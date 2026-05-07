@@ -397,18 +397,23 @@ async function seedTenant(
     log(`✓ Reusing existing ${heroImages.length} hero image(s)`);
   }
 
-  // Upsert tenant
-  const previewCode = generatePreviewAccessCode();
-  const existingTenant = await Tenant.findOne({ slug: tenantData.slug });
+  // Upsert tenant. CRITICAL: select '+previewAccessCode' explicitly because
+  // it's `select: false` by default — without this we'd think the code was
+  // missing and rotate it on every rerun.
+  const newPreviewCode = generatePreviewAccessCode();
+  const existingTenant = await Tenant.findOne({ slug: tenantData.slug }).select('+previewAccessCode +previewAccessCodeUpdatedAt');
   let tenant;
   if (existingTenant) {
     log('Updating existing tenant…');
+    const preservedCode = existingTenant.previewAccessCode;
     Object.assign(existingTenant, tenantData);
     if (logo) existingTenant.logo = logo;
     if (heroImages.length > 0) existingTenant.heroImages = heroImages;
     if (customPages.length > 0) existingTenant.customPages = customPages;
-    if (!existingTenant.previewAccessCode) {
-      existingTenant.previewAccessCode = previewCode;
+    if (preservedCode) {
+      existingTenant.previewAccessCode = preservedCode;
+    } else {
+      existingTenant.previewAccessCode = newPreviewCode;
       existingTenant.previewAccessCodeUpdatedAt = new Date();
     }
     await existingTenant.save();
@@ -420,7 +425,7 @@ async function seedTenant(
       logo: logo || '/logos/placeholder.png',
       heroImages,
       customPages,
-      previewAccessCode: previewCode,
+      previewAccessCode: newPreviewCode,
       previewAccessCodeUpdatedAt: new Date(),
     });
   }
@@ -541,7 +546,10 @@ async function seedTenant(
     }
   }
 
-  log(`\n🔑 Preview Code: ${previewCode}`);
+  // Re-fetch with the field so we always log the ACTUAL code in DB, not a
+  // stale local variable that may not have been saved.
+  const final = await Tenant.findById(tenant._id).select('+previewAccessCode');
+  log(`\n🔑 Preview Code: ${final?.previewAccessCode || newPreviewCode}`);
   log(`🌐 Preview URL: https://foxes-network.netlify.app/?tenant=${tenant.slug}`);
   return tenant;
 }
