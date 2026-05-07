@@ -42,12 +42,29 @@ async function uploadGeneratedImage(prompt: string, folder: string, size: '1024x
     log(`  ⏭  skip image (${folder}): ${prompt.slice(0, 60)}…`);
     return '';
   }
-  log(`  🎨 generating image: ${prompt.slice(0, 70)}…`);
-  const { base64, mimeType } = await generateImageFromPrompt({ prompt, size, quality: 'high', outputFormat: 'jpeg' });
-  const dataUrl = `data:${mimeType};base64,${base64}`;
-  const result = await uploadBase64Image(dataUrl, folder);
-  log(`     → ${result.url.slice(0, 90)}…`);
-  return result.url;
+  // Up to 3 attempts on timeout/transient errors. OpenAI gpt-image-1.5 and
+  // Cloudinary uploads occasionally 499/503 — a simple retry handles it.
+  const maxAttempts = 3;
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      log(`  🎨 [${attempt}/${maxAttempts}] generating image: ${prompt.slice(0, 70)}…`);
+      const { base64, mimeType } = await generateImageFromPrompt({ prompt, size, quality: 'high', outputFormat: 'jpeg' });
+      const dataUrl = `data:${mimeType};base64,${base64}`;
+      const result = await uploadBase64Image(dataUrl, folder);
+      log(`     → ${result.url.slice(0, 90)}…`);
+      return result.url;
+    } catch (err) {
+      lastError = err;
+      log(`  ⚠  attempt ${attempt} failed: ${err instanceof Error ? err.message : 'unknown'}`);
+      if (attempt < maxAttempts) {
+        await new Promise((r) => setTimeout(r, 3000));
+      }
+    }
+  }
+  log(`  ❌ giving up on this image after ${maxAttempts} attempts. Continuing.`);
+  console.error('  Last error:', lastError);
+  return '';
 }
 
 async function callGPT(systemPrompt: string, userPrompt: string): Promise<string> {
@@ -339,17 +356,24 @@ async function seedTenant(
   const tenantName = tenantData.name as string;
   log(`\n═════════ ${tenantName} ═════════`);
 
-  // Logo + hero images
-  let logo = '';
-  let heroImages: string[] = [];
-  if (!SKIP_IMAGES) {
+  // Logo + hero images — skip regeneration if tenant already has them
+  const existingTenantForImages = await Tenant.findOne({ slug: tenantData.slug as string });
+  let logo = existingTenantForImages?.logo || '';
+  let heroImages: string[] = existingTenantForImages?.heroImages || [];
+  const needsLogo = !logo || logo.startsWith('/logos/');
+  const needsHeroes = heroImages.length < 3;
+  if (!SKIP_IMAGES && needsLogo) {
     log('Generating logo…');
     const logoPrompt =
       tenantData.slug === 'safari-sahara-hurghada'
         ? 'Premium emblem badge logo for "Safari Sahara Hurghada" desert adventure operator: stylised camel silhouette + sun + dunes + palm tree + waves, gold and warm-brown colour palette, clean vector style, transparent background, no extra text'
         : 'Bold action logo emblem for "Quad Tour Safari": stylised orange quad bike + camel + palm tree + desert dunes + sun, energetic action vibe, orange and amber colours on dark background, clean vector style, no extra text';
     logo = await uploadGeneratedImage(logoPrompt, `attractions-network/tenant-logos/${tenantData.slug}`, '1024x1024');
+  } else if (logo) {
+    log(`✓ Reusing existing logo: ${logo.slice(0, 80)}…`);
+  }
 
+  if (!SKIP_IMAGES && needsHeroes) {
     log('Generating 3 hero images…');
     const heroPrompts = [
       tenantData.slug === 'safari-sahara-hurghada'
@@ -362,11 +386,15 @@ async function seedTenant(
         ? 'Bedouin camp at night under Milky Way: traditional tents, glowing fire, camels resting, Egyptian Red Sea desert, atmospheric nightscape'
         : 'Group of riders cruising on quad bikes along ridge silhouetted against fiery Egyptian sunset, cinematic widescreen, Red Sea desert',
     ];
+    const newHeroes: string[] = [];
     for (const [i, p] of heroPrompts.entries()) {
       const url = await uploadGeneratedImage(p, `attractions-network/tenant-heroes/${tenantData.slug}`, '1536x1024');
-      if (url) heroImages.push(url);
+      if (url) newHeroes.push(url);
       log(`  hero ${i + 1}/${heroPrompts.length} done`);
     }
+    if (newHeroes.length > 0) heroImages = newHeroes;
+  } else if (heroImages.length > 0) {
+    log(`✓ Reusing existing ${heroImages.length} hero image(s)`);
   }
 
   // Upsert tenant
@@ -442,14 +470,21 @@ async function seedTenant(
       };
     }
 
-    const tourImage = !SKIP_IMAGES
+    // Skip image generation if attraction already has one (idempotent rerun)
+    const isFlat = !!(tenantData as { flatUrls?: boolean }).flatUrls;
+    const storageSlug = isFlat ? `${tenantData.slug}-${tour.slug}` : tour.slug;
+    const existingForImage = await Attraction.findOne({
+      $or: [{ slug: storageSlug }, { pathSlug: tour.slug, tenantIds: { $in: [tenant._id] } }],
+    });
+    const tourImage = !SKIP_IMAGES && (!existingForImage?.images?.length)
       ? await uploadGeneratedImage(tour.imagePrompt, `attractions-network/tours/${tenantData.slug}`, '1536x1024')
-      : '';
+      : (existingForImage?.images?.[0] || '');
+    if (existingForImage?.images?.length) {
+      log(`    ✓ Reusing existing tour image`);
+    }
 
     // For flatUrls tenants we prefix the storage slug to avoid colliding on
     // the global unique `slug` index, while pathSlug holds the user-facing URL.
-    const isFlat = !!(tenantData as { flatUrls?: boolean }).flatUrls;
-    const storageSlug = isFlat ? `${tenantData.slug}-${tour.slug}` : tour.slug;
     const attrPayload = {
       slug: storageSlug,
       pathSlug: isFlat ? tour.slug : undefined,
@@ -497,13 +532,10 @@ async function seedTenant(
       sortOrder: tours.indexOf(tour),
     };
 
-    const existing = await Attraction.findOne({
-      $or: [{ slug: storageSlug }, { pathSlug: tour.slug, tenantIds: { $in: [tenant._id] } }],
-    });
-    if (existing) {
-      Object.assign(existing, attrPayload);
-      if (tourImage) existing.images = [tourImage];
-      await existing.save();
+    if (existingForImage) {
+      Object.assign(existingForImage, attrPayload);
+      if (tourImage) existingForImage.images = [tourImage];
+      await existingForImage.save();
     } else {
       await Attraction.create(attrPayload);
     }
