@@ -14,6 +14,10 @@ const allowedPatterns = [
   /\.netlify\.app$/,
   /\.foxesnetwork\.com$/,
   /\.up\.railway\.app$/,
+  // Foxes demo portal — public-facing demo domain on the same shared origin
+  // as foxes-network.netlify.app, gated by per-tenant access codes
+  /^foxesdemoplatform\.com$/,
+  /^www\.foxesdemoplatform\.com$/,
   // Custom tenant domains (Fouad's client brands)
   /^makadihorseclub\.com$/,
   /^cairotourfromhurghada\.com$/,
