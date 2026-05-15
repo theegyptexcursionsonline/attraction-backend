@@ -202,6 +202,7 @@ export interface IAttraction extends Document {
   cancellationPolicy: string;
   instantConfirmation: boolean;
   mobileTicket: boolean;
+  hasHotelPickup: boolean;
   badges: Badge[];
   availability: {
     type: 'time-slots' | 'date-only' | 'flexible';
@@ -249,6 +250,11 @@ export interface IBooking extends Document {
       name: string;
       price: number;
     }>;
+    hotelPickup?: {
+      hotelName: string;
+      roomNumber?: string;
+      pickupTime?: string;
+    };
   }>;
   guestDetails: {
     firstName: string;

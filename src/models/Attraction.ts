@@ -148,6 +148,14 @@ const attractionSchema = new Schema<IAttraction>(
       type: Boolean,
       default: true,
     },
+    // Opt-in hotel pickup. When true, the booking flow surfaces a pickup
+    // details step (hotel name + room number + optional preferred time)
+    // and the booking item stores those details for the operator. When
+    // false, the pickup step is skipped entirely.
+    hasHotelPickup: {
+      type: Boolean,
+      default: false,
+    },
     badges: [{
       type: String,
       enum: ['bestseller', 'free-cancellation', 'skip-line', 'instant-confirm'],

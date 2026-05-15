@@ -45,6 +45,14 @@ const bookingSchema = new Schema<IBooking>(
         name: { type: String },
         price: { type: Number },
       }],
+      // Hotel pickup details — only populated when the booked attraction
+      // has `hasHotelPickup === true`. The operator uses these to dispatch
+      // a pickup driver.
+      hotelPickup: {
+        hotelName: { type: String },
+        roomNumber: { type: String },
+        pickupTime: { type: String },
+      },
     }],
     guestDetails: {
       firstName: { type: String, required: true },
