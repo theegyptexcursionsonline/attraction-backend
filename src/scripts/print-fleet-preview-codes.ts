@@ -10,6 +10,7 @@ import { Tenant } from '../models/Tenant';
 import { generatePreviewAccessCode } from '../utils/hash';
 
 const SLUGS = [
+  'egypt-sunmarine',
   'royal-seascope',
   'pirates-premier-sailing',
   'nefertari-cruise',
