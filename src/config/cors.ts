@@ -49,6 +49,8 @@ const allowedPatterns = [
   /^www\.rosettaclassic\.com$/,
   /^majestictravel\.com$/,
   /^www\.majestictravel\.com$/,
+  /^hurghadapremiumexcursions\.com$/,
+  /^www\.hurghadapremiumexcursions\.com$/,
   // German EEO network
   /^aegyptenausfluege\.de$/,
   /^kairoausfluege\.de$/,
