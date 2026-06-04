@@ -74,7 +74,7 @@ const tenantSchema = new Schema<ITenant>(
     },
     designMode: {
       type: String,
-      enum: ['default', 'luxury', 'minimal', 'nautical', 'equestrian', 'marine', 'desert', 'safari', 'travel', 'stable', 'sunmarine', 'rittal', 'speedboat', 'ancient', 'pyramid', 'skyride', 'temple', 'ranch', 'reef', 'obelisk', 'dune', 'savanna', 'expedition', 'dolphin', 'safarisahara', 'quadtour', 'desertfox', 'pharaonic', 'luxorballoon', 'nilenight', 'seascope', 'pirates', 'nefertari', 'elitevip', 'classic', 'majestic', 'bazaar', 'abyss', 'island', 'angler', 'lagoon', 'sandbar', 'evening', 'atlas', 'caravan', 'pod', 'overland', 'azure', 'concierge', 'mirage'],
+      enum: ['default', 'luxury', 'minimal', 'nautical', 'equestrian', 'marine', 'desert', 'safari', 'travel', 'stable', 'sunmarine', 'rittal', 'speedboat', 'ancient', 'pyramid', 'skyride', 'temple', 'ranch', 'reef', 'obelisk', 'dune', 'savanna', 'expedition', 'dolphin', 'safarisahara', 'quadtour', 'desertfox', 'pharaonic', 'luxorballoon', 'nilenight', 'seascope', 'pirates', 'nefertari', 'elitevip', 'classic', 'majestic', 'bazaar', 'abyss', 'island', 'angler', 'lagoon', 'sandbar', 'evening', 'atlas', 'premium', 'caravan', 'pod', 'overland', 'azure', 'concierge', 'mirage'],
       default: 'default',
     },
     defaultCurrency: {

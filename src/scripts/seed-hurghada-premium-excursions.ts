@@ -57,12 +57,12 @@ async function main(): Promise<void> {
     (tenant as any).logo = '/logos/hurghada-premium-excursions.png';
     (tenant as any).favicon = '/favicon.png';
     (tenant as any).theme = {
-      primaryColor: '#0E7C86', // Red Sea teal
-      secondaryColor: '#0B2A3A', // deep navy
-      accentColor: '#E0A24E', // warm gold
+      primaryColor: '#072A33', // deep Red Sea teal ink
+      secondaryColor: '#159A8E', // Red Sea turquoise
+      accentColor: '#E0B45C', // champagne gold
     };
-    (tenant as any).fonts = { heading: 'Playfair Display', body: 'Inter' };
-    (tenant as any).designMode = 'atlas';
+    (tenant as any).fonts = { heading: 'Cormorant Garamond', body: 'Outfit' };
+    (tenant as any).designMode = 'premium';
     (tenant as any).flatUrls = false;
     (tenant as any).defaultCurrency = 'USD';
     (tenant as any).defaultLanguage = 'en';
@@ -101,7 +101,7 @@ async function main(): Promise<void> {
 
     await tenant.save();
     const tenantId = (tenant as any)._id;
-    console.log(`✅ Tenant ${isNew ? 'created' : 'updated'} — designMode=atlas, status=active, _id=${tenantId}`);
+    console.log(`✅ Tenant ${isNew ? 'created' : 'updated'} — designMode=premium, status=active, _id=${tenantId}`);
 
     /* ---------- 2. Clone the Hurghada catalog ---------- */
     // Wipe previously-cloned tours for this tenant (idempotent rerun).
@@ -129,6 +129,14 @@ async function main(): Promise<void> {
       copy.status = 'active';
       copy.featured = cloned < 4; // first few featured for the homepage rail
       copy.sortOrder = cloned;
+
+      // #14 reads as a generic Cairo package — make its Hurghada departure explicit
+      // so the catalog stays strictly "trips from Hurghada" (client requirement).
+      if (title === 'Cairo Tour Package') {
+        copy.title = 'Cairo Tour Package from Hurghada';
+        copy.slug = 'cairo-tour-package-from-hurghada-hpe';
+        copy.pathSlug = 'cairo-tour-package-from-hurghada';
+      }
 
       await Attraction.create(copy);
       cloned += 1;
