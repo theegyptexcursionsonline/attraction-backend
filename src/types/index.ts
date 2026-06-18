@@ -219,9 +219,8 @@ export interface IAttraction extends Document {
   ownerTenantId?: Types.ObjectId;
   reseller: {
     enabled: boolean;
-    type: 'commission' | 'net';
-    // commission: % the reseller keeps of the sale. net: fixed amount the
-    // supplier must receive per booking; the reseller keeps the rest.
+    // Commission % the reseller charges on the total the customer pays. The
+    // supplier (tour owner) receives the rest, minus the payment processing fee.
     value: number;
     // Empty = any tenant may resell (open marketplace). Otherwise restricted.
     allowedTenants: Types.ObjectId[];
@@ -295,10 +294,14 @@ export interface IBooking extends Document {
   sellerTenantId?: Types.ObjectId;
   isResale?: boolean;
   revenueBreakdown?: {
-    commissionType: 'commission' | 'net';
-    commissionValue: number;
-    supplierEarnings: number;
+    // Reseller commission % applied to the total the customer paid.
+    commissionPercent: number;
+    // What the reseller (seller) earns = total * commissionPercent / 100.
     sellerEarnings: number;
+    // Payment processing fee deducted from the supplier's share.
+    paymentFee: number;
+    // What the supplier (tour owner) nets = total - sellerEarnings - paymentFee.
+    supplierEarnings: number;
   };
   createdAt: Date;
   updatedAt: Date;

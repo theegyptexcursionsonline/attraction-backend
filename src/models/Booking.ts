@@ -129,10 +129,10 @@ const bookingSchema = new Schema<IBooking>(
       default: false,
     },
     revenueBreakdown: {
-      commissionType: { type: String, enum: ['commission', 'net'] },
-      commissionValue: { type: Number },
-      supplierEarnings: { type: Number },
+      commissionPercent: { type: Number },
       sellerEarnings: { type: Number },
+      paymentFee: { type: Number },
+      supplierEarnings: { type: Number },
     },
   },
   {

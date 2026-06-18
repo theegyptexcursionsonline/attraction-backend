@@ -19,6 +19,10 @@ const adminRoles = ['super-admin', 'brand-admin', 'manager'];
 // Round money to 2 decimals (avoids float drift when splitting revenue).
 const round2 = (n: number): number => Math.round(n * 100) / 100;
 
+// Payment-processing fee deducted from the supplier's net on a resale booking
+// (configurable). The supplier receives: total − reseller commission − this fee.
+const RESELLER_PAYMENT_FEE_PERCENT = 2.9;
+
 const hasTenantAccess = (req: AuthRequest, tenantId?: unknown): boolean => {
   if (!req.user || !tenantId) return false;
   if (req.user.role === 'super-admin') return true;
@@ -212,35 +216,28 @@ export const createBooking = async (
       sellerTenantId: typeof sellerTenant;
       isResale: true;
       revenueBreakdown: {
-        commissionType: 'commission' | 'net';
-        commissionValue: number;
-        supplierEarnings: number;
+        commissionPercent: number;
         sellerEarnings: number;
+        paymentFee: number;
+        supplierEarnings: number;
       };
     } | { isResale: false } = { isResale: false };
 
     if (isResale) {
-      const { type, value } = attraction.reseller;
-      let sellerEarnings: number;
-      let supplierEarnings: number;
-      if (type === 'commission') {
-        // Reseller keeps `value`% of the sale; supplier gets the rest.
-        sellerEarnings = round2((total * value) / 100);
-        supplierEarnings = round2(total - sellerEarnings);
-      } else {
-        // net: supplier must receive a fixed `value` (capped at total); reseller keeps the rest.
-        supplierEarnings = round2(Math.min(value, total));
-        sellerEarnings = round2(total - supplierEarnings);
-      }
+      // Commission % only, on the total the customer pays.
+      const commissionPercent = attraction.reseller.value;
+      const sellerEarnings = round2((total * commissionPercent) / 100); // reseller commission
+      const paymentFee = round2((total * RESELLER_PAYMENT_FEE_PERCENT) / 100); // payment processing fee
+      const supplierEarnings = round2(total - sellerEarnings - paymentFee); // supplier (tour owner) net
       resaleFields = {
         supplierTenantId: supplierTenant,
         sellerTenantId: sellerTenant,
         isResale: true,
         revenueBreakdown: {
-          commissionType: type,
-          commissionValue: value,
-          supplierEarnings,
+          commissionPercent,
           sellerEarnings,
+          paymentFee,
+          supplierEarnings,
         },
       };
     }
@@ -581,14 +578,18 @@ export const getAllBookings = async (
     const limitNum = parseInt(limit as string, 10);
 
     const query: Record<string, unknown> = {};
+    const andClauses: Record<string, unknown>[] = [];
 
-    // Filter by tenant for non-super-admins
+    // Scope for non-super-admins: their own-site bookings PLUS resale bookings
+    // of tours they supply — so a supplier sees their tours sold via resellers.
+    const scope = req.tenant ? [req.tenant._id] : (req.user?.assignedTenants || []);
     if (req.user?.role !== 'super-admin') {
-      if (req.tenant) {
-        query.tenantId = req.tenant._id;
-      } else {
-        query.tenantId = { $in: req.user?.assignedTenants || [] };
-      }
+      andClauses.push({
+        $or: [
+          { tenantId: { $in: scope } },
+          { supplierTenantId: { $in: scope }, isResale: true },
+        ],
+      });
     }
 
     if (status) {
@@ -603,13 +604,17 @@ export const getAllBookings = async (
 
     if (search) {
       const safeSearch = escapeRegex(search as string);
-      query.$or = [
-        { reference: { $regex: safeSearch, $options: 'i' } },
-        { 'guestDetails.email': { $regex: safeSearch, $options: 'i' } },
-        { 'guestDetails.firstName': { $regex: safeSearch, $options: 'i' } },
-        { 'guestDetails.lastName': { $regex: safeSearch, $options: 'i' } },
-      ];
+      andClauses.push({
+        $or: [
+          { reference: { $regex: safeSearch, $options: 'i' } },
+          { 'guestDetails.email': { $regex: safeSearch, $options: 'i' } },
+          { 'guestDetails.firstName': { $regex: safeSearch, $options: 'i' } },
+          { 'guestDetails.lastName': { $regex: safeSearch, $options: 'i' } },
+        ],
+      });
     }
+
+    if (andClauses.length > 0) query.$and = andClauses;
 
     const [bookings, total] = await Promise.all([
       Booking.find(query)
@@ -623,7 +628,26 @@ export const getAllBookings = async (
       Booking.countDocuments(query),
     ]);
 
-    sendPaginated(res, bookings, pageNum, limitNum, total);
+    // Privacy: when a supplier views a resale booking of their own tour, never
+    // reveal which reseller website sold it. Swap the seller identity for a
+    // generic label and drop the seller tenant id. Super-admins see everything.
+    const isSuper = req.user?.role === 'super-admin';
+    const scopeSet = new Set(scope.map((t) => String(t)));
+    const sanitized = (bookings as Array<Record<string, any>>).map((b) => {
+      if (!isSuper && b.isResale) {
+        const supplierId = b.supplierTenantId ? String(b.supplierTenantId) : null;
+        const sellerId = b.sellerTenantId ? String(b.sellerTenantId) : null;
+        const viewerIsSupplier = supplierId && scopeSet.has(supplierId);
+        const viewerIsSeller = sellerId && scopeSet.has(sellerId);
+        if (viewerIsSupplier && !viewerIsSeller) {
+          b.tenantId = { name: 'Reseller partner' };
+          b.sellerTenantId = undefined;
+        }
+      }
+      return b;
+    });
+
+    sendPaginated(res, sanitized, pageNum, limitNum, total);
   } catch (error) {
     next(error);
   }
@@ -770,7 +794,8 @@ export const getResellerEarnings = async (
         amount: b.total,
         currency: b.currency,
         supplierTenant: b.supplierTenantId?.name || null,
-        sellerTenant: b.sellerTenantId?.name || null,
+        // Never reveal the reselling website to the supplier.
+        sellerTenant: role === 'supplier' ? null : (b.sellerTenantId?.name || null),
         breakdown: b.revenueBreakdown || null,
         role,
         createdAt: b.createdAt,

@@ -15,6 +15,8 @@ import {
   getResellableAttractions,
   addReseller,
   removeReseller,
+  getResellerConfig,
+  updateResellerConfig,
 } from '../controllers/attractions.controller';
 import { authenticate, optionalAuth, requireAdmin, requireRole } from '../middleware/auth.middleware';
 import { optionalTenant } from '../middleware/tenant.middleware';
@@ -266,6 +268,11 @@ router.delete('/:id/block-dates/:date', authenticate, requireAdmin, unblockDate)
 // Reseller marketplace — opt the current tenant in/out of selling an attraction.
 router.post('/:id/resell', authenticate, optionalTenant, requireRole('super-admin', 'brand-admin'), addReseller);
 router.delete('/:id/resell', authenticate, optionalTenant, requireRole('super-admin', 'brand-admin'), removeReseller);
+
+// Resellers hub (supplier side) — owner lists their tours + sets commission.
+// MUST stay above `/admin/:id` so it is not captured as an id.
+router.get('/admin/reseller-config', authenticate, optionalTenant, requireRole('super-admin', 'brand-admin', 'manager'), getResellerConfig);
+router.patch('/:id/reseller-config', authenticate, optionalTenant, requireRole('super-admin', 'brand-admin', 'manager'), updateResellerConfig);
 
 // Submit a review
 router.post(

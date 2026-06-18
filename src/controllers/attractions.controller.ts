@@ -1,9 +1,10 @@
 import { Response, NextFunction } from 'express';
 import { Attraction } from '../models/Attraction';
+import { Booking } from '../models/Booking';
 import { Review } from '../models/Review';
 import { Availability } from '../models/Availability';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
-import { AuthRequest } from '../types';
+import { AuthRequest, IAttraction } from '../types';
 import { Types } from 'mongoose';
 import { escapeRegex } from '../utils/helpers';
 
@@ -351,15 +352,13 @@ const validatePricingOptions = (pricingOptions: unknown): string | null => {
 
 const validateReseller = (reseller: unknown): string | null => {
   if (!reseller || typeof reseller !== 'object') return null;
-  const r = reseller as { enabled?: boolean; type?: string; value?: number };
+  const r = reseller as { enabled?: boolean; value?: number };
   if (!r.enabled) return null;
-  if (r.type !== 'commission' && r.type !== 'net') {
-    return 'Reseller type must be "commission" or "net"';
-  }
+  // Commission-only model: the value is a % of the total the customer pays.
   if (typeof r.value !== 'number' || Number.isNaN(r.value) || r.value < 0) {
-    return 'Reseller rate must be a positive number';
+    return 'Commission must be a positive number';
   }
-  if (r.type === 'commission' && r.value > 100) {
+  if (r.value > 100) {
     return 'Commission cannot exceed 100%';
   }
   return null;
@@ -641,6 +640,160 @@ export const removeReseller = async (
     );
 
     sendSuccess(res, updated, 'Attraction removed from your catalog');
+  } catch (error) {
+    next(error);
+  }
+};
+
+const round2 = (n: number): number => Math.round((n + Number.EPSILON) * 100) / 100;
+
+// Which tenants does this admin manage? Site picker (req.tenant) wins,
+// otherwise their assigned tenants. Empty for a super-admin with no picker
+// (treated as "all" downstream).
+const resolveOwnerScope = (req: AuthRequest): Types.ObjectId[] => {
+  if (req.tenant?._id) return [req.tenant._id];
+  return req.user?.assignedTenants || [];
+};
+
+// GET /attractions/admin/reseller-config
+// Supplier-side "Resellers" hub: every tour the operator owns, the commission
+// it charges resellers, and how much it has earned via resale (so best-sellers
+// surface naturally). One place to set commission + read the reselling report.
+export const getResellerConfig = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const scope = resolveOwnerScope(req);
+    const isSuper = req.user?.role === 'super-admin';
+
+    if (scope.length === 0 && !isSuper) {
+      sendSuccess(res, { tours: [], summary: { totalEarned: 0, totalCommission: 0, toursListed: 0 } });
+      return;
+    }
+
+    const attractionQuery: Record<string, unknown> = {};
+    if (scope.length > 0) attractionQuery.ownerTenantId = { $in: scope };
+
+    const attractions = await Attraction.find(attractionQuery)
+      .select('title images priceFrom currency reseller status')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const ids = attractions.map((a) => a._id);
+
+    // Resale earnings for these tours, from the supplier's side.
+    const statMatch: Record<string, unknown> = { isResale: true, attractionId: { $in: ids } };
+    if (scope.length > 0) statMatch.supplierTenantId = { $in: scope };
+
+    const stats = await Booking.aggregate([
+      { $match: statMatch },
+      {
+        $group: {
+          _id: '$attractionId',
+          totalEarned: { $sum: '$revenueBreakdown.supplierEarnings' },
+          unitsSold: { $sum: 1 },
+        },
+      },
+    ]);
+    const statById = new Map<string, { totalEarned: number; unitsSold: number }>(
+      stats.map((s: { _id: Types.ObjectId; totalEarned: number; unitsSold: number }) => [String(s._id), s])
+    );
+
+    const tours = attractions.map((a) => {
+      const s = statById.get(String(a._id));
+      const reseller = (a as { reseller?: { enabled?: boolean; value?: number } }).reseller;
+      return {
+        id: a._id,
+        title: a.title,
+        image: a.images?.[0] || null,
+        currency: a.currency,
+        priceFrom: a.priceFrom,
+        status: a.status,
+        enabled: reseller?.enabled ?? false,
+        commission: reseller?.value ?? 0,
+        totalEarned: round2(s?.totalEarned || 0),
+        unitsSold: s?.unitsSold || 0,
+      };
+    });
+
+    // Commission earned reselling OTHER operators' tours (the seller side).
+    const sellerMatch: Record<string, unknown> = { isResale: true };
+    if (scope.length > 0) sellerMatch.sellerTenantId = { $in: scope };
+    const sellerAgg = await Booking.aggregate([
+      { $match: sellerMatch },
+      { $group: { _id: null, total: { $sum: '$revenueBreakdown.sellerEarnings' } } },
+    ]);
+
+    const totalEarned = tours.reduce((sum, t) => sum + t.totalEarned, 0);
+
+    sendSuccess(res, {
+      tours,
+      summary: {
+        totalEarned: round2(totalEarned),
+        totalCommission: round2(sellerAgg[0]?.total || 0),
+        toursListed: tours.filter((t) => t.enabled).length,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// PATCH /attractions/:id/reseller-config
+// Owner sets the commission % (and on/off) for one of their tours straight
+// from the Resellers hub — no need to open the full tour editor.
+export const updateResellerConfig = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { enabled, value } = req.body;
+
+    const attraction = await Attraction.findById(id);
+    if (!attraction) {
+      sendError(res, 'Attraction not found', 404);
+      return;
+    }
+
+    // Only the owning tenant (or a super-admin) may change these settings.
+    if (req.user?.role !== 'super-admin') {
+      const scope = new Set((req.user?.assignedTenants || []).map((t: Types.ObjectId) => t.toString()));
+      const owner = attraction.ownerTenantId?.toString();
+      if (!owner || !scope.has(owner)) {
+        sendError(res, 'You can only manage reseller settings for your own tours', 403);
+        return;
+      }
+    }
+
+    if (!attraction.reseller) {
+      attraction.reseller = { enabled: false, value: 0, allowedTenants: [] } as IAttraction['reseller'];
+    }
+
+    if (typeof enabled === 'boolean') attraction.reseller.enabled = enabled;
+    if (value !== undefined) {
+      const v = Number(value);
+      if (Number.isNaN(v) || v < 0) {
+        sendError(res, 'Commission must be a positive number', 400);
+        return;
+      }
+      if (v > 100) {
+        sendError(res, 'Commission cannot exceed 100%', 400);
+        return;
+      }
+      attraction.reseller.value = v;
+    }
+
+    await attraction.save();
+
+    sendSuccess(
+      res,
+      { id: attraction._id, enabled: attraction.reseller.enabled, commission: attraction.reseller.value },
+      'Reseller settings updated'
+    );
   } catch (error) {
     next(error);
   }

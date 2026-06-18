@@ -187,11 +187,11 @@ const attractionSchema = new Schema<IAttraction>(
       index: true,
     },
     // Reseller marketplace settings — other tenants can sell this attraction
-    // under their own brand with a commission cut or a fixed net rate.
+    // under their own brand for a commission % of the total the customer pays.
+    // The supplier nets the rest after the reseller commission + payment fee.
     reseller: {
       enabled: { type: Boolean, default: false },
-      type: { type: String, enum: ['commission', 'net'], default: 'commission' },
-      value: { type: Number, default: 0, min: 0 },
+      value: { type: Number, default: 0, min: 0, max: 100 },
       allowedTenants: [{ type: Schema.Types.ObjectId, ref: 'Tenant' }],
     },
     status: {
