@@ -817,3 +817,159 @@ export const getResellerEarnings = async (
     next(error);
   }
 };
+
+// Anonymized, stable label for a reseller partner — the supplier can tell
+// partners apart and settle per-partner without ever seeing the website name.
+const partnerCode = (id: unknown): string =>
+  id ? `Partner #${String(id).slice(-4).toUpperCase()}` : 'Partner #N/A';
+
+// GET /bookings/admin/settlement
+// Supplier-side payout ledger: every resale booking of the admin's tours, the
+// net owed to them, grouped by (anonymized) partner, with settled/outstanding
+// totals. Drives the manual-settlement workflow.
+export const getSettlement = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    let myTenants: unknown[] | undefined;
+    if (req.user?.role !== 'super-admin') {
+      myTenants = req.tenant ? [req.tenant._id] : (req.user?.assignedTenants || []);
+    }
+
+    const match: Record<string, unknown> = { isResale: true };
+    if (myTenants) match.supplierTenantId = { $in: myTenants };
+
+    const bookings = await Booking.find(match)
+      .populate('attractionId', 'title')
+      .sort({ createdAt: -1 })
+      .limit(500)
+      .lean();
+
+    let totalEarned = 0;
+    let settled = 0;
+    let outstanding = 0;
+    const partners = new Map<string, { partnerId: string; partner: string; outstanding: number; settled: number; count: number }>();
+
+    const items = (bookings as Array<Record<string, any>>).map((b) => {
+      const net = b.revenueBreakdown?.supplierEarnings || 0;
+      const isSettled = b.settlementStatus === 'settled';
+      totalEarned += net;
+      if (isSettled) settled += net; else outstanding += net;
+
+      const partnerId = b.sellerTenantId ? String(b.sellerTenantId) : 'unknown';
+      const code = partnerCode(b.sellerTenantId);
+      const p = partners.get(partnerId) || { partnerId, partner: code, outstanding: 0, settled: 0, count: 0 };
+      p.count += 1;
+      if (isSettled) p.settled += net; else p.outstanding += net;
+      partners.set(partnerId, p);
+
+      return {
+        _id: b._id,
+        reference: b.reference,
+        title: b.attractionId?.title || null,
+        partner: code,
+        partnerId,
+        date: b.items?.[0]?.date || null,
+        net: round2(net),
+        currency: b.currency,
+        status: isSettled ? 'settled' : 'pending',
+        settledAt: b.settledAt || null,
+        createdAt: b.createdAt,
+      };
+    });
+
+    sendSuccess(res, {
+      summary: {
+        totalEarned: round2(totalEarned),
+        settled: round2(settled),
+        outstanding: round2(outstanding),
+        count: items.length,
+      },
+      partners: Array.from(partners.values()).map((p) => ({
+        ...p,
+        outstanding: round2(p.outstanding),
+        settled: round2(p.settled),
+      })),
+      items,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Guard: can this admin settle this resale booking? (owns the supplied tour)
+const canSettle = (req: AuthRequest, booking: { supplierTenantId?: unknown }): boolean => {
+  if (req.user?.role === 'super-admin') return true;
+  const scope = new Set((req.user?.assignedTenants || []).map((t) => String(t)));
+  if (req.tenant?._id) scope.add(String(req.tenant._id));
+  const sup = booking.supplierTenantId ? String(booking.supplierTenantId) : null;
+  return !!sup && scope.has(sup);
+};
+
+// PATCH /bookings/admin/:id/settlement — mark one resale booking settled/pending
+export const updateSettlement = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    if (status !== 'settled' && status !== 'pending') {
+      sendError(res, 'status must be "settled" or "pending"', 400);
+      return;
+    }
+
+    const booking = await Booking.findById(id);
+    if (!booking) { sendError(res, 'Booking not found', 404); return; }
+    if (!booking.isResale) { sendError(res, 'Not a resale booking', 400); return; }
+    if (!canSettle(req, booking)) {
+      sendError(res, 'You can only settle earnings for your own tours', 403);
+      return;
+    }
+
+    booking.settlementStatus = status;
+    booking.settledAt = status === 'settled' ? new Date() : undefined;
+    await booking.save();
+
+    sendSuccess(res, { id: booking._id, settlementStatus: booking.settlementStatus, settledAt: booking.settledAt }, 'Settlement updated');
+  } catch (error) {
+    next(error);
+  }
+};
+
+// POST /bookings/admin/settlement/settle — batch settle/unsettle by booking ids
+export const settleBatch = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { ids, status } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      sendError(res, 'ids (non-empty array) required', 400);
+      return;
+    }
+    if (status !== 'settled' && status !== 'pending') {
+      sendError(res, 'status must be "settled" or "pending"', 400);
+      return;
+    }
+
+    const match: Record<string, unknown> = { _id: { $in: ids }, isResale: true };
+    if (req.user?.role !== 'super-admin') {
+      const scope = req.tenant ? [req.tenant._id] : (req.user?.assignedTenants || []);
+      match.supplierTenantId = { $in: scope };
+    }
+
+    const update: Record<string, unknown> = status === 'settled'
+      ? { $set: { settlementStatus: 'settled', settledAt: new Date() } }
+      : { $set: { settlementStatus: 'pending' }, $unset: { settledAt: '' } };
+
+    const result = await Booking.updateMany(match, update);
+    sendSuccess(res, { modified: result.modifiedCount }, `${result.modifiedCount} booking(s) marked ${status}`);
+  } catch (error) {
+    next(error);
+  }
+};

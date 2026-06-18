@@ -134,6 +134,17 @@ const bookingSchema = new Schema<IBooking>(
       paymentFee: { type: Number },
       supplierEarnings: { type: Number },
     },
+    // Manual settlement of the supplier's resale earnings. Only meaningful on
+    // resale bookings; the supplier marks each as settled once paid out.
+    settlementStatus: {
+      type: String,
+      enum: ['pending', 'settled'],
+      default: 'pending',
+      index: true,
+    },
+    settledAt: {
+      type: Date,
+    },
   },
   {
     timestamps: true,

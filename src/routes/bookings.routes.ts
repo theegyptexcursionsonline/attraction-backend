@@ -9,6 +9,9 @@ import {
   updateBookingStatus,
   getBookingStats,
   getResellerEarnings,
+  getSettlement,
+  updateSettlement,
+  settleBatch,
 } from '../controllers/bookings.controller';
 import { authenticate, optionalAuth, requireAdmin, requireRole } from '../middleware/auth.middleware';
 import { optionalTenant } from '../middleware/tenant.middleware';
@@ -320,6 +323,12 @@ router.get(
   optionalTenant,
   getResellerEarnings
 );
+
+// Reseller settlement — supplier payout ledger + mark settled (single/batch).
+// Keep above `/admin/:id` so the segments are not captured as an id.
+router.get('/admin/settlement', authenticate, requireAdmin, optionalTenant, getSettlement);
+router.post('/admin/settlement/settle', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, settleBatch);
+router.patch('/admin/:id/settlement', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, updateSettlement);
 
 /**
  * @swagger

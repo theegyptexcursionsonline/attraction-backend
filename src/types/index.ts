@@ -303,6 +303,9 @@ export interface IBooking extends Document {
     // What the supplier (tour owner) nets = total - sellerEarnings - paymentFee.
     supplierEarnings: number;
   };
+  // Manual settlement of the supplier's resale earnings (resale bookings only).
+  settlementStatus?: 'pending' | 'settled';
+  settledAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
