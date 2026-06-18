@@ -535,8 +535,9 @@ export const getResellableAttractions = async (
     };
 
     if (currentTenantId) {
+      // Not my own tours. Items already on my site stay in the list (flagged
+      // below) so the UI can filter "on my site" and still offer Remove.
       query.ownerTenantId = { $ne: currentTenantId };
-      query.tenantIds = { $ne: currentTenantId };
       query.$or = [
         { 'reseller.allowedTenants': { $size: 0 } },
         { 'reseller.allowedTenants': currentTenantId },
@@ -544,12 +545,22 @@ export const getResellableAttractions = async (
     }
 
     const attractions = await Attraction.find(query)
-      .select('title slug images priceFrom currency reseller ownerTenantId destination category')
+      .select('title slug images priceFrom currency reseller ownerTenantId destination category tenantIds')
       .populate('ownerTenantId', 'name slug logo')
       .sort({ rating: -1, createdAt: -1 })
       .lean();
 
-    sendSuccess(res, attractions);
+    // Flag the ones already on the current tenant's storefront, then strip the
+    // full tenant list so we don't leak who else resells each item.
+    const result = (attractions as Array<Record<string, any>>).map((a) => {
+      const addedToMySite = currentTenantId
+        ? (a.tenantIds || []).some((t: unknown) => String(t) === String(currentTenantId))
+        : false;
+      const { tenantIds: _tenantIds, ...rest } = a;
+      return { ...rest, addedToMySite };
+    });
+
+    sendSuccess(res, result);
   } catch (error) {
     next(error);
   }
