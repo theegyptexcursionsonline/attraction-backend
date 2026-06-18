@@ -754,17 +754,28 @@ export const getResellerEarnings = async (
         .lean(),
     ]);
 
-    const recentResale = recent.map((b: Record<string, any>) => ({
-      _id: b._id,
-      reference: b.reference,
-      title: b.attractionId?.title || null,
-      amount: b.total,
-      currency: b.currency,
-      supplierTenant: b.supplierTenantId?.name || null,
-      sellerTenant: b.sellerTenantId?.name || null,
-      breakdown: b.revenueBreakdown || null,
-      createdAt: b.createdAt,
-    }));
+    const myTenantSet = new Set((myTenants || []).map((t) => String(t)));
+    const recentResale = recent.map((b: Record<string, any>) => {
+      const supplierId = b.supplierTenantId?._id ? String(b.supplierTenantId._id) : null;
+      const sellerId = b.sellerTenantId?._id ? String(b.sellerTenantId._id) : null;
+      // Which side is the requesting admin? supplier (earns the net) or seller (earns commission).
+      const role =
+        supplierId && myTenantSet.has(supplierId) ? 'supplier'
+        : sellerId && myTenantSet.has(sellerId) ? 'seller'
+        : 'network';
+      return {
+        _id: b._id,
+        reference: b.reference,
+        title: b.attractionId?.title || null,
+        amount: b.total,
+        currency: b.currency,
+        supplierTenant: b.supplierTenantId?.name || null,
+        sellerTenant: b.sellerTenantId?.name || null,
+        breakdown: b.revenueBreakdown || null,
+        role,
+        createdAt: b.createdAt,
+      };
+    });
 
     sendSuccess(res, {
       asSupplier: {
