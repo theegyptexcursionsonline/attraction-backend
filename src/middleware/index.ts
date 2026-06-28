@@ -32,3 +32,8 @@ export {
   bookingLimiter,
   searchLimiter,
 } from './rate-limit.middleware';
+
+export {
+  authenticateApiKey,
+  requireScope,
+} from './apiKey.middleware';

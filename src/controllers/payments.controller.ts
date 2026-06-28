@@ -6,6 +6,29 @@ import { AuthRequest } from '../types';
 import { createMockPaymentIntent, confirmMockPayment, createMockRefund } from '../services/stripe.service';
 import { generateTicketPdf } from '../services/pdf.service';
 import { sendBookingConfirmation } from '../services/email.service';
+import { safeEmitEvent, recordInboundEvent } from '../services/webhook.service';
+
+// Compact, tenant-safe booking summary for webhook payloads (the booking's own
+// fields only — never cross-tenant data).
+const paymentEventPayload = (booking: {
+  _id: unknown;
+  reference: string;
+  tenantId: unknown;
+  attractionId?: unknown;
+  status: string;
+  paymentStatus: string;
+  total: number;
+  currency: string;
+}): Record<string, unknown> => ({
+  bookingId: String(booking._id),
+  reference: booking.reference,
+  tenantId: String(booking.tenantId),
+  attractionId: booking.attractionId ? String(booking.attractionId) : undefined,
+  status: booking.status,
+  paymentStatus: booking.paymentStatus,
+  total: booking.total,
+  currency: booking.currency,
+});
 
 const adminRoles = ['super-admin', 'brand-admin', 'manager'];
 
@@ -115,6 +138,10 @@ export const confirmPayment = async (
 
     await booking.save();
 
+    // Outbound webhooks: a successful payment confirms the booking. Tenant-scoped.
+    safeEmitEvent(booking.tenantId, 'payment.succeeded', paymentEventPayload(booking));
+    safeEmitEvent(booking.tenantId, 'booking.confirmed', paymentEventPayload(booking));
+
     // Generate ticket PDF and send confirmation email
     try {
       const attraction = booking.attractionId as any;
@@ -166,6 +193,12 @@ export const confirmPayment = async (
         },
         pdfBuffer
       );
+
+      // The mobile ticket is now issued — notify subscribers. Tenant-scoped.
+      safeEmitEvent(booking.tenantId, 'ticket.issued', {
+        ...paymentEventPayload(booking),
+        attractionTitle: attraction?.title,
+      });
     } catch (emailError) {
       console.error('Failed to send confirmation email:', emailError);
       // Don't fail the payment if email fails
@@ -188,10 +221,64 @@ export const handleWebhook = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  // Mock webhook handler - in production, this would verify Stripe webhook signatures
-  // For now, we handle payments via the confirmPayment endpoint directly
+  // Inbound provider webhook (Stripe). The body arrives raw (express.raw on
+  // this path) so a real Stripe signature check can be added without a parser
+  // mutating the bytes. Idempotency is enforced via the (provider, eventId)
+  // unique index so provider retries never double-confirm a booking.
   try {
-    // Mock webhook handler - payments are handled via confirmPayment endpoint
+    let event: {
+      id?: string;
+      type?: string;
+      data?: { object?: { id?: string; metadata?: { bookingId?: string } } };
+    };
+    try {
+      const raw = Buffer.isBuffer(req.body)
+        ? req.body.toString('utf8')
+        : typeof req.body === 'string'
+          ? req.body
+          : JSON.stringify(req.body || {});
+      event = raw ? JSON.parse(raw) : {};
+    } catch {
+      sendError(res, 'Invalid webhook payload', 400);
+      return;
+    }
+
+    const eventId = event.id;
+    const eventType = event.type;
+
+    if (!eventId) {
+      // Without an id we can't dedupe; acknowledge so the provider stops
+      // retrying, but take no action.
+      res.json({ received: true, ignored: 'missing event id' });
+      return;
+    }
+
+    // Idempotency gate — first writer wins; duplicates short-circuit.
+    const { duplicate } = await recordInboundEvent('stripe', eventId, { eventType });
+    if (duplicate) {
+      res.json({ received: true, duplicate: true });
+      return;
+    }
+
+    if (eventType === 'payment_intent.succeeded' || eventType === 'checkout.session.completed') {
+      const obj = event.data?.object;
+      const intentId = obj?.id;
+      const bookingId = obj?.metadata?.bookingId;
+      const booking = bookingId
+        ? await Booking.findById(bookingId)
+        : intentId
+          ? await Booking.findOne({ stripePaymentIntentId: intentId })
+          : null;
+
+      if (booking && booking.paymentStatus !== 'succeeded') {
+        booking.paymentStatus = 'succeeded';
+        booking.status = 'confirmed';
+        await booking.save();
+        safeEmitEvent(booking.tenantId, 'payment.succeeded', paymentEventPayload(booking));
+        safeEmitEvent(booking.tenantId, 'booking.confirmed', paymentEventPayload(booking));
+      }
+    }
+
     res.json({ received: true });
   } catch (error) {
     next(error);

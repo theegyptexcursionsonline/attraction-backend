@@ -20,6 +20,8 @@ import previewRoutes from './preview.routes';
 import pageRoutes from './page.routes';
 import blogRoutes from './blog.routes';
 import contentRoutes from './content.routes';
+import apiKeysRoutes from './apiKeys.routes';
+import webhooksRoutes from './webhooks.routes';
 
 const router = Router();
 
@@ -280,6 +282,10 @@ router.use('/rsvps', rsvpsRoutes);
 router.use('/preview', previewRoutes);
 router.use('/page', pageRoutes);
 router.use('/blog', blogRoutes);
+
+// Programmatic API keys + outbound webhooks (tenant-scoped, admin-managed)
+router.use('/api-keys', apiKeysRoutes);
+router.use('/webhooks', webhooksRoutes);
 
 // foxes-content-engine publishing bridge (Bearer CONTENT_ENGINE_API_KEY)
 router.use('/admin/content', contentRoutes);

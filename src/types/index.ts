@@ -392,10 +392,99 @@ export interface INotification extends Document {
   updatedAt: Date;
 }
 
-// Extended Request with User and Tenant
+// API Key Types
+// Programmatic, tenant-scoped credentials. The plaintext key is shown ONCE on
+// creation; only its sha256 hash is stored at rest. Resolving an ApiKey yields
+// the owning tenant — keys are never resolvable across tenants.
+export type ApiKeyScope = 'read' | 'write' | '*';
+
+export interface IApiKey extends Document {
+  _id: Types.ObjectId;
+  tenantId: Types.ObjectId;
+  label: string;
+  // sha256(plaintext) — unique. The plaintext is never persisted.
+  hashedKey: string;
+  // Non-secret display fragment, e.g. "fxs_att_a1b2…". Safe to show in lists.
+  keyPrefix: string;
+  scopes: ApiKeyScope[];
+  lastUsedAt?: Date;
+  revoked: boolean;
+  revokedAt?: Date;
+  createdBy?: Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Outbound Webhook Types
+export type WebhookEventType =
+  | 'booking.created'
+  | 'booking.confirmed'
+  | 'booking.cancelled'
+  | 'payment.succeeded'
+  | 'ticket.issued'
+  | 'ping'
+  | '*';
+
+export interface IWebhookEndpoint extends Document {
+  _id: Types.ObjectId;
+  tenantId: Types.ObjectId;
+  url: string;
+  // Per-endpoint HMAC secret used to sign X-Foxes-Signature. Shown once on
+  // create; the receiver stores it to verify. Tenant-scoped.
+  secret: string;
+  description?: string;
+  // Subscribed event types. '*' = all events.
+  events: WebhookEventType[];
+  enabled: boolean;
+  // Consecutive delivery failures; the endpoint auto-disables past a threshold.
+  consecutiveFailures: number;
+  disabledAt?: Date;
+  lastDeliveryAt?: Date;
+  createdBy?: Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type WebhookDeliveryStatus = 'pending' | 'success' | 'failed';
+
+export interface IWebhookDelivery extends Document {
+  _id: Types.ObjectId;
+  tenantId: Types.ObjectId;
+  endpointId: Types.ObjectId;
+  // Foxes event id (shared across all endpoint deliveries of one emit).
+  eventId: string;
+  eventType: WebhookEventType;
+  payload: Record<string, unknown>;
+  status: WebhookDeliveryStatus;
+  attempts: number;
+  responseStatus?: number;
+  responseBody?: string;
+  error?: string;
+  lastAttemptAt?: Date;
+  nextRetryAt?: Date;
+  deliveredAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Inbound webhook idempotency ledger. A unique (provider, eventId) pair ensures
+// a provider event (e.g. a Stripe event id) is only ever processed once.
+export interface IWebhookEvent extends Document {
+  _id: Types.ObjectId;
+  provider: string;
+  eventId: string;
+  eventType?: string;
+  tenantId?: Types.ObjectId;
+  receivedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Extended Request with User, Tenant, and (for programmatic access) ApiKey
 export interface AuthRequest extends Request {
   user?: IUser;
   tenant?: ITenant;
+  apiKey?: IApiKey;
 }
 
 // Pagination

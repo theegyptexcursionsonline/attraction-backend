@@ -6,3 +6,5 @@ export * from './destinations.controller';
 export * from './tenants.controller';
 export * from './users.controller';
 export * from './payments.controller';
+export * from './apiKeys.controller';
+export * from './webhooks.controller';

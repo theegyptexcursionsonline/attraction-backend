@@ -150,6 +150,35 @@ async function main(): Promise<void> {
       console.log('✓ created demo brand-admin');
     }
 
+    // Marketplace demo: another operator opens a few tours for resale, and the
+    // demo supplier (acting as a reseller here) has already added one to its
+    // own site — so the "on my site only" filter has something to show.
+    const otherOwner = await Attraction.aggregate([
+      { $match: { status: 'active', ownerTenantId: { $ne: supplier._id } } },
+      { $group: { _id: '$ownerTenantId', n: { $sum: 1 } } },
+      { $match: { n: { $gte: 3 } } },
+      { $sort: { n: -1 } },
+      { $limit: 1 },
+    ]);
+    if (otherOwner[0]) {
+      const mktTours: any[] = await Attraction.find({ ownerTenantId: otherOwner[0]._id, status: 'active' })
+        .sort({ rating: -1 })
+        .limit(3);
+      const mktRates = [12, 18, 22];
+      for (let i = 0; i < mktTours.length; i++) {
+        const t = mktTours[i];
+        if (!t.reseller) t.reseller = { enabled: false, value: 0, allowedTenants: [] };
+        t.reseller.enabled = true;
+        t.reseller.value = mktRates[i % mktRates.length];
+        if (i === 0 && !t.tenantIds.some((x: any) => String(x) === String(supplier._id))) {
+          t.tenantIds.push(supplier._id); // already reselling this one
+        }
+        await t.save();
+      }
+      const mktTenant: any = await Tenant.findById(otherOwner[0]._id);
+      console.log(`marketplace : ${mktTenant?.name} opened ${mktTours.length} tours for resale; 1 added to ${supplier.slug}`);
+    }
+
     console.log('\n=== DEMO READY ===');
     console.log(`supplier tenant : ${supplier.slug}`);
     console.log(`admin email     : ${EMAIL}`);

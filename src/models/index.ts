@@ -6,3 +6,7 @@ export { Category } from './Category';
 export { Destination } from './Destination';
 export { Review } from './Review';
 export { EventRsvp } from './EventRsvp';
+export { ApiKey } from './ApiKey';
+export { WebhookEndpoint } from './WebhookEndpoint';
+export { WebhookDelivery } from './WebhookDelivery';
+export { WebhookEvent } from './WebhookEvent';

@@ -13,6 +13,38 @@ import { sendBookingConfirmation, sendAdminBookingNotification } from '../servic
 import { Tenant } from '../models/Tenant';
 import { escapeRegex } from '../utils/helpers';
 import { Availability } from '../models/Availability';
+import { safeEmitEvent } from '../services/webhook.service';
+import { IBooking } from '../types';
+
+// Compact, tenant-safe booking summary for webhook payloads. Contains only the
+// booking's own fields — never other tenants' data.
+const bookingEventPayload = (
+  booking: Pick<
+    IBooking,
+    | '_id'
+    | 'reference'
+    | 'tenantId'
+    | 'attractionId'
+    | 'status'
+    | 'paymentStatus'
+    | 'total'
+    | 'currency'
+    | 'guestDetails'
+  >
+): Record<string, unknown> => ({
+  bookingId: String(booking._id),
+  reference: booking.reference,
+  tenantId: String(booking.tenantId),
+  attractionId: String(booking.attractionId),
+  status: booking.status,
+  paymentStatus: booking.paymentStatus,
+  total: booking.total,
+  currency: booking.currency,
+  customer: {
+    name: `${booking.guestDetails?.firstName || ''} ${booking.guestDetails?.lastName || ''}`.trim(),
+    email: booking.guestDetails?.email,
+  },
+});
 
 const adminRoles = ['super-admin', 'brand-admin', 'manager'];
 
@@ -263,6 +295,13 @@ export const createBooking = async (
       ...resaleFields,
     });
 
+    // Outbound webhooks: booking.created always; booking.confirmed when the
+    // booking is immediately confirmed (pay-later). Tenant-scoped emit.
+    safeEmitEvent(tenantId, 'booking.created', bookingEventPayload(booking));
+    if (booking.status === 'confirmed') {
+      safeEmitEvent(tenantId, 'booking.confirmed', bookingEventPayload(booking));
+    }
+
     // Update user stats if logged in
     if (req.user) {
       await User.findByIdAndUpdate(req.user._id, {
@@ -469,6 +508,8 @@ export const cancelBooking = async (
 
     booking.status = 'cancelled';
     await booking.save();
+
+    safeEmitEvent(booking.tenantId, 'booking.cancelled', bookingEventPayload(booking));
 
     sendSuccess(res, booking, 'Booking cancelled successfully');
   } catch (error) {
