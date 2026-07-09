@@ -128,7 +128,16 @@ export const getAttractionBySlug = async (
   try {
     const { slug } = req.params;
 
-    const attraction = await Attraction.findOne({ slug, status: 'active' });
+    // Public single-attraction lookup. Accept an ObjectId as well as a slug so
+    // callers that only hold the id (e.g. the booking-confirmation meeting-point
+    // map, where the booking stores attractionId) can resolve it without the
+    // authenticated admin endpoint. A 24-hex id is never a real slug, so this is
+    // unambiguous.
+    const attraction = await Attraction.findOne(
+      Types.ObjectId.isValid(slug)
+        ? { _id: slug, status: 'active' }
+        : { slug, status: 'active' }
+    );
 
     if (!attraction) {
       sendError(res, 'Attraction not found', 404);
