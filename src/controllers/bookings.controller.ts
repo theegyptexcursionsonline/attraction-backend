@@ -122,6 +122,18 @@ export const createBooking = async (
         throw new Error('INVALID_QUANTITY');
       }
 
+      // Reject a date in the past. The booking widget greys out past days in the UI,
+      // but nothing enforced it server-side, so a stale cart or a direct API call could
+      // still book "yesterday". Compare on UTC day so a same-day booking always passes.
+      if (item.date) {
+        const bookingDay = new Date(`${item.date}T00:00:00Z`);
+        const todayUtc = new Date();
+        todayUtc.setUTCHours(0, 0, 0, 0);
+        if (!Number.isNaN(bookingDay.getTime()) && bookingDay < todayUtc) {
+          throw new Error('PAST_DATE');
+        }
+      }
+
       // Pick the right tier. Falls back to foreigner price if resident is requested
       // but the flag is off or the option doesn't carry a residentPrice — never throws.
       const useResident =
@@ -424,6 +436,10 @@ export const createBooking = async (
     }
     if (error instanceof Error && error.message === 'INVALID_QUANTITY') {
       sendError(res, 'At least one paid guest is required', 400);
+      return;
+    }
+    if (error instanceof Error && error.message === 'PAST_DATE') {
+      sendError(res, 'Cannot book a date in the past', 400);
       return;
     }
     next(error);

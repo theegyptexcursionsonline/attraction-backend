@@ -117,7 +117,7 @@ describe('API security and pricing guards', () => {
           {
             optionId: 'adult-option',
             optionName: 'Tampered Name',
-            date: '2026-03-10',
+            date: '2030-03-10',
             quantities: { adults: 2, children: 1, infants: 0 },
             unitPrice: 0.01,
             totalPrice: 0.01,
@@ -158,7 +158,7 @@ describe('API security and pricing guards', () => {
           {
             optionId: 'unknown-option',
             optionName: 'Unknown',
-            date: '2026-03-10',
+            date: '2030-03-10',
             quantities: { adults: 1, children: 0, infants: 0 },
             unitPrice: 1,
             totalPrice: 1,
@@ -176,6 +176,42 @@ describe('API security and pricing guards', () => {
     expect(response.status).toBe(400);
     expect(response.body.success).toBe(false);
     expect(response.body.error).toBe('Invalid pricing option selected');
+  });
+
+  it('rejects a booking for a date in the past', async () => {
+    (Attraction.findById as jest.Mock).mockResolvedValue({
+      _id: ATTR_ID,
+      currency: 'USD',
+      tenantIds: [TENANT_ID],
+      pricingOptions: [{ id: 'adult-option', name: 'Adult Ticket', price: 50 }],
+    });
+
+    const response = await request(app)
+      .post('/api/bookings')
+      .send({
+        attractionId: ATTR_ID,
+        items: [
+          {
+            optionId: 'adult-option',
+            optionName: 'Adult Ticket',
+            date: '2020-01-01', // firmly in the past
+            quantities: { adults: 2, children: 0, infants: 0 },
+            unitPrice: 50,
+            totalPrice: 100,
+          },
+        ],
+        guestDetails: {
+          firstName: 'Test',
+          lastName: 'User',
+          email: 'test@example.com',
+          phone: '+123456789',
+          country: 'US',
+        },
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.success).toBe(false);
+    expect(response.body.error).toBe('Cannot book a date in the past');
   });
 
   it('blocks tenant admins from cancelling bookings outside assigned tenants', async () => {
