@@ -41,3 +41,41 @@ describe('renderBookingConfirmationHtml', () => {
     expect(html).toMatch(/Total paid/i);
   });
 });
+
+import { renderAdminBookingNotificationHtml } from '../services/email.service';
+import type { AdminBookingDetails } from '../services/email.service';
+
+const adminBase: AdminBookingDetails = {
+  reference: 'ATT-TEST-1',
+  tenantName: 'Makadi Horse Club',
+  attractionTitle: 'Private VIP Horse Ride',
+  date: '2026-07-15',
+  time: '08:00',
+  guestName: 'QA Test',
+  guestEmail: 'guest@example.com',
+  guestPhone: '+201000000000',
+  adults: 2,
+  children: 0,
+  total: 199.5,
+  currency: 'USD',
+  paymentMethod: 'pay-later',
+};
+
+describe('renderAdminBookingNotificationHtml', () => {
+  it('includes tenant, guest, experience, contact and the admin link', () => {
+    const html = renderAdminBookingNotificationHtml(brand, adminBase, 'https://makadihorseclub.com/admin/bookings');
+    expect(html).toContain('Makadi Horse Club');
+    expect(html).toContain('QA Test');
+    expect(html).toContain('Private VIP Horse Ride');
+    expect(html).toContain('ATT-TEST-1');
+    expect(html).toContain('mailto:guest@example.com');
+    expect(html).toContain('https://makadihorseclub.com/admin/bookings');
+    expect(html).toContain('#8B4513'); // brand colour
+  });
+
+  it('never prints "undefined" when the experience title is missing', () => {
+    const html = renderAdminBookingNotificationHtml(brand, { ...adminBase, attractionTitle: '' }, 'https://x/admin/bookings');
+    expect(html).not.toContain('undefined');
+    expect(html).toContain('Experience'); // fallback label used
+  });
+});

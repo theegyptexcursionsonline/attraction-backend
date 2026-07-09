@@ -229,79 +229,120 @@ export const sendBookingConfirmation = async (
   });
 };
 
+export interface AdminBookingDetails {
+  reference: string;
+  tenantName: string;
+  attractionTitle: string;
+  date: string;
+  time?: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string;
+  adults: number;
+  children: number;
+  total: number;
+  currency: string;
+  paymentMethod: string;
+}
+
+/** Pure builder for the operator "new booking" notification (exported for preview/tests).
+ *  Responsive, table-based, brand-coloured — matches the customer confirmation. */
+export const renderAdminBookingNotificationHtml = (
+  brand: EmailBrand,
+  details: AdminBookingDetails,
+  adminUrl: string
+): string => {
+  const title = details.attractionTitle || 'Experience';
+  const totalGuests = details.adults + details.children;
+  const guestsText = `${totalGuests} · ${details.adults} adult${details.adults === 1 ? '' : 's'}${details.children ? `, ${details.children} child${details.children === 1 ? '' : 'ren'}` : ''}`;
+  const isPaid = !!details.paymentMethod && details.paymentMethod !== 'pay-later';
+  const paymentText = isPaid ? 'Paid online' : 'Pay at location';
+  const dateStr = `${details.date}${details.time ? ` at ${details.time}` : ''}`;
+
+  const row = (label: string, value: string, first = false): string => `
+                <tr>
+                  <td style="padding:12px 0;${first ? '' : 'border-top:1px solid #f0f0f3;'}color:#6b7280;font-size:13px;vertical-align:top;">${label}</td>
+                  <td align="right" style="padding:12px 0;${first ? '' : 'border-top:1px solid #f0f0f3;'}color:#16181d;font-weight:600;font-size:14px;vertical-align:top;">${value}</td>
+                </tr>`;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>New booking</title>
+  <style>
+    body,table,td,a{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;}
+    table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
+    body{margin:0;padding:0;width:100%!important;background:#f2f2f4;}
+    @media screen and (max-width:600px){
+      .container{width:100%!important;border-radius:0!important;}
+      .px{padding-left:22px!important;padding-right:22px!important;}
+      .btn a{display:block!important;}
+      h1{font-size:21px!important;}
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background:#f2f2f4;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${details.guestName} booked ${title} — ${dateStr} · ${details.reference}.</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f2f4;">
+    <tr><td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+        <tr><td class="px" style="background:${brand.color};padding:24px 34px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+            <td style="color:#ffffff;font-size:17px;font-weight:700;letter-spacing:0.3px;">${details.tenantName}</td>
+            <td align="right"><span style="display:inline-block;background:rgba(255,255,255,0.2);color:#ffffff;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;padding:5px 12px;border-radius:999px;">New booking</span></td>
+          </tr></table>
+        </td></tr>
+        <tr><td class="px" style="padding:32px 34px 6px;">
+          <h1 style="margin:0 0 6px;font-size:23px;line-height:1.3;color:#16181d;font-weight:700;"><strong>${details.guestName}</strong> just booked ${title}</h1>
+          <p style="margin:0;font-size:14px;color:#8a909c;">Reference <span style="font-family:'SF Mono',Menlo,Consolas,monospace;font-weight:700;color:#5b6472;">${details.reference}</span></p>
+        </td></tr>
+        <tr><td class="px" style="padding:20px 34px 6px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #ececf0;border-radius:12px;">
+            <tr><td style="padding:8px 20px 16px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+${row('Experience', title, true)}
+${row('Date &amp; time', dateStr)}
+${row('Guests', guestsText)}
+${row('Lead traveller', details.guestName)}
+${row('Email', `<a href="mailto:${details.guestEmail}" style="color:${brand.color};text-decoration:none;font-weight:600;">${details.guestEmail}</a>`)}
+${row('Phone', `<a href="tel:${details.guestPhone}" style="color:#16181d;text-decoration:none;">${details.guestPhone}</a>`)}
+${row('Payment', paymentText)}
+${row('Total', `<span style="font-size:17px;font-weight:800;color:${brand.color};">${details.currency} ${details.total.toFixed(2)}</span>`)}
+              </table>
+            </td></tr>
+          </table>
+        </td></tr>
+        <tr><td class="px btn" style="padding:22px 34px 4px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr>
+            <td align="center" bgcolor="${brand.color}" style="border-radius:10px;">
+              <a href="${adminUrl}" style="display:inline-block;padding:14px 30px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;">Open in admin</a>
+            </td>
+          </tr></table>
+        </td></tr>
+        <tr><td class="px" style="padding:20px 34px;background:#fafafb;border-top:1px solid #ececf0;">
+          <p style="margin:0;font-size:12px;line-height:1.6;color:#8a909c;">Sent automatically when a guest completes checkout on ${details.tenantName}.</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+};
+
 export const sendAdminBookingNotification = async (
   recipientEmail: string,
-  details: {
-    reference: string;
-    tenantName: string;
-    attractionTitle: string;
-    date: string;
-    time?: string;
-    guestName: string;
-    guestEmail: string;
-    guestPhone: string;
-    adults: number;
-    children: number;
-    total: number;
-    currency: string;
-    paymentMethod: string;
-  }
+  details: AdminBookingDetails,
+  tenant?: EmailTenant | null
 ): Promise<void> => {
-  const adminUrl = `${env.frontendUrl.split(',')[0].trim()}/admin/bookings`;
-  const totalGuests = details.adults + details.children;
-  const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <style>
-        body { font-family: Arial, sans-serif; line-height: 1.5; color: #1f2937; background: #f3f4f6; margin: 0; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .header { background: linear-gradient(135deg, #7c3aed, #c026d3); color: white; padding: 24px 28px; }
-        .header .eyebrow { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; opacity: 0.85; }
-        .header h1 { margin: 6px 0 0; font-size: 22px; font-weight: 600; }
-        .content { padding: 28px; }
-        .ref { display: inline-block; background: #f3f4f6; color: #111; font-family: monospace; font-size: 14px; padding: 6px 12px; border-radius: 6px; margin-bottom: 16px; }
-        table.details { width: 100%; border-collapse: collapse; margin: 16px 0; }
-        table.details td { padding: 10px 0; border-bottom: 1px solid #e5e7eb; font-size: 14px; vertical-align: top; }
-        table.details td:first-child { color: #6b7280; width: 38%; }
-        table.details td:last-child { color: #111; font-weight: 500; }
-        .total-row td { font-size: 16px !important; font-weight: 600 !important; padding-top: 14px !important; border-top: 2px solid #111 !important; border-bottom: none !important; color: #111 !important; }
-        .button { display: inline-block; background: #111; color: white !important; padding: 12px 22px; text-decoration: none; border-radius: 8px; margin-top: 18px; font-size: 14px; font-weight: 500; }
-        .footer { padding: 20px 28px; color: #6b7280; font-size: 12px; background: #fafafa; border-top: 1px solid #e5e7eb; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <div class="eyebrow">${details.tenantName}</div>
-          <h1>New Booking Received</h1>
-        </div>
-        <div class="content">
-          <div class="ref">${details.reference}</div>
-          <p style="margin: 0 0 6px;"><strong>${details.guestName}</strong> just booked <strong>${details.attractionTitle}</strong>.</p>
-          <table class="details">
-            <tr><td>Experience</td><td>${details.attractionTitle}</td></tr>
-            <tr><td>Date</td><td>${details.date}${details.time ? ` · ${details.time}` : ''}</td></tr>
-            <tr><td>Guests</td><td>${totalGuests} (${details.adults} adult${details.adults === 1 ? '' : 's'}${details.children ? `, ${details.children} child${details.children === 1 ? '' : 'ren'}` : ''})</td></tr>
-            <tr><td>Lead traveller</td><td>${details.guestName}</td></tr>
-            <tr><td>Email</td><td><a href="mailto:${details.guestEmail}" style="color:#7c3aed;">${details.guestEmail}</a></td></tr>
-            <tr><td>Phone</td><td>${details.guestPhone}</td></tr>
-            <tr><td>Payment</td><td>${details.paymentMethod === 'pay-later' ? 'Pay at location' : 'Paid online'}</td></tr>
-            <tr class="total-row"><td>Total</td><td>${details.currency} ${details.total.toFixed(2)}</td></tr>
-          </table>
-          <a href="${adminUrl}" class="button">Open in admin →</a>
-        </div>
-        <div class="footer">
-          Sent automatically when a guest completes checkout on ${details.tenantName}.
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-
+  const brand = getEmailBrand(tenant);
+  const adminUrl = brandedLink(brand, '/admin/bookings');
+  const html = renderAdminBookingNotificationHtml(brand, details, adminUrl);
   await sendEmail({
     to: recipientEmail,
-    subject: `New booking · ${details.reference} · ${details.attractionTitle}`,
+    subject: `New booking · ${details.reference} · ${details.attractionTitle || 'Experience'}`,
     html,
   });
 };

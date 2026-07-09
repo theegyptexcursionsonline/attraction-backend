@@ -417,7 +417,7 @@ export const createBooking = async (
               total,
               currency: attraction.currency,
               paymentMethod: paymentMethod || 'pay-later',
-            });
+            }, tenantDoc);
           } catch (err) {
             console.error(`Admin booking email to ${recipient} failed:`, err);
           }
