@@ -52,12 +52,15 @@ export interface EmailTenant {
   slug?: string;
   customDomain?: string;
   domainMigrated?: boolean; // true once the custom domain serves the Attractions build
+  theme?: { primaryColor?: string; secondaryColor?: string };
+  logo?: string;
 }
 
 export interface EmailBrand {
   name: string;
   origin: string;
   slug?: string; // set only when NOT on a custom domain (needs ?tenant=)
+  color: string; // brand primary, used for the email header/accents/button
 }
 
 export const getEmailBrand = (tenant?: EmailTenant | null): EmailBrand => {
@@ -69,11 +72,15 @@ export const getEmailBrand = (tenant?: EmailTenant | null): EmailBrand => {
   // A domain is "migrated" when the per-tenant `domainMigrated` flag is set (flip it
   // from the admin — no deploy), OR it's in the legacy MIGRATED_DOMAINS allow-list.
   // Otherwise link via the shared origin + ?tenant= (which themes the linked page).
+  // Brand accent for the email chrome. Fall back to a premium near-black that always
+  // contrasts white text, so a missing/very-light brand colour never breaks the header.
+  const raw = tenant?.theme?.primaryColor?.trim() || '';
+  const color = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(raw) ? raw : '#111827';
   const cd = tenant?.customDomain?.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '').toLowerCase();
   if (cd && (tenant?.domainMigrated || MIGRATED_DOMAINS.has(cd))) {
-    return { name, origin: `https://${cd}` };
+    return { name, origin: `https://${cd}`, color };
   }
-  return { name, origin: base, slug: tenant?.slug };
+  return { name, origin: base, slug: tenant?.slug, color };
 };
 
 // Custom domains confirmed to serve the Attractions Network build (not an old
@@ -97,85 +104,124 @@ export const brandedLink = (
   return `${brand.origin}${path}${q ? `?${q}` : ''}`;
 };
 
+export interface BookingEmailDetails {
+  reference: string;
+  attractionTitle: string;
+  date: string;
+  time?: string;
+  guestName: string;
+  total: number;
+  currency: string;
+  paymentMethod?: string;
+  guests?: number;
+}
+
+/** Pure builder for the customer booking-confirmation email (exported so it can be
+ *  previewed/unit-tested without sending). Responsive, table-based, brand-coloured. */
+export const renderBookingConfirmationHtml = (
+  brand: EmailBrand,
+  bookingDetails: BookingEmailDetails,
+  hasTicket = false
+): string => {
+  const viewUrl = brandedLink(brand, '/checkout/confirmation', { ref: bookingDetails.reference });
+  const firstName = (bookingDetails.guestName || 'there').trim().split(/\s+/)[0];
+  const isPaid = !!bookingDetails.paymentMethod && bookingDetails.paymentMethod !== 'pay-later';
+  const totalLabel = isPaid ? 'Total paid' : 'Total';
+  const totalNote = isPaid ? 'Paid online' : 'Pay at location — collected on arrival';
+  const dateStr = `${bookingDetails.date}${bookingDetails.time ? ` at ${bookingDetails.time}` : ''}`;
+  const year = new Date().getFullYear();
+
+  const row = (label: string, value: string, opts: { note?: string; first?: boolean } = {}): string => `
+                <tr>
+                  <td style="padding:12px 0;${opts.first ? '' : 'border-top:1px solid #f0f0f3;'}color:#6b7280;font-size:13px;vertical-align:top;">${label}${opts.note ? `<div style="color:#a0a6b0;font-size:12px;margin-top:2px;">${opts.note}</div>` : ''}</td>
+                  <td align="right" style="padding:12px 0;${opts.first ? '' : 'border-top:1px solid #f0f0f3;'}color:#16181d;font-weight:600;font-size:14px;vertical-align:top;">${value}</td>
+                </tr>`;
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>Booking confirmed</title>
+  <style>
+    body,table,td,a{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;}
+    table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
+    img{border:0;line-height:100%;outline:none;text-decoration:none;}
+    body{margin:0;padding:0;width:100%!important;background:#f2f2f4;}
+    @media screen and (max-width:600px){
+      .container{width:100%!important;border-radius:0!important;}
+      .px{padding-left:22px!important;padding-right:22px!important;}
+      .btn a{display:block!important;}
+      h1{font-size:22px!important;}
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background:#f2f2f4;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Booking confirmed — ${bookingDetails.reference} · ${bookingDetails.attractionTitle} on ${dateStr}.</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f2f4;">
+    <tr><td align="center" style="padding:24px 12px;">
+      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+        <tr><td class="px" style="background:${brand.color};padding:24px 34px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+            <td style="color:#ffffff;font-size:17px;font-weight:700;letter-spacing:0.3px;">${brand.name}</td>
+            <td align="right"><span style="display:inline-block;background:rgba(255,255,255,0.2);color:#ffffff;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;padding:5px 12px;border-radius:999px;">Confirmed</span></td>
+          </tr></table>
+        </td></tr>
+        <tr><td class="px" style="padding:34px 34px 6px;">
+          <div style="width:46px;height:46px;border-radius:50%;background:#eef0f3;color:${brand.color};font-size:24px;line-height:46px;text-align:center;font-weight:700;">&#10003;</div>
+          <h1 style="margin:18px 0 6px;font-size:25px;line-height:1.25;color:#16181d;font-weight:700;">You're all set, ${firstName}!</h1>
+          <p style="margin:0;font-size:15px;line-height:1.6;color:#5b6472;">Your booking is confirmed. The details are below${hasTicket ? " and your e-ticket is attached" : ""}.</p>
+        </td></tr>
+        <tr><td class="px" style="padding:22px 34px 6px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #ececf0;border-radius:12px;">
+            <tr><td style="padding:18px 20px 4px;">
+              <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#9aa1ad;">Experience</div>
+              <div style="font-size:18px;font-weight:700;color:#16181d;margin-top:4px;line-height:1.3;">${bookingDetails.attractionTitle}</div>
+            </td></tr>
+            <tr><td style="padding:6px 20px 16px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+${row('Booking reference', `<span style="font-family:'SF Mono',Menlo,Consolas,monospace;font-weight:700;letter-spacing:0.5px;">${bookingDetails.reference}</span>`, { first: true })}
+${row('Date &amp; time', dateStr)}
+${bookingDetails.guests ? row('Guests', String(bookingDetails.guests)) : ''}
+${row(totalLabel, `<span style="font-size:18px;font-weight:800;color:${brand.color};">${bookingDetails.currency} ${bookingDetails.total.toFixed(2)}</span>`, { note: totalNote })}
+              </table>
+            </td></tr>
+          </table>
+        </td></tr>
+        <tr><td class="px btn" style="padding:24px 34px 4px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr>
+            <td align="center" bgcolor="${brand.color}" style="border-radius:10px;">
+              <a href="${viewUrl}" style="display:inline-block;padding:14px 30px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;">View booking</a>
+            </td>
+          </tr></table>
+        </td></tr>
+        <tr><td class="px" style="padding:14px 34px 30px;">
+          <p style="margin:0;font-size:13px;line-height:1.6;color:#8a909c;text-align:center;">${hasTicket ? 'Show the attached e-ticket on your phone at the venue.' : 'Bring this confirmation with you to the venue.'}</p>
+        </td></tr>
+        <tr><td class="px" style="padding:22px 34px;background:#fafafb;border-top:1px solid #ececf0;">
+          <p style="margin:0 0 4px;font-size:12px;line-height:1.6;color:#8a909c;">Questions? Just reply to this email — our team is happy to help.</p>
+          <p style="margin:0;font-size:12px;color:#adb2bd;">&copy; ${year} ${brand.name}. All rights reserved.</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+  return html;
+};
+
 export const sendBookingConfirmation = async (
   email: string,
-  bookingDetails: {
-    reference: string;
-    attractionTitle: string;
-    date: string;
-    time?: string;
-    guestName: string;
-    total: number;
-    currency: string;
-  },
+  bookingDetails: BookingEmailDetails,
   ticketPdf?: Buffer,
   tenant?: EmailTenant | null
 ): Promise<void> => {
   const brand = getEmailBrand(tenant);
-  const bookingsUrl = brandedLink(brand, '/dashboard/bookings');
-  const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #7c3aed, #c026d3); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-        .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
-        .booking-details { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
-        .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e7eb; }
-        .detail-row:last-child { border-bottom: none; }
-        .label { color: #6b7280; }
-        .value { font-weight: 600; }
-        .total { font-size: 24px; color: #7c3aed; }
-        .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }
-        .button { display: inline-block; background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin-top: 20px; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>Booking Confirmed!</h1>
-          <p>Your adventure awaits</p>
-        </div>
-        <div class="content">
-          <p>Hi ${bookingDetails.guestName},</p>
-          <p>Great news! Your booking has been confirmed. Here are your details:</p>
-          <div class="booking-details">
-            <div class="detail-row">
-              <span class="label">Booking Reference</span>
-              <span class="value">${bookingDetails.reference}</span>
-            </div>
-            <div class="detail-row">
-              <span class="label">Experience</span>
-              <span class="value">${bookingDetails.attractionTitle}</span>
-            </div>
-            <div class="detail-row">
-              <span class="label">Date</span>
-              <span class="value">${bookingDetails.date}${bookingDetails.time ? ` at ${bookingDetails.time}` : ''}</span>
-            </div>
-            <div class="detail-row">
-              <span class="label">Total Paid</span>
-              <span class="value total">${bookingDetails.currency} ${bookingDetails.total.toFixed(2)}</span>
-            </div>
-          </div>
-          <p>Your e-ticket is attached to this email. Simply show it on your phone at the venue.</p>
-          <center>
-            <a href="${bookingsUrl}" class="button">View My Bookings</a>
-          </center>
-        </div>
-        <div class="footer">
-          <p>Questions? Just reply to this email and our team will help.</p>
-          <p>&copy; ${new Date().getFullYear()} ${brand.name}. All rights reserved.</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-
+  const html = renderBookingConfirmationHtml(brand, bookingDetails, !!ticketPdf);
   await sendEmail({
     to: email,
-    subject: `Booking Confirmed - ${bookingDetails.reference}`,
+    subject: `Booking confirmed · ${bookingDetails.reference}`,
     html,
     attachments: ticketPdf
       ? [{ filename: `ticket-${bookingDetails.reference}.pdf`, data: ticketPdf }]

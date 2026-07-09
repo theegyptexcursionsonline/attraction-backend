@@ -373,7 +373,7 @@ export const createBooking = async (
       // One tenant lookup, reused for both the customer confirmation (branding)
       // and the operator notification below.
       const tenantDoc = await Tenant.findById(tenantId)
-        .select('name slug customDomain domainMigrated contactInfo')
+        .select('name slug customDomain domainMigrated contactInfo theme logo')
         .lean();
 
       try {
@@ -387,6 +387,8 @@ export const createBooking = async (
             guestName,
             total,
             currency: attraction.currency,
+            paymentMethod: paymentMethod || 'pay-later',
+            guests: totalAdults + totalChildren,
           },
           undefined,
           tenantDoc,
