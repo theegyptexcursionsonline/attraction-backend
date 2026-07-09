@@ -111,6 +111,7 @@ export const createBooking = async (
       category?: 'foreigner' | 'resident';
       quantities: { adults: number; children: number; infants: number };
       addons?: Array<{ id: string; name: string; price: number }>;
+      hotelPickup?: { hotelName?: string; roomNumber?: string; pickupTime?: string };
     }) => {
       const option = attraction.pricingOptions.find((o) => o.id === item.optionId);
       if (!option) {
@@ -172,6 +173,18 @@ export const createBooking = async (
         totalPrice,
         ...(appliedCategory ? { category: appliedCategory } : {}),
         ...(validAddons.length > 0 ? { addons: validAddons } : {}),
+        // Persist hotel pickup when the guest supplied it (the widget only collects it
+        // for attractions with hasHotelPickup). Was previously dropped here, so pickup
+        // never reached the booking, admin, voucher or emails.
+        ...(item.hotelPickup?.hotelName
+          ? {
+              hotelPickup: {
+                hotelName: item.hotelPickup.hotelName,
+                roomNumber: item.hotelPickup.roomNumber,
+                pickupTime: item.hotelPickup.pickupTime,
+              },
+            }
+          : {}),
       };
     });
 
@@ -389,6 +402,7 @@ export const createBooking = async (
             currency: attraction.currency,
             paymentMethod: paymentMethod || 'pay-later',
             guests: totalAdults + totalChildren,
+            hotelPickup: firstItem?.hotelPickup,
           },
           undefined,
           tenantDoc,
@@ -417,6 +431,7 @@ export const createBooking = async (
               total,
               currency: attraction.currency,
               paymentMethod: paymentMethod || 'pay-later',
+              hotelPickup: firstItem?.hotelPickup,
             }, tenantDoc);
           } catch (err) {
             console.error(`Admin booking email to ${recipient} failed:`, err);

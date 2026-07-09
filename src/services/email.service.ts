@@ -114,6 +114,7 @@ export interface BookingEmailDetails {
   currency: string;
   paymentMethod?: string;
   guests?: number;
+  hotelPickup?: { hotelName?: string; roomNumber?: string; pickupTime?: string };
 }
 
 /** Pure builder for the customer booking-confirmation email (exported so it can be
@@ -184,6 +185,7 @@ export const renderBookingConfirmationHtml = (
 ${row('Booking reference', `<span style="font-family:'SF Mono',Menlo,Consolas,monospace;font-weight:700;letter-spacing:0.5px;">${bookingDetails.reference}</span>`, { first: true })}
 ${row('Date &amp; time', dateStr)}
 ${bookingDetails.guests ? row('Guests', String(bookingDetails.guests)) : ''}
+${bookingDetails.hotelPickup?.hotelName ? row('Hotel pickup', `${bookingDetails.hotelPickup.hotelName}${bookingDetails.hotelPickup.roomNumber ? `, Room ${bookingDetails.hotelPickup.roomNumber}` : ''}${bookingDetails.hotelPickup.pickupTime ? ` &middot; ${bookingDetails.hotelPickup.pickupTime}` : ''}`) : ''}
 ${row(totalLabel, `<span style="font-size:18px;font-weight:800;color:${brand.color};">${bookingDetails.currency} ${bookingDetails.total.toFixed(2)}</span>`, { note: totalNote })}
               </table>
             </td></tr>
@@ -243,6 +245,7 @@ export interface AdminBookingDetails {
   total: number;
   currency: string;
   paymentMethod: string;
+  hotelPickup?: { hotelName?: string; roomNumber?: string; pickupTime?: string };
 }
 
 /** Pure builder for the operator "new booking" notification (exported for preview/tests).
@@ -306,6 +309,7 @@ export const renderAdminBookingNotificationHtml = (
 ${row('Experience', title, true)}
 ${row('Date &amp; time', dateStr)}
 ${row('Guests', guestsText)}
+${details.hotelPickup?.hotelName ? row('Hotel pickup', `${details.hotelPickup.hotelName}${details.hotelPickup.roomNumber ? `, Room ${details.hotelPickup.roomNumber}` : ''}${details.hotelPickup.pickupTime ? ` &middot; ${details.hotelPickup.pickupTime}` : ''}`) : ''}
 ${row('Lead traveller', details.guestName)}
 ${row('Email', `<a href="mailto:${details.guestEmail}" style="color:${brand.color};text-decoration:none;font-weight:600;">${details.guestEmail}</a>`)}
 ${row('Phone', `<a href="tel:${details.guestPhone}" style="color:#16181d;text-decoration:none;">${details.guestPhone}</a>`)}
