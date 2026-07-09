@@ -49,6 +49,15 @@ jest.mock('../models/PromoCode', () => ({
   },
 }));
 
+// createBooking fires a booking-notification email side-effect. NEVER let the test
+// suite send real mail — stub the senders (belt-and-suspenders with the global
+// Mailgun disable in setup-env.ts). Keep the rest of the module (getEmailBrand, etc.).
+jest.mock('../services/email.service', () => ({
+  ...jest.requireActual('../services/email.service'),
+  sendBookingConfirmation: jest.fn().mockResolvedValue(undefined),
+  sendAdminBookingNotification: jest.fn().mockResolvedValue(undefined),
+}));
+
 // createBooking fires a non-blocking email side-effect that looks up the tenant
 // (Tenant.findById(...).select(...).lean()). Mock it so the fire-and-forget path
 // resolves instantly instead of buffering against a real (absent) DB connection.
