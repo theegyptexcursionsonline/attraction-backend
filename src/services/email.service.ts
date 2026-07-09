@@ -40,6 +40,63 @@ export const sendEmail = async (options: EmailOptions): Promise<void> => {
   await mg.messages.create(env.mailgunDomain, messageData as any);
 };
 
+// ---------------------------------------------------------------------------
+// Tenant email branding
+// Transactional emails must speak in the tenant's brand, never the generic
+// "Foxes Network" platform. `getEmailBrand` resolves the display name and the
+// base URL to use: a live custom domain when the tenant has one, otherwise the
+// shared origin with a `?tenant=<slug>` so the linked page themes correctly.
+// ---------------------------------------------------------------------------
+export interface EmailTenant {
+  name?: string;
+  slug?: string;
+  customDomain?: string;
+  domainMigrated?: boolean; // true once the custom domain serves the Attractions build
+}
+
+export interface EmailBrand {
+  name: string;
+  origin: string;
+  slug?: string; // set only when NOT on a custom domain (needs ?tenant=)
+}
+
+export const getEmailBrand = (tenant?: EmailTenant | null): EmailBrand => {
+  const base = env.frontendUrl.split(',')[0].trim().replace(/\/+$/, '');
+  const name = tenant?.name?.trim() || 'Foxes Network';
+  // Prefer the brand's own custom domain for links — but only when it's confirmed to
+  // serve the Attractions build. Many custom domains still point at the client's OLD
+  // site (e.g. a WordPress build) where /reset-password and /accept-invitation 404.
+  // A domain is "migrated" when the per-tenant `domainMigrated` flag is set (flip it
+  // from the admin — no deploy), OR it's in the legacy MIGRATED_DOMAINS allow-list.
+  // Otherwise link via the shared origin + ?tenant= (which themes the linked page).
+  const cd = tenant?.customDomain?.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '').toLowerCase();
+  if (cd && (tenant?.domainMigrated || MIGRATED_DOMAINS.has(cd))) {
+    return { name, origin: `https://${cd}` };
+  }
+  return { name, origin: base, slug: tenant?.slug };
+};
+
+// Custom domains confirmed to serve the Attractions Network build (not an old
+// site). Links in transactional emails may safely target these directly.
+const MIGRATED_DOMAINS = new Set<string>([
+  'makadihorseclub.com',
+  'www.makadihorseclub.com',
+  'splashspeedboathurghada.com',
+  'www.splashspeedboathurghada.com',
+]);
+
+// Build a link on the brand's origin, carrying ?tenant= only on the shared origin.
+export const brandedLink = (
+  brand: EmailBrand,
+  path: string,
+  params: Record<string, string> = {}
+): string => {
+  const qs = new URLSearchParams(params);
+  if (brand.slug) qs.set('tenant', brand.slug);
+  const q = qs.toString();
+  return `${brand.origin}${path}${q ? `?${q}` : ''}`;
+};
+
 export const sendBookingConfirmation = async (
   email: string,
   bookingDetails: {
@@ -51,8 +108,11 @@ export const sendBookingConfirmation = async (
     total: number;
     currency: string;
   },
-  ticketPdf?: Buffer
+  ticketPdf?: Buffer,
+  tenant?: EmailTenant | null
 ): Promise<void> => {
+  const brand = getEmailBrand(tenant);
+  const bookingsUrl = brandedLink(brand, '/dashboard/bookings');
   const html = `
     <!DOCTYPE html>
     <html>
@@ -101,12 +161,12 @@ export const sendBookingConfirmation = async (
           </div>
           <p>Your e-ticket is attached to this email. Simply show it on your phone at the venue.</p>
           <center>
-            <a href="${env.frontendUrl}/dashboard/bookings" class="button">View My Bookings</a>
+            <a href="${bookingsUrl}" class="button">View My Bookings</a>
           </center>
         </div>
         <div class="footer">
-          <p>Questions? Contact us at support@foxesnetwork.com</p>
-          <p>&copy; ${new Date().getFullYear()} Foxes Network. All rights reserved.</p>
+          <p>Questions? Just reply to this email and our team will help.</p>
+          <p>&copy; ${new Date().getFullYear()} ${brand.name}. All rights reserved.</p>
         </div>
       </div>
     </body>
@@ -203,9 +263,11 @@ export const sendAdminBookingNotification = async (
 export const sendPasswordResetEmail = async (
   email: string,
   resetToken: string,
-  userName: string
+  userName: string,
+  tenant?: EmailTenant | null
 ): Promise<void> => {
-  const resetUrl = `${env.frontendUrl}/reset-password?token=${resetToken}`;
+  const brand = getEmailBrand(tenant);
+  const resetUrl = brandedLink(brand, '/reset-password', { token: resetToken });
 
   const html = `
     <!DOCTYPE html>
@@ -235,7 +297,7 @@ export const sendPasswordResetEmail = async (
           <p>If you didn't request this, please ignore this email. Your password will remain unchanged.</p>
         </div>
         <div class="footer">
-          <p>&copy; ${new Date().getFullYear()} Foxes Network. All rights reserved.</p>
+          <p>&copy; ${new Date().getFullYear()} ${brand.name}. All rights reserved.</p>
         </div>
       </div>
     </body>
@@ -244,7 +306,7 @@ export const sendPasswordResetEmail = async (
 
   await sendEmail({
     to: email,
-    subject: 'Reset Your Password - Foxes Network',
+    subject: `Reset Your Password - ${brand.name}`,
     html,
   });
 };
@@ -253,9 +315,13 @@ export const sendUserInvitation = async (
   email: string,
   invitationToken: string,
   inviterName: string,
-  role: string
+  role: string,
+  tenant?: EmailTenant | null
 ): Promise<void> => {
-  const inviteUrl = `${env.frontendUrl}/accept-invitation?token=${invitationToken}`;
+  // Brand the link + copy for the invited user's site (custom domain when set,
+  // else the shared origin with ?tenant= so the set-password page themes right).
+  const brand = getEmailBrand(tenant);
+  const inviteUrl = brandedLink(brand, '/accept-invitation', { token: invitationToken });
 
   const html = `
     <!DOCTYPE html>
@@ -277,7 +343,7 @@ export const sendUserInvitation = async (
         </div>
         <div class="content">
           <p>Hi there,</p>
-          <p>${inviterName} has invited you to join Foxes Network as a <strong>${role}</strong>.</p>
+          <p>${inviterName} has invited you to join ${brand.name} as a <strong>${role}</strong>.</p>
           <p>Click the button below to accept the invitation and set up your account:</p>
           <center>
             <a href="${inviteUrl}" class="button">Accept Invitation</a>
@@ -285,7 +351,7 @@ export const sendUserInvitation = async (
           <p>This invitation will expire in 7 days.</p>
         </div>
         <div class="footer">
-          <p>&copy; ${new Date().getFullYear()} Foxes Network. All rights reserved.</p>
+          <p>&copy; ${new Date().getFullYear()} ${brand.name}. All rights reserved.</p>
         </div>
       </div>
     </body>
@@ -294,7 +360,7 @@ export const sendUserInvitation = async (
 
   await sendEmail({
     to: email,
-    subject: `You're invited to join Foxes Network`,
+    subject: `You're invited to join ${brand.name}`,
     html,
   });
 };

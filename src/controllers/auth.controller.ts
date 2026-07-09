@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 import { User } from '../models/User';
+import { Tenant } from '../models/Tenant';
 import { generateAccessToken, generateRefreshToken, verifyToken } from '../utils/jwt';
 import { generateRandomToken, hashToken } from '../utils/hash';
 import { verifyPassportAssertion } from '../utils/passport';
@@ -328,11 +329,22 @@ export const forgotPassword = async (
     user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
     await user.save();
 
+    // Resolve the user's primary tenant so the reset link + email speak in that
+    // brand (custom domain / ?tenant=) instead of the generic platform.
+    let tenantBrand = null;
+    const primaryTenantId = user.assignedTenants?.[0];
+    if (primaryTenantId) {
+      tenantBrand = await Tenant.findById(primaryTenantId)
+        .select('name slug customDomain domainMigrated')
+        .lean();
+    }
+
     // Send password reset email
     await sendPasswordResetEmail(
       user.email,
       resetToken,
-      `${user.firstName} ${user.lastName}`.trim()
+      `${user.firstName} ${user.lastName}`.trim(),
+      tenantBrand
     );
 
     sendSuccess(res, null, 'If the email exists, a password reset link will be sent');

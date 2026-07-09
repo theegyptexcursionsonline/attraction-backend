@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { User } from '../models/User';
 import { Attraction } from '../models/Attraction';
+import { Tenant } from '../models/Tenant';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { generateRandomToken, hashToken } from '../utils/hash';
@@ -223,12 +224,22 @@ export const inviteUser = async (
       passwordResetExpires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     });
 
+    // Resolve the invited user's primary site so the invite link + email are
+    // branded for THAT site (custom domain / ?tenant=) not the generic platform.
+    let inviteTenant = null;
+    if (Array.isArray(assignedTenants) && assignedTenants.length > 0) {
+      inviteTenant = await Tenant.findById(assignedTenants[0])
+        .select('name slug customDomain domainMigrated')
+        .lean();
+    }
+
     // Send invitation email
     await sendUserInvitation(
       user.email,
       invitationToken,
       req.user ? `${req.user.firstName} ${req.user.lastName}`.trim() : 'Attractions Network',
-      role
+      role,
+      inviteTenant
     );
 
     sendSuccess(res, user, 'User invited successfully', 201);

@@ -7,6 +7,7 @@ import {
   getBookingTicket,
   getAllBookings,
   updateBookingStatus,
+  deleteBooking,
   getBookingStats,
   getResellerEarnings,
   getSettlement,
@@ -376,5 +377,10 @@ router.patch(
   ),
   updateBookingStatus
 );
+
+// Hard-delete a booking — super-admin only (destructive; removes test/junk
+// bookings that would otherwise persist in dashboards + booking counts). A
+// supplier/brand-admin can only CANCEL (PATCH status), never delete.
+router.delete('/admin/:id', authenticate, requireRole('super-admin'), deleteBooking);
 
 export default router;

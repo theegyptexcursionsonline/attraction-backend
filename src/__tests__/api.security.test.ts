@@ -49,6 +49,27 @@ jest.mock('../models/PromoCode', () => ({
   },
 }));
 
+// createBooking fires a non-blocking email side-effect that looks up the tenant
+// (Tenant.findById(...).select(...).lean()). Mock it so the fire-and-forget path
+// resolves instantly instead of buffering against a real (absent) DB connection.
+jest.mock('../models/Tenant', () => ({
+  Tenant: {
+    findById: jest.fn().mockReturnValue({
+      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(null) }),
+    }),
+  },
+}));
+
+// createBooking dynamically imports SpecialOffer to apply an active discount;
+// mock it so the pricing/auth tests don't hit an unconnected real model.
+jest.mock('../models/SpecialOffer', () => ({
+  SpecialOffer: {
+    // createBooking does SpecialOffer.findOne(...).sort(...), so the mock must be chainable.
+    findOne: jest.fn().mockReturnValue({ sort: jest.fn().mockResolvedValue(null) }),
+    findByIdAndUpdate: jest.fn().mockResolvedValue(null),
+  },
+}));
+
 describe('API security and pricing guards', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -62,15 +83,16 @@ describe('API security and pricing guards', () => {
   };
 
   it('requires authentication for protected booking/payment endpoints', async () => {
-    const [cancelRes, ticketRes, createIntentRes, paymentStatusRes] = await Promise.all([
+    // NB: GET /bookings/:id/ticket is intentionally optionalAuth (guests must be
+    // able to download their own ticket), so it is deliberately NOT in this
+    // protected-endpoints list.
+    const [cancelRes, createIntentRes, paymentStatusRes] = await Promise.all([
       request(app).patch('/api/bookings/booking-id/cancel'),
-      request(app).get('/api/bookings/booking-id/ticket'),
       request(app).post('/api/payments/create-intent').send({ bookingId: 'booking-id' }),
       request(app).get('/api/payments/booking-id/status'),
     ]);
 
     expect(cancelRes.status).toBe(401);
-    expect(ticketRes.status).toBe(401);
     expect(createIntentRes.status).toBe(401);
     expect(paymentStatusRes.status).toBe(401);
   });

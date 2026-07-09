@@ -29,6 +29,12 @@ const tenantSchema = new Schema<ITenant>(
       sparse: true,
       index: true,
     },
+    // Flip to true (per tenant) once the custom domain serves the Attractions build,
+    // so transactional email links use the brand domain instead of the shared origin.
+    domainMigrated: {
+      type: Boolean,
+      default: false,
+    },
     logo: {
       type: String,
       required: true,
@@ -148,6 +154,10 @@ const tenantSchema = new Schema<ITenant>(
     paymentSettings: {
       stripeAccountId: String,
       enabledGateways: [{ type: String }],
+      // True when this supplier collects online payments through their OWN gateway
+      // (not the platform's). Drives settlement authority: own-gateway suppliers
+      // hold their own funds and may self-settle card bookings too.
+      ownPaymentGateway: { type: Boolean, default: false },
     },
     status: {
       type: String,

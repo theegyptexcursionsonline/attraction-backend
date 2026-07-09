@@ -33,3 +33,11 @@ coverage/
 # Temporary files
 tmp/
 temp/
+
+# internal reference docs
+INFRA.md
+ENV.md
+RUNBOOK.md
+DECISIONS.md
+GLOSSARY.md
+PROJECT-TRACKER.md

@@ -15,6 +15,7 @@ import { escapeRegex } from '../utils/helpers';
 import { Availability } from '../models/Availability';
 import { safeEmitEvent } from '../services/webhook.service';
 import { IBooking } from '../types';
+import { isPlatformHeld, settlementHeldBy } from '../utils/settlement';
 
 // Compact, tenant-safe booking summary for webhook payloads. Contains only the
 // booking's own fields — never other tenants' data.
@@ -348,27 +349,41 @@ export const createBooking = async (
     //   • Admin notification to the tenant's contact email + Fouad's central
     //     inbox so brand operators see new bookings in their inbox.
     (async () => {
+     // Whole block guarded: a tenant lookup or mail failure must never surface
+     // as an unhandled promise rejection (which would crash the process on a DB
+     // blip, since nothing awaits this IIFE).
+     try {
       const firstItem = items[0];
       const totalAdults = items.reduce((s: number, it: { quantities?: { adults?: number } }) => s + (it.quantities?.adults || 0), 0);
       const totalChildren = items.reduce((s: number, it: { quantities?: { children?: number } }) => s + (it.quantities?.children || 0), 0);
       const guestName = `${guestDetails.firstName} ${guestDetails.lastName}`.trim();
 
+      // One tenant lookup, reused for both the customer confirmation (branding)
+      // and the operator notification below.
+      const tenantDoc = await Tenant.findById(tenantId)
+        .select('name slug customDomain domainMigrated contactInfo')
+        .lean();
+
       try {
-        await sendBookingConfirmation(guestDetails.email, {
-          reference: booking.reference,
-          attractionTitle: attraction.title,
-          date: firstItem?.date || '',
-          time: firstItem?.time,
-          guestName,
-          total,
-          currency: attraction.currency,
-        });
+        await sendBookingConfirmation(
+          guestDetails.email,
+          {
+            reference: booking.reference,
+            attractionTitle: attraction.title,
+            date: firstItem?.date || '',
+            time: firstItem?.time,
+            guestName,
+            total,
+            currency: attraction.currency,
+          },
+          undefined,
+          tenantDoc,
+        );
       } catch (err) {
         console.error('Customer confirmation email failed:', err);
       }
 
       try {
-        const tenantDoc = await Tenant.findById(tenantId).select('name contactInfo').lean();
         const recipients = new Set<string>();
         if (tenantDoc?.contactInfo?.email) recipients.add(tenantDoc.contactInfo.email);
         recipients.add('info@foxestechnology.com');
@@ -396,6 +411,9 @@ export const createBooking = async (
       } catch (err) {
         console.error('Admin booking notification block failed:', err);
       }
+     } catch (err) {
+       console.error('Booking notification side-effect failed:', err);
+     }
     })();
 
     sendSuccess(res, booking, 'Booking created successfully', 201);
@@ -747,23 +765,36 @@ export const getBookingStats = async (
       }
     }
 
-    const [totalBookings, confirmedBookings, pendingBookings, cancelledBookings, revenue] = await Promise.all([
+    const [totalBookings, confirmedBookings, pendingBookings, cancelledBookings, revenueAgg] = await Promise.all([
       Booking.countDocuments(query),
       Booking.countDocuments({ ...query, status: 'confirmed' }),
       Booking.countDocuments({ ...query, status: 'pending' }),
       Booking.countDocuments({ ...query, status: 'cancelled' }),
       Booking.aggregate([
-        { $match: { ...query, paymentStatus: 'succeeded' } },
-        { $group: { _id: null, total: { $sum: '$total' } } },
+        { $match: query },
+        {
+          $group: {
+            _id: null,
+            // Booked = confirmed/completed commitments (includes pay-later, which
+            // never reaches paymentStatus 'succeeded'). Collected = money cleared.
+            // Headline revenue is "booked" so pre-launch/pay-later bookings aren't
+            // silently shown as $0.
+            bookedRevenue: { $sum: { $cond: [{ $in: ['$status', ['confirmed', 'completed']] }, '$total', 0] } },
+            collectedRevenue: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'succeeded'] }, '$total', 0] } },
+          },
+        },
       ]),
     ]);
 
+    const rev = revenueAgg[0] || { bookedRevenue: 0, collectedRevenue: 0 };
     sendSuccess(res, {
       totalBookings,
       confirmedBookings,
       pendingBookings,
       cancelledBookings,
-      totalRevenue: revenue[0]?.total || 0,
+      totalRevenue: rev.bookedRevenue,
+      bookedRevenue: rev.bookedRevenue,
+      collectedRevenue: rev.collectedRevenue,
     });
   } catch (error) {
     next(error);
@@ -888,6 +919,12 @@ export const getSettlement = async (
       .limit(500)
       .lean();
 
+    // Suppliers with their own gateway hold their own funds → their card bookings
+    // are supplier-settled; everyone else's card bookings are platform-settled.
+    const ownGatewaySet = new Set(
+      (await Tenant.find({ 'paymentSettings.ownPaymentGateway': true }).distinct('_id')).map((x) => String(x)),
+    );
+
     let totalEarned = 0;
     let settled = 0;
     let outstanding = 0;
@@ -917,6 +954,9 @@ export const getSettlement = async (
         currency: b.currency,
         status: isSettled ? 'settled' : 'pending',
         settledAt: b.settledAt || null,
+        // Who holds the money → who may settle it (Fouad's rule). The UI uses this
+        // to enable/disable the supplier's settle button per row.
+        heldBy: settlementHeldBy(b.paymentMethod, ownGatewaySet.has(String(b.supplierTenantId))),
         createdAt: b.createdAt,
       };
     });
@@ -950,6 +990,29 @@ const canSettle = (req: AuthRequest, booking: { supplierTenantId?: unknown }): b
 };
 
 // PATCH /bookings/admin/:id/settlement — mark one resale booking settled/pending
+// DELETE /bookings/admin/:id — hard-delete a booking. Super-admin only (a
+// destructive cleanup for test/junk bookings; a supplier can only CANCEL).
+export const deleteBooking = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    if (req.user?.role !== 'super-admin') {
+      sendError(res, 'Only a super admin can delete bookings', 403);
+      return;
+    }
+    const deleted = await Booking.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      sendError(res, 'Booking not found', 404);
+      return;
+    }
+    sendSuccess(res, { id: req.params.id }, 'Booking deleted');
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const updateSettlement = async (
   req: AuthRequest,
   res: Response,
@@ -969,6 +1032,18 @@ export const updateSettlement = async (
     if (!canSettle(req, booking)) {
       sendError(res, 'You can only settle earnings for your own tours', 403);
       return;
+    }
+    // Fouad's rule: a supplier may self-settle only bookings they hold the money
+    // for (cash-on-arrival or their own gateway). Platform-held online-card
+    // bookings can only be settled by a super-admin (Foxes pays the supplier out).
+    if (req.user?.role !== 'super-admin') {
+      const sup = await Tenant.findById(booking.supplierTenantId)
+        .select('paymentSettings.ownPaymentGateway')
+        .lean();
+      if (isPlatformHeld(booking.paymentMethod, !!sup?.paymentSettings?.ownPaymentGateway)) {
+        sendError(res, 'This booking was paid online and is held by the platform — only a super admin can settle it. It still appears in your reports.', 403);
+        return;
+      }
     }
 
     booking.settlementStatus = status;
@@ -1002,6 +1077,16 @@ export const settleBatch = async (
     if (req.user?.role !== 'super-admin') {
       const scope = req.tenant ? [req.tenant._id] : (req.user?.assignedTenants || []);
       match.supplierTenantId = { $in: scope };
+      // Suppliers may self-settle only bookings they hold the money for
+      // (cash-on-arrival or their own gateway); platform-held card bookings are
+      // silently excluded here and left for a super-admin.
+      const ownGatewayTenants = await Tenant.find(
+        { _id: { $in: scope }, 'paymentSettings.ownPaymentGateway': true },
+      ).distinct('_id');
+      match.$or = [
+        { paymentMethod: { $ne: 'card' } },
+        ...(ownGatewayTenants.length ? [{ supplierTenantId: { $in: ownGatewayTenants } }] : []),
+      ];
     }
 
     const update: Record<string, unknown> = status === 'settled'

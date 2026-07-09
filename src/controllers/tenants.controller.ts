@@ -68,21 +68,32 @@ export const getTenantById = async (
     }
 
     // Get stats
-    const [attractionCount, bookingStats, revenue] = await Promise.all([
+    const [attractionCount, bookingStats, revenueAgg] = await Promise.all([
       Attraction.countDocuments({ tenantIds: tenant._id, status: 'active' }),
       Booking.countDocuments({ tenantId: tenant._id }),
       Booking.aggregate([
-        { $match: { tenantId: tenant._id, paymentStatus: 'succeeded' } },
-        { $group: { _id: null, total: { $sum: '$total' } } },
+        { $match: { tenantId: tenant._id } },
+        {
+          $group: {
+            _id: null,
+            // Booked = confirmed/completed commitments (includes pay-later).
+            // Collected = payments actually cleared (paymentStatus succeeded).
+            bookedRevenue: { $sum: { $cond: [{ $in: ['$status', ['confirmed', 'completed']] }, '$total', 0] } },
+            collectedRevenue: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'succeeded'] }, '$total', 0] } },
+          },
+        },
       ]),
     ]);
 
+    const rev = revenueAgg[0] || { bookedRevenue: 0, collectedRevenue: 0 };
     sendSuccess(res, {
       ...tenant,
       stats: {
         totalAttractions: attractionCount,
         totalBookings: bookingStats,
-        totalRevenue: revenue[0]?.total || 0,
+        totalRevenue: rev.bookedRevenue,
+        bookedRevenue: rev.bookedRevenue,
+        collectedRevenue: rev.collectedRevenue,
       },
     });
   } catch (error) {
@@ -402,11 +413,18 @@ export const getTenantStats = async (
         {
           $match: {
             tenantId: new Types.ObjectId(id as string),
-            paymentStatus: 'succeeded',
             createdAt: { $gte: startDate },
           },
         },
-        { $group: { _id: null, total: { $sum: '$total' } } },
+        {
+          $group: {
+            _id: null,
+            // Booked = confirmed/completed commitments (includes pay-later, which
+            // never reaches paymentStatus 'succeeded'). Collected = money cleared.
+            bookedRevenue: { $sum: { $cond: [{ $in: ['$status', ['confirmed', 'completed']] }, '$total', 0] } },
+            collectedRevenue: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'succeeded'] }, '$total', 0] } },
+          },
+        },
       ]),
       Booking.aggregate([
         {
@@ -419,7 +437,8 @@ export const getTenantStats = async (
           $group: {
             _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
             bookings: { $sum: 1 },
-            revenue: { $sum: '$total' },
+            // Daily revenue tracks booked revenue so the chart matches the headline.
+            revenue: { $sum: { $cond: [{ $in: ['$status', ['confirmed', 'completed']] }, '$total', 0] } },
           },
         },
         { $sort: { _id: 1 } },
@@ -431,8 +450,10 @@ export const getTenantStats = async (
         totalAttractions,
         totalBookings,
         confirmedBookings,
-        totalRevenue: revenue[0]?.total || 0,
-        conversionRate: totalBookings > 0 
+        totalRevenue: revenue[0]?.bookedRevenue || 0,
+        bookedRevenue: revenue[0]?.bookedRevenue || 0,
+        collectedRevenue: revenue[0]?.collectedRevenue || 0,
+        conversionRate: totalBookings > 0
           ? ((confirmedBookings / totalBookings) * 100).toFixed(2) 
           : 0,
       },

@@ -23,6 +23,7 @@ import contentRoutes from './content.routes';
 import apiKeysRoutes from './apiKeys.routes';
 import webhooksRoutes from './webhooks.routes';
 import v1Routes from './v1.routes';
+import octoRoutes from './octo.routes';
 
 const router = Router();
 
@@ -290,6 +291,10 @@ router.use('/webhooks', webhooksRoutes);
 
 // Partner-facing programmatic data API (authenticated by tenant-scoped API key)
 router.use('/v1', v1Routes);
+
+// OCTO (octo.travel) supplier API — standard channel-manager / OTA connectivity.
+// Increment 1: catalogue (supplier + products); availability + bookings next.
+router.use('/octo', octoRoutes);
 
 // foxes-content-engine publishing bridge (Bearer CONTENT_ENGINE_API_KEY)
 router.use('/admin/content', contentRoutes);

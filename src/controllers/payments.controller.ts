@@ -1,6 +1,7 @@
 import { Response, NextFunction, Request } from 'express';
 import { Booking } from '../models/Booking';
 import { Attraction } from '../models/Attraction';
+import { Tenant } from '../models/Tenant';
 import { sendSuccess, sendError } from '../utils/response';
 import { AuthRequest } from '../types';
 import { createMockPaymentIntent, confirmMockPayment, createMockRefund } from '../services/stripe.service';
@@ -179,6 +180,11 @@ export const confirmPayment = async (
 
       const pdfBuffer = await generateTicketPdf(ticketData);
 
+      // Resolve the tenant so the confirmation email is branded for that site.
+      const tenantBrand = await Tenant.findById(booking.tenantId)
+        .select('name slug customDomain domainMigrated')
+        .lean();
+
       // Send confirmation email with PDF attachment
       await sendBookingConfirmation(
         booking.guestDetails.email,
@@ -191,7 +197,8 @@ export const confirmPayment = async (
           total: booking.total,
           currency: booking.currency,
         },
-        pdfBuffer
+        pdfBuffer,
+        tenantBrand
       );
 
       // The mobile ticket is now issued — notify subscribers. Tenant-scoped.

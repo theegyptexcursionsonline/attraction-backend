@@ -7,6 +7,8 @@ const allowedOrigins = [
   ...env.frontendUrl.split(',').map((u) => u.trim()).filter(Boolean),
   'http://localhost:3000',
   'http://localhost:3001',
+  'http://localhost:3050',
+  'http://127.0.0.1:3050',
 ];
 
 // Patterns for dynamic subdomain matching + custom tenant domains
