@@ -61,6 +61,7 @@ export interface EmailBrand {
   origin: string;
   slug?: string; // set only when NOT on a custom domain (needs ?tenant=)
   color: string; // brand primary, used for the email header/accents/button
+  logo?: string; // absolute URL to the tenant logo, shown in the email header
 }
 
 export const getEmailBrand = (tenant?: EmailTenant | null): EmailBrand => {
@@ -76,12 +77,31 @@ export const getEmailBrand = (tenant?: EmailTenant | null): EmailBrand => {
   // contrasts white text, so a missing/very-light brand colour never breaks the header.
   const raw = tenant?.theme?.primaryColor?.trim() || '';
   const color = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(raw) ? raw : '#111827';
+  // Resolve the tenant logo (stored as a site-relative path like /logos/x.png,
+  // served by the frontend build) to an absolute URL against a given origin, so
+  // it loads in email clients. Both the shared origin and migrated custom domains
+  // serve the same /logos assets.
+  const absLogo = (origin: string): string | undefined => {
+    const l = tenant?.logo?.trim();
+    if (!l) return undefined;
+    return /^https?:\/\//i.test(l) ? l : `${origin}${l.startsWith('/') ? '' : '/'}${l}`;
+  };
   const cd = tenant?.customDomain?.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '').toLowerCase();
   if (cd && (tenant?.domainMigrated || MIGRATED_DOMAINS.has(cd))) {
-    return { name, origin: `https://${cd}`, color };
+    const origin = `https://${cd}`;
+    return { name, origin, color, logo: absLogo(origin) };
   }
-  return { name, origin: base, slug: tenant?.slug, color };
+  return { name, origin: base, slug: tenant?.slug, color, logo: absLogo(base) };
 };
+
+/** The brand mark for an email header. Renders the tenant logo inside a white chip
+ *  (so a dark/coloured logo stays legible on the brand-coloured header bar), falling
+ *  back to the brand name as text when there's no logo — which is also the `alt`,
+ *  so a blocked image still shows the brand. */
+const brandHeaderMark = (brand: EmailBrand): string =>
+  brand.logo
+    ? `<span style="display:inline-block;background:#ffffff;border-radius:8px;padding:7px 12px;line-height:0;"><img src="${brand.logo}" alt="${brand.name}" height="30" style="height:30px;max-height:30px;width:auto;display:block;border:0;"></span>`
+    : `<span style="color:#ffffff;font-size:17px;font-weight:700;letter-spacing:0.3px;">${brand.name}</span>`;
 
 // Custom domains confirmed to serve the Attractions Network build (not an old
 // site). Links in transactional emails may safely target these directly.
@@ -115,7 +135,84 @@ export interface BookingEmailDetails {
   paymentMethod?: string;
   guests?: number;
   hotelPickup?: { hotelName?: string; roomNumber?: string; pickupTime?: string };
+  meetingPoint?: { lat?: number; lng?: number; label?: string };
 }
+
+/**
+ * Static meeting-point map card for the booking emails. Emails can't run the live
+ * iframe map used on the confirmation page, so this renders a static map image —
+ * proxied through the wsrv.nl image CDN so it loads reliably across email clients —
+ * wrapped in a Google Maps link, with a "Get directions" button as the always-works
+ * fallback if images are blocked. Renders nothing unless real coordinates exist.
+ */
+const renderMeetingPointBlock = (
+  brand: EmailBrand,
+  mp?: { lat?: number; lng?: number; label?: string }
+): string => {
+  if (!mp || typeof mp.lat !== 'number' || typeof mp.lng !== 'number') return '';
+  const { lat, lng } = mp;
+  const mapsLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  // Prefer Google Static Maps (clean, no third-party watermark) when a key is
+  // configured — the same key the tourticket/EEO sites use. Fall back to a keyless
+  // static-map source (proxied via wsrv.nl for reliable email rendering) so the map
+  // still shows even without a key.
+  let mapImg: string;
+  if (env.googleMapsStaticKey) {
+    const p = new URLSearchParams({
+      center: `${lat},${lng}`,
+      zoom: '15',
+      size: '600x280',
+      scale: '2',
+      maptype: 'roadmap',
+      key: env.googleMapsStaticKey,
+    });
+    p.append('markers', `color:0xDC2626|${lat},${lng}`);
+    p.append('style', 'feature:poi|visibility:off');
+    p.append('style', 'feature:road|element:labels.icon|visibility:off');
+    mapImg = `https://maps.googleapis.com/maps/api/staticmap?${p.toString()}`;
+  } else {
+    const upstream = `static-maps.yandex.ru/1.x/?ll=${lng},${lat}&z=14&size=650,300&l=map&lang=en_US&pt=${lng},${lat},pm2rdm`;
+    mapImg = `https://wsrv.nl/?url=${encodeURIComponent(upstream)}&output=jpg&q=82`;
+  }
+  return `
+        <tr><td class="px" style="padding:14px 34px 4px;">
+          <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#9aa1ad;margin:0 0 8px;">Meeting point</div>
+          ${mp.label ? `<p style="margin:0 0 10px;font-size:14px;color:#16181d;font-weight:600;line-height:1.45;">${mp.label}</p>` : ''}
+          <a href="${mapsLink}" target="_blank" style="text-decoration:none;">
+            <img src="${mapImg}" width="532" alt="Map to the meeting point" style="display:block;width:100%;max-width:532px;height:auto;border-radius:12px;border:1px solid #ececf0;">
+          </a>
+          <table role="presentation" cellpadding="0" cellspacing="0" style="margin:12px 0 0;"><tr>
+            <td bgcolor="#eef0f3" style="border-radius:8px;">
+              <a href="${mapsLink}" target="_blank" style="display:inline-block;padding:10px 20px;font-size:13px;font-weight:700;color:${brand.color};text-decoration:none;border-radius:8px;">&#128205; Get directions</a>
+            </td>
+          </tr></table>
+        </td></tr>`;
+};
+
+/**
+ * Shared builder for a simple branded "action" email (password reset, invitation).
+ * Uses the tenant logo + brand colour via getEmailBrand — so these transactional
+ * emails carry the operator's brand instead of a generic purple "Foxes Network"
+ * template. Responsive + table-based like the booking emails.
+ */
+export const renderActionEmail = (
+  brand: EmailBrand,
+  opts: { title: string; heading: string; intro: string; note?: string; ctaLabel: string; ctaUrl: string }
+): string => {
+  const year = new Date().getFullYear();
+  return `<!DOCTYPE html>
+<html lang="en" dir="ltr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="x-apple-disable-message-reformatting"><title>${opts.title}</title>
+<style>body,table,td,a{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;}body{margin:0;padding:0;width:100%!important;background:#f2f2f4;}@media screen and (max-width:600px){.container{width:100%!important;border-radius:0!important;}.px{padding-left:22px!important;padding-right:22px!important;}.btn a{display:block!important;}h1{font-size:21px!important;}}</style></head>
+<body dir="ltr" style="margin:0;padding:0;background:#f2f2f4;direction:ltr;text-align:left;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f2f4;"><tr><td align="center" style="padding:24px 12px;">
+<table role="presentation" dir="ltr" class="container" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<tr><td class="px" style="background:${brand.color};padding:24px 34px;">${brandHeaderMark(brand)}</td></tr>
+<tr><td class="px" style="padding:34px 34px 4px;"><h1 style="margin:0 0 10px;font-size:23px;line-height:1.3;color:#16181d;font-weight:700;">${opts.heading}</h1><p style="margin:0;font-size:15px;line-height:1.6;color:#5b6472;">${opts.intro}</p></td></tr>
+<tr><td class="px btn" style="padding:24px 34px 6px;"><table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr><td align="center" bgcolor="${brand.color}" style="border-radius:10px;"><a href="${opts.ctaUrl}" style="display:inline-block;padding:14px 30px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;">${opts.ctaLabel}</a></td></tr></table></td></tr>
+${opts.note ? `<tr><td class="px" style="padding:10px 34px 6px;"><p style="margin:0;font-size:13px;line-height:1.6;color:#8a909c;">${opts.note}</p></td></tr>` : ''}
+<tr><td class="px" style="padding:22px 34px;background:#fafafb;border-top:1px solid #ececf0;"><p style="margin:0;font-size:12px;color:#adb2bd;">&copy; ${year} ${brand.name}. All rights reserved.</p></td></tr>
+</table></td></tr></table></body></html>`;
+};
 
 /** Pure builder for the customer booking-confirmation email (exported so it can be
  *  previewed/unit-tested without sending). Responsive, table-based, brand-coloured. */
@@ -134,12 +231,12 @@ export const renderBookingConfirmationHtml = (
 
   const row = (label: string, value: string, opts: { note?: string; first?: boolean } = {}): string => `
                 <tr>
-                  <td style="padding:12px 0;${opts.first ? '' : 'border-top:1px solid #f0f0f3;'}color:#6b7280;font-size:13px;vertical-align:top;">${label}${opts.note ? `<div style="color:#a0a6b0;font-size:12px;margin-top:2px;">${opts.note}</div>` : ''}</td>
-                  <td align="right" style="padding:12px 0;${opts.first ? '' : 'border-top:1px solid #f0f0f3;'}color:#16181d;font-weight:600;font-size:14px;vertical-align:top;">${value}</td>
+                  <td dir="ltr" width="38%" style="padding:12px 0;${opts.first ? '' : 'border-top:1px solid #f0f0f3;'}color:#6b7280;font-size:13px;vertical-align:top;text-align:left;direction:ltr;">${label}${opts.note ? `<div style="color:#a0a6b0;font-size:12px;margin-top:2px;">${opts.note}</div>` : ''}</td>
+                  <td dir="ltr" align="left" style="padding:12px 0 12px 18px;${opts.first ? '' : 'border-top:1px solid #f0f0f3;'}color:#16181d;font-weight:600;font-size:14px;vertical-align:top;text-align:left;direction:ltr;unicode-bidi:isolate;word-break:break-word;">${value}</td>
                 </tr>`;
 
   const html = `<!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -158,15 +255,15 @@ export const renderBookingConfirmationHtml = (
     }
   </style>
 </head>
-<body style="margin:0;padding:0;background:#f2f2f4;">
+<body dir="ltr" style="margin:0;padding:0;background:#f2f2f4;direction:ltr;text-align:left;">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Booking confirmed — ${bookingDetails.reference} · ${bookingDetails.attractionTitle} on ${dateStr}.</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f2f4;">
     <tr><td align="center" style="padding:24px 12px;">
-      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+      <table role="presentation" dir="ltr" class="container" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
         <tr><td class="px" style="background:${brand.color};padding:24px 34px;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-            <td style="color:#ffffff;font-size:17px;font-weight:700;letter-spacing:0.3px;">${brand.name}</td>
-            <td align="right"><span style="display:inline-block;background:rgba(255,255,255,0.2);color:#ffffff;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;padding:5px 12px;border-radius:999px;">Confirmed</span></td>
+            <td style="vertical-align:middle;">${brandHeaderMark(brand)}</td>
+            <td align="right" style="vertical-align:middle;"><span style="display:inline-block;background:rgba(255,255,255,0.2);color:#ffffff;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;padding:5px 12px;border-radius:999px;">Confirmed</span></td>
           </tr></table>
         </td></tr>
         <tr><td class="px" style="padding:34px 34px 6px;">
@@ -191,6 +288,7 @@ ${row(totalLabel, `<span style="font-size:18px;font-weight:800;color:${brand.col
             </td></tr>
           </table>
         </td></tr>
+${renderMeetingPointBlock(brand, bookingDetails.meetingPoint)}
         <tr><td class="px btn" style="padding:24px 34px 4px;">
           <table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr>
             <td align="center" bgcolor="${brand.color}" style="border-radius:10px;">
@@ -246,6 +344,7 @@ export interface AdminBookingDetails {
   currency: string;
   paymentMethod: string;
   hotelPickup?: { hotelName?: string; roomNumber?: string; pickupTime?: string };
+  meetingPoint?: { lat?: number; lng?: number; label?: string };
 }
 
 /** Pure builder for the operator "new booking" notification (exported for preview/tests).
@@ -264,12 +363,12 @@ export const renderAdminBookingNotificationHtml = (
 
   const row = (label: string, value: string, first = false): string => `
                 <tr>
-                  <td style="padding:12px 0;${first ? '' : 'border-top:1px solid #f0f0f3;'}color:#6b7280;font-size:13px;vertical-align:top;">${label}</td>
-                  <td align="right" style="padding:12px 0;${first ? '' : 'border-top:1px solid #f0f0f3;'}color:#16181d;font-weight:600;font-size:14px;vertical-align:top;">${value}</td>
+                  <td dir="ltr" width="38%" style="padding:12px 0;${first ? '' : 'border-top:1px solid #f0f0f3;'}color:#6b7280;font-size:13px;vertical-align:top;text-align:left;direction:ltr;">${label}</td>
+                  <td dir="ltr" align="left" style="padding:12px 0 12px 18px;${first ? '' : 'border-top:1px solid #f0f0f3;'}color:#16181d;font-weight:600;font-size:14px;vertical-align:top;text-align:left;direction:ltr;unicode-bidi:isolate;word-break:break-word;">${value}</td>
                 </tr>`;
 
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -287,15 +386,15 @@ export const renderAdminBookingNotificationHtml = (
     }
   </style>
 </head>
-<body style="margin:0;padding:0;background:#f2f2f4;">
+<body dir="ltr" style="margin:0;padding:0;background:#f2f2f4;direction:ltr;text-align:left;">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${details.guestName} booked ${title} — ${dateStr} · ${details.reference}.</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f2f4;">
     <tr><td align="center" style="padding:24px 12px;">
-      <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+      <table role="presentation" dir="ltr" class="container" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
         <tr><td class="px" style="background:${brand.color};padding:24px 34px;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-            <td style="color:#ffffff;font-size:17px;font-weight:700;letter-spacing:0.3px;">${details.tenantName}</td>
-            <td align="right"><span style="display:inline-block;background:rgba(255,255,255,0.2);color:#ffffff;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;padding:5px 12px;border-radius:999px;">New booking</span></td>
+            <td style="vertical-align:middle;">${brandHeaderMark(brand)}</td>
+            <td align="right" style="vertical-align:middle;"><span style="display:inline-block;background:rgba(255,255,255,0.2);color:#ffffff;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;padding:5px 12px;border-radius:999px;">New booking</span></td>
           </tr></table>
         </td></tr>
         <tr><td class="px" style="padding:32px 34px 6px;">
@@ -319,6 +418,7 @@ ${row('Total', `<span style="font-size:17px;font-weight:800;color:${brand.color}
             </td></tr>
           </table>
         </td></tr>
+${renderMeetingPointBlock(brand, details.meetingPoint)}
         <tr><td class="px btn" style="padding:22px 34px 4px;">
           <table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr>
             <td align="center" bgcolor="${brand.color}" style="border-radius:10px;">
@@ -359,45 +459,20 @@ export const sendPasswordResetEmail = async (
 ): Promise<void> => {
   const brand = getEmailBrand(tenant);
   const resetUrl = brandedLink(brand, '/reset-password', { token: resetToken });
+  const firstName = (userName || 'there').trim().split(/\s+/)[0];
 
-  const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #1f2937; color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-        .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
-        .button { display: inline-block; background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 20px 0; }
-        .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>Password Reset Request</h1>
-        </div>
-        <div class="content">
-          <p>Hi ${userName},</p>
-          <p>We received a request to reset your password. Click the button below to create a new password:</p>
-          <center>
-            <a href="${resetUrl}" class="button">Reset Password</a>
-          </center>
-          <p>This link will expire in 1 hour.</p>
-          <p>If you didn't request this, please ignore this email. Your password will remain unchanged.</p>
-        </div>
-        <div class="footer">
-          <p>&copy; ${new Date().getFullYear()} ${brand.name}. All rights reserved.</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
+  const html = renderActionEmail(brand, {
+    title: 'Password reset',
+    heading: 'Reset your password',
+    intro: `Hi ${firstName}, we received a request to reset your password. Click below to choose a new one — this link expires in 1 hour.`,
+    note: "If you didn't request this, you can safely ignore this email — your password won't change.",
+    ctaLabel: 'Reset password',
+    ctaUrl: resetUrl,
+  });
 
   await sendEmail({
     to: email,
-    subject: `Reset Your Password - ${brand.name}`,
+    subject: `Reset your password · ${brand.name}`,
     html,
   });
 };
@@ -414,40 +489,13 @@ export const sendUserInvitation = async (
   const brand = getEmailBrand(tenant);
   const inviteUrl = brandedLink(brand, '/accept-invitation', { token: invitationToken });
 
-  const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #7c3aed, #c026d3); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-        .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
-        .button { display: inline-block; background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 20px 0; }
-        .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>You're Invited!</h1>
-        </div>
-        <div class="content">
-          <p>Hi there,</p>
-          <p>${inviterName} has invited you to join ${brand.name} as a <strong>${role}</strong>.</p>
-          <p>Click the button below to accept the invitation and set up your account:</p>
-          <center>
-            <a href="${inviteUrl}" class="button">Accept Invitation</a>
-          </center>
-          <p>This invitation will expire in 7 days.</p>
-        </div>
-        <div class="footer">
-          <p>&copy; ${new Date().getFullYear()} ${brand.name}. All rights reserved.</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
+  const html = renderActionEmail(brand, {
+    title: 'Invitation',
+    heading: "You're invited",
+    intro: `${inviterName} has invited you to join <strong>${brand.name}</strong> as a <strong>${role}</strong>. Click below to accept and set up your account — this invitation expires in 7 days.`,
+    ctaLabel: 'Accept invitation',
+    ctaUrl: inviteUrl,
+  });
 
   await sendEmail({
     to: email,

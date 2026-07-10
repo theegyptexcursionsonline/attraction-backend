@@ -7,6 +7,26 @@ import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest, IAttraction } from '../types';
 import { Types } from 'mongoose';
 import { escapeRegex } from '../utils/helpers';
+import { isSuperAdmin, callerTenantIds, attractionInCallerTenants } from '../utils/tenantScope';
+
+/**
+ * Guard for the stop-sale (blocked-date) handlers: a non-super admin may only
+ * read/change availability for an attraction in one of their own tenants. Returns
+ * true when the request should be rejected (and has already sent a 404).
+ */
+const rejectIfNotOwnedAttraction = async (
+  req: AuthRequest,
+  res: Response,
+  attractionId: string
+): Promise<boolean> => {
+  if (!req.user || isSuperAdmin(req.user)) return false;
+  const ok = await attractionInCallerTenants(attractionId, callerTenantIds(req.user));
+  if (!ok) {
+    sendError(res, 'Attraction not found', 404);
+    return true;
+  }
+  return false;
+};
 
 interface AttractionQuery {
   status?: string;
@@ -868,6 +888,8 @@ export const getBlockedDates = async (
     const { id } = req.params;
     const { from, to } = req.query;
 
+    if (await rejectIfNotOwnedAttraction(req, res, id as string)) return;
+
     const query: Record<string, unknown> = {
       attractionId: new Types.ObjectId(id as string),
       isBlocked: true,
@@ -894,6 +916,8 @@ export const blockDates = async (
   try {
     const { id } = req.params;
     const { startDate, endDate, reason } = req.body;
+
+    if (await rejectIfNotOwnedAttraction(req, res, id as string)) return;
 
     if (!startDate || !endDate) {
       sendError(res, 'startDate and endDate are required', 400);
@@ -929,6 +953,9 @@ export const unblockDate = async (
 ): Promise<void> => {
   try {
     const { id, date } = req.params;
+
+    if (await rejectIfNotOwnedAttraction(req, res, id as string)) return;
+
     const dateObj = new Date(date);
     dateObj.setHours(0, 0, 0, 0);
 

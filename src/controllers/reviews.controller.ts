@@ -4,6 +4,12 @@ import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { sanitizeHtml, escapeRegex } from '../utils/helpers';
 import { createAdminNotifications } from '../services/notification.service';
+import {
+  isSuperAdmin,
+  callerTenantIds,
+  attractionIdsForTenants,
+  attractionInCallerTenants,
+} from '../utils/tenantScope';
 
 export const getRecentReviews = async (
   req: AuthRequest,
@@ -193,6 +199,14 @@ export const getAdminReviews = async (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const query: Record<string, any> = {};
 
+    // Tenant scope: Review has no tenant field, so a non-super admin is restricted
+    // to reviews of attractions in their own tenants. Without this, a brand-admin
+    // could list AND moderate every tenant's reviews.
+    if (req.user && !isSuperAdmin(req.user)) {
+      const attrIds = await attractionIdsForTenants(callerTenantIds(req.user));
+      query.attractionId = { $in: attrIds };
+    }
+
     if (status && status !== 'all') {
       query.status = status;
     }
@@ -206,6 +220,8 @@ export const getAdminReviews = async (
       ];
     }
 
+    // Stats must respect the same tenant scope (drop only the status/search facets).
+    const statsBase = query.attractionId ? { attractionId: query.attractionId } : {};
     const [reviews, total, pendingCount, approvedCount, rejectedCount] = await Promise.all([
       Review.find(query)
         .populate('attractionId', 'title slug')
@@ -214,9 +230,9 @@ export const getAdminReviews = async (
         .limit(limitNum)
         .lean(),
       Review.countDocuments(query),
-      Review.countDocuments({ status: 'pending' }),
-      Review.countDocuments({ status: 'approved' }),
-      Review.countDocuments({ status: 'rejected' }),
+      Review.countDocuments({ ...statsBase, status: 'pending' }),
+      Review.countDocuments({ ...statsBase, status: 'approved' }),
+      Review.countDocuments({ ...statsBase, status: 'rejected' }),
     ]);
 
     res.status(200).json({
@@ -247,6 +263,21 @@ export const updateReviewStatus = async (
 
     if (!['approved', 'rejected'].includes(status)) {
       sendError(res, 'Status must be "approved" or "rejected"', 400);
+      return;
+    }
+
+    const existing = await Review.findById(id).select('attractionId');
+    if (!existing) {
+      sendError(res, 'Review not found', 404);
+      return;
+    }
+    // Ownership: a non-super admin may only moderate reviews of their own attractions.
+    if (
+      req.user &&
+      !isSuperAdmin(req.user) &&
+      !(await attractionInCallerTenants(existing.attractionId, callerTenantIds(req.user)))
+    ) {
+      sendError(res, 'Review not found', 404);
       return;
     }
 
@@ -283,6 +314,20 @@ export const replyToReview = async (
     }
 
     const author = `${req.user?.firstName || ''} ${req.user?.lastName || ''}`.trim() || 'Admin';
+
+    const existing = await Review.findById(id).select('attractionId');
+    if (!existing) {
+      sendError(res, 'Review not found', 404);
+      return;
+    }
+    if (
+      req.user &&
+      !isSuperAdmin(req.user) &&
+      !(await attractionInCallerTenants(existing.attractionId, callerTenantIds(req.user)))
+    ) {
+      sendError(res, 'Review not found', 404);
+      return;
+    }
 
     const review = await Review.findByIdAndUpdate(
       id,

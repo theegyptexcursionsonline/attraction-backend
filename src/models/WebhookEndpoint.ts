@@ -6,6 +6,7 @@ const WEBHOOK_EVENT_TYPES = [
   'booking.confirmed',
   'booking.cancelled',
   'payment.succeeded',
+  'payment.failed',
   'ticket.issued',
   'ping',
   '*',

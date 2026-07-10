@@ -425,6 +425,7 @@ export type WebhookEventType =
   | 'booking.confirmed'
   | 'booking.cancelled'
   | 'payment.succeeded'
+  | 'payment.failed'
   | 'ticket.issued'
   | 'ping'
   | '*';

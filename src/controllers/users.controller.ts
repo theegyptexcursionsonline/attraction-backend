@@ -7,6 +7,13 @@ import { AuthRequest } from '../types';
 import { generateRandomToken, hashToken } from '../utils/hash';
 import { sendUserInvitation } from '../services/email.service';
 import { escapeRegex } from '../utils/helpers';
+import {
+  isSuperAdmin,
+  callerTenantIds,
+  sharesAnyTenant,
+  canAssignRole,
+  canManageRole,
+} from '../utils/tenantScope';
 
 // User Profile Endpoints
 export const getProfile = async (
@@ -186,6 +193,20 @@ export const getUserById = async (
       return;
     }
 
+    // Tenant scope: a non-super admin may only read a user who shares at least one
+    // of their assigned tenants — otherwise it's a cross-tenant PII read. 404 (not
+    // 403) so ids can't be enumerated.
+    if (req.user && !isSuperAdmin(req.user)) {
+      const mine = callerTenantIds(req.user);
+      const theirs = (user.assignedTenants || []).map((t) =>
+        String((t as { _id?: unknown })?._id ?? t)
+      );
+      if (!sharesAnyTenant(mine, theirs)) {
+        sendError(res, 'User not found', 404);
+        return;
+      }
+    }
+
     sendSuccess(res, user);
   } catch (error) {
     next(error);
@@ -199,6 +220,24 @@ export const inviteUser = async (
 ): Promise<void> => {
   try {
     const { email, firstName, lastName, role, assignedTenants } = req.body;
+
+    // Role ceiling: a non-super admin (e.g. brand-admin) must not be able to mint a
+    // super-admin or another brand-admin — that would be a privilege-escalation path.
+    if (!canAssignRole(req.user?.role, role)) {
+      sendError(res, 'You are not allowed to assign that role', 403);
+      return;
+    }
+
+    // Tenant ownership: a non-super admin may only invite users into tenants they
+    // themselves manage, and must scope the invite to at least one tenant.
+    if (!isSuperAdmin(req.user)) {
+      const mine = callerTenantIds(req.user);
+      const requested = (Array.isArray(assignedTenants) ? assignedTenants : []).map(String);
+      if (!requested.length || !requested.every((t) => mine.includes(t))) {
+        sendError(res, 'You can only invite users to your own tenants', 403);
+        return;
+      }
+    }
 
     // Check if user already exists
     const existingUser = await User.findOne({ email: email.toLowerCase() });
@@ -229,7 +268,7 @@ export const inviteUser = async (
     let inviteTenant = null;
     if (Array.isArray(assignedTenants) && assignedTenants.length > 0) {
       inviteTenant = await Tenant.findById(assignedTenants[0])
-        .select('name slug customDomain domainMigrated')
+        .select('name slug customDomain domainMigrated theme logo')
         .lean();
     }
 
@@ -257,25 +296,63 @@ export const updateUser = async (
     const { id } = req.params;
     const { firstName, lastName, role, status, assignedTenants } = req.body;
 
-    const updates: Record<string, unknown> = {};
-    if (firstName !== undefined) updates.firstName = firstName;
-    if (lastName !== undefined) updates.lastName = lastName;
-    if (role !== undefined) updates.role = role;
-    if (status !== undefined) updates.status = status;
-    if (assignedTenants !== undefined) updates.assignedTenants = assignedTenants;
-
-    const user = await User.findByIdAndUpdate(
-      id,
-      { $set: updates },
-      { new: true, runValidators: true }
-    ).populate('assignedTenants', 'name slug');
-
-    if (!user) {
+    // Load the target first so we can enforce tenant scope + role ceiling BEFORE
+    // applying any change. Previously this blindly $set role/assignedTenants from the
+    // body with no checks, so a brand-admin could PATCH any id (incl. their own) to
+    // super-admin, or reassign any user to any tenant — full privilege escalation.
+    const target = await User.findById(id);
+    if (!target) {
       sendError(res, 'User not found', 404);
       return;
     }
 
-    sendSuccess(res, user, 'User updated successfully');
+    if (!isSuperAdmin(req.user)) {
+      const mine = callerTenantIds(req.user);
+      const theirs = (target.assignedTenants || []).map((t) => String(t));
+
+      // Must share a tenant with the target (else it's a cross-tenant user) — 404.
+      if (!sharesAnyTenant(mine, theirs)) {
+        sendError(res, 'User not found', 404);
+        return;
+      }
+      // Cannot manage a peer or a higher-privileged user (e.g. edit a super-admin).
+      if (!canManageRole(req.user?.role, target.role)) {
+        sendError(res, 'You are not allowed to manage this user', 403);
+        return;
+      }
+      // Cannot grant a role above the caller's ceiling.
+      if (role !== undefined && !canAssignRole(req.user?.role, role)) {
+        sendError(res, 'You are not allowed to assign that role', 403);
+        return;
+      }
+      // Cannot change one's own role (prevents self-escalation).
+      if (
+        role !== undefined &&
+        role !== target.role &&
+        String(target._id) === String(req.user?._id)
+      ) {
+        sendError(res, 'You cannot change your own role', 403);
+        return;
+      }
+      // May only (re)assign tenants the caller manages.
+      if (assignedTenants !== undefined) {
+        const requested = (Array.isArray(assignedTenants) ? assignedTenants : []).map(String);
+        if (!requested.every((t) => mine.includes(t))) {
+          sendError(res, 'You can only assign your own tenants', 403);
+          return;
+        }
+      }
+    }
+
+    if (firstName !== undefined) target.firstName = firstName;
+    if (lastName !== undefined) target.lastName = lastName;
+    if (role !== undefined) target.role = role;
+    if (status !== undefined) target.status = status;
+    if (assignedTenants !== undefined) target.assignedTenants = assignedTenants;
+    await target.save();
+    await target.populate('assignedTenants', 'name slug');
+
+    sendSuccess(res, target, 'User updated successfully');
   } catch (error) {
     next(error);
   }

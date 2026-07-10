@@ -112,7 +112,7 @@ export const getPublicTenants = async (
 ): Promise<void> => {
   try {
     const tenants = await Tenant.find({ status: { $in: ['active', 'coming_soon'] } })
-      .select('slug name domain customDomain logo logoDark favicon heroImages tagline description theme fonts designMode defaultCurrency defaultLanguage supportedLanguages timezone status seoSettings contactInfo socialLinks aiSettings navigation pricingSettings flatUrls customPages')
+      .select('slug name domain customDomain logo logoDark favicon heroImages tagline description theme fonts designMode defaultCurrency defaultLanguage supportedLanguages timezone status seoSettings contactInfo socialLinks aiSettings navigation pricingSettings flatUrls customPages paymentSettings.stripe.enabled paymentSettings.stripe.publishableKey')
       .sort({ name: 1 })
       .lean();
 
@@ -246,7 +246,9 @@ export const updateTenantSettings = async (
     const allowedFields = [
       'contactInfo',
       'socialLinks',
-      'paymentSettings',
+      // NOTE: paymentSettings is intentionally NOT here — the Stripe keys live in an
+      // encrypted subdoc and are managed only via PUT /payments/gateway/:tenantId, so
+      // a wholesale settings write can't overwrite/wipe or expose them.
       'seoSettings',
       'aiSettings',
       'theme',

@@ -48,6 +48,17 @@ export const env = {
   // foxes-content-engine publishing key (Bearer token on /api/admin/content/*)
   contentEngineApiKey: process.env.CONTENT_ENGINE_API_KEY || '',
 
+  // Key used to encrypt per-tenant secrets at rest (e.g. each tenant's Stripe
+  // secret + webhook signing secret). Falls back to the JWT secret so a dedicated
+  // key is optional; set ENCRYPTION_KEY in prod to rotate independently.
+  encryptionKey: process.env.ENCRYPTION_KEY || jwtSecret,
+
+  // Google Static Maps key (for the meeting-point map in booking emails). Shared
+  // with the tourticket/EEO projects. When unset, the email map falls back to a
+  // keyless static-map source, so this is an enhancement, not a hard dependency.
+  googleMapsStaticKey:
+    process.env.GOOGLE_MAPS_STATIC_KEY || process.env.GOOGLE_MAPS_API_KEY || '',
+
   // Frontend URL
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
   

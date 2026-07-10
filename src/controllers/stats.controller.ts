@@ -62,7 +62,9 @@ export const getAdminStats = async (
     const isSuperAdmin = req.user?.role === 'super-admin';
     const assignedTenants = req.user?.assignedTenants ?? [];
 
-    // If a specific tenant is selected (via X-Tenant-ID header), scope to that tenant
+    // If a specific tenant is selected, scope to that tenant. The sidebar's
+    // "Bookings" badge represents every booking record, matching the Bookings
+    // page total; status breakdowns belong on the dashboard/cards instead.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let attractionFilter: Record<string, any>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -70,13 +72,13 @@ export const getAdminStats = async (
 
     if (req.tenant) {
       attractionFilter = { status: 'active', tenantIds: { $in: [req.tenant._id] } };
-      bookingFilter = { status: { $in: ['confirmed', 'completed'] }, tenantId: req.tenant._id };
+      bookingFilter = { tenantId: req.tenant._id };
     } else if (isSuperAdmin) {
       attractionFilter = { status: 'active' };
-      bookingFilter = { status: { $in: ['confirmed', 'completed'] } };
+      bookingFilter = {};
     } else {
       attractionFilter = { status: 'active', tenantIds: { $in: assignedTenants } };
-      bookingFilter = { status: { $in: ['confirmed', 'completed'] }, tenantId: { $in: assignedTenants } };
+      bookingFilter = { tenantId: { $in: assignedTenants } };
     }
 
     const [totalAttractions, totalBookings] = await Promise.all([

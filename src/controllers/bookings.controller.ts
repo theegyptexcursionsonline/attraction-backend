@@ -7,7 +7,8 @@ import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { generateBookingReference } from '../utils/hash';
 import { generateTicketPdf } from '../services/pdf.service';
-import { createMockRefund } from '../services/stripe.service';
+import { createRefund } from '../services/stripe.service';
+import { getTenantStripeConfig } from '../services/tenantPayment.service';
 import { createAdminNotifications } from '../services/notification.service';
 import { sendBookingConfirmation, sendAdminBookingNotification } from '../services/email.service';
 import { Tenant } from '../models/Tenant';
@@ -378,10 +379,29 @@ export const createBooking = async (
      // as an unhandled promise rejection (which would crash the process on a DB
      // blip, since nothing awaits this IIFE).
      try {
+      // Card bookings are NOT paid yet — their confirmation + operator emails are
+      // sent by the Stripe webhook once the charge succeeds (finalizePaidBooking).
+      // Announcing a card booking here would email a "confirmed" booking that hasn't
+      // been paid for. Pay-later bookings email immediately (nothing to collect).
+      if (paymentMethod === 'card') return;
       const firstItem = items[0];
       const totalAdults = items.reduce((s: number, it: { quantities?: { adults?: number } }) => s + (it.quantities?.adults || 0), 0);
       const totalChildren = items.reduce((s: number, it: { quantities?: { children?: number } }) => s + (it.quantities?.children || 0), 0);
       const guestName = `${guestDetails.firstName} ${guestDetails.lastName}`.trim();
+
+      // Meeting point for the email map: coordinates come off the attraction's
+      // destination (required on the model), the label prefers the specific
+      // meeting-point address, falling back to the city. Undefined when no coords,
+      // in which case the email simply omits the map block.
+      const coords = attraction.destination?.coordinates;
+      const meetingPoint =
+        coords && typeof coords.lat === 'number' && typeof coords.lng === 'number'
+          ? {
+              lat: coords.lat,
+              lng: coords.lng,
+              label: attraction.meetingPoint?.address || attraction.destination?.city || undefined,
+            }
+          : undefined;
 
       // One tenant lookup, reused for both the customer confirmation (branding)
       // and the operator notification below.
@@ -403,6 +423,7 @@ export const createBooking = async (
             paymentMethod: paymentMethod || 'pay-later',
             guests: totalAdults + totalChildren,
             hotelPickup: firstItem?.hotelPickup,
+            meetingPoint,
           },
           undefined,
           tenantDoc,
@@ -432,6 +453,7 @@ export const createBooking = async (
               currency: attraction.currency,
               paymentMethod: paymentMethod || 'pay-later',
               hotelPickup: firstItem?.hotelPickup,
+              meetingPoint,
             }, tenantDoc);
           } catch (err) {
             console.error(`Admin booking email to ${recipient} failed:`, err);
@@ -550,9 +572,10 @@ export const cancelBooking = async (
       return;
     }
 
-    // If payment was made, process refund
+    // If payment was made, refund it on the tenant's own Stripe account.
     if (booking.paymentStatus === 'succeeded' && booking.stripePaymentIntentId) {
-      createMockRefund(booking.stripePaymentIntentId, Math.round(booking.total * 100));
+      const stripeCfg = await getTenantStripeConfig(booking.tenantId);
+      await createRefund(stripeCfg?.secretKey, booking.stripePaymentIntentId, Math.round(booking.total * 100));
       booking.paymentStatus = 'refunded';
       booking.status = 'refunded';
     }
@@ -675,7 +698,11 @@ export const getAllBookings = async (
     // Scope for non-super-admins: their own-site bookings PLUS resale bookings
     // of tours they supply — so a supplier sees their tours sold via resellers.
     const scope = req.tenant ? [req.tenant._id] : (req.user?.assignedTenants || []);
-    if (req.user?.role !== 'super-admin') {
+    if (req.user?.role === 'super-admin' && req.tenant) {
+      // A selected site must scope super-admin results just like the rest of the
+      // admin UI. With no selected site, super-admins retain the All Sites view.
+      andClauses.push({ tenantId: req.tenant._id });
+    } else if (req.user?.role !== 'super-admin') {
       andClauses.push({
         $or: [
           { tenantId: { $in: scope } },
@@ -790,7 +817,9 @@ export const getBookingStats = async (
   try {
     const query: Record<string, unknown> = {};
 
-    if (req.user?.role !== 'super-admin') {
+    if (req.user?.role === 'super-admin' && req.tenant) {
+      query.tenantId = req.tenant._id;
+    } else if (req.user?.role !== 'super-admin') {
       if (req.tenant) {
         query.tenantId = req.tenant._id;
       } else {
@@ -798,11 +827,21 @@ export const getBookingStats = async (
       }
     }
 
-    const [totalBookings, confirmedBookings, pendingBookings, cancelledBookings, revenueAgg] = await Promise.all([
+    const [
+      totalBookings,
+      confirmedBookings,
+      pendingBookings,
+      completedBookings,
+      cancelledBookings,
+      refundedBookings,
+      revenueAgg,
+    ] = await Promise.all([
       Booking.countDocuments(query),
       Booking.countDocuments({ ...query, status: 'confirmed' }),
       Booking.countDocuments({ ...query, status: 'pending' }),
+      Booking.countDocuments({ ...query, status: 'completed' }),
       Booking.countDocuments({ ...query, status: 'cancelled' }),
+      Booking.countDocuments({ ...query, status: 'refunded' }),
       Booking.aggregate([
         { $match: query },
         {
@@ -824,7 +863,9 @@ export const getBookingStats = async (
       totalBookings,
       confirmedBookings,
       pendingBookings,
+      completedBookings,
       cancelledBookings,
+      refundedBookings,
       totalRevenue: rev.bookedRevenue,
       bookedRevenue: rev.bookedRevenue,
       collectedRevenue: rev.collectedRevenue,

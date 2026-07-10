@@ -335,7 +335,7 @@ export const forgotPassword = async (
     const primaryTenantId = user.assignedTenants?.[0];
     if (primaryTenantId) {
       tenantBrand = await Tenant.findById(primaryTenantId)
-        .select('name slug customDomain domainMigrated')
+        .select('name slug customDomain domainMigrated theme logo')
         .lean();
     }
 

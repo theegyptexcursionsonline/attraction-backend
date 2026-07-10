@@ -227,6 +227,7 @@ export const attractionFiltersSchema = z.object({
 // Payment Validators
 export const createPaymentIntentSchema = z.object({
   bookingId: z.string().min(1, 'Booking ID is required'),
+  guestEmail: z.string().email().optional(),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;

@@ -158,6 +158,17 @@ const tenantSchema = new Schema<ITenant>(
       // (not the platform's). Drives settlement authority: own-gateway suppliers
       // hold their own funds and may self-settle card bookings too.
       ownPaymentGateway: { type: Boolean, default: false },
+      // Per-tenant Stripe gateway — each site's admin enters their OWN keys. The
+      // publishable key is public (the checkout needs it); the secret + webhook
+      // signing secret are stored ENCRYPTED and never returned to clients
+      // (select:false + AES-GCM via secretCrypto).
+      stripe: {
+        enabled: { type: Boolean, default: false },
+        publishableKey: { type: String, default: '' },
+        secretKeyEnc: { type: String, default: '', select: false },
+        webhookSecretEnc: { type: String, default: '', select: false },
+        configuredAt: Date,
+      },
     },
     status: {
       type: String,

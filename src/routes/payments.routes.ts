@@ -5,12 +5,31 @@ import {
   handleWebhook,
   getPaymentStatus,
   refundPayment,
+  getPaymentGateway,
+  updatePaymentGateway,
 } from '../controllers/payments.controller';
-import { authenticate, optionalAuth, requireRole } from '../middleware/auth.middleware';
+import { authenticate, optionalAuth, requireRole, canAccessTenant } from '../middleware/auth.middleware';
 import { validate } from '../middleware/validate.middleware';
 import { createPaymentIntentSchema } from '../utils/validators';
 
 const router = Router();
+
+// Per-tenant Stripe gateway config (admin). Each site's admin manages their OWN
+// keys — canAccessTenant confines a brand-admin to their assigned tenant(s).
+router.get(
+  '/gateway/:tenantId',
+  authenticate,
+  requireRole('super-admin', 'brand-admin', 'manager'),
+  canAccessTenant,
+  getPaymentGateway
+);
+router.put(
+  '/gateway/:tenantId',
+  authenticate,
+  requireRole('super-admin', 'brand-admin'),
+  canAccessTenant,
+  updatePaymentGateway
+);
 
 /**
  * @swagger
@@ -31,7 +50,7 @@ const router = Router();
  *       400:
  *         description: Invalid webhook signature
  */
-router.post('/webhook', handleWebhook);
+router.post('/webhook/:tenantId', handleWebhook);
 
 /**
  * @swagger
@@ -80,7 +99,7 @@ router.post('/webhook', handleWebhook);
  */
 router.post(
   '/create-intent',
-  authenticate,
+  optionalAuth,
   validate(createPaymentIntentSchema),
   createPaymentIntent
 );

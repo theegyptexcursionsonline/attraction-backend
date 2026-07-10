@@ -3,6 +3,7 @@ import { PromoCode } from '../models/PromoCode';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { escapeRegex } from '../utils/helpers';
+import { isSuperAdmin, callerTenantIds } from '../utils/tenantScope';
 
 // POST /promo-codes/validate (public)
 export const validatePromoCode = async (
@@ -73,6 +74,11 @@ export const getPromoCodes = async (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const query: Record<string, any> = {};
 
+    // Tenant scope: a non-super admin only sees promo codes owned by their tenants.
+    if (req.user && !isSuperAdmin(req.user)) {
+      query.tenantId = { $in: callerTenantIds(req.user) };
+    }
+
     if (status === 'active') query.isActive = true;
     else if (status === 'inactive') query.isActive = false;
 
@@ -102,10 +108,16 @@ export const getPromoCodeStats = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const scope: Record<string, any> = {};
+    if (req.user && !isSuperAdmin(req.user)) {
+      scope.tenantId = { $in: callerTenantIds(req.user) };
+    }
     const [total, active, usageAgg] = await Promise.all([
-      PromoCode.countDocuments(),
-      PromoCode.countDocuments({ isActive: true }),
+      PromoCode.countDocuments(scope),
+      PromoCode.countDocuments({ ...scope, isActive: true }),
       PromoCode.aggregate([
+        { $match: scope },
         { $group: { _id: null, totalUsage: { $sum: '$usageCount' } } },
       ]),
     ]);
@@ -132,6 +144,13 @@ export const getPromoCodeById = async (
       sendError(res, 'Promo code not found', 404);
       return;
     }
+    if (req.user && !isSuperAdmin(req.user)) {
+      const mine = callerTenantIds(req.user);
+      if (!promo.tenantId || !mine.includes(String(promo.tenantId))) {
+        sendError(res, 'Promo code not found', 404);
+        return;
+      }
+    }
     sendSuccess(res, promo);
   } catch (error) {
     next(error);
@@ -145,10 +164,19 @@ export const createPromoCode = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const promo = await PromoCode.create({
-      ...req.body,
-      code: req.body.code.toUpperCase(),
-    });
+    const body = { ...req.body, code: req.body.code.toUpperCase() };
+    // A non-super admin's code is always owned by one of their tenants — never left
+    // global, and never assignable to a tenant they don't manage.
+    if (req.user && !isSuperAdmin(req.user)) {
+      const mine = callerTenantIds(req.user);
+      if (!mine.length) {
+        sendError(res, 'You are not assigned to any tenant', 403);
+        return;
+      }
+      const requested = body.tenantId ? String(body.tenantId) : '';
+      body.tenantId = requested && mine.includes(requested) ? requested : mine[0];
+    }
+    const promo = await PromoCode.create(body);
     sendSuccess(res, promo, 'Promo code created', 201);
   } catch (error) {
     next(error);
@@ -164,6 +192,18 @@ export const updatePromoCode = async (
   try {
     if (req.body.code) {
       req.body.code = req.body.code.toUpperCase();
+    }
+    if (req.user && !isSuperAdmin(req.user)) {
+      const mine = callerTenantIds(req.user);
+      const existing = await PromoCode.findById(req.params.id).select('tenantId');
+      if (!existing || !existing.tenantId || !mine.includes(String(existing.tenantId))) {
+        sendError(res, 'Promo code not found', 404);
+        return;
+      }
+      if (req.body.tenantId !== undefined && !mine.includes(String(req.body.tenantId))) {
+        sendError(res, 'You can only assign your own tenants', 403);
+        return;
+      }
     }
     const promo = await PromoCode.findByIdAndUpdate(
       req.params.id,
@@ -187,6 +227,14 @@ export const deletePromoCode = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    if (req.user && !isSuperAdmin(req.user)) {
+      const mine = callerTenantIds(req.user);
+      const existing = await PromoCode.findById(req.params.id).select('tenantId');
+      if (!existing || !existing.tenantId || !mine.includes(String(existing.tenantId))) {
+        sendError(res, 'Promo code not found', 404);
+        return;
+      }
+    }
     const promo = await PromoCode.findByIdAndDelete(req.params.id);
     if (!promo) {
       sendError(res, 'Promo code not found', 404);
