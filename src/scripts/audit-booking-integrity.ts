@@ -1,7 +1,9 @@
 import mongoose from 'mongoose';
 import { env } from '../config/env';
 import { Availability } from '../models/Availability';
+import { Attraction } from '../models/Attraction';
 import { Booking } from '../models/Booking';
+import { inventoryEntriesForItems } from '../services/bookingInventory.service';
 
 type SlotTotals = Map<string, number>;
 
@@ -12,6 +14,11 @@ const slotKey = (attractionId: unknown, date: Date | string, time?: string): str
 const addSlotGuests = (totals: SlotTotals, key: string, guests: number): void => {
   totals.set(key, (totals.get(key) || 0) + guests);
 };
+
+const normalizedEntries = (entries: Array<{ date: Date; time?: string; guests: number }>): string[] =>
+  entries
+    .map((entry) => `${dayKey(entry.date)}:${entry.time || 'all-day'}:${entry.guests}`)
+    .sort();
 
 async function run(): Promise<void> {
   await mongoose.connect(env.mongodbUri);
@@ -66,6 +73,15 @@ async function run(): Promise<void> {
 
   const expectedSlots: SlotTotals = new Map();
   let legacyBookingsWithoutInventoryLedger = 0;
+  let inventoryLedgerMismatches = 0;
+  const attractionIds = Array.from(new Set(futureBookings.map((booking) => String(booking.attractionId))));
+  const attractions = await Attraction.find({ _id: { $in: attractionIds } })
+    .select('_id availability.type')
+    .lean();
+  const availabilityModes = new Map(
+    attractions.map((attraction) => [String(attraction._id), attraction.availability?.type])
+  );
+
   for (const booking of futureBookings) {
     const reservations = booking.inventoryReservations || [];
     if (!booking.inventoryReservedAt || booking.inventoryReleasedAt || reservations.length === 0) {
@@ -73,12 +89,26 @@ async function run(): Promise<void> {
       continue;
     }
 
-    for (const reservation of reservations) {
-      if (!reservation.date || dayKey(reservation.date) < todayString) continue;
+    const entries = inventoryEntriesForItems(
+      booking.attractionId,
+      booking.items,
+      availabilityModes.get(String(booking.attractionId)) === 'time-slots'
+    );
+    const actualEntries = reservations.map((reservation) => ({
+      date: new Date(reservation.date),
+      time: reservation.time,
+      guests: reservation.guests || 0,
+    }));
+    if (JSON.stringify(normalizedEntries(entries)) !== JSON.stringify(normalizedEntries(actualEntries))) {
+      inventoryLedgerMismatches += 1;
+    }
+
+    for (const entry of entries) {
+      if (dayKey(entry.date) < todayString) continue;
       addSlotGuests(
         expectedSlots,
-        slotKey(booking.attractionId, reservation.date, reservation.time),
-        reservation.guests || 0
+        slotKey(booking.attractionId, entry.date, entry.time),
+        entry.guests
       );
     }
   }
@@ -132,6 +162,7 @@ async function run(): Promise<void> {
       blockedSlotsWithBookings,
       bookingsWithoutAvailability,
       legacyBookingsWithoutInventoryLedger,
+      inventoryLedgerMismatches,
     },
   }, null, 2)}\n`);
 }

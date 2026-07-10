@@ -3,6 +3,7 @@ import { Booking } from '../models/Booking';
 import {
   expireStaleCardHolds,
   failCardBookingAndReleaseInventory,
+  bookingDate,
   inventoryEntriesForItems,
   reserveInventory,
 } from '../services/bookingInventory.service';
@@ -25,6 +26,10 @@ describe('booking inventory lifecycle', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (Availability.updateOne as jest.Mock).mockResolvedValue({ acknowledged: true });
+  });
+
+  it('stores date-only inventory at UTC midnight regardless of server timezone', () => {
+    expect(bookingDate('2026-08-01').toISOString()).toBe('2026-08-01T00:00:00.000Z');
   });
 
   it('materializes advertised default capacity before the atomic reservation', async () => {
