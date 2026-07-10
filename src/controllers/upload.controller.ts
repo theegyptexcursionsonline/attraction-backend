@@ -4,6 +4,7 @@ import { AuthRequest } from '../types';
 import { uploadImage } from '../services/upload.service';
 import { uploadBase64Image } from '../services/upload.service';
 import { generateImageFromPrompt } from '../services/image-generation.service';
+import { cleanupUploadedFiles } from '../utils/uploadCleanup';
 
 export const uploadSingleImage = async (
   req: AuthRequest,
@@ -26,6 +27,8 @@ export const uploadSingleImage = async (
     }, 'Image uploaded successfully');
   } catch (error) {
     next(error);
+  } finally {
+    await cleanupUploadedFiles(req);
   }
 };
 
@@ -53,6 +56,8 @@ export const uploadMultipleImages = async (
     })), 'Images uploaded successfully');
   } catch (error) {
     next(error);
+  } finally {
+    await cleanupUploadedFiles(req);
   }
 };
 

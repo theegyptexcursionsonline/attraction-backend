@@ -353,10 +353,7 @@ router.patch('/admin/:id/settlement', authenticate, requireRole('super-admin', '
  *             properties:
  *               status:
  *                 type: string
- *                 enum: [pending, confirmed, cancelled, completed, refunded]
- *               paymentStatus:
- *                 type: string
- *                 enum: [pending, processing, succeeded, failed, refunded]
+ *                 enum: [pending, confirmed, completed]
  *     responses:
  *       200:
  *         description: Booking updated
@@ -371,9 +368,8 @@ router.patch(
   requireRole('super-admin', 'brand-admin', 'manager'),
   validate(
     z.object({
-      status: z.enum(['pending', 'confirmed', 'cancelled', 'completed', 'refunded']).optional(),
-      paymentStatus: z.enum(['pending', 'processing', 'succeeded', 'failed', 'refunded']).optional(),
-    })
+      status: z.enum(['pending', 'confirmed', 'completed']).optional(),
+    }).strict()
   ),
   updateBookingStatus
 );

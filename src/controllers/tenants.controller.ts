@@ -7,6 +7,70 @@ import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { escapeRegex } from '../utils/helpers';
 
+const PUBLIC_TENANT_FIELDS = [
+  '_id',
+  'slug',
+  'name',
+  'domain',
+  'customDomain',
+  'logo',
+  'logoDark',
+  'favicon',
+  'heroImages',
+  'tagline',
+  'description',
+  'theme',
+  'fonts',
+  'designMode',
+  'defaultCurrency',
+  'defaultLanguage',
+  'supportedLanguages',
+  'timezone',
+  'status',
+  'seoSettings',
+  'contactInfo',
+  'socialLinks',
+  'aiSettings',
+  'navigation',
+  'pricingSettings',
+  'flatUrls',
+  'customPages',
+] as const;
+
+export const PUBLIC_TENANT_PROJECTION = [
+  ...PUBLIC_TENANT_FIELDS,
+  'paymentSettings.stripe.enabled',
+  'paymentSettings.stripe.publishableKey',
+].join(' ');
+
+export const toPublicTenantDto = (source: unknown): Record<string, unknown> => {
+  if (!source || typeof source !== 'object') return {};
+  const record = source as Record<string, unknown>;
+  const dto = Object.fromEntries(
+    PUBLIC_TENANT_FIELDS
+      .filter((field) => record[field] !== undefined)
+      .map((field) => [field, record[field]])
+  ) as Record<string, unknown>;
+
+  const paymentSettings = record.paymentSettings;
+  if (paymentSettings && typeof paymentSettings === 'object') {
+    const stripe = (paymentSettings as Record<string, unknown>).stripe;
+    if (stripe && typeof stripe === 'object') {
+      const stripeRecord = stripe as Record<string, unknown>;
+      const publicStripe: Record<string, unknown> = {};
+      if (typeof stripeRecord.enabled === 'boolean') publicStripe.enabled = stripeRecord.enabled;
+      if (typeof stripeRecord.publishableKey === 'string') {
+        publicStripe.publishableKey = stripeRecord.publishableKey;
+      }
+      if (Object.keys(publicStripe).length > 0) {
+        dto.paymentSettings = { stripe: publicStripe };
+      }
+    }
+  }
+
+  return dto;
+};
+
 export const getTenants = async (
   req: AuthRequest,
   res: Response,
@@ -112,11 +176,11 @@ export const getPublicTenants = async (
 ): Promise<void> => {
   try {
     const tenants = await Tenant.find({ status: { $in: ['active', 'coming_soon'] } })
-      .select('slug name domain customDomain logo logoDark favicon heroImages tagline description theme fonts designMode defaultCurrency defaultLanguage supportedLanguages timezone status seoSettings contactInfo socialLinks aiSettings navigation pricingSettings flatUrls customPages paymentSettings.stripe.enabled paymentSettings.stripe.publishableKey')
+      .select(PUBLIC_TENANT_PROJECTION)
       .sort({ name: 1 })
       .lean();
 
-    sendSuccess(res, tenants);
+    sendSuccess(res, tenants.map(toPublicTenantDto));
   } catch (error) {
     next(error);
   }
@@ -124,7 +188,7 @@ export const getPublicTenants = async (
 
 /**
  * Public endpoint – returns a single tenant by ID (no auth required).
- * Includes all fields for the admin detail page fallback.
+ * Uses the same storefront-safe contract as the public tenant list.
  */
 export const getPublicTenantById = async (
   req: AuthRequest,
@@ -133,14 +197,16 @@ export const getPublicTenantById = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const tenant = await Tenant.findById(id).lean();
+    const tenant = await Tenant.findById(id)
+      .select(PUBLIC_TENANT_PROJECTION)
+      .lean();
 
-    if (!tenant) {
+    if (!tenant || !['active', 'coming_soon'].includes(tenant.status)) {
       sendError(res, 'Tenant not found', 404);
       return;
     }
 
-    sendSuccess(res, tenant);
+    sendSuccess(res, toPublicTenantDto(tenant));
   } catch (error) {
     next(error);
   }
@@ -154,14 +220,16 @@ export const getTenantBySlug = async (
   try {
     const { slug } = req.params;
 
-    const tenant = await Tenant.findOne({ slug, status: { $in: ['active', 'coming_soon'] } }).lean();
+    const tenant = await Tenant.findOne({ slug, status: { $in: ['active', 'coming_soon'] } })
+      .select(PUBLIC_TENANT_PROJECTION)
+      .lean();
 
     if (!tenant) {
       sendError(res, 'Tenant not found', 404);
       return;
     }
 
-    sendSuccess(res, tenant);
+    sendSuccess(res, toPublicTenantDto(tenant));
   } catch (error) {
     next(error);
   }

@@ -1,9 +1,12 @@
 import crypto from 'crypto';
+import http from 'http';
+import https from 'https';
 import mongoose from 'mongoose';
 import { WebhookEndpoint } from '../models/WebhookEndpoint';
 import { WebhookDelivery } from '../models/WebhookDelivery';
 import { WebhookEvent } from '../models/WebhookEvent';
 import { IWebhookDelivery, WebhookEventType } from '../types';
+import { validateWebhookDestination } from '../utils/webhookDestination';
 
 // Delivery tuning. Attempt 0 is immediate; subsequent attempts back off.
 export const MAX_DELIVERY_ATTEMPTS = 5;
@@ -11,8 +14,6 @@ export const MAX_DELIVERY_ATTEMPTS = 5;
 const BACKOFF_MS = [0, 1_000, 5_000, 30_000, 120_000];
 // Auto-disable an endpoint after this many consecutive failed deliveries.
 const AUTO_DISABLE_THRESHOLD = 15;
-// Cap stored response bodies so a chatty receiver can't bloat the log.
-const MAX_RESPONSE_BODY = 2_000;
 const REQUEST_TIMEOUT_MS = 10_000;
 
 type FetchLike = typeof fetch;
@@ -102,9 +103,51 @@ export const verifySignatureHeader = (
 interface SingleAttemptResult {
   ok: boolean;
   status?: number;
-  responseBody?: string;
   error?: string;
 }
+
+const postToValidatedDestination = async (
+  value: string,
+  body: string,
+  headers: Record<string, string>
+): Promise<SingleAttemptResult> => {
+  let destination;
+  try {
+    destination = await validateWebhookDestination(value);
+  } catch {
+    return { ok: false, error: 'Webhook destination is not allowed' };
+  }
+
+  return new Promise((resolve) => {
+    const transport = destination.url.protocol === 'https:' ? https : http;
+    const request = transport.request(
+      destination.url,
+      {
+        method: 'POST',
+        headers,
+        lookup: (_hostname, _options, callback) => {
+          callback(null, destination.address, destination.family);
+        },
+      },
+      (response) => {
+        const status = response.statusCode;
+        // Redirects are intentionally not followed. Following a receiver-supplied
+        // Location could move the signed payload to an unvalidated destination.
+        response.resume();
+        response.on('end', () => resolve({
+          ok: status !== undefined && status >= 200 && status < 300,
+          status,
+        }));
+      }
+    );
+
+    request.setTimeout(REQUEST_TIMEOUT_MS, () => {
+      request.destroy(new Error('timeout'));
+    });
+    request.on('error', () => resolve({ ok: false, error: 'Webhook request failed' }));
+    request.end(body);
+  });
+};
 
 /** One HTTP POST attempt to the endpoint with a signed, timestamped body. */
 export const sendWebhookRequest = async (
@@ -117,32 +160,32 @@ export const sendWebhookRequest = async (
 ): Promise<SingleAttemptResult> => {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const headers = {
+    'Content-Type': 'application/json',
+    'Content-Length': Buffer.byteLength(body).toString(),
+    'User-Agent': 'Foxes-Webhooks/1.0',
+    'X-Foxes-Event': meta.eventType,
+    'X-Foxes-Delivery': meta.eventId,
+    'X-Foxes-Signature': buildSignatureHeader(secret, body, nowMs),
+  };
   try {
+    if (fetchImpl === fetch) {
+      return await postToValidatedDestination(url, body, headers);
+    }
+
     const res = await fetchImpl(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': 'Foxes-Webhooks/1.0',
-        'X-Foxes-Event': meta.eventType,
-        'X-Foxes-Delivery': meta.eventId,
-        'X-Foxes-Signature': buildSignatureHeader(secret, body, nowMs),
-      },
+      headers,
       body,
       signal: controller.signal,
+      redirect: 'manual',
     });
-    let text = '';
-    try {
-      text = await res.text();
-    } catch {
-      text = '';
-    }
     return {
       ok: res.ok,
       status: res.status,
-      responseBody: text.slice(0, MAX_RESPONSE_BODY),
     };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+    return { ok: false, error: 'Webhook request failed' };
   } finally {
     clearTimeout(timer);
   }
@@ -231,7 +274,7 @@ export const runDeliveryWithRetry = async (
     delivery.attempts = attempt + 1;
     delivery.lastAttemptAt = new Date(now());
     delivery.responseStatus = lastResult.status;
-    delivery.responseBody = lastResult.responseBody;
+    delivery.responseBody = undefined;
     delivery.error = lastResult.error;
 
     if (lastResult.ok) {

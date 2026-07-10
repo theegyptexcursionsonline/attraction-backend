@@ -2,7 +2,14 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const nodeEnv = process.env.NODE_ENV || 'development';
+// Railway does not set NODE_ENV automatically. Treat its production environment
+// as production even if the variable is accidentally omitted so security checks,
+// secure cookies, error redaction, and payment verification fail closed.
+const nodeEnv =
+  process.env.NODE_ENV ||
+  (process.env.RAILWAY_ENVIRONMENT_NAME?.toLowerCase() === 'production'
+    ? 'production'
+    : 'development');
 const isDev = nodeEnv === 'development';
 const isProd = nodeEnv === 'production';
 
@@ -11,6 +18,31 @@ const jwtSecret = process.env.JWT_SECRET || (isDev ? 'dev-secret-change-me' : ''
 if (!jwtSecret) {
   throw new Error('JWT_SECRET environment variable is required');
 }
+
+const configuredEncryptionKey = process.env.ENCRYPTION_KEY?.trim() || '';
+if (isProd && configuredEncryptionKey === jwtSecret) {
+  throw new Error('ENCRYPTION_KEY must be distinct from JWT_SECRET in production');
+}
+const requireDedicatedEncryptionKey =
+  process.env.REQUIRE_DEDICATED_ENCRYPTION_KEY?.toLowerCase() === 'true';
+if (isProd && requireDedicatedEncryptionKey && !configuredEncryptionKey) {
+  throw new Error(
+    'ENCRYPTION_KEY environment variable is required when REQUIRE_DEDICATED_ENCRYPTION_KEY=true'
+  );
+}
+// During the production migration window, an empty primary key keeps startup
+// available for legacy decrypts but prevents any new secret from being encrypted
+// with JWT_SECRET. Development/tests retain their convenient local fallback.
+const encryptionKey = configuredEncryptionKey || (isProd ? '' : jwtSecret);
+
+const configuredBookingAccessSecret = process.env.BOOKING_ACCESS_SECRET?.trim() || '';
+if (isProd && !configuredBookingAccessSecret) {
+  throw new Error('BOOKING_ACCESS_SECRET environment variable is required in production');
+}
+if (isProd && configuredBookingAccessSecret === jwtSecret) {
+  throw new Error('BOOKING_ACCESS_SECRET must be distinct from JWT_SECRET in production');
+}
+const bookingAccessSecret = configuredBookingAccessSecret || jwtSecret;
 
 export const env = {
   nodeEnv,
@@ -48,10 +80,17 @@ export const env = {
   // foxes-content-engine publishing key (Bearer token on /api/admin/content/*)
   contentEngineApiKey: process.env.CONTENT_ENGINE_API_KEY || '',
 
-  // Key used to encrypt per-tenant secrets at rest (e.g. each tenant's Stripe
-  // secret + webhook signing secret). Falls back to the JWT secret so a dedicated
-  // key is optional; set ENCRYPTION_KEY in prod to rotate independently.
-  encryptionKey: process.env.ENCRYPTION_KEY || jwtSecret,
+  // A dedicated production key keeps encrypted tenant credentials independent
+  // from auth-token rotation. The legacy JWT key is decrypt-only in production
+  // until existing ciphertext has been re-encrypted with the primary key.
+  encryptionKey,
+  legacyEncryptionKey: jwtSecret,
+  requireDedicatedEncryptionKey,
+  hasDedicatedEncryptionKey: Boolean(configuredEncryptionKey),
+
+  // HMAC key for guest booking-access tokens. Production keeps it separate from
+  // JWT signing so either credential can rotate without invalidating the other.
+  bookingAccessSecret,
 
   // Google Static Maps key (for the meeting-point map in booking emails). Shared
   // with the tourticket/EEO projects. When unset, the email map falls back to a

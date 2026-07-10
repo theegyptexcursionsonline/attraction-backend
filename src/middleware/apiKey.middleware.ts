@@ -5,7 +5,7 @@ import { AuthRequest, ApiKeyScope } from '../types';
 import { hashToken, API_KEY_PREFIX } from '../utils/hash';
 import { sendError } from '../utils/response';
 
-const PUBLIC_TENANT_STATUSES = ['active', 'coming_soon', 'pending'];
+const PUBLIC_TENANT_STATUSES = ['active', 'coming_soon'];
 
 // Extract the presented key from `x-api-key` or a `Bearer fxs_att_…` header.
 const extractApiKey = (req: AuthRequest): string | undefined => {

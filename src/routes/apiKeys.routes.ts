@@ -4,7 +4,7 @@ import {
   listApiKeys,
   revokeApiKey,
 } from '../controllers/apiKeys.controller';
-import { authenticate, requireAdmin } from '../middleware/auth.middleware';
+import { authenticate, requireAdmin, requireRole } from '../middleware/auth.middleware';
 import { optionalTenant } from '../middleware/tenant.middleware';
 
 const router = Router();
@@ -51,7 +51,13 @@ const router = Router();
  *         description: API key created (key shown once)
  */
 router.get('/', authenticate, requireAdmin, optionalTenant, listApiKeys);
-router.post('/', authenticate, requireAdmin, optionalTenant, createApiKey);
+router.post(
+  '/',
+  authenticate,
+  requireRole('super-admin', 'brand-admin', 'manager'),
+  optionalTenant,
+  createApiKey
+);
 
 /**
  * @swagger
@@ -73,6 +79,12 @@ router.post('/', authenticate, requireAdmin, optionalTenant, createApiKey);
  *       404:
  *         description: Not found (or belongs to another tenant)
  */
-router.delete('/:id', authenticate, requireAdmin, optionalTenant, revokeApiKey);
+router.delete(
+  '/:id',
+  authenticate,
+  requireRole('super-admin', 'brand-admin', 'manager'),
+  optionalTenant,
+  revokeApiKey
+);
 
 export default router;

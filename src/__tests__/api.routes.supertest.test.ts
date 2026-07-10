@@ -107,6 +107,16 @@ describe('API routes supertest coverage', () => {
     expect(endpoints.length).toBeGreaterThanOrEqual(70);
   });
 
+  it('never publishes seeded account credentials on the API homepage', async () => {
+    const response = await request(app).get('/api');
+
+    expect(response.status).toBe(200);
+    expect(response.text).not.toContain('Test Accounts');
+    expect(response.text).not.toContain('admin@attractions-network.com');
+    expect(response.text).not.toContain('Admin@123456');
+    expect(response.text).not.toContain('Customer@123');
+  });
+
   test.each(endpoints)('%s %s responds (not missing route)', async ({ method, path: routePath }) => {
     const concretePath = toConcretePath(routePath);
     let req = request(app)[method](concretePath);
@@ -122,4 +132,3 @@ describe('API routes supertest coverage', () => {
     expect(response.status).not.toBe(404);
   });
 });
-

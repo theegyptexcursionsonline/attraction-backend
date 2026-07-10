@@ -126,6 +126,7 @@ export const brandedLink = (
 
 export interface BookingEmailDetails {
   reference: string;
+  guestAccessToken?: string;
   attractionTitle: string;
   date: string;
   time?: string;
@@ -221,7 +222,10 @@ export const renderBookingConfirmationHtml = (
   bookingDetails: BookingEmailDetails,
   hasTicket = false
 ): string => {
-  const viewUrl = brandedLink(brand, '/checkout/confirmation', { ref: bookingDetails.reference });
+  const viewUrl = brandedLink(brand, '/checkout/confirmation', {
+    ref: bookingDetails.reference,
+    ...(bookingDetails.guestAccessToken ? { accessToken: bookingDetails.guestAccessToken } : {}),
+  });
   const firstName = (bookingDetails.guestName || 'there').trim().split(/\s+/)[0];
   const isPaid = !!bookingDetails.paymentMethod && bookingDetails.paymentMethod !== 'pay-later';
   const totalLabel = isPaid ? 'Total paid' : 'Total';

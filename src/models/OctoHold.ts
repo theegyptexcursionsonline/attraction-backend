@@ -39,20 +39,26 @@ const octoHoldSchema = new Schema<IOctoHold>(
     supplierTenantId: { type: Schema.Types.ObjectId, ref: 'Tenant' },
     attractionId: { type: Schema.Types.ObjectId, ref: 'Attraction', required: true },
     productId: { type: String, required: true },
-    optionId: { type: String, default: 'DEFAULT' },
+    optionId: { type: String, enum: ['DEFAULT'], default: 'DEFAULT' },
     availabilityId: { type: String, required: true },
     localDate: { type: String, required: true },
     startTime: { type: String, default: null },
-    unitItems: [
-      {
+    unitItems: {
+      type: [{
         unitId: { type: String, required: true },
-        quantity: { type: Number, required: true, min: 0 },
-        unitPriceMinor: { type: Number, required: true, min: 0 },
+        quantity: { type: Number, required: true, min: 1, validate: Number.isInteger },
+        unitPriceMinor: { type: Number, required: true, min: 1, validate: Number.isInteger },
+      }],
+      required: true,
+      validate: {
+        validator: (items: IOctoHold['unitItems']) =>
+          items.length > 0 && new Set(items.map((item) => item.unitId)).size === items.length,
+        message: 'unitItems must be non-empty and contain unique unit IDs',
       },
-    ],
+    },
     currency: { type: String, required: true, default: 'USD' },
-    totalMinor: { type: Number, required: true, default: 0 },
-    expiresAt: { type: Date },
+    totalMinor: { type: Number, required: true, min: 1 },
+    expiresAt: { type: Date, required: true },
     bookingId: { type: Schema.Types.ObjectId, ref: 'Booking' },
     contact: {
       firstName: { type: String },
@@ -63,5 +69,8 @@ const octoHoldSchema = new Schema<IOctoHold>(
   },
   { timestamps: true },
 );
+
+// Supports bounded scheduler sweeps without deleting unreleased holds.
+octoHoldSchema.index({ status: 1, expiresAt: 1 });
 
 export const OctoHold = mongoose.model<IOctoHold>('OctoHold', octoHoldSchema);

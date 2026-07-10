@@ -8,13 +8,17 @@ import {
   listWebhookDeliveries,
   pingWebhookEndpoint,
 } from '../controllers/webhooks.controller';
-import { authenticate, requireAdmin } from '../middleware/auth.middleware';
+import { authenticate, requireRole } from '../middleware/auth.middleware';
 import { optionalTenant } from '../middleware/tenant.middleware';
 
 const router = Router();
 
 // All webhook management is tenant-scoped admin work over the JWT session.
-router.use(authenticate, requireAdmin, optionalTenant);
+router.use(
+  authenticate,
+  requireRole('super-admin', 'brand-admin', 'manager'),
+  optionalTenant
+);
 
 /**
  * @swagger

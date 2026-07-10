@@ -130,7 +130,7 @@ router.post(
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-router.post('/confirm', optionalAuth, confirmPayment);
+router.post('/confirm', optionalAuth, validate(createPaymentIntentSchema), confirmPayment);
 
 /**
  * @swagger

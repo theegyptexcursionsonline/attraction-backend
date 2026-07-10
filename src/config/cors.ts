@@ -89,7 +89,14 @@ export const corsOptions: CorsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-ID', 'X-Tenant-Slug'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Tenant-ID',
+    'X-Tenant-Slug',
+    'X-Booking-Access-Token',
+    'X-API-Key',
+  ],
   exposedHeaders: ['X-Total-Count', 'X-Total-Pages'],
   maxAge: 86400, // 24 hours
 };

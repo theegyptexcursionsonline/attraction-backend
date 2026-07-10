@@ -45,6 +45,8 @@ const promoCodeSchema = new Schema<IPromoCode>(
     currency: {
       type: String,
       default: 'EGP',
+      uppercase: true,
+      trim: true,
     },
     minOrderAmount: {
       type: Number,
@@ -90,5 +92,8 @@ const promoCodeSchema = new Schema<IPromoCode>(
     },
   }
 );
+
+promoCodeSchema.index({ tenantId: 1, code: 1 });
+promoCodeSchema.index({ currency: 1, isActive: 1, validFrom: 1, validUntil: 1 });
 
 export const PromoCode = mongoose.model<IPromoCode>('PromoCode', promoCodeSchema);

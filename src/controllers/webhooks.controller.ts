@@ -8,6 +8,7 @@ import { sendSuccess, sendError } from '../utils/response';
 import crypto from 'crypto';
 import { generateWebhookSecret } from '../utils/hash';
 import { runDeliveryWithRetry } from '../services/webhook.service';
+import { validateWebhookDestination } from '../utils/webhookDestination';
 
 const VALID_EVENTS: WebhookEventType[] = [
   'booking.created',
@@ -18,15 +19,6 @@ const VALID_EVENTS: WebhookEventType[] = [
   'ping',
   '*',
 ];
-
-const isHttpUrl = (value: string): boolean => {
-  try {
-    const u = new URL(value);
-    return u.protocol === 'http:' || u.protocol === 'https:';
-  } catch {
-    return false;
-  }
-};
 
 const resolveTargetTenantId = (
   req: AuthRequest,
@@ -53,8 +45,21 @@ const readableTenantScope = (req: AuthRequest): string[] | undefined => {
   if (req.user?.role === 'super-admin') {
     return req.tenant ? [req.tenant._id.toString()] : undefined;
   }
-  if (req.tenant) return [req.tenant._id.toString()];
-  return (req.user?.assignedTenants || []).map((t) => t.toString());
+  const assigned = (req.user?.assignedTenants || []).map((t) => t.toString());
+  if (req.tenant && assigned.includes(req.tenant._id.toString())) {
+    return [req.tenant._id.toString()];
+  }
+  return assigned;
+};
+
+const validateDestination = async (res: Response, url: string): Promise<boolean> => {
+  try {
+    await validateWebhookDestination(url);
+    return true;
+  } catch (error) {
+    sendError(res, error instanceof Error ? error.message : 'Webhook destination is not allowed', 400);
+    return false;
+  }
 };
 
 const validateEvents = (events: unknown): { events?: WebhookEventType[]; error?: string } => {
@@ -80,8 +85,7 @@ export const createWebhookEndpoint = async (
       tenantId?: string;
     };
 
-    if (!url || !isHttpUrl(url)) {
-      sendError(res, 'A valid http(s) url is required', 400);
+    if (!url || !(await validateDestination(res, url))) {
       return;
     }
 
@@ -214,8 +218,7 @@ export const updateWebhookEndpoint = async (
     };
 
     if (url !== undefined) {
-      if (!isHttpUrl(url)) {
-        sendError(res, 'A valid http(s) url is required', 400);
+      if (!(await validateDestination(res, url))) {
         return;
       }
       endpoint.url = url;
@@ -278,7 +281,8 @@ export const listWebhookDeliveries = async (
       .limit(limit)
       .lean();
 
-    sendSuccess(res, deliveries);
+    const sanitized = deliveries.map(({ responseBody: _responseBody, ...delivery }) => delivery);
+    sendSuccess(res, sanitized);
   } catch (error) {
     next(error);
   }

@@ -11,6 +11,22 @@ import {
   attractionInCallerTenants,
 } from '../utils/tenantScope';
 
+const PUBLIC_REVIEW_FIELDS = [
+  'attractionId',
+  'author',
+  'avatar',
+  'rating',
+  'title',
+  'content',
+  'helpful',
+  'verified',
+  'country',
+  'images',
+  'adminReply',
+  'createdAt',
+  'updatedAt',
+].join(' ');
+
 export const getRecentReviews = async (
   req: AuthRequest,
   res: Response,
@@ -168,10 +184,9 @@ export const getReviewById = async (
   try {
     const { reviewId } = req.params;
 
-    const review = await Review.findById(reviewId).populate(
-      'attractionId',
-      'title slug'
-    );
+    const review = await Review.findOne({ _id: reviewId, status: 'approved' })
+      .select(PUBLIC_REVIEW_FIELDS)
+      .populate('attractionId', 'title slug');
 
     if (!review) {
       sendError(res, 'Review not found', 404);

@@ -9,6 +9,11 @@ import {
   attractionInCallerTenants,
 } from '../utils/tenantScope';
 
+const OFFER_MUTATION_ROLES = ['super-admin', 'brand-admin', 'manager'];
+
+const canMutateOffers = (req: AuthRequest): boolean =>
+  !!req.user && OFFER_MUTATION_ROLES.includes(req.user.role);
+
 export const getActiveOffers = async (
   req: AuthRequest,
   res: Response,
@@ -143,6 +148,11 @@ export const createOffer = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    if (!canMutateOffers(req)) {
+      sendError(res, 'Insufficient permissions', 403);
+      return;
+    }
+
     // A non-super admin may only create an offer for an attraction they own.
     if (req.user && !isSuperAdmin(req.user)) {
       const attractionId = req.body?.attractionId;
@@ -167,6 +177,11 @@ export const updateOffer = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    if (!canMutateOffers(req)) {
+      sendError(res, 'Insufficient permissions', 403);
+      return;
+    }
+
     // Ownership: a non-super admin may only touch offers on their own attractions
     // (both the existing offer's attraction and any new one they try to point it at).
     if (req.user && !isSuperAdmin(req.user)) {
@@ -206,6 +221,22 @@ export const deleteOffer = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    if (!canMutateOffers(req)) {
+      sendError(res, 'Insufficient permissions', 403);
+      return;
+    }
+
+    if (req.user && !isSuperAdmin(req.user)) {
+      const existing = await SpecialOffer.findById(req.params.id).select('attractionId');
+      if (
+        !existing ||
+        !(await attractionInCallerTenants(existing.attractionId, callerTenantIds(req.user)))
+      ) {
+        sendError(res, 'Offer not found', 404);
+        return;
+      }
+    }
+
     const offer = await SpecialOffer.findByIdAndDelete(req.params.id);
     if (!offer) {
       sendError(res, 'Offer not found', 404);

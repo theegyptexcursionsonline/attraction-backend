@@ -1,7 +1,9 @@
 import { encryptSecret, decryptSecret, secretHint } from '../utils/secretCrypto';
 import {
   createPaymentIntent,
+  createRefund,
   constructWebhookEvent,
+  retrieveSucceededRefundAmount,
   retrievePaymentIntentStatus,
 } from '../services/stripe.service';
 
@@ -42,17 +44,43 @@ describe('secretCrypto — encryption for tenant-held payment secrets', () => {
   });
 });
 
-describe('stripe.service — mock fallback when a tenant has no key', () => {
-  it('createPaymentIntent returns a mock intent + client secret without a key', async () => {
-    const pi = await createPaymentIntent(undefined, 19950, 'usd', { bookingId: 'b1' });
+describe('stripe.service — explicit mock boundary', () => {
+  it('fails closed without a key by default', async () => {
+    await expect(
+      createPaymentIntent(undefined, 19950, 'usd', { bookingId: 'b1' })
+    ).rejects.toThrow('Stripe secret key is required');
+    await expect(retrievePaymentIntentStatus(undefined, 'pi_mock_x')).rejects.toThrow(
+      'Stripe secret key is required'
+    );
+    await expect(createRefund(undefined, 'pi_mock_x', 19950)).rejects.toThrow(
+      'Stripe secret key is required'
+    );
+    await expect(retrieveSucceededRefundAmount(undefined, 'pi_mock_x')).rejects.toThrow(
+      'Stripe secret key is required'
+    );
+  });
+
+  it('creates mock values only when a test explicitly opts in', async () => {
+    const pi = await createPaymentIntent(
+      undefined,
+      19950,
+      'usd',
+      { bookingId: 'b1' },
+      { allowMock: true }
+    );
     expect(pi.id).toMatch(/^pi_mock_/);
     expect(pi.clientSecret).toContain('_secret_');
     expect(pi.amount).toBe(19950);
     expect(pi.currency).toBe('usd');
-  });
-
-  it('retrievePaymentIntentStatus resolves "succeeded" in mock mode', async () => {
-    expect(await retrievePaymentIntentStatus(undefined, 'pi_mock_x')).toBe('succeeded');
+    expect(
+      await retrievePaymentIntentStatus(undefined, 'pi_mock_x', { allowMock: true })
+    ).toBe('succeeded');
+    expect(
+      await createRefund(undefined, 'pi_mock_x', 19950, { allowMock: true })
+    ).toMatchObject({ status: 'succeeded', amount: 19950 });
+    expect(
+      await retrieveSucceededRefundAmount(undefined, 'pi_mock_x', { allowMock: true })
+    ).toBe(0);
   });
 
   it('constructWebhookEvent refuses to verify without a configured tenant', () => {

@@ -121,35 +121,64 @@ export const createAttractionSchema = z.object({
 export const updateAttractionSchema = createAttractionSchema.partial();
 
 // Booking Validators
+const isoDateSchema = z.string()
+  .trim()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must use YYYY-MM-DD format')
+  .refine((value) => {
+    const parsed = new Date(`${value}T00:00:00.000Z`);
+    return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+  }, 'Date must be a valid calendar date');
+
+const timeSchema = z.string()
+  .trim()
+  .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Time must use 24-hour HH:mm format');
+
+const quantitiesSchema = z.object({
+  adults: z.number().int().min(0).max(50),
+  children: z.number().int().min(0).max(50),
+  infants: z.number().int().min(0).max(50).optional().default(0),
+}).refine(
+  ({ adults, children }) => adults + children > 0,
+  { message: 'At least one adult or child is required' }
+).refine(
+  ({ adults, children, infants }) => adults + children + infants <= 50,
+  { message: 'A booking cannot contain more than 50 guests' }
+);
+
 export const createBookingSchema = z.object({
-  attractionId: z.string().min(1, 'Attraction ID is required'),
+  attractionId: z.string()
+    .trim()
+    .regex(/^[a-f\d]{24}$/i, 'Attraction ID must be a valid MongoDB ObjectId'),
   items: z.array(z.object({
-    optionId: z.string(),
-    optionName: z.string().optional(),
-    date: z.string(),
-    time: z.string().optional(),
-    quantities: z.object({
-      adults: z.number().int().min(0),
-      children: z.number().int().min(0),
-      infants: z.number().int().min(0).optional().default(0),
-    }),
-    unitPrice: z.number().optional(),
-    totalPrice: z.number().optional(),
+    optionId: z.string().trim().min(1).max(100),
+    optionName: z.string().trim().max(200).optional(),
+    date: isoDateSchema,
+    time: timeSchema.optional(),
+    category: z.enum(['foreigner', 'resident']).optional(),
+    quantities: quantitiesSchema,
+    unitPrice: z.number().finite().min(0).max(10_000_000).optional(),
+    totalPrice: z.number().finite().min(0).max(100_000_000).optional(),
     addons: z.array(z.object({
-      id: z.string(),
-      name: z.string(),
-      price: z.number(),
-    })).optional().default([]),
-  })).min(1),
+      id: z.string().trim().min(1).max(100),
+      name: z.string().trim().min(1).max(200),
+      price: z.number().finite().min(0).max(10_000_000),
+    })).max(20).optional().default([]),
+    hotelPickup: z.object({
+      hotelName: z.string().trim().min(1).max(200),
+      roomNumber: z.string().trim().max(50).optional(),
+      pickupTime: timeSchema.optional(),
+    }).optional(),
+  })).min(1).max(10),
   guestDetails: z.object({
-    firstName: z.string().min(1),
-    lastName: z.string().min(1),
-    email: z.string().email(),
-    phone: z.string().min(1),
-    country: z.string().min(1),
-    specialRequests: z.string().optional(),
+    firstName: z.string().trim().min(1).max(100),
+    lastName: z.string().trim().min(1).max(100),
+    email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
+    phone: z.string().trim().min(5).max(40),
+    country: z.string().trim().min(1).max(100),
+    specialRequests: z.string().trim().max(2000).optional(),
   }),
-  promoCode: z.string().optional(),
+  promoCode: z.string().trim().min(1).max(64).optional(),
+  paymentMethod: z.enum(['card', 'pay-later', 'cash']).optional().default('pay-later'),
 });
 
 // Category Validators
@@ -228,6 +257,7 @@ export const attractionFiltersSchema = z.object({
 export const createPaymentIntentSchema = z.object({
   bookingId: z.string().min(1, 'Booking ID is required'),
   guestEmail: z.string().email().optional(),
+  guestAccessToken: z.string().min(32).max(128).optional(),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;

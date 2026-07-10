@@ -7,6 +7,10 @@ import { sendSuccess, sendError } from '../utils/response';
 import { generateApiKey, apiKeyPreview, hashToken } from '../utils/hash';
 
 const VALID_SCOPES: ApiKeyScope[] = ['read', 'write', '*'];
+const API_KEY_MUTATION_ROLES = ['super-admin', 'brand-admin', 'manager'];
+
+const canMutateApiKeys = (req: AuthRequest): boolean =>
+  !!req.user && API_KEY_MUTATION_ROLES.includes(req.user.role);
 
 // Which tenant is this admin acting on, and may they?
 //  - super-admin: any tenant (must be supplied), no membership requirement
@@ -50,6 +54,11 @@ export const createApiKey = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    if (!canMutateApiKeys(req)) {
+      sendError(res, 'Insufficient permissions', 403);
+      return;
+    }
+
     const { label, scopes, tenantId: bodyTenantId } = req.body as {
       label?: string;
       scopes?: ApiKeyScope[];
@@ -148,6 +157,11 @@ export const revokeApiKey = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    if (!canMutateApiKeys(req)) {
+      sendError(res, 'Insufficient permissions', 403);
+      return;
+    }
+
     const { id } = req.params;
     if (!Types.ObjectId.isValid(id)) {
       sendError(res, 'Invalid API key id', 400);

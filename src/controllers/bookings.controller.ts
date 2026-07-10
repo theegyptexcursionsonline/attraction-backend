@@ -1,8 +1,9 @@
 import { Response, NextFunction } from 'express';
+import mongoose from 'mongoose';
 import { Booking } from '../models/Booking';
 import { Attraction } from '../models/Attraction';
 import { User } from '../models/User';
-import { PromoCode } from '../models/PromoCode';
+import { PromoCode, IPromoCode } from '../models/PromoCode';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { generateBookingReference } from '../utils/hash';
@@ -13,10 +14,22 @@ import { createAdminNotifications } from '../services/notification.service';
 import { sendBookingConfirmation, sendAdminBookingNotification } from '../services/email.service';
 import { Tenant } from '../models/Tenant';
 import { escapeRegex } from '../utils/helpers';
-import { Availability } from '../models/Availability';
 import { safeEmitEvent } from '../services/webhook.service';
 import { IBooking } from '../types';
 import { isPlatformHeld, settlementHeldBy } from '../utils/settlement';
+import {
+  generateBookingAccessToken,
+  verifyBookingAccessToken,
+} from '../utils/bookingAccess';
+import {
+  BookingWithInventoryMarker,
+  bookingDate,
+  inventoryEntriesForItems,
+  releaseBookingInventory,
+  reserveInventory,
+  runBookingTransaction,
+  sessionOption,
+} from '../services/bookingInventory.service';
 
 // Compact, tenant-safe booking summary for webhook payloads. Contains only the
 // booking's own fields — never other tenants' data.
@@ -53,9 +66,53 @@ const adminRoles = ['super-admin', 'brand-admin', 'manager'];
 // Round money to 2 decimals (avoids float drift when splitting revenue).
 const round2 = (n: number): number => Math.round(n * 100) / 100;
 
+const earningsEligibilityClauses: Record<string, unknown>[] = [
+  { status: { $in: ['confirmed', 'completed'] } },
+  {
+    $or: [
+      { paymentMethod: { $ne: 'card' } },
+      { paymentMethod: 'card', paymentStatus: 'succeeded' },
+    ],
+  },
+];
+
+const isEarningsEligible = (booking: {
+  status?: string;
+  paymentMethod?: string;
+  paymentStatus?: string;
+}): boolean =>
+  ['confirmed', 'completed'].includes(booking.status || '') &&
+  (booking.paymentMethod !== 'card' || booking.paymentStatus === 'succeeded');
+
 // Payment-processing fee deducted from the supplier's net on a resale booking
 // (configurable). The supplier receives: total − reseller commission − this fee.
 const RESELLER_PAYMENT_FEE_PERCENT = 2.9;
+
+const bookingAccessTokenFromRequest = (req: AuthRequest): string | undefined => {
+  const header = req.headers['x-booking-access-token'];
+  const query = req.query.accessToken;
+  if (typeof query === 'string' && query) {
+    // Query fallback is retained for emailed links, but remove the credential
+    // before response-time request logging so it does not land in access logs.
+    const redact = (value: string): string => {
+      const parsed = new URL(value, 'http://booking.local');
+      parsed.searchParams.delete('accessToken');
+      return `${parsed.pathname}${parsed.search}`;
+    };
+    req.url = redact(req.url);
+    req.originalUrl = redact(req.originalUrl);
+  }
+  if (typeof header === 'string' && header) return header;
+  return typeof query === 'string' && query ? query : undefined;
+};
+
+const hasGuestTokenAccess = (
+  req: AuthRequest,
+  booking: Pick<IBooking, '_id' | 'reference'>
+): boolean => {
+  const token = bookingAccessTokenFromRequest(req);
+  return !!token && verifyBookingAccessToken(token, String(booking._id), booking.reference);
+};
 
 const hasTenantAccess = (req: AuthRequest, tenantId?: unknown): boolean => {
   if (!req.user || !tenantId) return false;
@@ -80,6 +137,14 @@ const canAccessBooking = (req: AuthRequest, ownerId?: unknown, tenantId?: unknow
   return ownerId !== undefined && ownerId !== null && String(ownerId) === req.user._id.toString();
 };
 
+const canReadBooking = (req: AuthRequest, ownerId?: unknown, tenantId?: unknown): boolean => {
+  if (canAccessBooking(req, ownerId, tenantId)) return true;
+  if (!req.user || !['editor', 'viewer'].includes(req.user.role)) return false;
+  return (req.user.assignedTenants || []).some(
+    (assignedTenantId) => assignedTenantId.toString() === String(tenantId)
+  );
+};
+
 export const createBooking = async (
   req: AuthRequest,
   res: Response,
@@ -88,10 +153,20 @@ export const createBooking = async (
   try {
     const { attractionId, items, guestDetails, promoCode, paymentMethod } = req.body;
 
+    if (paymentMethod && !['card', 'pay-later', 'cash'].includes(paymentMethod)) {
+      sendError(res, 'Unsupported payment method', 400);
+      return;
+    }
+
     // Verify attraction exists
     const attraction = await Attraction.findById(attractionId);
     if (!attraction) {
       sendError(res, 'Attraction not found', 404);
+      return;
+    }
+
+    if (attraction.status !== 'active') {
+      sendError(res, 'Attraction is not available for booking', 409);
       return;
     }
 
@@ -119,21 +194,32 @@ export const createBooking = async (
         throw new Error(`INVALID_OPTION:${item.optionId}`);
       }
 
-      const payableGuests = (item.quantities?.adults || 0) + (item.quantities?.children || 0);
+      const quantities = {
+        adults: item.quantities?.adults || 0,
+        children: item.quantities?.children || 0,
+        infants: item.quantities?.infants || 0,
+      };
+      const values = Object.values(quantities);
+      if (values.some((value) => !Number.isInteger(value) || value < 0 || value > 100)) {
+        throw new Error('INVALID_QUANTITY');
+      }
+
+      const payableGuests = quantities.adults + quantities.children;
+      const capacityGuests = payableGuests + quantities.infants;
       if (payableGuests <= 0) {
         throw new Error('INVALID_QUANTITY');
       }
+      if (capacityGuests > 100) throw new Error('INVALID_QUANTITY');
 
       // Reject a date in the past. The booking widget greys out past days in the UI,
       // but nothing enforced it server-side, so a stale cart or a direct API call could
       // still book "yesterday". Compare on UTC day so a same-day booking always passes.
-      if (item.date) {
-        const bookingDay = new Date(`${item.date}T00:00:00Z`);
-        const todayUtc = new Date();
-        todayUtc.setUTCHours(0, 0, 0, 0);
-        if (!Number.isNaN(bookingDay.getTime()) && bookingDay < todayUtc) {
-          throw new Error('PAST_DATE');
-        }
+      if (!item.date) throw new Error('INVALID_DATE');
+      const bookingDay = bookingDate(item.date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (bookingDay < today) {
+        throw new Error('PAST_DATE');
       }
 
       // Pick the right tier. Falls back to foreigner price if resident is requested
@@ -160,7 +246,7 @@ export const createBooking = async (
         return {
           id: addon.id,
           name: catalogAddon?.name || addon.name,
-          price: catalogAddon?.price || addon.price,
+          price: catalogAddon?.price ?? 0,
         };
       });
 
@@ -169,7 +255,7 @@ export const createBooking = async (
         optionName: option.name,
         date: item.date,
         time: item.time,
-        quantities: item.quantities,
+        quantities,
         unitPrice,
         totalPrice,
         ...(appliedCategory ? { category: appliedCategory } : {}),
@@ -197,65 +283,63 @@ export const createBooking = async (
       0
     );
 
-    const fees = Math.round(subtotal * 0.05 * 100) / 100; // 5% service fee
-    let discount = 0;
-
-    // Validate promo code
-    if (promoCode) {
-      const promo = await PromoCode.findOne({
-        code: promoCode.toUpperCase(),
-        isActive: true,
-        validFrom: { $lte: new Date() },
-        validUntil: { $gte: new Date() },
-      });
-
-      if (promo && promo.usageCount < promo.usageLimit && subtotal >= promo.minOrderAmount) {
-        if (promo.discountType === 'percentage') {
-          discount = Math.round(subtotal * (promo.discountValue / 100) * 100) / 100;
-          if (promo.maxDiscount) {
-            discount = Math.min(discount, promo.maxDiscount);
-          }
-        } else {
-          discount = promo.discountValue;
-        }
-
-        // Increment usage count
-        await PromoCode.findByIdAndUpdate(promo._id, { $inc: { usageCount: 1 } });
-      }
-    }
-
-    // Auto-apply best special offer (if better than promo code)
-    let specialOfferId = null;
-    const { SpecialOffer } = await import('../models/SpecialOffer');
-    const activeOffer = await SpecialOffer.findOne({
-      attractionId,
-      isActive: true,
-      validFrom: { $lte: new Date() },
-      validUntil: { $gte: new Date() },
-      $expr: { $lt: ['$usageCount', '$usageLimit'] },
-    }).sort({ discountValue: -1 });
-
-    if (activeOffer) {
-      let offerDiscount = 0;
-      if (activeOffer.discountType === 'percentage') {
-        offerDiscount = Math.round(subtotal * (activeOffer.discountValue / 100) * 100) / 100;
-      } else {
-        offerDiscount = activeOffer.discountValue;
-      }
-      if (offerDiscount > discount) {
-        discount = offerDiscount;
-        specialOfferId = activeOffer._id;
-        await SpecialOffer.findByIdAndUpdate(activeOffer._id, { $inc: { usageCount: 1 } });
-      }
-    }
-
-    const total = subtotal + fees - discount;
-
+    const fees = round2(subtotal * 0.05); // 5% service fee
     const tenantId = req.tenant?._id || attraction.tenantIds[0];
     if (!tenantId) {
       sendError(res, 'Attraction is not assigned to any tenant', 400);
       return;
     }
+
+    const now = new Date();
+    let promoCandidate: IPromoCode | null = null;
+    let promoDiscount = 0;
+    if (promoCode) {
+      const promoBase = {
+        code: String(promoCode).trim().toUpperCase(),
+        currency: attraction.currency.toUpperCase(),
+        isActive: true,
+        validFrom: { $lte: now },
+        validUntil: { $gte: now },
+        minOrderAmount: { $lte: subtotal },
+        $expr: { $lt: ['$usageCount', '$usageLimit'] },
+      };
+      promoCandidate = await PromoCode.findOne({ ...promoBase, tenantId });
+      if (!promoCandidate) {
+        promoCandidate = await PromoCode.findOne({
+          ...promoBase,
+          $or: [{ tenantId: null }, { tenantId: { $exists: false } }],
+        });
+      }
+      if (!promoCandidate) throw new Error('INVALID_PROMO');
+
+      promoDiscount = promoCandidate.discountType === 'percentage'
+        ? round2(subtotal * (promoCandidate.discountValue / 100))
+        : promoCandidate.discountValue;
+      if (promoCandidate.maxDiscount !== undefined) {
+        promoDiscount = Math.min(promoDiscount, promoCandidate.maxDiscount);
+      }
+    }
+
+    // Auto-apply best special offer (if better than promo code)
+    const { SpecialOffer } = await import('../models/SpecialOffer');
+    const activeOffer = await SpecialOffer.findOne({
+      attractionId,
+      isActive: true,
+      validFrom: { $lte: now },
+      validUntil: { $gte: now },
+      $expr: { $lt: ['$usageCount', '$usageLimit'] },
+    }).sort({ discountValue: -1 });
+
+    let offerDiscount = 0;
+    if (activeOffer) {
+      offerDiscount = activeOffer.discountType === 'percentage'
+        ? round2(subtotal * (activeOffer.discountValue / 100))
+        : activeOffer.discountValue;
+    }
+
+    const useSpecialOffer = !!activeOffer && offerDiscount > promoDiscount;
+    const discount = round2(Math.min(Math.max(useSpecialOffer ? offerDiscount : promoDiscount, 0), subtotal));
+    const total = round2(Math.max(subtotal + fees - discount, 0));
 
     // Reseller revenue split. When this booking is made on a reseller's site
     // (sellerTenant) for an attraction owned by a different supplier tenant, we
@@ -301,25 +385,85 @@ export const createBooking = async (
       };
     }
 
-    // Create booking
-    const booking = await Booking.create({
-      reference: generateBookingReference(),
-      userId: req.user?._id,
-      tenantId,
+    const reference = generateBookingReference();
+    const bookingId = new mongoose.Types.ObjectId();
+    const guestAccessToken = generateBookingAccessToken(String(bookingId), reference);
+    const inventoryEntries = inventoryEntriesForItems(
       attractionId,
-      items: normalizedItems,
-      guestDetails,
-      subtotal,
-      fees,
-      discount,
-      total,
-      currency: attraction.currency,
-      promoCode,
-      specialOfferId,
-      paymentMethod: paymentMethod || 'pay-later',
-      status: paymentMethod === 'pay-later' ? 'confirmed' : 'pending',
-      paymentStatus: paymentMethod === 'pay-later' ? 'pending' : 'pending',
-      ...resaleFields,
+      normalizedItems,
+      attraction.availability?.type === 'time-slots'
+    );
+
+    const booking = await runBookingTransaction<IBooking>(async (session) => {
+      await reserveInventory(inventoryEntries, session);
+
+      if (useSpecialOffer && activeOffer) {
+        const consumed = await SpecialOffer.findOneAndUpdate(
+          {
+            _id: activeOffer._id,
+            isActive: true,
+            validFrom: { $lte: now },
+            validUntil: { $gte: now },
+            $expr: { $lt: ['$usageCount', '$usageLimit'] },
+          },
+          { $inc: { usageCount: 1 } },
+          { ...sessionOption(session), new: true }
+        );
+        if (!consumed) throw new Error('DISCOUNT_UNAVAILABLE');
+      } else if (promoCandidate) {
+        const consumed = await PromoCode.findOneAndUpdate(
+          {
+            _id: promoCandidate._id,
+            currency: attraction.currency.toUpperCase(),
+            isActive: true,
+            validFrom: { $lte: now },
+            validUntil: { $gte: now },
+            $expr: { $lt: ['$usageCount', '$usageLimit'] },
+          },
+          { $inc: { usageCount: 1 } },
+          { ...sessionOption(session), new: true }
+        );
+        if (!consumed) throw new Error('DISCOUNT_UNAVAILABLE');
+      }
+
+      const payload = {
+        _id: bookingId,
+        reference,
+        inventoryReservedAt: new Date(),
+        inventoryReservations: inventoryEntries.map((entry) => ({
+          date: entry.date,
+          time: entry.time,
+          guests: entry.guests,
+        })),
+        userId: req.user?._id,
+        tenantId,
+        attractionId,
+        items: normalizedItems,
+        guestDetails,
+        subtotal,
+        fees,
+        discount,
+        total,
+        currency: attraction.currency,
+        promoCode: promoCandidate && !useSpecialOffer ? promoCandidate.code : undefined,
+        specialOfferId: useSpecialOffer ? activeOffer?._id : undefined,
+        paymentMethod: paymentMethod || 'pay-later',
+        status: paymentMethod === 'card' ? 'pending' : 'confirmed',
+        paymentStatus: 'pending',
+        ...resaleFields,
+      };
+
+      const created = session
+        ? (await Booking.create([payload], { session }))[0]
+        : await Booking.create(payload);
+      if (req.user) {
+        await User.findByIdAndUpdate(
+          req.user._id,
+          { $inc: { totalBookings: 1 } },
+          sessionOption(session)
+        );
+      }
+      return created;
     });
 
     // Outbound webhooks: booking.created always; booking.confirmed when the
@@ -327,36 +471,6 @@ export const createBooking = async (
     safeEmitEvent(tenantId, 'booking.created', bookingEventPayload(booking));
     if (booking.status === 'confirmed') {
       safeEmitEvent(tenantId, 'booking.confirmed', bookingEventPayload(booking));
-    }
-
-    // Update user stats if logged in
-    if (req.user) {
-      await User.findByIdAndUpdate(req.user._id, {
-        $inc: { totalBookings: 1, totalSpent: total },
-      });
-    }
-
-    // Decrement availability for booked slots
-    for (const item of items) {
-      if (item.date) {
-        const bookingDate = new Date(item.date);
-        bookingDate.setHours(0, 0, 0, 0);
-        const totalGuests = (item.quantities?.adults || 0) + (item.quantities?.children || 0);
-
-        if (item.time) {
-          await Availability.findOneAndUpdate(
-            { attractionId, date: bookingDate, 'timeSlots.time': item.time },
-            { $inc: { 'timeSlots.$.booked': totalGuests } },
-            { upsert: false }
-          );
-        } else {
-          await Availability.findOneAndUpdate(
-            { attractionId, date: bookingDate },
-            { $inc: { allDayBooked: totalGuests } },
-            { upsert: false }
-          );
-        }
-      }
     }
 
     // Send notification to admins
@@ -414,6 +528,7 @@ export const createBooking = async (
           guestDetails.email,
           {
             reference: booking.reference,
+            guestAccessToken,
             attractionTitle: attraction.title,
             date: firstItem?.date || '',
             time: firstItem?.time,
@@ -467,7 +582,15 @@ export const createBooking = async (
      }
     })();
 
-    sendSuccess(res, booking, 'Booking created successfully', 201);
+    const bookingResponse = typeof (booking as any).toJSON === 'function'
+      ? (booking as any).toJSON()
+      : { ...(booking as any) };
+    sendSuccess(
+      res,
+      { ...bookingResponse, guestAccessToken },
+      'Booking created successfully',
+      201
+    );
   } catch (error) {
     if (error instanceof Error && error.message.startsWith('INVALID_OPTION:')) {
       sendError(res, 'Invalid pricing option selected', 400);
@@ -481,8 +604,74 @@ export const createBooking = async (
       sendError(res, 'Cannot book a date in the past', 400);
       return;
     }
+    if (error instanceof Error && error.message === 'INVALID_DATE') {
+      sendError(res, 'A valid booking date is required', 400);
+      return;
+    }
+    if (error instanceof Error && error.message === 'INVALID_PROMO') {
+      sendError(res, 'Promo code is invalid for this site, currency, or order', 400);
+      return;
+    }
+    if (error instanceof Error && error.message === 'DISCOUNT_UNAVAILABLE') {
+      sendError(res, 'The selected discount is no longer available', 409);
+      return;
+    }
+    if (error instanceof Error && error.message === 'SLOT_UNAVAILABLE') {
+      sendError(res, 'The selected date or time is blocked, full, or unavailable', 409);
+      return;
+    }
     next(error);
   }
+};
+
+const confirmationSafeBooking = (booking: IBooking): Record<string, unknown> => {
+  const raw = typeof (booking as any).toObject === 'function'
+    ? (booking as any).toObject()
+    : booking as any;
+  const attraction = raw.attractionId && typeof raw.attractionId === 'object'
+    ? raw.attractionId
+    : null;
+  const tenant = raw.tenantId && typeof raw.tenantId === 'object'
+    ? raw.tenantId
+    : null;
+
+  return {
+    id: raw.reference,
+    reference: raw.reference,
+    status: raw.status,
+    paymentStatus: raw.paymentStatus,
+    paymentMethod: raw.paymentMethod,
+    items: (raw.items || []).map((item: Record<string, any>) => ({
+      optionName: item.optionName,
+      date: item.date,
+      time: item.time,
+      quantities: item.quantities,
+      unitPrice: item.unitPrice,
+      totalPrice: item.totalPrice,
+      category: item.category,
+      addons: (item.addons || []).map((addon: Record<string, unknown>) => ({
+        name: addon.name,
+        price: addon.price,
+      })),
+    })),
+    subtotal: raw.subtotal,
+    fees: raw.fees,
+    discount: raw.discount,
+    total: raw.total,
+    currency: raw.currency,
+    attraction: attraction
+      ? {
+          title: attraction.title,
+          slug: attraction.slug,
+          images: attraction.images,
+          destination: attraction.destination,
+        }
+      : undefined,
+    tenant: tenant ? { name: tenant.name, logo: tenant.logo } : undefined,
+    ticketAvailable: raw.status === 'confirmed',
+    createdAt: raw.createdAt,
+    updatedAt: raw.updatedAt,
+  };
 };
 
 export const getBookingByReference = async (
@@ -493,18 +682,29 @@ export const getBookingByReference = async (
   try {
     const { reference } = req.params;
 
-    const booking = await Booking.findOne({ reference })
-      .populate('attractionId', 'title slug images destination')
-      .populate('tenantId', 'name logo');
+    const booking = await Booking.findOne({ reference });
 
     if (!booking) {
       sendError(res, 'Booking not found', 404);
       return;
     }
 
-    // Reference-based lookup is public — the reference itself acts as auth
-    // (only the booker and admin know the reference)
-    sendSuccess(res, booking);
+    const hasAuthenticatedAccess = canReadBooking(req, booking.userId, booking.tenantId);
+    const suppliedGuestToken = bookingAccessTokenFromRequest(req);
+    if (!req.user && !suppliedGuestToken) {
+      sendError(res, 'Booking access token or authentication is required', 401);
+      return;
+    }
+    if (!hasAuthenticatedAccess && !hasGuestTokenAccess(req, booking)) {
+      sendError(res, 'Not authorized to access this booking', 403);
+      return;
+    }
+
+    await booking.populate([
+      { path: 'attractionId', select: 'title slug images destination' },
+      { path: 'tenantId', select: 'name logo' },
+    ]);
+    sendSuccess(res, confirmationSafeBooking(booking));
   } catch (error) {
     next(error);
   }
@@ -572,21 +772,94 @@ export const cancelBooking = async (
       return;
     }
 
-    // If payment was made, refund it on the tenant's own Stripe account.
-    if (booking.paymentStatus === 'succeeded' && booking.stripePaymentIntentId) {
+    let completedRefund: { id: string; status: string; amount: number } | undefined;
+    // A collected payment must be refunded successfully before cancellation can
+    // change state or release inventory. Missing gateway data fails closed.
+    if (booking.paymentStatus === 'succeeded') {
+      if (booking.paymentMethod !== 'card' || !booking.stripePaymentIntentId) {
+        sendError(res, 'Collected payment requires a verified gateway refund before cancellation', 409);
+        return;
+      }
       const stripeCfg = await getTenantStripeConfig(booking.tenantId);
-      await createRefund(stripeCfg?.secretKey, booking.stripePaymentIntentId, Math.round(booking.total * 100));
-      booking.paymentStatus = 'refunded';
-      booking.status = 'refunded';
+      if (!stripeCfg?.enabled || !stripeCfg.secretKey) {
+        sendError(res, 'Cancellation unavailable because the payment gateway is not configured', 503);
+        return;
+      }
+      const refund = await createRefund(
+        stripeCfg.secretKey,
+        booking.stripePaymentIntentId,
+        Math.round(booking.total * 100),
+        { idempotencyKey: `booking-cancel-${booking._id}` }
+      );
+      if (!refund.id || refund.status !== 'succeeded') {
+        sendError(res, 'Stripe has not completed the cancellation refund', 409);
+        return;
+      }
+      completedRefund = refund;
     }
 
-    booking.status = 'cancelled';
-    await booking.save();
+    const cancelledBooking = await runBookingTransaction<BookingWithInventoryMarker>(
+      async (session) => {
+        const current = await Booking.findOne(
+          {
+            _id: booking._id,
+            status: { $in: ['pending', 'confirmed'] },
+            inventoryReleasedAt: { $exists: false },
+          },
+          null,
+          sessionOption(session)
+        ) as BookingWithInventoryMarker | null;
+        if (!current) throw new Error('CANCELLATION_CONFLICT');
 
-    safeEmitEvent(booking.tenantId, 'booking.cancelled', bookingEventPayload(booking));
+        await releaseBookingInventory(current, session);
+        if (completedRefund) {
+          current.paymentStatus = 'refunded';
+          current.refundedAmount = current.total;
+          current.refunds = [
+            ...(current.refunds || []).filter(
+              (refund) => refund.providerRefundId !== completedRefund?.id
+            ),
+            {
+              providerRefundId: completedRefund.id,
+              amount: completedRefund.amount / 100,
+              status: 'succeeded',
+              createdAt: new Date(),
+            },
+          ];
+          if (current.userId) {
+            await User.findByIdAndUpdate(
+              current.userId,
+              { $inc: { totalSpent: -current.total } },
+              sessionOption(session)
+            );
+          }
+        }
+        current.status = 'cancelled';
+        await current.save(sessionOption(session));
+        return current;
+      }
+    );
 
-    sendSuccess(res, booking, 'Booking cancelled successfully');
+    safeEmitEvent(
+      cancelledBooking.tenantId,
+      'booking.cancelled',
+      bookingEventPayload(cancelledBooking)
+    );
+
+    sendSuccess(res, cancelledBooking, 'Booking cancelled successfully');
   } catch (error) {
+    if (error instanceof Error && error.message === 'INVENTORY_RELEASE_FAILED') {
+      sendError(res, 'Cancellation could not safely restore inventory', 409);
+      return;
+    }
+    if (error instanceof Error && error.message === 'CANCELLATION_CONFLICT') {
+      sendError(res, 'Booking was already cancelled or its inventory was released', 409);
+      return;
+    }
+    if (error instanceof Error && error.message === 'REFUND_NOT_COMPLETED') {
+      sendError(res, 'Refund has not completed; booking and inventory were not changed', 409);
+      return;
+    }
     next(error);
   }
 };
@@ -599,18 +872,24 @@ export const getBookingTicket = async (
   try {
     const { id } = req.params;
 
-    const booking = await Booking.findById(id)
-      .populate('attractionId')
-      .populate('tenantId', 'name theme logo');
+    const booking = mongoose.Types.ObjectId.isValid(id)
+      ? await Booking.findById(id)
+      : await Booking.findOne({ reference: id });
 
     if (!booking) {
       sendError(res, 'Booking not found', 404);
       return;
     }
 
-    // Allow public access when user is not authenticated (optionalAuth)
-    // but still gate for authenticated users who don't own the booking
-    if (req.user && !canAccessBooking(req, booking.userId, booking.tenantId)) {
+    const suppliedGuestToken = bookingAccessTokenFromRequest(req);
+    if (!req.user && !suppliedGuestToken) {
+      sendError(res, 'Booking access token or authentication is required', 401);
+      return;
+    }
+    if (
+      !canReadBooking(req, booking.userId, booking.tenantId) &&
+      !hasGuestTokenAccess(req, booking)
+    ) {
       sendError(res, 'Not authorized to access this ticket', 403);
       return;
     }
@@ -623,6 +902,10 @@ export const getBookingTicket = async (
 
     // Generate and return PDF ticket
     try {
+      await booking.populate([
+        { path: 'attractionId' },
+        { path: 'tenantId', select: 'name theme logo' },
+      ]);
       const attraction = booking.attractionId as any;
       const tenant = booking.tenantId as any;
       const firstItem = booking.items[0] as any;
@@ -781,6 +1064,15 @@ export const updateBookingStatus = async (
     const { id } = req.params;
     const { status, paymentStatus } = req.body;
 
+    if (paymentStatus !== undefined) {
+      sendError(res, 'Payment status is controlled by the payment provider', 400);
+      return;
+    }
+    if (status === 'cancelled' || status === 'refunded') {
+      sendError(res, 'Use the cancellation workflow for cancelled or refunded bookings', 400);
+      return;
+    }
+
     const booking = await Booking.findById(id);
 
     if (!booking) {
@@ -793,13 +1085,18 @@ export const updateBookingStatus = async (
       return;
     }
 
+    if (
+      (status === 'confirmed' || status === 'completed') &&
+      booking.paymentMethod === 'card' &&
+      booking.paymentStatus !== 'succeeded'
+    ) {
+      sendError(res, 'Card bookings can only be confirmed after provider-verified payment', 409);
+      return;
+    }
+
     if (status) {
       booking.status = status;
     }
-    if (paymentStatus) {
-      booking.paymentStatus = paymentStatus;
-    }
-
     await booking.save();
 
     sendSuccess(res, booking, 'Booking updated successfully');
@@ -852,7 +1149,20 @@ export const getBookingStats = async (
             // Headline revenue is "booked" so pre-launch/pay-later bookings aren't
             // silently shown as $0.
             bookedRevenue: { $sum: { $cond: [{ $in: ['$status', ['confirmed', 'completed']] }, '$total', 0] } },
-            collectedRevenue: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'succeeded'] }, '$total', 0] } },
+            collectedRevenue: {
+              $sum: {
+                $cond: [
+                  {
+                    $and: [
+                      { $eq: ['$paymentStatus', 'succeeded'] },
+                      { $in: ['$status', ['confirmed', 'completed']] },
+                    ],
+                  },
+                  '$total',
+                  0,
+                ],
+              },
+            },
           },
         },
       ]),
@@ -893,18 +1203,21 @@ export const getResellerEarnings = async (
     }
 
     const scope = (field: 'supplierTenantId' | 'sellerTenantId'): Record<string, unknown> => {
-      const match: Record<string, unknown> = { isResale: true };
-      if (myTenants) match[field] = { $in: myTenants };
-      return match;
+      const tenantScope: Record<string, unknown> = { isResale: true };
+      if (myTenants) tenantScope[field] = { $in: myTenants };
+      return { $and: [tenantScope, ...earningsEligibilityClauses] };
     };
 
-    const recentMatch: Record<string, unknown> = { isResale: true };
+    const recentScope: Record<string, unknown> = { isResale: true };
     if (myTenants) {
-      recentMatch.$or = [
+      recentScope.$or = [
         { supplierTenantId: { $in: myTenants } },
         { sellerTenantId: { $in: myTenants } },
       ];
     }
+    const recentMatch: Record<string, unknown> = {
+      $and: [recentScope, ...earningsEligibilityClauses],
+    };
 
     const [asSupplierAgg, asSellerAgg, recent] = await Promise.all([
       Booking.aggregate([
@@ -984,8 +1297,11 @@ export const getSettlement = async (
       myTenants = req.tenant ? [req.tenant._id] : (req.user?.assignedTenants || []);
     }
 
-    const match: Record<string, unknown> = { isResale: true };
-    if (myTenants) match.supplierTenantId = { $in: myTenants };
+    const settlementScope: Record<string, unknown> = { isResale: true };
+    if (myTenants) settlementScope.supplierTenantId = { $in: myTenants };
+    const match: Record<string, unknown> = {
+      $and: [settlementScope, ...earningsEligibilityClauses],
+    };
 
     const bookings = await Booking.find(match)
       .populate('attractionId', 'title')
@@ -1103,6 +1419,10 @@ export const updateSettlement = async (
     const booking = await Booking.findById(id);
     if (!booking) { sendError(res, 'Booking not found', 404); return; }
     if (!booking.isResale) { sendError(res, 'Not a resale booking', 400); return; }
+    if (!isEarningsEligible(booking)) {
+      sendError(res, 'Only eligible confirmed or completed revenue can be settled', 400);
+      return;
+    }
     if (!canSettle(req, booking)) {
       sendError(res, 'You can only settle earnings for your own tours', 403);
       return;
@@ -1147,21 +1467,27 @@ export const settleBatch = async (
       return;
     }
 
-    const match: Record<string, unknown> = { _id: { $in: ids }, isResale: true };
+    const matchClauses: Record<string, unknown>[] = [
+      { _id: { $in: ids }, isResale: true },
+      ...earningsEligibilityClauses,
+    ];
     if (req.user?.role !== 'super-admin') {
       const scope = req.tenant ? [req.tenant._id] : (req.user?.assignedTenants || []);
-      match.supplierTenantId = { $in: scope };
+      matchClauses.push({ supplierTenantId: { $in: scope } });
       // Suppliers may self-settle only bookings they hold the money for
       // (cash-on-arrival or their own gateway); platform-held card bookings are
       // silently excluded here and left for a super-admin.
       const ownGatewayTenants = await Tenant.find(
         { _id: { $in: scope }, 'paymentSettings.ownPaymentGateway': true },
       ).distinct('_id');
-      match.$or = [
-        { paymentMethod: { $ne: 'card' } },
-        ...(ownGatewayTenants.length ? [{ supplierTenantId: { $in: ownGatewayTenants } }] : []),
-      ];
+      matchClauses.push({
+        $or: [
+          { paymentMethod: { $ne: 'card' } },
+          ...(ownGatewayTenants.length ? [{ supplierTenantId: { $in: ownGatewayTenants } }] : []),
+        ],
+      });
     }
+    const match: Record<string, unknown> = { $and: matchClauses };
 
     const update: Record<string, unknown> = status === 'settled'
       ? { $set: { settlementStatus: 'settled', settledAt: new Date() } }

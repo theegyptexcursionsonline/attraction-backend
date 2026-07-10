@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { env } from '../config';
 import authRoutes from './auth.routes';
 import attractionsRoutes from './attractions.routes';
 import bookingsRoutes from './bookings.routes';
@@ -45,23 +44,6 @@ router.use('/stats', statsRoutes);
 // API Documentation - Homepage (HTML)
 router.get('/', (req, res) => {
   const baseUrl = `${req.protocol}://${req.get('host')}/api`;
-  const testAccountsSection = env.isDev
-    ? `
-    <div class="test-accounts">
-      <h3>Test Accounts (Development only)</h3>
-      <div class="account">
-        <span>Admin:</span>
-        <code>admin@attractions-network.com</code>
-        <code>Admin@123456</code>
-      </div>
-      <div class="account">
-        <span>Customer:</span>
-        <code>customer@example.com</code>
-        <code>Customer@123</code>
-      </div>
-    </div>
-    `
-    : '';
   
   const html = `
 <!DOCTYPE html>
@@ -87,10 +69,6 @@ router.get('/', (req, res) => {
     .quick-link:hover { background: #334155; border-color: #60a5fa; }
     .quick-link span { display: block; color: #94a3b8; font-size: 0.875rem; margin-top: 0.25rem; }
     
-    .test-accounts { background: #1e293b; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 2rem; border: 1px solid #334155; }
-    .test-accounts h3 { color: #fff; margin-bottom: 1rem; }
-    .account { display: flex; gap: 2rem; margin-bottom: 0.5rem; }
-    .account code { background: #0f172a; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-family: monospace; }
     
     .section { margin-bottom: 2rem; }
     .section-title { font-size: 1.5rem; color: #fff; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #334155; display: flex; align-items: center; gap: 0.5rem; }
@@ -139,8 +117,6 @@ router.get('/', (req, res) => {
       <a href="${baseUrl}/attractions" class="quick-link">Attractions<span>GET /api/attractions</span></a>
       <a href="${baseUrl}/attractions/featured" class="quick-link">Featured<span>GET /api/attractions/featured</span></a>
     </div>
-    
-    ${testAccountsSection}
     
     <div class="section">
       <h2 class="section-title"><span class="icon">🔐</span> Authentication</h2>

@@ -4,7 +4,30 @@ import { Tenant } from '../models/Tenant';
 import { AuthRequest } from '../types';
 import { sendError } from '../utils/response';
 
-const PUBLIC_TENANT_STATUSES = ['active', 'coming_soon', 'pending'] as const;
+// Pending tenants are not public storefronts. Keeping them out here prevents
+// an explicit tenant header from exposing unpublished catalog data.
+const PUBLIC_TENANT_STATUSES = ['active', 'coming_soon'] as const;
+const TENANT_SCOPED_ADMIN_ROLES = ['brand-admin', 'manager', 'editor', 'viewer'];
+
+const canUseTenant = (req: AuthRequest, tenantId: string): boolean => {
+  if (!req.user || req.user.role === 'super-admin') return true;
+  if (!TENANT_SCOPED_ADMIN_ROLES.includes(req.user.role)) return true;
+
+  return (req.user.assignedTenants || []).some((assignedTenantId) =>
+    assignedTenantId.toString() === tenantId
+  );
+};
+
+const rejectUnassignedTenant = (
+  req: AuthRequest,
+  res: Response,
+  tenantId: string
+): boolean => {
+  if (canUseTenant(req, tenantId)) return false;
+
+  sendError(res, 'Access denied to this tenant', 403);
+  return true;
+};
 
 export const resolveTenant = async (
   req: AuthRequest,
@@ -58,6 +81,8 @@ export const resolveTenant = async (
       return;
     }
 
+    if (rejectUnassignedTenant(req, res, tenant._id.toString())) return;
+
     req.tenant = tenant;
     next();
   } catch (error) {
@@ -103,13 +128,18 @@ export const optionalTenant = async (
         status: { $in: PUBLIC_TENANT_STATUSES },
       });
 
-      if (tenant) {
-        req.tenant = tenant;
+      if (!tenant) {
+        sendError(res, 'Tenant not found', 404);
+        return;
       }
+
+      if (rejectUnassignedTenant(req, res, tenant._id.toString())) return;
+
+      req.tenant = tenant;
     }
 
     next();
-  } catch {
-    next();
+  } catch (error) {
+    next(error);
   }
 };

@@ -8,7 +8,7 @@ import {
   updateOffer,
   deleteOffer,
 } from '../controllers/specialOffers.controller';
-import { authenticate, requireAdmin } from '../middleware/auth.middleware';
+import { authenticate, requireAdmin, requireRole } from '../middleware/auth.middleware';
 import { validateQuery } from '../middleware/validate.middleware';
 import { paginationSchema } from '../utils/validators';
 
@@ -21,8 +21,8 @@ router.get('/attraction/:attractionId', getOfferForAttraction);
 // Admin routes
 router.get('/stats', authenticate, requireAdmin, getOfferStats);
 router.get('/', authenticate, requireAdmin, validateQuery(paginationSchema), getAllOffers);
-router.post('/', authenticate, requireAdmin, createOffer);
-router.patch('/:id', authenticate, requireAdmin, updateOffer);
-router.delete('/:id', authenticate, requireAdmin, deleteOffer);
+router.post('/', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), createOffer);
+router.patch('/:id', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), updateOffer);
+router.delete('/:id', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), deleteOffer);
 
 export default router;

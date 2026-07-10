@@ -106,6 +106,17 @@ const bookingSchema = new Schema<IBooking>(
     stripePaymentIntentId: {
       type: String,
     },
+    refundedAmount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    refunds: [{
+      providerRefundId: { type: String, required: true },
+      amount: { type: Number, required: true, min: 0 },
+      status: { type: String, enum: ['pending', 'succeeded', 'failed'], required: true },
+      createdAt: { type: Date, default: Date.now },
+    }],
     ticketPdfUrl: {
       type: String,
     },
@@ -157,6 +168,25 @@ const bookingSchema = new Schema<IBooking>(
     },
   }
 );
+
+bookingSchema.add({
+  // Present only when this booking actually incremented an availability row.
+  // Legacy bookings have no marker and therefore must not decrement inventory.
+  inventoryReservedAt: {
+    type: Date,
+  },
+  inventoryReservations: [{
+    _id: false,
+    date: { type: Date, required: true },
+    time: { type: String },
+    guests: { type: Number, required: true, min: 1 },
+  }],
+  // Makes inventory release idempotent across cancellation and payment-failure
+  // cleanup paths.
+  inventoryReleasedAt: {
+    type: Date,
+  },
+} as any);
 
 // Generate booking reference before saving
 bookingSchema.pre('save', function (this: IBooking, next) {

@@ -1,15 +1,19 @@
 import { Response, NextFunction, Request } from 'express';
+import type Stripe from 'stripe';
 import { Booking } from '../models/Booking';
 import { Attraction } from '../models/Attraction';
 import { Tenant } from '../models/Tenant';
+import { User } from '../models/User';
 import { sendSuccess, sendError } from '../utils/response';
 import { AuthRequest } from '../types';
 import {
   createPaymentIntent as stripeCreatePaymentIntent,
-  retrievePaymentIntentStatus,
+  retrievePaymentIntent,
+  retrieveSucceededRefundAmount,
   createRefund as stripeCreateRefund,
   constructWebhookEvent,
 } from '../services/stripe.service';
+import type { PaymentIntentResult } from '../services/stripe.service';
 import {
   evaluateStripeConfirmation,
   getTenantStripeConfig,
@@ -20,6 +24,8 @@ import { generateTicketPdf } from '../services/pdf.service';
 import { sendBookingConfirmation, sendAdminBookingNotification } from '../services/email.service';
 import { safeEmitEvent, recordInboundEvent } from '../services/webhook.service';
 import { env } from '../config/env';
+import { generateBookingAccessToken, verifyBookingAccessToken } from '../utils/bookingAccess';
+import { failCardBookingAndReleaseInventory } from '../services/bookingInventory.service';
 
 // Compact, tenant-safe booking summary for webhook payloads (the booking's own
 // fields only — never cross-tenant data).
@@ -83,12 +89,66 @@ const canAccessBooking = (req: AuthRequest, ownerId?: unknown, tenantId?: unknow
 };
 
 const canGuestAccessBooking = (
-  bookingEmail?: string,
-  suppliedEmail?: unknown
+  booking: { _id: unknown; reference: string; guestDetails?: { email?: string } },
+  suppliedEmail?: unknown,
+  suppliedToken?: unknown
 ): boolean =>
   typeof suppliedEmail === 'string' &&
-  !!bookingEmail &&
-  bookingEmail.trim().toLowerCase() === suppliedEmail.trim().toLowerCase();
+  !!booking.guestDetails?.email &&
+  booking.guestDetails.email.trim().toLowerCase() === suppliedEmail.trim().toLowerCase() &&
+  verifyBookingAccessToken(suppliedToken, String(booking._id), booking.reference);
+
+type PaymentBinding = {
+  _id: unknown;
+  tenantId: unknown;
+  stripePaymentIntentId?: string;
+  total: number;
+  currency: string;
+};
+
+const bookingAmountMinor = (booking: Pick<PaymentBinding, 'total'>): number =>
+  Math.round(booking.total * 100);
+
+const paymentBindingError = (
+  booking: PaymentBinding,
+  intent: PaymentIntentResult,
+  requireSucceeded: boolean
+): string | null => {
+  if (!booking.stripePaymentIntentId || intent.id !== booking.stripePaymentIntentId) {
+    return 'Stripe PaymentIntent does not match this booking';
+  }
+  if (intent.metadata.bookingId !== String(booking._id)) {
+    return 'Stripe PaymentIntent booking metadata does not match';
+  }
+  if (intent.metadata.tenantId !== String(booking.tenantId)) {
+    return 'Stripe PaymentIntent tenant metadata does not match';
+  }
+  if (intent.amount !== bookingAmountMinor(booking)) {
+    return 'Stripe PaymentIntent amount does not match this booking';
+  }
+  if (intent.currency.toLowerCase() !== booking.currency.toLowerCase()) {
+    return 'Stripe PaymentIntent currency does not match this booking';
+  }
+  if (requireSucceeded && intent.status !== 'succeeded') {
+    return 'Payment has not completed yet';
+  }
+  if (requireSucceeded && intent.amountReceived !== bookingAmountMinor(booking)) {
+    return 'Stripe amount received does not match this booking';
+  }
+  return null;
+};
+
+const paymentIntentResponse = (
+  booking: Pick<PaymentBinding, 'total' | 'currency'>,
+  intent: PaymentIntentResult,
+  publishableKey: string
+) => ({
+  clientSecret: intent.clientSecret,
+  paymentIntentId: intent.id,
+  publishableKey,
+  amount: booking.total,
+  currency: booking.currency,
+});
 
 export const createPaymentIntent = async (
   req: AuthRequest,
@@ -96,7 +156,7 @@ export const createPaymentIntent = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { bookingId, guestEmail } = req.body;
+    const { bookingId, guestEmail, guestAccessToken } = req.body;
 
     if (!req.user && !guestEmail) {
       sendError(res, 'Authentication or guest email is required', 401);
@@ -112,13 +172,13 @@ export const createPaymentIntent = async (
 
     if (
       !canAccessBooking(req, booking.userId, booking.tenantId) &&
-      !canGuestAccessBooking(booking.guestDetails?.email, guestEmail)
+      !canGuestAccessBooking(booking, guestEmail, guestAccessToken)
     ) {
       sendError(res, 'Not authorized to process payment for this booking', 403);
       return;
     }
 
-    if (booking.paymentStatus !== 'pending') {
+    if (!['pending', 'processing', 'failed'].includes(booking.paymentStatus)) {
       sendError(res, 'Payment already processed', 400);
       return;
     }
@@ -126,34 +186,127 @@ export const createPaymentIntent = async (
     // Resolve THIS booking's tenant's own Stripe gateway. Online payment is only
     // available when that site's admin has configured + enabled their keys.
     const stripeCfg = await getTenantStripeConfig(booking.tenantId);
-    if (!stripeCfg || !stripeCfg.enabled || !stripeCfg.secretKey) {
+    if (
+      !stripeCfg ||
+      !stripeCfg.enabled ||
+      !stripeCfg.secretKey ||
+      !stripeCfg.publishableKey
+    ) {
       sendError(res, 'Online payment is not enabled for this site', 400);
+      return;
+    }
+
+    // A reload or retry must resume the already-bound PaymentIntent rather than
+    // create another possible charge for the same booking.
+    if (booking.stripePaymentIntentId) {
+      const existingIntent = await retrievePaymentIntent(
+        stripeCfg.secretKey,
+        booking.stripePaymentIntentId
+      );
+      if (!existingIntent) {
+        sendError(res, 'The existing Stripe payment session could not be retrieved', 502);
+        return;
+      }
+      const bindingError = paymentBindingError(booking, existingIntent, false);
+      if (bindingError) {
+        sendError(res, bindingError, 409);
+        return;
+      }
+      if (existingIntent.status === 'canceled') {
+        sendError(res, 'The existing Stripe payment session was cancelled', 409);
+        return;
+      }
+
+      sendSuccess(
+        res,
+        paymentIntentResponse(booking, existingIntent, stripeCfg.publishableKey),
+        'Payment session resumed'
+      );
       return;
     }
 
     const paymentIntent = await stripeCreatePaymentIntent(
       stripeCfg.secretKey,
-      Math.round(booking.total * 100),
+      bookingAmountMinor(booking),
       booking.currency.toLowerCase(),
       {
         bookingId: booking._id.toString(),
         bookingReference: booking.reference,
         tenantId: String(booking.tenantId),
+      },
+      {
+        // Stripe returns the same intent when concurrent/retried requests use
+        // this key, including a retry after Stripe succeeded but MongoDB did not.
+        idempotencyKey: `booking:${booking._id}:payment:${bookingAmountMinor(booking)}:${booking.currency.toLowerCase()}`,
       }
     );
 
-    // Update booking with payment intent ID
-    booking.stripePaymentIntentId = paymentIntent.id;
-    booking.paymentStatus = 'processing';
-    await booking.save();
+    const createdBindingError = paymentBindingError(
+      {
+        _id: booking._id,
+        tenantId: booking.tenantId,
+        stripePaymentIntentId: paymentIntent.id,
+        total: booking.total,
+        currency: booking.currency,
+      },
+      paymentIntent,
+      false
+    );
+    if (createdBindingError) {
+      sendError(res, `Stripe created an invalid payment session: ${createdBindingError}`, 502);
+      return;
+    }
 
-    sendSuccess(res, {
-      clientSecret: paymentIntent.clientSecret,
-      paymentIntentId: paymentIntent.id,
-      publishableKey: stripeCfg.publishableKey, // the checkout inits Stripe.js with this
-      amount: booking.total,
-      currency: booking.currency,
-    });
+    // Bind the provider intent exactly once. If another request won the race,
+    // deterministic Stripe idempotency means it bound this same intent.
+    const claimed = await Booking.findOneAndUpdate(
+      {
+        _id: booking._id,
+        paymentStatus: { $in: ['pending', 'failed'] },
+        $or: [
+          { stripePaymentIntentId: { $exists: false } },
+          { stripePaymentIntentId: null },
+          { stripePaymentIntentId: '' },
+        ],
+      },
+      {
+        $set: {
+          stripePaymentIntentId: paymentIntent.id,
+          paymentStatus: 'processing',
+        },
+      },
+      { new: true }
+    );
+
+    if (!claimed) {
+      const latest = await Booking.findById(booking._id);
+      if (!latest?.stripePaymentIntentId) {
+        sendError(res, 'Payment session could not be bound to this booking', 409);
+        return;
+      }
+      const latestIntent = await retrievePaymentIntent(stripeCfg.secretKey, latest.stripePaymentIntentId);
+      if (!latestIntent) {
+        sendError(res, 'The existing Stripe payment session could not be retrieved', 502);
+        return;
+      }
+      const bindingError = paymentBindingError(latest, latestIntent, false);
+      if (bindingError) {
+        sendError(res, bindingError, 409);
+        return;
+      }
+      sendSuccess(
+        res,
+        paymentIntentResponse(latest, latestIntent, stripeCfg.publishableKey),
+        'Payment session resumed'
+      );
+      return;
+    }
+
+    sendSuccess(
+      res,
+      paymentIntentResponse(claimed, paymentIntent, stripeCfg.publishableKey),
+      'Payment session created'
+    );
   } catch (error) {
     next(error);
   }
@@ -166,18 +319,34 @@ export const createPaymentIntent = async (
  * endpoint — the first caller wins; a duplicate call short-circuits so emails never
  * double-send. This is the single place a card booking becomes "paid".
  */
-const finalizePaidBooking = async (bookingId: string): Promise<boolean> => {
-  const booking = await Booking.findById(bookingId).populate(
+const finalizePaidBooking = async (
+  bookingId: string,
+  expected: { tenantId: unknown; paymentIntentId: string }
+): Promise<boolean> => {
+  const booking = await Booking.findOneAndUpdate(
+    {
+      _id: bookingId,
+      tenantId: expected.tenantId,
+      stripePaymentIntentId: expected.paymentIntentId,
+      paymentStatus: { $in: ['pending', 'processing', 'failed'] },
+    },
+    {
+      $set: {
+        paymentStatus: 'succeeded',
+        status: 'confirmed',
+        paymentMethod: 'card',
+      },
+    },
+    { new: true }
+  ).populate(
     'attractionId',
     'title slug images destination meetingPoint duration cancellationPolicy instantConfirmation'
   );
-  if (!booking) return false;
-  if (booking.paymentStatus === 'succeeded') return false; // already finalized — idempotent
+  if (!booking) return false; // another confirm/webhook caller already won
 
-  booking.paymentStatus = 'succeeded';
-  booking.status = 'confirmed';
-  booking.paymentMethod = 'card';
-  await booking.save();
+  if (booking.userId) {
+    await User.findByIdAndUpdate(booking.userId, { $inc: { totalSpent: booking.total } });
+  }
 
   safeEmitEvent(booking.tenantId, 'payment.succeeded', paymentEventPayload(booking));
   safeEmitEvent(booking.tenantId, 'booking.confirmed', paymentEventPayload(booking));
@@ -256,6 +425,7 @@ const finalizePaidBooking = async (bookingId: string): Promise<boolean> => {
         guests: totalAdults + totalChildren,
         hotelPickup,
         meetingPoint,
+        guestAccessToken: generateBookingAccessToken(String(booking._id), booking.reference),
       },
       pdfBuffer,
       tenantBrand
@@ -308,7 +478,7 @@ export const confirmPayment = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { bookingId, guestEmail } = req.body;
+    const { bookingId, guestEmail, guestAccessToken } = req.body;
 
     if (!req.user && !guestEmail) {
       sendError(res, 'Authentication or guest email is required', 401);
@@ -324,7 +494,7 @@ export const confirmPayment = async (
     }
     if (
       !canAccessBooking(req, booking.userId, booking.tenantId) &&
-      !canGuestAccessBooking(booking.guestDetails?.email, guestEmail)
+      !canGuestAccessBooking(booking, guestEmail, guestAccessToken)
     ) {
       sendError(res, 'Not authorized to confirm payment for this booking', 403);
       return;
@@ -356,17 +526,31 @@ export const confirmPayment = async (
       sendError(res, confirmationPolicy.error, 400);
       return;
     }
-    if (confirmationPolicy.verifyIntent && booking.stripePaymentIntentId && stripeCfg?.secretKey) {
-      const status = await retrievePaymentIntentStatus(stripeCfg.secretKey, booking.stripePaymentIntentId);
-      if (status !== 'succeeded') {
-        sendError(res, 'Payment has not completed yet', 400);
-        return;
-      }
+    if (!confirmationPolicy.verifyIntent || !booking.stripePaymentIntentId || !stripeCfg?.secretKey) {
+      sendError(res, 'A verified Stripe payment session is required', 400);
+      return;
+    }
+    const intent = await retrievePaymentIntent(stripeCfg.secretKey, booking.stripePaymentIntentId);
+    if (!intent) {
+      sendError(res, 'Stripe payment session could not be verified', 502);
+      return;
+    }
+    const bindingError = paymentBindingError(booking, intent, true);
+    if (bindingError) {
+      sendError(res, bindingError, 400);
+      return;
     }
 
-    await finalizePaidBooking(String(booking._id));
+    const finalized = await finalizePaidBooking(String(booking._id), {
+      tenantId: booking.tenantId,
+      paymentIntentId: booking.stripePaymentIntentId as string,
+    });
 
     const updated = await Booking.findById(booking._id).select('reference paymentStatus status total currency');
+    if (!finalized && updated?.paymentStatus !== 'succeeded') {
+      sendError(res, 'Payment could not be atomically finalized', 409);
+      return;
+    }
     sendSuccess(res, {
       reference: updated?.reference,
       paymentStatus: updated?.paymentStatus,
@@ -394,71 +578,108 @@ export const handleWebhook = async (
     const stripeCfg = await getTenantStripeConfig(tenantId);
     const signature = (req.headers['stripe-signature'] as string) || '';
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let event: any;
-    if (stripeCfg?.secretKey && stripeCfg?.webhookSecret) {
-      // Verified path (production): reject anything not signed by the tenant's secret.
-      try {
-        event = constructWebhookEvent(stripeCfg.secretKey, stripeCfg.webhookSecret, req.body, signature);
-      } catch {
-        sendError(res, 'Invalid webhook signature', 400);
-        return;
-      }
-    } else {
-      // No gateway configured for this tenant — nothing to verify against. Parse the
-      // raw body (dev/mock only); never authoritative in production.
-      try {
-        const raw = Buffer.isBuffer(req.body)
-          ? req.body.toString('utf8')
-          : typeof req.body === 'string'
-            ? req.body
-            : JSON.stringify(req.body || {});
-        event = raw ? JSON.parse(raw) : {};
-      } catch {
-        sendError(res, 'Invalid webhook payload', 400);
-        return;
-      }
+    // Webhooks are authoritative in every environment. Never parse an unsigned
+    // body as an event; local tests must mock signature construction explicitly.
+    if (!stripeCfg?.secretKey || !stripeCfg.webhookSecret) {
+      sendError(res, 'Stripe webhook is not configured for this tenant', 503);
+      return;
+    }
+    if (!signature) {
+      sendError(res, 'Stripe webhook signature is required', 400);
+      return;
+    }
+
+    let event;
+    try {
+      event = constructWebhookEvent(stripeCfg.secretKey, stripeCfg.webhookSecret, req.body, signature);
+    } catch {
+      sendError(res, 'Invalid webhook signature', 400);
+      return;
     }
 
     const eventId = event?.id;
     const eventType = event?.type;
     if (!eventId) {
-      res.json({ received: true, ignored: 'missing event id' });
+      sendError(res, 'Stripe webhook event ID is required', 400);
+      return;
+    }
+
+    const obj = event.data.object as Stripe.PaymentIntent;
+    const intentId = obj?.id;
+    if (eventType === 'payment_intent.succeeded') {
+      if (!intentId || obj?.status !== 'succeeded') {
+        sendError(res, 'Invalid succeeded PaymentIntent payload', 400);
+        return;
+      }
+
+      // Bind by the stored provider ID and tenant, never by attacker-controlled
+      // metadata alone. Metadata, amount, currency, and amount_received must also
+      // agree before the compare-and-set transition can run.
+      const booking = await Booking.findOne({
+        stripePaymentIntentId: intentId,
+        tenantId,
+      });
+      if (!booking) {
+        res.json({ received: true, ignored: 'payment intent is not bound to this tenant' });
+        return;
+      }
+
+      const intentEvidence: PaymentIntentResult = {
+        id: intentId,
+        clientSecret: '',
+        amount: obj.amount,
+        amountReceived: obj.amount_received,
+        currency: obj.currency || '',
+        status: obj.status,
+        metadata: obj.metadata || {},
+      };
+      const bindingError = paymentBindingError(booking, intentEvidence, true);
+      if (bindingError) {
+        sendError(res, bindingError, 400);
+        return;
+      }
+
+      const finalized = await finalizePaidBooking(String(booking._id), {
+        tenantId: booking.tenantId,
+        paymentIntentId: intentId,
+      });
+      const { duplicate } = await recordInboundEvent('stripe', eventId, { eventType, tenantId });
+      res.json({ received: true, duplicate: duplicate || !finalized });
+      return;
+    } else if (eventType === 'payment_intent.payment_failed') {
+      if (!intentId) {
+        sendError(res, 'Invalid failed PaymentIntent payload', 400);
+        return;
+      }
+      const booking = await Booking.findOne({ stripePaymentIntentId: intentId, tenantId });
+      if (booking) {
+        if (
+          obj?.metadata?.bookingId !== String(booking._id) ||
+          obj?.metadata?.tenantId !== String(booking.tenantId)
+        ) {
+          sendError(res, 'Stripe PaymentIntent metadata does not match this booking', 400);
+          return;
+        }
+        const failedBooking = await failCardBookingAndReleaseInventory(
+          booking._id,
+          booking.tenantId,
+          intentId
+        );
+        if (failedBooking) {
+          safeEmitEvent(
+            failedBooking.tenantId,
+            'payment.failed',
+            paymentEventPayload(failedBooking)
+          );
+        }
+      }
+      const { duplicate } = await recordInboundEvent('stripe', eventId, { eventType, tenantId });
+      res.json({ received: true, duplicate });
       return;
     }
 
     const { duplicate } = await recordInboundEvent('stripe', eventId, { eventType, tenantId });
-    if (duplicate) {
-      res.json({ received: true, duplicate: true });
-      return;
-    }
-
-    const obj = event?.data?.object;
-    const intentId = obj?.id;
-    const bookingId = obj?.metadata?.bookingId;
-    const findBooking = async () =>
-      bookingId
-        ? Booking.findById(bookingId)
-        : intentId
-          ? Booking.findOne({ stripePaymentIntentId: intentId })
-          : null;
-
-    if (eventType === 'payment_intent.succeeded' || eventType === 'checkout.session.completed') {
-      const booking = await findBooking();
-      // Defense in depth: the booking must belong to the tenant this webhook is for.
-      if (booking && String(booking.tenantId) === String(tenantId)) {
-        await finalizePaidBooking(String(booking._id));
-      }
-    } else if (eventType === 'payment_intent.payment_failed') {
-      const booking = await findBooking();
-      if (booking && String(booking.tenantId) === String(tenantId) && booking.paymentStatus !== 'succeeded') {
-        booking.paymentStatus = 'failed';
-        await booking.save();
-        safeEmitEvent(booking.tenantId, 'payment.failed', paymentEventPayload(booking));
-      }
-    }
-
-    res.json({ received: true });
+    res.json({ received: true, duplicate, ignored: eventType });
   } catch (error) {
     next(error);
   }
@@ -541,15 +762,103 @@ export const refundPayment = async (
     }
     const refundAmount = amount ? Math.round(amount * 100) : Math.round(booking.total * 100);
 
-    // Refund on the tenant's own Stripe account.
+    // Refund on the tenant's own Stripe account. Missing credentials must never
+    // create a fake provider success or mutate the booking.
     const stripeCfg = await getTenantStripeConfig(booking.tenantId);
-    await stripeCreateRefund(stripeCfg?.secretKey, booking.stripePaymentIntentId, refundAmount);
+    if (!stripeCfg?.secretKey) {
+      sendError(res, 'Stripe refunds are not configured for this tenant', 503);
+      return;
+    }
+    const refund = await stripeCreateRefund(
+      stripeCfg.secretKey,
+      booking.stripePaymentIntentId,
+      refundAmount,
+      {
+        allowPending: true,
+        idempotencyKey: `booking:${booking._id}:refund:${refundAmount}`,
+      }
+    );
+    const ledgerStatus = refund.status === 'succeeded'
+      ? 'succeeded'
+      : refund.status === 'failed'
+        ? 'failed'
+        : 'pending';
+    await Booking.updateOne(
+      { _id: booking._id, 'refunds.providerRefundId': { $ne: refund.id } },
+      {
+        $push: {
+          refunds: {
+            providerRefundId: refund.id,
+            amount: refund.amount / 100,
+            status: ledgerStatus,
+            createdAt: new Date(),
+          },
+        },
+      }
+    );
+    await Booking.updateOne(
+      { _id: booking._id, 'refunds.providerRefundId': refund.id },
+      { $set: { 'refunds.$.status': ledgerStatus, 'refunds.$.amount': refund.amount / 100 } }
+    );
 
-    booking.paymentStatus = 'refunded';
-    booking.status = 'refunded';
-    await booking.save();
+    if (refund.status !== 'succeeded') {
+      sendSuccess(
+        res,
+        {
+          refundId: refund.id,
+          refundStatus: refund.status,
+          amount: refund.amount / 100,
+          currency: booking.currency,
+          paymentStatus: booking.paymentStatus,
+          bookingStatus: booking.status,
+        },
+        'Refund submitted but not completed',
+        202
+      );
+      return;
+    }
 
-    sendSuccess(res, booking, 'Refund processed successfully');
+    const refundedAmount = await retrieveSucceededRefundAmount(
+      stripeCfg.secretKey,
+      booking.stripePaymentIntentId
+    );
+    const bookingAmount = Math.round(booking.total * 100);
+    const fullRefund = refundedAmount >= bookingAmount;
+    const refundedMajor = Math.min(refundedAmount, bookingAmount) / 100;
+    const beforeRefundUpdate = await Booking.findOneAndUpdate(
+      {
+        _id: booking._id,
+        stripePaymentIntentId: booking.stripePaymentIntentId,
+      },
+      {
+        $max: { refundedAmount: refundedMajor },
+        ...(fullRefund ? { $set: { paymentStatus: 'refunded', status: 'refunded' } } : {}),
+      },
+      { new: false }
+    );
+    const newlyRefunded = Math.max(
+      refundedMajor - (beforeRefundUpdate?.refundedAmount || 0),
+      0
+    );
+    if (booking.userId && newlyRefunded > 0) {
+      await User.findByIdAndUpdate(booking.userId, { $inc: { totalSpent: -newlyRefunded } });
+    }
+
+    sendSuccess(
+      res,
+      {
+        refundId: refund.id,
+        refundStatus: refund.status,
+        refundType: fullRefund ? 'full' : 'partial',
+        amount: refund.amount / 100,
+        refundedAmount: Math.min(refundedAmount, bookingAmount) / 100,
+        remainingAmount: Math.max(bookingAmount - refundedAmount, 0) / 100,
+        currency: booking.currency,
+        paymentStatus: fullRefund ? 'refunded' : booking.paymentStatus,
+        bookingStatus: fullRefund ? 'refunded' : booking.status,
+      },
+      fullRefund ? 'Refund processed successfully' : 'Partial refund processed successfully'
+    );
   } catch (error) {
     next(error);
   }
@@ -617,6 +926,9 @@ export const updatePaymentGateway = async (
     const effectivePublishableKey =
       publishableKey !== undefined ? String(publishableKey).trim() : existing?.publishableKey;
     const effectiveSecretKey = secretKey ? String(secretKey).trim() : existing?.secretKey;
+    const effectiveWebhookSecret = webhookSecret
+      ? String(webhookSecret).trim()
+      : existing?.webhookSecret;
     const effectiveMode = resolveStripeMode(effectivePublishableKey, effectiveSecretKey);
 
     if (effectiveMode === 'mixed') {
@@ -632,8 +944,13 @@ export const updatePaymentGateway = async (
     if (enabled) {
       const willHaveSecret = !!effectiveSecretKey;
       const willHavePublishable = !!effectivePublishableKey;
-      if (!willHaveSecret || !willHavePublishable) {
-        sendError(res, 'Add both the publishable and secret keys before enabling online payments', 400);
+      const willHaveWebhookSecret = !!effectiveWebhookSecret;
+      if (!willHaveSecret || !willHavePublishable || !willHaveWebhookSecret) {
+        sendError(
+          res,
+          'Add the publishable key, secret key, and webhook signing secret before enabling online payments',
+          400
+        );
         return;
       }
     }

@@ -9,6 +9,58 @@ import { Types } from 'mongoose';
 import { escapeRegex } from '../utils/helpers';
 import { isSuperAdmin, callerTenantIds, attractionInCallerTenants } from '../utils/tenantScope';
 
+const PUBLIC_ATTRACTION_FIELDS = [
+  '_id',
+  'slug',
+  'pathSlug',
+  'title',
+  'shortDescription',
+  'description',
+  'images',
+  'category',
+  'subcategory',
+  'destination',
+  'duration',
+  'languages',
+  'rating',
+  'reviewCount',
+  'priceFrom',
+  'currency',
+  'pricingOptions',
+  'addons',
+  'entryWindows',
+  'itinerary',
+  'whatToBring',
+  'accessibility',
+  'gettingThere',
+  'highlights',
+  'inclusions',
+  'exclusions',
+  'meetingPoint',
+  'cancellationPolicy',
+  'instantConfirmation',
+  'mobileTicket',
+  'hasHotelPickup',
+  'badges',
+  'availability',
+  'seo',
+  'status',
+  'featured',
+  'sortOrder',
+] as const;
+
+export const PUBLIC_ATTRACTION_PROJECTION = PUBLIC_ATTRACTION_FIELDS.join(' ');
+
+export const toPublicAttractionDto = (source: unknown): Record<string, unknown> => {
+  if (!source || typeof source !== 'object') return {};
+  const record = source as Record<string, unknown>;
+  return Object.fromEntries(
+    PUBLIC_ATTRACTION_FIELDS
+      .filter((field) => record[field] !== undefined)
+      .map((field) => [field, record[field]])
+  );
+};
+
 /**
  * Guard for the stop-sale (blocked-date) handlers: a non-super admin may only
  * read/change availability for an attraction in one of their own tenants. Returns
@@ -121,9 +173,11 @@ export const getAttractions = async (
     else if (sort === 'popularity') sortOption = { reviewCount: -1 };
     else if (sort === 'recommended') sortOption = { featured: -1, rating: -1 };
 
+    const attractionsQuery = Attraction.find(query).select(PUBLIC_ATTRACTION_PROJECTION);
+
     // Execute query
     const [attractions, total] = await Promise.all([
-      Attraction.find(query)
+      attractionsQuery
         .sort(sortOption)
         .skip((pageNum - 1) * limitNum)
         .limit(limitNum)
@@ -134,7 +188,13 @@ export const getAttractions = async (
     // Cache for 2 minutes (dynamic based on search params)
     res.setHeader('Cache-Control', 'public, max-age=120, s-maxage=300, stale-while-revalidate=600');
 
-    sendPaginated(res, attractions, pageNum, limitNum, total);
+    sendPaginated(
+      res,
+      attractions.map(toPublicAttractionDto),
+      pageNum,
+      limitNum,
+      total
+    );
   } catch (error) {
     next(error);
   }
@@ -157,25 +217,16 @@ export const getAttractionBySlug = async (
       Types.ObjectId.isValid(slug)
         ? { _id: slug, status: 'active' }
         : { slug, status: 'active' }
-    );
+    )
+      .select(PUBLIC_ATTRACTION_PROJECTION)
+      .lean();
 
     if (!attraction) {
       sendError(res, 'Attraction not found', 404);
       return;
     }
 
-    // For authenticated admin users (non-super-admin), verify they have access to this attraction's tenants
-    if (req.user && req.user.role !== 'super-admin' && req.user.role !== 'customer' && req.user.role !== 'guest') {
-      const userTenantIds = (req.user.assignedTenants || []).map((t) => t.toString());
-      const attractionTenantIds = (attraction.tenantIds || []).map((t) => t.toString());
-      const hasAccess = attractionTenantIds.some((tid) => userTenantIds.includes(tid));
-      if (!hasAccess && userTenantIds.length > 0) {
-        sendError(res, 'Attraction not found', 404);
-        return;
-      }
-    }
-
-    sendSuccess(res, attraction);
+    sendSuccess(res, toPublicAttractionDto(attraction));
   } catch (error) {
     next(error);
   }
@@ -864,6 +915,7 @@ export const getFeaturedAttractions = async (
     }
 
     const attractions = await Attraction.find(query)
+      .select(PUBLIC_ATTRACTION_PROJECTION)
       .sort({ sortOrder: 1, rating: -1 })
       .limit(parseInt(limit as string, 10))
       .lean();
@@ -871,7 +923,7 @@ export const getFeaturedAttractions = async (
     // Cache for 10 minutes (featured attractions change less frequently)
     res.setHeader('Cache-Control', 'public, max-age=600, s-maxage=600, stale-while-revalidate=1200');
 
-    sendSuccess(res, attractions);
+    sendSuccess(res, attractions.map(toPublicAttractionDto));
   } catch (error) {
     next(error);
   }

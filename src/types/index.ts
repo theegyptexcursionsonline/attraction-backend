@@ -289,6 +289,20 @@ export interface IBooking extends Document {
   paymentStatus: PaymentStatus;
   status: BookingStatus;
   stripePaymentIntentId?: string;
+  refundedAmount?: number;
+  refunds?: Array<{
+    providerRefundId: string;
+    amount: number;
+    status: 'pending' | 'succeeded' | 'failed';
+    createdAt: Date;
+  }>;
+  inventoryReservedAt?: Date;
+  inventoryReleasedAt?: Date;
+  inventoryReservations?: Array<{
+    date: Date;
+    time?: string;
+    guests: number;
+  }>;
   ticketPdfUrl?: string;
   specialOfferId?: Types.ObjectId;
   // Reseller revenue split — only populated when this booking was sold by one

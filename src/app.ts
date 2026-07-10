@@ -14,6 +14,7 @@ import swaggerUi from 'swagger-ui-express';
 import { env, connectDatabase, corsOptions, swaggerSpec } from './config';
 import routes from './routes';
 import { notFoundHandler, errorHandler, apiLimiter } from './middleware';
+import { expireStaleCardHolds } from './services/bookingInventory.service';
 
 export const createApp = (): express.Application => {
   const app = express();
@@ -111,6 +112,18 @@ export const startServer = async (): Promise<void> => {
   try {
     // Connect to database
     await connectDatabase();
+
+    const sweepExpiredHolds = async (): Promise<void> => {
+      try {
+        const released = await expireStaleCardHolds();
+        if (released > 0) console.log(`[booking-inventory] released ${released} expired card hold(s)`);
+      } catch (error) {
+        console.error('[booking-inventory] expired-hold sweep failed:', error);
+      }
+    };
+    void sweepExpiredHolds();
+    const inventorySweep = setInterval(sweepExpiredHolds, 5 * 60 * 1000);
+    inventorySweep.unref();
 
     // Start listening
     app.listen(env.port, () => {
