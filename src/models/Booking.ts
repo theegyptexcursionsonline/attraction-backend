@@ -106,6 +106,19 @@ const bookingSchema = new Schema<IBooking>(
     stripePaymentIntentId: {
       type: String,
     },
+    paymentReconciliation: {
+      source: {
+        type: String,
+        enum: ['legacy-import'],
+      },
+      reconciledAt: {
+        type: Date,
+      },
+      note: {
+        type: String,
+        maxlength: 240,
+      },
+    },
     refundedAmount: {
       type: Number,
       default: 0,

@@ -11,6 +11,7 @@
     "seed:promo": "ts-node src/scripts/seed-promo-codes.ts",
     "seed:availability": "ts-node src/scripts/seed-availability.ts",
     "audit:booking-integrity": "ts-node src/scripts/audit-booking-integrity.ts",
+    "repair:booking-integrity": "ts-node src/scripts/repair-booking-integrity.ts",
     "rotate:tenant-payment-secrets": "ts-node src/scripts/rotate-tenant-payment-secrets.ts",
     "user:set-password": "ts-node src/scripts/set-user-password.ts",
     "lint": "tsc --noEmit",

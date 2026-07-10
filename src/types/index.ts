@@ -289,6 +289,14 @@ export interface IBooking extends Document {
   paymentStatus: PaymentStatus;
   status: BookingStatus;
   stripePaymentIntentId?: string;
+  // A legacy import may be paid by card without a Stripe PaymentIntent because
+  // it predates provider-reference tracking. This never substitutes for a
+  // provider ID on new Stripe payments.
+  paymentReconciliation?: {
+    source: 'legacy-import';
+    reconciledAt: Date;
+    note: string;
+  };
   refundedAmount?: number;
   refunds?: Array<{
     providerRefundId: string;
