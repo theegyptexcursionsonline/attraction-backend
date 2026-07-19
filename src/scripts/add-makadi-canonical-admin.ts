@@ -15,12 +15,13 @@
 import { connectDatabase, disconnectDatabase } from '../config/database';
 import { Tenant } from '../models/Tenant';
 import { User } from '../models/User';
+import { requireScriptSecret } from './require-script-secret';
 
 const SLUG = 'makadi-horse-club';
 const EMAIL = 'makadi-horse-club@foxestechnology.com';
-const PASSWORD = 'Foxes@Net2026!';
 
 async function main(): Promise<void> {
+  const initialPassword = requireScriptSecret('TENANT_ADMIN_INITIAL_PASSWORD');
   await connectDatabase();
 
   try {
@@ -56,16 +57,16 @@ async function main(): Promise<void> {
           tenant._id,
         ] as typeof existing.assignedTenants;
       }
-      existing.password = PASSWORD; // hashed by pre-save hook
+      existing.password = initialPassword; // hashed by pre-save hook
       existing.passwordResetToken = undefined;
       existing.passwordResetExpires = undefined;
       await existing.save();
-      console.log(`Re-synced. Password reset to default.`);
+      console.log('Re-synced. Credential was supplied securely and is not printed.');
     } else {
       console.log(`\nCreating new brand-admin user: ${EMAIL}`);
       const user = new User({
         email: EMAIL,
-        password: PASSWORD,
+        password: initialPassword,
         firstName: 'Makadi Horse Club',
         lastName: 'Admin',
         role: 'brand-admin',
@@ -79,10 +80,10 @@ async function main(): Promise<void> {
     }
 
     console.log('\n===========================================');
-    console.log(' MAKADI HORSE CLUB — canonical credential');
+    console.log(' MAKADI HORSE CLUB - canonical account');
     console.log('===========================================');
     console.log(` Email:    ${EMAIL}`);
-    console.log(` Password: ${PASSWORD}`);
+    console.log(' Password: supplied through approved secret manager');
     console.log(` Role:     brand-admin`);
     console.log(` Scope:    ${tenant.name} only`);
     console.log('===========================================');

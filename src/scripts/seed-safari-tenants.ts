@@ -22,6 +22,7 @@ import { User } from '../models/User';
 import { generateImageFromPrompt } from '../services/image-generation.service';
 import { uploadBase64Image } from '../services/upload.service';
 import { hashPassword, generatePreviewAccessCode } from '../utils/hash';
+import { requireScriptSecret } from './require-script-secret';
 import { env } from '../config/env';
 
 // ─────────────────────────────────────────────────────────────────────
@@ -30,8 +31,6 @@ import { env } from '../config/env';
 const args = new Set(process.argv.slice(2));
 const SKIP_IMAGES = args.has('--skip-images');
 const ONLY_TENANT = process.argv.find((a) => a.startsWith('--tenant='))?.split('=')[1] || null;
-const DEFAULT_PASSWORD = 'Foxes@Net2026!';
-
 // ─────────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────────
@@ -435,9 +434,10 @@ async function seedTenant(
   const brandAdminEmail = `${tenantData.slug}@foxestechnology.com`;
   const existingUser = await User.findOne({ email: brandAdminEmail });
   if (!existingUser) {
+    const initialPassword = requireScriptSecret('TENANT_ADMIN_INITIAL_PASSWORD');
     await User.create({
       email: brandAdminEmail,
-      password: await hashPassword(DEFAULT_PASSWORD),
+      password: await hashPassword(initialPassword),
       firstName: tenantName.split(' ')[0],
       lastName: 'Admin',
       role: 'brand-admin',

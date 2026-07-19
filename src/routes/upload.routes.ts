@@ -5,6 +5,7 @@ import { uploadSingleImage, uploadMultipleImages, generateAiImage } from '../con
 import { authenticate, requireRole } from '../middleware/auth.middleware';
 import { AuthRequest } from '../types';
 import { cleanupUploadedFiles } from '../utils/uploadCleanup';
+import { aiGenerationLimiter, uploadLimiter } from '../middleware/rate-limit.middleware';
 
 const router = Router();
 
@@ -47,6 +48,7 @@ router.post(
   '/image',
   authenticate,
   requireRole('super-admin', 'brand-admin', 'manager', 'editor'),
+  uploadLimiter,
   runUpload(upload.single('image')),
   uploadSingleImage
 );
@@ -55,6 +57,7 @@ router.post(
   '/images',
   authenticate,
   requireRole('super-admin', 'brand-admin', 'manager', 'editor'),
+  uploadLimiter,
   runUpload(upload.array('images', 10)),
   uploadMultipleImages
 );
@@ -63,6 +66,7 @@ router.post(
   '/generate',
   authenticate,
   requireRole('super-admin', 'brand-admin', 'manager', 'editor'),
+  aiGenerationLimiter,
   generateAiImage
 );
 

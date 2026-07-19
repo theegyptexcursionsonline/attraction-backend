@@ -1,4 +1,5 @@
 import { Response, NextFunction } from 'express';
+import crypto from 'crypto';
 import mongoose from 'mongoose';
 import { Booking } from '../models/Booking';
 import { Attraction } from '../models/Attraction';
@@ -11,8 +12,9 @@ import { generateTicketPdf } from '../services/pdf.service';
 import { createRefund } from '../services/stripe.service';
 import { getTenantStripeConfig } from '../services/tenantPayment.service';
 import { createAdminNotifications } from '../services/notification.service';
-import { sendBookingConfirmation, sendAdminBookingNotification } from '../services/email.service';
+import { sendBookingConfirmation, sendAdminBookingNotification, sendBookingStatusEmail } from '../services/email.service';
 import { Tenant } from '../models/Tenant';
+import { IdempotencyKey } from '../models/IdempotencyKey';
 import { escapeRegex } from '../utils/helpers';
 import { safeEmitEvent } from '../services/webhook.service';
 import { IBooking } from '../types';
@@ -65,6 +67,30 @@ const adminRoles = ['super-admin', 'brand-admin', 'manager'];
 
 // Round money to 2 decimals (avoids float drift when splitting revenue).
 const round2 = (n: number): number => Math.round(n * 100) / 100;
+
+const hashValue = (value: string): string =>
+  crypto.createHash('sha256').update(value).digest('hex');
+
+const stableStringify = (value: unknown): string => {
+  if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`;
+  if (value && typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, item]) => `${JSON.stringify(key)}:${stableStringify(item)}`);
+    return `{${entries.join(',')}}`;
+  }
+  return JSON.stringify(value) ?? 'null';
+};
+
+const bookingResponse = (booking: IBooking): Record<string, unknown> => {
+  const raw = typeof (booking as any).toJSON === 'function'
+    ? (booking as any).toJSON()
+    : { ...(booking as any) };
+  return {
+    ...raw,
+    guestAccessToken: generateBookingAccessToken(String(booking._id), booking.reference),
+  };
+};
 
 const earningsEligibilityClauses: Record<string, unknown>[] = [
   { status: { $in: ['confirmed', 'completed'] } },
@@ -150,8 +176,20 @@ export const createBooking = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
+  let idempotencyRecordId: mongoose.Types.ObjectId | undefined;
   try {
     const { attractionId, items, guestDetails, promoCode, paymentMethod } = req.body;
+    const idempotencyKey = req.headers['idempotency-key'];
+
+    if (
+      typeof idempotencyKey !== 'string' ||
+      idempotencyKey.length < 16 ||
+      idempotencyKey.length > 128 ||
+      !/^[A-Za-z0-9._:-]+$/.test(idempotencyKey)
+    ) {
+      sendError(res, 'A valid Idempotency-Key header is required', 400);
+      return;
+    }
 
     if (paymentMethod && !['card', 'pay-later', 'cash'].includes(paymentMethod)) {
       sendError(res, 'Unsupported payment method', 400);
@@ -341,6 +379,59 @@ export const createBooking = async (
     const discount = round2(Math.min(Math.max(useSpecialOffer ? offerDiscount : promoDiscount, 0), subtotal));
     const total = round2(Math.max(subtotal + fees - discount, 0));
 
+    const keyHash = hashValue(idempotencyKey);
+    const requestHash = hashValue(stableStringify({
+      tenantId: String(tenantId),
+      attractionId,
+      items,
+      guestDetails,
+      promoCode: promoCode || null,
+      paymentMethod: paymentMethod || 'pay-later',
+    }));
+
+    try {
+      const record = await IdempotencyKey.create({
+        scope: 'booking.create',
+        tenantId,
+        keyHash,
+        requestHash,
+        status: 'processing',
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+      });
+      idempotencyRecordId = record._id as mongoose.Types.ObjectId;
+    } catch (claimError) {
+      const isDuplicate =
+        !!claimError &&
+        typeof claimError === 'object' &&
+        'code' in claimError &&
+        (claimError as { code?: number }).code === 11000;
+      if (!isDuplicate) throw claimError;
+
+      const existing = await IdempotencyKey.findOne({
+        scope: 'booking.create',
+        tenantId,
+        keyHash,
+      }).lean();
+
+      if (!existing || existing.requestHash !== requestHash) {
+        sendError(res, 'Idempotency key was already used for a different booking request', 409);
+        return;
+      }
+
+      if (existing.status === 'completed' && existing.resourceId) {
+        const replayedBooking = await Booking.findById(existing.resourceId);
+        if (replayedBooking) {
+          res.setHeader('Idempotency-Replayed', 'true');
+          sendSuccess(res, bookingResponse(replayedBooking as IBooking), 'Booking already created');
+          return;
+        }
+      }
+
+      res.setHeader('Retry-After', '2');
+      sendError(res, 'An identical booking request is already processing', 409);
+      return;
+    }
+
     // Reseller revenue split. When this booking is made on a reseller's site
     // (sellerTenant) for an attraction owned by a different supplier tenant, we
     // record both sides and split `total` between them. Internal accounting only
@@ -456,6 +547,17 @@ export const createBooking = async (
       const created = session
         ? (await Booking.create([payload], { session }))[0]
         : await Booking.create(payload);
+      await IdempotencyKey.findByIdAndUpdate(
+        idempotencyRecordId,
+        {
+          $set: {
+            status: 'completed',
+            resourceId: created._id,
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          },
+        },
+        sessionOption(session)
+      );
       if (req.user) {
         await User.findByIdAndUpdate(
           req.user._id,
@@ -486,8 +588,7 @@ export const createBooking = async (
     // Email notifications — fire and forget so a delivery failure never blocks
     // the booking response. Includes:
     //   • Customer confirmation to the address typed at checkout
-    //   • Admin notification to the tenant's contact email + Fouad's central
-    //     inbox so brand operators see new bookings in their inbox.
+    //   • Operator notification only to this tenant's configured contact inbox.
     (async () => {
      // Whole block guarded: a tenant lookup or mail failure must never surface
      // as an unhandled promise rejection (which would crash the process on a DB
@@ -548,10 +649,8 @@ export const createBooking = async (
       }
 
       try {
-        const recipients = new Set<string>();
-        if (tenantDoc?.contactInfo?.email) recipients.add(tenantDoc.contactInfo.email);
-        recipients.add('info@foxestechnology.com');
-        for (const recipient of recipients) {
+        const recipient = tenantDoc?.contactInfo?.email;
+        if (recipient) {
           try {
             await sendAdminBookingNotification(recipient, {
               reference: booking.reference,
@@ -582,16 +681,19 @@ export const createBooking = async (
      }
     })();
 
-    const bookingResponse = typeof (booking as any).toJSON === 'function'
-      ? (booking as any).toJSON()
-      : { ...(booking as any) };
     sendSuccess(
       res,
-      { ...bookingResponse, guestAccessToken },
+      bookingResponse(booking),
       'Booking created successfully',
       201
     );
   } catch (error) {
+    if (idempotencyRecordId) {
+      await IdempotencyKey.deleteOne({
+        _id: idempotencyRecordId,
+        status: 'processing',
+      }).catch(() => undefined);
+    }
     if (error instanceof Error && error.message.startsWith('INVALID_OPTION:')) {
       sendError(res, 'Invalid pricing option selected', 400);
       return;
@@ -845,6 +947,25 @@ export const cancelBooking = async (
       'booking.cancelled',
       bookingEventPayload(cancelledBooking)
     );
+
+    void Tenant.findById(cancelledBooking.tenantId)
+      .select('name slug customDomain domainMigrated contactInfo theme logo defaultLanguage defaultCurrency timezone')
+      .lean()
+      .then((tenant) => tenant ? sendBookingStatusEmail(
+          cancelledBooking.guestDetails.email,
+          {
+            reference: cancelledBooking.reference,
+            guestName: `${cancelledBooking.guestDetails.firstName} ${cancelledBooking.guestDetails.lastName}`.trim(),
+            kind: 'cancelled',
+            guestAccessToken: generateBookingAccessToken(String(cancelledBooking._id), cancelledBooking.reference),
+            refundAmount: completedRefund ? completedRefund.amount / 100 : undefined,
+            currency: cancelledBooking.currency,
+          },
+          tenant
+        ) : undefined)
+      .catch(() => console.error('[email] cancellation notification failed', {
+        tenantId: String(cancelledBooking.tenantId),
+      }));
 
     sendSuccess(res, cancelledBooking, 'Booking cancelled successfully');
   } catch (error) {

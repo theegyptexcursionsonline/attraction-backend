@@ -21,12 +21,16 @@ export const getActiveOffers = async (
 ): Promise<void> => {
   try {
     const now = new Date();
-    const offers = await SpecialOffer.find({
+    const query: Record<string, unknown> = {
       isActive: true,
       validFrom: { $lte: now },
       validUntil: { $gte: now },
       $expr: { $lt: ['$usageCount', '$usageLimit'] },
-    })
+    };
+    if (req.tenant) {
+      query.attractionId = { $in: await attractionIdsForTenants([req.tenant._id.toString()]) };
+    }
+    const offers = await SpecialOffer.find(query)
       .populate('attractionId', 'title slug images priceFrom currency rating reviewCount destination category shortDescription badges')
       .sort({ discountValue: -1 })
       .lean();
@@ -45,6 +49,14 @@ export const getOfferForAttraction = async (
   try {
     const { attractionId } = req.params;
     const now = new Date();
+
+    if (
+      req.tenant &&
+      !(await attractionInCallerTenants(attractionId, [req.tenant._id.toString()]))
+    ) {
+      sendError(res, 'Offer not found', 404);
+      return;
+    }
 
     const offer = await SpecialOffer.findOne({
       attractionId,

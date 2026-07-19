@@ -11,11 +11,11 @@ const allowedOrigins = [
   'http://127.0.0.1:3050',
 ];
 
-// Patterns for dynamic subdomain matching + custom tenant domains
+// Patterns for owned preview subdomains and custom tenant domains.
 const allowedPatterns = [
-  /\.netlify\.app$/,
+  /^foxes-network\.netlify\.app$/,
+  /^[a-z0-9-]+--foxes-network\.netlify\.app$/,
   /\.foxesnetwork\.com$/,
-  /\.up\.railway\.app$/,
   // Foxes demo portal — public-facing demo domain on the same shared origin
   // as foxes-network.netlify.app, gated by per-tenant access codes
   /^foxesdemoplatform\.com$/,
@@ -96,6 +96,7 @@ export const corsOptions: CorsOptions = {
     'X-Tenant-Slug',
     'X-Booking-Access-Token',
     'X-API-Key',
+    'Idempotency-Key',
   ],
   exposedHeaders: ['X-Total-Count', 'X-Total-Pages'],
   maxAge: 86400, // 24 hours

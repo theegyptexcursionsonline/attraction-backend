@@ -30,6 +30,10 @@ export {
   authLimiter,
   passwordResetLimiter,
   bookingLimiter,
+  publicWriteLimiter,
+  paymentLimiter,
+  uploadLimiter,
+  aiGenerationLimiter,
   searchLimiter,
 } from './rate-limit.middleware';
 

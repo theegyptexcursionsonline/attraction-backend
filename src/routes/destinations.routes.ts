@@ -108,7 +108,7 @@ router.get(
  *                   items:
  *                     $ref: '#/components/schemas/Destination'
  */
-router.get('/featured', getFeaturedDestinations);
+router.get('/featured', optionalAuth, optionalTenant, getFeaturedDestinations);
 
 /**
  * @swagger
@@ -137,7 +137,7 @@ router.get('/featured', getFeaturedDestinations);
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-router.get('/:slug', getDestinationBySlug);
+router.get('/:slug', optionalAuth, optionalTenant, getDestinationBySlug);
 
 /**
  * @swagger

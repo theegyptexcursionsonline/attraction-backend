@@ -192,7 +192,7 @@ router.get(
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-router.get('/:slug', optionalAuth, getAttractionBySlug);
+router.get('/:slug', optionalAuth, optionalTenant, getAttractionBySlug);
 
 /**
  * @swagger
@@ -221,7 +221,7 @@ router.get('/:slug', optionalAuth, getAttractionBySlug);
  *       200:
  *         description: Attraction reviews
  */
-router.get('/:id/reviews', validateQuery(paginationSchema), getAttractionReviews);
+router.get('/:id/reviews', optionalTenant, validateQuery(paginationSchema), getAttractionReviews);
 
 /**
  * @swagger

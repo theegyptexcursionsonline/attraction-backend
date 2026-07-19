@@ -40,6 +40,11 @@ export const authenticate = async (
       return;
     }
 
+    if ((decoded.sessionVersion || 0) !== (user.tokenVersion || 0)) {
+      sendError(res, 'Session has been revoked', 401);
+      return;
+    }
+
     req.user = user;
     next();
   } catch {
@@ -64,7 +69,11 @@ export const optionalAuth = async (
     if (token) {
       const decoded = verifyToken(token);
       const user = await User.findById(decoded.userId);
-      if (user && user.status === 'active') {
+      if (
+        user &&
+        user.status === 'active' &&
+        (decoded.sessionVersion || 0) === (user.tokenVersion || 0)
+      ) {
         req.user = user;
       }
     }

@@ -8,6 +8,7 @@ import { sendEventRsvpNotification, sendEventRsvpConfirmation } from '../service
 import { escapeRegex } from '../utils/helpers';
 
 const adminRoles = ['super-admin', 'brand-admin', 'manager'];
+const emailPattern = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
 
 const hasTenantAccess = (req: AuthRequest, tenantId?: unknown): boolean => {
   if (!req.user || !tenantId) return false;
@@ -17,9 +18,6 @@ const hasTenantAccess = (req: AuthRequest, tenantId?: unknown): boolean => {
     (assignedTenantId) => assignedTenantId.toString() === String(tenantId)
   );
 };
-
-// Notification recipient for all RSVPs — per Fouad (Apr 22, 2026)
-const RSVP_NOTIFICATION_EMAIL = 'info@foxestechnology.com';
 
 export const createRsvp = async (
   req: AuthRequest,
@@ -44,6 +42,22 @@ export const createRsvp = async (
 
     if (!eventSlug || !eventName || !eventDate || !firstName || !lastName || !email || !phone) {
       sendError(res, 'Missing required fields', 400);
+      return;
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+    if (normalizedEmail.length > 254 || !emailPattern.test(normalizedEmail)) {
+      sendError(res, 'A valid email address is required', 400);
+      return;
+    }
+    const requiredText = [eventSlug, eventName, firstName, lastName, phone];
+    if (requiredText.some((value) => String(value).trim().length > 160)) {
+      sendError(res, 'One or more fields exceed the maximum length', 400);
+      return;
+    }
+    const parsedEventDate = new Date(String(eventDate));
+    if (Number.isNaN(parsedEventDate.getTime())) {
+      sendError(res, 'A valid event date is required', 400);
       return;
     }
 
@@ -75,7 +89,7 @@ export const createRsvp = async (
       eventDate: new Date(String(eventDate)),
       firstName: String(firstName).trim(),
       lastName: String(lastName).trim(),
-      email: String(email).trim().toLowerCase(),
+      email: normalizedEmail,
       phone: String(phone).trim(),
       adultsCount: adults,
       childrenCount: children,
@@ -83,7 +97,7 @@ export const createRsvp = async (
       status: 'pending',
     });
 
-    const eventDateDisplay = new Date(String(eventDate)).toLocaleDateString('en-US', {
+    const eventDateDisplay = parsedEventDate.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -94,22 +108,21 @@ export const createRsvp = async (
       ? eventLocation.trim()
       : (tenant.contactInfo?.address || 'Makadi Bay, Egypt');
 
-    // Fan out emails in parallel — never block the user response on them
-    Promise.allSettled([
-      sendEventRsvpNotification(RSVP_NOTIFICATION_EMAIL, {
+    const rsvpEmailDetails = {
         eventName: String(eventName),
         eventDate: eventDateDisplay,
         eventLocation: locationString,
         tenantName,
         firstName: String(firstName),
         lastName: String(lastName),
-        email: String(email),
+        email: normalizedEmail,
         phone: String(phone),
         adultsCount: adults,
         childrenCount: children,
         message: typeof message === 'string' ? message : undefined,
-      }),
-      sendEventRsvpConfirmation(String(email).trim().toLowerCase(), {
+    };
+    const emails: Promise<void>[] = [
+      sendEventRsvpConfirmation(normalizedEmail, {
         eventName: String(eventName),
         eventDate: eventDateDisplay,
         eventLocation: locationString,
@@ -117,11 +130,17 @@ export const createRsvp = async (
         firstName: String(firstName),
         adultsCount: adults,
         childrenCount: children,
-      }),
-    ]).then((results) => {
+      }, tenant),
+    ];
+    if (tenant.contactInfo?.email) {
+      emails.push(sendEventRsvpNotification(tenant.contactInfo.email, rsvpEmailDetails, tenant));
+    }
+
+    // Fan out emails in parallel — never block the user response on them.
+    Promise.allSettled(emails).then((results) => {
       results.forEach((r, i) => {
         if (r.status === 'rejected') {
-          console.error(`RSVP email ${i === 0 ? 'notification' : 'confirmation'} failed:`, r.reason);
+          console.error(`RSVP email ${i === 0 ? 'confirmation' : 'notification'} failed:`, r.reason);
         }
       });
     });

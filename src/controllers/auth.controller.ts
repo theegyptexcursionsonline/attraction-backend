@@ -11,12 +11,18 @@ import { env } from '../config/env';
 import { sendPasswordResetEmail } from '../services/email.service';
 import { createAdminNotifications } from '../services/notification.service';
 
-const COOKIE_OPTIONS = {
+const ACCESS_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: env.isProd,
   sameSite: 'lax' as const,
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  maxAge: 15 * 60 * 1000,
 };
+
+const refreshCookieOptions = (rememberMe = false) => ({
+  ...ACCESS_COOKIE_OPTIONS,
+  maxAge: (rememberMe ? 30 : 7) * 24 * 60 * 60 * 1000,
+  path: '/api/auth/refresh-token',
+});
 
 export const register = async (
   req: AuthRequest,
@@ -55,8 +61,8 @@ export const register = async (
     await user.save();
 
     // Set cookies
-    res.cookie('accessToken', accessToken, COOKIE_OPTIONS);
-    res.cookie('refreshToken', refreshToken, { ...COOKIE_OPTIONS, path: '/api/auth/refresh' });
+    res.cookie('accessToken', accessToken, ACCESS_COOKIE_OPTIONS);
+    res.cookie('refreshToken', refreshToken, refreshCookieOptions());
 
     // Notify admins about new user
     createAdminNotifications({
@@ -67,7 +73,7 @@ export const register = async (
       data: { userId: user._id },
     }).catch(() => {});
 
-    sendSuccess(res, { user, accessToken, refreshToken }, 'Registration successful', 201);
+    sendSuccess(res, { user }, 'Registration successful', 201);
   } catch (error) {
     next(error);
   }
@@ -112,14 +118,13 @@ export const login = async (
     await user.save();
 
     // Set cookies
-    const cookieMaxAge = rememberMe ? 30 * 24 * 60 * 60 * 1000 : COOKIE_OPTIONS.maxAge;
-    res.cookie('accessToken', accessToken, { ...COOKIE_OPTIONS, maxAge: cookieMaxAge });
-    res.cookie('refreshToken', refreshToken, { ...COOKIE_OPTIONS, path: '/api/auth/refresh', maxAge: cookieMaxAge });
+    res.cookie('accessToken', accessToken, ACCESS_COOKIE_OPTIONS);
+    res.cookie('refreshToken', refreshToken, refreshCookieOptions(rememberMe === true));
 
     // Remove password from response
     const userResponse = user.toJSON();
 
-    sendSuccess(res, { user: userResponse, accessToken, refreshToken }, 'Login successful');
+    sendSuccess(res, { user: userResponse }, 'Login successful');
   } catch (error) {
     next(error);
   }
@@ -192,14 +197,10 @@ export const passportLogin = async (
     user.lastLogin = new Date();
     await user.save();
 
-    // Reuse login()'s exact cookie options (harmless backend-origin cookies).
-    res.cookie('accessToken', accessToken, COOKIE_OPTIONS);
-    res.cookie('refreshToken', refreshToken, { ...COOKIE_OPTIONS, path: '/api/auth/refresh' });
+    res.cookie('accessToken', accessToken, ACCESS_COOKIE_OPTIONS);
+    res.cookie('refreshToken', refreshToken, refreshCookieOptions());
 
-    // Return tokens as JSON (mirrors login()). The frontend BFF /api/auth/passport
-    // sets the cookies on the FRONTEND origin and performs the redirect to /dashboard,
-    // so the live session cookie is on the user-facing host (not the API host).
-    sendSuccess(res, { user: user.toJSON(), accessToken, refreshToken }, 'Passport sign-in successful');
+    sendSuccess(res, { user: user.toJSON() }, 'Passport sign-in successful');
   } catch (error) {
     next(error);
   }
@@ -212,13 +213,15 @@ export const logout = async (
 ): Promise<void> => {
   try {
     if (req.user) {
-      // Clear refresh token
-      await User.findByIdAndUpdate(req.user._id, { refreshToken: null });
+      await User.findByIdAndUpdate(req.user._id, {
+        $unset: { refreshToken: 1 },
+        $inc: { tokenVersion: 1 },
+      });
     }
 
     // Clear cookies
     res.clearCookie('accessToken');
-    res.clearCookie('refreshToken', { path: '/api/auth/refresh' });
+    res.clearCookie('refreshToken', { path: '/api/auth/refresh-token' });
 
     sendSuccess(res, null, 'Logout successful');
   } catch (error) {
@@ -232,7 +235,7 @@ export const refreshToken = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const token = req.cookies?.refreshToken || req.body.refreshToken;
+    const token = req.cookies?.refreshToken;
 
     if (!token) {
       sendError(res, 'Refresh token required', 401);
@@ -256,6 +259,11 @@ export const refreshToken = async (
       return;
     }
 
+    if ((decoded.sessionVersion || 0) !== (user.tokenVersion || 0)) {
+      sendError(res, 'Session has been revoked', 401);
+      return;
+    }
+
     // Verify stored token matches
     const hashedToken = hashToken(token);
     if (user.refreshToken !== hashedToken) {
@@ -272,10 +280,10 @@ export const refreshToken = async (
     await user.save();
 
     // Set cookies
-    res.cookie('accessToken', accessToken, COOKIE_OPTIONS);
-    res.cookie('refreshToken', newRefreshToken, { ...COOKIE_OPTIONS, path: '/api/auth/refresh' });
+    res.cookie('accessToken', accessToken, ACCESS_COOKIE_OPTIONS);
+    res.cookie('refreshToken', newRefreshToken, refreshCookieOptions());
 
-    sendSuccess(res, { accessToken }, 'Token refreshed');
+    sendSuccess(res, null, 'Token refreshed');
   } catch (error) {
     next(error);
   }
@@ -335,7 +343,7 @@ export const forgotPassword = async (
     const primaryTenantId = user.assignedTenants?.[0];
     if (primaryTenantId) {
       tenantBrand = await Tenant.findById(primaryTenantId)
-        .select('name slug customDomain domainMigrated theme logo')
+        .select('name slug customDomain domainMigrated theme logo contactInfo defaultLanguage defaultCurrency timezone')
         .lean();
     }
 
@@ -377,7 +385,6 @@ export const resetPassword = async (
     user.password = password;
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
-    user.refreshToken = undefined; // Invalidate all sessions
     await user.save();
 
     sendSuccess(res, null, 'Password reset successful');
@@ -416,7 +423,6 @@ export const acceptInvitation = async (
     user.status = 'active';
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
-    user.refreshToken = undefined;
     await user.save();
 
     sendSuccess(res, null, 'Invitation accepted successfully. You can now log in.');

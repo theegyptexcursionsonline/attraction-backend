@@ -10,6 +10,8 @@ import {
   replyToReview,
 } from '../controllers/reviews.controller';
 import { optionalAuth, authenticate, requireAdmin } from '../middleware/auth.middleware';
+import { optionalTenant } from '../middleware/tenant.middleware';
+import { publicWriteLimiter } from '../middleware/rate-limit.middleware';
 
 const router = Router();
 
@@ -31,7 +33,7 @@ const router = Router();
  *       200:
  *         description: List of recent reviews
  */
-router.get('/recent', optionalAuth, getRecentReviews);
+router.get('/recent', optionalAuth, optionalTenant, getRecentReviews);
 
 /**
  * @swagger
@@ -51,7 +53,7 @@ router.get('/recent', optionalAuth, getRecentReviews);
  *       200:
  *         description: List of featured reviews
  */
-router.get('/featured', optionalAuth, getFeaturedReviews);
+router.get('/featured', optionalAuth, optionalTenant, getFeaturedReviews);
 
 /**
  * @swagger
@@ -97,7 +99,7 @@ router.get('/featured', optionalAuth, getFeaturedReviews);
  *       400:
  *         description: Validation error
  */
-router.post('/', optionalAuth, createReview);
+router.post('/', publicWriteLimiter, optionalAuth, optionalTenant, createReview);
 
 /**
  * @swagger
@@ -131,7 +133,7 @@ router.get('/admin', authenticate, requireAdmin, getAdminReviews);
 router.patch('/:id/status', authenticate, requireAdmin, updateReviewStatus);
 router.post('/:id/reply', authenticate, requireAdmin, replyToReview);
 
-router.get('/attraction/:attractionId', optionalAuth, getReviewsByAttractionId);
+router.get('/attraction/:attractionId', optionalAuth, optionalTenant, getReviewsByAttractionId);
 
 /**
  * @swagger
@@ -151,6 +153,6 @@ router.get('/attraction/:attractionId', optionalAuth, getReviewsByAttractionId);
  *       404:
  *         description: Review not found
  */
-router.get('/:reviewId', optionalAuth, getReviewById);
+router.get('/:reviewId', optionalAuth, optionalTenant, getReviewById);
 
 export default router;

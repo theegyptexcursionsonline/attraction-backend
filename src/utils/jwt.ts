@@ -6,6 +6,7 @@ export interface TokenPayload extends JwtPayload {
   userId: string;
   email: string;
   role: string;
+  sessionVersion: number;
 }
 
 export const generateAccessToken = (user: IUser): string => {
@@ -13,6 +14,7 @@ export const generateAccessToken = (user: IUser): string => {
     userId: user._id.toString(),
     email: user.email,
     role: user.role,
+    sessionVersion: user.tokenVersion || 0,
   };
 
   const options: SignOptions = {
@@ -27,6 +29,7 @@ export const generateRefreshToken = (user: IUser): string => {
     userId: user._id.toString(),
     email: user.email,
     role: user.role,
+    sessionVersion: user.tokenVersion || 0,
   };
 
   const options: SignOptions = {

@@ -71,7 +71,7 @@ router.get('/', optionalAuth, optionalTenant, getCategories);
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-router.get('/:slug', getCategoryBySlug);
+router.get('/:slug', optionalAuth, optionalTenant, getCategoryBySlug);
 
 /**
  * @swagger

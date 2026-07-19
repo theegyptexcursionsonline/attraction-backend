@@ -1,5 +1,6 @@
 import Mailgun from 'mailgun.js';
 import formData from 'form-data';
+import sanitizeMarkup from 'sanitize-html';
 import { env } from '../config/env';
 
 const mailgun = new Mailgun(formData);
@@ -11,24 +12,97 @@ interface EmailOptions {
   to: string;
   subject: string;
   html: string;
+  tenant: EmailTenant | null;
+  replyTo?: string;
   attachments?: Array<{
     filename: string;
     data: Buffer;
   }>;
 }
 
+const emailAddressFrom = (value: string): string => {
+  const bracketed = value.match(/<([^<>\r\n]+)>/);
+  return (bracketed?.[1] || value).trim().replace(/[\r\n]/g, '');
+};
+
+const isEmailAddress = (value?: string): value is string =>
+  !!value && /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(value.trim());
+
+const safeMailtoAddress = (value: string): string | null => {
+  const candidate = value.trim().toLowerCase();
+  return isEmailAddress(candidate) ? candidate : null;
+};
+
+const safeDisplayName = (value: string): string =>
+  value.replace(/[\r\n<>\"]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
+
+export const escapeEmailHtml = (value: unknown): string =>
+  String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const sanitizeInlineEmailHtml = (value: string): string =>
+  sanitizeMarkup(value, {
+    allowedTags: ['strong', 'b', 'em', 'i', 'br'],
+    allowedAttributes: {},
+    disallowedTagsMode: 'discard',
+  });
+
+const safeHttpUrl = (value: string): string => {
+  try {
+    const url = new URL(value);
+    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) return '#';
+    return url.toString();
+  } catch {
+    return '#';
+  }
+};
+
+export interface EmailEnvelope {
+  from: string;
+  to: string[];
+  replyTo?: string;
+}
+
+export const resolveEmailEnvelope = (
+  tenant: EmailTenant | null,
+  recipient: string,
+  explicitReplyTo?: string
+): EmailEnvelope => {
+  const senderAddress = emailAddressFrom(env.mailgunFromEmail);
+  if (!isEmailAddress(senderAddress) || !isEmailAddress(recipient)) {
+    throw new Error('Email sender or recipient is invalid');
+  }
+
+  const brand = getEmailBrand(tenant);
+  const replyCandidate = explicitReplyTo?.trim() || tenant?.contactInfo?.email?.trim();
+  return {
+    from: `${safeDisplayName(brand.name) || 'Attractions Network'} <${senderAddress}>`,
+    to: [recipient.trim().toLowerCase()],
+    ...(isEmailAddress(replyCandidate) ? { replyTo: replyCandidate.toLowerCase() } : {}),
+  };
+};
+
 export const sendEmail = async (options: EmailOptions): Promise<void> => {
   if (!mg || !env.mailgunDomain) {
-    console.log('Mailgun not configured. Would send:', options.subject, 'to:', options.to);
+    console.info('[email] delivery skipped: provider is not configured', {
+      subject: options.subject.replace(/[\r\n]/g, ' ').slice(0, 160),
+      tenant: options.tenant?.slug || 'platform',
+    });
     return;
   }
 
+  const envelope = resolveEmailEnvelope(options.tenant, options.to, options.replyTo);
   const messageData: Record<string, unknown> = {
-    from: env.mailgunFromEmail,
-    to: [options.to],
-    subject: options.subject,
+    from: envelope.from,
+    to: envelope.to,
+    subject: options.subject.replace(/[\r\n]/g, ' ').slice(0, 200),
     html: options.html,
   };
+  if (envelope.replyTo) messageData['h:Reply-To'] = envelope.replyTo;
 
   if (options.attachments && options.attachments.length > 0) {
     messageData.attachment = options.attachments.map((a) => ({
@@ -54,6 +128,10 @@ export interface EmailTenant {
   domainMigrated?: boolean; // true once the custom domain serves the Attractions build
   theme?: { primaryColor?: string; secondaryColor?: string };
   logo?: string;
+  defaultLanguage?: string;
+  defaultCurrency?: string;
+  timezone?: string;
+  contactInfo?: { email?: string; phone?: string; address?: string };
 }
 
 export interface EmailBrand {
@@ -64,9 +142,23 @@ export interface EmailBrand {
   logo?: string; // absolute URL to the tenant logo, shown in the email header
 }
 
+const normalizedCustomDomain = (value?: string): string | null => {
+  const candidate = value
+    ?.trim()
+    .replace(/^https?:\/\//i, '')
+    .replace(/\/+$/, '')
+    .replace(/\.$/, '')
+    .toLowerCase();
+  if (!candidate || candidate.length > 253) return null;
+  if (!/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(candidate)) {
+    return null;
+  }
+  return candidate;
+};
+
 export const getEmailBrand = (tenant?: EmailTenant | null): EmailBrand => {
   const base = env.frontendUrl.split(',')[0].trim().replace(/\/+$/, '');
-  const name = tenant?.name?.trim() || 'Foxes Network';
+  const name = safeDisplayName(tenant?.name?.trim() || 'Foxes Network') || 'Foxes Network';
   // Prefer the brand's own custom domain for links — but only when it's confirmed to
   // serve the Attractions build. Many custom domains still point at the client's OLD
   // site (e.g. a WordPress build) where /reset-password and /accept-invitation 404.
@@ -84,9 +176,15 @@ export const getEmailBrand = (tenant?: EmailTenant | null): EmailBrand => {
   const absLogo = (origin: string): string | undefined => {
     const l = tenant?.logo?.trim();
     if (!l) return undefined;
-    return /^https?:\/\//i.test(l) ? l : `${origin}${l.startsWith('/') ? '' : '/'}${l}`;
+    try {
+      const url = new URL(l, `${origin}/`);
+      if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) return undefined;
+      return url.toString();
+    } catch {
+      return undefined;
+    }
   };
-  const cd = tenant?.customDomain?.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '').toLowerCase();
+  const cd = normalizedCustomDomain(tenant?.customDomain);
   if (cd && (tenant?.domainMigrated || MIGRATED_DOMAINS.has(cd))) {
     const origin = `https://${cd}`;
     return { name, origin, color, logo: absLogo(origin) };
@@ -100,8 +198,8 @@ export const getEmailBrand = (tenant?: EmailTenant | null): EmailBrand => {
  *  so a blocked image still shows the brand. */
 const brandHeaderMark = (brand: EmailBrand): string =>
   brand.logo
-    ? `<span style="display:inline-block;background:#ffffff;border-radius:8px;padding:7px 12px;line-height:0;"><img src="${brand.logo}" alt="${brand.name}" height="30" style="height:30px;max-height:30px;width:auto;display:block;border:0;"></span>`
-    : `<span style="color:#ffffff;font-size:17px;font-weight:700;letter-spacing:0.3px;">${brand.name}</span>`;
+    ? `<span style="display:inline-block;background:#ffffff;border-radius:8px;padding:7px 12px;line-height:0;"><img src="${escapeEmailHtml(brand.logo)}" alt="${escapeEmailHtml(brand.name)}" height="30" style="height:30px;max-height:30px;width:auto;display:block;border:0;"></span>`
+    : `<span style="color:#ffffff;font-size:17px;font-weight:700;letter-spacing:0.3px;">${escapeEmailHtml(brand.name)}</span>`;
 
 // Custom domains confirmed to serve the Attractions Network build (not an old
 // site). Links in transactional emails may safely target these directly.
@@ -118,6 +216,7 @@ export const brandedLink = (
   path: string,
   params: Record<string, string> = {}
 ): string => {
+  if (!/^\/[A-Za-z0-9/_-]*$/.test(path)) return brand.origin;
   const qs = new URLSearchParams(params);
   if (brand.slug) qs.set('tenant', brand.slug);
   const q = qs.toString();
@@ -178,7 +277,7 @@ const renderMeetingPointBlock = (
   return `
         <tr><td class="px" style="padding:14px 34px 4px;">
           <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#9aa1ad;margin:0 0 8px;">Meeting point</div>
-          ${mp.label ? `<p style="margin:0 0 10px;font-size:14px;color:#16181d;font-weight:600;line-height:1.45;">${mp.label}</p>` : ''}
+          ${mp.label ? `<p style="margin:0 0 10px;font-size:14px;color:#16181d;font-weight:600;line-height:1.45;">${escapeEmailHtml(mp.label)}</p>` : ''}
           <a href="${mapsLink}" target="_blank" style="text-decoration:none;">
             <img src="${mapImg}" width="532" alt="Map to the meeting point" style="display:block;width:100%;max-width:532px;height:auto;border-radius:12px;border:1px solid #ececf0;">
           </a>
@@ -201,17 +300,26 @@ export const renderActionEmail = (
   opts: { title: string; heading: string; intro: string; note?: string; ctaLabel: string; ctaUrl: string }
 ): string => {
   const year = new Date().getFullYear();
+  const safe = {
+    title: escapeEmailHtml(opts.title),
+    heading: escapeEmailHtml(opts.heading),
+    intro: sanitizeInlineEmailHtml(opts.intro),
+    note: opts.note ? escapeEmailHtml(opts.note) : undefined,
+    ctaLabel: escapeEmailHtml(opts.ctaLabel),
+    ctaUrl: escapeEmailHtml(safeHttpUrl(opts.ctaUrl)),
+  };
+  const brandName = escapeEmailHtml(brand.name);
   return `<!DOCTYPE html>
-<html lang="en" dir="ltr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="x-apple-disable-message-reformatting"><title>${opts.title}</title>
+<html lang="en" dir="ltr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="x-apple-disable-message-reformatting"><title>${safe.title}</title>
 <style>body,table,td,a{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;}body{margin:0;padding:0;width:100%!important;background:#f2f2f4;}@media screen and (max-width:600px){.container{width:100%!important;border-radius:0!important;}.px{padding-left:22px!important;padding-right:22px!important;}.btn a{display:block!important;}h1{font-size:21px!important;}}</style></head>
 <body dir="ltr" style="margin:0;padding:0;background:#f2f2f4;direction:ltr;text-align:left;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f2f4;"><tr><td align="center" style="padding:24px 12px;">
 <table role="presentation" dir="ltr" class="container" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
 <tr><td class="px" style="background:${brand.color};padding:24px 34px;">${brandHeaderMark(brand)}</td></tr>
-<tr><td class="px" style="padding:34px 34px 4px;"><h1 style="margin:0 0 10px;font-size:23px;line-height:1.3;color:#16181d;font-weight:700;">${opts.heading}</h1><p style="margin:0;font-size:15px;line-height:1.6;color:#5b6472;">${opts.intro}</p></td></tr>
-<tr><td class="px btn" style="padding:24px 34px 6px;"><table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr><td align="center" bgcolor="${brand.color}" style="border-radius:10px;"><a href="${opts.ctaUrl}" style="display:inline-block;padding:14px 30px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;">${opts.ctaLabel}</a></td></tr></table></td></tr>
-${opts.note ? `<tr><td class="px" style="padding:10px 34px 6px;"><p style="margin:0;font-size:13px;line-height:1.6;color:#8a909c;">${opts.note}</p></td></tr>` : ''}
-<tr><td class="px" style="padding:22px 34px;background:#fafafb;border-top:1px solid #ececf0;"><p style="margin:0;font-size:12px;color:#adb2bd;">&copy; ${year} ${brand.name}. All rights reserved.</p></td></tr>
+<tr><td class="px" style="padding:34px 34px 4px;"><h1 style="margin:0 0 10px;font-size:23px;line-height:1.3;color:#16181d;font-weight:700;">${safe.heading}</h1><p style="margin:0;font-size:15px;line-height:1.6;color:#5b6472;">${safe.intro}</p></td></tr>
+<tr><td class="px btn" style="padding:24px 34px 6px;"><table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr><td align="center" bgcolor="${brand.color}" style="border-radius:10px;"><a href="${safe.ctaUrl}" style="display:inline-block;padding:14px 30px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;">${safe.ctaLabel}</a></td></tr></table></td></tr>
+${safe.note ? `<tr><td class="px" style="padding:10px 34px 6px;"><p style="margin:0;font-size:13px;line-height:1.6;color:#8a909c;">${safe.note}</p></td></tr>` : ''}
+<tr><td class="px" style="padding:22px 34px;background:#fafafb;border-top:1px solid #ececf0;"><p style="margin:0;font-size:12px;color:#adb2bd;">&copy; ${year} ${brandName}. All rights reserved.</p></td></tr>
 </table></td></tr></table></body></html>`;
 };
 
@@ -226,6 +334,31 @@ export const renderBookingConfirmationHtml = (
     ref: bookingDetails.reference,
     ...(bookingDetails.guestAccessToken ? { accessToken: bookingDetails.guestAccessToken } : {}),
   });
+  bookingDetails = {
+    ...bookingDetails,
+    reference: escapeEmailHtml(bookingDetails.reference),
+    attractionTitle: escapeEmailHtml(bookingDetails.attractionTitle),
+    date: escapeEmailHtml(bookingDetails.date),
+    time: bookingDetails.time ? escapeEmailHtml(bookingDetails.time) : undefined,
+    guestName: escapeEmailHtml(bookingDetails.guestName),
+    currency: escapeEmailHtml(bookingDetails.currency),
+    paymentMethod: bookingDetails.paymentMethod
+      ? escapeEmailHtml(bookingDetails.paymentMethod)
+      : undefined,
+    hotelPickup: bookingDetails.hotelPickup
+      ? {
+          hotelName: escapeEmailHtml(bookingDetails.hotelPickup.hotelName),
+          roomNumber: escapeEmailHtml(bookingDetails.hotelPickup.roomNumber),
+          pickupTime: escapeEmailHtml(bookingDetails.hotelPickup.pickupTime),
+        }
+      : undefined,
+    meetingPoint: bookingDetails.meetingPoint
+      ? {
+          ...bookingDetails.meetingPoint,
+          label: bookingDetails.meetingPoint.label,
+        }
+      : undefined,
+  };
   const firstName = (bookingDetails.guestName || 'there').trim().split(/\s+/)[0];
   const isPaid = !!bookingDetails.paymentMethod && bookingDetails.paymentMethod !== 'pay-later';
   const totalLabel = isPaid ? 'Total paid' : 'Total';
@@ -305,7 +438,7 @@ ${renderMeetingPointBlock(brand, bookingDetails.meetingPoint)}
         </td></tr>
         <tr><td class="px" style="padding:22px 34px;background:#fafafb;border-top:1px solid #ececf0;">
           <p style="margin:0 0 4px;font-size:12px;line-height:1.6;color:#8a909c;">Questions? Just reply to this email — our team is happy to help.</p>
-          <p style="margin:0;font-size:12px;color:#adb2bd;">&copy; ${year} ${brand.name}. All rights reserved.</p>
+          <p style="margin:0;font-size:12px;color:#adb2bd;">&copy; ${year} ${escapeEmailHtml(brand.name)}. All rights reserved.</p>
         </td></tr>
       </table>
     </td></tr>
@@ -318,8 +451,8 @@ ${renderMeetingPointBlock(brand, bookingDetails.meetingPoint)}
 export const sendBookingConfirmation = async (
   email: string,
   bookingDetails: BookingEmailDetails,
-  ticketPdf?: Buffer,
-  tenant?: EmailTenant | null
+  ticketPdf: Buffer | undefined,
+  tenant: EmailTenant | null
 ): Promise<void> => {
   const brand = getEmailBrand(tenant);
   const html = renderBookingConfirmationHtml(brand, bookingDetails, !!ticketPdf);
@@ -327,8 +460,12 @@ export const sendBookingConfirmation = async (
     to: email,
     subject: `Booking confirmed · ${bookingDetails.reference}`,
     html,
+    tenant: tenant || null,
     attachments: ticketPdf
-      ? [{ filename: `ticket-${bookingDetails.reference}.pdf`, data: ticketPdf }]
+      ? [{
+          filename: `ticket-${bookingDetails.reference.replace(/[^A-Za-z0-9_-]/g, '').slice(0, 80)}.pdf`,
+          data: ticketPdf,
+        }]
       : undefined,
   });
 };
@@ -358,6 +495,31 @@ export const renderAdminBookingNotificationHtml = (
   details: AdminBookingDetails,
   adminUrl: string
 ): string => {
+  const emailHref = safeMailtoAddress(details.guestEmail);
+  const phoneHref = details.guestPhone.replace(/[^+0-9]/g, '');
+  details = {
+    ...details,
+    reference: escapeEmailHtml(details.reference),
+    tenantName: escapeEmailHtml(details.tenantName),
+    attractionTitle: escapeEmailHtml(details.attractionTitle),
+    date: escapeEmailHtml(details.date),
+    time: details.time ? escapeEmailHtml(details.time) : undefined,
+    guestName: escapeEmailHtml(details.guestName),
+    guestEmail: escapeEmailHtml(details.guestEmail),
+    guestPhone: escapeEmailHtml(details.guestPhone),
+    currency: escapeEmailHtml(details.currency),
+    paymentMethod: escapeEmailHtml(details.paymentMethod),
+    hotelPickup: details.hotelPickup
+      ? {
+          hotelName: escapeEmailHtml(details.hotelPickup.hotelName),
+          roomNumber: escapeEmailHtml(details.hotelPickup.roomNumber),
+          pickupTime: escapeEmailHtml(details.hotelPickup.pickupTime),
+        }
+      : undefined,
+    meetingPoint: details.meetingPoint
+      ? { ...details.meetingPoint, label: details.meetingPoint.label }
+      : undefined,
+  };
   const title = details.attractionTitle || 'Experience';
   const totalGuests = details.adults + details.children;
   const guestsText = `${totalGuests} · ${details.adults} adult${details.adults === 1 ? '' : 's'}${details.children ? `, ${details.children} child${details.children === 1 ? '' : 'ren'}` : ''}`;
@@ -414,8 +576,10 @@ ${row('Date &amp; time', dateStr)}
 ${row('Guests', guestsText)}
 ${details.hotelPickup?.hotelName ? row('Hotel pickup', `${details.hotelPickup.hotelName}${details.hotelPickup.roomNumber ? `, Room ${details.hotelPickup.roomNumber}` : ''}${details.hotelPickup.pickupTime ? ` &middot; ${details.hotelPickup.pickupTime}` : ''}`) : ''}
 ${row('Lead traveller', details.guestName)}
-${row('Email', `<a href="mailto:${details.guestEmail}" style="color:${brand.color};text-decoration:none;font-weight:600;">${details.guestEmail}</a>`)}
-${row('Phone', `<a href="tel:${details.guestPhone}" style="color:#16181d;text-decoration:none;">${details.guestPhone}</a>`)}
+${row('Email', emailHref
+  ? `<a href="mailto:${escapeEmailHtml(emailHref)}" style="color:${brand.color};text-decoration:none;font-weight:600;">${details.guestEmail}</a>`
+  : details.guestEmail)}
+${row('Phone', `<a href="tel:${phoneHref}" style="color:#16181d;text-decoration:none;">${details.guestPhone}</a>`)}
 ${row('Payment', paymentText)}
 ${row('Total', `<span style="font-size:17px;font-weight:800;color:${brand.color};">${details.currency} ${details.total.toFixed(2)}</span>`)}
               </table>
@@ -426,7 +590,7 @@ ${renderMeetingPointBlock(brand, details.meetingPoint)}
         <tr><td class="px btn" style="padding:22px 34px 4px;">
           <table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr>
             <td align="center" bgcolor="${brand.color}" style="border-radius:10px;">
-              <a href="${adminUrl}" style="display:inline-block;padding:14px 30px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;">Open in admin</a>
+              <a href="${escapeEmailHtml(safeHttpUrl(adminUrl))}" style="display:inline-block;padding:14px 30px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;">Open in admin</a>
             </td>
           </tr></table>
         </td></tr>
@@ -443,7 +607,7 @@ ${renderMeetingPointBlock(brand, details.meetingPoint)}
 export const sendAdminBookingNotification = async (
   recipientEmail: string,
   details: AdminBookingDetails,
-  tenant?: EmailTenant | null
+  tenant: EmailTenant | null
 ): Promise<void> => {
   const brand = getEmailBrand(tenant);
   const adminUrl = brandedLink(brand, '/admin/bookings');
@@ -452,6 +616,69 @@ export const sendAdminBookingNotification = async (
     to: recipientEmail,
     subject: `New booking · ${details.reference} · ${details.attractionTitle || 'Experience'}`,
     html,
+    tenant: tenant || null,
+  });
+};
+
+export interface BookingStatusEmailDetails {
+  reference: string;
+  guestName: string;
+  kind: 'cancelled' | 'refunded';
+  guestAccessToken?: string;
+  refundAmount?: number;
+  currency?: string;
+  fullRefund?: boolean;
+}
+
+export const renderBookingStatusEmailHtml = (
+  brand: EmailBrand,
+  details: BookingStatusEmailDetails
+): string => {
+  const reference = escapeEmailHtml(details.reference);
+  const firstName = escapeEmailHtml(details.guestName.trim().split(/\s+/)[0] || 'there');
+  const viewUrl = brandedLink(brand, '/checkout/confirmation', {
+    ref: details.reference,
+    ...(details.guestAccessToken ? { accessToken: details.guestAccessToken } : {}),
+  });
+
+  if (details.kind === 'cancelled') {
+    const refundNote = details.refundAmount && details.currency
+      ? `A refund of ${details.currency.toUpperCase()} ${details.refundAmount.toFixed(2)} has been processed to the original payment method.`
+      : 'No online payment was collected for this booking.';
+    return renderActionEmail(brand, {
+      title: `Booking cancelled · ${reference}`,
+      heading: 'Your booking is cancelled',
+      intro: `Hi ${firstName}, booking <strong>${reference}</strong> has been cancelled.`,
+      note: refundNote,
+      ctaLabel: 'View booking',
+      ctaUrl: viewUrl,
+    });
+  }
+
+  const amount = Number.isFinite(details.refundAmount)
+    ? `${escapeEmailHtml(details.currency?.toUpperCase() || '')} ${details.refundAmount!.toFixed(2)}`.trim()
+    : 'your payment';
+  return renderActionEmail(brand, {
+    title: `Refund processed · ${reference}`,
+    heading: details.fullRefund ? 'Your refund is complete' : 'Your partial refund is complete',
+    intro: `Hi ${firstName}, a refund of <strong>${amount}</strong> has been processed for booking <strong>${reference}</strong>.`,
+    note: 'Your bank may take several business days to show the credit on your statement.',
+    ctaLabel: 'View booking',
+    ctaUrl: viewUrl,
+  });
+};
+
+export const sendBookingStatusEmail = async (
+  email: string,
+  details: BookingStatusEmailDetails,
+  tenant: EmailTenant | null
+): Promise<void> => {
+  const brand = getEmailBrand(tenant);
+  await sendEmail({
+    to: email,
+    subject: `${details.kind === 'cancelled' ? 'Booking cancelled' : 'Refund processed'} · ${safeDisplayName(details.reference)}`,
+    html: renderBookingStatusEmailHtml(brand, details),
+    tenant,
   });
 };
 
@@ -459,7 +686,7 @@ export const sendPasswordResetEmail = async (
   email: string,
   resetToken: string,
   userName: string,
-  tenant?: EmailTenant | null
+  tenant: EmailTenant | null
 ): Promise<void> => {
   const brand = getEmailBrand(tenant);
   const resetUrl = brandedLink(brand, '/reset-password', { token: resetToken });
@@ -468,7 +695,7 @@ export const sendPasswordResetEmail = async (
   const html = renderActionEmail(brand, {
     title: 'Password reset',
     heading: 'Reset your password',
-    intro: `Hi ${firstName}, we received a request to reset your password. Click below to choose a new one — this link expires in 1 hour.`,
+    intro: `Hi ${escapeEmailHtml(firstName)}, we received a request to reset your password. Click below to choose a new one — this link expires in 1 hour.`,
     note: "If you didn't request this, you can safely ignore this email — your password won't change.",
     ctaLabel: 'Reset password',
     ctaUrl: resetUrl,
@@ -478,6 +705,7 @@ export const sendPasswordResetEmail = async (
     to: email,
     subject: `Reset your password · ${brand.name}`,
     html,
+    tenant: tenant || null,
   });
 };
 
@@ -486,7 +714,7 @@ export const sendUserInvitation = async (
   invitationToken: string,
   inviterName: string,
   role: string,
-  tenant?: EmailTenant | null
+  tenant: EmailTenant | null
 ): Promise<void> => {
   // Brand the link + copy for the invited user's site (custom domain when set,
   // else the shared origin with ?tenant= so the set-password page themes right).
@@ -496,7 +724,7 @@ export const sendUserInvitation = async (
   const html = renderActionEmail(brand, {
     title: 'Invitation',
     heading: "You're invited",
-    intro: `${inviterName} has invited you to join <strong>${brand.name}</strong> as a <strong>${role}</strong>. Click below to accept and set up your account — this invitation expires in 7 days.`,
+    intro: `${escapeEmailHtml(inviterName)} has invited you to join <strong>${escapeEmailHtml(brand.name)}</strong> as a <strong>${escapeEmailHtml(role)}</strong>. Click below to accept and set up your account — this invitation expires in 7 days.`,
     ctaLabel: 'Accept invitation',
     ctaUrl: inviteUrl,
   });
@@ -505,6 +733,7 @@ export const sendUserInvitation = async (
     to: email,
     subject: `You're invited to join ${brand.name}`,
     html,
+    tenant: tenant || null,
   });
 };
 
@@ -521,7 +750,7 @@ const DEFAULT_OPENING_PROGRAMME = [
 
 export const sendEventRsvpNotification = async (
   recipientEmail: string,
-  rsvp: {
+  rawRsvp: {
     eventName: string;
     eventDate: string;
     eventLocation: string;
@@ -533,11 +762,35 @@ export const sendEventRsvpNotification = async (
     adultsCount: number;
     childrenCount: number;
     message?: string;
-  }
+  },
+  tenant: EmailTenant | null
 ): Promise<void> => {
+  const rsvp = {
+    ...rawRsvp,
+    eventName: escapeEmailHtml(rawRsvp.eventName),
+    eventDate: escapeEmailHtml(rawRsvp.eventDate),
+    eventLocation: escapeEmailHtml(rawRsvp.eventLocation),
+    tenantName: escapeEmailHtml(rawRsvp.tenantName),
+    firstName: escapeEmailHtml(rawRsvp.firstName),
+    lastName: escapeEmailHtml(rawRsvp.lastName),
+    email: escapeEmailHtml(rawRsvp.email),
+    phone: escapeEmailHtml(rawRsvp.phone),
+    message: rawRsvp.message ? escapeEmailHtml(rawRsvp.message) : undefined,
+  };
   const totalGuests = rsvp.adultsCount + rsvp.childrenCount;
-  const adminPanelUrl = `${env.frontendUrl.split(',')[0].trim()}/admin/rsvps`;
-  const receivedAt = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+  const adminPanelUrl = brandedLink(getEmailBrand(tenant), '/admin/rsvps');
+  let receivedAt: string;
+  try {
+    receivedAt = new Date().toLocaleString(tenant?.defaultLanguage || 'en-US', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+      ...(tenant?.timezone ? { timeZone: tenant.timezone } : {}),
+    });
+  } catch {
+    receivedAt = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+  }
+  const emailHref = safeMailtoAddress(rawRsvp.email);
+  const phoneHref = rawRsvp.phone.replace(/[^+0-9]/g, '');
   const preheader = `${rsvp.firstName} ${rsvp.lastName} — ${totalGuests} guest${totalGuests === 1 ? '' : 's'} (${rsvp.adultsCount} adult${rsvp.adultsCount === 1 ? '' : 's'}, ${rsvp.childrenCount} child${rsvp.childrenCount === 1 ? '' : 'ren'})`;
 
   const adminHtml = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -640,7 +893,9 @@ export const sendEventRsvpNotification = async (
                     <table width="100%" cellpadding="0" cellspacing="0" border="0">
                       <tr>
                         <td style="font-family:Arial,sans-serif;font-size:11px;color:#7A5A33;letter-spacing:1.5px;text-transform:uppercase;">Email</td>
-                        <td align="right" style="font-family:Georgia,serif;font-size:14px;"><a href="mailto:${rsvp.email}" style="color:#B8860B;text-decoration:none;font-weight:600;">${rsvp.email}</a></td>
+                        <td align="right" style="font-family:Georgia,serif;font-size:14px;">${emailHref
+                          ? `<a href="mailto:${escapeEmailHtml(emailHref)}" style="color:#B8860B;text-decoration:none;font-weight:600;">${rsvp.email}</a>`
+                          : rsvp.email}</td>
                       </tr>
                     </table>
                   </td>
@@ -650,7 +905,7 @@ export const sendEventRsvpNotification = async (
                     <table width="100%" cellpadding="0" cellspacing="0" border="0">
                       <tr>
                         <td style="font-family:Arial,sans-serif;font-size:11px;color:#7A5A33;letter-spacing:1.5px;text-transform:uppercase;">Phone</td>
-                        <td align="right" style="font-family:Georgia,serif;font-size:14px;"><a href="tel:${rsvp.phone.replace(/\s+/g, '')}" style="color:#B8860B;text-decoration:none;font-weight:600;">${rsvp.phone}</a></td>
+                        <td align="right" style="font-family:Georgia,serif;font-size:14px;"><a href="tel:${phoneHref}" style="color:#B8860B;text-decoration:none;font-weight:600;">${rsvp.phone}</a></td>
                       </tr>
                     </table>
                   </td>
@@ -684,7 +939,7 @@ export const sendEventRsvpNotification = async (
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#FDF6EC" style="background:#FDF6EC;border-left:3px solid #B8860B;border-radius:0 6px 6px 0;">
                   <tr>
                     <td style="padding:16px 18px;">
-                      <div style="font-family:Georgia,serif;font-style:italic;color:#4B3824;font-size:15px;line-height:1.6;">“${rsvp.message.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}”</div>
+                      <div style="font-family:Georgia,serif;font-style:italic;color:#4B3824;font-size:15px;line-height:1.6;">“${rsvp.message}”</div>
                     </td>
                   </tr>
                 </table>
@@ -731,14 +986,15 @@ export const sendEventRsvpNotification = async (
 
   await sendEmail({
     to: recipientEmail,
-    subject: `RSVP · ${rsvp.firstName} ${rsvp.lastName} · ${totalGuests} guest${totalGuests === 1 ? '' : 's'} · ${rsvp.eventName}`,
+    subject: `RSVP · ${safeDisplayName(rawRsvp.firstName)} ${safeDisplayName(rawRsvp.lastName)} · ${totalGuests} guest${totalGuests === 1 ? '' : 's'} · ${safeDisplayName(rawRsvp.eventName)}`,
     html: adminHtml,
+    tenant,
   });
 };
 
 export const sendEventRsvpConfirmation = async (
   guestEmail: string,
-  rsvp: {
+  rawRsvp: {
     eventName: string;
     eventDate: string;
     eventLocation: string;
@@ -748,8 +1004,19 @@ export const sendEventRsvpConfirmation = async (
     childrenCount: number;
     programme?: string[];
     eventTime?: string;
-  }
+  },
+  tenant: EmailTenant | null
 ): Promise<void> => {
+  const rsvp = {
+    ...rawRsvp,
+    eventName: escapeEmailHtml(rawRsvp.eventName),
+    eventDate: escapeEmailHtml(rawRsvp.eventDate),
+    eventLocation: escapeEmailHtml(rawRsvp.eventLocation),
+    tenantName: escapeEmailHtml(rawRsvp.tenantName),
+    firstName: escapeEmailHtml(rawRsvp.firstName),
+    programme: rawRsvp.programme?.map(escapeEmailHtml),
+    eventTime: rawRsvp.eventTime ? escapeEmailHtml(rawRsvp.eventTime) : undefined,
+  };
   const totalGuests = rsvp.adultsCount + rsvp.childrenCount;
   const programme = rsvp.programme && rsvp.programme.length > 0 ? rsvp.programme : DEFAULT_OPENING_PROGRAMME;
   const eventTime = rsvp.eventTime || '5 PM – 10 PM';
@@ -926,25 +1193,32 @@ export const sendEventRsvpConfirmation = async (
 
   await sendEmail({
     to: guestEmail,
-    subject: `✨ You’re on the list · ${rsvp.eventName}`,
+    subject: `You're on the list · ${safeDisplayName(rawRsvp.eventName)}`,
     html: guestHtml,
+    tenant,
   });
 };
 
-export const sendContactFormEmail = async (
+export const renderContactFormHtml = (
+  tenant: EmailTenant,
   fromName: string,
   fromEmail: string,
   subject: string,
   message: string
-): Promise<void> => {
-  const adminHtml = `
+): string => {
+  const brand = getEmailBrand(tenant);
+  const safeName = escapeEmailHtml(fromName);
+  const safeEmail = escapeEmailHtml(fromEmail);
+  const safeSubject = escapeEmailHtml(subject);
+  const safeMessage = escapeEmailHtml(message).replace(/\r?\n/g, '<br>');
+  return `
     <!DOCTYPE html>
     <html>
     <head>
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #1f2937; color: white; padding: 20px; border-radius: 10px 10px 0 0; }
+        .header { background: ${brand.color}; color: white; padding: 20px; border-radius: 10px 10px 0 0; }
         .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
         .field { margin-bottom: 15px; }
         .field-label { font-weight: 600; color: #6b7280; font-size: 12px; text-transform: uppercase; }
@@ -954,32 +1228,46 @@ export const sendContactFormEmail = async (
     <body>
       <div class="container">
         <div class="header">
-          <h2>New Contact Form Submission</h2>
+          <h2>New ${escapeEmailHtml(brand.name)} Contact Form Submission</h2>
         </div>
         <div class="content">
           <div class="field">
             <div class="field-label">From</div>
-            <div class="field-value">${fromName} &lt;${fromEmail}&gt;</div>
+            <div class="field-value">${safeName} &lt;${safeEmail}&gt;</div>
           </div>
           <div class="field">
             <div class="field-label">Subject</div>
-            <div class="field-value">${subject}</div>
+            <div class="field-value">${safeSubject}</div>
           </div>
           <div class="field">
             <div class="field-label">Message</div>
-            <div class="field-value">${message}</div>
+            <div class="field-value">${safeMessage}</div>
           </div>
         </div>
       </div>
     </body>
     </html>
   `;
+};
+
+export const sendContactFormEmail = async (
+  tenant: EmailTenant,
+  fromName: string,
+  fromEmail: string,
+  subject: string,
+  message: string
+): Promise<void> => {
+  const recipient = tenant.contactInfo?.email?.trim();
+  if (!isEmailAddress(recipient)) {
+    throw new Error('Tenant contact email is not configured');
+  }
+  const adminHtml = renderContactFormHtml(tenant, fromName, fromEmail, subject, message);
 
   await sendEmail({
-    to: env.mailgunFromEmail.includes('<')
-      ? env.mailgunFromEmail.match(/<(.+)>/)?.[1] || 'admin@foxesnetwork.com'
-      : env.mailgunFromEmail,
+    to: recipient,
     subject: `Contact Form: ${subject}`,
     html: adminHtml,
+    tenant,
+    replyTo: fromEmail,
   });
 };

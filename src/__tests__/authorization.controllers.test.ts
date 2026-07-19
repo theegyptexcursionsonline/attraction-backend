@@ -7,6 +7,7 @@ import { Review } from '../models/Review';
 import { createApiKey, revokeApiKey } from '../controllers/apiKeys.controller';
 import { createOffer, deleteOffer } from '../controllers/specialOffers.controller';
 import { getReviewById } from '../controllers/reviews.controller';
+import { getAttractionById, updateAttraction } from '../controllers/attractions.controller';
 import { AuthRequest } from '../types';
 
 jest.mock('../models/ApiKey', () => ({
@@ -20,7 +21,13 @@ jest.mock('../models/SpecialOffer', () => ({
     findByIdAndDelete: jest.fn(),
   },
 }));
-jest.mock('../models/Attraction', () => ({ Attraction: { exists: jest.fn() } }));
+jest.mock('../models/Attraction', () => ({
+  Attraction: {
+    exists: jest.fn(),
+    findById: jest.fn(),
+    findByIdAndUpdate: jest.fn(),
+  },
+}));
 jest.mock('../models/Review', () => ({ Review: { findOne: jest.fn() } }));
 jest.mock('../services/notification.service', () => ({
   createAdminNotifications: jest.fn().mockResolvedValue(undefined),
@@ -126,5 +133,45 @@ describe('authorization controller defenses', () => {
     expect(selectedFields).not.toContain('userId');
     expect(selectedFields.split(' ')).not.toContain('status');
     expect(res.status).toHaveBeenCalledWith(404);
+  });
+
+  it('denies attraction details to a non-super-admin with no tenant assignments', async () => {
+    const attractionTenantId = new Types.ObjectId();
+    (Attraction.findById as jest.Mock).mockResolvedValue({
+      _id: new Types.ObjectId(),
+      tenantIds: [attractionTenantId],
+    });
+    const req = authRequest({
+      params: { id: new Types.ObjectId().toString() },
+      user: { role: 'manager', assignedTenants: [] },
+    });
+    const res = response();
+
+    await getAttractionById(req, res, jest.fn());
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ success: false, error: 'Access denied to this attraction' })
+    );
+  });
+
+  it('rejects attraction reassignment to an unassigned tenant', async () => {
+    const assignedTenantId = new Types.ObjectId();
+    const otherTenantId = new Types.ObjectId();
+    (Attraction.findById as jest.Mock).mockResolvedValue({
+      _id: new Types.ObjectId(),
+      tenantIds: [assignedTenantId],
+    });
+    const req = authRequest({
+      params: { id: new Types.ObjectId().toString() },
+      body: { tenantIds: [assignedTenantId.toString(), otherTenantId.toString()] },
+      user: { role: 'manager', assignedTenants: [assignedTenantId] },
+    });
+    const res = response();
+
+    await updateAttraction(req, res, jest.fn());
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(Attraction.findByIdAndUpdate).not.toHaveBeenCalled();
   });
 });

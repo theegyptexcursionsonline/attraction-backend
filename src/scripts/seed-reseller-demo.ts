@@ -14,6 +14,7 @@ import { Tenant } from '../models/Tenant';
 import { Attraction } from '../models/Attraction';
 import { Booking } from '../models/Booking';
 import { User } from '../models/User';
+import { requireScriptSecret } from './require-script-secret';
 import { generateBookingReference } from '../utils/hash';
 
 const PAYMENT_FEE_PERCENT = 2.9;
@@ -128,10 +129,10 @@ async function main(): Promise<void> {
 
     // Demo brand-admin for the supplier so we can log into the admin UI.
     const EMAIL = `reseller.demo@foxesdemo.test`;
-    const PASSWORD = 'DemoPass2026!';
+    const demoPassword = requireScriptSecret('DEMO_ACCOUNT_PASSWORD');
     let admin: any = await User.findOne({ email: EMAIL }).select('+password');
     if (admin) {
-      admin.password = PASSWORD;
+      admin.password = demoPassword;
       admin.status = 'active';
       admin.role = 'brand-admin';
       admin.assignedTenants = [supplier._id];
@@ -140,7 +141,7 @@ async function main(): Promise<void> {
     } else {
       admin = await User.create({
         email: EMAIL,
-        password: PASSWORD,
+        password: demoPassword,
         firstName: 'Reseller',
         lastName: 'Demo',
         role: 'brand-admin',
@@ -182,7 +183,7 @@ async function main(): Promise<void> {
     console.log('\n=== DEMO READY ===');
     console.log(`supplier tenant : ${supplier.slug}`);
     console.log(`admin email     : ${EMAIL}`);
-    console.log(`admin password  : ${PASSWORD}`);
+    console.log('admin password  : supplied securely and not printed');
     console.log(`booking refs    : ${refs.join(', ')}`);
   } finally {
     await disconnectDatabase();

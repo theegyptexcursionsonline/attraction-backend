@@ -26,6 +26,7 @@ export interface IUser extends Document {
   totalBookings?: number;
   totalSpent?: number;
   refreshToken?: string;
+  tokenVersion?: number;
   passwordResetToken?: string;
   passwordResetExpires?: Date;
   lastLogin?: Date;

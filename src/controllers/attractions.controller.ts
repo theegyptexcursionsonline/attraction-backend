@@ -213,11 +213,12 @@ export const getAttractionBySlug = async (
     // map, where the booking stores attractionId) can resolve it without the
     // authenticated admin endpoint. A 24-hex id is never a real slug, so this is
     // unambiguous.
-    const attraction = await Attraction.findOne(
-      Types.ObjectId.isValid(slug)
-        ? { _id: slug, status: 'active' }
-        : { slug, status: 'active' }
-    )
+    const query: Record<string, unknown> = Types.ObjectId.isValid(slug)
+      ? { _id: slug, status: 'active' }
+      : { slug, status: 'active' };
+    if (req.tenant) query.tenantIds = { $in: [req.tenant._id] };
+
+    const attraction = await Attraction.findOne(query)
       .select(PUBLIC_ATTRACTION_PROJECTION)
       .lean();
 
@@ -252,7 +253,7 @@ export const getAttractionById = async (
       const userTenantIds = (req.user.assignedTenants || []).map((t) => t.toString());
       const attractionTenantIds = (attraction.tenantIds || []).map((t) => t.toString());
       const hasAccess = attractionTenantIds.some((tid) => userTenantIds.includes(tid));
-      if (!hasAccess && userTenantIds.length > 0) {
+      if (!hasAccess) {
         sendError(res, 'Access denied to this attraction', 403);
         return;
       }
@@ -275,6 +276,14 @@ export const getAttractionReviews = async (
 
     const pageNum = parseInt(page as string, 10);
     const limitNum = parseInt(limit as string, 10);
+
+    if (
+      req.tenant &&
+      !(await Attraction.exists({ _id: id, tenantIds: { $in: [req.tenant._id] }, status: 'active' }))
+    ) {
+      sendError(res, 'Attraction not found', 404);
+      return;
+    }
 
     const [reviews, total] = await Promise.all([
       Review.find({ attractionId: id, status: 'approved' })
@@ -507,6 +516,16 @@ export const updateAttraction = async (
       if (!hasAccess) {
         sendError(res, 'Access denied to this attraction', 403);
         return;
+      }
+
+      if (Array.isArray(req.body.tenantIds)) {
+        const unauthorizedTenant = req.body.tenantIds.some(
+          (tenantId: string) => !assignedSet.has(tenantId)
+        );
+        if (unauthorizedTenant) {
+          sendError(res, 'Cannot assign attraction to a tenant you do not manage', 403);
+          return;
+        }
       }
     }
 

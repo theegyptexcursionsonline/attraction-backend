@@ -1,4 +1,10 @@
-import { renderBookingConfirmationHtml, getEmailBrand, renderActionEmail } from '../services/email.service';
+import {
+  renderBookingConfirmationHtml,
+  getEmailBrand,
+  renderActionEmail,
+  renderContactFormHtml,
+  renderBookingStatusEmailHtml,
+} from '../services/email.service';
 import type { EmailBrand, BookingEmailDetails } from '../services/email.service';
 
 const brand: EmailBrand = {
@@ -96,6 +102,21 @@ describe('renderBookingConfirmationHtml', () => {
     expect(html).not.toContain('<img src="https://');
     expect(html).toContain('No Logo Co');
   });
+
+  it('escapes guest, attraction, hotel, and meeting-point markup', () => {
+    const attack = '<img src=x onerror="alert(1)">';
+    const html = renderBookingConfirmationHtml(brand, {
+      ...base,
+      guestName: attack,
+      attractionTitle: attack,
+      hotelPickup: { hotelName: attack, roomNumber: attack },
+      meetingPoint: { lat: 27.0287, lng: 33.9186, label: attack },
+    });
+
+    expect(html).not.toContain('<img src=x');
+    expect(html).not.toContain('onerror="alert');
+    expect(html).toContain('&lt;img');
+  });
 });
 
 import { renderAdminBookingNotificationHtml } from '../services/email.service';
@@ -146,6 +167,23 @@ describe('renderActionEmail (password-reset / invitation branding — A9)', () =
     expect(html).not.toContain('Foxes Network');
     expect(html).toContain('Makadi Horse Club'); // footer / alt uses the tenant brand
   });
+
+  it('keeps only narrow inline markup and rejects non-http action URLs', () => {
+    const html = renderActionEmail(branded, {
+      title: '<img src=x onerror=alert(1)>',
+      heading: '<script>alert(1)</script>',
+      intro: '<strong>Allowed</strong><img src=x onerror=alert(1)><script>alert(2)</script>',
+      ctaLabel: 'Continue',
+      ctaUrl: 'javascript:alert(1)',
+    });
+
+    expect(html).toContain('<strong>Allowed</strong>');
+    expect(html).not.toContain('<script');
+    expect(html).not.toContain('<img src=x');
+    expect(html).not.toContain('onerror="alert');
+    expect(html).not.toContain('javascript:');
+    expect(html).toContain('href="#"');
+  });
 });
 
 describe('renderAdminBookingNotificationHtml', () => {
@@ -183,5 +221,73 @@ describe('renderAdminBookingNotificationHtml', () => {
     expect(html).toMatch(/maps\.googleapis\.com|wsrv\.nl/);
     expect(html).toContain("google.com/maps/search");
     expect(html).toContain('27.0287,33.9186');
+  });
+
+  it('escapes operator-notification guest fields', () => {
+    const attack = '<svg onload=alert(1)>';
+    const html = renderAdminBookingNotificationHtml(
+      brand,
+      {
+        ...adminBase,
+        guestName: attack,
+        guestEmail: 'guest@example.com\" onmouseover=\"alert(1)',
+        guestPhone: attack,
+      },
+      'https://makadihorseclub.com/admin/bookings'
+    );
+
+    expect(html).not.toContain('<svg');
+    expect(html).not.toContain('onload="alert');
+    expect(html).not.toContain('href="mailto:guest@example.com&quot;');
+    expect(html).toContain('&lt;svg');
+  });
+});
+
+describe('renderContactFormHtml', () => {
+  it('tenant-brands and escapes every visitor-controlled field', () => {
+    const attack = '<img src=x onerror="alert(1)">';
+    const html = renderContactFormHtml(
+      {
+        name: 'Makadi Horse Club',
+        slug: 'makadi-horse-club',
+        theme: { primaryColor: '#B8860B' },
+        contactInfo: { email: 'info@makadihorseclub.com' },
+      },
+      attack,
+      'visitor@example.com',
+      attack,
+      `Line one\n${attack}`
+    );
+
+    expect(html).toContain('Makadi Horse Club Contact Form');
+    expect(html).toContain('#B8860B');
+    expect(html).not.toContain('<img src=x');
+    expect(html).not.toContain('onerror="alert');
+    expect(html).toContain('&lt;img');
+    expect(html).toContain('Line one<br>');
+  });
+});
+
+describe('renderBookingStatusEmailHtml', () => {
+  it.each([
+    ['cancelled', 'Your booking is cancelled'],
+    ['refunded', 'Your refund is complete'],
+  ] as const)('tenant-brands and escapes the %s email', (kind, heading) => {
+    const html = renderBookingStatusEmailHtml(brand, {
+      reference: '<script>alert(1)</script>',
+      guestName: '<img src=x onerror="alert(1)">',
+      kind,
+      guestAccessToken: 'guest-token',
+      refundAmount: 75,
+      currency: 'usd',
+      fullRefund: true,
+    });
+
+    expect(html).toContain(heading);
+    expect(html).toContain('#8B4513');
+    expect(html).toContain('accessToken=guest-token');
+    expect(html).not.toContain('<script');
+    expect(html).not.toContain('<img src=x');
+    expect(html).toContain('&lt;script&gt;');
   });
 });

@@ -1,5 +1,6 @@
 import { connectDatabase, disconnectDatabase } from '../config';
 import { User, Tenant, Attraction, Category, Destination, Review, Booking } from '../models';
+import { requireScriptSecret } from './require-script-secret';
 
 // Import mock data structures
 const categories = [
@@ -1795,10 +1796,10 @@ const tenants = [
   },
 ];;
 
-const users = [
+const buildSeedUsers = () => [
   {
     email: 'admin@attractions-network.com',
-    password: 'Admin@123456',
+    password: requireScriptSecret('SEED_SUPER_ADMIN_PASSWORD'),
     firstName: 'Super',
     lastName: 'Admin',
     role: 'super-admin',
@@ -1806,7 +1807,7 @@ const users = [
   },
   {
     email: 'customer@example.com',
-    password: 'Customer@123',
+    password: requireScriptSecret('SEED_CUSTOMER_PASSWORD'),
     firstName: 'John',
     lastName: 'Doe',
     role: 'customer',
@@ -1817,6 +1818,7 @@ const users = [
 
 const seed = async (): Promise<void> => {
   try {
+    const users = buildSeedUsers();
     console.log('🌱 Starting database seed...\n');
 
     await connectDatabase();
@@ -1887,8 +1889,8 @@ const seed = async (): Promise<void> => {
 
     console.log('\n✅ Database seeded successfully!\n');
     console.log('📝 Test accounts:');
-    console.log('   Admin: admin@attractions-network.com / Admin@123456');
-    console.log('   Customer: customer@example.com / Customer@123');
+    console.log('   Admin: admin@attractions-network.com (credential supplied securely)');
+    console.log('   Customer: customer@example.com (credential supplied securely)');
     console.log('\n📊 Egypt Network Summary:');
     console.log(`   ✅ ${tenants.filter(t => t.status === 'active').length} Active Tenants`);
     console.log(`   ✅ ${tenants.filter(t => t.status === 'coming_soon').length} Coming Soon Tenants`);

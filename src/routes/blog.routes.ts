@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { BlogPost } from '../models/BlogPost';
+import { sanitizeRichText, sanitizeTranslations } from '../utils/sanitizeHtml';
 
 const router = Router();
 
@@ -31,7 +32,14 @@ router.get('/:slug', async (req: Request, res: Response) => {
     res.status(404).json({ success: false, error: 'Not found' });
     return;
   }
-  res.json({ success: true, data: post });
+  res.json({
+    success: true,
+    data: {
+      ...post,
+      content: sanitizeRichText(post.content),
+      translations: sanitizeTranslations(post.translations),
+    },
+  });
 });
 
 export default router;

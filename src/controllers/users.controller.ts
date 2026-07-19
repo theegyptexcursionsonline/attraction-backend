@@ -14,6 +14,7 @@ import {
   canAssignRole,
   canManageRole,
 } from '../utils/tenantScope';
+import { revokeUserSessions } from '../utils/session';
 
 // User Profile Endpoints
 export const getProfile = async (
@@ -268,7 +269,7 @@ export const inviteUser = async (
     let inviteTenant = null;
     if (Array.isArray(assignedTenants) && assignedTenants.length > 0) {
       inviteTenant = await Tenant.findById(assignedTenants[0])
-        .select('name slug customDomain domainMigrated theme logo')
+        .select('name slug customDomain domainMigrated theme logo contactInfo defaultLanguage defaultCurrency timezone')
         .lean();
     }
 
@@ -344,11 +345,19 @@ export const updateUser = async (
       }
     }
 
+    const securityContextChanged =
+      (role !== undefined && role !== target.role) ||
+      (status !== undefined && status !== target.status) ||
+      (assignedTenants !== undefined &&
+        JSON.stringify((target.assignedTenants || []).map(String).sort()) !==
+          JSON.stringify((assignedTenants || []).map(String).sort()));
+
     if (firstName !== undefined) target.firstName = firstName;
     if (lastName !== undefined) target.lastName = lastName;
     if (role !== undefined) target.role = role;
     if (status !== undefined) target.status = status;
     if (assignedTenants !== undefined) target.assignedTenants = assignedTenants;
+    if (securityContextChanged) revokeUserSessions(target);
     await target.save();
     await target.populate('assignedTenants', 'name slug');
 

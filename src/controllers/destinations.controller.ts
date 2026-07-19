@@ -102,14 +102,17 @@ export const getDestinationBySlug = async (
       return;
     }
 
+    const attractionScope: Record<string, unknown> = {
+      'destination.city': destination.name,
+      status: 'active',
+    };
+    if (req.tenant) attractionScope.tenantIds = { $in: [req.tenant._id] };
+
     // Get attraction count and stats
     const [attractionCount, ratingStats, priceStats] = await Promise.all([
-      Attraction.countDocuments({
-        'destination.city': destination.name,
-        status: 'active',
-      }),
+      Attraction.countDocuments(attractionScope),
       Attraction.aggregate([
-        { $match: { 'destination.city': destination.name, status: 'active' } },
+        { $match: attractionScope },
         {
           $group: {
             _id: null,
@@ -119,7 +122,7 @@ export const getDestinationBySlug = async (
         },
       ]),
       Attraction.aggregate([
-        { $match: { 'destination.city': destination.name, status: 'active' } },
+        { $match: attractionScope },
         {
           $group: {
             _id: null,
@@ -130,10 +133,12 @@ export const getDestinationBySlug = async (
     ]);
 
     // Get popular attractions
-    const popularAttractions = await Attraction.find({
-      'destination.city': destination.name,
-      status: 'active',
-    })
+    if (req.tenant && attractionCount === 0) {
+      sendError(res, 'Destination not found', 404);
+      return;
+    }
+
+    const popularAttractions = await Attraction.find(attractionScope)
       .sort({ reviewCount: -1 })
       .limit(5)
       .select('title slug')
@@ -160,14 +165,22 @@ export const getFeaturedDestinations = async (
   try {
     const { limit = 6 } = req.query;
 
-    const destinations = await Destination.find({ isActive: true })
+    const attractionScope: Record<string, unknown> = { status: 'active' };
+    if (req.tenant) attractionScope.tenantIds = { $in: [req.tenant._id] };
+    const destinationNames = req.tenant
+      ? await Attraction.distinct('destination.city', attractionScope)
+      : undefined;
+    const destinationQuery: Record<string, unknown> = { isActive: true };
+    if (destinationNames) destinationQuery.name = { $in: destinationNames };
+
+    const destinations = await Destination.find(destinationQuery)
       .sort({ sortOrder: 1 })
       .limit(parseInt(limit as string, 10))
       .lean();
 
     // Get attraction counts
     const counts = await Attraction.aggregate([
-      { $match: { status: 'active' } },
+      { $match: attractionScope },
       { $group: { _id: '$destination.city', count: { $sum: 1 } } },
     ]);
 

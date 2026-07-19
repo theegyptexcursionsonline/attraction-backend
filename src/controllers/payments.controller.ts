@@ -21,7 +21,7 @@ import {
 } from '../services/tenantPayment.service';
 import { secretHint } from '../utils/secretCrypto';
 import { generateTicketPdf } from '../services/pdf.service';
-import { sendBookingConfirmation, sendAdminBookingNotification } from '../services/email.service';
+import { sendBookingConfirmation, sendAdminBookingNotification, sendBookingStatusEmail } from '../services/email.service';
 import { safeEmitEvent, recordInboundEvent } from '../services/webhook.service';
 import { env } from '../config/env';
 import { generateBookingAccessToken, verifyBookingAccessToken } from '../utils/bookingAccess';
@@ -431,10 +431,8 @@ const finalizePaidBooking = async (
       tenantBrand
     );
 
-    const recipients = new Set<string>();
-    if (tb?.contactInfo?.email) recipients.add(tb.contactInfo.email);
-    recipients.add('info@foxestechnology.com');
-    for (const recipient of recipients) {
+    const recipient = tb?.contactInfo?.email;
+    if (recipient) {
       try {
         await sendAdminBookingNotification(
           recipient,
@@ -843,6 +841,26 @@ export const refundPayment = async (
     if (booking.userId && newlyRefunded > 0) {
       await User.findByIdAndUpdate(booking.userId, { $inc: { totalSpent: -newlyRefunded } });
     }
+
+    void Tenant.findById(booking.tenantId)
+      .select('name slug customDomain domainMigrated contactInfo theme logo defaultLanguage defaultCurrency timezone')
+      .lean()
+      .then((tenant) => tenant ? sendBookingStatusEmail(
+          booking.guestDetails.email,
+          {
+            reference: booking.reference,
+            guestName: `${booking.guestDetails.firstName} ${booking.guestDetails.lastName}`.trim(),
+            kind: 'refunded',
+            guestAccessToken: generateBookingAccessToken(String(booking._id), booking.reference),
+            refundAmount: refund.amount / 100,
+            currency: booking.currency,
+            fullRefund,
+          },
+          tenant
+        ) : undefined)
+      .catch(() => console.error('[email] refund notification failed', {
+        tenantId: String(booking.tenantId),
+      }));
 
     sendSuccess(
       res,

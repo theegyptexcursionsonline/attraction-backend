@@ -1,19 +1,16 @@
 import { connectDatabase, disconnectDatabase } from '../config/database';
 import { User } from '../models/User';
+import { requireScriptSecret } from './require-script-secret';
 
 async function main(): Promise<void> {
   const email = process.argv[2]?.trim().toLowerCase();
-  const newPassword = process.argv[3];
 
-  if (!email || !newPassword) {
-    console.error('Usage: npm run user:set-password -- <email> <new-password>');
+  if (!email) {
+    console.error('Usage: USER_NEW_PASSWORD=<secret-manager-value> npm run user:set-password -- <email>');
     process.exit(1);
   }
 
-  if (newPassword.length < 8) {
-    console.error('Password must be at least 8 characters long.');
-    process.exit(1);
-  }
+  const newPassword = requireScriptSecret('USER_NEW_PASSWORD');
 
   await connectDatabase();
 

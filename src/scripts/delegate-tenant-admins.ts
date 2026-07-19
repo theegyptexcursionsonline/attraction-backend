@@ -7,17 +7,16 @@
  * duplicate users.
  *
  * Usage:
- *   npx ts-node src/scripts/delegate-tenant-admins.ts
+ *   DELEGATE_DEFAULT_PASSWORD=<secret-manager-value> npx ts-node src/scripts/delegate-tenant-admins.ts
  *
  * Email pattern: <slug>@foxestechnology.com
- * Default password: Foxes@Net2026!  (can be overridden via DELEGATE_DEFAULT_PASSWORD env var)
  */
 
 import { connectDatabase, disconnectDatabase } from '../config/database';
 import { User } from '../models/User';
 import { Tenant } from '../models/Tenant';
+import { requireScriptSecret } from './require-script-secret';
 
-const DEFAULT_PASSWORD = process.env.DELEGATE_DEFAULT_PASSWORD || 'Foxes@Net2026!';
 const EMAIL_DOMAIN = 'foxestechnology.com';
 
 type ResultRow = {
@@ -25,7 +24,6 @@ type ResultRow = {
   tenantName: string;
   status: string;
   email: string;
-  password: string;
   action: 'created' | 'already-delegated' | 'updated-existing';
   notes?: string;
 };
@@ -38,6 +36,7 @@ function titleCase(slug: string): string {
 }
 
 async function main(): Promise<void> {
+  const initialPassword = requireScriptSecret('DELEGATE_DEFAULT_PASSWORD');
   await connectDatabase();
 
   const results: ResultRow[] = [];
@@ -68,7 +67,6 @@ async function main(): Promise<void> {
           tenantName: tenant.name,
           status: tenant.status,
           email: existingBrandAdmin.email,
-          password: '(unchanged — existing admin)',
           action: 'already-delegated',
         });
         continue;
@@ -94,7 +92,7 @@ async function main(): Promise<void> {
           ] as typeof existingUser.assignedTenants;
         }
 
-        existingUser.password = DEFAULT_PASSWORD; // pre-save hook will hash
+        existingUser.password = initialPassword; // pre-save hook will hash
         existingUser.passwordResetToken = undefined;
         existingUser.passwordResetExpires = undefined;
         await existingUser.save();
@@ -104,7 +102,6 @@ async function main(): Promise<void> {
           tenantName: tenant.name,
           status: tenant.status,
           email,
-          password: DEFAULT_PASSWORD,
           action: 'updated-existing',
           notes: 'Row existed with this email; role/tenant/password re-synced.',
         });
@@ -115,7 +112,7 @@ async function main(): Promise<void> {
       const firstName = titleCase(slug);
       const user = new User({
         email,
-        password: DEFAULT_PASSWORD, // hashed by pre-save hook
+        password: initialPassword, // hashed by pre-save hook
         firstName,
         lastName: 'Admin',
         role: 'brand-admin',
@@ -131,7 +128,6 @@ async function main(): Promise<void> {
         tenantName: tenant.name,
         status: tenant.status,
         email,
-        password: DEFAULT_PASSWORD,
         action: 'created',
       });
     }
@@ -155,16 +151,13 @@ async function main(): Promise<void> {
 
   const allWithNewCreds = [...created, ...updated];
   if (allWithNewCreds.length > 0) {
-    console.log('--- NEW CREDENTIALS ---');
-    console.log(
-      'Tenant | Status | Email | Password'
-    );
+    console.log('--- PROVISIONED ACCOUNTS ---');
+    console.log('Tenant | Status | Email');
     console.log('-'.repeat(100));
     for (const r of allWithNewCreds) {
-      console.log(
-        `${r.tenantName} | ${r.status} | ${r.email} | ${r.password}`
-      );
+      console.log(`${r.tenantName} | ${r.status} | ${r.email}`);
     }
+    console.log('Credentials were supplied through the approved secret manager and are not printed.');
     console.log('');
   }
 

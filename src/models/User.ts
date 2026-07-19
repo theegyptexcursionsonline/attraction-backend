@@ -1,6 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import { IUser } from '../types';
+import { revokeUserSessions } from '../utils/session';
 
 const userSchema = new Schema<IUser>(
   {
@@ -79,6 +80,11 @@ const userSchema = new Schema<IUser>(
       type: String,
       select: false,
     },
+    tokenVersion: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     passwordResetToken: {
       type: String,
       select: false,
@@ -112,6 +118,7 @@ userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   
   try {
+    if (!this.isNew) revokeUserSessions(this);
     const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);
     next();

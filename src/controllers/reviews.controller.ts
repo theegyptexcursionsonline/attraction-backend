@@ -1,5 +1,6 @@
 import { Response, NextFunction } from 'express';
 import { Review } from '../models/Review';
+import { Attraction } from '../models/Attraction';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { sanitizeHtml, escapeRegex } from '../utils/helpers';
@@ -36,7 +37,12 @@ export const getRecentReviews = async (
     const { limit = 6 } = req.query;
     const reviewLimit = Math.min(Number(limit) || 6, 50);
 
-    const reviews = await Review.find({ status: 'approved' })
+    const query: Record<string, unknown> = { status: 'approved' };
+    if (req.tenant) {
+      query.attractionId = { $in: await attractionIdsForTenants([req.tenant._id.toString()]) };
+    }
+
+    const reviews = await Review.find(query)
       .sort({ createdAt: -1 })
       .limit(reviewLimit)
       .populate('attractionId', 'title slug')
@@ -58,10 +64,15 @@ export const getFeaturedReviews = async (
     const reviewLimit = Math.min(Number(limit) || 6, 50);
 
     // Get highest rated and verified reviews
-    const reviews = await Review.find({
+    const query: Record<string, unknown> = {
       status: 'approved',
       verified: true,
-    })
+    };
+    if (req.tenant) {
+      query.attractionId = { $in: await attractionIdsForTenants([req.tenant._id.toString()]) };
+    }
+
+    const reviews = await Review.find(query)
       .sort({ rating: -1, helpful: -1, createdAt: -1 })
       .limit(reviewLimit)
       .populate('attractionId', 'title slug')
@@ -85,6 +96,14 @@ export const getReviewsByAttractionId = async (
     const pageNum = Math.max(1, Number(page) || 1);
     const limitNum = Math.min(Math.max(1, Number(limit) || 10), 100);
     const skip = (pageNum - 1) * limitNum;
+
+    if (
+      req.tenant &&
+      !(await attractionInCallerTenants(attractionId, [req.tenant._id.toString()]))
+    ) {
+      sendError(res, 'Attraction not found', 404);
+      return;
+    }
 
     const [reviews, total] = await Promise.all([
       Review.find({
@@ -141,8 +160,28 @@ export const createReview = async (
       return;
     }
 
-    if (rating < 1 || rating > 5) {
+    if (typeof rating !== 'number' || !Number.isFinite(rating) || rating < 1 || rating > 5) {
       sendError(res, 'Rating must be between 1 and 5', 400);
+      return;
+    }
+
+    const tenantIds = req.tenant ? [req.tenant._id.toString()] : [];
+    const attractionExists = req.tenant
+      ? await attractionInCallerTenants(attractionId, tenantIds)
+      : !!(await Attraction.exists({ _id: attractionId }));
+    if (!attractionExists) {
+      sendError(res, 'Attraction not found', 404);
+      return;
+    }
+
+    if (
+      typeof title !== 'string' || title.trim().length > 160 ||
+      typeof content !== 'string' || content.trim().length > 5000 ||
+      typeof author !== 'string' || author.trim().length > 120 ||
+      typeof country !== 'string' || country.trim().length > 120 ||
+      (images !== undefined && (!Array.isArray(images) || images.length > 10 || images.some((image) => typeof image !== 'string' || image.length > 2048)))
+    ) {
+      sendError(res, 'Invalid review data', 400);
       return;
     }
 
@@ -184,7 +223,12 @@ export const getReviewById = async (
   try {
     const { reviewId } = req.params;
 
-    const review = await Review.findOne({ _id: reviewId, status: 'approved' })
+    const query: Record<string, unknown> = { _id: reviewId, status: 'approved' };
+    if (req.tenant) {
+      query.attractionId = { $in: await attractionIdsForTenants([req.tenant._id.toString()]) };
+    }
+
+    const review = await Review.findOne(query)
       .select(PUBLIC_REVIEW_FIELDS)
       .populate('attractionId', 'title slug');
 

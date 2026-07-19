@@ -7,6 +7,7 @@ import { User } from '../models/User';
 import { Availability } from '../models/Availability';
 import { PromoCode } from '../models/PromoCode';
 import { SpecialOffer } from '../models/SpecialOffer';
+import { IdempotencyKey } from '../models/IdempotencyKey';
 import { verifyToken } from '../utils/jwt';
 import { generateBookingAccessToken } from '../utils/bookingAccess';
 import { getTenantStripeConfig } from '../services/tenantPayment.service';
@@ -15,6 +16,25 @@ import { generateTicketPdf } from '../services/pdf.service';
 // Valid MongoDB ObjectIds for tests
 const ATTR_ID = new Types.ObjectId().toHexString();
 const TENANT_ID = new Types.ObjectId().toHexString();
+
+const validBookingPayload = () => ({
+  attractionId: ATTR_ID,
+  items: [{
+    optionId: 'adult-option',
+    optionName: 'Adult Ticket',
+    date: '2030-03-10',
+    quantities: { adults: 1, children: 0, infants: 0 },
+    unitPrice: 50,
+    totalPrice: 50,
+  }],
+  guestDetails: {
+    firstName: 'RDMI',
+    lastName: 'Team',
+    email: 'info@rdmiwebservices.com',
+    phone: '+123456789',
+    country: 'US',
+  },
+});
 
 jest.mock('../utils/jwt', () => ({
   ...jest.requireActual('../utils/jwt'),
@@ -35,6 +55,15 @@ jest.mock('../models/Booking', () => ({
     findById: jest.fn(),
     countDocuments: jest.fn(),
     aggregate: jest.fn(),
+  },
+}));
+
+jest.mock('../models/IdempotencyKey', () => ({
+  IdempotencyKey: {
+    create: jest.fn(),
+    findOne: jest.fn(),
+    findByIdAndUpdate: jest.fn(),
+    deleteOne: jest.fn(),
   },
 }));
 
@@ -107,6 +136,9 @@ jest.mock('../services/pdf.service', () => ({
 describe('API security and pricing guards', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (IdempotencyKey.create as jest.Mock).mockResolvedValue({ _id: new Types.ObjectId() });
+    (IdempotencyKey.findByIdAndUpdate as jest.Mock).mockResolvedValue({});
+    (IdempotencyKey.deleteOne as jest.Mock).mockResolvedValue({ deletedCount: 1 });
     (Booking.create as jest.Mock).mockImplementation(async (payload) => payload);
     (Availability.updateOne as jest.Mock).mockResolvedValue({ acknowledged: true });
     (Availability.findOneAndUpdate as jest.Mock).mockResolvedValue({ _id: 'availability-1' });
@@ -175,6 +207,7 @@ describe('API security and pricing guards', () => {
 
     const response = await request(app)
       .post('/api/bookings')
+      .set('Idempotency-Key', 'booking-test-key-0001')
       .send({
         attractionId: ATTR_ID,
         items: [
@@ -209,6 +242,128 @@ describe('API security and pricing guards', () => {
       expect.anything(),
       expect.objectContaining({ $inc: expect.objectContaining({ totalSpent: expect.anything() }) })
     );
+    const idempotencyClaim = (IdempotencyKey.create as jest.Mock).mock.calls[0][0];
+    expect(idempotencyClaim.keyHash).toMatch(/^[a-f0-9]{64}$/);
+    expect(idempotencyClaim.requestHash).toMatch(/^[a-f0-9]{64}$/);
+    expect(JSON.stringify(idempotencyClaim)).not.toContain('booking-test-key-0001');
+    expect(JSON.stringify(idempotencyClaim)).not.toContain('info@rdmiwebservices.com');
+  });
+
+  it('requires a valid idempotency key before looking up an attraction', async () => {
+    const response = await request(app)
+      .post('/api/bookings')
+      .send(validBookingPayload());
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe('A valid Idempotency-Key header is required');
+    expect(Attraction.findById).not.toHaveBeenCalled();
+    expect(Booking.create).not.toHaveBeenCalled();
+  });
+
+  it('replays a completed idempotent booking without reserving inventory twice', async () => {
+    (Attraction.findById as jest.Mock).mockResolvedValue({
+      _id: ATTR_ID,
+      status: 'active',
+      currency: 'USD',
+      tenantIds: [TENANT_ID],
+      pricingOptions: [{ id: 'adult-option', name: 'Adult Ticket', price: 50 }],
+    });
+
+    const existingBooking = {
+      ...validBookingPayload(),
+      _id: new Types.ObjectId(),
+      reference: 'AN-IDEMPOTENT',
+      tenantId: TENANT_ID,
+      status: 'confirmed',
+      paymentStatus: 'pending',
+      paymentMethod: 'pay-later',
+      subtotal: 50,
+      fees: 2.5,
+      discount: 0,
+      total: 52.5,
+      currency: 'USD',
+    };
+
+    (IdempotencyKey.create as jest.Mock).mockImplementation(async (claim) => {
+      (IdempotencyKey.findOne as jest.Mock).mockReturnValue({
+        lean: jest.fn().mockResolvedValue({
+          ...claim,
+          status: 'completed',
+          resourceId: existingBooking._id,
+        }),
+      });
+      throw Object.assign(new Error('duplicate key'), { code: 11000 });
+    });
+    (Booking.findById as jest.Mock).mockResolvedValue(existingBooking);
+
+    const response = await request(app)
+      .post('/api/bookings')
+      .set('Idempotency-Key', 'booking-replay-key-0001')
+      .send(validBookingPayload());
+
+    expect(response.status).toBe(200);
+    expect(response.headers['idempotency-replayed']).toBe('true');
+    expect(response.body.data.reference).toBe('AN-IDEMPOTENT');
+    expect(response.body.data.guestAccessToken).toMatch(/^[A-Za-z0-9_-]+$/);
+    expect(Booking.create).not.toHaveBeenCalled();
+    expect(Availability.findOneAndUpdate).not.toHaveBeenCalled();
+    expect(Availability.updateOne).not.toHaveBeenCalled();
+  });
+
+  it('rejects reuse of an idempotency key for a different booking request', async () => {
+    (Attraction.findById as jest.Mock).mockResolvedValue({
+      _id: ATTR_ID,
+      status: 'active',
+      currency: 'USD',
+      tenantIds: [TENANT_ID],
+      pricingOptions: [{ id: 'adult-option', name: 'Adult Ticket', price: 50 }],
+    });
+    (IdempotencyKey.create as jest.Mock).mockRejectedValue(
+      Object.assign(new Error('duplicate key'), { code: 11000 })
+    );
+    (IdempotencyKey.findOne as jest.Mock).mockReturnValue({
+      lean: jest.fn().mockResolvedValue({
+        requestHash: 'different-request-hash',
+        status: 'completed',
+        resourceId: new Types.ObjectId(),
+      }),
+    });
+
+    const response = await request(app)
+      .post('/api/bookings')
+      .set('Idempotency-Key', 'booking-collision-key-0001')
+      .send(validBookingPayload());
+
+    expect(response.status).toBe(409);
+    expect(response.body.error).toContain('different booking request');
+    expect(Booking.findById).not.toHaveBeenCalled();
+    expect(Booking.create).not.toHaveBeenCalled();
+  });
+
+  it('returns a retry hint while an identical booking request is processing', async () => {
+    (Attraction.findById as jest.Mock).mockResolvedValue({
+      _id: ATTR_ID,
+      status: 'active',
+      currency: 'USD',
+      tenantIds: [TENANT_ID],
+      pricingOptions: [{ id: 'adult-option', name: 'Adult Ticket', price: 50 }],
+    });
+    (IdempotencyKey.create as jest.Mock).mockImplementation(async (claim) => {
+      (IdempotencyKey.findOne as jest.Mock).mockReturnValue({
+        lean: jest.fn().mockResolvedValue({ ...claim, status: 'processing' }),
+      });
+      throw Object.assign(new Error('duplicate key'), { code: 11000 });
+    });
+
+    const response = await request(app)
+      .post('/api/bookings')
+      .set('Idempotency-Key', 'booking-processing-key-0001')
+      .send(validBookingPayload());
+
+    expect(response.status).toBe(409);
+    expect(response.headers['retry-after']).toBe('2');
+    expect(response.body.error).toContain('already processing');
+    expect(Booking.create).not.toHaveBeenCalled();
   });
 
   it('rejects unknown pricing options', async () => {
@@ -222,6 +377,7 @@ describe('API security and pricing guards', () => {
 
     const response = await request(app)
       .post('/api/bookings')
+      .set('Idempotency-Key', 'booking-test-key-0002')
       .send({
         attractionId: ATTR_ID,
         items: [
@@ -259,6 +415,7 @@ describe('API security and pricing guards', () => {
 
     const response = await request(app)
       .post('/api/bookings')
+      .set('Idempotency-Key', 'booking-test-key-0003')
       .send({
         attractionId: ATTR_ID,
         items: [
@@ -500,7 +657,10 @@ describe('API security and pricing guards', () => {
     });
     (Availability.findOneAndUpdate as jest.Mock).mockResolvedValueOnce(null);
 
-    const response = await request(app).post('/api/bookings').send({
+    const response = await request(app)
+      .post('/api/bookings')
+      .set('Idempotency-Key', 'booking-test-key-0004')
+      .send({
       attractionId: ATTR_ID,
       items: [{
         optionId: 'ride',
@@ -547,7 +707,10 @@ describe('API security and pricing guards', () => {
     (PromoCode.findOne as jest.Mock).mockResolvedValueOnce(promo);
     (PromoCode.findOneAndUpdate as jest.Mock).mockResolvedValueOnce({ ...promo, usageCount: 1 });
 
-    const response = await request(app).post('/api/bookings').send({
+    const response = await request(app)
+      .post('/api/bookings')
+      .set('Idempotency-Key', 'booking-test-key-0005')
+      .send({
       attractionId: ATTR_ID,
       promoCode: 'rdmi10',
       items: [{

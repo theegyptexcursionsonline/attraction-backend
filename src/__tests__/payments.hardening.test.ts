@@ -67,6 +67,7 @@ jest.mock('../services/pdf.service', () => ({
 jest.mock('../services/email.service', () => ({
   sendBookingConfirmation: jest.fn().mockResolvedValue(undefined),
   sendAdminBookingNotification: jest.fn().mockResolvedValue(undefined),
+  sendBookingStatusEmail: jest.fn().mockResolvedValue(undefined),
 }));
 
 jest.mock('../services/webhook.service', () => ({

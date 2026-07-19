@@ -6,6 +6,7 @@ import { Booking } from '../models/Booking';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { escapeRegex } from '../utils/helpers';
+import { sanitizeCustomPages } from '../utils/sanitizeHtml';
 
 const PUBLIC_TENANT_FIELDS = [
   '_id',
@@ -51,6 +52,10 @@ export const toPublicTenantDto = (source: unknown): Record<string, unknown> => {
       .filter((field) => record[field] !== undefined)
       .map((field) => [field, record[field]])
   ) as Record<string, unknown>;
+
+  if (dto.customPages !== undefined) {
+    dto.customPages = sanitizeCustomPages(dto.customPages);
+  }
 
   const paymentSettings = record.paymentSettings;
   if (paymentSettings && typeof paymentSettings === 'object') {
@@ -241,7 +246,12 @@ export const createTenant = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const tenant = await Tenant.create(req.body);
+    const tenant = await Tenant.create({
+      ...req.body,
+      ...(req.body.customPages !== undefined
+        ? { customPages: sanitizeCustomPages(req.body.customPages) }
+        : {}),
+    });
     sendSuccess(res, tenant, 'Tenant created successfully', 201);
   } catch (error) {
     next(error);
@@ -256,9 +266,16 @@ export const updateTenant = async (
   try {
     const { id } = req.params;
 
+    const updates = {
+      ...req.body,
+      ...(req.body.customPages !== undefined
+        ? { customPages: sanitizeCustomPages(req.body.customPages) }
+        : {}),
+    };
+
     const tenant = await Tenant.findByIdAndUpdate(
       id,
-      { $set: req.body },
+      { $set: updates },
       { new: true, runValidators: true }
     );
 

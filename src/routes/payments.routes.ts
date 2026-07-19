@@ -11,6 +11,7 @@ import {
 import { authenticate, optionalAuth, requireRole, canAccessTenant } from '../middleware/auth.middleware';
 import { validate } from '../middleware/validate.middleware';
 import { createPaymentIntentSchema } from '../utils/validators';
+import { paymentLimiter } from '../middleware/rate-limit.middleware';
 
 const router = Router();
 
@@ -99,6 +100,7 @@ router.post('/webhook/:tenantId', handleWebhook);
  */
 router.post(
   '/create-intent',
+  paymentLimiter,
   optionalAuth,
   validate(createPaymentIntentSchema),
   createPaymentIntent
@@ -130,7 +132,7 @@ router.post(
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-router.post('/confirm', optionalAuth, validate(createPaymentIntentSchema), confirmPayment);
+router.post('/confirm', paymentLimiter, optionalAuth, validate(createPaymentIntentSchema), confirmPayment);
 
 /**
  * @swagger

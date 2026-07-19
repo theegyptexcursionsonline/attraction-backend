@@ -83,10 +83,17 @@ export const getCategoryBySlug = async (
     }
 
     // Get attraction count
-    const count = await Attraction.countDocuments({
+    const attractionQuery: Record<string, unknown> = {
       category: slug,
       status: 'active',
-    });
+    };
+    if (req.tenant) attractionQuery.tenantIds = { $in: [req.tenant._id] };
+    const count = await Attraction.countDocuments(attractionQuery);
+
+    if (req.tenant && count === 0) {
+      sendError(res, 'Category not found', 404);
+      return;
+    }
 
     sendSuccess(res, { ...category, count });
   } catch (error) {

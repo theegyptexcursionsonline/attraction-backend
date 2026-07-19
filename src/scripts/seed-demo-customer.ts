@@ -8,13 +8,14 @@
 import { connectDatabase, disconnectDatabase } from '../config/database';
 import { Tenant } from '../models/Tenant';
 import { User } from '../models/User';
+import { requireScriptSecret } from './require-script-secret';
 
 const SLUG = process.argv[2] || 'sharm-dinner-cruise';
 const EMAIL = `demo.${SLUG}@foxesdemo.test`;
-const PASSWORD = 'DemoPass2026!';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 async function main(): Promise<void> {
+  const demoPassword = requireScriptSecret('DEMO_ACCOUNT_PASSWORD');
   await connectDatabase();
   try {
     const tenant: any = await Tenant.findOne({ slug: SLUG });
@@ -22,7 +23,7 @@ async function main(): Promise<void> {
 
     let user: any = await User.findOne({ email: EMAIL }).select('+password');
     if (user) {
-      user.password = PASSWORD; // pre-save hook re-hashes
+      user.password = demoPassword; // pre-save hook re-hashes
       user.status = 'active';
       user.assignedTenants = [tenant._id];
       await user.save();
@@ -30,7 +31,7 @@ async function main(): Promise<void> {
     } else {
       user = await User.create({
         email: EMAIL,
-        password: PASSWORD,
+        password: demoPassword,
         firstName: 'Demo',
         lastName: 'Guest',
         role: 'customer',
@@ -41,7 +42,7 @@ async function main(): Promise<void> {
     }
     console.log(`  tenant : ${SLUG}`);
     console.log(`  email  : ${EMAIL}`);
-    console.log(`  pass   : ${PASSWORD}`);
+    console.log('  pass   : supplied securely and not printed');
   } finally {
     await disconnectDatabase();
   }

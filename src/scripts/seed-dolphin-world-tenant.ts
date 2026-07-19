@@ -12,6 +12,7 @@ import { connectDatabase, disconnectDatabase } from '../config/database';
 import { Tenant } from '../models/Tenant';
 import { Attraction } from '../models/Attraction';
 import { User } from '../models/User';
+import { requireScriptSecret } from './require-script-secret';
 import { generateImageFromPrompt } from '../services/image-generation.service';
 import { uploadBase64Image } from '../services/upload.service';
 
@@ -58,7 +59,6 @@ const TENANT_DATA = {
 };
 
 const BRAND_ADMIN_EMAIL = 'dolphin-world-egypt@foxestechnology.com';
-const DEFAULT_PASSWORD = 'Foxes@Net2026!';
 
 const TOURS = [
   {
@@ -289,9 +289,10 @@ async function main(): Promise<void> {
     if (existingUser) {
       console.log(`Brand-admin already exists: ${BRAND_ADMIN_EMAIL}`);
     } else {
+      const initialPassword = requireScriptSecret('TENANT_ADMIN_INITIAL_PASSWORD');
       await User.create({
         email: BRAND_ADMIN_EMAIL,
-        password: DEFAULT_PASSWORD,
+        password: initialPassword,
         firstName: 'Dolphin World Egypt',
         lastName: 'Admin',
         role: 'brand-admin',
@@ -300,7 +301,7 @@ async function main(): Promise<void> {
         language: 'en',
         currency: 'USD',
       });
-      console.log(`Created brand-admin: ${BRAND_ADMIN_EMAIL} / ${DEFAULT_PASSWORD}`);
+      console.log(`Created brand-admin: ${BRAND_ADMIN_EMAIL} (credential supplied securely)`);
     }
 
     // Step 3: Seed tours
@@ -397,7 +398,7 @@ async function main(): Promise<void> {
 
     console.log(`\nDone. Created: ${created}, Skipped: ${skipped}`);
     console.log(`\nTenant URL: http://localhost:3001/?tenant=${TENANT_SLUG}`);
-    console.log(`Brand admin: ${BRAND_ADMIN_EMAIL} / ${DEFAULT_PASSWORD}`);
+    console.log(`Brand admin: ${BRAND_ADMIN_EMAIL}`);
   } finally {
     await disconnectDatabase();
   }

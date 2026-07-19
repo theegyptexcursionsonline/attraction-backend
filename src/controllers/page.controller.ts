@@ -4,6 +4,7 @@ import { Attraction } from '../models/Attraction';
 import { Tenant } from '../models/Tenant';
 import { sendSuccess, sendError } from '../utils/response';
 import { AuthRequest } from '../types';
+import { sanitizeRichText } from '../utils/sanitizeHtml';
 
 /**
  * GET /api/page/resolve?slug=<slug>
@@ -53,7 +54,10 @@ export const resolvePage = async (
     const tenant = await Tenant.findById(req.tenant._id).select('customPages name').lean();
     const page = tenant?.customPages?.find((p) => p.slug === slug);
     if (page) {
-      sendSuccess(res, { type: 'page', page });
+      sendSuccess(res, {
+        type: 'page',
+        page: { ...page, body: sanitizeRichText(page.body) },
+      });
       return;
     }
 

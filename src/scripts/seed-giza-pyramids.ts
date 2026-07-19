@@ -21,12 +21,11 @@ import { generateImageFromPrompt } from '../services/image-generation.service';
 import { uploadBase64Image } from '../services/upload.service';
 import { hashPassword, generatePreviewAccessCode } from '../utils/hash';
 import { env } from '../config/env';
+import { requireScriptSecret } from './require-script-secret';
 
 const args = new Set(process.argv.slice(2));
 const SKIP_IMAGES = args.has('--skip-images');
 const TOURS_ONLY = args.has('--tours-only');
-const DEFAULT_PASSWORD = 'Foxes@Net2026!';
-
 const log = (...args: unknown[]) => console.log('[giza]', ...args);
 
 async function uploadGeneratedImage(
@@ -363,9 +362,10 @@ async function seedGiza() {
   const brandAdminEmail = `${GIZA_TENANT.slug}@foxestechnology.com`;
   const existingUser = await User.findOne({ email: brandAdminEmail });
   if (!existingUser) {
+    const initialPassword = requireScriptSecret('TENANT_ADMIN_INITIAL_PASSWORD');
     await User.create({
       email: brandAdminEmail,
-      password: await hashPassword(DEFAULT_PASSWORD),
+      password: await hashPassword(initialPassword),
       firstName: 'Giza',
       lastName: 'Admin',
       role: 'brand-admin',

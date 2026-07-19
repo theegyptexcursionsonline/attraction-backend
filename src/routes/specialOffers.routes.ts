@@ -11,12 +11,13 @@ import {
 import { authenticate, requireAdmin, requireRole } from '../middleware/auth.middleware';
 import { validateQuery } from '../middleware/validate.middleware';
 import { paginationSchema } from '../utils/validators';
+import { optionalTenant } from '../middleware/tenant.middleware';
 
 const router = Router();
 
 // Public routes
-router.get('/active', getActiveOffers);
-router.get('/attraction/:attractionId', getOfferForAttraction);
+router.get('/active', optionalTenant, getActiveOffers);
+router.get('/attraction/:attractionId', optionalTenant, getOfferForAttraction);
 
 // Admin routes
 router.get('/stats', authenticate, requireAdmin, getOfferStats);

@@ -3,6 +3,7 @@ import { BlogPost } from '../models/BlogPost';
 import { authenticateContentEngine } from '../middleware/contentEngineAuth';
 import { sendError } from '../utils/response';
 import { env } from '../config';
+import { sanitizeRichText, sanitizeTranslations } from '../utils/sanitizeHtml';
 
 const router = Router();
 
@@ -93,7 +94,7 @@ router.post('/blog', authenticateContentEngine, async (req: Request, res: Respon
           slug: p.slug,
           title: p.title,
           excerpt: p.excerpt,
-          content: p.content,
+          content: sanitizeRichText(p.content),
           featuredImage: p.featuredImage,
           category: p.category,
           tags: asStringArray(p.tags),
@@ -103,7 +104,7 @@ router.post('/blog', authenticateContentEngine, async (req: Request, res: Respon
           readTime: p.readTime,
           status: p.status === 'draft' ? 'draft' : 'published',
           featured: p.featured === true,
-          translations: body.translations ?? {},
+          translations: sanitizeTranslations(body.translations),
           faqs: sanitizeFaqs(p.faqs),
         },
       },
@@ -123,7 +124,10 @@ router.post('/blog', authenticateContentEngine, async (req: Request, res: Respon
  * (404 = available, 200 = exists).
  */
 router.get('/blog/:slug', authenticateContentEngine, async (req: Request, res: Response) => {
-  const doc = await BlogPost.findOne({ slug: req.params.slug })
+  const tenantId = typeof req.query.tenantId === 'string' && req.query.tenantId.trim()
+    ? req.query.tenantId.trim()
+    : 'default';
+  const doc = await BlogPost.findOne({ tenantId, slug: req.params.slug })
     .select('slug title status updatedAt')
     .lean();
   if (!doc) {
