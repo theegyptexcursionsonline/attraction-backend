@@ -85,7 +85,9 @@ export const corsOptions: CorsOptions = {
       // Invalid URL, reject
     }
 
-    callback(new Error('Not allowed by CORS'));
+    const error = new Error('Not allowed by CORS');
+    error.name = 'CorsError';
+    callback(error);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

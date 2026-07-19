@@ -31,6 +31,14 @@ export const errorHandler = (
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _next: NextFunction
 ): void => {
+  if (err.name === 'CorsError') {
+    res.status(403).json({
+      success: false,
+      error: 'Origin not allowed',
+    });
+    return;
+  }
+
   console.error('Error:', err);
 
   // Zod validation errors

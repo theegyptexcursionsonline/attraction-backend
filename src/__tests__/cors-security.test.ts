@@ -1,4 +1,6 @@
 import { corsOptions } from '../config/cors';
+import request from 'supertest';
+import app from '../app';
 
 const evaluateOrigin = (origin: string): Promise<{ allowed: boolean; error?: Error }> =>
   new Promise((resolve) => {
@@ -33,5 +35,16 @@ describe('credentialed CORS origin isolation', () => {
     const result = await evaluateOrigin(origin);
     expect(result.allowed).toBe(false);
     expect(result.error?.message).toBe('Not allowed by CORS');
+  });
+
+  it('returns an intentional 403 without CORS headers for an unrelated origin', async () => {
+    const response = await request(app)
+      .options('/api/bookings')
+      .set('Origin', 'https://attacker.example')
+      .set('Access-Control-Request-Method', 'POST');
+
+    expect(response.status).toBe(403);
+    expect(response.body).toEqual({ success: false, error: 'Origin not allowed' });
+    expect(response.headers['access-control-allow-origin']).toBeUndefined();
   });
 });
