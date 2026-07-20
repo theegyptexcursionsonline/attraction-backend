@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
 import { env } from '../config/env';
+import { redactUrlForLogs, safeDevelopmentError } from '../utils/safe-logging';
 
 export class AppError extends Error {
   statusCode: number;
@@ -20,7 +21,7 @@ export const notFoundHandler = (
   res: Response,
   next: NextFunction
 ): void => {
-  const error = new AppError(`Route ${req.originalUrl} not found`, 404);
+  const error = new AppError('Route not found', 404);
   next(error);
 };
 
@@ -39,7 +40,15 @@ export const errorHandler = (
     return;
   }
 
-  console.error('Error:', err);
+  const statusCode = err instanceof AppError ? err.statusCode : 500;
+  console.error('[api-error]', {
+    requestId: String(res.locals.requestId || '-'),
+    method: req.method,
+    url: redactUrlForLogs(req.originalUrl || req.url || '/'),
+    statusCode,
+    name: err.name || 'Error',
+    ...(env.isDev ? safeDevelopmentError(err) : {}),
+  });
 
   // Zod validation errors
   if (err instanceof ZodError) {
@@ -111,10 +120,10 @@ export const errorHandler = (
   }
 
   // Default error
-  const statusCode = (err as AppError).statusCode || 500;
+  const fallbackStatusCode = (err as AppError).statusCode || 500;
   const message = env.isProd ? 'Internal server error' : err.message;
 
-  res.status(statusCode).json({
+  res.status(fallbackStatusCode).json({
     success: false,
     error: message,
     ...(env.isDev && { stack: err.stack }),

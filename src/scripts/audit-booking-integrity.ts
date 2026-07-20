@@ -33,6 +33,7 @@ async function run(): Promise<void> {
     staleProcessing,
     cardSucceededWithoutIntent,
     legacyCardPaymentsWithoutProviderReference,
+    legacyPaymentExceptionsMissingEvidence,
     impossibleTotals,
     ineligibleSettlements,
     futureBookings,
@@ -51,6 +52,15 @@ async function run(): Promise<void> {
       paymentStatus: 'succeeded',
       $or: [{ stripePaymentIntentId: { $exists: false } }, { stripePaymentIntentId: '' }],
       'paymentReconciliation.source': 'legacy-import',
+    }),
+    Booking.countDocuments({
+      'paymentReconciliation.source': 'legacy-import',
+      $or: [
+        { 'paymentReconciliation.reconciledAt': { $exists: false } },
+        { 'paymentReconciliation.reconciledAt': null },
+        { 'paymentReconciliation.note': { $exists: false } },
+        { 'paymentReconciliation.note': '' },
+      ],
     }),
     Booking.countDocuments({ total: { $lte: 0 } }),
     Booking.countDocuments({
@@ -155,6 +165,7 @@ async function run(): Promise<void> {
       staleProcessing,
       cardSucceededWithoutIntent,
       legacyCardPaymentsWithoutProviderReference,
+      legacyPaymentExceptionsMissingEvidence,
       impossibleTotals,
       ineligibleSettlements,
       availabilityMismatches,

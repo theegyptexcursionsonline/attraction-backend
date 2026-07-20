@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import mongoose from 'mongoose';
 import authRoutes from './auth.routes';
 import attractionsRoutes from './attractions.routes';
 import bookingsRoutes from './bookings.routes';
@@ -33,8 +34,16 @@ router.get('/health', (req, res) => {
     message: 'API is running',
     status: 'operational',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    memory: process.memoryUsage(),
+  });
+});
+
+router.get('/ready', (req, res) => {
+  const databaseReady = mongoose.connection.readyState === 1;
+  res.status(databaseReady ? 200 : 503).json({
+    success: databaseReady,
+    status: databaseReady ? 'ready' : 'not-ready',
+    checks: { database: databaseReady ? 'up' : 'down' },
+    timestamp: new Date().toISOString(),
   });
 });
 

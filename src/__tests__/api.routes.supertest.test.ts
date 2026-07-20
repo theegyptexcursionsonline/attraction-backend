@@ -81,6 +81,7 @@ const collectApiEndpoints = (): Endpoint[] => {
   const collected: Endpoint[] = [
     { method: 'get', path: '/api' },
     { method: 'get', path: '/api/health' },
+    { method: 'get', path: '/api/ready' },
   ];
 
   for (const [file, prefix] of Object.entries(routePrefixByFile)) {
@@ -115,6 +116,14 @@ describe('API routes supertest coverage', () => {
     expect(response.text).not.toContain('admin@attractions-network.com');
     expect(response.text).not.toContain('Admin@123456');
     expect(response.text).not.toContain('Customer@123');
+  });
+
+  it('does not echo sensitive query values from unknown routes', async () => {
+    const response = await request(app).get('/api/missing?guestAccessToken=private-value');
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ success: false, error: 'Route not found' });
+    expect(response.text).not.toContain('private-value');
   });
 
   test.each(endpoints)('%s %s responds (not missing route)', async ({ method, path: routePath }) => {

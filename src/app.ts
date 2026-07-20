@@ -1,4 +1,5 @@
 import dns from 'dns';
+import { randomUUID } from 'crypto';
 // Use Google Public DNS to avoid local resolver issues with MongoDB Atlas SRV records
 dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
 
@@ -15,6 +16,7 @@ import { env, connectDatabase, corsOptions, swaggerSpec } from './config';
 import routes from './routes';
 import { notFoundHandler, errorHandler, apiLimiter } from './middleware';
 import { expireStaleCardHolds } from './services/bookingInventory.service';
+import { redactUrlForLogs } from './utils/safe-logging';
 
 export const createApp = (): express.Application => {
   const app = express();
@@ -44,12 +46,20 @@ export const createApp = (): express.Application => {
   // CORS
   app.use(cors(corsOptions));
 
-  // Request logging
-  if (env.isDev) {
-    app.use(morgan('dev'));
-  } else {
-    app.use(morgan('combined'));
-  }
+  app.use((req, res, next) => {
+    const requestId = randomUUID();
+    res.locals.requestId = requestId;
+    res.setHeader('X-Request-ID', requestId);
+    next();
+  });
+
+  morgan.token('safe-url', (req) =>
+    redactUrlForLogs((req as express.Request).originalUrl || req.url || '/')
+  );
+  morgan.token('request-id', (_req, res) =>
+    String((res as express.Response).locals.requestId || '-')
+  );
+  app.use(morgan(':method :safe-url :status :res[content-length] :response-time ms requestId=:request-id'));
 
   // Stripe requires raw body for webhook signature validation.
   // This middleware must run before JSON/body parsing.

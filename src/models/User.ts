@@ -106,6 +106,7 @@ const userSchema = new Schema<IUser>(
         delete obj.refreshToken;
         delete obj.passwordResetToken;
         delete obj.passwordResetExpires;
+        delete obj.tokenVersion;
         delete obj.__v;
         return obj;
       },
