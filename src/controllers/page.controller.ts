@@ -138,7 +138,7 @@ export const tenantSitemap = async (
       '\n</urlset>\n';
 
     res.setHeader('Content-Type', 'application/xml; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=3600');
+    res.setHeader('Cache-Control', 'private, max-age=600');
     res.send(body);
   } catch (error) {
     next(error);

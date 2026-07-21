@@ -37,7 +37,7 @@ export const getHomepageStats = async (
     ]);
 
     // Cache for 5 minutes
-    res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=300, stale-while-revalidate=600');
+    res.setHeader('Cache-Control', 'private, max-age=120');
 
     sendSuccess(res, {
       totalAttractions,

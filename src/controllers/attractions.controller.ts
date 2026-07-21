@@ -185,8 +185,9 @@ export const getAttractions = async (
       Attraction.countDocuments(query),
     ]);
 
-    // Cache for 2 minutes (dynamic based on search params)
-    res.setHeader('Cache-Control', 'public, max-age=120, s-maxage=300, stale-while-revalidate=600');
+    // Private cache only: tenant-scoped payload — a shared/CDN cache serves one
+    // tenant's catalog to another (2026-07-21 Netlify edge poisoning incident).
+    res.setHeader('Cache-Control', 'private, max-age=60');
 
     sendPaginated(
       res,
@@ -940,7 +941,7 @@ export const getFeaturedAttractions = async (
       .lean();
 
     // Cache for 10 minutes (featured attractions change less frequently)
-    res.setHeader('Cache-Control', 'public, max-age=600, s-maxage=600, stale-while-revalidate=1200');
+    res.setHeader('Cache-Control', 'private, max-age=300');
 
     sendSuccess(res, attractions.map(toPublicAttractionDto));
   } catch (error) {
