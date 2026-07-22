@@ -3,6 +3,16 @@ import { randomUUID } from 'crypto';
 // Use Google Public DNS to avoid local resolver issues with MongoDB Atlas SRV records
 dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
 
+import * as Sentry from '@sentry/node';
+// Error tracking — inert unless SENTRY_DSN is set in the environment.
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'development',
+    tracesSampleRate: 0.1,
+  });
+}
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -109,6 +119,11 @@ export const createApp = (): express.Application => {
 
   // 404 handler
   app.use(notFoundHandler);
+
+  // Capture unhandled route errors before our handler formats the response
+  if (process.env.SENTRY_DSN) {
+    Sentry.setupExpressErrorHandler(app);
+  }
 
   // Error handler
   app.use(errorHandler);
