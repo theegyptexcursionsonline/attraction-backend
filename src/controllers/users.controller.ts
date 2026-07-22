@@ -15,6 +15,7 @@ import {
   canManageRole,
 } from '../utils/tenantScope';
 import { revokeUserSessions } from '../utils/session';
+import { PUBLIC_USER_PROJECTION, redactUserSecrets } from '../utils/userProjection';
 
 // User Profile Endpoints
 export const getProfile = async (
@@ -29,10 +30,14 @@ export const getProfile = async (
     }
 
     const user = await User.findById(req.user._id)
+      .select(PUBLIC_USER_PROJECTION)
       .populate('wishlist', 'slug title images priceFrom currency destination')
       .lean();
 
-    sendSuccess(res, user);
+    sendSuccess(
+      res,
+      user ? redactUserSecrets(user as unknown as Record<string, unknown>) : user
+    );
   } catch (error) {
     next(error);
   }
@@ -131,9 +136,10 @@ export const getUsers = async (
     const limitNum = parseInt(limit as string, 10);
 
     const query: Record<string, unknown> = {};
+    const scopedAdmin = Boolean(req.user && req.user.role !== 'super-admin');
 
     // Non-super-admins can only see users who share at least one of their assigned tenants
-    if (req.user && req.user.role !== 'super-admin') {
+    if (scopedAdmin && req.user) {
       const userTenantIds = req.user.assignedTenants || [];
       if (userTenantIds.length > 0) {
         query.assignedTenants = { $in: userTenantIds };
@@ -145,7 +151,16 @@ export const getUsers = async (
     }
 
     if (role) {
+      if (scopedAdmin && role === 'super-admin') {
+        sendPaginated(res, [], pageNum, limitNum, 0);
+        return;
+      }
       query.role = role;
+    } else if (scopedAdmin) {
+      // Platform super-admin identities are not tenant team members and should not
+      // be disclosed to delegated tenant operators even if legacy seed data happens
+      // to associate them with a tenant.
+      query.role = { $ne: 'super-admin' };
     }
 
     if (status) {
@@ -163,6 +178,7 @@ export const getUsers = async (
 
     const [users, total] = await Promise.all([
       User.find(query)
+        .select(PUBLIC_USER_PROJECTION)
         .populate('assignedTenants', 'name slug')
         .sort({ createdAt: -1 })
         .skip((pageNum - 1) * limitNum)
@@ -171,7 +187,10 @@ export const getUsers = async (
       User.countDocuments(query),
     ]);
 
-    sendPaginated(res, users, pageNum, limitNum, total);
+    const safeUsers = users.map((user) =>
+      redactUserSecrets(user as unknown as Record<string, unknown>)
+    );
+    sendPaginated(res, safeUsers, pageNum, limitNum, total);
   } catch (error) {
     next(error);
   }
@@ -186,6 +205,7 @@ export const getUserById = async (
     const { id } = req.params;
 
     const user = await User.findById(id)
+      .select(PUBLIC_USER_PROJECTION)
       .populate('assignedTenants', 'name slug')
       .lean();
 
@@ -198,6 +218,10 @@ export const getUserById = async (
     // of their assigned tenants — otherwise it's a cross-tenant PII read. 404 (not
     // 403) so ids can't be enumerated.
     if (req.user && !isSuperAdmin(req.user)) {
+      if (user.role === 'super-admin') {
+        sendError(res, 'User not found', 404);
+        return;
+      }
       const mine = callerTenantIds(req.user);
       const theirs = (user.assignedTenants || []).map((t) =>
         String((t as { _id?: unknown })?._id ?? t)
@@ -208,7 +232,7 @@ export const getUserById = async (
       }
     }
 
-    sendSuccess(res, user);
+    sendSuccess(res, redactUserSecrets(user as unknown as Record<string, unknown>));
   } catch (error) {
     next(error);
   }

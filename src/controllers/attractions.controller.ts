@@ -321,7 +321,10 @@ export const getAttractionAvailability = async (
     const { id } = req.params;
     const { date, month } = req.query;
 
-    const attraction = await Attraction.findById(id);
+    const attractionQuery: Record<string, unknown> = { _id: id, status: 'active' };
+    if (req.tenant) attractionQuery.tenantIds = { $in: [req.tenant._id] };
+
+    const attraction = await Attraction.findOne(attractionQuery);
 
     if (!attraction) {
       sendError(res, 'Attraction not found', 404);

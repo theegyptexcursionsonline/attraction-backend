@@ -20,8 +20,10 @@ import {
 } from '../controllers/attractions.controller';
 import { authenticate, optionalAuth, requireAdmin, requireRole } from '../middleware/auth.middleware';
 import { optionalTenant } from '../middleware/tenant.middleware';
+import { publicWriteLimiter } from '../middleware/rate-limit.middleware';
 import { validate, validateQuery } from '../middleware/validate.middleware';
 import { createAttractionSchema, updateAttractionSchema, paginationSchema, attractionFiltersSchema } from '../utils/validators';
+import { createReview as submitReview } from '../controllers/reviews.controller';
 import { z } from 'zod';
 
 const router = Router();
@@ -253,6 +255,7 @@ router.get('/:id/reviews', optionalTenant, validateQuery(paginationSchema), getA
  */
 router.get(
   '/:id/availability',
+  optionalTenant,
   validateQuery(z.object({
     date: z.string().optional(),
     month: z.string().optional(),
@@ -277,38 +280,15 @@ router.patch('/:id/reseller-config', authenticate, optionalTenant, requireRole('
 // Submit a review
 router.post(
   '/:id/reviews',
+  publicWriteLimiter,
   optionalAuth,
-  (req: any, res: any, next: any) => {
-    // Inline validation
-    const { rating, title, content, author, country } = req.body;
-    if (!rating || !title || !content || !author || !country) {
-      return res.status(400).json({ success: false, message: 'Missing required fields: rating, title, content, author, country' });
-    }
-    if (rating < 1 || rating > 5) {
-      return res.status(400).json({ success: false, message: 'Rating must be between 1 and 5' });
-    }
+  optionalTenant,
+  (req, _res, next) => {
+    // The path is authoritative; do not allow a forged body id to target another tour.
+    req.body = { ...req.body, attractionId: req.params.id };
     next();
   },
-  async (req: any, res: any, next: any) => {
-    try {
-      const { Review } = require('../models/Review');
-      const review = await Review.create({
-        attractionId: req.params.id,
-        userId: req.user?._id,
-        author: req.body.author,
-        rating: req.body.rating,
-        title: req.body.title,
-        content: req.body.content,
-        country: req.body.country,
-        images: req.body.images || [],
-        verified: !!req.user,
-        status: 'pending',
-      });
-      res.status(201).json({ success: true, data: review, message: 'Review submitted for moderation' });
-    } catch (error) {
-      next(error);
-    }
-  }
+  submitReview
 );
 
 /**

@@ -789,6 +789,32 @@ describe('API security and pricing guards', () => {
     expect(current.save).toHaveBeenCalledTimes(1);
   });
 
+  it('returns a conflict without touching inventory when cancellation is repeated', async () => {
+    (verifyToken as jest.Mock).mockReturnValue({ userId: 'customer-1' });
+    (User.findById as jest.Mock).mockResolvedValue({
+      _id: { toString: () => 'customer-1' },
+      role: 'customer',
+      status: 'active',
+      assignedTenants: [],
+    });
+    (Booking.findById as jest.Mock).mockResolvedValue({
+      _id: 'booking-1',
+      userId: { toString: () => 'customer-1' },
+      tenantId: TENANT_ID,
+      status: 'cancelled',
+      inventoryReleasedAt: new Date('2030-03-01T00:00:00Z'),
+    });
+
+    const response = await request(app)
+      .patch('/api/bookings/booking-1/cancel')
+      .set('Authorization', 'Bearer valid-token');
+
+    expect(response.status).toBe(409);
+    expect(response.body.error).toContain('already cancelled');
+    expect(Booking.findOne).not.toHaveBeenCalled();
+    expect(Availability.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
   it('fails paid cancellation closed when the tenant gateway is unavailable', async () => {
     (verifyToken as jest.Mock).mockReturnValue({ userId: 'customer-1' });
     (User.findById as jest.Mock).mockResolvedValue({

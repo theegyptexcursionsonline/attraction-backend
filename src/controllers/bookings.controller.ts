@@ -869,6 +869,10 @@ export const cancelBooking = async (
     }
 
     // Check if cancellation is allowed
+    if (booking.status === 'cancelled' || booking.inventoryReleasedAt) {
+      sendError(res, 'Booking was already cancelled or its inventory was released', 409);
+      return;
+    }
     if (!['pending', 'confirmed'].includes(booking.status)) {
       sendError(res, 'Booking cannot be cancelled', 400);
       return;

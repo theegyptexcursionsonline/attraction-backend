@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 import { Attraction } from '../models/Attraction';
 import { Destination } from '../models/Destination';
 import { SpecialOffer } from '../models/SpecialOffer';
-import { getAttractionBySlug } from '../controllers/attractions.controller';
+import { getAttractionAvailability, getAttractionBySlug } from '../controllers/attractions.controller';
 import { getDestinationBySlug } from '../controllers/destinations.controller';
 import { getActiveOffers } from '../controllers/specialOffers.controller';
 
@@ -44,6 +44,30 @@ describe('public catalogue tenant boundaries', () => {
       status: 'active',
       tenantIds: { $in: [tenantId] },
     });
+  });
+
+  it('adds the active tenant and active status to availability lookup', async () => {
+    const tenantId = new Types.ObjectId();
+    const attractionId = new Types.ObjectId().toHexString();
+    (Attraction.findOne as jest.Mock).mockResolvedValue(null);
+    const res = response();
+
+    await getAttractionAvailability(
+      {
+        tenant: { _id: tenantId },
+        params: { id: attractionId },
+        query: { date: '2026-08-15' },
+      } as never,
+      res,
+      jest.fn()
+    );
+
+    expect(Attraction.findOne).toHaveBeenCalledWith({
+      _id: attractionId,
+      status: 'active',
+      tenantIds: { $in: [tenantId] },
+    });
+    expect(res.status).toHaveBeenCalledWith(404);
   });
 
   it('does not return a destination with no attractions in the active tenant', async () => {
