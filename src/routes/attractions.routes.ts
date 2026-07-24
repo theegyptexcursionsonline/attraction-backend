@@ -263,8 +263,12 @@ router.get(
   getAttractionAvailability
 );
 
-// Stop Sale — Admin routes
-router.get('/:id/blocked-dates', authenticate, requireAdmin, getBlockedDates);
+// Stop Sale
+// Blocked dates are a PUBLIC read (dates only, tenant-scoped): guest booking
+// calendars must be able to disable stop-sale days. Admin callers get the full
+// records. Previously admin-only, so guest widgets 401'd and silently treated
+// every date as bookable.
+router.get('/:id/blocked-dates', optionalAuth, optionalTenant, getBlockedDates);
 router.post('/:id/block-dates', authenticate, requireAdmin, blockDates);
 router.delete('/:id/block-dates/:date', authenticate, requireAdmin, unblockDate);
 

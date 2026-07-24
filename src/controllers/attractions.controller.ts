@@ -963,7 +963,27 @@ export const getBlockedDates = async (
     const { id } = req.params;
     const { from, to } = req.query;
 
-    if (await rejectIfNotOwnedAttraction(req, res, id as string)) return;
+    if (!Types.ObjectId.isValid(id as string)) {
+      sendError(res, 'Attraction not found', 404);
+      return;
+    }
+
+    const adminRoles = ['super-admin', 'brand-admin', 'manager', 'editor', 'viewer'];
+    const isAdminCaller = Boolean(req.user && adminRoles.includes(req.user.role as string));
+
+    if (isAdminCaller) {
+      if (await rejectIfNotOwnedAttraction(req, res, id as string)) return;
+    } else {
+      // Public caller: serve stop-sale days only for a publicly visible
+      // attraction, tenant filter ANDed into the query (B1) so a cross-tenant
+      // id is indistinguishable from a missing one.
+      const attractionQuery: Record<string, unknown> = { _id: id, status: 'active' };
+      if (req.tenant) attractionQuery.tenantIds = { $in: [req.tenant._id] };
+      if (!(await Attraction.exists(attractionQuery))) {
+        sendError(res, 'Attraction not found', 404);
+        return;
+      }
+    }
 
     const query: Record<string, unknown> = {
       attractionId: new Types.ObjectId(id as string),
@@ -977,6 +997,14 @@ export const getBlockedDates = async (
     }
 
     const blocked = await Availability.find(query).sort({ date: 1 }).lean();
+
+    // Guests get dates only — never the operator's blocking reason, capacity
+    // or internal notes.
+    if (!isAdminCaller) {
+      sendSuccess(res, blocked.map((entry) => ({ date: entry.date })));
+      return;
+    }
+
     sendSuccess(res, blocked);
   } catch (error) {
     next(error);
