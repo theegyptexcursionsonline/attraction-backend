@@ -3,7 +3,7 @@ import { Availability } from '../models/Availability';
 import { Booking } from '../models/Booking';
 import { IBooking } from '../types';
 import { getTenantStripeConfig } from './tenantPayment.service';
-import { retrievePaymentIntent } from './stripe.service';
+import { cancelPaymentIntent, retrievePaymentIntent } from './stripe.service';
 
 const DEFAULT_CAPACITY = 25;
 const DEFAULT_TIME_SLOTS = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'];
@@ -257,6 +257,25 @@ export const failCardBookingAndReleaseInventory = async (
     return booking;
   });
 
+/** Keep a declined PaymentIntent retryable while the booking's hold is active. */
+export const markCardPaymentFailed = async (
+  bookingId: unknown,
+  tenantId: unknown,
+  paymentIntentId: string
+): Promise<BookingWithInventoryMarker | null> =>
+  Booking.findOneAndUpdate(
+    {
+      _id: bookingId,
+      tenantId,
+      stripePaymentIntentId: paymentIntentId,
+      paymentStatus: { $in: ['pending', 'processing', 'failed'] },
+      status: 'pending',
+      inventoryReleasedAt: { $exists: false },
+    },
+    { $set: { paymentStatus: 'failed' } },
+    { new: true }
+  ) as unknown as Promise<BookingWithInventoryMarker | null>;
+
 export const expireStaleCardHolds = async (olderThanMinutes = 30): Promise<number> => {
   const staleBefore = new Date(Date.now() - olderThanMinutes * 60 * 1000);
   const candidates = await Booking.find({
@@ -273,7 +292,7 @@ export const expireStaleCardHolds = async (olderThanMinutes = 30): Promise<numbe
       const stripeConfig = await getTenantStripeConfig(candidate.tenantId);
       if (!stripeConfig?.enabled || !stripeConfig.secretKey) continue;
 
-      const intent = await retrievePaymentIntent(
+      let intent = await retrievePaymentIntent(
         stripeConfig.secretKey,
         candidate.stripePaymentIntentId
       );
@@ -282,6 +301,18 @@ export const expireStaleCardHolds = async (olderThanMinutes = 30): Promise<numbe
       if (!intent || ['succeeded', 'processing', 'requires_capture'].includes(intent.status)) {
         continue;
       }
+
+      // Once capacity is returned to inventory, the old intent must be unable to
+      // charge later. Cancel at Stripe first; only a provider-confirmed canceled
+      // state permits the local release.
+      if (intent.status !== 'canceled') {
+        intent = await cancelPaymentIntent(
+          stripeConfig.secretKey,
+          candidate.stripePaymentIntentId,
+          { idempotencyKey: `booking:${candidate._id}:expire-payment` }
+        );
+      }
+      if (!intent || intent.status !== 'canceled') continue;
     }
 
     const result = await failCardBookingAndReleaseInventory(

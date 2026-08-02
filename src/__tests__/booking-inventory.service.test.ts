@@ -3,10 +3,13 @@ import { Booking } from '../models/Booking';
 import {
   expireStaleCardHolds,
   failCardBookingAndReleaseInventory,
+  markCardPaymentFailed,
   bookingDate,
   inventoryEntriesForItems,
   reserveInventory,
 } from '../services/bookingInventory.service';
+import { getTenantStripeConfig } from '../services/tenantPayment.service';
+import { cancelPaymentIntent, retrievePaymentIntent } from '../services/stripe.service';
 
 jest.mock('../models/Availability', () => ({
   Availability: {
@@ -18,8 +21,18 @@ jest.mock('../models/Availability', () => ({
 jest.mock('../models/Booking', () => ({
   Booking: {
     findOne: jest.fn(),
+    findOneAndUpdate: jest.fn(),
     find: jest.fn(),
   },
+}));
+
+jest.mock('../services/tenantPayment.service', () => ({
+  getTenantStripeConfig: jest.fn(),
+}));
+
+jest.mock('../services/stripe.service', () => ({
+  cancelPaymentIntent: jest.fn(),
+  retrievePaymentIntent: jest.fn(),
 }));
 
 describe('booking inventory lifecycle', () => {
@@ -121,6 +134,34 @@ describe('booking inventory lifecycle', () => {
     expect(booking.save).toHaveBeenCalled();
   });
 
+  it('keeps a declined payment retryable without releasing its inventory hold', async () => {
+    const booking = {
+      _id: 'booking-retryable',
+      tenantId: 'tenant-1',
+      stripePaymentIntentId: 'pi_retryable',
+      paymentStatus: 'failed',
+      status: 'pending',
+    };
+    (Booking.findOneAndUpdate as jest.Mock).mockResolvedValue(booking);
+
+    await expect(markCardPaymentFailed(
+      booking._id,
+      booking.tenantId,
+      booking.stripePaymentIntentId
+    )).resolves.toBe(booking);
+
+    expect(Booking.findOneAndUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        _id: booking._id,
+        status: 'pending',
+        inventoryReleasedAt: { $exists: false },
+      }),
+      { $set: { paymentStatus: 'failed' } },
+      { new: true }
+    );
+    expect(Availability.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
   it('expires an abandoned card booking even when no PaymentIntent was created', async () => {
     const candidate = {
       _id: 'booking-abandoned',
@@ -156,6 +197,65 @@ describe('booking inventory lifecycle', () => {
       null,
       {}
     );
+  });
+
+  it('cancels an abandoned Stripe intent before releasing its inventory', async () => {
+    const candidate = {
+      _id: 'booking-expired',
+      tenantId: 'tenant-1',
+      stripePaymentIntentId: 'pi_expired',
+    };
+    const booking = {
+      ...candidate,
+      attractionId: 'attraction-1',
+      paymentStatus: 'failed',
+      status: 'pending',
+      inventoryReservedAt: new Date('2026-07-31T00:00:00Z'),
+      inventoryReservations: [{
+        date: new Date('2026-08-01T00:00:00Z'),
+        guests: 1,
+      }],
+      inventoryReleasedAt: undefined as Date | undefined,
+      items: [{
+        date: '2026-08-01',
+        quantities: { adults: 1, children: 0, infants: 0 },
+      }],
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    (Booking.find as jest.Mock).mockReturnValue({
+      select: jest.fn().mockResolvedValue([candidate]),
+    });
+    (Booking.findOne as jest.Mock).mockResolvedValue(booking);
+    (Availability.findOneAndUpdate as jest.Mock).mockResolvedValue({});
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true, secretKey: 'sk_test' });
+    (retrievePaymentIntent as jest.Mock).mockResolvedValue({ status: 'requires_payment_method' });
+    (cancelPaymentIntent as jest.Mock).mockResolvedValue({ status: 'canceled' });
+
+    await expect(expireStaleCardHolds()).resolves.toBe(1);
+    expect(cancelPaymentIntent).toHaveBeenCalledWith(
+      'sk_test',
+      'pi_expired',
+      { idempotencyKey: 'booking:booking-expired:expire-payment' }
+    );
+    expect(Availability.findOneAndUpdate).toHaveBeenCalled();
+  });
+
+  it('keeps inventory held when Stripe cannot confirm cancellation', async () => {
+    const candidate = {
+      _id: 'booking-racing-payment',
+      tenantId: 'tenant-1',
+      stripePaymentIntentId: 'pi_racing',
+    };
+    (Booking.find as jest.Mock).mockReturnValue({
+      select: jest.fn().mockResolvedValue([candidate]),
+    });
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true, secretKey: 'sk_test' });
+    (retrievePaymentIntent as jest.Mock).mockResolvedValue({ status: 'requires_payment_method' });
+    (cancelPaymentIntent as jest.Mock).mockResolvedValue({ status: 'succeeded' });
+
+    await expect(expireStaleCardHolds()).resolves.toBe(0);
+    expect(Booking.findOne).not.toHaveBeenCalled();
+    expect(Availability.findOneAndUpdate).not.toHaveBeenCalled();
   });
 
   it('does not decrement inventory for a legacy booking that never reserved it', async () => {

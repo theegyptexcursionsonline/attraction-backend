@@ -138,6 +138,50 @@ export const retrievePaymentIntentStatus = async (
   return pi?.status || null;
 };
 
+/**
+ * Cancel an abandoned PaymentIntent before its inventory hold is released.
+ * If Stripe rejects the cancellation because the intent changed concurrently,
+ * return the provider's latest state so the caller can fail closed.
+ */
+export const cancelPaymentIntent = async (
+  secretKey: string | undefined,
+  id: string,
+  options: StripeCallOptions = {}
+): Promise<PaymentIntentResult | null> => {
+  const stripe = getStripe(secretKey);
+  if (!stripe) {
+    if (!options.allowMock) throw missingKeyError();
+    return {
+      id,
+      clientSecret: `${id}_secret_mock`,
+      amount: 0,
+      amountReceived: 0,
+      currency: 'usd',
+      status: 'canceled',
+      metadata: {},
+    };
+  }
+
+  try {
+    const pi = await stripe.paymentIntents.cancel(
+      id,
+      { cancellation_reason: 'abandoned' },
+      options.idempotencyKey ? { idempotencyKey: options.idempotencyKey } : undefined
+    );
+    return {
+      id: pi.id,
+      clientSecret: pi.client_secret || '',
+      amount: pi.amount,
+      amountReceived: pi.amount_received,
+      currency: pi.currency,
+      status: pi.status,
+      metadata: pi.metadata,
+    };
+  } catch {
+    return retrievePaymentIntent(secretKey, id, options);
+  }
+};
+
 export interface RefundResult {
   id: string;
   status: string;

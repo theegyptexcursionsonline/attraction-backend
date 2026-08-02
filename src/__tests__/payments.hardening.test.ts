@@ -24,6 +24,7 @@ jest.mock('../models/Booking', () => ({
     findById: jest.fn(),
     findOne: jest.fn(),
     findOneAndUpdate: jest.fn(),
+    exists: jest.fn(),
     updateOne: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
   },
 }));
@@ -195,6 +196,7 @@ describe('Stripe payment hardening', () => {
     jest.clearAllMocks();
     (getTenantStripeConfig as jest.Mock).mockResolvedValue(stripeConfig);
     (recordInboundEvent as jest.Mock).mockResolvedValue({ duplicate: false });
+    (Booking.exists as jest.Mock).mockResolvedValue({ _id: BOOKING_ID });
   });
 
   describe('webhook authenticity and payment binding', () => {
@@ -262,6 +264,34 @@ describe('Stripe payment hardening', () => {
       expect(recordInboundEvent).not.toHaveBeenCalled();
     });
 
+    it('marks a declined intent retryable without cancelling the booking hold', async () => {
+      (constructWebhookEvent as jest.Mock).mockReturnValue(
+        webhookEvent('payment_intent.payment_failed', {
+          status: 'requires_payment_method',
+          amount_received: 0,
+        })
+      );
+      const booking = bookingFixture();
+      (Booking.findOne as jest.Mock).mockResolvedValue(booking);
+      (Booking.findOneAndUpdate as jest.Mock).mockResolvedValue(
+        bookingFixture({ paymentStatus: 'failed' })
+      );
+
+      const res = await invoke(handleWebhook as never, webhookRequest());
+
+      expect(Booking.findOneAndUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          _id: BOOKING_ID,
+          stripePaymentIntentId: INTENT_ID,
+          status: 'pending',
+          inventoryReleasedAt: { $exists: false },
+        }),
+        { $set: { paymentStatus: 'failed' } },
+        { new: true }
+      );
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ received: true }));
+    });
+
     it('uses one atomic transition so concurrent valid events send side effects once', async () => {
       (constructWebhookEvent as jest.Mock)
         .mockReturnValueOnce(webhookEvent('payment_intent.succeeded', {}, 'evt_race_1'))
@@ -290,6 +320,9 @@ describe('Stripe payment hardening', () => {
           _id: BOOKING_ID,
           tenantId: TENANT_ID,
           stripePaymentIntentId: INTENT_ID,
+          paymentMethod: 'card',
+          status: 'pending',
+          inventoryReleasedAt: { $exists: false },
           paymentStatus: { $in: ['pending', 'processing', 'failed'] },
         }),
         expect.objectContaining({
@@ -309,6 +342,22 @@ describe('Stripe payment hardening', () => {
         expect.any(Buffer),
         expect.anything()
       );
+    });
+
+    it('does not acknowledge a paid event when the booking can no longer be finalized', async () => {
+      (constructWebhookEvent as jest.Mock).mockReturnValue(webhookEvent());
+      (Booking.findOne as jest.Mock).mockResolvedValue(
+        bookingFixture({ status: 'cancelled', inventoryReleasedAt: new Date() })
+      );
+      (Booking.findOneAndUpdate as jest.Mock).mockReturnValue({
+        populate: jest.fn().mockResolvedValue(null),
+      });
+      (Booking.exists as jest.Mock).mockResolvedValue(null);
+
+      const res = await invoke(handleWebhook as never, webhookRequest());
+
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(recordInboundEvent).not.toHaveBeenCalled();
     });
   });
 
@@ -376,6 +425,29 @@ describe('Stripe payment hardening', () => {
       );
     });
 
+    it('refuses to resume payment after the booking hold was released', async () => {
+      const booking = bookingFixture({
+        paymentStatus: 'failed',
+        status: 'cancelled',
+        inventoryReleasedAt: new Date(),
+      });
+      (Booking.findById as jest.Mock).mockReturnValue({
+        populate: jest.fn().mockResolvedValue(booking),
+      });
+
+      const res = await invoke(createPaymentIntent as never, {
+        body: {
+          bookingId: BOOKING_ID,
+          guestEmail: 'info@rdmiwebservices.com',
+          guestAccessToken: 'guest-access-token',
+        },
+      });
+
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(retrievePaymentIntent).not.toHaveBeenCalled();
+      expect(stripeCreatePaymentIntent).not.toHaveBeenCalled();
+    });
+
     it('creates and binds a new intent with a deterministic idempotency key', async () => {
       const pending = bookingFixture({
         paymentStatus: 'pending',
@@ -410,6 +482,9 @@ describe('Stripe payment hardening', () => {
       expect(Booking.findOneAndUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
           _id: BOOKING_ID,
+          paymentMethod: 'card',
+          status: 'pending',
+          inventoryReleasedAt: { $exists: false },
           paymentStatus: { $in: ['pending', 'failed'] },
         }),
         expect.objectContaining({
@@ -437,6 +512,46 @@ describe('Stripe payment hardening', () => {
       expect(res.status).toHaveBeenCalledWith(400);
       expect(Booking.findOneAndUpdate).not.toHaveBeenCalled();
       expect(sendBookingConfirmation).not.toHaveBeenCalled();
+    });
+
+    it('finalizes a provider-verified retry after an earlier card decline', async () => {
+      const retryable = bookingFixture({ paymentStatus: 'failed' });
+      const confirmed = bookingFixture({ paymentStatus: 'succeeded', status: 'confirmed' });
+      (Booking.findById as jest.Mock)
+        .mockReturnValueOnce({ select: jest.fn().mockResolvedValue(retryable) })
+        .mockReturnValueOnce({ select: jest.fn().mockResolvedValue(confirmed) });
+      (retrievePaymentIntent as jest.Mock).mockResolvedValue(paymentIntent());
+      (Booking.findOneAndUpdate as jest.Mock).mockReturnValue({
+        populate: jest.fn().mockResolvedValue(confirmed),
+      });
+
+      const res = await invoke(confirmPayment as never, {
+        body: {
+          bookingId: BOOKING_ID,
+          guestEmail: 'info@rdmiwebservices.com',
+          guestAccessToken: 'guest-access-token',
+        },
+      });
+
+      expect(Booking.findOneAndUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          _id: BOOKING_ID,
+          paymentStatus: { $in: ['pending', 'processing', 'failed'] },
+          status: 'pending',
+          inventoryReleasedAt: { $exists: false },
+        }),
+        expect.objectContaining({
+          $set: expect.objectContaining({ paymentStatus: 'succeeded', status: 'confirmed' }),
+        }),
+        { new: true }
+      );
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        success: true,
+        data: expect.objectContaining({
+          paymentStatus: 'succeeded',
+          bookingStatus: 'confirmed',
+        }),
+      }));
     });
   });
 

@@ -25,7 +25,7 @@ import { sendBookingConfirmation, sendAdminBookingNotification, sendBookingStatu
 import { safeEmitEvent, recordInboundEvent } from '../services/webhook.service';
 import { env } from '../config/env';
 import { generateBookingAccessToken, verifyBookingAccessToken } from '../utils/bookingAccess';
-import { failCardBookingAndReleaseInventory } from '../services/bookingInventory.service';
+import { markCardPaymentFailed } from '../services/bookingInventory.service';
 
 // Compact, tenant-safe booking summary for webhook payloads (the booking's own
 // fields only — never cross-tenant data).
@@ -183,6 +183,15 @@ export const createPaymentIntent = async (
       return;
     }
 
+    if (
+      booking.paymentMethod !== 'card' ||
+      booking.status !== 'pending' ||
+      booking.inventoryReleasedAt
+    ) {
+      sendError(res, 'This booking is no longer eligible for card payment', 409);
+      return;
+    }
+
     // Resolve THIS booking's tenant's own Stripe gateway. Online payment is only
     // available when that site's admin has configured + enabled their keys.
     const stripeCfg = await getTenantStripeConfig(booking.tenantId);
@@ -262,6 +271,9 @@ export const createPaymentIntent = async (
     const claimed = await Booking.findOneAndUpdate(
       {
         _id: booking._id,
+        paymentMethod: 'card',
+        status: 'pending',
+        inventoryReleasedAt: { $exists: false },
         paymentStatus: { $in: ['pending', 'failed'] },
         $or: [
           { stripePaymentIntentId: { $exists: false } },
@@ -328,6 +340,9 @@ const finalizePaidBooking = async (
       _id: bookingId,
       tenantId: expected.tenantId,
       stripePaymentIntentId: expected.paymentIntentId,
+      paymentMethod: 'card',
+      status: 'pending',
+      inventoryReleasedAt: { $exists: false },
       paymentStatus: { $in: ['pending', 'processing', 'failed'] },
     },
     {
@@ -484,7 +499,7 @@ export const confirmPayment = async (
     }
 
     const booking = await Booking.findById(bookingId).select(
-      'paymentStatus stripePaymentIntentId tenantId reference status total currency userId guestDetails.email'
+      'paymentStatus paymentMethod stripePaymentIntentId tenantId reference status total currency userId guestDetails.email inventoryReleasedAt'
     );
     if (!booking) {
       sendError(res, 'Booking not found', 404);
@@ -507,7 +522,15 @@ export const confirmPayment = async (
       }, 'Payment already confirmed');
       return;
     }
-    if (booking.paymentStatus !== 'processing' && booking.paymentStatus !== 'pending') {
+    if (
+      booking.paymentMethod !== 'card' ||
+      booking.status !== 'pending' ||
+      booking.inventoryReleasedAt
+    ) {
+      sendError(res, 'This booking is no longer eligible for card payment', 409);
+      return;
+    }
+    if (!['pending', 'processing', 'failed'].includes(booking.paymentStatus)) {
       sendError(res, 'Payment cannot be confirmed', 400);
       return;
     }
@@ -641,6 +664,19 @@ export const handleWebhook = async (
         tenantId: booking.tenantId,
         paymentIntentId: intentId,
       });
+      if (!finalized) {
+        const alreadyFinalized = await Booking.exists({
+          _id: booking._id,
+          tenantId: booking.tenantId,
+          stripePaymentIntentId: intentId,
+          paymentStatus: 'succeeded',
+          status: { $in: ['confirmed', 'completed'] },
+        });
+        if (!alreadyFinalized) {
+          sendError(res, 'Paid booking could not be finalized', 409);
+          return;
+        }
+      }
       const { duplicate } = await recordInboundEvent('stripe', eventId, { eventType, tenantId });
       res.json({ received: true, duplicate: duplicate || !finalized });
       return;
@@ -658,7 +694,7 @@ export const handleWebhook = async (
           sendError(res, 'Stripe PaymentIntent metadata does not match this booking', 400);
           return;
         }
-        const failedBooking = await failCardBookingAndReleaseInventory(
+        const failedBooking = await markCardPaymentFailed(
           booking._id,
           booking.tenantId,
           intentId
