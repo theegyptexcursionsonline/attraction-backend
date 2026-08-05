@@ -47,6 +47,11 @@ export interface ITenant extends Document {
   // True once the customDomain is confirmed to serve the Attractions build (not an
   // old WordPress site). Gates whether transactional email links use the brand domain.
   domainMigrated?: boolean;
+  customDomainStatus?: 'unconfigured' | 'pending_dns' | 'ready' | 'error';
+  customDomainAliasesAddedAt?: Date;
+  customDomainLastCheckedAt?: Date;
+  customDomainLastError?: string;
+  customDomainLastChangedBy?: Types.ObjectId;
   logo: string;
   logoDark?: string;
   favicon?: string;

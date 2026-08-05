@@ -35,6 +35,15 @@ const tenantSchema = new Schema<ITenant>(
       type: Boolean,
       default: false,
     },
+    customDomainStatus: {
+      type: String,
+      enum: ['unconfigured', 'pending_dns', 'ready', 'error'],
+      default: 'unconfigured',
+    },
+    customDomainAliasesAddedAt: Date,
+    customDomainLastCheckedAt: Date,
+    customDomainLastError: String,
+    customDomainLastChangedBy: { type: Schema.Types.ObjectId, ref: 'User' },
     logo: {
       type: String,
       required: true,

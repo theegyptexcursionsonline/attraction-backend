@@ -5,6 +5,11 @@ import {
   getPublicTenantById,
   getTenantById,
   getTenantBySlug,
+  getTenantByCustomDomain,
+  getCustomDomainStatus,
+  configureCustomDomain,
+  verifyCustomDomain,
+  removeCustomDomain,
   createTenant,
   updateTenant,
   updateTenantSettings,
@@ -79,6 +84,8 @@ router.get('/public/:id', getPublicTenantById);
  *         $ref: '#/components/responses/NotFoundError'
  */
 router.get('/by-slug/:slug', getTenantBySlug);
+
+router.get('/by-domain/:hostname', getTenantByCustomDomain);
 
 // Portfolio-wide totals for the admin Sites list page (Super-admin sees
 // everything; brand-admin sees only their assigned sites).
@@ -203,6 +210,35 @@ router.get(
   canAccessTenant,
   validateQuery(z.object({ period: z.enum(['7d', '30d', '90d']).optional() })),
   getTenantStats
+);
+
+router.get(
+  '/:id/custom-domain/status',
+  authenticate,
+  requireSuperAdmin,
+  getCustomDomainStatus
+);
+
+router.post(
+  '/:id/custom-domain',
+  authenticate,
+  requireSuperAdmin,
+  validate(z.object({ domain: z.string().trim().min(3).max(253) })),
+  configureCustomDomain
+);
+
+router.post(
+  '/:id/custom-domain/verify',
+  authenticate,
+  requireSuperAdmin,
+  verifyCustomDomain
+);
+
+router.delete(
+  '/:id/custom-domain',
+  authenticate,
+  requireSuperAdmin,
+  removeCustomDomain
 );
 
 /**

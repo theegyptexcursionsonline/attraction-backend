@@ -100,6 +100,12 @@ export const env = {
 
   // Frontend URL
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
+
+  // Netlify custom-domain automation. The access token must remain backend-only.
+  netlifyAccessToken: process.env.NETLIFY_ACCESS_TOKEN || '',
+  netlifySiteId: process.env.NETLIFY_SITE_ID || '',
+  netlifySiteHostname: process.env.NETLIFY_SITE_HOSTNAME || '',
+  netlifyDomainAliasLimit: parseInt(process.env.NETLIFY_DOMAIN_ALIAS_LIMIT || '50', 10),
   
   // Rate Limiting
   rateLimitWindowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10),

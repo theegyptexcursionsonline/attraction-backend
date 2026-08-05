@@ -7,6 +7,17 @@ import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { escapeRegex } from '../utils/helpers';
 import { sanitizeCustomPages } from '../utils/sanitizeHtml';
+import { DomainClaim } from '../models/DomainClaim';
+import {
+  NetlifyDomainError,
+  NetlifyDomainReadiness,
+  netlifyDomainService,
+} from '../services/netlifyDomain.service';
+import {
+  CustomDomainValidationError,
+  aliasesForCustomDomain,
+  normalizeCustomDomain,
+} from '../utils/customDomain';
 
 const PUBLIC_TENANT_FIELDS = [
   '_id',
@@ -236,6 +247,331 @@ export const getTenantBySlug = async (
 
     sendSuccess(res, toPublicTenantDto(tenant));
   } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Public edge-resolution endpoint. It intentionally returns only the minimum
+ * tenant identity needed by Next.js middleware, never the full tenant record.
+ */
+export const getTenantByCustomDomain = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    let domain: string;
+    try {
+      domain = normalizeCustomDomain(req.params.hostname);
+    } catch {
+      sendError(res, 'Tenant not found', 404);
+      return;
+    }
+
+    const tenant = await Tenant.findOne({
+      customDomain: domain,
+      status: { $in: ['active', 'coming_soon'] },
+    })
+      .select('_id slug name customDomain status')
+      .lean();
+
+    if (!tenant) {
+      sendError(res, 'Tenant not found', 404);
+      return;
+    }
+
+    sendSuccess(res, {
+      id: tenant._id,
+      slug: tenant.slug,
+      name: tenant.name,
+      customDomain: tenant.customDomain,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+type DomainTenantSnapshot = {
+  _id: unknown;
+  customDomain?: string;
+  customDomainStatus?: 'unconfigured' | 'pending_dns' | 'ready' | 'error';
+  customDomainAliasesAddedAt?: Date;
+  customDomainLastCheckedAt?: Date;
+  customDomainLastError?: string;
+  domainMigrated?: boolean;
+};
+
+const domainStatusDto = (
+  tenant: DomainTenantSnapshot,
+  readiness?: NetlifyDomainReadiness
+) => {
+  const inferredStatus = tenant.customDomainStatus || (
+    tenant.domainMigrated ? 'ready' : tenant.customDomain ? 'pending_dns' : 'unconfigured'
+  );
+  const domain = tenant.customDomain || null;
+
+  return {
+    domain,
+    aliases: domain ? aliasesForCustomDomain(domain) : [],
+    status: readiness
+      ? readiness.certificateReady && readiness.aliasesAttached
+        ? 'ready'
+        : 'pending_dns'
+      : inferredStatus,
+    migrated: Boolean(tenant.domainMigrated),
+    aliasesAttached: readiness?.aliasesAttached ?? Boolean(tenant.customDomainAliasesAddedAt),
+    certificateReady: readiness?.certificateReady ?? Boolean(tenant.domainMigrated),
+    certificateState: readiness?.certificateState || (tenant.domainMigrated ? 'issued' : 'unknown'),
+    providerConfigured: netlifyDomainService.isConfigured(),
+    dnsTargets: netlifyDomainService.getDnsTargets(),
+    lastCheckedAt: tenant.customDomainLastCheckedAt || null,
+    lastError: tenant.customDomainLastError || null,
+  };
+};
+
+const sendNetlifyError = (res: Response, error: NetlifyDomainError): void => {
+  const statusByCode: Record<string, number> = {
+    NETLIFY_NOT_CONFIGURED: 503,
+    NETLIFY_ALIAS_LIMIT: 409,
+    NETLIFY_PRIMARY_DOMAIN: 409,
+    NETLIFY_TIMEOUT: 504,
+    NETLIFY_UNAVAILABLE: 503,
+    NETLIFY_REQUEST_FAILED: 502,
+  };
+  sendError(res, error.message, statusByCode[error.code] || 502);
+};
+
+export const getCustomDomainStatus = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const tenant = await Tenant.findById(req.params.id).lean();
+    if (!tenant) {
+      sendError(res, 'Tenant not found', 404);
+      return;
+    }
+    sendSuccess(res, domainStatusDto(tenant));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const configureCustomDomain = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  let domain: string;
+  try {
+    domain = normalizeCustomDomain(req.body.domain);
+  } catch (error) {
+    const message = error instanceof CustomDomainValidationError
+      ? error.message
+      : 'Enter a valid public domain';
+    sendError(res, message, 400);
+    return;
+  }
+
+  let claimCreated = false;
+  let aliasesAdded: string[] = [];
+  try {
+    if (!netlifyDomainService.isConfigured()) {
+      throw new NetlifyDomainError(
+        'NETLIFY_NOT_CONFIGURED',
+        'Custom-domain automation is not configured on the server'
+      );
+    }
+
+    const tenant = await Tenant.findById(req.params.id);
+    if (!tenant) {
+      sendError(res, 'Tenant not found', 404);
+      return;
+    }
+    if (tenant.customDomain && tenant.customDomain !== domain) {
+      sendError(res, 'Remove the current custom domain before assigning a different one', 409);
+      return;
+    }
+
+    const conflict = await Tenant.findOne({
+      _id: { $ne: tenant._id },
+      $or: [{ customDomain: domain }, { domain }],
+    }).select('_id');
+    if (conflict) {
+      sendError(res, 'This domain is already assigned to another tenant', 409);
+      return;
+    }
+
+    try {
+      await DomainClaim.create({
+        _id: domain,
+        tenantId: tenant._id,
+        createdBy: req.user?._id,
+      });
+      claimCreated = true;
+    } catch (error) {
+      if ((error as { code?: number }).code !== 11000) throw error;
+      const claim = await DomainClaim.findById(domain).lean();
+      if (!claim || String(claim.tenantId) !== String(tenant._id)) {
+        sendError(res, 'This domain is already being configured for another tenant', 409);
+        return;
+      }
+    }
+
+    const readiness = await netlifyDomainService.addDomain(domain);
+    aliasesAdded = readiness.aliasesAdded;
+    const now = new Date();
+    const ready = readiness.aliasesAttached && readiness.certificateReady;
+    const updated = await Tenant.findOneAndUpdate(
+      {
+        _id: tenant._id,
+        $or: [
+          { customDomain: { $exists: false } },
+          { customDomain: null },
+          { customDomain: '' },
+          { customDomain: domain },
+        ],
+      },
+      {
+        $set: {
+          customDomain: domain,
+          customDomainStatus: ready ? 'ready' : 'pending_dns',
+          domainMigrated: ready,
+          customDomainAliasesAddedAt: now,
+          customDomainLastCheckedAt: now,
+          customDomainLastChangedBy: req.user?._id,
+        },
+        $unset: { customDomainLastError: 1 },
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updated) {
+      throw new Error('Tenant domain changed while configuration was in progress');
+    }
+
+    sendSuccess(
+      res,
+      domainStatusDto(updated, readiness),
+      ready
+        ? 'Custom domain connected and active'
+        : 'Domain added to Netlify. Update DNS, then verify the connection.'
+    );
+  } catch (error) {
+    if (aliasesAdded.length > 0) {
+      await netlifyDomainService.rollbackAliases(aliasesAdded).catch(() => undefined);
+    }
+    if (claimCreated) {
+      await DomainClaim.deleteOne({ _id: domain }).catch(() => undefined);
+    }
+    if (error instanceof NetlifyDomainError) {
+      sendNetlifyError(res, error);
+      return;
+    }
+    next(error);
+  }
+};
+
+export const verifyCustomDomain = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const tenant = await Tenant.findById(req.params.id);
+    if (!tenant) {
+      sendError(res, 'Tenant not found', 404);
+      return;
+    }
+    if (!tenant.customDomain) {
+      sendError(res, 'No custom domain is configured for this tenant', 400);
+      return;
+    }
+
+    const readiness = await netlifyDomainService.getReadiness(tenant.customDomain);
+    const ready = readiness.aliasesAttached && readiness.certificateReady;
+    const updated = await Tenant.findOneAndUpdate(
+      { _id: tenant._id, customDomain: tenant.customDomain },
+      {
+        $set: {
+          customDomainStatus: ready ? 'ready' : 'pending_dns',
+          domainMigrated: ready,
+          customDomainLastCheckedAt: new Date(),
+          customDomainLastChangedBy: req.user?._id,
+        },
+        $unset: { customDomainLastError: 1 },
+      },
+      { new: true }
+    );
+    if (!updated) {
+      sendError(res, 'Tenant domain changed while verification was in progress', 409);
+      return;
+    }
+
+    sendSuccess(
+      res,
+      domainStatusDto(updated, readiness),
+      ready ? 'Custom domain is active' : 'DNS or TLS is not ready yet'
+    );
+  } catch (error) {
+    if (error instanceof NetlifyDomainError) {
+      sendNetlifyError(res, error);
+      return;
+    }
+    next(error);
+  }
+};
+
+export const removeCustomDomain = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const tenant = await Tenant.findById(req.params.id);
+    if (!tenant) {
+      sendError(res, 'Tenant not found', 404);
+      return;
+    }
+    if (!tenant.customDomain) {
+      sendSuccess(res, domainStatusDto(tenant), 'No custom domain was configured');
+      return;
+    }
+
+    const domain = tenant.customDomain;
+    await netlifyDomainService.removeDomain(domain);
+    const updated = await Tenant.findOneAndUpdate(
+      { _id: tenant._id, customDomain: domain },
+      {
+        $set: {
+          customDomainStatus: 'unconfigured',
+          domainMigrated: false,
+          customDomainLastCheckedAt: new Date(),
+          customDomainLastChangedBy: req.user?._id,
+        },
+        $unset: {
+          customDomain: 1,
+          customDomainAliasesAddedAt: 1,
+          customDomainLastError: 1,
+        },
+      },
+      { new: true }
+    );
+    if (!updated) {
+      await netlifyDomainService.addDomain(domain).catch(() => undefined);
+      sendError(res, 'Tenant domain changed while removal was in progress', 409);
+      return;
+    }
+
+    await DomainClaim.deleteOne({ _id: domain, tenantId: tenant._id });
+    sendSuccess(res, domainStatusDto(updated), 'Custom domain removed');
+  } catch (error) {
+    if (error instanceof NetlifyDomainError) {
+      sendNetlifyError(res, error);
+      return;
+    }
     next(error);
   }
 };
