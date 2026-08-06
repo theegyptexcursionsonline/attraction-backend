@@ -5,6 +5,7 @@ import {
   addToWishlist,
   removeFromWishlist,
   getUsers,
+  getTravelers,
   getUserById,
   inviteUser,
   updateUser,
@@ -167,6 +168,21 @@ router.get(
     )
   ),
   getUsers
+);
+
+router.get(
+  '/travelers',
+  authenticate,
+  requireRole('super-admin', 'brand-admin', 'manager'),
+  validateQuery(
+    z.object({
+      limit: z.coerce.number().int().min(1).max(50).optional(),
+      cursor: z.string().optional(),
+      status: z.enum(['active', 'inactive', 'pending', 'suspended']).optional(),
+      search: z.string().max(120).optional(),
+    })
+  ),
+  getTravelers
 );
 
 /**

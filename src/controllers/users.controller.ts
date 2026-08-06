@@ -1,5 +1,7 @@
 import { Response, NextFunction } from 'express';
+import type { PipelineStage } from 'mongoose';
 import { User } from '../models/User';
+import { Booking } from '../models/Booking';
 import { Attraction } from '../models/Attraction';
 import { Tenant } from '../models/Tenant';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
@@ -150,7 +152,13 @@ export const getUsers = async (
       }
     }
 
+    const teamRoles = ['super-admin', 'brand-admin', 'manager', 'editor', 'viewer'];
+
     if (role) {
+      if (!teamRoles.includes(String(role))) {
+        sendPaginated(res, [], pageNum, limitNum, 0);
+        return;
+      }
       if (scopedAdmin && role === 'super-admin') {
         sendPaginated(res, [], pageNum, limitNum, 0);
         return;
@@ -160,7 +168,11 @@ export const getUsers = async (
       // Platform super-admin identities are not tenant team members and should not
       // be disclosed to delegated tenant operators even if legacy seed data happens
       // to associate them with a tenant.
-      query.role = { $ne: 'super-admin' };
+      query.role = { $in: teamRoles.filter((teamRole) => teamRole !== 'super-admin') };
+    } else {
+      // The Team endpoint is deliberately staff-only. Customer and guest identities
+      // are exposed through the tenant-scoped Travelers endpoint below.
+      query.role = { $in: teamRoles };
     }
 
     if (status) {
@@ -191,6 +203,202 @@ export const getUsers = async (
       redactUserSecrets(user as unknown as Record<string, unknown>)
     );
     sendPaginated(res, safeUsers, pageNum, limitNum, total);
+  } catch (error) {
+    next(error);
+  }
+};
+
+type TravelerRollup = {
+  _id: unknown;
+  email: string;
+  firstName: string;
+  lastName: string;
+  avatar?: string;
+  phone?: string;
+  country?: string;
+  status: string;
+  createdAt: Date;
+  lastLogin?: Date;
+  bookingRollup?: Array<{
+    summary?: Array<{ count: number }>;
+    brands?: Array<{ _id: unknown }>;
+    spending?: Array<{ _id: string; total: number }>;
+    latest?: Array<{
+      _id: unknown;
+      reference: string;
+      tenantId: unknown;
+      status: string;
+      total: number;
+      currency: string;
+      createdAt: Date;
+      items?: Array<{ date?: string; time?: string }>;
+    }>;
+  }>;
+};
+
+/**
+ * Tenant-safe traveler directory for admin users.
+ *
+ * A traveler is a registered customer/guest identity. Booking relationships are
+ * matched by userId and normalized guest email because checkout can precede account
+ * creation. Non-super-admins only see travelers with a booking in one of their
+ * assigned tenants; the booking lookup is scoped before any PII is returned.
+ */
+export const getTravelers = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const requestedLimit = Number.parseInt(String(req.query.limit ?? '25'), 10);
+    const limit = Math.min(Math.max(Number.isFinite(requestedLimit) ? requestedLimit : 25, 1), 50);
+    const cursor = req.query.cursor ? String(req.query.cursor) : undefined;
+    const search = req.query.search ? String(req.query.search).trim() : '';
+    const status = req.query.status ? String(req.query.status) : undefined;
+
+    const mongoose = await import('mongoose');
+    if (cursor && !mongoose.Types.ObjectId.isValid(cursor)) {
+      sendError(res, 'Invalid traveler cursor', 400);
+      return;
+    }
+
+    const scopedTenantIds = isSuperAdmin(req.user)
+      ? null
+      : callerTenantIds(req.user).filter(mongoose.Types.ObjectId.isValid).map((id) => new mongoose.Types.ObjectId(id));
+
+    if (scopedTenantIds && scopedTenantIds.length === 0) {
+      sendSuccess(res, { data: [], pagination: { limit, nextCursor: null, hasMore: false } });
+      return;
+    }
+
+    const userMatch: Record<string, unknown> = {
+      role: { $in: ['customer', 'guest'] },
+    };
+    if (cursor) userMatch._id = { $lt: new mongoose.Types.ObjectId(cursor) };
+    if (status) userMatch.status = status;
+    if (search) {
+      const safeSearch = escapeRegex(search);
+      userMatch.$or = [
+        { email: { $regex: safeSearch, $options: 'i' } },
+        { firstName: { $regex: safeSearch, $options: 'i' } },
+        { lastName: { $regex: safeSearch, $options: 'i' } },
+      ];
+    }
+
+    const bookingExpressions: Record<string, unknown>[] = [
+      {
+        $or: [
+          { $eq: ['$userId', '$$travelerId'] },
+          { $eq: [{ $toLower: '$guestDetails.email' }, '$$travelerEmail'] },
+        ],
+      },
+    ];
+    if (scopedTenantIds) bookingExpressions.unshift({ $in: ['$tenantId', scopedTenantIds] });
+
+    const pipeline: PipelineStage[] = [
+      { $match: userMatch },
+      {
+        $lookup: {
+          from: Booking.collection.name,
+          let: { travelerId: '$_id', travelerEmail: { $toLower: '$email' } },
+          pipeline: [
+            { $match: { $expr: { $and: bookingExpressions } } },
+            {
+              $facet: {
+                summary: [{ $count: 'count' }],
+                brands: [{ $group: { _id: '$tenantId' } }],
+                spending: [{ $group: { _id: '$currency', total: { $sum: '$total' } } }],
+                latest: [
+                  { $sort: { createdAt: -1 } },
+                  { $limit: 1 },
+                  { $project: { reference: 1, tenantId: 1, status: 1, total: 1, currency: 1, createdAt: 1, items: { $slice: ['$items', 1] } } },
+                ],
+              },
+            },
+          ],
+          as: 'bookingRollup',
+        },
+      },
+    ];
+
+    if (scopedTenantIds) {
+      pipeline.push({ $match: { 'bookingRollup.0.summary.0.count': { $gt: 0 } } });
+    }
+    pipeline.push(
+      { $sort: { _id: -1 } },
+      { $limit: limit + 1 },
+      {
+        $project: {
+          email: 1,
+          firstName: 1,
+          lastName: 1,
+          avatar: 1,
+          phone: 1,
+          country: 1,
+          status: 1,
+          createdAt: 1,
+          lastLogin: 1,
+          bookingRollup: 1,
+        },
+      }
+    );
+
+    const rows = await User.aggregate<TravelerRollup>(pipeline);
+    const hasMore = rows.length > limit;
+    const pageRows = hasMore ? rows.slice(0, limit) : rows;
+    const brandIds = Array.from(new Set(pageRows.flatMap((row) =>
+      (row.bookingRollup?.[0]?.brands || []).map((brand) => String(brand._id))
+    )));
+    const brands = brandIds.length
+      ? await Tenant.find({ _id: { $in: brandIds } }).select('name slug').lean()
+      : [];
+    const brandById = new Map(brands.map((brand) => [String(brand._id), brand]));
+
+    const travelers = pageRows.map((row) => {
+      const rollup = row.bookingRollup?.[0];
+      const latest = rollup?.latest?.[0];
+      const travelerBrands = (rollup?.brands || [])
+        .map((brand) => brandById.get(String(brand._id)))
+        .filter(Boolean)
+        .map((brand) => ({ id: String(brand!._id), name: brand!.name, slug: brand!.slug }));
+      const latestBrand = latest ? brandById.get(String(latest.tenantId)) : undefined;
+
+      return {
+        id: String(row._id),
+        email: row.email,
+        firstName: row.firstName,
+        lastName: row.lastName,
+        avatar: row.avatar,
+        phone: row.phone,
+        country: row.country,
+        status: row.status,
+        createdAt: row.createdAt,
+        lastActiveAt: row.lastLogin,
+        bookingCount: rollup?.summary?.[0]?.count || 0,
+        spendingByCurrency: (rollup?.spending || []).map((item) => ({ currency: item._id, total: item.total })),
+        brands: travelerBrands,
+        latestBooking: latest ? {
+          id: String(latest._id),
+          reference: latest.reference,
+          status: latest.status,
+          total: latest.total,
+          currency: latest.currency,
+          createdAt: latest.createdAt,
+          travelDate: latest.items?.[0]?.date,
+          travelTime: latest.items?.[0]?.time,
+          brand: latestBrand ? { id: String(latestBrand._id), name: latestBrand.name, slug: latestBrand.slug } : null,
+        } : null,
+      };
+    });
+
+    sendSuccess(res, {
+      data: travelers,
+      pagination: {
+        limit,
+        hasMore,
+        nextCursor: hasMore && pageRows.length ? String(pageRows[pageRows.length - 1]._id) : null,
+      },
+    });
   } catch (error) {
     next(error);
   }
