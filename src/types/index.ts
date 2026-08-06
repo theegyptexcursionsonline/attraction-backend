@@ -27,6 +27,12 @@ export interface IUser extends Document {
   totalSpent?: number;
   refreshToken?: string;
   tokenVersion?: number;
+  twoFactorEnabled?: boolean;
+  twoFactorSecretEnc?: string;
+  twoFactorPendingSecretEnc?: string;
+  twoFactorSetupExpires?: Date;
+  twoFactorLastUsedStep?: number;
+  twoFactorRecoveryCodeHashes?: string[];
   passwordResetToken?: string;
   passwordResetExpires?: Date;
   lastLogin?: Date;

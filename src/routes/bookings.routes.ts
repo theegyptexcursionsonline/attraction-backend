@@ -320,14 +320,14 @@ router.get(
 router.get(
   '/admin/earnings',
   authenticate,
-  requireAdmin,
+  requireRole('super-admin', 'brand-admin', 'manager'),
   optionalTenant,
   getResellerEarnings
 );
 
 // Reseller settlement — supplier payout ledger + mark settled (single/batch).
 // Keep above `/admin/:id` so the segments are not captured as an id.
-router.get('/admin/settlement', authenticate, requireAdmin, optionalTenant, getSettlement);
+router.get('/admin/settlement', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, getSettlement);
 router.post('/admin/settlement/settle', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, settleBatch);
 router.patch('/admin/:id/settlement', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, updateSettlement);
 

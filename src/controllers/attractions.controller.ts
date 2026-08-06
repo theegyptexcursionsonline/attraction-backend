@@ -463,8 +463,15 @@ export const createAttraction = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    // Non-super-admins can only assign attractions to their own tenants
-    if (req.user?.role !== 'super-admin' && req.body.tenantIds?.length) {
+    // Delegated admins must always create inside at least one explicitly assigned
+    // tenant. An empty tenant list would create a globally visible orphan record.
+    if (req.user?.role !== 'super-admin' && !req.body.tenantIds?.length) {
+      sendError(res, 'Select at least one assigned site for this attraction', 400);
+      return;
+    }
+
+    // Non-super-admins can only assign attractions to their own tenants.
+    if (req.user?.role !== 'super-admin') {
       const assignedSet = new Set((req.user?.assignedTenants || []).map((t: Types.ObjectId) => t.toString()));
       const unauthorized = req.body.tenantIds.filter((id: string) => !assignedSet.has(id));
       if (unauthorized.length > 0) {

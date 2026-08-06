@@ -10,7 +10,7 @@ import {
   updateUser,
   deleteUser,
 } from '../controllers/users.controller';
-import { authenticate, requireAdmin, requireRole, requireSuperAdmin } from '../middleware/auth.middleware';
+import { authenticate, requireRole, requireSuperAdmin } from '../middleware/auth.middleware';
 import { validate, validateQuery } from '../middleware/validate.middleware';
 import { paginationSchema } from '../utils/validators';
 import { z } from 'zod';
@@ -156,7 +156,7 @@ router.delete('/wishlist/:attractionId', authenticate, removeFromWishlist);
 router.get(
   '/',
   authenticate,
-  requireAdmin,
+  requireRole('super-admin', 'brand-admin', 'manager'),
   validateQuery(
     paginationSchema.merge(
       z.object({
@@ -194,7 +194,7 @@ router.get(
 router.get(
   '/:id',
   authenticate,
-  requireAdmin,
+  requireRole('super-admin', 'brand-admin', 'manager'),
   getUserById
 );
 

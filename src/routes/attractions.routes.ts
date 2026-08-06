@@ -269,8 +269,8 @@ router.get(
 // records. Previously admin-only, so guest widgets 401'd and silently treated
 // every date as bookable.
 router.get('/:id/blocked-dates', optionalAuth, optionalTenant, getBlockedDates);
-router.post('/:id/block-dates', authenticate, requireAdmin, blockDates);
-router.delete('/:id/block-dates/:date', authenticate, requireAdmin, unblockDate);
+router.post('/:id/block-dates', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), blockDates);
+router.delete('/:id/block-dates/:date', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), unblockDate);
 
 // Reseller marketplace — opt the current tenant in/out of selling an attraction.
 router.post('/:id/resell', authenticate, optionalTenant, requireRole('super-admin', 'brand-admin'), addReseller);
@@ -445,7 +445,7 @@ router.patch(
 router.delete(
   '/:id',
   authenticate,
-  requireRole('super-admin', 'brand-admin', 'manager'),
+  requireRole('super-admin', 'brand-admin'),
   deleteAttraction
 );
 

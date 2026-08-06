@@ -11,6 +11,9 @@ import {
   changePassword,
   updateProfile,
   passportLogin,
+  setupTwoFactor,
+  confirmTwoFactorSetup,
+  verifyTwoFactorLogin,
 } from '../controllers/auth.controller';
 import { authenticate, optionalAuth } from '../middleware/auth.middleware';
 import { validate } from '../middleware/validate.middleware';
@@ -24,6 +27,7 @@ import {
   changePasswordSchema,
   updateProfileSchema,
 } from '../utils/validators';
+import { z } from 'zod';
 
 const router = Router();
 
@@ -78,6 +82,20 @@ router.post('/register', authLimiter, validate(registerSchema), register);
  *               $ref: '#/components/schemas/Error'
  */
 router.post('/login', authLimiter, validate(loginSchema), login);
+
+const twoFactorChallengeSchema = z.object({
+  challengeToken: z.string().min(20).max(4096),
+});
+const twoFactorCodeSchema = twoFactorChallengeSchema.extend({
+  code: z.string().trim().transform((value) => value.toUpperCase()).refine(
+    (value) => /^\d{6}$/.test(value) || /^AN-[A-F0-9]{4}-[A-F0-9]{4}$/.test(value),
+    'Enter a 6-digit authenticator code or a valid recovery code'
+  ),
+});
+
+router.post('/2fa/setup', authLimiter, validate(twoFactorChallengeSchema), setupTwoFactor);
+router.post('/2fa/confirm', authLimiter, validate(twoFactorCodeSchema), confirmTwoFactorSetup);
+router.post('/2fa/verify', authLimiter, validate(twoFactorCodeSchema), verifyTwoFactorLogin);
 
 /**
  * @swagger

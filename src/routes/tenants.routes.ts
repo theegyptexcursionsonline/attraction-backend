@@ -17,7 +17,7 @@ import {
   getTenantStats,
   getPortfolioStats,
 } from '../controllers/tenants.controller';
-import { authenticate, requireSuperAdmin, requireAdmin, canAccessTenant } from '../middleware/auth.middleware';
+import { authenticate, requireSuperAdmin, requireAdmin, requireRole, canAccessTenant } from '../middleware/auth.middleware';
 import { validate, validateQuery } from '../middleware/validate.middleware';
 import { createTenantSchema, updateTenantSchema, paginationSchema } from '../utils/validators';
 import { z } from 'zod';
@@ -290,7 +290,7 @@ router.delete(
 router.post(
   '/',
   authenticate,
-  requireAdmin,
+  requireSuperAdmin,
   validate(createTenantSchema),
   createTenant
 );
@@ -334,7 +334,7 @@ router.post(
 router.patch(
   '/:id/settings',
   authenticate,
-  requireAdmin,
+  requireRole('super-admin', 'brand-admin'),
   canAccessTenant,
   updateTenantSettings
 );

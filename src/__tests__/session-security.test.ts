@@ -11,6 +11,8 @@ jest.mock('../utils/jwt', () => ({
   verifyToken: jest.fn(),
   generateAccessToken: jest.fn(),
   generateRefreshToken: jest.fn(),
+  generateTwoFactorChallenge: jest.fn(),
+  verifyTwoFactorChallenge: jest.fn(),
 }));
 
 jest.mock('../models/User', () => ({
@@ -137,6 +139,33 @@ describe('session revocation', () => {
       'refresh-secret',
       expect.objectContaining({ httpOnly: true, path: '/api/auth/refresh-token' })
     );
+  });
+
+  it('requires a 2FA challenge for admin login and does not mint cookies after password-only auth', async () => {
+    const user = {
+      _id: new Types.ObjectId(),
+      email: 'admin@example.com',
+      role: 'manager',
+      status: 'active',
+      tokenVersion: 0,
+      twoFactorEnabled: true,
+      comparePassword: jest.fn().mockResolvedValue(true),
+    };
+    (User.findOne as jest.Mock).mockReturnValue({ select: jest.fn().mockResolvedValue(user) });
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { generateTwoFactorChallenge } = require('../utils/jwt');
+    generateTwoFactorChallenge.mockReturnValue('two-factor-challenge');
+    const res = response();
+
+    await login({ body: { email: user.email, password: 'valid-password' } } as AuthRequest, res, jest.fn());
+
+    expect(res.status).toHaveBeenCalledWith(202);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      success: true,
+      data: { requiresTwoFactor: true, challengeToken: 'two-factor-challenge' },
+    }));
+    expect(res.cookie).not.toHaveBeenCalled();
+    expect(generateAccessToken).not.toHaveBeenCalled();
   });
 
   it('rotates a cookie refresh token without returning either token in JSON', async () => {

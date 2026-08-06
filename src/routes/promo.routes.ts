@@ -8,7 +8,7 @@ import {
   updatePromoCode,
   deletePromoCode,
 } from '../controllers/promo.controller';
-import { authenticate, requireAdmin } from '../middleware/auth.middleware';
+import { authenticate, requireRole } from '../middleware/auth.middleware';
 import { optionalTenant, requireTenant } from '../middleware/tenant.middleware';
 import { publicWriteLimiter } from '../middleware/rate-limit.middleware';
 
@@ -18,11 +18,11 @@ const router = Router();
 router.post('/validate', publicWriteLimiter, optionalTenant, requireTenant, validatePromoCode);
 
 // Admin — CRUD
-router.get('/', authenticate, requireAdmin, optionalTenant, getPromoCodes);
-router.get('/stats', authenticate, requireAdmin, optionalTenant, getPromoCodeStats);
-router.get('/:id', authenticate, requireAdmin, optionalTenant, getPromoCodeById);
-router.post('/', authenticate, requireAdmin, optionalTenant, createPromoCode);
-router.patch('/:id', authenticate, requireAdmin, optionalTenant, updatePromoCode);
-router.delete('/:id', authenticate, requireAdmin, optionalTenant, deletePromoCode);
+router.get('/', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, getPromoCodes);
+router.get('/stats', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, getPromoCodeStats);
+router.get('/:id', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, getPromoCodeById);
+router.post('/', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, createPromoCode);
+router.patch('/:id', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, updatePromoCode);
+router.delete('/:id', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, deletePromoCode);
 
 export default router;

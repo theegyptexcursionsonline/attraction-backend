@@ -2,14 +2,23 @@ import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 import { User } from '../models/User';
 import { Tenant } from '../models/Tenant';
-import { generateAccessToken, generateRefreshToken, verifyToken } from '../utils/jwt';
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  generateTwoFactorChallenge,
+  verifyToken,
+  verifyTwoFactorChallenge,
+} from '../utils/jwt';
 import { generateRandomToken, hashToken } from '../utils/hash';
 import { verifyPassportAssertion } from '../utils/passport';
 import { sendSuccess, sendError } from '../utils/response';
-import { AuthRequest } from '../types';
+import { AuthRequest, IUser } from '../types';
 import { env } from '../config/env';
 import { sendPasswordResetEmail } from '../services/email.service';
 import { createAdminNotifications } from '../services/notification.service';
+import { createTwoFactorSetup, generateTwoFactorRecoveryCodes, verifyTwoFactorCode } from '../utils/twoFactor';
+
+const ADMIN_ROLES = new Set(['super-admin', 'brand-admin', 'manager', 'editor', 'viewer']);
 
 const ACCESS_COOKIE_OPTIONS = {
   httpOnly: true,
@@ -23,6 +32,17 @@ const refreshCookieOptions = (rememberMe = false) => ({
   maxAge: (rememberMe ? 30 : 7) * 24 * 60 * 60 * 1000,
   path: '/api/auth/refresh-token',
 });
+
+const issueSession = async (user: IUser, res: Response, rememberMe = false) => {
+  const accessToken = generateAccessToken(user);
+  const refreshToken = generateRefreshToken(user);
+  user.refreshToken = hashToken(refreshToken);
+  user.lastLogin = new Date();
+  await user.save();
+  res.cookie('accessToken', accessToken, ACCESS_COOKIE_OPTIONS);
+  res.cookie('refreshToken', refreshToken, refreshCookieOptions(rememberMe));
+  return user.toJSON();
+};
 
 export const register = async (
   req: AuthRequest,
@@ -108,25 +128,182 @@ export const login = async (
       return;
     }
 
-    // Generate tokens
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
+    if (ADMIN_ROLES.has(user.role)) {
+      const challengeToken = generateTwoFactorChallenge(user, rememberMe === true);
+      sendSuccess(
+        res,
+        user.twoFactorEnabled
+          ? { requiresTwoFactor: true, challengeToken }
+          : { requiresTwoFactorSetup: true, challengeToken },
+        user.twoFactorEnabled ? 'Two-factor verification required' : 'Two-factor setup required',
+        202
+      );
+      return;
+    }
 
-    // Save refresh token
-    user.refreshToken = hashToken(refreshToken);
-    user.lastLogin = new Date();
-    await user.save();
-
-    // Set cookies
-    res.cookie('accessToken', accessToken, ACCESS_COOKIE_OPTIONS);
-    res.cookie('refreshToken', refreshToken, refreshCookieOptions(rememberMe === true));
-
-    // Remove password from response
-    const userResponse = user.toJSON();
+    const userResponse = await issueSession(user, res, rememberMe === true);
 
     sendSuccess(res, { user: userResponse }, 'Login successful');
   } catch (error) {
     next(error);
+  }
+};
+
+const challengeUser = async (challengeToken: string, extraSelection = '') => {
+  const challenge = verifyTwoFactorChallenge(challengeToken);
+  const user = await User.findById(challenge.userId).select(extraSelection);
+  if (
+    !user ||
+    user.status !== 'active' ||
+    !ADMIN_ROLES.has(user.role) ||
+    (user.tokenVersion || 0) !== (challenge.sessionVersion || 0)
+  ) {
+    throw new Error('Invalid two-factor challenge');
+  }
+  return { challenge, user };
+};
+
+export const setupTwoFactor = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { challengeToken } = req.body as { challengeToken: string };
+    const { user } = await challengeUser(challengeToken, '+twoFactorPendingSecretEnc +twoFactorSetupExpires');
+    if (user.twoFactorEnabled) {
+      sendError(res, 'Two-factor authentication is already enabled', 409);
+      return;
+    }
+    const setup = await createTwoFactorSetup(user.email);
+    user.twoFactorPendingSecretEnc = setup.encryptedSecret;
+    user.twoFactorSetupExpires = setup.expiresAt;
+    await user.save();
+    sendSuccess(res, {
+      qrCodeDataUrl: setup.qrCodeDataUrl,
+      manualSecret: setup.manualSecret,
+      expiresAt: setup.expiresAt,
+    }, 'Scan the code and confirm one current authenticator code');
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '';
+    if (message.includes('ENCRYPTION_KEY')) {
+      sendError(res, 'Two-factor setup is temporarily unavailable', 503);
+      return;
+    }
+    sendError(res, 'Invalid or expired two-factor challenge', 401);
+  }
+};
+
+export const confirmTwoFactorSetup = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { challengeToken, code } = req.body as { challengeToken: string; code: string };
+    const { challenge, user } = await challengeUser(
+      challengeToken,
+      '+twoFactorPendingSecretEnc +twoFactorSetupExpires'
+    );
+    if (
+      !user.twoFactorPendingSecretEnc ||
+      !user.twoFactorSetupExpires ||
+      user.twoFactorSetupExpires.getTime() <= Date.now()
+    ) {
+      sendError(res, 'Two-factor setup has expired. Start again.', 401);
+      return;
+    }
+    const result = await verifyTwoFactorCode({ encryptedSecret: user.twoFactorPendingSecretEnc, token: code });
+    if (!result.valid || result.timeStep === undefined) {
+      sendError(res, 'Invalid authenticator code', 401);
+      return;
+    }
+    const recoveryCodes = generateTwoFactorRecoveryCodes();
+    const recoveryCodeHashes = recoveryCodes.map(hashToken);
+    const enabledUser = await User.findOneAndUpdate(
+      {
+        _id: user._id,
+        tokenVersion: challenge.sessionVersion || 0,
+        twoFactorEnabled: false,
+      },
+      {
+        $set: {
+          twoFactorEnabled: true,
+          twoFactorSecretEnc: user.twoFactorPendingSecretEnc,
+          twoFactorLastUsedStep: result.timeStep,
+          twoFactorRecoveryCodeHashes: recoveryCodeHashes,
+        },
+        $unset: { twoFactorPendingSecretEnc: 1, twoFactorSetupExpires: 1 },
+      },
+      { new: true }
+    );
+    if (!enabledUser) {
+      sendError(res, 'Two-factor setup was already completed or the session changed', 409);
+      return;
+    }
+    const userResponse = await issueSession(enabledUser, res, challenge.rememberMe);
+    sendSuccess(res, { user: userResponse, recoveryCodes }, 'Two-factor authentication enabled');
+  } catch {
+    sendError(res, 'Invalid or expired two-factor challenge', 401);
+  }
+};
+
+export const verifyTwoFactorLogin = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { challengeToken, code } = req.body as { challengeToken: string; code: string };
+    const { challenge, user } = await challengeUser(
+      challengeToken,
+      '+twoFactorSecretEnc +twoFactorLastUsedStep +twoFactorRecoveryCodeHashes'
+    );
+    if (!user.twoFactorEnabled || !user.twoFactorSecretEnc) {
+      sendError(res, 'Two-factor setup is required', 409);
+      return;
+    }
+    const isTotp = /^\d{6}$/.test(code);
+    if (!isTotp) {
+      const normalizedRecoveryCode = code.trim().toUpperCase();
+      const recoveryHash = hashToken(normalizedRecoveryCode);
+      const recoveredUser = await User.findOneAndUpdate(
+        {
+          _id: user._id,
+          tokenVersion: challenge.sessionVersion || 0,
+          twoFactorEnabled: true,
+          twoFactorRecoveryCodeHashes: recoveryHash,
+        },
+        { $pull: { twoFactorRecoveryCodeHashes: recoveryHash } },
+        { new: true }
+      );
+      if (!recoveredUser) {
+        sendError(res, 'Invalid or already-used recovery code', 401);
+        return;
+      }
+      const userResponse = await issueSession(recoveredUser, res, challenge.rememberMe);
+      sendSuccess(res, { user: userResponse }, 'Login successful');
+      return;
+    }
+
+    const result = await verifyTwoFactorCode({
+      encryptedSecret: user.twoFactorSecretEnc,
+      token: code,
+      afterTimeStep: user.twoFactorLastUsedStep,
+    });
+    if (!result.valid || result.timeStep === undefined) {
+      sendError(res, 'Invalid or already-used authenticator code', 401);
+      return;
+    }
+    const verifiedUser = await User.findOneAndUpdate(
+      {
+        _id: user._id,
+        tokenVersion: challenge.sessionVersion || 0,
+        twoFactorEnabled: true,
+        $or: [
+          { twoFactorLastUsedStep: { $lt: result.timeStep } },
+          { twoFactorLastUsedStep: { $exists: false } },
+        ],
+      },
+      { $set: { twoFactorLastUsedStep: result.timeStep } },
+      { new: true }
+    );
+    if (!verifiedUser) {
+      sendError(res, 'Authenticator code was already used', 409);
+      return;
+    }
+    const userResponse = await issueSession(verifiedUser, res, challenge.rememberMe);
+    sendSuccess(res, { user: userResponse }, 'Login successful');
+  } catch {
+    sendError(res, 'Invalid or expired two-factor challenge', 401);
   }
 };
 

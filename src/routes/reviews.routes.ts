@@ -9,7 +9,7 @@ import {
   updateReviewStatus,
   replyToReview,
 } from '../controllers/reviews.controller';
-import { optionalAuth, authenticate, requireAdmin } from '../middleware/auth.middleware';
+import { optionalAuth, authenticate, requireRole } from '../middleware/auth.middleware';
 import { optionalTenant } from '../middleware/tenant.middleware';
 import { publicWriteLimiter } from '../middleware/rate-limit.middleware';
 
@@ -129,9 +129,9 @@ router.post('/', publicWriteLimiter, optionalAuth, optionalTenant, createReview)
  *         description: Paginated reviews for the attraction
  */
 // Admin routes (must be before /:reviewId to avoid param conflict)
-router.get('/admin', authenticate, requireAdmin, getAdminReviews);
-router.patch('/:id/status', authenticate, requireAdmin, updateReviewStatus);
-router.post('/:id/reply', authenticate, requireAdmin, replyToReview);
+router.get('/admin', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), getAdminReviews);
+router.patch('/:id/status', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), updateReviewStatus);
+router.post('/:id/reply', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), replyToReview);
 
 router.get('/attraction/:attractionId', optionalAuth, optionalTenant, getReviewsByAttractionId);
 

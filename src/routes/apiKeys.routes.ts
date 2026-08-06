@@ -4,7 +4,7 @@ import {
   listApiKeys,
   revokeApiKey,
 } from '../controllers/apiKeys.controller';
-import { authenticate, requireAdmin, requireRole } from '../middleware/auth.middleware';
+import { authenticate, requireRole } from '../middleware/auth.middleware';
 import { optionalTenant } from '../middleware/tenant.middleware';
 
 const router = Router();
@@ -50,7 +50,7 @@ const router = Router();
  *       201:
  *         description: API key created (key shown once)
  */
-router.get('/', authenticate, requireAdmin, optionalTenant, listApiKeys);
+router.get('/', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, listApiKeys);
 router.post(
   '/',
   authenticate,

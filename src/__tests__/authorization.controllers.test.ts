@@ -7,7 +7,7 @@ import { Review } from '../models/Review';
 import { createApiKey, revokeApiKey } from '../controllers/apiKeys.controller';
 import { createOffer, deleteOffer } from '../controllers/specialOffers.controller';
 import { getReviewById } from '../controllers/reviews.controller';
-import { getAttractionById, updateAttraction } from '../controllers/attractions.controller';
+import { createAttraction, getAttractionById, updateAttraction } from '../controllers/attractions.controller';
 import { AuthRequest } from '../types';
 
 jest.mock('../models/ApiKey', () => ({
@@ -26,6 +26,7 @@ jest.mock('../models/Attraction', () => ({
     exists: jest.fn(),
     findById: jest.fn(),
     findByIdAndUpdate: jest.fn(),
+    create: jest.fn(),
   },
 }));
 jest.mock('../models/Review', () => ({ Review: { findOne: jest.fn() } }));
@@ -173,5 +174,24 @@ describe('authorization controller defenses', () => {
 
     expect(res.status).toHaveBeenCalledWith(403);
     expect(Attraction.findByIdAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it('does not let a delegated admin create a globally unscoped attraction', async () => {
+    const req = authRequest({
+      body: { tenantIds: [] },
+      user: { role: 'editor', assignedTenants: [new Types.ObjectId()] },
+    });
+    const res = response();
+
+    await createAttraction(req, res, jest.fn());
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        error: 'Select at least one assigned site for this attraction',
+      })
+    );
+    expect(Attraction.create).not.toHaveBeenCalled();
   });
 });

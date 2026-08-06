@@ -6,7 +6,7 @@ import {
   updateRsvpStatus,
   deleteRsvp,
 } from '../controllers/rsvps.controller';
-import { authenticate, requireAdmin } from '../middleware/auth.middleware';
+import { authenticate, requireRole } from '../middleware/auth.middleware';
 import { optionalTenant } from '../middleware/tenant.middleware';
 import { publicWriteLimiter } from '../middleware/rate-limit.middleware';
 
@@ -17,9 +17,9 @@ const router = Router();
 router.post('/', publicWriteLimiter, optionalTenant, createRsvp);
 
 // Admin: list, view stats, update status, delete
-router.get('/admin/stats', authenticate, requireAdmin, optionalTenant, getRsvpStats);
-router.get('/admin', authenticate, requireAdmin, optionalTenant, getAllRsvps);
-router.patch('/admin/:id/status', authenticate, requireAdmin, updateRsvpStatus);
-router.delete('/admin/:id', authenticate, requireAdmin, deleteRsvp);
+router.get('/admin/stats', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, getRsvpStats);
+router.get('/admin', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, getAllRsvps);
+router.patch('/admin/:id/status', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), updateRsvpStatus);
+router.delete('/admin/:id', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), deleteRsvp);
 
 export default router;

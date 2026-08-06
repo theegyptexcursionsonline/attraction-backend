@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { Attraction } from '../models/Attraction';
 import { Review } from '../models/Review';
 import { Booking } from '../models/Booking';
+import { Tenant } from '../models/Tenant';
 import { sendSuccess } from '../utils/response';
 import { AuthRequest } from '../types';
 
@@ -81,12 +82,50 @@ export const getAdminStats = async (
       bookingFilter = { tenantId: { $in: assignedTenants } };
     }
 
-    const [totalAttractions, totalBookings] = await Promise.all([
-      Attraction.countDocuments(attractionFilter),
+    const tenantFilter = req.tenant
+      ? { _id: req.tenant._id, status: 'active' }
+      : isSuperAdmin
+        ? { status: 'active' }
+        : { _id: { $in: assignedTenants }, status: 'active' };
+
+    const [attractionSummary, totalBookings, activeSites] = await Promise.all([
+      Attraction.aggregate([
+        { $match: attractionFilter },
+        {
+          $group: {
+            _id: null,
+            totalAttractions: { $sum: 1 },
+            destinations: { $addToSet: '$destination.city' },
+            totalReviews: { $sum: { $ifNull: ['$reviewCount', 0] } },
+            weightedRatingTotal: {
+              $sum: {
+                $multiply: [
+                  { $ifNull: ['$rating', 0] },
+                  { $ifNull: ['$reviewCount', 0] },
+                ],
+              },
+            },
+          },
+        },
+      ]),
       Booking.countDocuments(bookingFilter),
+      Tenant.countDocuments(tenantFilter),
     ]);
 
-    sendSuccess(res, { totalAttractions, totalBookings });
+    const summary = attractionSummary[0];
+    const totalReviews = summary?.totalReviews || 0;
+    const averageRating = totalReviews > 0
+      ? Math.round((summary.weightedRatingTotal / totalReviews) * 10) / 10
+      : 0;
+
+    sendSuccess(res, {
+      totalAttractions: summary?.totalAttractions || 0,
+      totalBookings,
+      totalDestinations: (summary?.destinations || []).filter(Boolean).length,
+      totalReviews,
+      averageRating,
+      activeSites,
+    });
   } catch (error) {
     next(error);
   }

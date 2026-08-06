@@ -9,6 +9,11 @@ export interface TokenPayload extends JwtPayload {
   sessionVersion: number;
 }
 
+export interface TwoFactorChallengePayload extends TokenPayload {
+  type: 'two-factor-challenge';
+  rememberMe: boolean;
+}
+
 export const generateAccessToken = (user: IUser): string => {
   const payload: TokenPayload = {
     userId: user._id.toString(),
@@ -45,6 +50,28 @@ export const verifyToken = (token: string): TokenPayload => {
   } catch {
     throw new Error('Invalid or expired token');
   }
+};
+
+export const generateTwoFactorChallenge = (user: IUser, rememberMe = false): string =>
+  jwt.sign(
+    {
+      userId: user._id.toString(),
+      email: user.email,
+      role: user.role,
+      sessionVersion: user.tokenVersion || 0,
+      type: 'two-factor-challenge',
+      rememberMe,
+    } satisfies Omit<TwoFactorChallengePayload, keyof JwtPayload>,
+    env.jwtSecret,
+    { expiresIn: '10m', audience: 'attractions-network:two-factor' }
+  );
+
+export const verifyTwoFactorChallenge = (token: string): TwoFactorChallengePayload => {
+  const payload = jwt.verify(token, env.jwtSecret, {
+    audience: 'attractions-network:two-factor',
+  }) as TwoFactorChallengePayload;
+  if (payload.type !== 'two-factor-challenge') throw new Error('Invalid two-factor challenge');
+  return payload;
 };
 
 export const decodeToken = (token: string): TokenPayload | null => {

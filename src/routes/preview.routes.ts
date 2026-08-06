@@ -6,7 +6,7 @@ import {
   getPreviewCode,
   regeneratePreviewCode,
 } from '../controllers/preview.controller';
-import { authenticate, requireAdmin } from '../middleware/auth.middleware';
+import { authenticate, requireRole } from '../middleware/auth.middleware';
 import rateLimit from 'express-rate-limit';
 
 const router = Router();
@@ -28,7 +28,7 @@ router.post('/unlock', unlockLimiter, unlockPreview);
 router.post('/unlock-by-code', unlockLimiter, unlockByCode);
 
 // Admin — view/rotate per-tenant code
-router.get('/admin/code/:tenantId', authenticate, requireAdmin, getPreviewCode);
-router.post('/admin/regenerate/:tenantId', authenticate, requireAdmin, regeneratePreviewCode);
+router.get('/admin/code/:tenantId', authenticate, requireRole('super-admin', 'brand-admin'), getPreviewCode);
+router.post('/admin/regenerate/:tenantId', authenticate, requireRole('super-admin', 'brand-admin'), regeneratePreviewCode);
 
 export default router;

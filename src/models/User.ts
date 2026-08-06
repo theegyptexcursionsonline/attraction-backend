@@ -85,6 +85,30 @@ const userSchema = new Schema<IUser>(
       default: 0,
       min: 0,
     },
+    twoFactorEnabled: {
+      type: Boolean,
+      default: false,
+    },
+    twoFactorSecretEnc: {
+      type: String,
+      select: false,
+    },
+    twoFactorPendingSecretEnc: {
+      type: String,
+      select: false,
+    },
+    twoFactorSetupExpires: {
+      type: Date,
+      select: false,
+    },
+    twoFactorLastUsedStep: {
+      type: Number,
+      select: false,
+    },
+    twoFactorRecoveryCodeHashes: [{
+      type: String,
+      select: false,
+    }],
     passwordResetToken: {
       type: String,
       select: false,
@@ -107,6 +131,11 @@ const userSchema = new Schema<IUser>(
         delete obj.passwordResetToken;
         delete obj.passwordResetExpires;
         delete obj.tokenVersion;
+        delete obj.twoFactorSecretEnc;
+        delete obj.twoFactorPendingSecretEnc;
+        delete obj.twoFactorSetupExpires;
+        delete obj.twoFactorLastUsedStep;
+        delete obj.twoFactorRecoveryCodeHashes;
         delete obj.__v;
         return obj;
       },
