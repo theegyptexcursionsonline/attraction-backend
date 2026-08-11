@@ -4,6 +4,8 @@ import {
   renderActionEmail,
   renderContactFormHtml,
   renderBookingStatusEmailHtml,
+  bookingPaymentLink,
+  renderBookingPaymentLinkHtml,
 } from '../services/email.service';
 import type { EmailBrand, BookingEmailDetails } from '../services/email.service';
 
@@ -116,6 +118,26 @@ describe('renderBookingConfirmationHtml', () => {
     expect(html).not.toContain('<img src=x');
     expect(html).not.toContain('onerror="alert');
     expect(html).toContain('&lt;img');
+  });
+});
+
+describe('booking payment-link email', () => {
+  it('keeps the capability token out of the query string and renders the authoritative amount', () => {
+    const link = bookingPaymentLink(brand, 'ATT-PAY-1', 'token+/=');
+    expect(link).toBe('https://makadihorseclub.com/checkout/pay?ref=ATT-PAY-1#accessToken=token%2B%2F%3D');
+    expect(link.split('#')[0]).not.toContain('accessToken');
+
+    const html = renderBookingPaymentLinkHtml(brand, {
+      reference: 'ATT-PAY-1',
+      guestName: 'QA Guest',
+      guestAccessToken: 'secure-capability',
+      total: 94.5,
+      currency: 'USD',
+    });
+    expect(html).toContain('Complete your secure payment');
+    expect(html).toContain('USD 94.50');
+    expect(html).toContain('/checkout/pay?ref=ATT-PAY-1#accessToken=secure-capability');
+    expect(html).not.toContain('?ref=ATT-PAY-1&amp;accessToken=');
   });
 });
 

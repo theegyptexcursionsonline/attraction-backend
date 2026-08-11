@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   createBooking,
   getBookingByReference,
+  getBookingPaymentDetails,
   getMyBookings,
   cancelBooking,
   getBookingTicket,
@@ -13,6 +14,7 @@ import {
   getSettlement,
   updateSettlement,
   settleBatch,
+  sendBookingPaymentLink,
 } from '../controllers/bookings.controller';
 import { authenticate, optionalAuth, requireAdmin, requireRole } from '../middleware/auth.middleware';
 import { optionalTenant } from '../middleware/tenant.middleware';
@@ -89,6 +91,7 @@ router.post(
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
+router.get('/reference/:reference/payment', optionalAuth, getBookingPaymentDetails);
 router.get('/reference/:reference', optionalAuth, getBookingByReference);
 
 /**
@@ -330,6 +333,12 @@ router.get(
 router.get('/admin/settlement', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, getSettlement);
 router.post('/admin/settlement/settle', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, settleBatch);
 router.patch('/admin/:id/settlement', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, updateSettlement);
+router.post(
+  '/admin/:id/payment-link',
+  authenticate,
+  requireRole('super-admin', 'brand-admin', 'manager'),
+  sendBookingPaymentLink
+);
 
 /**
  * @swagger

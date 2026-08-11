@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import type { Server } from 'http';
 import request from 'supertest';
 
 function controllerMockFactory() {
@@ -102,6 +103,18 @@ const collectApiEndpoints = (): Endpoint[] => {
 
 describe('API routes supertest coverage', () => {
   const endpoints = collectApiEndpoints();
+  let server: Server;
+
+  // Reuse one listener for the large route inventory. Creating and tearing down
+  // an ephemeral listener for every row can exhaust local sockets and produces
+  // intermittent blank 404s that never reached Express or its request logger.
+  beforeAll((done) => {
+    server = app.listen(0, '127.0.0.1', done);
+  });
+
+  afterAll((done) => {
+    server.close(done);
+  });
 
   it('discovers route list from all API route modules', () => {
     // Protect against accidentally missing route modules from this coverage test.
@@ -109,7 +122,7 @@ describe('API routes supertest coverage', () => {
   });
 
   it('never publishes seeded account credentials on the API homepage', async () => {
-    const response = await request(app).get('/api');
+    const response = await request(server).get('/api');
 
     expect(response.status).toBe(200);
     expect(response.text).not.toContain('Test Accounts');
@@ -119,7 +132,7 @@ describe('API routes supertest coverage', () => {
   });
 
   it('does not echo sensitive query values from unknown routes', async () => {
-    const response = await request(app).get('/api/missing?guestAccessToken=private-value');
+    const response = await request(server).get('/api/missing?guestAccessToken=private-value');
 
     expect(response.status).toBe(404);
     expect(response.body).toEqual({ success: false, error: 'Route not found' });
@@ -128,7 +141,7 @@ describe('API routes supertest coverage', () => {
 
   test.each(endpoints)('%s %s responds (not missing route)', async ({ method, path: routePath }) => {
     const concretePath = toConcretePath(routePath);
-    let req = request(app)[method](concretePath);
+    let req = request(server)[method](concretePath);
 
     if (method === 'post' || method === 'put' || method === 'patch' || method === 'delete') {
       req = req.send({});
