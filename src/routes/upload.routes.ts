@@ -1,11 +1,18 @@
 import { Router } from 'express';
 import multer from 'multer';
 import path from 'path';
-import { uploadSingleImage, uploadMultipleImages, generateAiImage } from '../controllers/upload.controller';
+import {
+  uploadSingleImage,
+  uploadMultipleImages,
+  createAiImageGenerationJob,
+  getAiImageGenerationJob,
+} from '../controllers/upload.controller';
 import { authenticate, requireRole } from '../middleware/auth.middleware';
 import { AuthRequest } from '../types';
 import { cleanupUploadedFiles } from '../utils/uploadCleanup';
 import { aiGenerationLimiter, uploadLimiter } from '../middleware/rate-limit.middleware';
+import { validate, validateParams } from '../middleware/validate.middleware';
+import { generateAiImageJobSchema, imageGenerationJobParamsSchema } from '../utils/validators';
 
 const router = Router();
 
@@ -67,7 +74,16 @@ router.post(
   authenticate,
   requireRole('super-admin', 'brand-admin', 'manager', 'editor'),
   aiGenerationLimiter,
-  generateAiImage
+  validate(generateAiImageJobSchema),
+  createAiImageGenerationJob
+);
+
+router.get(
+  '/generate/:jobId',
+  authenticate,
+  requireRole('super-admin', 'brand-admin', 'manager', 'editor'),
+  validateParams(imageGenerationJobParamsSchema),
+  getAiImageGenerationJob
 );
 
 export default router;

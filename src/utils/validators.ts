@@ -315,6 +315,23 @@ export const createPaymentIntentSchema = z.object({
   guestAccessToken: z.string().min(32).max(128).optional(),
 });
 
+export const generateAiImageJobSchema = z.object({
+  prompt: z.string().trim().min(10, 'Prompt must be at least 10 characters').max(1200),
+  size: z.enum(['1024x1024', '1024x1536', '1536x1024', 'auto']).default('1536x1024'),
+  quality: z.enum(['low', 'medium', 'high', 'auto']).default('high'),
+  folder: z.string()
+    .trim()
+    .min(1)
+    .max(80)
+    .regex(/^[a-z0-9][a-z0-9/_-]*$/, 'Invalid image folder')
+    .refine((folder) => !folder.includes('..'), 'Invalid image folder')
+    .default('ai-generated'),
+});
+
+export const imageGenerationJobParamsSchema = z.object({
+  jobId: z.string().regex(/^[a-f0-9]{24}$/i, 'Invalid image generation job id'),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CreateAttractionInput = z.infer<typeof createAttractionSchema>;
