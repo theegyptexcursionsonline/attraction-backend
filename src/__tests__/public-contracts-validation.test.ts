@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import {
   PUBLIC_ATTRACTION_PROJECTION,
+  toAdminAttractionDto,
   toPublicAttractionDto,
 } from '../controllers/attractions.controller';
 import {
@@ -8,10 +9,11 @@ import {
   toPublicTenantDto,
 } from '../controllers/tenants.controller';
 import { validate } from '../middleware/validate.middleware';
-import { createBookingSchema } from '../utils/validators';
+import { createAttractionSchema, createBookingSchema } from '../utils/validators';
 
 const validBooking = {
   attractionId: '507f1f77bcf86cd799439011',
+  tenantId: '507f191e810c19729de860ea',
   items: [{
     optionId: 'adult',
     optionName: ' Adult Ticket ',
@@ -73,6 +75,21 @@ describe('public API DTO contracts', () => {
     expect(PUBLIC_ATTRACTION_PROJECTION).not.toMatch(/tenantIds|ownerTenantId|reseller|createdBy|__v/);
   });
 
+  it('returns only authorized assignment ids to authenticated admin lists', () => {
+    const dto = toAdminAttractionDto({
+      _id: 'attraction-1',
+      slug: 'reef-tour',
+      tenantIds: ['tenant-a', 'tenant-b'],
+      ownerTenantId: 'tenant-b',
+    }, ['tenant-a']);
+    expect(dto).toMatchObject({
+      _id: 'attraction-1',
+      slug: 'reef-tour',
+      tenantIds: ['tenant-a'],
+    });
+    expect(dto).not.toHaveProperty('ownerTenantId');
+  });
+
   it('exposes only public tenant fields and checkout-safe Stripe settings', () => {
     const dto = toPublicTenantDto({
       _id: 'tenant-1',
@@ -126,6 +143,7 @@ describe('booking input validation', () => {
     expect(status).not.toHaveBeenCalled();
     expect(req.body).not.toHaveProperty('ignoredField');
     expect(req.body.paymentMethod).toBe('card');
+    expect(req.body.tenantId).toBe('507f191e810c19729de860ea');
     expect(req.body.items[0]).toMatchObject({
       category: 'resident',
       time: '08:30',
@@ -163,5 +181,28 @@ describe('booking input validation', () => {
       ...override,
     };
     await expect(createBookingSchema.parseAsync(payload)).rejects.toBeDefined();
+  });
+});
+
+describe('tour authoring validation', () => {
+  const base = {
+    slug: 'tour-fallback-1', pathSlug: 'morning-safari', title: 'Morning Safari',
+    shortDescription: 'Short', description: 'Full', category: 'safari',
+    destination: { city: 'Hurghada', country: 'Egypt', coordinates: { lat: 0, lng: 0 } },
+    duration: '3 hours', priceFrom: 50, currency: 'USD',
+    pricingOptions: [{ id: 'adult', name: 'Adult', price: 50 }],
+    entryWindows: [{ label: 'Early', startTime: '08:30', endTime: '11:30', price: 65 }],
+    parentPage: { label: 'Safari Tours', path: '/safari-tours' }, tenantIds: ['tenant-a'],
+  };
+
+  it('preserves slot prices, editable URL slug, and local parent page', () => {
+    expect(createAttractionSchema.parse(base)).toMatchObject({
+      pathSlug: 'morning-safari', parentPage: { path: '/safari-tours' },
+      entryWindows: [{ startTime: '08:30', price: 65 }],
+    });
+  });
+
+  it.each(['HTTPS://evil.test', '//evil.test', '/bad\\path'])('rejects hostile parent path %s', (path) => {
+    expect(() => createAttractionSchema.parse({ ...base, parentPage: { label: 'Bad', path } })).toThrow();
   });
 });

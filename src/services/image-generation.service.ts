@@ -44,20 +44,33 @@ export const generateImageFromPrompt = async ({
     throw new Error('OPENAI_API_KEY is not configured');
   }
 
-  const response = await fetch('https://api.openai.com/v1/images/generations', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${env.openaiApiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'gpt-image-1.5',
-      prompt: buildImagePrompt(prompt),
-      size,
-      quality,
-      output_format: outputFormat,
-    }),
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 150_000);
+  let response: Response;
+  try {
+    response = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${env.openaiApiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-image-1.5',
+        prompt: buildImagePrompt(prompt),
+        size,
+        quality,
+        output_format: outputFormat,
+      }),
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Image generation timed out. Please try again.');
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
 
   const payload = (await response.json()) as OpenAiImageGenerationResponse;
 

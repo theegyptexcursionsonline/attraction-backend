@@ -6,6 +6,7 @@ import { Booking } from '../models/Booking';
 import { User } from '../models/User';
 import { Availability } from '../models/Availability';
 import { PromoCode } from '../models/PromoCode';
+import { Tenant } from '../models/Tenant';
 import { SpecialOffer } from '../models/SpecialOffer';
 import { IdempotencyKey } from '../models/IdempotencyKey';
 import { verifyToken } from '../utils/jwt';
@@ -44,6 +45,7 @@ jest.mock('../utils/jwt', () => ({
 jest.mock('../models/Attraction', () => ({
   Attraction: {
     findById: jest.fn(),
+    findOne: jest.fn(),
   },
 }));
 
@@ -102,6 +104,7 @@ jest.mock('../services/email.service', () => ({
 // resolves instantly instead of buffering against a real (absent) DB connection.
 jest.mock('../models/Tenant', () => ({
   Tenant: {
+    findOne: jest.fn(),
     findById: jest.fn().mockReturnValue({
       select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(null) }),
     }),
@@ -249,6 +252,21 @@ describe('API security and pricing guards', () => {
     expect(JSON.stringify(idempotencyClaim)).not.toContain('info@rdmiwebservices.com');
   });
 
+  it('uses the selected time-window price instead of client or base-option price', async () => {
+    (Attraction.findById as jest.Mock).mockResolvedValue({
+      _id: ATTR_ID, status: 'active', currency: 'USD', tenantIds: [TENANT_ID],
+      availability: { type: 'time-slots' },
+      pricingOptions: [{ id: 'adult-option', name: 'Adult Ticket', price: 50 }],
+      entryWindows: [{ label: 'Sunrise', startTime: '06:30', endTime: '09:30', price: 75 }],
+    });
+    const response = await request(app).post('/api/bookings')
+      .set('Idempotency-Key', 'booking-test-slot-price-0001')
+      .send({ ...validBookingPayload(), items: [{ ...validBookingPayload().items[0], time: '06:30', unitPrice: 1, totalPrice: 1 }] });
+
+    expect(response.status).toBe(201);
+    expect(response.body.data.items[0]).toMatchObject({ unitPrice: 75, totalPrice: 75 });
+  });
+
   it('requires a valid idempotency key before looking up an attraction', async () => {
     const response = await request(app)
       .post('/api/bookings')
@@ -258,6 +276,51 @@ describe('API security and pricing guards', () => {
     expect(response.body.error).toBe('A valid Idempotency-Key header is required');
     expect(Attraction.findById).not.toHaveBeenCalled();
     expect(Booking.create).not.toHaveBeenCalled();
+  });
+
+  it('creates an admin booking for an explicitly authorized assigned site', async () => {
+    const requestedTenantId = new Types.ObjectId().toHexString();
+    const scopedAdmin = { ...adminUser, assignedTenants: [requestedTenantId] };
+    const tenant = { _id: new Types.ObjectId(requestedTenantId), pricingSettings: {} };
+    (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1' });
+    (User.findById as jest.Mock).mockResolvedValue(scopedAdmin);
+    (Tenant.findOne as jest.Mock).mockResolvedValue(tenant);
+    (Attraction.findOne as jest.Mock).mockResolvedValue({
+      _id: ATTR_ID,
+      status: 'active',
+      currency: 'USD',
+      tenantIds: [tenant._id],
+      pricingOptions: [{ id: 'adult-option', name: 'Adult Ticket', price: 50 }],
+    });
+
+    const response = await request(app)
+      .post('/api/bookings')
+      .set('Authorization', 'Bearer valid-token')
+      .set('Idempotency-Key', 'admin-booking-key-0001')
+      .send({ ...validBookingPayload(), tenantId: requestedTenantId });
+
+    expect(response.status).toBe(201);
+    expect(Attraction.findOne).toHaveBeenCalledWith({
+      _id: ATTR_ID,
+      tenantIds: { $in: [tenant._id] },
+    });
+    expect(response.body.data.tenantId).toBe(requestedTenantId);
+  });
+
+  it('fails closed when an aggregate-scope admin omits the booking site', async () => {
+    (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1' });
+    (User.findById as jest.Mock).mockResolvedValue(adminUser);
+
+    const response = await request(app)
+      .post('/api/bookings')
+      .set('Authorization', 'Bearer valid-token')
+      .set('Idempotency-Key', 'admin-booking-key-0002')
+      .send(validBookingPayload());
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe('Select a site before creating this booking');
+    expect(Attraction.findById).not.toHaveBeenCalled();
+    expect(Attraction.findOne).not.toHaveBeenCalled();
   });
 
   it('replays a completed idempotent booking without reserving inventory twice', async () => {

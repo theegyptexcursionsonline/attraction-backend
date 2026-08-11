@@ -48,6 +48,11 @@ export const updateProfileSchema = z.object({
 // Attraction Validators
 export const createAttractionSchema = z.object({
   slug: z.string().min(1, 'Slug is required'),
+  pathSlug: z.string().trim().min(1).max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'URL slug may contain lowercase letters, numbers, and hyphens only').optional(),
+  parentPage: z.object({
+    label: z.string().trim().min(1).max(80),
+    path: z.string().trim().regex(/^\/(?!\/)[a-z0-9/_-]*$/, 'Parent page must be a local path'),
+  }).optional(),
   title: z.string().min(1, 'Title is required'),
   shortDescription: z.string().min(1, 'Short description is required'),
   description: z.string().min(1, 'Description is required'),
@@ -73,6 +78,12 @@ export const createAttractionSchema = z.object({
     price: z.number().positive(),
     originalPrice: z.number().positive().optional(),
   })).min(1),
+  entryWindows: z.array(z.object({
+    label: z.string().min(1),
+    startTime: z.string().trim().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Time must use 24-hour HH:mm format'),
+    endTime: z.string().trim().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Time must use 24-hour HH:mm format'),
+    price: z.number().positive().optional(),
+  })).optional().default([]),
   highlights: z.array(z.string()).optional().default([]),
   inclusions: z.array(z.string()).optional().default([]),
   exclusions: z.array(z.string()).optional().default([]),
@@ -120,6 +131,45 @@ export const createAttractionSchema = z.object({
 
 export const updateAttractionSchema = createAttractionSchema.partial();
 
+const objectIdSchema = z.string().trim().regex(/^[a-f\d]{24}$/i, 'Must be a valid MongoDB ObjectId');
+const specialOfferFields = z.object({
+  title: z.string().trim().min(1).max(160),
+  description: z.string().trim().max(2000).optional().default(''),
+  discountType: z.enum(['percentage', 'fixed']),
+  discountValue: z.number().finite().positive().max(10_000_000),
+  validFrom: z.coerce.date(),
+  validUntil: z.coerce.date(),
+  usageLimit: z.number().int().positive().max(1_000_000).optional().default(100),
+  isActive: z.boolean().optional().default(true),
+});
+
+const validateSpecialOfferDates = (
+  value: { validFrom?: Date; validUntil?: Date; discountType?: 'percentage' | 'fixed'; discountValue?: number },
+  ctx: z.RefinementCtx
+) => {
+  if (value.validFrom && value.validUntil && value.validUntil <= value.validFrom) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['validUntil'], message: 'Valid until must be after valid from' });
+  }
+  if (value.discountType === 'percentage' && value.discountValue !== undefined && value.discountValue > 100) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['discountValue'], message: 'Percentage discount cannot exceed 100' });
+  }
+};
+
+export const createSpecialOfferSchema = specialOfferFields
+  .extend({ attractionId: objectIdSchema })
+  .superRefine(validateSpecialOfferDates);
+
+export const createSpecialOffersBulkSchema = specialOfferFields
+  .extend({ attractionIds: z.array(objectIdSchema).min(1).max(100) })
+  .superRefine((value, ctx) => {
+    validateSpecialOfferDates(value, ctx);
+    if (new Set(value.attractionIds).size !== value.attractionIds.length) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['attractionIds'], message: 'Tour selections must be unique' });
+    }
+  });
+
+export const updateSpecialOfferSchema = specialOfferFields.partial().superRefine(validateSpecialOfferDates);
+
 // Booking Validators
 const isoDateSchema = z.string()
   .trim()
@@ -149,6 +199,10 @@ export const createBookingSchema = z.object({
   attractionId: z.string()
     .trim()
     .regex(/^[a-f\d]{24}$/i, 'Attraction ID must be a valid MongoDB ObjectId'),
+  tenantId: z.string()
+    .trim()
+    .regex(/^[a-f\d]{24}$/i, 'Tenant ID must be a valid MongoDB ObjectId')
+    .optional(),
   items: z.array(z.object({
     optionId: z.string().trim().min(1).max(100),
     optionName: z.string().trim().max(200).optional(),
@@ -251,6 +305,7 @@ export const attractionFiltersSchema = z.object({
   badges: z.string().optional(), // comma-separated
   search: z.string().optional(),
   status: z.enum(['active', 'draft', 'archived']).optional(),
+  lifecycle: z.enum(['archive', 'trash']).optional(),
 });
 
 // Payment Validators

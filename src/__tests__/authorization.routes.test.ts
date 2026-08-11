@@ -23,6 +23,7 @@ jest.mock('../controllers/specialOffers.controller', () => ({
   getAllOffers: jest.fn((req, res) => ok(req, res)),
   getOfferStats: jest.fn((req, res) => ok(req, res)),
   createOffer: jest.fn((req, res) => ok(req, res)),
+  createOffersBulk: jest.fn((req, res) => ok(req, res)),
   updateOffer: jest.fn((req, res) => ok(req, res)),
   deleteOffer: jest.fn((req, res) => ok(req, res)),
 }));
@@ -69,12 +70,14 @@ describe('authorization route guards', () => {
     });
 
     const responses = await Promise.all([
+      request(app).post('/special-offers/bulk').set('Authorization', 'Bearer token').send({}),
       request(app).post('/special-offers').set('Authorization', 'Bearer token').send({}),
       request(app).patch('/special-offers/offer-id').set('Authorization', 'Bearer token').send({}),
       request(app).delete('/special-offers/offer-id').set('Authorization', 'Bearer token'),
     ]);
 
-    expect(responses.map((res) => res.status)).toEqual([403, 403, 403]);
+    expect(responses.map((res) => res.status)).toEqual([403, 403, 403, 403]);
+    expect(offerControllers.createOffersBulk).not.toHaveBeenCalled();
     expect(offerControllers.createOffer).not.toHaveBeenCalled();
     expect(offerControllers.updateOffer).not.toHaveBeenCalled();
     expect(offerControllers.deleteOffer).not.toHaveBeenCalled();

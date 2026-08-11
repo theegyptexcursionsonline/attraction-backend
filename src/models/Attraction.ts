@@ -21,6 +21,10 @@ const attractionSchema = new Schema<IAttraction>(
       sparse: true,
       index: true,
     },
+    parentPage: {
+      label: { type: String, trim: true },
+      path: { type: String, trim: true },
+    },
     title: {
       type: String,
       required: true,
@@ -109,6 +113,7 @@ const attractionSchema = new Schema<IAttraction>(
       label: { type: String, required: true },
       startTime: { type: String, required: true },
       endTime: { type: String, required: true },
+      price: { type: Number, min: 0.01 },
     }],
     itinerary: [{
       time: { type: String },
@@ -200,6 +205,9 @@ const attractionSchema = new Schema<IAttraction>(
       default: 'active',
       index: true,
     },
+    archivedAt: { type: Date },
+    trashedAt: { type: Date },
+    statusBeforeArchive: { type: String, enum: ['active', 'draft'] },
     featured: {
       type: Boolean,
       default: false,

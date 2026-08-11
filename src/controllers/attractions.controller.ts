@@ -3,6 +3,8 @@ import { Attraction } from '../models/Attraction';
 import { Booking } from '../models/Booking';
 import { Review } from '../models/Review';
 import { Availability } from '../models/Availability';
+import { Tenant } from '../models/Tenant';
+import { Category } from '../models/Category';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest, IAttraction } from '../types';
 import { Types } from 'mongoose';
@@ -13,6 +15,7 @@ const PUBLIC_ATTRACTION_FIELDS = [
   '_id',
   'slug',
   'pathSlug',
+  'parentPage',
   'title',
   'shortDescription',
   'description',
@@ -61,6 +64,22 @@ export const toPublicAttractionDto = (source: unknown): Record<string, unknown> 
   );
 };
 
+export const toAdminAttractionDto = (
+  source: unknown,
+  allowedTenantIds?: string[]
+): Record<string, unknown> => {
+  const dto = toPublicAttractionDto(source);
+  if (!source || typeof source !== 'object') return dto;
+  const tenantIds = Array.isArray((source as Record<string, unknown>).tenantIds)
+    ? ((source as Record<string, unknown>).tenantIds as unknown[]).map(String)
+    : [];
+  const allowed = allowedTenantIds ? new Set(allowedTenantIds) : null;
+  return {
+    ...dto,
+    tenantIds: allowed ? tenantIds.filter((id) => allowed.has(id)) : tenantIds,
+  };
+};
+
 /**
  * Guard for the stop-sale (blocked-date) handlers: a non-super admin may only
  * read/change availability for an attraction in one of their own tenants. Returns
@@ -89,6 +108,9 @@ interface AttractionQuery {
   badges?: { $in: string[] };
   $text?: { $search: string };
   tenantIds?: { $in: Types.ObjectId[] } | { $size: number };
+  archivedAt?: { $exists: boolean };
+  trashedAt?: { $exists: boolean };
+  $or?: Array<Record<string, unknown>>;
 }
 
 export const getAttractions = async (
@@ -109,6 +131,7 @@ export const getAttractions = async (
       badges,
       search,
       status = 'active',
+      lifecycle,
     } = req.query;
 
     const pageNum = parseInt(page as string, 10);
@@ -120,8 +143,18 @@ export const getAttractions = async (
     // Only show active attractions for public API
     if (!req.user || req.user.role === 'customer') {
       query.status = 'active';
+      query.archivedAt = { $exists: false };
+      query.trashedAt = { $exists: false };
+    } else if (lifecycle === 'archive') {
+      query.status = 'archived';
+      query.archivedAt = { $exists: true };
+      query.trashedAt = { $exists: false };
+    } else if (lifecycle === 'trash') {
+      query.status = 'archived';
+      query.archivedAt = { $exists: false };
     } else if (status) {
       query.status = status as string;
+      query.trashedAt = { $exists: false };
     }
 
     // Filter by tenant context
@@ -173,7 +206,10 @@ export const getAttractions = async (
     else if (sort === 'popularity') sortOption = { reviewCount: -1 };
     else if (sort === 'recommended') sortOption = { featured: -1, rating: -1 };
 
-    const attractionsQuery = Attraction.find(query).select(PUBLIC_ATTRACTION_PROJECTION);
+    const isAdminRequest = !!req.user && req.user.role !== 'customer';
+    const attractionsQuery = Attraction.find(query).select(
+      isAdminRequest ? `${PUBLIC_ATTRACTION_PROJECTION} tenantIds` : PUBLIC_ATTRACTION_PROJECTION
+    );
 
     // Execute query
     const [attractions, total] = await Promise.all([
@@ -191,7 +227,13 @@ export const getAttractions = async (
 
     sendPaginated(
       res,
-      attractions.map(toPublicAttractionDto),
+      attractions.map((attraction) => {
+        if (!isAdminRequest) return toPublicAttractionDto(attraction);
+        const allowedTenantIds = req.user?.role === 'super-admin'
+          ? undefined
+          : (req.user?.assignedTenants || []).map(String);
+        return toAdminAttractionDto(attraction, allowedTenantIds);
+      }),
       pageNum,
       limitNum,
       total
@@ -216,7 +258,7 @@ export const getAttractionBySlug = async (
     // unambiguous.
     const query: Record<string, unknown> = Types.ObjectId.isValid(slug)
       ? { _id: slug, status: 'active' }
-      : { slug, status: 'active' };
+      : { $or: [{ pathSlug: slug }, { slug }], status: 'active' };
     if (req.tenant) query.tenantIds = { $in: [req.tenant._id] };
 
     const attraction = await Attraction.findOne(query)
@@ -457,6 +499,12 @@ const validateReseller = (reseller: unknown): string | null => {
   return null;
 };
 
+const normalizeCategoryValue = async (value: string): Promise<string | null> => {
+  if (!Types.ObjectId.isValid(value)) return value;
+  const category = await Category.findById(value).select('slug isActive').lean();
+  return category?.isActive ? category.slug : null;
+};
+
 export const createAttraction = async (
   req: AuthRequest,
   res: Response,
@@ -492,8 +540,23 @@ export const createAttraction = async (
       return;
     }
 
+    const normalizedCategory = await normalizeCategoryValue(req.body.category);
+    if (!normalizedCategory) {
+      sendError(res, 'Select a valid active category', 400);
+      return;
+    }
+
+    if (req.body.pathSlug && await Attraction.exists({
+      pathSlug: req.body.pathSlug,
+      tenantIds: { $in: req.body.tenantIds },
+    })) {
+      sendError(res, 'This public URL is already used on one of the selected sites', 409);
+      return;
+    }
+
     const attractionData = {
       ...req.body,
+      category: normalizedCategory,
       // Default the supplier (owner) to the first assigned tenant.
       ownerTenantId: req.body.ownerTenantId || req.body.tenantIds?.[0],
       createdBy: req.user?._id,
@@ -552,6 +615,27 @@ export const updateAttraction = async (
       return;
     }
 
+    if (req.body.category) {
+      const normalizedCategory = await normalizeCategoryValue(req.body.category);
+      if (!normalizedCategory) {
+        sendError(res, 'Select a valid active category', 400);
+        return;
+      }
+      req.body.category = normalizedCategory;
+    }
+
+    const targetTenantIds = Array.isArray(req.body.tenantIds)
+      ? req.body.tenantIds
+      : (await Attraction.findById(id).select('tenantIds').lean())?.tenantIds || [];
+    if (req.body.pathSlug && await Attraction.exists({
+      _id: { $ne: id },
+      pathSlug: req.body.pathSlug,
+      tenantIds: { $in: targetTenantIds },
+    })) {
+      sendError(res, 'This public URL is already used on one of the selected sites', 409);
+      return;
+    }
+
     const attraction = await Attraction.findByIdAndUpdate(
       id,
       { $set: req.body },
@@ -594,7 +678,7 @@ export const deleteAttraction = async (
 
     const attraction = await Attraction.findByIdAndUpdate(
       id,
-      { status: 'archived' },
+      { $set: { status: 'archived', trashedAt: new Date() }, $unset: { archivedAt: 1, statusBeforeArchive: 1 } },
       { new: true }
     );
 
@@ -604,6 +688,83 @@ export const deleteAttraction = async (
     }
 
     sendSuccess(res, null, 'Attraction archived successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const archiveAttraction = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { id } = req.params;
+    if (await rejectIfNotOwnedAttraction(req, res, id as string)) return;
+    const existing = await Attraction.findOne({ _id: id, status: { $in: ['active', 'draft'] } });
+    if (!existing) { sendError(res, 'Active or draft attraction not found', 404); return; }
+    existing.statusBeforeArchive = existing.status as 'active' | 'draft';
+    existing.status = 'archived';
+    existing.archivedAt = new Date();
+    existing.trashedAt = undefined;
+    await existing.save();
+    sendSuccess(res, existing, 'Attraction archived');
+  } catch (error) { next(error); }
+};
+
+export const unarchiveAttraction = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { id } = req.params;
+    if (await rejectIfNotOwnedAttraction(req, res, id as string)) return;
+    const attraction = await Attraction.findOneAndUpdate(
+      { _id: id, status: 'archived', archivedAt: { $exists: true }, trashedAt: { $exists: false } },
+      { $set: { status: 'draft' }, $unset: { archivedAt: 1, statusBeforeArchive: 1 } },
+      { new: true }
+    );
+    if (!attraction) { sendError(res, 'Archived attraction not found', 404); return; }
+    sendSuccess(res, attraction, 'Attraction returned to drafts');
+  } catch (error) { next(error); }
+};
+
+export const restoreAttraction = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    if (await rejectIfNotOwnedAttraction(req, res, id as string)) return;
+    const attraction = await Attraction.findOneAndUpdate(
+      { _id: id, status: 'archived', archivedAt: { $exists: false } },
+      { $set: { status: 'draft' }, $unset: { trashedAt: 1 } },
+      { new: true }
+    );
+    if (!attraction) {
+      sendError(res, 'Archived attraction not found', 404);
+      return;
+    }
+    sendSuccess(res, attraction, 'Attraction restored to drafts');
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const permanentlyDeleteAttraction = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    if (await rejectIfNotOwnedAttraction(req, res, id as string)) return;
+    const hasBookings = await Booking.exists({ attractionId: id });
+    if (hasBookings) {
+      sendError(res, 'This tour has booking history and cannot be permanently deleted', 409);
+      return;
+    }
+    const attraction = await Attraction.findOneAndDelete({ _id: id, status: 'archived', archivedAt: { $exists: false } });
+    if (!attraction) {
+      sendError(res, 'Archived attraction not found', 404);
+      return;
+    }
+    await Availability.deleteMany({ attractionId: id });
+    sendSuccess(res, null, 'Attraction permanently deleted');
   } catch (error) {
     next(error);
   }
@@ -632,6 +793,13 @@ export const getResellableAttractions = async (
 ): Promise<void> => {
   try {
     const currentTenantId = resolveResellerTenantId(req);
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const limit = Math.min(Math.max(Number(req.query.limit) || 24, 1), 100);
+    const search = typeof req.query.search === 'string' ? req.query.search.trim().slice(0, 120) : '';
+    const ownerTenantIds = typeof req.query.ownerTenantIds === 'string'
+      ? [...new Set(req.query.ownerTenantIds.split(',').map((id) => id.trim()).filter((id) => Types.ObjectId.isValid(id)))].slice(0, 100)
+      : [];
+    const addedOnly = (req.query as Record<string, unknown>).addedOnly === true;
 
     // No tenant context and not a super-admin => nothing to offer.
     if (!currentTenantId && req.user?.role !== 'super-admin') {
@@ -639,26 +807,59 @@ export const getResellableAttractions = async (
       return;
     }
 
-    const query: Record<string, unknown> = {
+    const query: Record<string, unknown> & { $and?: Array<Record<string, unknown>> } = {
       status: 'active',
       'reseller.enabled': true,
     };
+    const conditions: Array<Record<string, unknown>> = [];
 
     if (currentTenantId) {
       // Not my own tours. Items already on my site stay in the list (flagged
       // below) so the UI can filter "on my site" and still offer Remove.
       query.ownerTenantId = { $ne: currentTenantId };
-      query.$or = [
+      conditions.push({ $or: [
         { 'reseller.allowedTenants': { $size: 0 } },
         { 'reseller.allowedTenants': currentTenantId },
-      ];
+      ] });
+      if (addedOnly) conditions.push({ tenantIds: currentTenantId });
+    } else if (addedOnly) {
+      sendError(res, 'Choose a site before filtering marketplace listings', 400);
+      return;
     }
 
-    const attractions = await Attraction.find(query)
-      .select('title slug images priceFrom currency reseller ownerTenantId destination category tenantIds')
-      .populate('ownerTenantId', 'name slug logo')
-      .sort({ rating: -1, createdAt: -1 })
-      .lean();
+    if (ownerTenantIds.length > 0) {
+      query.ownerTenantId = {
+        ...(typeof query.ownerTenantId === 'object' ? query.ownerTenantId as Record<string, unknown> : {}),
+        $in: ownerTenantIds.map((id) => new Types.ObjectId(id)),
+      };
+    }
+
+    if (search) {
+      const searchRegex = new RegExp(escapeRegex(search), 'i');
+      const matchingOwners = await Tenant.find({
+        status: 'active',
+        $or: [{ name: searchRegex }, { slug: searchRegex }],
+      }).select('_id').lean();
+      conditions.push({
+        $or: [
+          { title: searchRegex },
+          { ownerTenantId: { $in: matchingOwners.map((tenant) => tenant._id) } },
+        ],
+      });
+    }
+
+    if (conditions.length > 0) query.$and = conditions;
+
+    const [attractions, total] = await Promise.all([
+      Attraction.find(query)
+        .select('title slug images priceFrom currency reseller ownerTenantId destination category tenantIds shortDescription duration rating reviewCount')
+        .populate('ownerTenantId', 'name slug logo')
+        .sort({ rating: -1, createdAt: -1, _id: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      Attraction.countDocuments(query),
+    ]);
 
     // Flag the ones already on the current tenant's storefront, then strip the
     // full tenant list so we don't leak who else resells each item.
@@ -666,11 +867,107 @@ export const getResellableAttractions = async (
       const addedToMySite = currentTenantId
         ? (a.tenantIds || []).some((t: unknown) => String(t) === String(currentTenantId))
         : false;
-      const { tenantIds: _tenantIds, ...rest } = a;
-      return { ...rest, addedToMySite };
+      const owner = a.ownerTenantId && typeof a.ownerTenantId === 'object' ? a.ownerTenantId : null;
+      return {
+        id: String(a._id),
+        _id: String(a._id),
+        title: a.title,
+        slug: a.slug,
+        images: a.images,
+        priceFrom: a.priceFrom,
+        currency: a.currency,
+        destination: a.destination,
+        category: a.category,
+        shortDescription: a.shortDescription,
+        duration: a.duration,
+        rating: a.rating,
+        reviewCount: a.reviewCount,
+        ownerTenant: owner ? { id: String(owner._id), name: owner.name, slug: owner.slug, logo: owner.logo } : null,
+        resellTerms: {
+          type: a.reseller?.type || 'commission',
+          commission: a.reseller?.value || 0,
+          currency: a.currency,
+        },
+        addedToMySite,
+      };
     });
 
-    sendSuccess(res, result);
+    sendPaginated(res, result, page, limit, total);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getResellableAttractionDetails = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const currentTenantId = resolveResellerTenantId(req);
+    if (!currentTenantId && req.user?.role !== 'super-admin') {
+      sendError(res, 'Choose a site before viewing marketplace details', 400);
+      return;
+    }
+    const query: Record<string, unknown> & { $and?: Array<Record<string, unknown>> } = {
+      _id: req.params.id,
+      status: 'active',
+      'reseller.enabled': true,
+    };
+    if (currentTenantId) {
+      query.ownerTenantId = { $ne: currentTenantId };
+      query.$and = [{
+        $or: [
+          { 'reseller.allowedTenants': { $size: 0 } },
+          { 'reseller.allowedTenants': currentTenantId },
+        ],
+      }];
+    }
+    const attraction = await Attraction.findOne(query)
+      .select('title slug images priceFrom currency reseller ownerTenantId destination category tenantIds shortDescription description duration languages highlights inclusions exclusions cancellationPolicy instantConfirmation mobileTicket entryWindows pricingOptions rating reviewCount')
+      .populate('ownerTenantId', 'name slug logo')
+      .lean() as Record<string, any> | null;
+    if (!attraction) {
+      sendError(res, 'Marketplace listing not found', 404);
+      return;
+    }
+    const owner = attraction.ownerTenantId && typeof attraction.ownerTenantId === 'object'
+      ? attraction.ownerTenantId
+      : null;
+    sendSuccess(res, {
+      id: String(attraction._id),
+      _id: String(attraction._id),
+      title: attraction.title,
+      slug: attraction.slug,
+      images: attraction.images,
+      priceFrom: attraction.priceFrom,
+      currency: attraction.currency,
+      destination: attraction.destination,
+      category: attraction.category,
+      shortDescription: attraction.shortDescription,
+      description: attraction.description,
+      duration: attraction.duration,
+      languages: attraction.languages,
+      highlights: attraction.highlights,
+      inclusions: attraction.inclusions,
+      exclusions: attraction.exclusions,
+      cancellationPolicy: attraction.cancellationPolicy,
+      instantConfirmation: attraction.instantConfirmation,
+      mobileTicket: attraction.mobileTicket,
+      entryWindows: attraction.entryWindows,
+      pricingOptions: attraction.pricingOptions,
+      rating: attraction.rating,
+      reviewCount: attraction.reviewCount,
+      ownerTenant: owner ? { id: String(owner._id), name: owner.name, slug: owner.slug, logo: owner.logo } : null,
+      resellTerms: {
+        type: attraction.reseller?.type || 'commission',
+        commission: attraction.reseller?.value || 0,
+        currency: attraction.currency,
+      },
+      addedToMySite: currentTenantId
+        ? (attraction.tenantIds || []).some((tenantId: unknown) => String(tenantId) === String(currentTenantId))
+        : false,
+    });
   } catch (error) {
     next(error);
   }
@@ -798,7 +1095,7 @@ export const getResellerConfig = async (
     if (scope.length > 0) attractionQuery.ownerTenantId = { $in: scope };
 
     const attractions = await Attraction.find(attractionQuery)
-      .select('title images priceFrom currency reseller status')
+      .select('title images priceFrom currency reseller status ownerTenantId')
       .sort({ createdAt: -1 })
       .lean();
 
@@ -824,7 +1121,7 @@ export const getResellerConfig = async (
 
     const tours = attractions.map((a) => {
       const s = statById.get(String(a._id));
-      const reseller = (a as { reseller?: { enabled?: boolean; value?: number } }).reseller;
+      const reseller = (a as { reseller?: { enabled?: boolean; value?: number; allowedTenants?: Types.ObjectId[] } }).reseller;
       return {
         id: a._id,
         title: a.title,
@@ -834,6 +1131,8 @@ export const getResellerConfig = async (
         status: a.status,
         enabled: reseller?.enabled ?? false,
         commission: reseller?.value ?? 0,
+        ownerTenantId: a.ownerTenantId,
+        allowedTenants: (reseller?.allowedTenants || []).map(String),
         totalEarned: round2(s?.totalEarned || 0),
         unitsSold: s?.unitsSold || 0,
       };
@@ -872,7 +1171,7 @@ export const updateResellerConfig = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const { enabled, value } = req.body;
+    const { enabled, value, allowedTenants } = req.body;
 
     const attraction = await Attraction.findById(id);
     if (!attraction) {
@@ -907,14 +1206,103 @@ export const updateResellerConfig = async (
       }
       attraction.reseller.value = v;
     }
+    if (allowedTenants !== undefined) {
+      if (!Array.isArray(allowedTenants) || allowedTenants.length > 500) {
+        sendError(res, 'Allowed brands must be an array of at most 500 tenant IDs', 400);
+        return;
+      }
+      const uniqueIds = [...new Set(allowedTenants.map(String))];
+      if (uniqueIds.some((tenantId) => !Types.ObjectId.isValid(tenantId))) {
+        sendError(res, 'Allowed brands contains an invalid tenant ID', 400);
+        return;
+      }
+      const ownerId = attraction.ownerTenantId?.toString();
+      const resellerIds = uniqueIds.filter((tenantId) => tenantId !== ownerId);
+      const activeCount = await Tenant.countDocuments({ _id: { $in: resellerIds }, status: 'active' });
+      if (activeCount !== resellerIds.length) {
+        sendError(res, 'Every allowed brand must be active', 400);
+        return;
+      }
+      attraction.reseller.allowedTenants = resellerIds.map((tenantId) => new Types.ObjectId(tenantId));
+      if (resellerIds.length > 0) {
+        const permitted = new Set([ownerId, ...resellerIds].filter(Boolean));
+        attraction.tenantIds = attraction.tenantIds.filter((tenantId) => permitted.has(tenantId.toString()));
+      }
+    }
 
     await attraction.save();
 
     sendSuccess(
       res,
-      { id: attraction._id, enabled: attraction.reseller.enabled, commission: attraction.reseller.value },
+      { id: attraction._id, enabled: attraction.reseller.enabled, commission: attraction.reseller.value, allowedTenants: attraction.reseller.allowedTenants.map(String) },
       'Reseller settings updated'
     );
+  } catch (error) {
+    next(error);
+  }
+};
+
+// PATCH /attractions/admin/reseller-config/bulk
+// Applies one marketplace visibility rule to a verified set of tours. All
+// tours and brands are validated before the first write, so partial updates
+// cannot occur when one selection is invalid or outside the caller's scope.
+export const updateResellerVisibilityBulk = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const attractionIds: string[] = Array.isArray(req.body.attractionIds)
+      ? [...new Set<string>((req.body.attractionIds as unknown[]).map(String))]
+      : [];
+    const allowedTenants: string[] | null = Array.isArray(req.body.allowedTenants)
+      ? [...new Set<string>((req.body.allowedTenants as unknown[]).map(String))]
+      : null;
+    if (attractionIds.length === 0 || attractionIds.length > 500 || attractionIds.some((id) => !Types.ObjectId.isValid(id))) {
+      sendError(res, 'Select between 1 and 500 valid tours', 400);
+      return;
+    }
+    if (!allowedTenants || allowedTenants.length > 500 || allowedTenants.some((id) => !Types.ObjectId.isValid(id))) {
+      sendError(res, 'Allowed brands must be an array of at most 500 valid tenant IDs', 400);
+      return;
+    }
+
+    const attractions = await Attraction.find({ _id: { $in: attractionIds } }).select('ownerTenantId tenantIds');
+    if (attractions.length !== attractionIds.length) {
+      sendError(res, 'One or more selected tours were not found', 404);
+      return;
+    }
+    if (req.user?.role !== 'super-admin') {
+      const scope = new Set((req.user?.assignedTenants || []).map(String));
+      if (attractions.some((attraction) => !attraction.ownerTenantId || !scope.has(attraction.ownerTenantId.toString()))) {
+        sendError(res, 'You can only manage reseller settings for your own tours', 403);
+        return;
+      }
+    }
+
+    const ownerIds = new Set<string>(attractions.map((attraction) => attraction.ownerTenantId?.toString()).filter((id): id is string => Boolean(id)));
+    const resellerIds = allowedTenants.filter((tenantId) => !ownerIds.has(tenantId));
+    const activeCount = await Tenant.countDocuments({ _id: { $in: resellerIds }, status: 'active' });
+    if (activeCount !== resellerIds.length) {
+      sendError(res, 'Every allowed brand must be active', 400);
+      return;
+    }
+
+    await Attraction.bulkWrite(attractions.map((attraction) => {
+      const ownerId = attraction.ownerTenantId?.toString();
+      const permitted = new Set<string>([ownerId, ...resellerIds].filter((id): id is string => Boolean(id)));
+      const tenantIds = resellerIds.length === 0
+        ? attraction.tenantIds
+        : attraction.tenantIds.filter((tenantId) => permitted.has(tenantId.toString()));
+      return {
+        updateOne: {
+          filter: { _id: attraction._id },
+          update: { $set: { 'reseller.allowedTenants': resellerIds.map((id) => new Types.ObjectId(id)), tenantIds } },
+        },
+      };
+    }), { ordered: true });
+
+    sendSuccess(res, { updatedCount: attractions.length, allowedTenants: resellerIds }, 'Reseller visibility updated');
   } catch (error) {
     next(error);
   }
@@ -1051,6 +1439,63 @@ export const blockDates = async (
     }
 
     sendSuccess(res, { blockedCount: count }, `${count} dates blocked`);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateStopSaleBatch = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { attractionIds, startDate, endDate, action, reason } = req.body as {
+      attractionIds?: string[]; startDate?: string; endDate?: string;
+      action?: 'block' | 'unblock'; reason?: string;
+    };
+    if (!Array.isArray(attractionIds) || attractionIds.length === 0 || attractionIds.length > 100) {
+      sendError(res, 'Select between 1 and 100 tours', 400);
+      return;
+    }
+    if (!attractionIds.every(Types.ObjectId.isValid) || !startDate || !endDate || !['block', 'unblock'].includes(action || '')) {
+      sendError(res, 'Valid tours, dates, and action are required', 400);
+      return;
+    }
+    const start = new Date(`${startDate}T00:00:00.000Z`);
+    const end = new Date(`${endDate}T00:00:00.000Z`);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || start > end) {
+      sendError(res, 'Invalid date range', 400);
+      return;
+    }
+    const dayCount = Math.floor((end.getTime() - start.getTime()) / 86400000) + 1;
+    if (dayCount > 366) {
+      sendError(res, 'Date range cannot exceed 366 days', 400);
+      return;
+    }
+    const attractionQuery: Record<string, unknown> = { _id: { $in: attractionIds } };
+    if (!isSuperAdmin(req.user)) attractionQuery.tenantIds = { $in: callerTenantIds(req.user) };
+    const authorizedIds = (await Attraction.find(attractionQuery).distinct('_id')).map(String);
+    if (authorizedIds.length !== new Set(attractionIds).size) {
+      sendError(res, 'One or more selected tours are unavailable or not assigned to you', 403);
+      return;
+    }
+    const operations = authorizedIds.flatMap((attractionId) =>
+      Array.from({ length: dayCount }, (_, index) => {
+        const date = new Date(start.getTime() + index * 86400000);
+        return {
+          updateOne: {
+            filter: { attractionId: new Types.ObjectId(attractionId), date },
+            update: action === 'block'
+              ? { $set: { isBlocked: true, blockReason: reason || 'other' } }
+              : { $set: { isBlocked: false }, $unset: { blockReason: 1 } },
+            upsert: action === 'block',
+          },
+        };
+      })
+    );
+    if (operations.length) await Availability.bulkWrite(operations, { ordered: true });
+    sendSuccess(res, { tourCount: authorizedIds.length, dateCount: dayCount, updatedCount: operations.length }, `Stop Sale ${action} completed`);
   } catch (error) {
     next(error);
   }

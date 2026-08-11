@@ -217,6 +217,12 @@ const tenantSchema = new Schema<ITenant>(
         metaTitle: { type: String },
         metaDescription: { type: String },
         body: { type: String, required: true }, // HTML or Markdown
+        pageType: { type: String, enum: ['attraction', 'category'], default: 'attraction' },
+        parentPath: { type: String, default: '/' },
+        categoryIds: [{ type: String }],
+        status: { type: String, enum: ['active', 'archived'], default: 'active' },
+        archivedAt: { type: Date },
+        trashedAt: { type: Date },
         sortOrder: { type: Number, default: 0 },
       },
     ],

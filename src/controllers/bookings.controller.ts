@@ -178,7 +178,7 @@ export const createBooking = async (
 ): Promise<void> => {
   let idempotencyRecordId: mongoose.Types.ObjectId | undefined;
   try {
-    const { attractionId, items, guestDetails, promoCode, paymentMethod } = req.body;
+    const { attractionId, tenantId: requestedTenantId, items, guestDetails, promoCode, paymentMethod } = req.body;
     const idempotencyKey = req.headers['idempotency-key'];
 
     if (
@@ -196,8 +196,41 @@ export const createBooking = async (
       return;
     }
 
-    // Verify attraction exists
-    const attraction = await Attraction.findById(attractionId);
+    let bookingTenant = req.tenant;
+    if (requestedTenantId) {
+      if (!req.user || !adminRoles.includes(req.user.role)) {
+        sendError(res, 'Tenant selection is only available to authorized staff', 403);
+        return;
+      }
+      if (req.tenant && req.tenant._id.toString() !== requestedTenantId) {
+        sendError(res, 'Booking tenant does not match the active site', 403);
+        return;
+      }
+      if (req.user.role !== 'super-admin' && !hasTenantAccess(req, requestedTenantId)) {
+        sendError(res, 'Booking site not found', 404);
+        return;
+      }
+      bookingTenant = await Tenant.findOne({
+        _id: requestedTenantId,
+        status: { $in: ['active', 'coming_soon'] },
+      }) || undefined;
+      if (!bookingTenant) {
+        sendError(res, 'Booking site not found', 404);
+        return;
+      }
+    } else if (req.user && adminRoles.includes(req.user.role) && !bookingTenant) {
+      sendError(res, 'Select a site before creating this booking', 400);
+      return;
+    }
+
+    // Keep tenant ownership inside the lookup so a cross-tenant id is not
+    // fetched and checked after the fact.
+    const attraction = bookingTenant
+      ? await Attraction.findOne({
+          _id: attractionId,
+          tenantIds: { $in: [bookingTenant._id] },
+        })
+      : await Attraction.findById(attractionId);
     if (!attraction) {
       sendError(res, 'Attraction not found', 404);
       return;
@@ -208,14 +241,9 @@ export const createBooking = async (
       return;
     }
 
-    if (req.tenant && !attraction.tenantIds.some((id) => id.toString() === req.tenant?._id.toString())) {
-      sendError(res, 'Attraction not available for this tenant', 403);
-      return;
-    }
-
     // Whether THIS booking's tenant has opted into dual (Foreigner/Resident) pricing.
     // The Resident rate is honoured only when the tenant flag is on AND the option has a residentPrice set.
-    const residentPricingEnabled = req.tenant?.pricingSettings?.enableResidentPricing === true;
+    const residentPricingEnabled = bookingTenant?.pricingSettings?.enableResidentPricing === true;
 
     // Recalculate line items on the server to prevent client-side price tampering.
     const normalizedItems = items.map((item: {
@@ -267,7 +295,21 @@ export const createBooking = async (
         item.category === 'resident' &&
         typeof option.residentPrice === 'number' &&
         option.residentPrice > 0;
-      const unitPrice = useResident ? (option.residentPrice as number) : option.price;
+      const selectedWindow = item.time
+        ? attraction.entryWindows?.find((window) => window.startTime === item.time)
+        : undefined;
+      if (attraction.availability?.type === 'time-slots') {
+        if (!item.time || ((attraction.entryWindows?.length || 0) > 0 && !selectedWindow)) {
+          throw new Error('INVALID_TIME_SLOT');
+        }
+      }
+      // A configured departure price overrides the general pricing option. This
+      // is calculated here (never trusted from the client) so carts cannot alter it.
+      const unitPrice = typeof selectedWindow?.price === 'number'
+        ? selectedWindow.price
+        : useResident
+          ? (option.residentPrice as number)
+          : option.price;
       const appliedCategory: 'foreigner' | 'resident' | undefined = residentPricingEnabled
         ? useResident
           ? 'resident'
@@ -322,7 +364,7 @@ export const createBooking = async (
     );
 
     const fees = round2(subtotal * 0.05); // 5% service fee
-    const tenantId = req.tenant?._id || attraction.tenantIds[0];
+    const tenantId = bookingTenant?._id || attraction.tenantIds[0];
     if (!tenantId) {
       sendError(res, 'Attraction is not assigned to any tenant', 400);
       return;
@@ -708,6 +750,10 @@ export const createBooking = async (
     }
     if (error instanceof Error && error.message === 'INVALID_DATE') {
       sendError(res, 'A valid booking date is required', 400);
+      return;
+    }
+    if (error instanceof Error && error.message === 'INVALID_TIME_SLOT') {
+      sendError(res, 'Select an available time slot for this tour', 400);
       return;
     }
     if (error instanceof Error && error.message === 'INVALID_PROMO') {

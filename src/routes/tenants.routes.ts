@@ -16,6 +16,7 @@ import {
   deleteTenant,
   getTenantStats,
   getPortfolioStats,
+  getMarketplaceBrands,
 } from '../controllers/tenants.controller';
 import { authenticate, requireSuperAdmin, requireAdmin, requireRole, canAccessTenant } from '../middleware/auth.middleware';
 import { validate, validateQuery } from '../middleware/validate.middleware';
@@ -95,6 +96,7 @@ router.get(
   requireAdmin,
   getPortfolioStats
 );
+router.get('/admin/marketplace-brands', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), validateQuery(paginationSchema), getMarketplaceBrands);
 
 /**
  * @swagger

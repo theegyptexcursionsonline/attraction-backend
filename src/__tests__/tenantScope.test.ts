@@ -5,6 +5,7 @@ import {
   sharesAnyTenant,
   canAssignRole,
   canManageRole,
+  isAttractionOwnedByTenants,
 } from '../utils/tenantScope';
 
 describe('tenantScope guards (the shared core of the RBAC / isolation fixes)', () => {
@@ -76,6 +77,21 @@ describe('tenantScope guards (the shared core of the RBAC / isolation fixes)', (
       expect(sharesAnyTenant(['a'], ['b'])).toBe(false);
       expect(sharesAnyTenant([], ['a'])).toBe(false);
       expect(sharesAnyTenant(['a'], [])).toBe(false);
+    });
+  });
+
+  describe('isAttractionOwnedByTenants', () => {
+    const owner = new Types.ObjectId();
+    const reseller = new Types.ObjectId();
+
+    it('does not grant a reseller authority over a supplier-owned attraction', () => {
+      expect(isAttractionOwnedByTenants({ ownerTenantId: owner, tenantIds: [owner, reseller] }, [reseller.toString()])).toBe(false);
+      expect(isAttractionOwnedByTenants({ ownerTenantId: owner, tenantIds: [owner, reseller] }, [owner.toString()])).toBe(true);
+    });
+
+    it('uses catalogue membership only for legacy attractions with no owner field', () => {
+      expect(isAttractionOwnedByTenants({ tenantIds: [reseller] }, [reseller.toString()])).toBe(true);
+      expect(isAttractionOwnedByTenants({ ownerTenantId: null, tenantIds: [reseller] }, [reseller.toString()])).toBe(true);
     });
   });
 });

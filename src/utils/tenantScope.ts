@@ -89,3 +89,50 @@ export const attractionInCallerTenants = async (
   });
   return !!found;
 };
+
+/**
+ * Attractions commercially owned by the supplied tenants. Modern records use
+ * `ownerTenantId`; the tenantIds fallback is only for legacy records that never
+ * received an owner field. Reseller catalogue membership must never grant offer
+ * or supplier-setting authority.
+ */
+export const ownedAttractionIdsForTenants = async (
+  tenantIds: string[]
+): Promise<Types.ObjectId[]> => {
+  if (!tenantIds.length) return [];
+  return Attraction.find({
+    $or: [
+      { ownerTenantId: { $in: tenantIds } },
+      { ownerTenantId: { $exists: false }, tenantIds: { $in: tenantIds } },
+      { ownerTenantId: null, tenantIds: { $in: tenantIds } },
+    ],
+  }).distinct('_id') as Promise<Types.ObjectId[]>;
+};
+
+export const attractionOwnedByCallerTenants = async (
+  attractionId: string | Types.ObjectId,
+  tenantIds: string[]
+): Promise<boolean> => {
+  if (!tenantIds.length) return false;
+  const found = await Attraction.exists({
+    _id: attractionId,
+    $or: [
+      { ownerTenantId: { $in: tenantIds } },
+      { ownerTenantId: { $exists: false }, tenantIds: { $in: tenantIds } },
+      { ownerTenantId: null, tenantIds: { $in: tenantIds } },
+    ],
+  });
+  return !!found;
+};
+
+/** Ownership check for an attraction document already loaded by the caller. */
+export const isAttractionOwnedByTenants = (
+  attraction: { ownerTenantId?: unknown; tenantIds?: unknown[] },
+  tenantIds: string[]
+): boolean => {
+  const allowed = new Set(tenantIds.map(String));
+  if (attraction.ownerTenantId !== undefined && attraction.ownerTenantId !== null) {
+    return allowed.has(String(attraction.ownerTenantId));
+  }
+  return (attraction.tenantIds || []).some((tenantId) => allowed.has(String(tenantId)));
+};

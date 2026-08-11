@@ -9,24 +9,40 @@ import {
   createAttraction,
   updateAttraction,
   deleteAttraction,
+  restoreAttraction,
+  permanentlyDeleteAttraction,
+  archiveAttraction,
+  unarchiveAttraction,
   getBlockedDates,
   blockDates,
+  updateStopSaleBatch,
   unblockDate,
   getResellableAttractions,
+  getResellableAttractionDetails,
   addReseller,
   removeReseller,
   getResellerConfig,
   updateResellerConfig,
+  updateResellerVisibilityBulk,
 } from '../controllers/attractions.controller';
 import { authenticate, optionalAuth, requireAdmin, requireRole } from '../middleware/auth.middleware';
 import { optionalTenant } from '../middleware/tenant.middleware';
 import { publicWriteLimiter } from '../middleware/rate-limit.middleware';
-import { validate, validateQuery } from '../middleware/validate.middleware';
+import { validate, validateParams, validateQuery } from '../middleware/validate.middleware';
 import { createAttractionSchema, updateAttractionSchema, paginationSchema, attractionFiltersSchema } from '../utils/validators';
 import { createReview as submitReview } from '../controllers/reviews.controller';
 import { z } from 'zod';
 
 const router = Router();
+
+const marketplaceQuerySchema = paginationSchema.extend({
+  search: z.string().trim().max(120).optional(),
+  ownerTenantIds: z.string().trim().max(2499).regex(/^[a-f\d]{24}(,[a-f\d]{24})*$/i, 'Brand filters must contain valid IDs').optional(),
+  addedOnly: z.enum(['true', 'false']).transform((value) => value === 'true').optional(),
+});
+const marketplaceDetailsParamsSchema = z.object({ id: z.string().regex(/^[a-f\d]{24}$/i, 'Listing ID must be valid') });
+
+router.post('/stop-sale/batch', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), updateStopSaleBatch);
 
 /**
  * @swagger
@@ -163,7 +179,16 @@ router.get(
   authenticate,
   optionalTenant,
   requireRole('super-admin', 'brand-admin'),
+  validateQuery(marketplaceQuerySchema),
   getResellableAttractions
+);
+router.get(
+  '/resellable/:id',
+  authenticate,
+  optionalTenant,
+  requireRole('super-admin', 'brand-admin'),
+  validateParams(marketplaceDetailsParamsSchema),
+  getResellableAttractionDetails
 );
 
 /**
@@ -272,6 +297,11 @@ router.get('/:id/blocked-dates', optionalAuth, optionalTenant, getBlockedDates);
 router.post('/:id/block-dates', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), blockDates);
 router.delete('/:id/block-dates/:date', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), unblockDate);
 
+router.post('/:id/restore', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), restoreAttraction);
+router.post('/:id/archive', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), archiveAttraction);
+router.post('/:id/unarchive', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), unarchiveAttraction);
+router.delete('/:id/permanent', authenticate, requireRole('super-admin', 'brand-admin'), permanentlyDeleteAttraction);
+
 // Reseller marketplace — opt the current tenant in/out of selling an attraction.
 router.post('/:id/resell', authenticate, optionalTenant, requireRole('super-admin', 'brand-admin'), addReseller);
 router.delete('/:id/resell', authenticate, optionalTenant, requireRole('super-admin', 'brand-admin'), removeReseller);
@@ -279,6 +309,7 @@ router.delete('/:id/resell', authenticate, optionalTenant, requireRole('super-ad
 // Resellers hub (supplier side) — owner lists their tours + sets commission.
 // MUST stay above `/admin/:id` so it is not captured as an id.
 router.get('/admin/reseller-config', authenticate, optionalTenant, requireRole('super-admin', 'brand-admin', 'manager'), getResellerConfig);
+router.patch('/admin/reseller-config/bulk', authenticate, optionalTenant, requireRole('super-admin', 'brand-admin', 'manager'), updateResellerVisibilityBulk);
 router.patch('/:id/reseller-config', authenticate, optionalTenant, requireRole('super-admin', 'brand-admin', 'manager'), updateResellerConfig);
 
 // Submit a review

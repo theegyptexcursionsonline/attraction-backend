@@ -132,6 +132,23 @@ export const getTenants = async (
   }
 };
 
+// Admin-safe network directory used only for configuring marketplace access.
+// It deliberately exposes the minimum brand identity and paginates through the
+// database so Brand Admins can reach every active reseller without gaining
+// access to another tenant's private settings.
+export const getMarketplaceBrands = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const pageNum = Number(req.query.page || 1);
+    const limitNum = Number(req.query.limit || 100);
+    const query = { status: 'active' };
+    const [brands, total] = await Promise.all([
+      Tenant.find(query).select('_id name slug logo status').sort({ name: 1 }).skip((pageNum - 1) * limitNum).limit(limitNum).lean(),
+      Tenant.countDocuments(query),
+    ]);
+    sendPaginated(res, brands.map((brand) => ({ id: brand._id, name: brand.name, slug: brand.slug, logo: brand.logo, status: brand.status })), pageNum, limitNum, total);
+  } catch (error) { next(error); }
+};
+
 export const getTenantById = async (
   req: AuthRequest,
   res: Response,

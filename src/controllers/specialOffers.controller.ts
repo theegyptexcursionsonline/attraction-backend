@@ -1,5 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { SpecialOffer } from '../models/SpecialOffer';
+import { Attraction } from '../models/Attraction';
+import mongoose from 'mongoose';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import {
@@ -7,6 +9,9 @@ import {
   callerTenantIds,
   attractionIdsForTenants,
   attractionInCallerTenants,
+  ownedAttractionIdsForTenants,
+  attractionOwnedByCallerTenants,
+  isAttractionOwnedByTenants,
 } from '../utils/tenantScope';
 
 const OFFER_MUTATION_ROLES = ['super-admin', 'brand-admin', 'manager'];
@@ -90,7 +95,7 @@ export const getAllOffers = async (
     // Tenant scope: SpecialOffer has no tenant field, so a non-super admin only sees
     // offers for attractions in their own tenants.
     if (req.user && !isSuperAdmin(req.user)) {
-      const attrIds = await attractionIdsForTenants(callerTenantIds(req.user));
+      const attrIds = await ownedAttractionIdsForTenants(callerTenantIds(req.user));
       query.attractionId = { $in: attrIds };
     }
 
@@ -136,7 +141,7 @@ export const getOfferStats = async (
     // Scope stats to the caller's own attractions for non-super admins.
     const scope: Record<string, unknown> = {};
     if (req.user && !isSuperAdmin(req.user)) {
-      scope.attractionId = { $in: await attractionIdsForTenants(callerTenantIds(req.user)) };
+      scope.attractionId = { $in: await ownedAttractionIdsForTenants(callerTenantIds(req.user)) };
     }
     const [total, active, totalRedemptions] = await Promise.all([
       SpecialOffer.countDocuments(scope),
@@ -170,7 +175,7 @@ export const createOffer = async (
       const attractionId = req.body?.attractionId;
       if (
         !attractionId ||
-        !(await attractionInCallerTenants(attractionId, callerTenantIds(req.user)))
+        !(await attractionOwnedByCallerTenants(attractionId, callerTenantIds(req.user)))
       ) {
         sendError(res, 'You can only create offers for your own attractions', 403);
         return;
@@ -178,6 +183,51 @@ export const createOffer = async (
     }
     const offer = await SpecialOffer.create(req.body);
     sendSuccess(res, offer, 'Special offer created', 201);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createOffersBulk = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    if (!canMutateOffers(req)) {
+      sendError(res, 'Insufficient permissions', 403);
+      return;
+    }
+    const attractionIds = [...new Set<string>((req.body.attractionIds as string[]).map(String))];
+    const attractions = await Attraction.find({ _id: { $in: attractionIds } })
+      .select('_id ownerTenantId tenantIds')
+      .lean();
+    if (attractions.length !== attractionIds.length) {
+      sendError(res, 'One or more selected tours were not found', 404);
+      return;
+    }
+    if (req.user && !isSuperAdmin(req.user)) {
+      const tenantIds = callerTenantIds(req.user);
+      if (attractions.some((attraction) => !isAttractionOwnedByTenants(attraction, tenantIds))) {
+        sendError(res, 'You can only create offers for tours owned by your sites', 403);
+        return;
+      }
+    }
+
+    const { attractionIds: _attractionIds, ...offerFields } = req.body;
+    const session = await mongoose.startSession();
+    let created: unknown[] = [];
+    try {
+      await session.withTransaction(async () => {
+        created = await SpecialOffer.insertMany(
+          attractionIds.map((attractionId) => ({ ...offerFields, attractionId })),
+          { session, ordered: true }
+        );
+      });
+    } finally {
+      await session.endSession();
+    }
+    sendSuccess(res, { createdCount: created.length, offers: created }, 'Special offer applied to selected tours', 201);
   } catch (error) {
     next(error);
   }
@@ -199,14 +249,14 @@ export const updateOffer = async (
     if (req.user && !isSuperAdmin(req.user)) {
       const mine = callerTenantIds(req.user);
       const existing = await SpecialOffer.findById(req.params.id).select('attractionId');
-      if (!existing || !(await attractionInCallerTenants(existing.attractionId, mine))) {
+      if (!existing || !(await attractionOwnedByCallerTenants(existing.attractionId, mine))) {
         sendError(res, 'Offer not found', 404);
         return;
       }
       if (
         req.body?.attractionId &&
         String(req.body.attractionId) !== String(existing.attractionId) &&
-        !(await attractionInCallerTenants(req.body.attractionId, mine))
+        !(await attractionOwnedByCallerTenants(req.body.attractionId, mine))
       ) {
         sendError(res, 'You can only assign your own attractions', 403);
         return;
@@ -242,7 +292,7 @@ export const deleteOffer = async (
       const existing = await SpecialOffer.findById(req.params.id).select('attractionId');
       if (
         !existing ||
-        !(await attractionInCallerTenants(existing.attractionId, callerTenantIds(req.user)))
+        !(await attractionOwnedByCallerTenants(existing.attractionId, callerTenantIds(req.user)))
       ) {
         sendError(res, 'Offer not found', 404);
         return;

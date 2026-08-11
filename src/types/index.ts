@@ -142,6 +142,12 @@ export interface ITenant extends Document {
     metaTitle?: string;
     metaDescription?: string;
     body: string;
+    pageType?: 'attraction' | 'category';
+    parentPath?: string;
+    categoryIds?: string[];
+    status?: 'active' | 'archived';
+    archivedAt?: Date;
+    trashedAt?: Date;
     sortOrder?: number;
   }>;
   createdAt: Date;
@@ -156,6 +162,7 @@ export interface IAttraction extends Document {
   _id: Types.ObjectId;
   slug: string;
   pathSlug?: string;
+  parentPage?: { label: string; path: string };
   title: string;
   shortDescription: string;
   description: string;
@@ -194,6 +201,7 @@ export interface IAttraction extends Document {
     label: string;
     startTime: string;
     endTime: string;
+    price?: number;
   }>;
   itinerary: Array<{
     time: string;
@@ -242,6 +250,9 @@ export interface IAttraction extends Document {
     allowedTenants: Types.ObjectId[];
   };
   status: AttractionStatus;
+  archivedAt?: Date;
+  trashedAt?: Date;
+  statusBeforeArchive?: 'active' | 'draft';
   featured: boolean;
   sortOrder: number;
   createdBy: Types.ObjectId;

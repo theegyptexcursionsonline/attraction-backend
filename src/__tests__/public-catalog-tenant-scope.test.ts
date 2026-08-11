@@ -40,7 +40,7 @@ describe('public catalogue tenant boundaries', () => {
     );
 
     expect(Attraction.findOne).toHaveBeenCalledWith({
-      slug: 'private-tour',
+      $or: [{ pathSlug: 'private-tour' }, { slug: 'private-tour' }],
       status: 'active',
       tenantIds: { $in: [tenantId] },
     });
