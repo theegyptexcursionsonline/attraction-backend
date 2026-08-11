@@ -188,6 +188,24 @@ export interface RefundResult {
   amount: number;
 }
 
+export const retrieveRefund = async (
+  secretKey: string | undefined,
+  refundId: string,
+  options: StripeCallOptions = {}
+): Promise<RefundResult | null> => {
+  const stripe = getStripe(secretKey);
+  if (!stripe) {
+    if (!options.allowMock) throw missingKeyError();
+    return { id: refundId, status: 'succeeded', amount: 0 };
+  }
+  try {
+    const refund = await stripe.refunds.retrieve(refundId);
+    return { id: refund.id, status: refund.status || 'pending', amount: refund.amount };
+  } catch {
+    return null;
+  }
+};
+
 /** Sum provider-confirmed refunds so partial refunds retain accurate state. */
 export const retrieveSucceededRefundAmount = async (
   secretKey: string | undefined,

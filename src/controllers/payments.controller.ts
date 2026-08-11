@@ -26,6 +26,15 @@ import { safeEmitEvent, recordInboundEvent } from '../services/webhook.service';
 import { env } from '../config/env';
 import { generateBookingAccessToken, verifyBookingAccessToken } from '../utils/bookingAccess';
 import { markCardPaymentFailed } from '../services/bookingInventory.service';
+import { BundleOrder } from '../models/BundleOrder';
+import {
+  bundlePaymentBindingError,
+  claimBundleProviderEvent,
+  completeBundleProviderEvent,
+  failBundlePayment,
+  failBundleProviderEvent,
+  finalizeBundlePayment,
+} from '../services/bundlePayment.service';
 
 // Compact, tenant-safe booking summary for webhook payloads (the booking's own
 // fields only — never cross-tenant data).
@@ -627,6 +636,64 @@ export const handleWebhook = async (
 
     const obj = event.data.object as Stripe.PaymentIntent;
     const intentId = obj?.id;
+    if (
+      intentId &&
+      obj?.metadata?.paymentKind === 'bundle' &&
+      (eventType === 'payment_intent.succeeded' || eventType === 'payment_intent.payment_failed')
+    ) {
+      const bundleOrder = await BundleOrder.findOne({
+        stripePaymentIntentId: intentId,
+        storefrontTenantId: tenantId,
+      });
+      if (bundleOrder) {
+        const intentEvidence: PaymentIntentResult = {
+          id: intentId,
+          clientSecret: '',
+          amount: obj.amount,
+          amountReceived: obj.amount_received,
+          currency: obj.currency || '',
+          status: obj.status,
+          metadata: obj.metadata || {},
+        };
+        const bindingError = bundlePaymentBindingError(
+          bundleOrder,
+          intentEvidence,
+          eventType === 'payment_intent.succeeded'
+        );
+        if (bindingError) {
+          sendError(res, bindingError, 400);
+          return;
+        }
+        const claim = await claimBundleProviderEvent({
+          eventId,
+          eventType,
+          tenantId,
+          orderId: bundleOrder._id,
+        });
+        if (claim.duplicate || !claim.recordId) {
+          res.json({ received: true, duplicate: true });
+          return;
+        }
+        try {
+          const result = eventType === 'payment_intent.succeeded'
+            ? await finalizeBundlePayment(bundleOrder._id.toString(), intentEvidence, 'stripe')
+            : await failBundlePayment(
+                bundleOrder._id.toString(),
+                intentId,
+                obj.last_payment_error?.message || 'Card payment failed'
+              );
+          await completeBundleProviderEvent(claim.recordId);
+          res.json({ received: true, duplicate: result.duplicate, bundleOrder: true });
+          return;
+        } catch (error) {
+          await failBundleProviderEvent(
+            claim.recordId,
+            error instanceof Error ? error : new Error('Bundle payment processing failed')
+          );
+          throw error;
+        }
+      }
+    }
     if (eventType === 'payment_intent.succeeded') {
       if (!intentId || obj?.status !== 'succeeded') {
         sendError(res, 'Invalid succeeded PaymentIntent payload', 400);

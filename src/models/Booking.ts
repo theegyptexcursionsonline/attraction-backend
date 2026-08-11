@@ -199,6 +199,22 @@ bookingSchema.add({
   inventoryReleasedAt: {
     type: Date,
   },
+  // Bundle child linkage is additive. The parent order owns the single payment;
+  // a child booking owns only its supplier operation and immutable allocation.
+  bundleOrderId: {
+    type: Schema.Types.ObjectId,
+    ref: 'BundleOrder',
+  },
+  bundleComponentId: {
+    type: String,
+  },
+  bundleAllocation: {
+    supplierNetMinor: { type: Number, min: 0 },
+    customerAllocationMinor: { type: Number, min: 0 },
+    currency: { type: String, minlength: 3, maxlength: 3 },
+    supplyOfferId: { type: Schema.Types.ObjectId, ref: 'BundleSupplyOffer' },
+    supplyOfferVersion: { type: Number, min: 1 },
+  },
 } as any);
 
 // Generate booking reference before saving
@@ -216,5 +232,10 @@ bookingSchema.index({ tenantId: 1, status: 1, createdAt: -1 });
 // Reseller earnings lookups
 bookingSchema.index({ supplierTenantId: 1, isResale: 1 });
 bookingSchema.index({ sellerTenantId: 1, isResale: 1 });
+bookingSchema.index(
+  { bundleOrderId: 1, bundleComponentId: 1 },
+  { unique: true, sparse: true }
+);
+bookingSchema.index({ supplierTenantId: 1, bundleOrderId: 1 });
 
 export const Booking = mongoose.model<IBooking>('Booking', bookingSchema);

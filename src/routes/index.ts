@@ -24,6 +24,9 @@ import apiKeysRoutes from './apiKeys.routes';
 import webhooksRoutes from './webhooks.routes';
 import v1Routes from './v1.routes';
 import octoRoutes from './octo.routes';
+import bundlesRoutes from './bundles.routes';
+import bundleOrdersRoutes from './bundleOrders.routes';
+import bundleSupplyOffersRoutes from './bundleSupplyOffers.routes';
 
 const router = Router();
 
@@ -265,6 +268,9 @@ router.use('/contact', contactRoutes);
 router.use('/promo-codes', promoRoutes);
 router.use('/notifications', notificationsRoutes);
 router.use('/special-offers', specialOffersRoutes);
+router.use('/bundles', bundlesRoutes);
+router.use('/bundle-orders', bundleOrdersRoutes);
+router.use('/bundle-supply-offers', bundleSupplyOffersRoutes);
 router.use('/rsvps', rsvpsRoutes);
 router.use('/preview', previewRoutes);
 router.use('/page', pageRoutes);

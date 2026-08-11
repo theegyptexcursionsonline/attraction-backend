@@ -44,6 +44,11 @@ if (isProd && configuredBookingAccessSecret === jwtSecret) {
 }
 const bookingAccessSecret = configuredBookingAccessSecret || jwtSecret;
 
+const envFlag = (value: string | undefined, defaultValue: boolean): boolean => {
+  if (value === undefined) return defaultValue;
+  return value.trim().toLowerCase() === 'true';
+};
+
 export const env = {
   nodeEnv,
   port: parseInt(process.env.PORT || '5000', 10),
@@ -91,6 +96,12 @@ export const env = {
   // HMAC key for guest booking-access tokens. Production keeps it separate from
   // JWT signing so either credential can rotate without invalidating the other.
   bookingAccessSecret,
+
+  // Bundle discovery and checkout are separately reversible. Production fails
+  // closed until each flag is explicitly enabled after its acceptance gate.
+  bundleDiscoveryEnabled: envFlag(process.env.BUNDLE_DISCOVERY_ENABLED, !isProd),
+  bundleCheckoutEnabled: envFlag(process.env.BUNDLE_CHECKOUT_ENABLED, !isProd),
+  bundleRecoveryEnabled: envFlag(process.env.BUNDLE_RECOVERY_ENABLED, !isProd),
 
   // Google Static Maps key (for the meeting-point map in booking emails). Shared
   // with the tourticket/EEO projects. When unset, the email map falls back to a

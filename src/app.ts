@@ -26,6 +26,8 @@ import { env, connectDatabase, corsOptions, swaggerSpec } from './config';
 import routes from './routes';
 import { notFoundHandler, errorHandler, apiLimiter } from './middleware';
 import { expireStaleCardHolds } from './services/bookingInventory.service';
+import { expireStaleBundleOrders } from './services/bundleOperations.service';
+import { processBundleOutboxBatch } from './services/bundleOutbox.service';
 import { redactUrlForLogs } from './utils/safe-logging';
 
 export const createApp = (): express.Application => {
@@ -149,6 +151,36 @@ export const startServer = async (): Promise<void> => {
     void sweepExpiredHolds();
     const inventorySweep = setInterval(sweepExpiredHolds, 5 * 60 * 1000);
     inventorySweep.unref();
+
+    const sweepExpiredBundles = async (): Promise<void> => {
+      try {
+        const result = await expireStaleBundleOrders();
+        if (result.expired || result.paid || result.manualReview) {
+          console.log('[bundle-orders] expired-hold sweep', result);
+        }
+      } catch (error) {
+        console.error('[bundle-orders] expired-hold sweep failed:', error);
+      }
+    };
+    if (env.bundleRecoveryEnabled) {
+      void sweepExpiredBundles();
+      const bundleSweep = setInterval(sweepExpiredBundles, 60 * 1000);
+      bundleSweep.unref();
+    }
+
+    const deliverBundleOutbox = async (): Promise<void> => {
+      try {
+        const result = await processBundleOutboxBatch();
+        if (result.delivered || result.retried || result.deadLetter) {
+          console.log('[bundle-outbox] delivery sweep', result);
+        }
+      } catch (error) {
+        console.error('[bundle-outbox] delivery sweep failed:', error);
+      }
+    };
+    void deliverBundleOutbox();
+    const bundleOutboxSweep = setInterval(deliverBundleOutbox, 30 * 1000);
+    bundleOutboxSweep.unref();
 
     // Start listening
     app.listen(env.port, () => {
