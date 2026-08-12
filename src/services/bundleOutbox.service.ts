@@ -12,6 +12,16 @@ import {
 
 const MAX_ATTEMPTS = 8;
 
+export const bundleOrderGuestLink = (
+  tenant: Parameters<typeof getEmailBrand>[0],
+  orderId: string,
+  reference: string
+): string => {
+  const brand = getEmailBrand(tenant);
+  const accessToken = generateBundleAccessToken(orderId, reference);
+  return `${brandedLink(brand, `/bundle-orders/${orderId}`)}#accessToken=${encodeURIComponent(accessToken)}`;
+};
+
 const renderShell = (
   tenant: Parameters<typeof getEmailBrand>[0],
   title: string,
@@ -48,9 +58,7 @@ const processEvent = async (eventId: string): Promise<void> => {
   let html = '';
   if (event.audience === 'customer') {
     recipient = order.guestDetails.email;
-    const accessToken = generateBundleAccessToken(order._id.toString(), order.reference);
-    const brand = getEmailBrand(tenant);
-    const url = brandedLink(brand, `/bundle-orders/${order._id}`, { accessToken });
+    const url = bundleOrderGuestLink(tenant, order._id.toString(), order.reference);
     const completed = event.eventType === 'bundle.order_completed';
     const refunded = event.eventType === 'bundle.order_refunded';
     const cancelled = event.eventType === 'bundle.order_cancelled';

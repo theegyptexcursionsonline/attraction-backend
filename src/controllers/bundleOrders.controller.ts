@@ -121,17 +121,15 @@ const canUseCustomerOrder = (
 };
 
 const loadCustomerOrder = async (req: AuthRequest, res: Response) => {
-  const order = await BundleOrder.findById(req.params.id);
+  const query: Record<string, unknown> = { _id: req.params.id };
+  if (req.tenant) query.storefrontTenantId = req.tenant._id;
+  const order = await BundleOrder.findOne(query);
   if (!order) {
     sendError(res, 'Bundle order not found', 404);
     return null;
   }
-  if (req.tenant && String(req.tenant._id) !== String(order.storefrontTenantId)) {
-    sendError(res, 'Bundle order not found', 404);
-    return null;
-  }
   if (!canUseCustomerOrder(req, order)) {
-    sendError(res, 'Bundle order access denied', 403);
+    sendError(res, 'Bundle order not found', 404);
     return null;
   }
   return order;
@@ -196,17 +194,15 @@ export const getBundleOrderByReferenceHandler = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const order = await BundleOrder.findOne({ reference: req.params.reference });
+    const query: Record<string, unknown> = { reference: req.params.reference };
+    if (req.tenant) query.storefrontTenantId = req.tenant._id;
+    const order = await BundleOrder.findOne(query);
     if (!order) {
       sendError(res, 'Bundle order not found', 404);
       return;
     }
-    if (req.tenant && String(req.tenant._id) !== String(order.storefrontTenantId)) {
-      sendError(res, 'Bundle order not found', 404);
-      return;
-    }
     if (!canUseCustomerOrder(req, order)) {
-      sendError(res, 'Bundle order access denied', 403);
+      sendError(res, 'Bundle order not found', 404);
       return;
     }
     sendSuccess(res, customerBundleOrderDto(order));
