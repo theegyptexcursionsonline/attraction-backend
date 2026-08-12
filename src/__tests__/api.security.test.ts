@@ -13,6 +13,7 @@ import { verifyToken } from '../utils/jwt';
 import { generateBookingAccessToken } from '../utils/bookingAccess';
 import { getTenantStripeConfig } from '../services/tenantPayment.service';
 import { generateTicketPdf } from '../services/pdf.service';
+import { sendBookingPaymentLinkEmail } from '../services/email.service';
 
 // Valid MongoDB ObjectIds for tests
 const ATTR_ID = new Types.ObjectId().toHexString();
@@ -97,6 +98,7 @@ jest.mock('../services/email.service', () => ({
   ...jest.requireActual('../services/email.service'),
   sendBookingConfirmation: jest.fn().mockResolvedValue(undefined),
   sendAdminBookingNotification: jest.fn().mockResolvedValue(undefined),
+  sendBookingPaymentLinkEmail: jest.fn().mockResolvedValue(undefined),
 }));
 
 // createBooking fires a non-blocking email side-effect that looks up the tenant
@@ -707,6 +709,107 @@ describe('API security and pricing guards', () => {
     expect(response.status).toBe(200);
     expect(response.headers['content-type']).toContain('application/pdf');
     expect(generateTicketPdf).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns payment details only to the booking capability and only while card payment is eligible', async () => {
+    const bookingId = new Types.ObjectId().toHexString();
+    const reference = 'ATT-RDMI-PAY';
+    const booking = {
+      _id: bookingId,
+      reference,
+      tenantId: TENANT_ID,
+      attractionId: ATTR_ID,
+      status: 'pending',
+      paymentStatus: 'pending',
+      paymentMethod: 'card',
+      total: 94.5,
+      currency: 'USD',
+      items: [{ optionName: 'Sunrise Ride' }],
+      guestDetails: {
+        firstName: 'QA', lastName: 'Guest', email: 'guest@example.com', phone: '+201000000000',
+      },
+    };
+    (Booking.findOne as jest.Mock).mockResolvedValue(booking);
+    (Tenant.findById as jest.Mock).mockReturnValue({
+      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue({ name: 'RDMI Adventures', slug: 'rdmi' }) }),
+    });
+    (Attraction.findById as jest.Mock).mockReturnValue({
+      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue({ title: 'Sunrise Ride' }) }),
+    });
+
+    const noToken = await request(app).get(`/api/bookings/reference/${reference}/payment`);
+    expect(noToken.status).toBe(401);
+
+    const token = generateBookingAccessToken(bookingId, reference);
+    const response = await request(app)
+      .get(`/api/bookings/reference/${reference}/payment`)
+      .set('x-booking-access-token', token);
+    expect(response.status).toBe(200);
+    expect(response.body.data).toEqual(expect.objectContaining({
+      bookingId,
+      reference,
+      total: 94.5,
+      currency: 'USD',
+      guestName: 'QA Guest',
+      guestEmail: 'guest@example.com',
+      attractionTitle: 'Sunrise Ride',
+    }));
+
+    (Booking.findOne as jest.Mock).mockResolvedValue({ ...booking, paymentStatus: 'succeeded' });
+    const alreadyPaid = await request(app)
+      .get(`/api/bookings/reference/${reference}/payment`)
+      .set('x-booking-access-token', token);
+    expect(alreadyPaid.status).toBe(409);
+  });
+
+  it('sends a tenant-branded payment link only for an assigned pending card booking', async () => {
+    const tenantId = 'tenant-1';
+    const bookingId = new Types.ObjectId().toHexString();
+    const booking = {
+      _id: bookingId,
+      reference: 'ATT-RDMI-SEND-PAY',
+      tenantId: { toString: () => tenantId },
+      status: 'pending',
+      paymentStatus: 'pending',
+      paymentMethod: 'card',
+      total: 84,
+      currency: 'USD',
+      guestDetails: {
+        firstName: 'QA', lastName: 'Guest', email: 'guest@example.com', phone: '+201000000000',
+      },
+    };
+    (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1' });
+    (User.findById as jest.Mock).mockResolvedValue(adminUser);
+    (Booking.findById as jest.Mock).mockResolvedValue(booking);
+    const tenant = { name: 'RDMI Adventures', slug: 'rdmi', theme: { primaryColor: '#123456' } };
+    (Tenant.findById as jest.Mock).mockReturnValue({
+      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(tenant) }),
+    });
+
+    const response = await request(app)
+      .post(`/api/bookings/admin/${bookingId}/payment-link`)
+      .set('Authorization', 'Bearer valid-token');
+    expect(response.status).toBe(200);
+    expect(sendBookingPaymentLinkEmail).toHaveBeenCalledWith(
+      'guest@example.com',
+      expect.objectContaining({
+        reference: 'ATT-RDMI-SEND-PAY',
+        total: 84,
+        currency: 'USD',
+        guestAccessToken: expect.stringMatching(/^[A-Za-z0-9_-]+$/),
+      }),
+      tenant
+    );
+
+    (Booking.findById as jest.Mock).mockResolvedValue({
+      ...booking,
+      tenantId: { toString: () => 'tenant-2' },
+    });
+    const crossTenant = await request(app)
+      .post(`/api/bookings/admin/${bookingId}/payment-link`)
+      .set('Authorization', 'Bearer valid-token');
+    expect(crossTenant.status).toBe(403);
+    expect(sendBookingPaymentLinkEmail).toHaveBeenCalledTimes(1);
   });
 
   it('atomically rejects a missing, blocked, full, or unknown availability slot', async () => {

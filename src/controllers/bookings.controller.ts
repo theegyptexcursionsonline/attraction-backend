@@ -12,7 +12,12 @@ import { generateTicketPdf } from '../services/pdf.service';
 import { createRefund } from '../services/stripe.service';
 import { getTenantStripeConfig } from '../services/tenantPayment.service';
 import { createAdminNotifications } from '../services/notification.service';
-import { sendBookingConfirmation, sendAdminBookingNotification, sendBookingStatusEmail } from '../services/email.service';
+import {
+  sendBookingConfirmation,
+  sendAdminBookingNotification,
+  sendBookingPaymentLinkEmail,
+  sendBookingStatusEmail,
+} from '../services/email.service';
 import { Tenant } from '../models/Tenant';
 import { IdempotencyKey } from '../models/IdempotencyKey';
 import { escapeRegex } from '../utils/helpers';
@@ -853,6 +858,114 @@ export const getBookingByReference = async (
       { path: 'tenantId', select: 'name logo' },
     ]);
     sendSuccess(res, confirmationSafeBooking(booking));
+  } catch (error) {
+    next(error);
+  }
+};
+
+const isPayableCardBooking = (booking: Pick<IBooking, 'paymentMethod' | 'paymentStatus' | 'status'> & {
+  inventoryReleasedAt?: unknown;
+}): boolean =>
+  booking.paymentMethod === 'card' &&
+  booking.status === 'pending' &&
+  ['pending', 'processing', 'failed'].includes(booking.paymentStatus) &&
+  !booking.inventoryReleasedAt;
+
+/**
+ * Capability-protected detail needed by the hosted payment page. Unlike the
+ * general confirmation response, this returns the internal booking id because
+ * Stripe PaymentIntent creation is bound to that exact record. Access is still
+ * fail-closed behind either an authorized principal or the booking HMAC token.
+ */
+export const getBookingPaymentDetails = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const booking = await Booking.findOne({ reference: req.params.reference });
+    if (!booking) {
+      sendError(res, 'Booking not found', 404);
+      return;
+    }
+
+    const hasAuthenticatedAccess = canReadBooking(req, booking.userId, booking.tenantId);
+    const suppliedGuestToken = bookingAccessTokenFromRequest(req);
+    if (!req.user && !suppliedGuestToken) {
+      sendError(res, 'Booking access token or authentication is required', 401);
+      return;
+    }
+    if (!hasAuthenticatedAccess && !hasGuestTokenAccess(req, booking)) {
+      sendError(res, 'Not authorized to access this booking', 403);
+      return;
+    }
+    if (!isPayableCardBooking(booking)) {
+      sendError(res, 'This booking is no longer eligible for card payment', 409);
+      return;
+    }
+
+    const [tenant, attraction] = await Promise.all([
+      Tenant.findById(booking.tenantId).select('name slug logo theme').lean(),
+      Attraction.findById(booking.attractionId).select('title').lean(),
+    ]);
+    sendSuccess(res, {
+      bookingId: String(booking._id),
+      reference: booking.reference,
+      status: booking.status,
+      paymentStatus: booking.paymentStatus,
+      paymentMethod: booking.paymentMethod,
+      total: booking.total,
+      currency: booking.currency,
+      guestName: `${booking.guestDetails.firstName} ${booking.guestDetails.lastName}`.trim(),
+      guestEmail: booking.guestDetails.email,
+      attractionTitle: attraction?.title || booking.items?.[0]?.optionName || 'Your booking',
+      tenant: tenant
+        ? { name: tenant.name, slug: tenant.slug, logo: tenant.logo, theme: tenant.theme }
+        : undefined,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/** Send or resend the hosted card-payment link from the admin booking record. */
+export const sendBookingPaymentLink = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+      sendError(res, 'Booking not found', 404);
+      return;
+    }
+    if (!hasTenantAccess(req, booking.tenantId)) {
+      sendError(res, 'Not authorized to access this booking', 403);
+      return;
+    }
+    if (!isPayableCardBooking(booking)) {
+      sendError(res, 'This booking is no longer eligible for a payment link', 409);
+      return;
+    }
+
+    const tenant = await Tenant.findById(booking.tenantId)
+      .select('name slug customDomain domainMigrated contactInfo theme logo')
+      .lean();
+    const guestName = `${booking.guestDetails.firstName} ${booking.guestDetails.lastName}`.trim();
+    await sendBookingPaymentLinkEmail(
+      booking.guestDetails.email,
+      {
+        reference: booking.reference,
+        guestName,
+        guestAccessToken: generateBookingAccessToken(String(booking._id), booking.reference),
+        total: booking.total,
+        currency: booking.currency,
+      },
+      tenant
+    );
+
+    sendSuccess(res, { sent: true, reference: booking.reference }, 'Payment link sent');
   } catch (error) {
     next(error);
   }

@@ -470,6 +470,59 @@ export const sendBookingConfirmation = async (
   });
 };
 
+export interface BookingPaymentLinkDetails {
+  reference: string;
+  guestName: string;
+  guestAccessToken: string;
+  total: number;
+  currency: string;
+}
+
+/**
+ * Build the customer payment URL without putting the capability token in the
+ * query string. URL fragments are never sent to Netlify, the custom-domain
+ * server, or access logs; the payment page moves the token into the API header.
+ */
+export const bookingPaymentLink = (
+  brand: EmailBrand,
+  reference: string,
+  guestAccessToken: string
+): string => {
+  const base = brandedLink(brand, '/checkout/pay', { ref: reference });
+  return `${base}#accessToken=${encodeURIComponent(guestAccessToken)}`;
+};
+
+export const renderBookingPaymentLinkHtml = (
+  brand: EmailBrand,
+  details: BookingPaymentLinkDetails
+): string => {
+  const safeReference = escapeEmailHtml(details.reference);
+  const firstName = escapeEmailHtml(details.guestName.trim().split(/\s+/)[0] || 'there');
+  const amount = `${escapeEmailHtml(details.currency.toUpperCase())} ${details.total.toFixed(2)}`;
+  return renderActionEmail(brand, {
+    title: `Complete payment · ${safeReference}`,
+    heading: 'Complete your secure payment',
+    intro: `Hi ${firstName}, your booking <strong>${safeReference}</strong> is reserved pending payment. The amount due is <strong>${amount}</strong>.`,
+    note: 'Use the secure link below to pay by card. The booking is confirmed only after the payment succeeds.',
+    ctaLabel: `Pay ${amount}`,
+    ctaUrl: bookingPaymentLink(brand, details.reference, details.guestAccessToken),
+  });
+};
+
+export const sendBookingPaymentLinkEmail = async (
+  email: string,
+  details: BookingPaymentLinkDetails,
+  tenant: EmailTenant | null
+): Promise<void> => {
+  const brand = getEmailBrand(tenant);
+  await sendEmail({
+    to: email,
+    subject: `Complete payment · ${safeDisplayName(details.reference)}`,
+    html: renderBookingPaymentLinkHtml(brand, details),
+    tenant,
+  });
+};
+
 export interface AdminBookingDetails {
   reference: string;
   tenantName: string;

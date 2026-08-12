@@ -2,9 +2,12 @@ import { Response, NextFunction } from 'express';
 import { sendSuccess, sendError } from '../utils/response';
 import { AuthRequest } from '../types';
 import { uploadImage } from '../services/upload.service';
-import { uploadBase64Image } from '../services/upload.service';
-import { generateImageFromPrompt } from '../services/image-generation.service';
 import { cleanupUploadedFiles } from '../utils/uploadCleanup';
+import {
+  createImageGenerationJob,
+  getImageGenerationJob,
+  kickImageGenerationWorker,
+} from '../services/image-generation-job.service';
 
 export const uploadSingleImage = async (
   req: AuthRequest,
@@ -61,43 +64,47 @@ export const uploadMultipleImages = async (
   }
 };
 
-export const generateAiImage = async (
+export const createAiImageGenerationJob = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const prompt = typeof req.body?.prompt === 'string' ? req.body.prompt.trim() : '';
-    const size = typeof req.body?.size === 'string' ? req.body.size : '1536x1024';
-    const quality = typeof req.body?.quality === 'string' ? req.body.quality : 'high';
-    const folder = typeof req.body?.folder === 'string' && req.body.folder.trim()
-      ? req.body.folder.trim()
-      : 'ai-generated';
-
-    if (!prompt) {
-      sendError(res, 'Prompt is required', 400);
+    if (!req.user) {
+      sendError(res, 'Authentication required', 401);
       return;
     }
+    const job = await createImageGenerationJob(req.user._id, req.body);
+    sendSuccess(res, { id: String(job._id), status: job.status }, 'Image generation queued', 202);
+    kickImageGenerationWorker();
+  } catch (error) {
+    next(error);
+  }
+};
 
-    const generated = await generateImageFromPrompt({
-      prompt,
-      size,
-      quality,
-      outputFormat: 'jpeg',
-    });
-
-    const uploaded = await uploadBase64Image(
-      `data:${generated.mimeType};base64,${generated.base64}`,
-      folder
-    );
-
+export const getAiImageGenerationJob = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    if (!req.user) {
+      sendError(res, 'Authentication required', 401);
+      return;
+    }
+    const ownerScope = req.user.role === 'super-admin' ? undefined : req.user._id;
+    const job = await getImageGenerationJob(req.params.jobId, ownerScope);
+    if (!job) {
+      sendError(res, 'Image generation job not found', 404);
+      return;
+    }
+    kickImageGenerationWorker();
     sendSuccess(res, {
-      url: uploaded.url,
-      publicId: uploaded.publicId,
-      width: uploaded.width,
-      height: uploaded.height,
-      prompt,
-    }, 'Image generated successfully');
+      id: String(job._id),
+      status: job.status,
+      error: job.status === 'failed' ? job.error : undefined,
+      result: job.status === 'succeeded' ? job.result : undefined,
+    });
   } catch (error) {
     next(error);
   }

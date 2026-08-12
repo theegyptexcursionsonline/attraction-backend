@@ -29,6 +29,7 @@ import { expireStaleCardHolds } from './services/bookingInventory.service';
 import { expireStaleBundleOrders } from './services/bundleOperations.service';
 import { processBundleOutboxBatch } from './services/bundleOutbox.service';
 import { redactUrlForLogs } from './utils/safe-logging';
+import { startImageGenerationWorker } from './services/image-generation-job.service';
 
 export const createApp = (): express.Application => {
   const app = express();
@@ -151,6 +152,7 @@ export const startServer = async (): Promise<void> => {
     void sweepExpiredHolds();
     const inventorySweep = setInterval(sweepExpiredHolds, 5 * 60 * 1000);
     inventorySweep.unref();
+    startImageGenerationWorker();
 
     const sweepExpiredBundles = async (): Promise<void> => {
       try {
