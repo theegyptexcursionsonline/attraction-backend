@@ -102,6 +102,68 @@ export const assertOfferTravelRules = (
   }
 };
 
+export const assertOrderSelectionsTravelRules = async (input: {
+  selections: Array<{
+    attractionId: Types.ObjectId;
+    supplyOfferId: Types.ObjectId;
+    supplierTenantId: Types.ObjectId;
+    date: string;
+    time?: string;
+  }>;
+  offers: Array<{
+    _id: Types.ObjectId;
+    supplierTenantId: Types.ObjectId;
+    validTravelFrom: Date;
+    validTravelTo: Date;
+    salesStartsAt?: Date;
+    salesEndsAt?: Date;
+    blackoutDates: Date[];
+    leadTimeHours: number;
+    entryWindowLabels?: string[];
+  }>;
+  session?: ClientSession;
+}): Promise<void> => {
+  const attractions = await Attraction.find({
+    _id: { $in: input.selections.map((selection) => selection.attractionId) },
+    status: 'active',
+    instantConfirmation: true,
+  })
+    .select('ownerTenantId entryWindows')
+    .session(input.session || null)
+    .lean();
+  if (attractions.length !== input.selections.length) {
+    throw new BundleOrderError(
+      'BUNDLE_ATTRACTION_CHANGED',
+      'An attraction changed before checkout',
+      409
+    );
+  }
+  const attractionById = new Map(attractions.map((item) => [item._id.toString(), item]));
+  const offerById = new Map(input.offers.map((offer) => [offer._id.toString(), offer]));
+  for (const selection of input.selections) {
+    const attraction = attractionById.get(selection.attractionId.toString());
+    const offer = offerById.get(selection.supplyOfferId.toString());
+    if (
+      !attraction ||
+      !offer ||
+      String(attraction.ownerTenantId) !== String(selection.supplierTenantId) ||
+      String(offer.supplierTenantId) !== String(selection.supplierTenantId)
+    ) {
+      throw new BundleOrderError(
+        'BUNDLE_SUPPLY_CHANGED',
+        'Supplier ownership or terms changed before checkout',
+        409
+      );
+    }
+    assertOfferTravelRules(
+      offer,
+      selection.date,
+      selection.time,
+      attraction.entryWindows || []
+    );
+  }
+};
+
 export const publicBundleDto = (bundle: IBundleDefinition): Record<string, unknown> => ({
   id: bundle._id.toString(),
   slug: bundle.slug,
@@ -371,6 +433,11 @@ export const createBundleOrder = async (input: {
       if (offers.length !== quote.selections.length) {
         throw new BundleOrderError('BUNDLE_SUPPLY_CHANGED', 'Supplier terms changed before checkout', 409);
       }
+      await assertOrderSelectionsTravelRules({
+        selections: quote.selections,
+        offers,
+        session,
+      });
       const offerById = new Map(offers.map((offer) => [offer._id.toString(), offer]));
       const guests = totalGuests(quote.quantities);
       const orderId = new Types.ObjectId();
@@ -394,7 +461,6 @@ export const createBundleOrder = async (input: {
       }));
       for (const selection of quote.selections) {
         const offer = offerById.get(selection.supplyOfferId.toString())!;
-        assertOfferTravelRules(offer, selection.date, selection.time);
         await reserveBundleInventory({
           attractionId: selection.attractionId,
           supplyOfferId: selection.supplyOfferId,
