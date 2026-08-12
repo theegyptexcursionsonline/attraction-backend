@@ -173,7 +173,7 @@ export const startServer = async (): Promise<void> => {
     const deliverBundleOutbox = async (): Promise<void> => {
       try {
         const result = await processBundleOutboxBatch();
-        if (result.delivered || result.retried || result.deadLetter) {
+        if (result.delivered || result.suppressed || result.retried || result.deadLetter) {
           console.log('[bundle-outbox] delivery sweep', result);
         }
       } catch (error) {

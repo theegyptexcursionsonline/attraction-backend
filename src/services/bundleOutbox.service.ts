@@ -40,18 +40,19 @@ const renderShell = (
     </div></body></html>`;
 };
 
-const processEvent = async (eventId: string): Promise<void> => {
+const processEvent = async (eventId: string): Promise<'delivered' | 'suppressed'> => {
   const event = await BundleOutboxEvent.findById(eventId);
-  if (!event) return;
-  if (!env.mailgunApiKey || !env.mailgunDomain) {
-    throw new Error('Transactional email provider is not configured');
-  }
+  if (!event) throw new Error('Outbox event no longer exists');
   const [tenant, order] = await Promise.all([
     Tenant.findById(event.tenantId).lean(),
     event.orderId ? BundleOrder.findById(event.orderId) : null,
   ]);
   if (!tenant) throw new Error('Outbox tenant no longer exists');
   if (!order) throw new Error('Outbox order no longer exists');
+  if (tenant.bundleSettings?.mode === 'test') return 'suppressed';
+  if (!env.mailgunApiKey || !env.mailgunDomain) {
+    throw new Error('Transactional email provider is not configured');
+  }
 
   let recipient = '';
   let subject = '';
@@ -120,14 +121,16 @@ const processEvent = async (eventId: string): Promise<void> => {
   }
   if (!recipient) throw new Error('Outbox recipient is not configured');
   await sendEmail({ to: recipient, subject, html, tenant });
+  return 'delivered';
 };
 
 export const processBundleOutboxBatch = async (limit = 20): Promise<{
   delivered: number;
+  suppressed: number;
   retried: number;
   deadLetter: number;
 }> => {
-  const result = { delivered: 0, retried: 0, deadLetter: 0 };
+  const result = { delivered: 0, suppressed: 0, retried: 0, deadLetter: 0 };
   for (let index = 0; index < limit; index += 1) {
     const now = new Date();
     const event = await BundleOutboxEvent.findOneAndUpdate(
@@ -147,15 +150,24 @@ export const processBundleOutboxBatch = async (limit = 20): Promise<{
     );
     if (!event) break;
     try {
-      await processEvent(event._id.toString());
+      const outcome = await processEvent(event._id.toString());
       await BundleOutboxEvent.updateOne(
         { _id: event._id, status: 'processing' },
-        {
-          $set: { status: 'delivered', deliveredAt: new Date() },
-          $unset: { leaseUntil: 1, lastError: 1 },
-        }
+        outcome === 'suppressed'
+          ? {
+              $set: {
+                status: 'suppressed',
+                suppressedAt: new Date(),
+                suppressionReason: 'TEST_MODE_NO_EXTERNAL_DELIVERY',
+              },
+              $unset: { leaseUntil: 1, lastError: 1 },
+            }
+          : {
+              $set: { status: 'delivered', deliveredAt: new Date() },
+              $unset: { leaseUntil: 1, lastError: 1 },
+            }
       );
-      result.delivered += 1;
+      result[outcome] += 1;
     } catch (error) {
       const dead = event.attempts >= MAX_ATTEMPTS;
       await BundleOutboxEvent.updateOne(

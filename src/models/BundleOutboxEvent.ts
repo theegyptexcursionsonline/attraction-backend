@@ -7,12 +7,14 @@ export interface IBundleOutboxEvent extends Document {
   audience: 'customer' | 'supplier' | 'storefront';
   eventType: string;
   payload: Record<string, unknown>;
-  status: 'pending' | 'processing' | 'delivered' | 'retry' | 'dead_letter';
+  status: 'pending' | 'processing' | 'delivered' | 'suppressed' | 'retry' | 'dead_letter';
   attempts: number;
   nextAttemptAt: Date;
   leaseUntil?: Date;
   lastError?: string;
   deliveredAt?: Date;
+  suppressedAt?: Date;
+  suppressionReason?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,12 +27,14 @@ const bundleOutboxEventSchema = new Schema<IBundleOutboxEvent>(
     audience: { type: String, enum: ['customer', 'supplier', 'storefront'], required: true },
     eventType: { type: String, required: true, maxlength: 120 },
     payload: { type: Schema.Types.Mixed, required: true },
-    status: { type: String, enum: ['pending', 'processing', 'delivered', 'retry', 'dead_letter'], default: 'pending', index: true },
+    status: { type: String, enum: ['pending', 'processing', 'delivered', 'suppressed', 'retry', 'dead_letter'], default: 'pending', index: true },
     attempts: { type: Number, default: 0, min: 0, validate: Number.isSafeInteger },
     nextAttemptAt: { type: Date, default: Date.now, index: true },
     leaseUntil: { type: Date },
     lastError: { type: String, maxlength: 1000 },
     deliveredAt: { type: Date },
+    suppressedAt: { type: Date },
+    suppressionReason: { type: String, maxlength: 160 },
   },
   { timestamps: true }
 );
