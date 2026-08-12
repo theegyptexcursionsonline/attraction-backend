@@ -12,6 +12,7 @@ const pageSchema = z.object({
   metaTitle: z.string().max(160).optional(), metaDescription: z.string().max(320).optional(),
   body: z.string().min(1), pageType: z.enum(['attraction', 'category']),
   parentPath: z.string().regex(/^\/(?!\/)[a-z0-9/_-]*$/), categoryIds: z.array(z.string()).max(100).optional(),
+  isPublished: z.boolean().optional(),
 });
 
 router.get('/admin', authenticate, optionalTenant, requireRole('super-admin', 'brand-admin', 'manager'), listAdminPages);

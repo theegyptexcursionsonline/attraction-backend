@@ -35,7 +35,13 @@ export const createAdminPage = async (req: AuthRequest, res: Response, next: Nex
       Attraction.exists({ tenantIds: tenantId, $or: [{ pathSlug: slug }, { slug }] }),
     ]);
     if (collision.some(Boolean)) { sendError(res, 'This URL is already used on the selected site', 409); return; }
-    const page = { ...req.body, slug, body: sanitizeRichText(req.body.body), status: 'active' };
+    const page = {
+      ...req.body,
+      slug,
+      body: sanitizeRichText(req.body.body),
+      isPublished: req.body.isPublished ?? true,
+      status: 'active',
+    };
     const tenant = await Tenant.findByIdAndUpdate(tenantId, { $push: { customPages: page } }, { new: true, runValidators: true });
     sendSuccess(res, tenant?.customPages?.at(-1), 'Page created', 201);
   } catch (error) { next(error); }
@@ -46,6 +52,21 @@ export const updateAdminPage = async (req: AuthRequest, res: Response, next: Nex
     const tenantId = requirePageTenant(req, res); if (!tenantId) return;
     const pageId = req.params.id;
     const updates = { ...req.body, ...(req.body.body !== undefined ? { body: sanitizeRichText(req.body.body) } : {}) };
+    if (req.body.slug !== undefined) {
+      const slug = String(req.body.slug).toLowerCase();
+      const collision = await Promise.all([
+        Tenant.exists({
+          _id: tenantId,
+          customPages: { $elemMatch: { slug, _id: { $ne: pageId } } },
+        }),
+        Attraction.exists({ tenantIds: tenantId, $or: [{ pathSlug: slug }, { slug }] }),
+      ]);
+      if (collision.some(Boolean)) {
+        sendError(res, 'This URL is already used on the selected site', 409);
+        return;
+      }
+      updates.slug = slug;
+    }
     const $set = Object.fromEntries(Object.entries(updates).map(([key, value]) => [`customPages.$.${key}`, value]));
     const tenant = await Tenant.findOneAndUpdate({ _id: tenantId, 'customPages._id': pageId }, { $set }, { new: true, runValidators: true });
     if (!tenant) { sendError(res, 'Page not found', 404); return; }
@@ -160,7 +181,9 @@ export const resolvePage = async (
 
     // 2. Try matching a custom page on the tenant
     const tenant = await Tenant.findById(req.tenant._id).select('customPages name').lean();
-    const page = tenant?.customPages?.find((p) => p.slug === slug && p.status !== 'archived');
+    const page = tenant?.customPages?.find(
+      (p) => p.slug === slug && p.status !== 'archived' && p.isPublished !== false
+    );
     if (page) {
       sendSuccess(res, {
         type: 'page',
@@ -227,11 +250,13 @@ export const tenantSitemap = async (
         lastmod: (a.updatedAt as Date | undefined)?.toISOString().slice(0, 10) || today,
         priority: 0.8,
       })),
-      ...(tenant.customPages || []).filter((p) => p.status !== 'archived').map((p) => ({
+      ...(tenant.customPages || [])
+        .filter((p) => p.status !== 'archived' && p.isPublished !== false)
+        .map((p) => ({
         loc: `${origin}/${p.slug}`,
         lastmod: today,
         priority: 0.5,
-      })),
+        })),
     ];
 
     const body =

@@ -13,6 +13,13 @@ describe('Bundle to Win route permission matrix', () => {
     expect(orders).toMatch(/release-settlement',[\s\S]*requireSuperAdmin/s);
     expect(orders).toMatch(/mark-settled',[\s\S]*requireSuperAdmin/s);
     expect(orders).toMatch(/'\/admin\/:id\/recover',[\s\S]*requireBundleFeature\('recovery'\)[\s\S]*requireSuperAdmin/s);
+    expect(bundles).toMatch(/router\.put\([\s\S]*'\/admin\/readiness',[\s\S]*requireSuperAdmin[\s\S]*validate\(updateBundleLaunchModeSchema\)/s);
+  });
+
+  it('exposes tenant-scoped readiness without exposing cross-tenant launch mutation', () => {
+    const bundles = source('bundles.routes.ts');
+    expect(bundles).toMatch(/router\.get\([\s\S]*'\/admin\/readiness',[\s\S]*requireRole\('super-admin', 'brand-admin', 'manager', 'viewer'\)[\s\S]*validateQuery\(bundleReadinessQuerySchema\)[\s\S]*optionalAdminTenant[\s\S]*requireTenant/s);
+    expect(bundles.indexOf("'/admin/readiness'")).toBeLessThan(bundles.indexOf("'/admin/:id'"));
   });
 
   it('allows only commercial supplier admins to mutate offers', () => {
@@ -27,7 +34,9 @@ describe('Bundle to Win route permission matrix', () => {
     const bundles = source('bundles.routes.ts');
     const orders = source('bundleOrders.routes.ts');
     expect(bundles).toMatch(/'\/:slug\/quote',[\s\S]*requireBundleFeature\('checkout'\)[\s\S]*requireTenant[\s\S]*validate\(createBundleQuoteSchema\)/s);
+    expect(bundles).toMatch(/'\/:slug\/quote',[\s\S]*requireTenantBundleMode\(\['test', 'live'\]\)/s);
     expect(orders).toMatch(/router\.post\([\s\S]*requireBundleFeature\('checkout'\)[\s\S]*bookingLimiter[\s\S]*requireTenant[\s\S]*validate\(createBundleOrderSchema\)/s);
+    expect(orders).toMatch(/router\.post\([\s\S]*requireTenantBundleMode\(\['test', 'live'\]\)[\s\S]*validate\(createBundleOrderSchema\)/s);
     expect(orders).toMatch(/'\/:id\/payment-intent',[\s\S]*paymentLimiter[\s\S]*requireTenant/s);
     expect(orders).toMatch(/'\/:id\/cancel',[\s\S]*optionalAuth[\s\S]*validate\(cancelBundleOrderSchema\)/s);
   });

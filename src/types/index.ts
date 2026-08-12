@@ -43,6 +43,7 @@ export interface IUser extends Document {
 
 // Tenant Types
 export type TenantStatus = 'active' | 'inactive' | 'pending' | 'suspended' | 'coming_soon';
+export type BundleLaunchMode = 'off' | 'discovery' | 'test' | 'live';
 
 export interface ITenant extends Document {
   _id: Types.ObjectId;
@@ -132,6 +133,12 @@ export interface ITenant extends Document {
     enabledGateways: string[];
     ownPaymentGateway?: boolean;
   };
+  bundleSettings?: {
+    mode: BundleLaunchMode;
+    updatedAt?: Date;
+    updatedBy?: Types.ObjectId;
+    reason?: string;
+  };
   status: TenantStatus;
   previewAccessCode?: string;
   previewAccessCodeUpdatedAt?: Date;
@@ -145,6 +152,7 @@ export interface ITenant extends Document {
     pageType?: 'attraction' | 'category';
     parentPath?: string;
     categoryIds?: string[];
+    isPublished?: boolean;
     status?: 'active' | 'archived';
     archivedAt?: Date;
     trashedAt?: Date;

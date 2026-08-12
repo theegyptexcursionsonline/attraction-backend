@@ -53,6 +53,7 @@ export const PUBLIC_TENANT_PROJECTION = [
   ...PUBLIC_TENANT_FIELDS,
   'paymentSettings.stripe.enabled',
   'paymentSettings.stripe.publishableKey',
+  'bundleSettings.mode',
 ].join(' ');
 
 export const toPublicTenantDto = (source: unknown): Record<string, unknown> => {
@@ -82,6 +83,12 @@ export const toPublicTenantDto = (source: unknown): Record<string, unknown> => {
         dto.paymentSettings = { stripe: publicStripe };
       }
     }
+  }
+
+  const bundleSettings = record.bundleSettings;
+  if (bundleSettings && typeof bundleSettings === 'object') {
+    const mode = (bundleSettings as Record<string, unknown>).mode;
+    if (typeof mode === 'string') dto.bundleSettings = { mode };
   }
 
   return dto;

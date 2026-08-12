@@ -14,7 +14,7 @@ import {
   refundBundleOrderHandler,
   releaseBundleSettlementHandler,
 } from '../controllers/bundleOrders.controller';
-import { requireBundleFeature } from '../bundles/featureFlags';
+import { requireBundleFeature, requireTenantBundleMode } from '../bundles/featureFlags';
 import {
   bundleOrderListQuerySchema,
   bundleComponentParamsSchema,
@@ -95,6 +95,7 @@ router.post(
   optionalAuth,
   optionalTenant,
   requireTenant,
+  requireTenantBundleMode(['test', 'live']),
   validate(createBundleOrderSchema),
   createBundleOrderHandler
 );
@@ -129,6 +130,7 @@ router.post(
   optionalAuth,
   optionalTenant,
   requireTenant,
+  requireTenantBundleMode(['test', 'live']),
   validateParams(bundleIdParamsSchema),
   createBundlePaymentSessionHandler
 );

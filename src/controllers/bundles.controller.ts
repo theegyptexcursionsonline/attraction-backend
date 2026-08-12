@@ -16,6 +16,11 @@ import {
 import { BundleInventoryError } from '../services/bundleInventory.service';
 import { AuthRequest } from '../types';
 import { sendError, sendSuccess } from '../utils/response';
+import {
+  BundleLaunchModeError,
+  getBundleLaunchReadiness,
+  updateTenantBundleLaunchMode,
+} from '../services/bundleLaunchReadiness.service';
 
 const known = (error: unknown, res: Response, next: NextFunction): void => {
   if (
@@ -107,6 +112,49 @@ export const createBundleQuoteHandler = async (
     sendSuccess(res, quote, 'Bundle price and availability confirmed', 201);
   } catch (error) {
     known(error, res, next);
+  }
+};
+
+export const getBundleLaunchReadinessHandler = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    if (!req.tenant) {
+      sendError(res, 'Tenant context required', 400);
+      return;
+    }
+    sendSuccess(res, await getBundleLaunchReadiness(req.tenant));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateBundleLaunchModeHandler = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    if (!req.user?._id) {
+      sendError(res, 'Authentication required', 401);
+      return;
+    }
+    const readiness = await updateTenantBundleLaunchMode({
+      tenantId: req.body.tenantId,
+      mode: req.body.mode,
+      reason: req.body.reason,
+      expectedRevision: req.body.revision,
+      actorId: req.user._id,
+    });
+    sendSuccess(res, readiness, `Bundle storefront moved to ${req.body.mode}`);
+  } catch (error) {
+    if (error instanceof BundleLaunchModeError) {
+      sendError(res, error.message, error.statusCode);
+      return;
+    }
+    next(error);
   }
 };
 

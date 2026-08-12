@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 import { Tenant } from '../models/Tenant';
-import { optionalTenant, resolveTenant } from '../middleware/tenant.middleware';
+import { optionalAdminTenant, optionalTenant, resolveTenant } from '../middleware/tenant.middleware';
 import { AuthRequest } from '../types';
 
 jest.mock('../models/Tenant', () => ({
@@ -63,6 +63,23 @@ describe('tenant resolution authorization', () => {
     expect(req.tenant).toBe(tenant);
     expect(next).toHaveBeenCalledTimes(1);
     expect(res.status).not.toHaveBeenCalled();
+  });
+
+  it('lets an assigned administrator inspect an inactive tenant without widening access', async () => {
+    const tenantId = new Types.ObjectId();
+    const tenant = { _id: tenantId, status: 'inactive' };
+    (Tenant.findOne as jest.Mock).mockResolvedValue(tenant);
+    const req = adminRequest(tenantId, tenantId.toString());
+    const res = response();
+    const next = jest.fn();
+
+    await optionalAdminTenant(req, res, next);
+
+    expect(Tenant.findOne).toHaveBeenCalledWith(expect.objectContaining({
+      status: { $in: expect.arrayContaining(['inactive', 'suspended', 'pending']) },
+    }));
+    expect(req.tenant).toBe(tenant);
+    expect(next).toHaveBeenCalledTimes(1);
   });
 
   test.each([

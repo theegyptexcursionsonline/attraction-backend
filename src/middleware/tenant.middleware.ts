@@ -7,6 +7,7 @@ import { sendError } from '../utils/response';
 // Pending tenants are not public storefronts. Keeping them out here prevents
 // an explicit tenant header from exposing unpublished catalog data.
 const PUBLIC_TENANT_STATUSES = ['active', 'coming_soon'] as const;
+const ADMIN_TENANT_STATUSES = ['active', 'inactive', 'pending', 'suspended', 'coming_soon'] as const;
 const TENANT_SCOPED_ADMIN_ROLES = ['brand-admin', 'manager', 'editor', 'viewer'];
 
 const queryTenantIdentifier = (req: AuthRequest): string | undefined => {
@@ -108,10 +109,11 @@ export const requireTenant = (
   next();
 };
 
-export const optionalTenant = async (
+const resolveOptionalTenant = async (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
+  statuses: readonly string[]
 ): Promise<void> => {
   try {
     let tenantIdentifier: string | undefined;
@@ -132,7 +134,7 @@ export const optionalTenant = async (
           { domain: tenantIdentifier },
           { customDomain: tenantIdentifier },
         ],
-        status: { $in: PUBLIC_TENANT_STATUSES },
+        status: { $in: statuses },
       });
 
       if (!tenant) {
@@ -150,3 +152,18 @@ export const optionalTenant = async (
     next(error);
   }
 };
+
+export const optionalTenant = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => resolveOptionalTenant(req, res, next, PUBLIC_TENANT_STATUSES);
+
+// Authenticated launch/readiness tools must be able to inspect a tenant that is
+// pending, suspended or inactive so the exact blocking condition remains
+// visible. Assignment boundaries are still enforced by resolveOptionalTenant.
+export const optionalAdminTenant = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => resolveOptionalTenant(req, res, next, ADMIN_TENANT_STATUSES);

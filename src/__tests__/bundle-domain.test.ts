@@ -16,6 +16,7 @@ import {
   cancelBundleOrderSchema,
   refundBundleOrderSchema,
   supplyOfferListQuerySchema,
+  updateBundleLaunchModeSchema,
 } from '../bundles/validators';
 import { assertOfferTravelRules } from '../services/bundleOrder.service';
 import { validateOfferCommercialRules } from '../services/bundleSupplyOffer.service';
@@ -161,6 +162,19 @@ describe('Bundle to Win domain invariants', () => {
       termsVersion: 'v1',
     }).success).toBe(false);
     expect(supplyOfferListQuerySchema.parse({ allSuppliers: 'false' }).allSuppliers).toBe(false);
+    const launchTenantId = new Types.ObjectId().toString();
+    expect(updateBundleLaunchModeSchema.safeParse({
+      tenantId: launchTenantId,
+      mode: 'test',
+      revision: 2,
+      reason: 'Controlled acceptance',
+    }).success).toBe(true);
+    expect(updateBundleLaunchModeSchema.safeParse({
+      tenantId: launchTenantId,
+      mode: 'live',
+      revision: -1,
+      reason: 'x',
+    }).success).toBe(false);
   });
 
   it('revalidates full commercial windows after a partial supplier revision', () => {

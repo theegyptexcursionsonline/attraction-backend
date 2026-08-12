@@ -236,3 +236,14 @@ export const bundleOrderListQuerySchema = z.object({
   cursor: objectId.optional(),
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
+
+export const bundleReadinessQuerySchema = z.object({
+  tenantId: objectId,
+});
+
+export const updateBundleLaunchModeSchema = z.object({
+  tenantId: objectId,
+  mode: z.enum(['off', 'discovery', 'test', 'live']),
+  revision: z.number().int().nonnegative(),
+  reason: z.string().trim().min(3).max(500),
+});

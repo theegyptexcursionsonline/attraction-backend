@@ -72,6 +72,11 @@ const setUser = (role: TestRole, tenantIds = [TENANT_A]) => {
     firstName: 'RDMI',
     lastName: 'Team',
   };
+  // Pin both sides of the auth lookup whenever the role fixture changes. The
+  // old mutable closure could briefly authenticate the next table row with the
+  // previous role when the complete suite reused this worker.
+  (verifyToken as jest.Mock).mockReturnValue({ userId: currentUser._id.toString() });
+  (User.findById as jest.Mock).mockResolvedValue(currentUser);
 };
 
 const buildProtectedApp = () => {
@@ -89,8 +94,6 @@ describe('authorization boundaries', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     setUser('manager');
-    (verifyToken as jest.Mock).mockReturnValue({ userId: currentUser._id.toString() });
-    (User.findById as jest.Mock).mockImplementation(async () => currentUser);
   });
 
   describe('tenant resolution', () => {

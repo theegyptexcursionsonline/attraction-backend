@@ -1304,7 +1304,7 @@ export const getAllBookings = async (
 
     const [bookings, total] = await Promise.all([
       Booking.find(query)
-        .populate('attractionId', 'title slug')
+        .populate('attractionId', 'title slug images')
         .populate('userId', 'firstName lastName email')
         .populate('tenantId', 'name slug')
         .sort({ createdAt: -1 })

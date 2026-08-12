@@ -179,6 +179,19 @@ const tenantSchema = new Schema<ITenant>(
         configuredAt: Date,
       },
     },
+    // Bundle launches are tenant-specific. Existing tenants remain in safe
+    // discovery-only mode until a guarded admin readiness check promotes the
+    // storefront to TEST acceptance or LIVE sales.
+    bundleSettings: {
+      mode: {
+        type: String,
+        enum: ['off', 'discovery', 'test', 'live'],
+        default: 'discovery',
+      },
+      updatedAt: Date,
+      updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+      reason: { type: String, trim: true, maxlength: 500 },
+    },
     status: {
       type: String,
       enum: ['active', 'inactive', 'pending', 'suspended', 'coming_soon'],
@@ -220,6 +233,9 @@ const tenantSchema = new Schema<ITenant>(
         pageType: { type: String, enum: ['attraction', 'category'], default: 'attraction' },
         parentPath: { type: String, default: '/' },
         categoryIds: [{ type: String }],
+        // Existing pages predate this field and remain public. Explicit false
+        // gives editors a safe draft state without changing live content.
+        isPublished: { type: Boolean, default: true },
         status: { type: String, enum: ['active', 'archived'], default: 'active' },
         archivedAt: { type: Date },
         trashedAt: { type: Date },

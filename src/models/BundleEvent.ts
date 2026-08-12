@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema, Types } from 'mongoose';
 
 export interface IBundleEvent extends Document {
-  aggregateType: 'supply_offer' | 'bundle' | 'order' | 'component' | 'settlement';
+  aggregateType: 'supply_offer' | 'bundle' | 'order' | 'component' | 'settlement' | 'tenant';
   aggregateId: Types.ObjectId;
   sequence: number;
   storefrontTenantId?: Types.ObjectId;
@@ -21,7 +21,7 @@ export interface IBundleEvent extends Document {
 
 const bundleEventSchema = new Schema<IBundleEvent>(
   {
-    aggregateType: { type: String, enum: ['supply_offer', 'bundle', 'order', 'component', 'settlement'], required: true },
+    aggregateType: { type: String, enum: ['supply_offer', 'bundle', 'order', 'component', 'settlement', 'tenant'], required: true },
     aggregateId: { type: Schema.Types.ObjectId, required: true },
     sequence: { type: Number, required: true, min: 1, validate: Number.isSafeInteger },
     storefrontTenantId: { type: Schema.Types.ObjectId, ref: 'Tenant' },
