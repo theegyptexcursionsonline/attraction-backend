@@ -13,11 +13,16 @@ import {
   createBundleQuote,
   publicBundleDto,
 } from '../services/bundleOrder.service';
+import { BundleInventoryError } from '../services/bundleInventory.service';
 import { AuthRequest } from '../types';
 import { sendError, sendSuccess } from '../utils/response';
 
 const known = (error: unknown, res: Response, next: NextFunction): void => {
-  if (error instanceof BundleCatalogError || error instanceof BundleOrderError) {
+  if (
+    error instanceof BundleCatalogError ||
+    error instanceof BundleOrderError ||
+    error instanceof BundleInventoryError
+  ) {
     sendError(res, error.message, error.statusCode);
     return;
   }

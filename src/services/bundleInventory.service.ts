@@ -12,7 +12,11 @@ export interface BundleInventorySelection {
 }
 
 export class BundleInventoryError extends Error {
-  constructor(readonly code: string, message: string) {
+  constructor(
+    readonly code: string,
+    message: string,
+    readonly statusCode = code === 'INVALID_GUEST_COUNT' ? 400 : 409
+  ) {
     super(message);
   }
 }

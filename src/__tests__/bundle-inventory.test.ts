@@ -30,6 +30,17 @@ describe('bundle dual-capacity checks', () => {
     );
   });
 
+  it('classifies customer-correctable capacity conflicts as 409 responses', () => {
+    expect(new BundleInventoryError(
+      'AVAILABILITY_NOT_CONFIGURED',
+      'This departure is not available'
+    ).statusCode).toBe(409);
+    expect(new BundleInventoryError(
+      'INVALID_GUEST_COUNT',
+      'A positive guest count is required'
+    ).statusCode).toBe(400);
+  });
+
   it('checks both real attraction capacity and supplier allocation capacity', async () => {
     (Availability.findOne as jest.Mock).mockResolvedValue({
       isBlocked: false,

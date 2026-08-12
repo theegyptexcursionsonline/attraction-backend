@@ -11,6 +11,7 @@ import {
   customerBundleOrderDto,
   supplierBundleOrderDto,
 } from '../services/bundleOrder.service';
+import { BundleInventoryError } from '../services/bundleInventory.service';
 import {
   BundlePaymentError,
   confirmBundlePaymentFromProvider,
@@ -32,6 +33,7 @@ import {
 const known = (error: unknown, res: Response, next: NextFunction): void => {
   if (
     error instanceof BundleOrderError ||
+    error instanceof BundleInventoryError ||
     error instanceof BundlePaymentError ||
     error instanceof BundleIdempotencyError ||
     error instanceof BundleOperationsError
