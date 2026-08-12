@@ -2,8 +2,10 @@ import { ClientSession, Types } from 'mongoose';
 import { isBundleFeatureEnabled } from '../bundles/featureFlags';
 import { Attraction } from '../models/Attraction';
 import { BundleDefinition } from '../models/BundleDefinition';
+import { BundleOfferInventory } from '../models/BundleOfferInventory';
 import { BundleOrder } from '../models/BundleOrder';
 import { BundleSupplyOffer } from '../models/BundleSupplyOffer';
+import { Availability } from '../models/Availability';
 import { Tenant } from '../models/Tenant';
 import { BundleLaunchMode, ITenant } from '../types';
 import { appendBundleEvent } from './bundleAudit.service';
@@ -45,6 +47,7 @@ export interface BundleLaunchReadinessInput {
     counts: Record<string, number>;
     publishedBundleCount: number;
     sellablePublishedBundleCount: number;
+    futureCapacityReadyBundleCount: number;
   };
   operations: {
     recoveryQueueCount: number;
@@ -121,10 +124,11 @@ export const evaluateBundleLaunchReadiness = (
   const hasPublished = input.storefront.publishedBundleCount > 0;
   const allPublishedSellable = hasPublished &&
     input.storefront.sellablePublishedBundleCount === input.storefront.publishedBundleCount;
+  const futureCapacityReady = input.storefront.futureCapacityReadyBundleCount > 0;
   const recoveryClear = input.operations.recoveryQueueCount === 0;
   const unsafeConfiguration = input.payment.mode === 'mixed';
   const platformBlocked = !tenantReady || !featureReady || !recoveryClear || unsafeConfiguration;
-  const setupComplete = paymentComplete && supplyReady && hasPublished && allPublishedSellable;
+  const setupComplete = paymentComplete && supplyReady && hasPublished && allPublishedSellable && futureCapacityReady;
   const canActivateTest = !platformBlocked && setupComplete && input.payment.mode === 'test';
   const canActivateLive = !platformBlocked && setupComplete && input.payment.mode === 'live';
   const state: BundleLaunchState = platformBlocked
@@ -188,6 +192,14 @@ export const evaluateBundleLaunchReadiness = (
           : 'Sellability can be checked after the first bundle is published.',
     ),
     check(
+      'future_capacity',
+      'Complete future departure',
+      futureCapacityReady,
+      futureCapacityReady
+        ? `${input.storefront.futureCapacityReadyBundleCount} published bundle(s) have a complete future capacity path.`
+        : 'Configure aligned future capacity for every component in at least one published bundle.',
+    ),
+    check(
       'recovery_queue',
       'Recovery queue',
       recoveryClear,
@@ -204,11 +216,133 @@ export const evaluateBundleLaunchReadiness = (
     canActivateTest,
     canActivateLive,
     acceptingCheckout:
-      input.features.checkout && input.tenant.status === 'active' &&
-      (input.tenant.activationMode === 'test' || input.tenant.activationMode === 'live'),
+      (input.tenant.activationMode === 'test' && canActivateTest) ||
+      (input.tenant.activationMode === 'live' && canActivateLive),
     checks,
     evaluatedAt: evaluatedAt.toISOString(),
   };
+};
+
+interface CapacityComponent {
+  attractionId: Types.ObjectId | string;
+  supplyOfferId: Types.ObjectId | string;
+  dayNumber: number;
+  startTime?: string;
+}
+
+interface CapacityAvailability {
+  attractionId: Types.ObjectId | string;
+  date: Date;
+  timeSlots: Array<{ time: string; capacity: number; booked: number }>;
+  allDayCapacity?: number;
+  allDayBooked?: number;
+  isBlocked: boolean;
+}
+
+interface CapacityOffer {
+  _id: Types.ObjectId | string;
+  capacityPerDeparture: number;
+  validTravelFrom: Date;
+  validTravelTo: Date;
+  blackoutDates: Date[];
+  leadTimeHours: number;
+}
+
+interface CapacityInventory {
+  supplyOfferId: Types.ObjectId | string;
+  date: Date;
+  timeKey: string;
+  capacity: number;
+  reserved: number;
+}
+
+const dateKey = (value: Date): string => value.toISOString().slice(0, 10);
+const shiftDateKey = (value: string, days: number): string => {
+  const date = new Date(`${value}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return dateKey(date);
+};
+
+export const hasCompleteFutureCapacityWindow = (input: {
+  components: CapacityComponent[];
+  availabilities: CapacityAvailability[];
+  offers: CapacityOffer[];
+  inventories: CapacityInventory[];
+  now: Date;
+}): boolean => {
+  if (input.components.length < 3 || input.components.length > 4) return false;
+  const offerById = new Map(input.offers.map((offer) => [String(offer._id), offer]));
+  const inventoryByKey = new Map(input.inventories.map((item) => [
+    `${String(item.supplyOfferId)}:${dateKey(item.date)}:${item.timeKey}`,
+    item,
+  ]));
+  const baseDatesByComponent = input.components.map((component) => {
+    const offer = offerById.get(String(component.supplyOfferId));
+    if (!offer) return new Set<string>();
+    const blackouts = new Set(offer.blackoutDates.map(dateKey));
+    const earliest = new Date(input.now.getTime() + offer.leadTimeHours * 60 * 60 * 1000);
+    const baseDates = new Set<string>();
+    for (const availability of input.availabilities) {
+      if (String(availability.attractionId) !== String(component.attractionId) || availability.isBlocked) continue;
+      if (availability.date < earliest || availability.date < offer.validTravelFrom || availability.date > offer.validTravelTo) continue;
+      const key = dateKey(availability.date);
+      if (blackouts.has(key)) continue;
+      const actualCapacity = component.startTime
+        ? availability.timeSlots.find((slot) => slot.time === component.startTime)
+        : undefined;
+      const actualAvailable = component.startTime
+        ? Boolean(actualCapacity && actualCapacity.booked < actualCapacity.capacity)
+        : availability.allDayCapacity !== undefined && (availability.allDayBooked || 0) < availability.allDayCapacity;
+      if (!actualAvailable) continue;
+      const timeKey = component.startTime || 'all-day';
+      const inventory = inventoryByKey.get(`${String(component.supplyOfferId)}:${key}:${timeKey}`);
+      const allocationAvailable = inventory
+        ? inventory.reserved < inventory.capacity && inventory.capacity === offer.capacityPerDeparture
+        : offer.capacityPerDeparture > 0;
+      if (allocationAvailable) baseDates.add(shiftDateKey(key, -(component.dayNumber - 1)));
+    }
+    return baseDates;
+  });
+  if (baseDatesByComponent.some((dates) => dates.size === 0)) return false;
+  return [...baseDatesByComponent[0]].some((baseDate) =>
+    baseDatesByComponent.slice(1).every((dates) => dates.has(baseDate))
+  );
+};
+
+const loadFutureCapacityReadyBundleCount = async (
+  tenantId: Types.ObjectId,
+  now: Date
+): Promise<number> => {
+  const windowStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+  const windowEnd = new Date(windowStart);
+  windowEnd.setUTCDate(windowEnd.getUTCDate() + 366);
+  const bundles = await BundleDefinition.find({ storefrontTenantId: tenantId, status: 'published' })
+    .select('components')
+    .lean();
+  const attractionIds = bundles.flatMap((bundle) => bundle.components.map((component) => component.attractionId));
+  const offerIds = bundles.flatMap((bundle) => bundle.components.map((component) => component.supplyOfferId));
+  if (!attractionIds.length || !offerIds.length) return 0;
+  const [availabilities, offers, inventories] = await Promise.all([
+    Availability.find({
+      attractionId: { $in: attractionIds },
+      date: { $gte: windowStart, $lte: windowEnd },
+      isBlocked: false,
+    }).select('attractionId date timeSlots allDayCapacity allDayBooked isBlocked').lean(),
+    BundleSupplyOffer.find({ _id: { $in: offerIds }, status: 'active' })
+      .select('capacityPerDeparture validTravelFrom validTravelTo blackoutDates leadTimeHours')
+      .lean(),
+    BundleOfferInventory.find({
+      supplyOfferId: { $in: offerIds },
+      date: { $gte: windowStart, $lte: windowEnd },
+    }).select('supplyOfferId date timeKey capacity reserved').lean(),
+  ]);
+  return bundles.filter((bundle) => hasCompleteFutureCapacityWindow({
+    components: bundle.components,
+    availabilities,
+    offers,
+    inventories,
+    now,
+  })).length;
 };
 
 const activeOfferMatch = (now: Date): Record<string, unknown> => ({
@@ -338,11 +472,12 @@ export const getBundleLaunchReadiness = async (
   now = new Date()
 ): Promise<BundleLaunchReadiness> => {
   const tenantId = tenant._id;
-  const [config, currencyPools, counts, publishedHealth, recoveryQueueCount] = await Promise.all([
+  const [config, currencyPools, counts, publishedHealth, futureCapacityReadyBundleCount, recoveryQueueCount] = await Promise.all([
     getTenantStripeConfig(tenantId),
     loadSupplyPools(now),
     loadBundleCounts(tenantId),
     loadPublishedHealth(tenantId, now),
+    loadFutureCapacityReadyBundleCount(tenantId, now),
     BundleOrder.countDocuments({
       storefrontTenantId: tenantId,
       $or: [
@@ -380,6 +515,7 @@ export const getBundleLaunchReadiness = async (
     storefront: {
       counts,
       ...publishedHealth,
+      futureCapacityReadyBundleCount,
     },
     operations: { recoveryQueueCount },
   }, now);

@@ -3,6 +3,7 @@ import { requireTenantBundleMode } from '../bundles/featureFlags';
 import {
   BundleLaunchReadinessInput,
   evaluateBundleLaunchReadiness,
+  hasCompleteFutureCapacityWindow,
 } from '../services/bundleLaunchReadiness.service';
 
 const base = (): BundleLaunchReadinessInput => ({
@@ -29,11 +30,92 @@ const base = (): BundleLaunchReadinessInput => ({
     counts: { published: 1 },
     publishedBundleCount: 1,
     sellablePublishedBundleCount: 1,
+    futureCapacityReadyBundleCount: 1,
   },
   operations: { recoveryQueueCount: 0 },
 });
 
 describe('Bundle per-tenant launch readiness', () => {
+  it('requires aligned future capacity across every itinerary day', () => {
+    const components = [
+      { attractionId: 'a1', supplyOfferId: 'o1', dayNumber: 1, startTime: '08:00' },
+      { attractionId: 'a2', supplyOfferId: 'o2', dayNumber: 2, startTime: '08:00' },
+      { attractionId: 'a3', supplyOfferId: 'o3', dayNumber: 3, startTime: '08:00' },
+    ];
+    const offers = ['o1', 'o2', 'o3'].map((_id) => ({
+      _id,
+      capacityPerDeparture: 8,
+      validTravelFrom: new Date('2026-08-01T00:00:00.000Z'),
+      validTravelTo: new Date('2027-08-31T23:59:59.999Z'),
+      blackoutDates: [],
+      leadTimeHours: 0,
+    }));
+    const availabilities = [
+      ['a1', '2026-08-20'],
+      ['a2', '2026-08-21'],
+      ['a3', '2026-08-22'],
+    ].map(([attractionId, date]) => ({
+      attractionId,
+      date: new Date(`${date}T00:00:00.000Z`),
+      timeSlots: [{ time: '08:00', capacity: 8, booked: 0 }],
+      isBlocked: false,
+    }));
+
+    expect(hasCompleteFutureCapacityWindow({
+      components,
+      offers,
+      availabilities,
+      inventories: [],
+      now: new Date('2026-08-13T00:00:00.000Z'),
+    })).toBe(true);
+
+    availabilities[2].date = new Date('2026-08-23T00:00:00.000Z');
+    expect(hasCompleteFutureCapacityWindow({
+      components,
+      offers,
+      availabilities,
+      inventories: [],
+      now: new Date('2026-08-13T00:00:00.000Z'),
+    })).toBe(false);
+  });
+
+  it('fails an aligned path when supplier allocation is exhausted', () => {
+    const components = [1, 2, 3].map((dayNumber) => ({
+      attractionId: `a${dayNumber}`,
+      supplyOfferId: `o${dayNumber}`,
+      dayNumber,
+      startTime: '08:00',
+    }));
+    const offers = [1, 2, 3].map((number) => ({
+      _id: `o${number}`,
+      capacityPerDeparture: 8,
+      validTravelFrom: new Date('2026-08-01T00:00:00.000Z'),
+      validTravelTo: new Date('2027-08-31T23:59:59.999Z'),
+      blackoutDates: [],
+      leadTimeHours: 0,
+    }));
+    const availabilities = [1, 2, 3].map((number) => ({
+      attractionId: `a${number}`,
+      date: new Date(`2026-08-${19 + number}T00:00:00.000Z`),
+      timeSlots: [{ time: '08:00', capacity: 8, booked: 0 }],
+      isBlocked: false,
+    }));
+
+    expect(hasCompleteFutureCapacityWindow({
+      components,
+      offers,
+      availabilities,
+      inventories: [{
+        supplyOfferId: 'o2',
+        date: new Date('2026-08-21T00:00:00.000Z'),
+        timeKey: '08:00',
+        capacity: 8,
+        reserved: 8,
+      }],
+      now: new Date('2026-08-13T00:00:00.000Z'),
+    })).toBe(false);
+  });
+
   it('marks a complete TEST tenant ready without silently activating checkout', () => {
     const readiness = evaluateBundleLaunchReadiness(base(), new Date('2026-08-12T12:00:00.000Z'));
     expect(readiness.state).toBe('test_ready');
@@ -53,6 +135,13 @@ describe('Bundle per-tenant launch readiness', () => {
     const input = base();
     input.tenant.activationMode = 'test';
     input.tenant.status = 'suspended';
+    expect(evaluateBundleLaunchReadiness(input).acceptingCheckout).toBe(false);
+  });
+
+  it('reports checkout closed when an activated tenant loses complete capacity', () => {
+    const input = base();
+    input.tenant.activationMode = 'test';
+    input.storefront.futureCapacityReadyBundleCount = 0;
     expect(evaluateBundleLaunchReadiness(input).acceptingCheckout).toBe(false);
   });
 
@@ -84,6 +173,7 @@ describe('Bundle per-tenant launch readiness', () => {
     ['multi-supplier supply', (input: BundleLaunchReadinessInput) => { input.supply.currencyPools = []; }],
     ['published inventory', (input: BundleLaunchReadinessInput) => { input.storefront.publishedBundleCount = 0; input.storefront.sellablePublishedBundleCount = 0; }],
     ['sellable inventory', (input: BundleLaunchReadinessInput) => { input.storefront.sellablePublishedBundleCount = 0; }],
+    ['future departure capacity', (input: BundleLaunchReadinessInput) => { input.storefront.futureCapacityReadyBundleCount = 0; }],
   ])('keeps a tenant in setup-required state when %s is incomplete', (_name, mutate) => {
     const input = base();
     mutate(input);
