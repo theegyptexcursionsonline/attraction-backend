@@ -237,6 +237,8 @@ describe('bundle payment recovery contracts', () => {
     });
 
     expect(result.order.status).toBe('refunded');
+    expect(result.order.components[0].settlementStatus).toBe('not_eligible');
+    expect(result.order.components[1].settlementStatus).toBe('on_hold');
     expect(result.order.recovery).toEqual(expect.objectContaining({ required: false }));
     expect(result.order.recovery.reason).toBeUndefined();
     expect(releaseBundleInventory).toHaveBeenCalledTimes(1);

@@ -485,10 +485,18 @@ export const refundBundleOrder = async (input: {
     const releasableComponents = order.components.filter((component) =>
       ['reserved', 'confirmed', 'cancel_pending', 'refund_pending'].includes(component.status)
     );
+    const releasableComponentIds = new Set(
+      releasableComponents.map((component) => component.componentId)
+    );
     order.components.forEach((component, index) => {
       component.refundedMinor += componentAllocations[index];
-      component.settlementStatus = component.settlementStatus === 'paid' ? 'disputed' : 'on_hold';
-      component.status = component.refundedMinor >= component.customerAllocationMinor
+      const fullyRefunded = component.refundedMinor >= component.customerAllocationMinor;
+      component.settlementStatus = component.settlementStatus === 'paid'
+        ? 'disputed'
+        : fullyRefunded && releasableComponentIds.has(component.componentId)
+          ? 'not_eligible'
+          : 'on_hold';
+      component.status = fullyRefunded
         ? 'refunded'
         : 'partially_refunded';
     });
