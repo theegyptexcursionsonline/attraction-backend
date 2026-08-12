@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 import { assertTransition } from '../bundles/domain';
-import { allocateProportionally } from '../bundles/money';
+import { allocateProportionally, totalGuests } from '../bundles/money';
 import { Booking } from '../models/Booking';
 import { BundleOrder, IBundleOrder } from '../models/BundleOrder';
 import { BundleProviderEvent } from '../models/BundleProviderEvent';
@@ -18,7 +18,7 @@ import {
   enqueueBundleOutbox,
   LedgerLine,
 } from './bundleAudit.service';
-import { runBundleTransaction } from './bundleInventory.service';
+import { releaseBundleInventory, runBundleTransaction } from './bundleInventory.service';
 
 export class BundlePaymentError extends Error {
   constructor(readonly code: string, message: string, readonly statusCode = 400) {
@@ -482,6 +482,9 @@ export const refundBundleOrder = async (input: {
       order.components.map((component) => component.customerAllocationMinor - component.refundedMinor)
     );
     const fromState = order.status;
+    const releasableComponents = order.components.filter((component) =>
+      ['reserved', 'confirmed', 'cancel_pending', 'refund_pending'].includes(component.status)
+    );
     order.components.forEach((component, index) => {
       component.refundedMinor += componentAllocations[index];
       component.settlementStatus = component.settlementStatus === 'paid' ? 'disputed' : 'on_hold';
@@ -497,6 +500,46 @@ export const refundBundleOrder = async (input: {
     order.paymentStatus = full ? 'refunded' : 'partially_refunded';
     order.status = full ? 'refunded' : 'partially_refunded';
     await order.save({ session });
+    if (full) {
+      for (const component of releasableComponents) {
+        const claimedBooking = await Booking.findOneAndUpdate(
+          {
+            bundleOrderId: order._id,
+            bundleComponentId: component.componentId,
+            inventoryReleasedAt: { $exists: false },
+          },
+          {
+            $set: {
+              status: 'cancelled',
+              paymentStatus: 'refunded',
+              inventoryReleasedAt: new Date(),
+            },
+          },
+          { new: false, session }
+        );
+        if (!claimedBooking) {
+          const alreadyReleased = await Booking.findOne({
+            bundleOrderId: order._id,
+            bundleComponentId: component.componentId,
+            inventoryReleasedAt: { $exists: true },
+          }).session(session);
+          if (alreadyReleased) continue;
+          throw new BundlePaymentError(
+            'REFUND_INVENTORY_BINDING_MISSING',
+            'Refunded booking inventory could not be verified',
+            409
+          );
+        }
+        await releaseBundleInventory({
+          attractionId: component.attractionId,
+          supplyOfferId: component.supplyOfferId,
+          date: component.date,
+          time: component.time,
+          guests: totalGuests(component.quantities),
+          offerCapacity: 1,
+        }, session);
+      }
+    }
     await Booking.updateMany(
       { bundleOrderId: order._id },
       { $set: { settlementStatus: 'pending' } },

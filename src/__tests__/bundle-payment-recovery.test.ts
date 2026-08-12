@@ -7,10 +7,16 @@ import {
   refundBundleOrder,
 } from '../services/bundlePayment.service';
 import { retrieveRefund } from '../services/stripe.service';
+import { createRefund } from '../services/stripe.service';
 import { getTenantStripeConfig } from '../services/tenantPayment.service';
 
 jest.mock('../models/Booking', () => ({
-  Booking: { updateMany: jest.fn(), updateOne: jest.fn() },
+  Booking: {
+    findOne: jest.fn(),
+    findOneAndUpdate: jest.fn(),
+    updateMany: jest.fn(),
+    updateOne: jest.fn(),
+  },
 }));
 jest.mock('../models/BundleOrder', () => ({
   BundleOrder: {
@@ -161,5 +167,139 @@ describe('bundle payment recovery contracts', () => {
         },
       }
     );
+  });
+
+  it('releases unfulfilled capacity exactly once after a full refund succeeds', async () => {
+    const operationId = 'refund:full-release-001';
+    const order = {
+      _id: new Types.ObjectId(),
+      storefrontTenantId: new Types.ObjectId(),
+      stripePaymentIntentId: 'pi_full_refund',
+      status: 'cancel_pending',
+      paymentStatus: 'succeeded',
+      currency: 'USD',
+      totalMinor: 20_000,
+      refundedMinor: 0,
+      refundPendingMinor: 20_000,
+      components: [
+        {
+          componentId: 'future-component',
+          attractionId: new Types.ObjectId(),
+          supplyOfferId: new Types.ObjectId(),
+          date: '2030-04-01',
+          time: '09:00',
+          quantities: { adults: 2, children: 0, infants: 0 },
+          customerAllocationMinor: 10_000,
+          refundedMinor: 0,
+          status: 'cancel_pending',
+          settlementStatus: 'on_hold',
+        },
+        {
+          componentId: 'fulfilled-component',
+          attractionId: new Types.ObjectId(),
+          supplyOfferId: new Types.ObjectId(),
+          date: '2030-03-01',
+          time: '09:00',
+          quantities: { adults: 2, children: 0, infants: 0 },
+          customerAllocationMinor: 10_000,
+          refundedMinor: 0,
+          status: 'fulfilled',
+          settlementStatus: 'accrued',
+        },
+      ],
+      refunds: [{
+        operationId,
+        amountMinor: 20_000,
+        status: 'requested',
+        reason: 'Approved cancellation',
+      }],
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    (BundleOrder.findById as jest.Mock)
+      .mockResolvedValueOnce(order)
+      .mockReturnValueOnce(queryResult(order));
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true, secretKey: 'sk_test' });
+    (createRefund as jest.Mock).mockResolvedValue({ id: 're_full', status: 'succeeded', amount: 20_000 });
+    (Booking.findOneAndUpdate as jest.Mock).mockResolvedValue({ _id: new Types.ObjectId() });
+    (Booking.updateMany as jest.Mock).mockResolvedValue({ modifiedCount: 2 });
+
+    const result = await refundBundleOrder({
+      orderId: order._id.toString(),
+      operationId,
+      amountMinor: 20_000,
+      reason: 'Approved cancellation',
+      actorId: new Types.ObjectId(),
+    });
+
+    expect(result.order.status).toBe('refunded');
+    expect(releaseBundleInventory).toHaveBeenCalledTimes(1);
+    expect(releaseBundleInventory).toHaveBeenCalledWith(
+      expect.objectContaining({
+        attractionId: order.components[0].attractionId,
+        supplyOfferId: order.components[0].supplyOfferId,
+        guests: 2,
+      }),
+      expect.anything()
+    );
+    expect(Booking.findOneAndUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        bundleOrderId: order._id,
+        bundleComponentId: 'future-component',
+        inventoryReleasedAt: { $exists: false },
+      }),
+      expect.anything(),
+      expect.objectContaining({ new: false })
+    );
+  });
+
+  it('fails closed when a full refund cannot bind future inventory to a child booking', async () => {
+    const operationId = 'refund:missing-booking-001';
+    const order = {
+      _id: new Types.ObjectId(),
+      storefrontTenantId: new Types.ObjectId(),
+      stripePaymentIntentId: 'pi_missing_booking',
+      status: 'cancel_pending',
+      paymentStatus: 'succeeded',
+      currency: 'USD',
+      totalMinor: 20_000,
+      refundedMinor: 0,
+      refundPendingMinor: 20_000,
+      components: [{
+        componentId: 'missing-component',
+        attractionId: new Types.ObjectId(),
+        supplyOfferId: new Types.ObjectId(),
+        date: '2030-04-01',
+        time: '09:00',
+        quantities: { adults: 2, children: 0, infants: 0 },
+        customerAllocationMinor: 20_000,
+        refundedMinor: 0,
+        status: 'cancel_pending',
+        settlementStatus: 'on_hold',
+      }],
+      refunds: [{
+        operationId,
+        amountMinor: 20_000,
+        status: 'requested',
+        reason: 'Approved cancellation',
+      }],
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    (BundleOrder.findById as jest.Mock)
+      .mockResolvedValueOnce(order)
+      .mockReturnValueOnce(queryResult(order));
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true, secretKey: 'sk_test' });
+    (createRefund as jest.Mock).mockResolvedValue({ id: 're_missing', status: 'succeeded', amount: 20_000 });
+    (Booking.findOneAndUpdate as jest.Mock).mockResolvedValue(null);
+    (Booking.findOne as jest.Mock).mockReturnValue(queryResult(null));
+
+    await expect(refundBundleOrder({
+      orderId: order._id.toString(),
+      operationId,
+      amountMinor: 20_000,
+      reason: 'Approved cancellation',
+      actorId: new Types.ObjectId(),
+    })).rejects.toEqual(expect.objectContaining({ code: 'REFUND_INVENTORY_BINDING_MISSING' }));
+
+    expect(releaseBundleInventory).not.toHaveBeenCalled();
   });
 });
