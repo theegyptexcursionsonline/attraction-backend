@@ -499,6 +499,10 @@ export const refundBundleOrder = async (input: {
     const full = order.refundedMinor === order.totalMinor;
     order.paymentStatus = full ? 'refunded' : 'partially_refunded';
     order.status = full ? 'refunded' : 'partially_refunded';
+    if (full) {
+      order.recovery.required = false;
+      order.recovery.reason = undefined;
+    }
     await order.save({ session });
     if (full) {
       for (const component of releasableComponents) {

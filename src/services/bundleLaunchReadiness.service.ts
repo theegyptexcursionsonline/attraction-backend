@@ -347,7 +347,10 @@ export const getBundleLaunchReadiness = async (
       storefrontTenantId: tenantId,
       $or: [
         { status: { $in: ['manual_review', 'paid_allocation_pending'] } },
-        { 'recovery.required': true },
+        {
+          'recovery.required': true,
+          status: { $nin: ['cancelled', 'refunded', 'reservation_failed'] },
+        },
       ],
     }),
   ]);

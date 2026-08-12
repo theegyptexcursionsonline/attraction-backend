@@ -181,6 +181,11 @@ describe('bundle payment recovery contracts', () => {
       totalMinor: 20_000,
       refundedMinor: 0,
       refundPendingMinor: 20_000,
+      recovery: {
+        required: true,
+        attempts: 0,
+        reason: 'Cancellation review',
+      },
       components: [
         {
           componentId: 'future-component',
@@ -232,6 +237,8 @@ describe('bundle payment recovery contracts', () => {
     });
 
     expect(result.order.status).toBe('refunded');
+    expect(result.order.recovery).toEqual(expect.objectContaining({ required: false }));
+    expect(result.order.recovery.reason).toBeUndefined();
     expect(releaseBundleInventory).toHaveBeenCalledTimes(1);
     expect(releaseBundleInventory).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -264,6 +271,11 @@ describe('bundle payment recovery contracts', () => {
       totalMinor: 20_000,
       refundedMinor: 0,
       refundPendingMinor: 20_000,
+      recovery: {
+        required: true,
+        attempts: 0,
+        reason: 'Cancellation review',
+      },
       components: [{
         componentId: 'missing-component',
         attractionId: new Types.ObjectId(),
