@@ -9,6 +9,11 @@ import { sendError } from '../utils/response';
 const PUBLIC_TENANT_STATUSES = ['active', 'coming_soon'] as const;
 const TENANT_SCOPED_ADMIN_ROLES = ['brand-admin', 'manager', 'editor', 'viewer'];
 
+const queryTenantIdentifier = (req: AuthRequest): string | undefined => {
+  const value = req.query.tenantId ?? req.query.tenant;
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+};
+
 const canUseTenant = (req: AuthRequest, tenantId: string): boolean => {
   if (!req.user || req.user.role === 'super-admin') return true;
   if (!TENANT_SCOPED_ADMIN_ROLES.includes(req.user.role)) return true;
@@ -37,14 +42,15 @@ export const resolveTenant = async (
   try {
     // Get tenant from header, query, or host
     let tenantIdentifier: string | undefined;
+    const queryIdentifier = queryTenantIdentifier(req);
 
     // Check X-Tenant-ID header first
     if (req.headers['x-tenant-id']) {
       tenantIdentifier = req.headers['x-tenant-id'] as string;
     }
     // Check query parameter
-    else if (req.query.tenantId) {
-      tenantIdentifier = req.query.tenantId as string;
+    else if (queryIdentifier) {
+      tenantIdentifier = queryIdentifier;
     }
     // Try to resolve from host
     else {
@@ -109,11 +115,12 @@ export const optionalTenant = async (
 ): Promise<void> => {
   try {
     let tenantIdentifier: string | undefined;
+    const queryIdentifier = queryTenantIdentifier(req);
 
     if (req.headers['x-tenant-id']) {
       tenantIdentifier = req.headers['x-tenant-id'] as string;
-    } else if (req.query.tenantId) {
-      tenantIdentifier = req.query.tenantId as string;
+    } else if (queryIdentifier) {
+      tenantIdentifier = queryIdentifier;
     }
 
     if (tenantIdentifier) {

@@ -64,4 +64,49 @@ describe('tenant resolution authorization', () => {
     expect(next).toHaveBeenCalledTimes(1);
     expect(res.status).not.toHaveBeenCalled();
   });
+
+  test.each([
+    ['resolveTenant', resolveTenant],
+    ['optionalTenant', optionalTenant],
+  ])('%s resolves the public tenant query alias', async (_name, middleware) => {
+    const tenantId = new Types.ObjectId();
+    const tenant = { _id: tenantId };
+    (Tenant.findOne as jest.Mock).mockResolvedValue(tenant);
+    const req = {
+      headers: {},
+      query: { tenant: '  makadi-horse-club  ' },
+    } as unknown as AuthRequest;
+    const res = response();
+    const next = jest.fn();
+
+    await middleware(req, res, next);
+
+    expect(Tenant.findOne).toHaveBeenCalledWith(expect.objectContaining({
+      $or: expect.arrayContaining([{ slug: 'makadi-horse-club' }]),
+    }));
+    expect(req.tenant).toBe(tenant);
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(res.status).not.toHaveBeenCalled();
+  });
+
+  it('keeps the explicit tenant header authoritative over query aliases', async () => {
+    const tenantId = new Types.ObjectId();
+    (Tenant.findOne as jest.Mock).mockResolvedValue({ _id: tenantId });
+    const req = {
+      headers: { 'x-tenant-id': 'header-tenant' },
+      query: { tenantId: 'legacy-query-tenant', tenant: 'public-query-tenant' },
+    } as unknown as AuthRequest;
+    const res = response();
+    const next = jest.fn();
+
+    await resolveTenant(req, res, next);
+
+    expect(Tenant.findOne).toHaveBeenCalledWith(expect.objectContaining({
+      $or: expect.arrayContaining([{ slug: 'header-tenant' }]),
+    }));
+    expect(Tenant.findOne).not.toHaveBeenCalledWith(expect.objectContaining({
+      $or: expect.arrayContaining([{ slug: 'public-query-tenant' }]),
+    }));
+    expect(next).toHaveBeenCalledTimes(1);
+  });
 });
