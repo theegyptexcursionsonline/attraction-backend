@@ -145,6 +145,11 @@ export const createBundleOrderHandler = async (
       sendError(res, 'Tenant context required', 400);
       return;
     }
+    const checkoutMode = req.tenant.bundleSettings?.mode;
+    if (checkoutMode !== 'test' && checkoutMode !== 'live') {
+      sendError(res, 'Bundle checkout is not active for this storefront', 503);
+      return;
+    }
     const quote = await BundleQuote.findById(req.body.quoteId).select('storefrontTenantId');
     if (!quote || String(quote.storefrontTenantId) !== String(req.tenant._id)) {
       sendError(res, 'Quote not found', 404);
@@ -159,6 +164,7 @@ export const createBundleOrderHandler = async (
       ...req.body,
       userId: req.user?._id,
       idempotencyKey,
+      checkoutMode,
     });
     const accessToken = generateBundleAccessToken(
       result.order._id.toString(),

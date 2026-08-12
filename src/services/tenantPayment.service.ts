@@ -8,6 +8,25 @@ export interface TenantStripeConfig {
   webhookSecret: string;
 }
 
+export type StripeCredentialMode = 'test' | 'live' | 'mixed' | 'unconfigured';
+
+/** Classify a tenant's key pair without exposing either credential. */
+export const stripeCredentialMode = (
+  config: TenantStripeConfig | null
+): StripeCredentialMode => {
+  const publishable = config?.publishableKey || '';
+  const secret = config?.secretKey || '';
+  const publicMode = publishable.startsWith('pk_test_')
+    ? 'test'
+    : publishable.startsWith('pk_live_') ? 'live' : '';
+  const secretMode = /^(sk|rk)_test_/.test(secret)
+    ? 'test'
+    : /^(sk|rk)_live_/.test(secret) ? 'live' : '';
+  if (!publicMode && !secretMode) return 'unconfigured';
+  if (!publicMode || !secretMode || publicMode !== secretMode) return 'mixed';
+  return publicMode;
+};
+
 export type StripeConfirmationPolicy =
   | { allowed: true; verifyIntent: boolean }
   | { allowed: false; error: string };

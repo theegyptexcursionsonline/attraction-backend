@@ -654,6 +654,7 @@ export const handleWebhook = async (
           currency: obj.currency || '',
           status: obj.status,
           metadata: obj.metadata || {},
+          livemode: obj.livemode,
         };
         const bindingError = bundlePaymentBindingError(
           bundleOrder,
@@ -720,6 +721,7 @@ export const handleWebhook = async (
         currency: obj.currency || '',
         status: obj.status,
         metadata: obj.metadata || {},
+        livemode: obj.livemode,
       };
       const bindingError = paymentBindingError(booking, intentEvidence, true);
       if (bindingError) {

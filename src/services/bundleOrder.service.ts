@@ -403,6 +403,7 @@ export const createBundleOrder = async (input: {
   guestDetails: BundleGuestDetails;
   userId?: Types.ObjectId;
   idempotencyKey: string;
+  checkoutMode: 'test' | 'live';
 }): Promise<{ order: IBundleOrder; replayed: boolean }> => {
   const quoteSnapshot = await BundleQuote.findById(input.quoteId);
   if (!quoteSnapshot) throw new BundleOrderError('QUOTE_NOT_FOUND', 'Quote not found', 404);
@@ -473,6 +474,7 @@ export const createBundleOrder = async (input: {
       const orderData = {
         userId: input.userId,
         storefrontTenantId: quote.storefrontTenantId,
+        checkoutMode: input.checkoutMode,
         guestDetails: input.guestDetails,
         currency: quote.currency,
       };

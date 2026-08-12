@@ -49,7 +49,10 @@ const processEvent = async (eventId: string): Promise<'delivered' | 'suppressed'
   ]);
   if (!tenant) throw new Error('Outbox tenant no longer exists');
   if (!order) throw new Error('Outbox order no longer exists');
-  if (tenant.bundleSettings?.mode === 'test') return 'suppressed';
+  // Delivery follows the immutable environment captured on the order, not the
+  // recipient tenant's current mode. Supplier events target another tenant and
+  // launch modes may change while an event waits in the outbox.
+  if (order.checkoutMode !== 'live') return 'suppressed';
   if (!env.mailgunApiKey || !env.mailgunDomain) {
     throw new Error('Transactional email provider is not configured');
   }

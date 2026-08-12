@@ -34,6 +34,7 @@ export interface PaymentIntentResult {
   currency: string;
   status: string;
   metadata: Record<string, string>;
+  livemode: boolean;
 }
 
 export interface StripeCallOptions {
@@ -71,6 +72,7 @@ export const createPaymentIntent = async (
       currency: pi.currency,
       status: pi.status,
       metadata: pi.metadata,
+      livemode: pi.livemode,
     };
   }
   if (!options.allowMock) throw missingKeyError();
@@ -84,6 +86,7 @@ export const createPaymentIntent = async (
     currency: currency.toLowerCase(),
     status: 'requires_confirmation',
     metadata,
+    livemode: false,
   };
 };
 
@@ -104,6 +107,7 @@ export const retrievePaymentIntent = async (
       currency: 'usd',
       status: 'succeeded',
       metadata: {},
+      livemode: false,
     };
   }
 
@@ -117,6 +121,7 @@ export const retrievePaymentIntent = async (
       currency: pi.currency,
       status: pi.status,
       metadata: pi.metadata,
+      livemode: pi.livemode,
     };
   } catch {
     return null;
@@ -159,6 +164,7 @@ export const cancelPaymentIntent = async (
       currency: 'usd',
       status: 'canceled',
       metadata: {},
+      livemode: false,
     };
   }
 
@@ -176,6 +182,7 @@ export const cancelPaymentIntent = async (
       currency: pi.currency,
       status: pi.status,
       metadata: pi.metadata,
+      livemode: pi.livemode,
     };
   } catch {
     return retrievePaymentIntent(secretKey, id, options);

@@ -11,7 +11,7 @@ import {
   retrievePaymentIntent,
   retrieveRefund,
 } from './stripe.service';
-import { getTenantStripeConfig } from './tenantPayment.service';
+import { getTenantStripeConfig, stripeCredentialMode, TenantStripeConfig } from './tenantPayment.service';
 import {
   appendBalancedLedger,
   appendBundleEvent,
@@ -26,6 +26,19 @@ export class BundlePaymentError extends Error {
   }
 }
 
+const assertBundleStripeEnvironment = (
+  order: IBundleOrder,
+  config: TenantStripeConfig | null
+): void => {
+  if (!order.checkoutMode || stripeCredentialMode(config) !== order.checkoutMode) {
+    throw new BundlePaymentError(
+      'PAYMENT_MODE_MISMATCH',
+      'This order cannot use a different TEST or LIVE payment environment',
+      409
+    );
+  }
+};
+
 export const bundlePaymentBindingError = (
   order: IBundleOrder,
   intent: PaymentIntentResult,
@@ -37,6 +50,10 @@ export const bundlePaymentBindingError = (
   if (intent.metadata.paymentKind !== 'bundle') return 'Payment kind does not match this order';
   if (intent.amount !== order.totalMinor) return 'Payment amount does not match this order';
   if (intent.currency.toUpperCase() !== order.currency.toUpperCase()) return 'Payment currency does not match this order';
+  if (order.checkoutMode) {
+    if (intent.metadata.checkoutMode !== order.checkoutMode) return 'Payment environment metadata does not match this order';
+    if (intent.livemode !== (order.checkoutMode === 'live')) return 'Payment provider environment does not match this order';
+  }
   if (requireSucceeded && (intent.status !== 'succeeded' || intent.amountReceived < order.totalMinor)) {
     return 'Payment has not been fully received';
   }
@@ -65,6 +82,7 @@ export const createBundlePaymentSession = async (
   if (!config?.enabled || !config.secretKey || !config.publishableKey) {
     throw new BundlePaymentError('PAYMENT_GATEWAY_UNAVAILABLE', 'Card payment is not configured for this storefront', 503);
   }
+  assertBundleStripeEnvironment(order, config);
   const intent = await createPaymentIntent(
     config.secretKey,
     order.totalMinor,
@@ -74,6 +92,7 @@ export const createBundlePaymentSession = async (
       bundleOrderId: order._id.toString(),
       storefrontTenantId: order.storefrontTenantId.toString(),
       orderReference: order.reference,
+      checkoutMode: order.checkoutMode!,
     },
     { idempotencyKey: `bundle:${order._id}:intent:v1` }
   );
@@ -261,6 +280,7 @@ export const confirmBundlePaymentFromProvider = async (
   if (!config?.enabled || !config.secretKey) {
     throw new BundlePaymentError('PAYMENT_GATEWAY_UNAVAILABLE', 'Payment verification is unavailable', 503);
   }
+  assertBundleStripeEnvironment(order, config);
   const intent = await retrievePaymentIntent(config.secretKey, order.stripePaymentIntentId);
   if (!intent) throw new BundlePaymentError('PAYMENT_NOT_FOUND', 'Payment could not be verified', 409);
   return finalizeBundlePayment(order._id.toString(), intent, 'user');
@@ -422,6 +442,7 @@ export const refundBundleOrder = async (input: {
   if (!config?.enabled || !config.secretKey) {
     throw new BundlePaymentError('PAYMENT_GATEWAY_UNAVAILABLE', 'Refund provider is unavailable', 503);
   }
+  assertBundleStripeEnvironment(order, config);
   const currentRefund = order.refunds.find((item) => item.operationId === input.operationId)!;
   const providerRefund = currentRefund.providerRefundId
     ? await retrieveRefund(config.secretKey, currentRefund.providerRefundId)

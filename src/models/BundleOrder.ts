@@ -36,6 +36,8 @@ export interface IBundleOrder extends Document {
   _id: Types.ObjectId;
   reference: string;
   storefrontTenantId: Types.ObjectId;
+  /** Immutable checkout environment captured when the order is created. */
+  checkoutMode?: 'test' | 'live';
   bundleDefinitionId: Types.ObjectId;
   bundleVersion: number;
   quoteId: Types.ObjectId;
@@ -123,6 +125,7 @@ const bundleOrderSchema = new Schema<IBundleOrder>(
   {
     reference: { type: String, required: true, unique: true, index: true },
     storefrontTenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true, index: true },
+    checkoutMode: { type: String, enum: ['test', 'live'], immutable: true },
     bundleDefinitionId: { type: Schema.Types.ObjectId, ref: 'BundleDefinition', required: true },
     bundleVersion: { type: Number, required: true, min: 1, validate: Number.isSafeInteger },
     quoteId: { type: Schema.Types.ObjectId, ref: 'BundleQuote', required: true, unique: true },

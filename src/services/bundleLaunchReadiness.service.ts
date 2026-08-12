@@ -10,7 +10,7 @@ import { Tenant } from '../models/Tenant';
 import { BundleLaunchMode, ITenant } from '../types';
 import { appendBundleEvent } from './bundleAudit.service';
 import { runBundleTransaction } from './bundleInventory.service';
-import { getTenantStripeConfig, TenantStripeConfig } from './tenantPayment.service';
+import { getTenantStripeConfig, stripeCredentialMode } from './tenantPayment.service';
 
 export type BundleLaunchState = 'blocked' | 'setup_required' | 'test_ready' | 'live_ready';
 export type BundleReadinessCheckState = 'pass' | 'action_required' | 'blocked';
@@ -80,20 +80,6 @@ interface PublishedHealthRow {
   publishedBundleCount: number;
   sellablePublishedBundleCount: number;
 }
-
-const stripeMode = (config: TenantStripeConfig | null): StripeMode => {
-  const publishable = config?.publishableKey || '';
-  const secret = config?.secretKey || '';
-  const publicMode = publishable.startsWith('pk_test_')
-    ? 'test'
-    : publishable.startsWith('pk_live_') ? 'live' : '';
-  const secretMode = /^(sk|rk)_test_/.test(secret)
-    ? 'test'
-    : /^(sk|rk)_live_/.test(secret) ? 'live' : '';
-  if (!publicMode && !secretMode) return 'unconfigured';
-  if (!publicMode || !secretMode || publicMode !== secretMode) return 'mixed';
-  return publicMode;
-};
 
 const check = (
   key: string,
@@ -489,7 +475,7 @@ export const getBundleLaunchReadiness = async (
       ],
     }),
   ]);
-  const paymentMode = stripeMode(config);
+  const paymentMode: StripeMode = stripeCredentialMode(config);
   return evaluateBundleLaunchReadiness({
     tenant: {
       id: tenantId.toString(),

@@ -46,7 +46,7 @@ describe('bundle TEST-mode outbox safety', () => {
     (Tenant.findById as jest.Mock).mockReturnValue({
       lean: jest.fn().mockResolvedValue({ _id: tenantId, bundleSettings: { mode: 'test' } }),
     });
-    (BundleOrder.findById as jest.Mock).mockResolvedValue({ _id: orderId });
+    (BundleOrder.findById as jest.Mock).mockResolvedValue({ _id: orderId, checkoutMode: 'test' });
     (BundleOutboxEvent.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
 
     await expect(processBundleOutboxBatch()).resolves.toEqual({
@@ -88,6 +88,7 @@ describe('bundle TEST-mode outbox safety', () => {
     });
     (BundleOrder.findById as jest.Mock).mockResolvedValue({
       _id: orderId,
+      checkoutMode: 'live',
       reference: 'BND-TEST-001',
       status: 'confirmed',
       guestDetails: { email: 'safe-test-recipient@example.test' },
@@ -108,5 +109,46 @@ describe('bundle TEST-mode outbox safety', () => {
         $set: expect.objectContaining({ status: 'delivered' }),
       })
     );
+  });
+
+  it('suppresses a TEST supplier event even when its recipient tenant is not in TEST mode', async () => {
+    const eventId = new Types.ObjectId();
+    const supplierTenantId = new Types.ObjectId();
+    const storefrontTenantId = new Types.ObjectId();
+    const orderId = new Types.ObjectId();
+    const event = {
+      _id: eventId,
+      tenantId: supplierTenantId,
+      orderId,
+      audience: 'supplier',
+      eventType: 'bundle.component_confirmed',
+    };
+
+    (BundleOutboxEvent.findOneAndUpdate as jest.Mock)
+      .mockResolvedValueOnce(event)
+      .mockResolvedValueOnce(null);
+    (BundleOutboxEvent.findById as jest.Mock).mockResolvedValue(event);
+    (Tenant.findById as jest.Mock).mockReturnValue({
+      lean: jest.fn().mockResolvedValue({
+        _id: supplierTenantId,
+        bundleSettings: { mode: 'live' },
+        contactInfo: { email: 'supplier@example.test' },
+      }),
+    });
+    (BundleOrder.findById as jest.Mock).mockResolvedValue({
+      _id: orderId,
+      storefrontTenantId,
+      checkoutMode: 'test',
+      components: [],
+    });
+    (BundleOutboxEvent.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
+
+    await expect(processBundleOutboxBatch()).resolves.toEqual({
+      delivered: 0,
+      suppressed: 1,
+      retried: 0,
+      deadLetter: 0,
+    });
+    expect(sendEmail).not.toHaveBeenCalled();
   });
 });

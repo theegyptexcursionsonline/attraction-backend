@@ -50,6 +50,7 @@ jest.mock('../services/stripe.service', () => ({
   retrieveRefund: jest.fn(),
 }));
 jest.mock('../services/tenantPayment.service', () => ({
+  ...jest.requireActual('../services/tenantPayment.service'),
   getTenantStripeConfig: jest.fn(),
 }));
 
@@ -62,6 +63,7 @@ describe('bundle payment recovery contracts', () => {
     const order = {
       _id: new Types.ObjectId(),
       storefrontTenantId: new Types.ObjectId(),
+      checkoutMode: 'test',
       status: 'payment_pending',
       paymentStatus: 'intent_created',
       stripePaymentIntentId: 'pi_retryable',
@@ -83,6 +85,7 @@ describe('bundle payment recovery contracts', () => {
     const order = {
       _id: new Types.ObjectId(),
       storefrontTenantId: new Types.ObjectId(),
+      checkoutMode: 'test',
       stripePaymentIntentId: 'pi_refund',
       paymentStatus: 'succeeded',
       totalMinor: 20_000,
@@ -97,7 +100,7 @@ describe('bundle payment recovery contracts', () => {
       }],
     };
     (BundleOrder.findById as jest.Mock).mockResolvedValue(order);
-    (getTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true, secretKey: 'sk_test' });
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true, publishableKey: 'pk_test_public', secretKey: 'sk_test_secret' });
     (retrieveRefund as jest.Mock).mockResolvedValue({ id: 're_pending', status: 'pending', amount: 5_000 });
     (BundleOrder.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
 
@@ -110,7 +113,7 @@ describe('bundle payment recovery contracts', () => {
     })).rejects.toEqual(expect.objectContaining({ code: 'REFUND_PENDING' }));
 
     expect(BundleOrder.findOneAndUpdate).not.toHaveBeenCalled();
-    expect(retrieveRefund).toHaveBeenCalledWith('sk_test', 're_pending');
+    expect(retrieveRefund).toHaveBeenCalledWith('sk_test_secret', 're_pending');
     expect(BundleOrder.updateOne).toHaveBeenCalledWith(
       { _id: order._id, 'refunds.operationId': operationId },
       { $set: { 'refunds.$.providerRefundId': 're_pending', 'refunds.$.status': 'provider_pending' } }
@@ -122,6 +125,7 @@ describe('bundle payment recovery contracts', () => {
     const order = {
       _id: new Types.ObjectId(),
       storefrontTenantId: new Types.ObjectId(),
+      checkoutMode: 'test',
       stripePaymentIntentId: 'pi_failed_refund',
       paymentStatus: 'succeeded',
       totalMinor: 20_000,
@@ -136,7 +140,7 @@ describe('bundle payment recovery contracts', () => {
       }],
     };
     (BundleOrder.findById as jest.Mock).mockResolvedValue(order);
-    (getTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true, secretKey: 'sk_test' });
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true, publishableKey: 'pk_test_public', secretKey: 'sk_test_secret' });
     (retrieveRefund as jest.Mock).mockResolvedValue({ id: 're_failed', status: 'failed', amount: 5_000 });
     (BundleOrder.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
 
@@ -174,6 +178,7 @@ describe('bundle payment recovery contracts', () => {
     const order = {
       _id: new Types.ObjectId(),
       storefrontTenantId: new Types.ObjectId(),
+      checkoutMode: 'test',
       stripePaymentIntentId: 'pi_full_refund',
       status: 'cancel_pending',
       paymentStatus: 'succeeded',
@@ -223,7 +228,7 @@ describe('bundle payment recovery contracts', () => {
     (BundleOrder.findById as jest.Mock)
       .mockResolvedValueOnce(order)
       .mockReturnValueOnce(queryResult(order));
-    (getTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true, secretKey: 'sk_test' });
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true, publishableKey: 'pk_test_public', secretKey: 'sk_test_secret' });
     (createRefund as jest.Mock).mockResolvedValue({ id: 're_full', status: 'succeeded', amount: 20_000 });
     (Booking.findOneAndUpdate as jest.Mock).mockResolvedValue({ _id: new Types.ObjectId() });
     (Booking.updateMany as jest.Mock).mockResolvedValue({ modifiedCount: 2 });
@@ -266,6 +271,7 @@ describe('bundle payment recovery contracts', () => {
     const order = {
       _id: new Types.ObjectId(),
       storefrontTenantId: new Types.ObjectId(),
+      checkoutMode: 'test',
       stripePaymentIntentId: 'pi_missing_booking',
       status: 'cancel_pending',
       paymentStatus: 'succeeded',
@@ -301,7 +307,7 @@ describe('bundle payment recovery contracts', () => {
     (BundleOrder.findById as jest.Mock)
       .mockResolvedValueOnce(order)
       .mockReturnValueOnce(queryResult(order));
-    (getTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true, secretKey: 'sk_test' });
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true, publishableKey: 'pk_test_public', secretKey: 'sk_test_secret' });
     (createRefund as jest.Mock).mockResolvedValue({ id: 're_missing', status: 'succeeded', amount: 20_000 });
     (Booking.findOneAndUpdate as jest.Mock).mockResolvedValue(null);
     (Booking.findOne as jest.Mock).mockReturnValue(queryResult(null));

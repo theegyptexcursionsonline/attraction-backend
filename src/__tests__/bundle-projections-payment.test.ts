@@ -12,6 +12,7 @@ const orderFixture = () => new BundleOrder({
   _id: new Types.ObjectId(),
   reference: 'BTW-SECURE001',
   storefrontTenantId,
+  checkoutMode: 'test',
   bundleDefinitionId: new Types.ObjectId(),
   bundleVersion: 1,
   quoteId: new Types.ObjectId(),
@@ -104,10 +105,12 @@ describe('bundle projections and payment binding', () => {
     const valid = {
       id: 'pi_bundle_bound', clientSecret: '', amount: 20000, amountReceived: 20000,
       currency: 'usd', status: 'succeeded',
+      livemode: false,
       metadata: {
         paymentKind: 'bundle',
         bundleOrderId: order._id.toString(),
         storefrontTenantId: storefrontTenantId.toString(),
+        checkoutMode: 'test',
       },
     };
     expect(bundlePaymentBindingError(order, valid, true)).toBeNull();
@@ -117,5 +120,26 @@ describe('bundle projections and payment binding', () => {
       ...valid,
       metadata: { ...valid.metadata, storefrontTenantId: supplierA.toString() },
     }, true)).toMatch(/tenant/);
+  });
+
+  it('binds new bundle orders to the captured TEST or LIVE provider environment', () => {
+    const order = orderFixture();
+    order.checkoutMode = 'test';
+    const valid = {
+      id: 'pi_bundle_bound', clientSecret: '', amount: 20000, amountReceived: 20000,
+      currency: 'usd', status: 'succeeded', livemode: false,
+      metadata: {
+        paymentKind: 'bundle',
+        bundleOrderId: order._id.toString(),
+        storefrontTenantId: storefrontTenantId.toString(),
+        checkoutMode: 'test',
+      },
+    };
+    expect(bundlePaymentBindingError(order, valid, true)).toBeNull();
+    expect(bundlePaymentBindingError(order, { ...valid, livemode: true }, true)).toMatch(/environment/);
+    expect(bundlePaymentBindingError(order, {
+      ...valid,
+      metadata: { ...valid.metadata, checkoutMode: 'live' },
+    }, true)).toMatch(/environment/);
   });
 });
