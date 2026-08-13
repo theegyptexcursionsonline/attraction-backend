@@ -28,8 +28,20 @@ export interface IBundleOrderComponent {
   status: ComponentStatus;
   settlementStatus: BundleSettlementStatus;
   settlementOperationId?: string;
+  settlementPaidMinor?: number;
+  settlementDisputedMinor?: number;
+  settlementRecoveredMinor?: number;
+  settlementWrittenOffMinor?: number;
   settlementDisputeOperationId?: string;
   settlementDisputeResolution?: 'recovered' | 'written_off';
+  settlementDisputeResolutions?: Array<{
+    operationId: string;
+    resolution: 'recovered' | 'written_off';
+    amountMinor: number;
+    reason: string;
+    actorId: Types.ObjectId;
+    createdAt: Date;
+  }>;
   bookingId?: Types.ObjectId;
   bookingReference?: string;
   refundedMinor: number;
@@ -120,8 +132,21 @@ const componentSchema = new Schema<IBundleOrderComponent>(
     status: { type: String, enum: [...COMPONENT_STATUSES], default: 'reserved' },
     settlementStatus: { type: String, enum: [...SETTLEMENT_STATUSES], default: 'on_hold' },
     settlementOperationId: { type: String, maxlength: 128 },
+    settlementPaidMinor: { type: Number, default: 0, min: 0, validate: Number.isSafeInteger },
+    settlementDisputedMinor: { type: Number, default: 0, min: 0, validate: Number.isSafeInteger },
+    settlementRecoveredMinor: { type: Number, default: 0, min: 0, validate: Number.isSafeInteger },
+    settlementWrittenOffMinor: { type: Number, default: 0, min: 0, validate: Number.isSafeInteger },
     settlementDisputeOperationId: { type: String, maxlength: 128 },
     settlementDisputeResolution: { type: String, enum: ['recovered', 'written_off'] },
+    settlementDisputeResolutions: [{
+      _id: false,
+      operationId: { type: String, required: true, maxlength: 128 },
+      resolution: { type: String, required: true, enum: ['recovered', 'written_off'] },
+      amountMinor: { type: Number, required: true, min: 1, validate: Number.isSafeInteger },
+      reason: { type: String, required: true, maxlength: 500 },
+      actorId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+      createdAt: { type: Date, default: Date.now },
+    }],
     bookingId: { type: Schema.Types.ObjectId, ref: 'Booking' },
     bookingReference: { type: String },
     refundedMinor: { type: Number, default: 0, min: 0, validate: Number.isSafeInteger },
@@ -196,5 +221,9 @@ bundleOrderSchema.index({ status: 1, holdExpiresAt: 1 });
 bundleOrderSchema.index({ userId: 1, createdAt: -1 });
 bundleOrderSchema.index({ 'components.settlementOperationId': 1 }, { unique: true, sparse: true });
 bundleOrderSchema.index({ 'components.settlementDisputeOperationId': 1 }, { unique: true, sparse: true });
+bundleOrderSchema.index(
+  { 'components.settlementDisputeResolutions.operationId': 1 },
+  { unique: true, sparse: true }
+);
 
 export const BundleOrder = mongoose.model<IBundleOrder>('BundleOrder', bundleOrderSchema);

@@ -573,7 +573,12 @@ export const refundBundleOrder = async (input: {
       order.components.map((component) => component.customerAllocationMinor - component.refundedMinor)
     );
     const fromState = order.status;
-    const settlementStatusesBeforeRefund = order.components.map((component) => component.settlementStatus);
+    const paidSettlementMinorBeforeRefund = order.components.map((component) =>
+      component.settlementPaidMinor ||
+      (component.settlementOperationId || component.settlementStatus === 'paid' || component.settlementStatus === 'disputed'
+        ? component.supplierNetTotalMinor
+        : 0)
+    );
     const releasableComponents = order.components.filter((component) =>
       ['reserved', 'confirmed', 'cancel_pending', 'refund_pending'].includes(component.status)
     );
@@ -581,11 +586,21 @@ export const refundBundleOrder = async (input: {
       component.refundedMinor += componentAllocations[index];
       const fullyRefunded = component.refundedMinor >= component.customerAllocationMinor;
       component.refundStatus = fullyRefunded ? 'full' : 'partial';
-      component.settlementStatus = component.settlementStatus === 'paid'
-        ? 'disputed'
-        : fullyRefunded
-          ? 'not_eligible'
-          : component.settlementStatus;
+      const paidMinor = paidSettlementMinorBeforeRefund[index];
+      if (paidMinor > 0) {
+        component.settlementPaidMinor = paidMinor;
+        const targetExposureMinor = fullyRefunded
+          ? paidMinor
+          : Math.floor(paidMinor * component.refundedMinor / component.customerAllocationMinor);
+        const resolvedMinor = (component.settlementRecoveredMinor || 0) +
+          (component.settlementWrittenOffMinor || 0);
+        component.settlementDisputedMinor = Math.max(0, targetExposureMinor - resolvedMinor);
+        component.settlementStatus = component.settlementDisputedMinor > 0
+          ? 'disputed'
+          : fullyRefunded ? 'not_eligible' : 'paid';
+      } else if (fullyRefunded) {
+        component.settlementStatus = 'not_eligible';
+      }
       // Fulfilment and refund are independent dimensions. A partial refund
       // must not make a still-booked supplier component impossible to fulfil,
       // and a full refund must not erase whether service had been delivered.
@@ -597,13 +612,13 @@ export const refundBundleOrder = async (input: {
     const full = order.refundedMinor === order.totalMinor;
     order.paymentStatus = full ? 'refunded' : 'partially_refunded';
     order.status = full ? 'refunded' : 'partially_refunded';
-    if (full) {
-      const disputedSettlement = order.components.some((component) => component.settlementStatus === 'disputed');
-      order.recovery.required = disputedSettlement;
-      order.recovery.reason = disputedSettlement
-        ? 'A refunded supplier settlement still requires resolution'
-        : undefined;
-    }
+    const disputedSettlement = order.components.some((component) =>
+      (component.settlementDisputedMinor || 0) > 0 || component.settlementStatus === 'disputed'
+    );
+    order.recovery.required = disputedSettlement;
+    order.recovery.reason = disputedSettlement
+      ? 'A refunded supplier settlement still requires resolution'
+      : undefined;
     await order.save({ session });
     if (full) {
       for (const component of releasableComponents) {
@@ -656,7 +671,7 @@ export const refundBundleOrder = async (input: {
     if (full) {
       const reversalLines: LedgerLine[] = [
         ...order.components.flatMap((component, index) =>
-          settlementStatusesBeforeRefund[index] === 'paid'
+          paidSettlementMinorBeforeRefund[index] > 0
             ? []
             : [{
                 account: 'supplier_payable' as const,

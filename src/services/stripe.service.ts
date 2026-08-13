@@ -45,14 +45,55 @@ export interface StripeCallOptions {
 
 const missingKeyError = (): Error => new Error('Stripe secret key is required');
 
-/** Verify that a tenant key authenticates to a real Stripe account. */
-export const verifyStripeAccount = async (
-  secretKey: string | undefined
-): Promise<{ accountId: string; chargesEnabled: boolean }> => {
-  const stripe = getStripe(secretKey);
-  if (!stripe) throw missingKeyError();
-  const account = await stripe.accounts.retrieve();
-  return { accountId: account.id, chargesEnabled: !!account.charges_enabled };
+/**
+ * Prove that the publishable and secret keys belong to the same Stripe account.
+ * Prefixes only prove TEST/LIVE mode; they do not bind two independently pasted
+ * credentials. A provider-created SetupIntent can be retrieved with its client
+ * secret only by a publishable key from the same account, without charging a
+ * card or creating a customer.
+ */
+export const verifyStripeCredentialBinding = async (
+  secretKey: string | undefined,
+  publishableKey: string | undefined
+): Promise<{ accountId: string; chargesEnabled: boolean; credentialFingerprint: string }> => {
+  const secretStripe = getStripe(secretKey);
+  const publicStripe = getStripe(publishableKey);
+  if (!secretStripe || !publicStripe || !secretKey || !publishableKey) {
+    throw missingKeyError();
+  }
+
+  const account = await secretStripe.accounts.retrieve();
+  const credentialFingerprint = crypto
+    .createHash('sha256')
+    .update(`${publishableKey}\u0000${secretKey}`)
+    .digest('hex');
+  const probe = await secretStripe.setupIntents.create(
+    {
+      payment_method_types: ['card'],
+      usage: 'off_session',
+      metadata: { purpose: 'tenant_credential_binding' },
+    },
+    { idempotencyKey: `tenant-credential-binding:${credentialFingerprint}` }
+  );
+
+  try {
+    if (!probe.client_secret) throw new Error('Stripe credential probe has no client secret');
+    const publicProbe = await publicStripe.setupIntents.retrieve(
+      probe.id,
+      { client_secret: probe.client_secret }
+    );
+    if (publicProbe.id !== probe.id) throw new Error('Stripe credential binding failed');
+  } finally {
+    if (!['canceled', 'succeeded'].includes(probe.status)) {
+      await secretStripe.setupIntents.cancel(probe.id).catch(() => undefined);
+    }
+  }
+
+  return {
+    accountId: account.id,
+    chargesEnabled: !!account.charges_enabled,
+    credentialFingerprint,
+  };
 };
 
 /** Create a PaymentIntent on the tenant's own Stripe account. */

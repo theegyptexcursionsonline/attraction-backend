@@ -12,6 +12,7 @@ import { retrieveRefund } from '../services/stripe.service';
 import { createRefund } from '../services/stripe.service';
 import { getTenantStripeConfig } from '../services/tenantPayment.service';
 import { appendBalancedLedger } from '../services/bundleAudit.service';
+import { resolveBundleSettlementDispute } from '../services/bundleOperations.service';
 
 jest.mock('../models/Booking', () => ({
   Booking: {
@@ -414,6 +415,7 @@ describe('bundle payment recovery contracts', () => {
         quantities: { adults: 1, children: 0, infants: 0 },
         customerAllocationMinor: 10_000,
         supplierNetTotalMinor: 8_000,
+        settlementPaidMinor: 8_000,
         refundedMinor: 0,
         status: 'fulfilled',
         settlementStatus: 'paid',
@@ -437,6 +439,7 @@ describe('bundle payment recovery contracts', () => {
     });
 
     expect(result.order.components[0].settlementStatus).toBe('disputed');
+    expect(result.order.components[0].settlementDisputedMinor).toBe(8_000);
     expect(result.order.recovery).toEqual(expect.objectContaining({
       required: true,
       reason: 'A refunded supplier settlement still requires resolution',
@@ -449,6 +452,218 @@ describe('bundle payment recovery contracts', () => {
       amountMinor: 8_000,
     }));
   });
+
+  it('keeps paid settlement exposure cumulative across partial then full refunds without a second payable debit', async () => {
+    const firstOperation = 'refund:paid-partial-then-full-1';
+    const secondOperation = 'refund:paid-partial-then-full-2';
+    const order = {
+      _id: new Types.ObjectId(),
+      storefrontTenantId: new Types.ObjectId(),
+      checkoutMode: 'test',
+      stripePaymentIntentId: 'pi_paid_partial_full',
+      status: 'completed',
+      paymentStatus: 'succeeded',
+      currency: 'USD',
+      totalMinor: 10_000,
+      platformAllocationMinor: 2_000,
+      paymentFeeReserveMinor: 0,
+      taxMinor: 0,
+      refundedMinor: 0,
+      refundPendingMinor: 5_000,
+      recovery: { required: false, attempts: 0 },
+      components: [{
+        componentId: 'paid-component',
+        supplierTenantId: new Types.ObjectId(),
+        customerAllocationMinor: 10_000,
+        supplierNetTotalMinor: 8_000,
+        settlementPaidMinor: 8_000,
+        settlementDisputedMinor: 0,
+        settlementRecoveredMinor: 0,
+        settlementWrittenOffMinor: 0,
+        settlementOperationId: 'payout:original',
+        refundedMinor: 0,
+        refundStatus: 'none',
+        status: 'fulfilled',
+        settlementStatus: 'paid',
+      }],
+      refunds: [{
+        operationId: firstOperation,
+        amountMinor: 5_000,
+        status: 'requested',
+        reason: 'First adjustment',
+      }],
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    (BundleOrder.findById as jest.Mock)
+      .mockResolvedValueOnce(order)
+      .mockReturnValueOnce(queryResult(order))
+      .mockResolvedValueOnce(order)
+      .mockReturnValueOnce(queryResult(order));
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue({
+      enabled: true,
+      publishableKey: 'pk_test_public',
+      secretKey: 'sk_test_secret',
+    });
+    (createRefund as jest.Mock)
+      .mockResolvedValueOnce({ id: 're_paid_partial', status: 'succeeded', amount: 5_000 })
+      .mockResolvedValueOnce({ id: 're_paid_full', status: 'succeeded', amount: 5_000 });
+    (Booking.updateMany as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
+
+    await refundBundleOrder({
+      orderId: order._id.toString(),
+      operationId: firstOperation,
+      amountMinor: 5_000,
+      reason: 'First adjustment',
+      actorId: new Types.ObjectId(),
+    });
+    expect(order.components[0]).toEqual(expect.objectContaining({
+      settlementStatus: 'disputed',
+      settlementDisputedMinor: 4_000,
+    }));
+    expect(order.recovery.required).toBe(true);
+
+    order.refundPendingMinor = 5_000;
+    order.refunds.push({
+      operationId: secondOperation,
+      amountMinor: 5_000,
+      status: 'requested',
+      reason: 'Final adjustment',
+    });
+    await refundBundleOrder({
+      orderId: order._id.toString(),
+      operationId: secondOperation,
+      amountMinor: 5_000,
+      reason: 'Final adjustment',
+      actorId: new Types.ObjectId(),
+    });
+
+    expect(order.components[0]).toEqual(expect.objectContaining({
+      settlementStatus: 'disputed',
+      settlementDisputedMinor: 8_000,
+      refundStatus: 'full',
+    }));
+    expect(order.recovery.required).toBe(true);
+    const finalRefundLedger = (appendBalancedLedger as jest.Mock).mock.calls.find(
+      ([entry]) => entry.operationId === `refund:${secondOperation}`
+    )?.[0];
+    expect(finalRefundLedger.lines).not.toContainEqual(
+      expect.objectContaining({ account: 'supplier_payable' })
+    );
+  });
+
+  it.each(['recovered', 'written_off'] as const)(
+    'reopens only remaining paid exposure after a partial dispute was %s',
+    async (resolution) => {
+      const firstOperation = `refund:paid-${resolution}-partial`;
+      const finalOperation = `refund:paid-${resolution}-full`;
+      const order = {
+        _id: new Types.ObjectId(),
+        storefrontTenantId: new Types.ObjectId(),
+        checkoutMode: 'test',
+        stripePaymentIntentId: `pi_paid_${resolution}`,
+        status: 'completed',
+        paymentStatus: 'succeeded',
+        currency: 'USD',
+        totalMinor: 10_000,
+        platformAllocationMinor: 2_000,
+        paymentFeeReserveMinor: 0,
+        taxMinor: 0,
+        refundedMinor: 0,
+        refundPendingMinor: 5_000,
+        recovery: { required: false, attempts: 0 },
+        components: [{
+          componentId: 'paid-component',
+          supplierTenantId: new Types.ObjectId(),
+          customerAllocationMinor: 10_000,
+          supplierNetTotalMinor: 8_000,
+          settlementPaidMinor: 8_000,
+          settlementDisputedMinor: 0,
+          settlementRecoveredMinor: 0,
+          settlementWrittenOffMinor: 0,
+          settlementOperationId: 'payout:original',
+          refundedMinor: 0,
+          refundStatus: 'none',
+          status: 'fulfilled',
+          settlementStatus: 'paid',
+          settlementDisputeResolutions: [],
+        }],
+        refunds: [{
+          operationId: firstOperation,
+          amountMinor: 5_000,
+          status: 'requested',
+          reason: 'First adjustment',
+        }],
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      (getTenantStripeConfig as jest.Mock).mockResolvedValue({
+        enabled: true,
+        publishableKey: 'pk_test_public',
+        secretKey: 'sk_test_secret',
+      });
+      (Booking.updateMany as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
+      (createRefund as jest.Mock)
+        .mockResolvedValueOnce({ id: `re_${resolution}_partial`, status: 'succeeded', amount: 5_000 })
+        .mockResolvedValueOnce({ id: `re_${resolution}_full`, status: 'succeeded', amount: 5_000 });
+      (BundleOrder.findById as jest.Mock)
+        .mockResolvedValueOnce(order)
+        .mockReturnValueOnce(queryResult(order));
+
+      await refundBundleOrder({
+        orderId: order._id.toString(),
+        operationId: firstOperation,
+        amountMinor: 5_000,
+        reason: 'First adjustment',
+        actorId: new Types.ObjectId(),
+      });
+
+      (BundleOrder.findById as jest.Mock).mockReset().mockReturnValue(queryResult(order));
+      (BundleOrder.findOne as jest.Mock).mockReturnValue(queryResult(null));
+      await resolveBundleSettlementDispute({
+        orderId: order._id.toString(),
+        componentId: 'paid-component',
+        operationId: `dispute:${resolution}:partial`,
+        resolution,
+        reason: 'Recorded settlement resolution evidence',
+        actorId: new Types.ObjectId(),
+      });
+      expect(order.components[0]).toEqual(expect.objectContaining({
+        settlementStatus: 'paid',
+        settlementDisputedMinor: 0,
+        [resolution === 'recovered' ? 'settlementRecoveredMinor' : 'settlementWrittenOffMinor']: 4_000,
+      }));
+
+      order.refundPendingMinor = 5_000;
+      order.refunds.push({
+        operationId: finalOperation,
+        amountMinor: 5_000,
+        status: 'requested',
+        reason: 'Final adjustment',
+      });
+      (BundleOrder.findById as jest.Mock)
+        .mockReset()
+        .mockResolvedValueOnce(order)
+        .mockReturnValueOnce(queryResult(order));
+      await refundBundleOrder({
+        orderId: order._id.toString(),
+        operationId: finalOperation,
+        amountMinor: 5_000,
+        reason: 'Final adjustment',
+        actorId: new Types.ObjectId(),
+      });
+
+      expect(order.components[0]).toEqual(expect.objectContaining({
+        settlementStatus: 'disputed',
+        settlementDisputedMinor: 4_000,
+      }));
+      expect(order.recovery.required).toBe(true);
+      const finalRefundLedger = (appendBalancedLedger as jest.Mock).mock.calls.find(
+        ([entry]) => entry.operationId === `refund:${finalOperation}`
+      )?.[0];
+      expect(finalRefundLedger.lines).not.toContainEqual(
+        expect.objectContaining({ account: 'supplier_payable' })
+      );
+    }
+  );
 
   it('fails closed when a full refund cannot bind future inventory to a child booking', async () => {
     const operationId = 'refund:missing-booking-001';

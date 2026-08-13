@@ -591,6 +591,10 @@ export const markBundleSettlementPaid = async (input: {
   }
   component.settlementStatus = 'paid';
   component.settlementOperationId = input.operationId;
+  component.settlementPaidMinor = component.supplierNetTotalMinor;
+  component.settlementDisputedMinor = 0;
+  component.settlementRecoveredMinor = 0;
+  component.settlementWrittenOffMinor = 0;
   await order.save({ session });
   await Booking.updateOne(
     { bundleOrderId: order._id, bundleComponentId: component.componentId },
@@ -647,6 +651,17 @@ export const resolveBundleSettlementDispute = async (input: {
   if (!order) throw new BundleOperationsError('ORDER_NOT_FOUND', 'Bundle order not found', 404);
   const component = order.components.find((item) => item.componentId === input.componentId);
   if (!component) throw new BundleOperationsError('COMPONENT_NOT_FOUND', 'Bundle component not found', 404);
+  const priorResolution = (component.settlementDisputeResolutions || []).find(
+    (item) => item.operationId === input.operationId
+  );
+  if (priorResolution) {
+    if (priorResolution.resolution === input.resolution) return order;
+    throw new BundleOperationsError(
+      'SETTLEMENT_DISPUTE_OPERATION_REUSED',
+      'This dispute operation is already bound to a different resolution',
+      409
+    );
+  }
   if (component.settlementStatus !== 'disputed') {
     if (
       component.settlementDisputeOperationId === input.operationId &&
@@ -658,8 +673,32 @@ export const resolveBundleSettlementDispute = async (input: {
       409
     );
   }
+  const paidMinor = component.settlementPaidMinor ||
+    (component.settlementOperationId || component.settlementStatus === 'disputed'
+      ? component.supplierNetTotalMinor
+      : 0);
+  const resolvedMinor = (component.settlementRecoveredMinor || 0) +
+    (component.settlementWrittenOffMinor || 0);
+  const proportionalExposure = component.customerAllocationMinor > 0
+    ? Math.floor(paidMinor * component.refundedMinor / component.customerAllocationMinor)
+    : 0;
+  const targetExposureMinor = component.refundStatus === 'full'
+    ? paidMinor
+    : proportionalExposure;
+  const outstandingMinor = component.settlementDisputedMinor ||
+    Math.max(0, targetExposureMinor - resolvedMinor);
+  if (outstandingMinor <= 0) {
+    throw new BundleOperationsError(
+      'SETTLEMENT_DISPUTE_AMOUNT_INVALID',
+      'This component has no outstanding settlement amount to resolve',
+      409
+    );
+  }
   const reusedOperation = await BundleOrder.findOne({
-    'components.settlementDisputeOperationId': input.operationId,
+    $or: [
+      { 'components.settlementDisputeOperationId': input.operationId },
+      { 'components.settlementDisputeResolutions.operationId': input.operationId },
+    ],
   }).session(session);
   if (reusedOperation) {
     throw new BundleOperationsError(
@@ -668,10 +707,27 @@ export const resolveBundleSettlementDispute = async (input: {
       409
     );
   }
-  component.settlementStatus = 'not_eligible';
+  component.settlementDisputedMinor = 0;
+  if (input.resolution === 'recovered') {
+    component.settlementRecoveredMinor = (component.settlementRecoveredMinor || 0) + outstandingMinor;
+  } else {
+    component.settlementWrittenOffMinor = (component.settlementWrittenOffMinor || 0) + outstandingMinor;
+  }
+  component.settlementStatus = component.refundStatus === 'full' ? 'not_eligible' : 'paid';
   component.settlementDisputeOperationId = input.operationId;
   component.settlementDisputeResolution = input.resolution;
-  const unresolved = order.components.some((item) => item.settlementStatus === 'disputed');
+  component.settlementDisputeResolutions = component.settlementDisputeResolutions || [];
+  component.settlementDisputeResolutions.push({
+    operationId: input.operationId,
+    resolution: input.resolution,
+    amountMinor: outstandingMinor,
+    reason: input.reason,
+    actorId: input.actorId,
+    createdAt: new Date(),
+  });
+  const unresolved = order.components.some((item) =>
+    (item.settlementDisputedMinor || 0) > 0 || item.settlementStatus === 'disputed'
+  );
   order.recovery.required = unresolved;
   order.recovery.reason = unresolved
     ? 'A refunded supplier settlement still requires resolution'
@@ -687,14 +743,14 @@ export const resolveBundleSettlementDispute = async (input: {
         {
           account: 'supplier_settlement',
           direction: 'debit',
-          amountMinor: component.supplierNetTotalMinor,
+          amountMinor: outstandingMinor,
           supplierTenantId: component.supplierTenantId,
           componentId: component.componentId,
         },
         {
           account: 'customer_refund',
           direction: 'credit',
-          amountMinor: component.supplierNetTotalMinor,
+          amountMinor: outstandingMinor,
           supplierTenantId: component.supplierTenantId,
           componentId: component.componentId,
         },
@@ -710,10 +766,10 @@ export const resolveBundleSettlementDispute = async (input: {
     actorId: input.actorId,
     command: `resolve_dispute_${input.resolution}`,
     fromState: 'disputed',
-    toState: 'not_eligible',
+    toState: component.settlementStatus,
     reason: input.reason,
     correlationId: input.operationId,
-    metadata: { componentId: component.componentId, amountMinor: component.supplierNetTotalMinor },
+    metadata: { componentId: component.componentId, amountMinor: outstandingMinor },
   }, session);
   return order;
 });

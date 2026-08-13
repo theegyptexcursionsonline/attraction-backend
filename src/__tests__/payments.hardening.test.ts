@@ -14,7 +14,7 @@ import {
   createRefund as stripeCreateRefund,
   retrievePaymentIntent,
   retrieveSucceededRefundAmount,
-  verifyStripeAccount,
+  verifyStripeCredentialBinding,
 } from '../services/stripe.service';
 import {
   getTenantStripeConfig,
@@ -63,7 +63,7 @@ jest.mock('../services/stripe.service', () => ({
   createRefund: jest.fn(),
   retrieveSucceededRefundAmount: jest.fn(),
   constructWebhookEvent: jest.fn(),
-  verifyStripeAccount: jest.fn(),
+  verifyStripeCredentialBinding: jest.fn(),
 }));
 
 jest.mock('../services/tenantPayment.service', () => ({
@@ -106,6 +106,8 @@ const stripeConfig = {
   secretKey: 'sk_test_secret',
   webhookSecret: 'whsec_test',
   verifiedAccountId: 'acct_verified',
+  verifiedCredentialFingerprint: 'fingerprint_verified',
+  credentialsVerifiedAt: new Date('2030-01-01T00:00:00.000Z'),
 };
 
 const bookingFixture = (overrides: Record<string, unknown> = {}) => ({
@@ -214,7 +216,11 @@ describe('Stripe payment hardening', () => {
     (recordInboundEvent as jest.Mock).mockResolvedValue({ duplicate: false });
     (Booking.exists as jest.Mock).mockResolvedValue({ _id: BOOKING_ID });
     (BundleOrder.countDocuments as jest.Mock).mockResolvedValue(0);
-    (verifyStripeAccount as jest.Mock).mockResolvedValue({ accountId: 'acct_verified', chargesEnabled: true });
+    (verifyStripeCredentialBinding as jest.Mock).mockResolvedValue({
+      accountId: 'acct_verified',
+      chargesEnabled: true,
+      credentialFingerprint: 'fingerprint_verified',
+    });
     (saveTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true });
   });
 
@@ -432,6 +438,12 @@ describe('Stripe payment hardening', () => {
     });
 
     it('authenticates an enabled gateway with Stripe before saving it as launch-ready', async () => {
+      (getTenantStripeConfig as jest.Mock).mockResolvedValue({
+        enabled: false,
+        publishableKey: '',
+        secretKey: '',
+        webhookSecret: '',
+      });
       const res = await invoke(updatePaymentGateway as never, {
         params: { tenantId: TENANT_ID },
         protocol: 'https',
@@ -444,19 +456,23 @@ describe('Stripe payment hardening', () => {
         },
       });
 
-      expect(verifyStripeAccount).toHaveBeenCalledWith('sk_test_secret');
+      expect(verifyStripeCredentialBinding).toHaveBeenCalledWith('sk_test_secret', 'pk_test_public');
       expect(saveTenantStripeConfig).toHaveBeenCalledWith(
         TENANT_ID,
-        expect.objectContaining({ verifiedAccountId: 'acct_verified' })
+        expect.objectContaining({
+          verifiedAccountId: 'acct_verified',
+          verifiedCredentialFingerprint: 'fingerprint_verified',
+        })
       );
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
     });
 
     it('blocks a same-mode Stripe account change while a provider-bound Bundle order remains refundable', async () => {
       (BundleOrder.countDocuments as jest.Mock).mockResolvedValue(1);
-      (verifyStripeAccount as jest.Mock).mockResolvedValue({
+      (verifyStripeCredentialBinding as jest.Mock).mockResolvedValue({
         accountId: 'acct_replacement',
         chargesEnabled: true,
+        credentialFingerprint: 'fingerprint_replacement',
       });
 
       const res = await invoke(updatePaymentGateway as never, {
@@ -493,7 +509,10 @@ describe('Stripe payment hardening', () => {
         },
       });
 
-      expect(verifyStripeAccount).toHaveBeenCalledWith('sk_test_replacement');
+      expect(verifyStripeCredentialBinding).toHaveBeenCalledWith(
+        'sk_test_replacement',
+        'pk_test_public'
+      );
       expect(BundleOrder.countDocuments).not.toHaveBeenCalled();
       expect(saveTenantStripeConfig).toHaveBeenCalledWith(
         TENANT_ID,
@@ -501,9 +520,72 @@ describe('Stripe payment hardening', () => {
           secretKey: 'sk_test_replacement',
           webhookSecret: 'whsec_replacement',
           verifiedAccountId: 'acct_verified',
+          verifiedCredentialFingerprint: 'fingerprint_verified',
         })
       );
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+    });
+
+    it('verifies an enabled gateway when enabled is omitted and blocks a different-account secret', async () => {
+      (BundleOrder.countDocuments as jest.Mock).mockResolvedValue(1);
+      (verifyStripeCredentialBinding as jest.Mock).mockResolvedValue({
+        accountId: 'acct_replacement',
+        chargesEnabled: true,
+        credentialFingerprint: 'fingerprint_replacement',
+      });
+
+      const res = await invoke(updatePaymentGateway as never, {
+        params: { tenantId: TENANT_ID },
+        protocol: 'https',
+        get: jest.fn(() => 'api.example.test'),
+        body: { secretKey: 'sk_test_replacement' },
+      });
+
+      expect(verifyStripeCredentialBinding).toHaveBeenCalledWith(
+        'sk_test_replacement',
+        'pk_test_public'
+      );
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(saveTenantStripeConfig).not.toHaveBeenCalled();
+    });
+
+    it('rejects a provider-detected key-account mismatch during initial configuration', async () => {
+      (getTenantStripeConfig as jest.Mock).mockResolvedValue({
+        enabled: false,
+        publishableKey: '',
+        secretKey: '',
+        webhookSecret: '',
+      });
+      (verifyStripeCredentialBinding as jest.Mock).mockRejectedValue(new Error('account mismatch'));
+
+      const res = await invoke(updatePaymentGateway as never, {
+        params: { tenantId: TENANT_ID },
+        protocol: 'https',
+        get: jest.fn(() => 'api.example.test'),
+        body: {
+          enabled: true,
+          publishableKey: 'pk_test_wrong_account',
+          secretKey: 'sk_test_secret',
+          webhookSecret: 'whsec_test',
+        },
+      });
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(saveTenantStripeConfig).not.toHaveBeenCalled();
+    });
+
+    it('rejects a provider-detected key-account mismatch during publishable-key rotation', async () => {
+      (verifyStripeCredentialBinding as jest.Mock).mockRejectedValue(new Error('account mismatch'));
+
+      const res = await invoke(updatePaymentGateway as never, {
+        params: { tenantId: TENANT_ID },
+        protocol: 'https',
+        get: jest.fn(() => 'api.example.test'),
+        body: { publishableKey: 'pk_test_wrong_account' },
+      });
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(saveTenantStripeConfig).not.toHaveBeenCalled();
     });
 
     it('refuses a second webhook-secret rotation before the replacement is verified', async () => {

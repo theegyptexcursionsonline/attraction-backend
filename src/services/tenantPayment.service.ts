@@ -9,6 +9,7 @@ export interface TenantStripeConfig {
   previousWebhookSecret?: string;
   previousWebhookValidUntil?: Date;
   verifiedAccountId?: string;
+  verifiedCredentialFingerprint?: string;
   credentialsVerifiedAt?: Date;
   webhookVerifiedAt?: Date;
 }
@@ -90,6 +91,7 @@ export const getTenantStripeConfig = async (
     previousWebhookSecret: decryptSecret(s.previousWebhookSecretEnc as string),
     previousWebhookValidUntil: s.previousWebhookValidUntil as Date | undefined,
     verifiedAccountId: (s.verifiedAccountId as string) || '',
+    verifiedCredentialFingerprint: (s.verifiedCredentialFingerprint as string) || '',
     credentialsVerifiedAt: s.credentialsVerifiedAt as Date | undefined,
     webhookVerifiedAt: s.webhookVerifiedAt as Date | undefined,
   };
@@ -109,6 +111,7 @@ export const saveTenantStripeConfig = async (
     secretKey?: string;
     webhookSecret?: string;
     verifiedAccountId?: string;
+    verifiedCredentialFingerprint?: string;
   }
 ): Promise<{ enabled: boolean; publishableKey: string; hasSecretKey: boolean; hasWebhookSecret: boolean }> => {
   // Load-mutate-save (not a dotted `$set`, which collides on the select:false
@@ -122,6 +125,15 @@ export const saveTenantStripeConfig = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ps = (tenant as any).paymentSettings || ((tenant as any).paymentSettings = {});
   const stripe = ps.stripe || (ps.stripe = {});
+
+  const currentPublishableKey = String(stripe.publishableKey || '');
+  const currentSecretKey = decryptSecret(stripe.secretKeyEnc as string);
+  const nextPublishableKey = input.publishableKey !== undefined
+    ? input.publishableKey.trim()
+    : currentPublishableKey;
+  const nextSecretKey = input.secretKey ? input.secretKey.trim() : currentSecretKey;
+  const keyBindingChanged = nextPublishableKey !== currentPublishableKey ||
+    nextSecretKey !== currentSecretKey;
 
   if (typeof input.enabled === 'boolean') stripe.enabled = input.enabled;
   if (input.publishableKey !== undefined) stripe.publishableKey = input.publishableKey.trim();
@@ -144,8 +156,14 @@ export const saveTenantStripeConfig = async (
       stripe.webhookVerifiedAt = undefined;
     }
   }
-  if (input.verifiedAccountId) {
+  if (keyBindingChanged) {
+    stripe.verifiedAccountId = undefined;
+    stripe.verifiedCredentialFingerprint = undefined;
+    stripe.credentialsVerifiedAt = undefined;
+  }
+  if (input.verifiedAccountId && input.verifiedCredentialFingerprint) {
     stripe.verifiedAccountId = input.verifiedAccountId;
+    stripe.verifiedCredentialFingerprint = input.verifiedCredentialFingerprint;
     stripe.credentialsVerifiedAt = new Date();
   }
   stripe.configuredAt = new Date();

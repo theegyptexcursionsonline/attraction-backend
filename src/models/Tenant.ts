@@ -180,6 +180,7 @@ const tenantSchema = new Schema<ITenant>(
         previousWebhookValidUntil: Date,
         configuredAt: Date,
         verifiedAccountId: String,
+        verifiedCredentialFingerprint: String,
         credentialsVerifiedAt: Date,
         webhookVerifiedAt: Date,
       },

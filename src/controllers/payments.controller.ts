@@ -12,7 +12,7 @@ import {
   retrieveSucceededRefundAmount,
   createRefund as stripeCreateRefund,
   constructWebhookEvent,
-  verifyStripeAccount,
+  verifyStripeCredentialBinding,
 } from '../services/stripe.service';
 import type { PaymentIntentResult } from '../services/stripe.service';
 import {
@@ -1101,8 +1101,15 @@ export const updatePaymentGateway = async (
     const effectiveWebhookSecret = webhookSecret
       ? String(webhookSecret).trim()
       : existing?.webhookSecret;
+    const effectiveEnabled = typeof enabled === 'boolean' ? enabled : !!existing?.enabled;
     const effectiveMode = resolveStripeMode(effectivePublishableKey, effectiveSecretKey);
     const existingMode = resolveStripeMode(existing?.publishableKey, existing?.secretKey);
+    const publishableChanged = publishableKey !== undefined &&
+      String(publishableKey).trim() !== (existing?.publishableKey || '');
+    const secretKeyChanged = !!secretKey &&
+      String(secretKey).trim() !== (existing?.secretKey || '');
+    const webhookSecretChanged = !!webhookSecret &&
+      String(webhookSecret).trim() !== (existing?.webhookSecret || '');
 
     if (effectiveMode === 'mixed') {
       sendError(
@@ -1114,7 +1121,7 @@ export const updatePaymentGateway = async (
     }
 
     // Don't let a tenant enable the gateway without the keys it needs.
-    if (enabled) {
+    if (effectiveEnabled) {
       const willHaveSecret = !!effectiveSecretKey;
       const willHavePublishable = !!effectivePublishableKey;
       const willHaveWebhookSecret = !!effectiveWebhookSecret;
@@ -1129,26 +1136,31 @@ export const updatePaymentGateway = async (
     }
 
     let verifiedAccountId: string | undefined;
-    if (enabled) {
+    let verifiedCredentialFingerprint: string | undefined;
+    const bindingEvidenceMissing = !existing?.verifiedAccountId ||
+      !existing?.verifiedCredentialFingerprint ||
+      !existing?.credentialsVerifiedAt;
+    const enablingGateway = enabled === true && !existing?.enabled;
+    if (effectiveEnabled && (
+      enablingGateway || publishableChanged || secretKeyChanged || bindingEvidenceMissing
+    )) {
       try {
-        const verified = await verifyStripeAccount(effectiveSecretKey);
+        const verified = await verifyStripeCredentialBinding(
+          effectiveSecretKey,
+          effectivePublishableKey
+        );
         if (!verified.chargesEnabled) {
           sendError(res, 'Stripe authenticated, but card charges are not enabled for this account', 409);
           return;
         }
         verifiedAccountId = verified.accountId;
+        verifiedCredentialFingerprint = verified.credentialFingerprint;
       } catch {
-        sendError(res, 'Stripe credentials could not be verified with the provider', 400);
+        sendError(res, 'Stripe publishable and secret keys could not be verified as one provider account', 400);
         return;
       }
     }
 
-    const publishableChanged = publishableKey !== undefined &&
-      String(publishableKey).trim() !== (existing?.publishableKey || '');
-    const secretKeyChanged = !!secretKey &&
-      String(secretKey).trim() !== (existing?.secretKey || '');
-    const webhookSecretChanged = !!webhookSecret &&
-      String(webhookSecret).trim() !== (existing?.webhookSecret || '');
     const verifiedAccountChanged = !!existing?.verifiedAccountId &&
       !!verifiedAccountId && verifiedAccountId !== existing.verifiedAccountId;
     const webhookRotationPending = isStripeWebhookRotationProtected(existing) &&
@@ -1161,14 +1173,13 @@ export const updatePaymentGateway = async (
       );
       return;
     }
-    const secretBindingUnknown = !existing?.verifiedAccountId && secretKeyChanged;
     const gatewayBindingChanges =
       (existingMode === 'test' || existingMode === 'live') &&
       (
         effectiveMode !== existingMode ||
-        enabled === false ||
+        effectiveEnabled === false ||
         verifiedAccountChanged ||
-        secretBindingUnknown
+        (secretKeyChanged && !existing?.verifiedAccountId)
       );
     if (gatewayBindingChanges) {
       // Protect every provider-bound order that can still need confirmation,
@@ -1216,6 +1227,7 @@ export const updatePaymentGateway = async (
       secretKey,
       webhookSecret,
       verifiedAccountId,
+      verifiedCredentialFingerprint,
     });
     const savedCfg = await getTenantStripeConfig(tenantId);
     sendSuccess(

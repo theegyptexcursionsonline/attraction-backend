@@ -576,7 +576,9 @@ export const getBundleLaunchReadiness = async (
       hasPublishableKey: !!config?.publishableKey,
       hasSecretKey: !!config?.secretKey,
       hasWebhookSecret: !!config?.webhookSecret,
-      credentialsVerified: !!config?.verifiedAccountId && !!config?.credentialsVerifiedAt,
+      credentialsVerified: !!config?.verifiedAccountId &&
+        !!config?.verifiedCredentialFingerprint &&
+        !!config?.credentialsVerifiedAt,
       webhookVerified: !!config?.webhookVerifiedAt,
       webhookRotationProtectedUntil:
         isStripeWebhookRotationProtected(config, now) && config?.previousWebhookValidUntil
