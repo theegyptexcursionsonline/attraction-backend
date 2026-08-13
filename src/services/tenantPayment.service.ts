@@ -1,5 +1,6 @@
 import { Tenant } from '../models/Tenant';
 import { decryptSecret, encryptSecret } from '../utils/secretCrypto';
+import crypto from 'crypto';
 
 export interface TenantStripeConfig {
   enabled: boolean;
@@ -12,11 +13,15 @@ export interface TenantStripeConfig {
   verifiedCredentialFingerprint?: string;
   credentialsVerifiedAt?: Date;
   webhookVerifiedAt?: Date;
+  webhookContextFingerprint?: string;
   configRevision?: number;
   configuredAt?: Date;
 }
 
 export const STRIPE_WEBHOOK_ROTATION_GRACE_MS = 72 * 60 * 60 * 1000;
+
+const stripeWebhookContextFingerprint = (secret: string): string =>
+  secret ? crypto.createHash('sha256').update(secret).digest('hex') : '';
 
 export const isStripeWebhookRotationProtected = (
   config: Pick<TenantStripeConfig, 'previousWebhookSecret' | 'previousWebhookValidUntil'> | null,
@@ -85,17 +90,20 @@ export const getTenantStripeConfig = async (
   const s = (tenant as { paymentSettings?: { stripe?: Record<string, unknown> } } | null)
     ?.paymentSettings?.stripe;
   if (!s) return null;
+  const currentWebhookSecret = decryptSecret(s.webhookSecretEnc as string);
   return {
     enabled: !!s.enabled,
     publishableKey: (s.publishableKey as string) || '',
     secretKey: decryptSecret(s.secretKeyEnc as string),
-    webhookSecret: decryptSecret(s.webhookSecretEnc as string),
+    webhookSecret: currentWebhookSecret,
     previousWebhookSecret: decryptSecret(s.previousWebhookSecretEnc as string),
     previousWebhookValidUntil: s.previousWebhookValidUntil as Date | undefined,
     verifiedAccountId: (s.verifiedAccountId as string) || '',
     verifiedCredentialFingerprint: (s.verifiedCredentialFingerprint as string) || '',
     credentialsVerifiedAt: s.credentialsVerifiedAt as Date | undefined,
     webhookVerifiedAt: s.webhookVerifiedAt as Date | undefined,
+    webhookContextFingerprint: (s.webhookContextFingerprint as string) ||
+      stripeWebhookContextFingerprint(currentWebhookSecret),
     configRevision: Number(s.configRevision || 0),
     configuredAt: s.configuredAt as Date | undefined,
   };
@@ -168,6 +176,8 @@ export const saveTenantStripeConfig = async (
     // account's webhook secret and a fresh signed delivery.
     stripe.webhookSecretEnc = '';
   }
+  const persistedWebhookSecret = decryptSecret(stripe.webhookSecretEnc as string);
+  stripe.webhookContextFingerprint = stripeWebhookContextFingerprint(persistedWebhookSecret);
   if (keyBindingChanged) {
     stripe.verifiedAccountId = undefined;
     stripe.verifiedCredentialFingerprint = undefined;
@@ -209,10 +219,15 @@ export const markTenantStripeWebhookVerified = async (
   tenantId: string,
   expected: Pick<
     TenantStripeConfig,
-    'configRevision' | 'configuredAt' | 'verifiedAccountId' | 'verifiedCredentialFingerprint'
+    'configRevision' | 'configuredAt' | 'verifiedAccountId' |
+    'verifiedCredentialFingerprint' | 'webhookContextFingerprint'
   >
 ): Promise<boolean> => {
-  if (!expected.verifiedAccountId || !expected.verifiedCredentialFingerprint) return false;
+  if (
+    !expected.verifiedAccountId ||
+    !expected.verifiedCredentialFingerprint ||
+    !expected.webhookContextFingerprint
+  ) return false;
   const expectedRevision = Number(expected.configRevision || 0);
   const expectedConfiguredAt = expected.configuredAt;
   const result = await Tenant.updateOne(
@@ -220,18 +235,29 @@ export const markTenantStripeWebhookVerified = async (
       _id: tenantId,
       'paymentSettings.stripe.verifiedAccountId': expected.verifiedAccountId,
       'paymentSettings.stripe.verifiedCredentialFingerprint': expected.verifiedCredentialFingerprint,
+      ...(expectedRevision === 0 ? {
+        $and: [
+          {
+            $or: [
+              { 'paymentSettings.stripe.webhookContextFingerprint': expected.webhookContextFingerprint },
+              { 'paymentSettings.stripe.webhookContextFingerprint': { $exists: false } },
+            ],
+          },
+          {
+            $or: [
+              { 'paymentSettings.stripe.configRevision': 0 },
+              { 'paymentSettings.stripe.configRevision': { $exists: false } },
+            ],
+          },
+        ],
+      } : {
+        'paymentSettings.stripe.webhookContextFingerprint': expected.webhookContextFingerprint,
+        'paymentSettings.stripe.configRevision': expectedRevision,
+      }),
       ...(expectedConfiguredAt ? {
         'paymentSettings.stripe.configuredAt': expectedConfiguredAt,
       } : {
         'paymentSettings.stripe.configuredAt': { $exists: false },
-      }),
-      ...(expectedRevision === 0 ? {
-        $or: [
-          { 'paymentSettings.stripe.configRevision': 0 },
-          { 'paymentSettings.stripe.configRevision': { $exists: false } },
-        ],
-      } : {
-        'paymentSettings.stripe.configRevision': expectedRevision,
       }),
     },
     { $set: { 'paymentSettings.stripe.webhookVerifiedAt': new Date() } }

@@ -1,4 +1,5 @@
 import { Tenant } from '../models/Tenant';
+import crypto from 'crypto';
 import {
   markTenantStripeWebhookVerified,
   saveTenantStripeConfig,
@@ -28,6 +29,7 @@ const tenantDocument = (webhookVerified: boolean) => ({
       webhookVerifiedAt: webhookVerified ? new Date('2030-01-01T00:00:00.000Z') : undefined,
       configRevision: 4,
       configuredAt: new Date('2030-01-01T00:00:00.000Z'),
+      webhookContextFingerprint: 'webhook-fingerprint-a',
     },
   },
   markModified: jest.fn(),
@@ -72,7 +74,52 @@ describe('tenant Stripe credential persistence', () => {
       previousWebhookSecretEnc: '',
       previousWebhookValidUntil: undefined,
       configRevision: 5,
+      webhookContextFingerprint: crypto
+        .createHash('sha256')
+        .update('whsec_replacement')
+        .digest('hex'),
     }));
+  });
+
+  it('distinguishes concurrent same-account webhook rotations under a frozen clock', async () => {
+    const documentB = tenantDocument(true);
+    const documentC = tenantDocument(true);
+    jest.useFakeTimers().setSystemTime(new Date('2030-03-17T00:00:00.000Z'));
+
+    try {
+      // Both documents are independently loaded copies of revision 4, as they
+      // would be in concurrent requests. Even when both saves compute revision
+      // 5 and the same timestamp, their secret-derived contexts remain unique.
+      preparePersistence(documentB);
+      await saveTenantStripeConfig('tenant-1', { webhookSecret: 'whsec_b' });
+      preparePersistence(documentC);
+      await saveTenantStripeConfig('tenant-1', { webhookSecret: 'whsec_c' });
+    } finally {
+      jest.useRealTimers();
+    }
+
+    expect(documentB.paymentSettings.stripe.configRevision).toBe(5);
+    expect(documentC.paymentSettings.stripe.configRevision).toBe(5);
+    expect(documentB.paymentSettings.stripe.configuredAt).toEqual(
+      documentC.paymentSettings.stripe.configuredAt
+    );
+    expect(documentB.paymentSettings.stripe.webhookContextFingerprint).not.toBe(
+      documentC.paymentSettings.stripe.webhookContextFingerprint
+    );
+
+    (Tenant.updateOne as jest.Mock).mockImplementation(async (filter) => ({
+      modifiedCount: filter['paymentSettings.stripe.webhookContextFingerprint'] ===
+        documentC.paymentSettings.stripe.webhookContextFingerprint ? 1 : 0,
+    }));
+    await expect(markTenantStripeWebhookVerified('tenant-1', {
+      configRevision: documentB.paymentSettings.stripe.configRevision,
+      configuredAt: documentB.paymentSettings.stripe.configuredAt,
+      verifiedAccountId: documentB.paymentSettings.stripe.verifiedAccountId,
+      verifiedCredentialFingerprint:
+        documentB.paymentSettings.stripe.verifiedCredentialFingerprint,
+      webhookContextFingerprint:
+        documentB.paymentSettings.stripe.webhookContextFingerprint,
+    })).resolves.toBe(false);
   });
 
   it('rejects a stale webhook trust write after the configuration revision changes', async () => {
@@ -83,6 +130,7 @@ describe('tenant Stripe credential persistence', () => {
       configuredAt: new Date('2030-01-01T00:00:00.000Z'),
       verifiedAccountId: 'acct_b',
       verifiedCredentialFingerprint: 'fingerprint_b',
+      webhookContextFingerprint: 'webhook-fingerprint-b',
     })).resolves.toBe(false);
 
     expect(Tenant.updateOne).toHaveBeenCalledWith(
@@ -92,6 +140,7 @@ describe('tenant Stripe credential persistence', () => {
         'paymentSettings.stripe.configuredAt': new Date('2030-01-01T00:00:00.000Z'),
         'paymentSettings.stripe.verifiedAccountId': 'acct_b',
         'paymentSettings.stripe.verifiedCredentialFingerprint': 'fingerprint_b',
+        'paymentSettings.stripe.webhookContextFingerprint': 'webhook-fingerprint-b',
       },
       { $set: { 'paymentSettings.stripe.webhookVerifiedAt': expect.any(Date) } }
     );
@@ -105,16 +154,27 @@ describe('tenant Stripe credential persistence', () => {
       configuredAt: undefined,
       verifiedAccountId: 'acct_legacy',
       verifiedCredentialFingerprint: 'fingerprint_legacy',
+      webhookContextFingerprint: 'webhook-fingerprint-legacy',
     })).resolves.toBe(true);
 
     expect(Tenant.updateOne).toHaveBeenCalledWith(
       expect.objectContaining({
         _id: 'tenant-1',
-        $or: [
-          { 'paymentSettings.stripe.configRevision': 0 },
-          { 'paymentSettings.stripe.configRevision': { $exists: false } },
-        ],
         'paymentSettings.stripe.configuredAt': { $exists: false },
+        $and: [
+          {
+            $or: [
+              { 'paymentSettings.stripe.webhookContextFingerprint': 'webhook-fingerprint-legacy' },
+              { 'paymentSettings.stripe.webhookContextFingerprint': { $exists: false } },
+            ],
+          },
+          {
+            $or: [
+              { 'paymentSettings.stripe.configRevision': 0 },
+              { 'paymentSettings.stripe.configRevision': { $exists: false } },
+            ],
+          },
+        ],
       }),
       { $set: { 'paymentSettings.stripe.webhookVerifiedAt': expect.any(Date) } }
     );

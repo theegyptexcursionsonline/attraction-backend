@@ -112,6 +112,7 @@ const stripeConfig = {
   credentialsVerifiedAt: new Date('2030-01-01T00:00:00.000Z'),
   configRevision: 4,
   configuredAt: new Date('2030-01-01T00:00:00.000Z'),
+  webhookContextFingerprint: 'webhook-fingerprint-a',
 };
 
 const bookingFixture = (overrides: Record<string, unknown> = {}) => ({
@@ -308,6 +309,7 @@ describe('Stripe payment hardening', () => {
         expect.objectContaining({
           configRevision: 4,
           configuredAt: new Date('2030-01-01T00:00:00.000Z'),
+          webhookContextFingerprint: 'webhook-fingerprint-a',
           verifiedAccountId: 'acct_verified',
           verifiedCredentialFingerprint: 'fingerprint_verified',
         })

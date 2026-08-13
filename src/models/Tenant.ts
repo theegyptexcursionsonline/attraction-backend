@@ -183,6 +183,7 @@ const tenantSchema = new Schema<ITenant>(
         verifiedCredentialFingerprint: String,
         credentialsVerifiedAt: Date,
         webhookVerifiedAt: Date,
+        webhookContextFingerprint: String,
         configRevision: { type: Number, default: 0, min: 0 },
       },
     },
