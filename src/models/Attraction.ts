@@ -98,6 +98,18 @@ const attractionSchema = new Schema<IAttraction>(
       name: { type: String, required: true },
       description: { type: String },
       price: { type: Number, required: true },
+      childPrice: { type: Number, min: 0 },
+      infantPrice: { type: Number, min: 0 },
+      discountPercentage: { type: Number, min: 0, max: 99.99 },
+      timeSlots: [{
+        id: { type: String, required: true },
+        label: { type: String, required: true },
+        startTime: { type: String, required: true },
+        endTime: { type: String, required: true },
+        adultPrice: { type: Number, min: 0 },
+        childPrice: { type: Number, min: 0 },
+        infantPrice: { type: Number, min: 0 },
+      }],
       originalPrice: { type: Number },
       // Optional lower price for residents (Egypt locals). Enforced only when
       // the tenant has pricingSettings.enableResidentPricing = true.

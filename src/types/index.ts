@@ -195,7 +195,20 @@ export interface IAttraction extends Document {
     id: string;
     name: string;
     description: string;
+    /** Adult price. Kept as `price` for rolling compatibility with existing clients. */
     price: number;
+    childPrice?: number;
+    infantPrice?: number;
+    discountPercentage?: number;
+    timeSlots?: Array<{
+      id: string;
+      label: string;
+      startTime: string;
+      endTime: string;
+      adultPrice?: number;
+      childPrice?: number;
+      infantPrice?: number;
+    }>;
     originalPrice?: number;
     residentPrice?: number;
   }>;
@@ -290,6 +303,12 @@ export interface IBooking extends Document {
     };
     unitPrice: number;
     totalPrice: number;
+    pricingBreakdown?: {
+      adultUnitPrice: number;
+      childUnitPrice: number;
+      infantUnitPrice: number;
+      discountPercentage: number;
+    };
     category?: 'foreigner' | 'resident';
     addons?: Array<{
       id: string;

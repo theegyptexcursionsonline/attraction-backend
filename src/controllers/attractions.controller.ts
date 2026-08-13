@@ -10,6 +10,7 @@ import { AuthRequest, IAttraction } from '../types';
 import { Types } from 'mongoose';
 import { escapeRegex } from '../utils/helpers';
 import { isSuperAdmin, callerTenantIds, attractionInCallerTenants } from '../utils/tenantScope';
+import { minimumTourPrice } from '../utils/attractionPricing';
 
 const PUBLIC_ATTRACTION_FIELDS = [
   '_id',
@@ -557,6 +558,9 @@ export const createAttraction = async (
     const attractionData = {
       ...req.body,
       category: normalizedCategory,
+      priceFrom: Array.isArray(req.body.pricingOptions) && req.body.pricingOptions.length > 0
+        ? minimumTourPrice(req.body.pricingOptions)
+        : req.body.priceFrom,
       // Default the supplier (owner) to the first assigned tenant.
       ownerTenantId: req.body.ownerTenantId || req.body.tenantIds?.[0],
       createdBy: req.user?._id,
@@ -638,7 +642,14 @@ export const updateAttraction = async (
 
     const attraction = await Attraction.findByIdAndUpdate(
       id,
-      { $set: req.body },
+      {
+        $set: {
+          ...req.body,
+          ...(Array.isArray(req.body.pricingOptions) && req.body.pricingOptions.length > 0
+            ? { priceFrom: minimumTourPrice(req.body.pricingOptions) }
+            : {}),
+        },
+      },
       { new: true, runValidators: true }
     );
 

@@ -72,10 +72,32 @@ export const createAttractionSchema = z.object({
   priceFrom: z.number().positive(),
   currency: z.string().min(1),
   pricingOptions: z.array(z.object({
-    id: z.string(),
-    name: z.string(),
+    id: z.string().trim().min(1, 'Pricing option ID is required'),
+    name: z.string().trim().min(1, 'Pricing option name is required'),
     description: z.string().optional().default(''),
-    price: z.number().positive(),
+    price: z.number().finite().positive('Adult price must be greater than zero'),
+    childPrice: z.number().finite().min(0, 'Child price cannot be negative').optional(),
+    infantPrice: z.number().finite().min(0, 'Infant price cannot be negative').optional(),
+    discountPercentage: z.number().finite().min(0).max(99.99, 'Discount must be below 100%').optional(),
+    timeSlots: z.array(z.object({
+      id: z.string().trim().min(1, 'Time-slot ID is required'),
+      label: z.string().trim().min(1, 'Time-slot label is required'),
+      startTime: z.string().trim().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Start time must use 24-hour HH:mm format'),
+      endTime: z.string().trim().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'End time must use 24-hour HH:mm format'),
+      adultPrice: z.number().finite().min(0, 'Adult slot price cannot be negative').optional(),
+      childPrice: z.number().finite().min(0, 'Child slot price cannot be negative').optional(),
+      infantPrice: z.number().finite().min(0, 'Infant slot price cannot be negative').optional(),
+    })).max(48, 'A pricing option cannot contain more than 48 time slots').superRefine((slots, ctx) => {
+      const ids = new Set<string>();
+      const starts = new Set<string>();
+      slots.forEach((slot, index) => {
+        if (ids.has(slot.id)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: [index, 'id'], message: 'Time-slot IDs must be unique within an option' });
+        if (starts.has(slot.startTime)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: [index, 'startTime'], message: 'Start times must be unique within an option' });
+        if (slot.endTime <= slot.startTime) ctx.addIssue({ code: z.ZodIssueCode.custom, path: [index, 'endTime'], message: 'End time must be after start time' });
+        ids.add(slot.id);
+        starts.add(slot.startTime);
+      });
+    }).optional().default([]),
     originalPrice: z.number().positive().optional(),
   })).min(1),
   entryWindows: z.array(z.object({

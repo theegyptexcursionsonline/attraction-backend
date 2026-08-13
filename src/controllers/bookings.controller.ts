@@ -41,6 +41,7 @@ import {
   isBundleComponentBooking,
   standaloneBookingClause,
 } from '../services/bookingRecordScope.service';
+import { calculateTourLinePrice } from '../utils/attractionPricing';
 
 // Compact, tenant-safe booking summary for webhook payloads. Contains only the
 // booking's own fields — never other tenants' data.
@@ -313,28 +314,30 @@ export const createBooking = async (
         item.category === 'resident' &&
         typeof option.residentPrice === 'number' &&
         option.residentPrice > 0;
+      const selectedOptionSlot = item.time
+        ? option.timeSlots?.find((window) => window.startTime === item.time)
+        : undefined;
       const selectedWindow = item.time
         ? attraction.entryWindows?.find((window) => window.startTime === item.time)
         : undefined;
       if (attraction.availability?.type === 'time-slots') {
-        if (!item.time || ((attraction.entryWindows?.length || 0) > 0 && !selectedWindow)) {
+        const hasConfiguredSlots = (option.timeSlots?.length || 0) > 0 || (attraction.entryWindows?.length || 0) > 0;
+        if (!item.time || (hasConfiguredSlots && !selectedOptionSlot && !selectedWindow)) {
           throw new Error('INVALID_TIME_SLOT');
         }
       }
-      // A configured departure price overrides the general pricing option. This
-      // is calculated here (never trusted from the client) so carts cannot alter it.
-      const unitPrice = typeof selectedWindow?.price === 'number'
-        ? selectedWindow.price
-        : useResident
-          ? (option.residentPrice as number)
-          : option.price;
+      const linePricing = calculateTourLinePrice({
+        option,
+        quantities,
+        time: item.time,
+        legacyEntryWindows: attraction.entryWindows || [],
+        useResidentPrice: useResident,
+      });
       const appliedCategory: 'foreigner' | 'resident' | undefined = residentPricingEnabled
         ? useResident
           ? 'resident'
           : 'foreigner'
         : undefined;
-
-      const totalPrice = Math.round(unitPrice * payableGuests * 100) / 100;
 
       // Validate add-ons against attraction's add-on catalog
       const validAddons = (item.addons || []).filter((addon) =>
@@ -354,8 +357,9 @@ export const createBooking = async (
         date: item.date,
         time: item.time,
         quantities,
-        unitPrice,
-        totalPrice,
+        unitPrice: linePricing.unitPrice,
+        totalPrice: linePricing.totalPrice,
+        pricingBreakdown: linePricing.pricingBreakdown,
         ...(appliedCategory ? { category: appliedCategory } : {}),
         ...(validAddons.length > 0 ? { addons: validAddons } : {}),
         // Persist hotel pickup when the guest supplied it (the widget only collects it

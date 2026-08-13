@@ -67,9 +67,16 @@ export const errorHandler = (
 
   // Mongoose validation error
   if (err.name === 'ValidationError') {
+    const fieldErrors = Object.entries(
+      (err as Error & { errors?: Record<string, { path?: string; message?: string }> }).errors || {}
+    ).map(([path, detail]) => ({
+      field: detail.path || path,
+      message: detail.message || `Invalid value for ${path}`,
+    }));
     res.status(400).json({
       success: false,
-      error: err.message,
+      error: 'Validation failed',
+      errors: fieldErrors.length > 0 ? fieldErrors : [{ field: 'form', message: err.message }],
     });
     return;
   }
