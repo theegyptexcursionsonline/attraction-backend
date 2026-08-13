@@ -113,6 +113,7 @@ export const saveTenantStripeConfig = async (
     verifiedAccountId?: string;
     verifiedCredentialFingerprint?: string;
     resetWebhookTrust?: boolean;
+    clearWebhookSecret?: boolean;
   }
 ): Promise<{ enabled: boolean; publishableKey: string; hasSecretKey: boolean; hasWebhookSecret: boolean }> => {
   // Load-mutate-save (not a dotted `$set`, which collides on the select:false
@@ -157,6 +158,12 @@ export const saveTenantStripeConfig = async (
       stripe.webhookVerifiedAt = undefined;
     }
   }
+  if (input.clearWebhookSecret && !input.webhookSecret) {
+    // Staged credentials that cannot be provider-bound must not inherit the
+    // prior account's endpoint secret. Re-enabling now requires the new
+    // account's webhook secret and a fresh signed delivery.
+    stripe.webhookSecretEnc = '';
+  }
   if (keyBindingChanged) {
     stripe.verifiedAccountId = undefined;
     stripe.verifiedCredentialFingerprint = undefined;
@@ -167,7 +174,9 @@ export const saveTenantStripeConfig = async (
     stripe.verifiedCredentialFingerprint = input.verifiedCredentialFingerprint;
     stripe.credentialsVerifiedAt = new Date();
   }
-  if (input.resetWebhookTrust) {
+  const unverifiedCredentialContextChanged = keyBindingChanged &&
+    !(input.verifiedAccountId && input.verifiedCredentialFingerprint);
+  if (input.resetWebhookTrust || unverifiedCredentialContextChanged) {
     // A signed event proves one exact Stripe account/mode/webhook context. It
     // cannot be carried to a different account or TEST/LIVE environment, and
     // an old-context secret cannot keep runtime checkout open during rotation.

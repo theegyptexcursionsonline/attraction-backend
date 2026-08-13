@@ -13,6 +13,7 @@ import {
   createRefund as stripeCreateRefund,
   constructWebhookEvent,
   verifyStripeCredentialBinding,
+  verifyStripeEventAccountBinding,
 } from '../services/stripe.service';
 import type { PaymentIntentResult } from '../services/stripe.service';
 import {
@@ -667,7 +668,11 @@ export const handleWebhook = async (
       sendError(res, 'Stripe webhook event ID is required', 400);
       return;
     }
-    if (verifiedWithCurrentSecret) {
+    if (
+      verifiedWithCurrentSecret &&
+      !stripeCfg.webhookVerifiedAt &&
+      await verifyStripeEventAccountBinding(stripeCfg.secretKey, eventId)
+    ) {
       await markTenantStripeWebhookVerified(tenantId);
     }
 
@@ -1163,9 +1168,14 @@ export const updatePaymentGateway = async (
 
     const verifiedAccountChanged = !!existing?.verifiedAccountId &&
       !!verifiedAccountId && verifiedAccountId !== existing.verifiedAccountId;
+    const credentialContextChangedWithoutFreshBinding =
+      (publishableChanged || secretKeyChanged) && !verifiedAccountId;
+    const freshBindingCannotProvePriorWebhookContext =
+      !!verifiedAccountId && !existing?.verifiedAccountId && !!existing?.webhookVerifiedAt;
     const webhookContextChanged = effectiveMode !== existingMode ||
       verifiedAccountChanged ||
-      (!!existing?.webhookVerifiedAt && !existing?.verifiedAccountId && secretKeyChanged);
+      credentialContextChangedWithoutFreshBinding ||
+      freshBindingCannotProvePriorWebhookContext;
     const webhookRotationPending = isStripeWebhookRotationProtected(existing) &&
       !existing?.webhookVerifiedAt;
     if (webhookSecretChanged && webhookRotationPending) {
@@ -1232,6 +1242,7 @@ export const updatePaymentGateway = async (
       verifiedAccountId,
       verifiedCredentialFingerprint,
       resetWebhookTrust: webhookContextChanged,
+      clearWebhookSecret: credentialContextChangedWithoutFreshBinding && !webhookSecret,
     });
     const savedCfg = await getTenantStripeConfig(tenantId);
     sendSuccess(

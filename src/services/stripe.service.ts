@@ -43,6 +43,25 @@ export interface StripeCallOptions {
   idempotencyKey?: string;
 }
 
+/**
+ * Bind a signed webhook delivery to the configured Stripe account. Signature
+ * verification proves the endpoint secret; retrieving the same immutable event
+ * through the current secret key proves it belongs to this account context.
+ */
+export const verifyStripeEventAccountBinding = async (
+  secretKey: string | undefined,
+  eventId: string
+): Promise<boolean> => {
+  const stripe = getStripe(secretKey);
+  if (!stripe) throw missingKeyError();
+  try {
+    const event = await stripe.events.retrieve(eventId);
+    return event.id === eventId;
+  } catch {
+    return false;
+  }
+};
+
 const missingKeyError = (): Error => new Error('Stripe secret key is required');
 
 /**

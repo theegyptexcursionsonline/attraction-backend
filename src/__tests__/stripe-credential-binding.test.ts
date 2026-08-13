@@ -1,5 +1,8 @@
 import Stripe from 'stripe';
-import { verifyStripeCredentialBinding } from '../services/stripe.service';
+import {
+  verifyStripeCredentialBinding,
+  verifyStripeEventAccountBinding,
+} from '../services/stripe.service';
 
 jest.mock('stripe', () => ({
   __esModule: true,
@@ -77,5 +80,30 @@ describe('Stripe credential account binding', () => {
       'pk_test_binding_failure_2'
     )).rejects.toThrow('No such setupintent');
     expect(cancel).toHaveBeenCalledWith('seti_wrong');
+  });
+
+  it('binds a webhook event to the current account secret key', async () => {
+    const secretClient = {
+      events: { retrieve: jest.fn().mockResolvedValue({ id: 'evt_current_account' }) },
+    };
+    (Stripe as unknown as jest.Mock).mockReturnValue(secretClient);
+
+    await expect(verifyStripeEventAccountBinding(
+      'sk_test_event_binding_3',
+      'evt_current_account'
+    )).resolves.toBe(true);
+    expect(secretClient.events.retrieve).toHaveBeenCalledWith('evt_current_account');
+  });
+
+  it('fails closed when a signed event cannot be retrieved through the current account', async () => {
+    const secretClient = {
+      events: { retrieve: jest.fn().mockRejectedValue(new Error('No such event')) },
+    };
+    (Stripe as unknown as jest.Mock).mockReturnValue(secretClient);
+
+    await expect(verifyStripeEventAccountBinding(
+      'sk_test_event_binding_4',
+      'evt_other_account'
+    )).resolves.toBe(false);
   });
 });

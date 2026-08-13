@@ -15,6 +15,7 @@ import {
   retrievePaymentIntent,
   retrieveSucceededRefundAmount,
   verifyStripeCredentialBinding,
+  verifyStripeEventAccountBinding,
 } from '../services/stripe.service';
 import {
   getTenantStripeConfig,
@@ -64,6 +65,7 @@ jest.mock('../services/stripe.service', () => ({
   retrieveSucceededRefundAmount: jest.fn(),
   constructWebhookEvent: jest.fn(),
   verifyStripeCredentialBinding: jest.fn(),
+  verifyStripeEventAccountBinding: jest.fn(),
 }));
 
 jest.mock('../services/tenantPayment.service', () => ({
@@ -221,6 +223,7 @@ describe('Stripe payment hardening', () => {
       chargesEnabled: true,
       credentialFingerprint: 'fingerprint_verified',
     });
+    (verifyStripeEventAccountBinding as jest.Mock).mockResolvedValue(true);
     (saveTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true });
   });
 
@@ -255,6 +258,24 @@ describe('Stripe payment hardening', () => {
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(Booking.findOneAndUpdate).not.toHaveBeenCalled();
+    });
+
+    it('does not restore webhook trust when the signed event is absent from the current account', async () => {
+      (constructWebhookEvent as jest.Mock).mockReturnValue(
+        webhookEvent('checkout.session.completed', {}, 'evt_other_account')
+      );
+      (verifyStripeEventAccountBinding as jest.Mock).mockResolvedValue(false);
+
+      const res = await invoke(handleWebhook as never, webhookRequest());
+
+      expect(verifyStripeEventAccountBinding).toHaveBeenCalledWith(
+        stripeConfig.secretKey,
+        'evt_other_account'
+      );
+      expect(markTenantStripeWebhookVerified).not.toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ received: true, ignored: 'checkout.session.completed' })
+      );
     });
 
     it('accepts an in-flight event signed by the prior secret without verifying the replacement', async () => {
@@ -544,6 +565,95 @@ describe('Stripe payment hardening', () => {
         expect.objectContaining({ resetWebhookTrust: true })
       );
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+    });
+
+    it('keeps checkout closed across disable, staged account change, and re-enable', async () => {
+      let stagedConfig: {
+        enabled: boolean;
+        publishableKey: string;
+        secretKey: string;
+        webhookSecret: string;
+        verifiedAccountId?: string;
+        verifiedCredentialFingerprint?: string;
+        credentialsVerifiedAt?: Date;
+        webhookVerifiedAt?: Date;
+        previousWebhookSecret?: string;
+        previousWebhookValidUntil?: Date;
+      } = {
+        ...stripeConfig,
+        webhookVerifiedAt: new Date('2030-01-01T00:00:00.000Z'),
+        previousWebhookSecret: 'whsec_previous',
+        previousWebhookValidUntil: new Date('2030-01-02T00:00:00.000Z'),
+      };
+      (getTenantStripeConfig as jest.Mock).mockImplementation(async () => stagedConfig);
+      (saveTenantStripeConfig as jest.Mock).mockImplementation(async (_tenantId, input) => {
+        const keyChanged = (input.publishableKey !== undefined && input.publishableKey !== stagedConfig.publishableKey) ||
+          (!!input.secretKey && input.secretKey !== stagedConfig.secretKey);
+        stagedConfig = {
+          ...stagedConfig,
+          enabled: typeof input.enabled === 'boolean' ? input.enabled : stagedConfig.enabled,
+          publishableKey: input.publishableKey ?? stagedConfig.publishableKey,
+          secretKey: input.secretKey || stagedConfig.secretKey,
+          webhookSecret: input.webhookSecret || stagedConfig.webhookSecret,
+          verifiedAccountId: keyChanged ? '' : stagedConfig.verifiedAccountId,
+          verifiedCredentialFingerprint: keyChanged ? '' : stagedConfig.verifiedCredentialFingerprint,
+          credentialsVerifiedAt: keyChanged ? undefined : stagedConfig.credentialsVerifiedAt,
+          ...(input.verifiedAccountId && input.verifiedCredentialFingerprint ? {
+            verifiedAccountId: input.verifiedAccountId,
+            verifiedCredentialFingerprint: input.verifiedCredentialFingerprint,
+            credentialsVerifiedAt: new Date(),
+          } : {}),
+          ...(input.resetWebhookTrust || (keyChanged && !input.verifiedAccountId) ? {
+            webhookVerifiedAt: undefined,
+            previousWebhookSecret: '',
+            previousWebhookValidUntil: undefined,
+          } : {}),
+          ...(input.clearWebhookSecret ? { webhookSecret: '' } : {}),
+        };
+        return { enabled: stagedConfig.enabled };
+      });
+
+      await invoke(updatePaymentGateway as never, {
+        params: { tenantId: TENANT_ID }, protocol: 'https',
+        get: jest.fn(() => 'api.example.test'), body: { enabled: false },
+      });
+      expect(stagedConfig.webhookVerifiedAt).toEqual(expect.any(Date));
+
+      await invoke(updatePaymentGateway as never, {
+        params: { tenantId: TENANT_ID }, protocol: 'https',
+        get: jest.fn(() => 'api.example.test'),
+        body: { publishableKey: 'pk_test_account_b', secretKey: 'sk_test_account_b' },
+      });
+      expect(saveTenantStripeConfig).toHaveBeenLastCalledWith(
+        TENANT_ID,
+        expect.objectContaining({ resetWebhookTrust: true, clearWebhookSecret: true })
+      );
+      expect(stagedConfig.webhookVerifiedAt).toBeUndefined();
+      expect(stagedConfig.previousWebhookSecret).toBe('');
+      expect(stagedConfig.webhookSecret).toBe('');
+
+      (verifyStripeCredentialBinding as jest.Mock).mockResolvedValueOnce({
+        accountId: 'acct_b', chargesEnabled: true, credentialFingerprint: 'fingerprint_b',
+      });
+      const blockedEnable = await invoke(updatePaymentGateway as never, {
+        params: { tenantId: TENANT_ID }, protocol: 'https',
+        get: jest.fn(() => 'api.example.test'), body: { enabled: true },
+      });
+
+      expect(blockedEnable.status).toHaveBeenCalledWith(400);
+      expect(stagedConfig.enabled).toBe(false);
+
+      await invoke(updatePaymentGateway as never, {
+        params: { tenantId: TENANT_ID }, protocol: 'https',
+        get: jest.fn(() => 'api.example.test'),
+        body: { enabled: true, webhookSecret: 'whsec_account_b' },
+      });
+
+      expect(stagedConfig.enabled).toBe(true);
+      expect(stagedConfig.verifiedAccountId).toBe('acct_b');
+      expect(stagedConfig.webhookSecret).toBe('whsec_account_b');
+      expect(stagedConfig.webhookVerifiedAt).toBeUndefined();
+      expect(markTenantStripeWebhookVerified).not.toHaveBeenCalled();
     });
 
     it('allows a same-account API key and webhook-secret rotation with bounded overlap', async () => {

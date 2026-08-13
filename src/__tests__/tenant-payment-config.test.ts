@@ -80,6 +80,31 @@ describe('tenant Stripe credential persistence', () => {
       verifiedAccountId: undefined,
       verifiedCredentialFingerprint: undefined,
       credentialsVerifiedAt: undefined,
+      webhookVerifiedAt: undefined,
+    }));
+  });
+
+  it('fails closed when account keys are staged while the gateway cannot verify them', async () => {
+    const document = tenantDocument(true);
+    document.paymentSettings.stripe.enabled = false;
+    document.paymentSettings.stripe.previousWebhookSecretEnc = 'enc:whsec_previous';
+    document.paymentSettings.stripe.previousWebhookValidUntil = new Date('2030-01-02T00:00:00.000Z');
+    preparePersistence(document);
+
+    await saveTenantStripeConfig('tenant-1', {
+      publishableKey: 'pk_test_account_b',
+      secretKey: 'sk_test_account_b',
+      clearWebhookSecret: true,
+    });
+
+    expect(document.paymentSettings.stripe).toEqual(expect.objectContaining({
+      verifiedAccountId: undefined,
+      verifiedCredentialFingerprint: undefined,
+      credentialsVerifiedAt: undefined,
+      webhookSecretEnc: '',
+      webhookVerifiedAt: undefined,
+      previousWebhookSecretEnc: '',
+      previousWebhookValidUntil: undefined,
     }));
   });
 
