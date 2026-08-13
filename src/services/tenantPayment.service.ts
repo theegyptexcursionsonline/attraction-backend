@@ -6,10 +6,21 @@ export interface TenantStripeConfig {
   publishableKey: string;
   secretKey: string;
   webhookSecret: string;
+  previousWebhookSecret?: string;
+  previousWebhookValidUntil?: Date;
   verifiedAccountId?: string;
   credentialsVerifiedAt?: Date;
   webhookVerifiedAt?: Date;
 }
+
+export const STRIPE_WEBHOOK_ROTATION_GRACE_MS = 72 * 60 * 60 * 1000;
+
+export const isStripeWebhookRotationProtected = (
+  config: Pick<TenantStripeConfig, 'previousWebhookSecret' | 'previousWebhookValidUntil'> | null,
+  now = new Date()
+): boolean => !!config?.previousWebhookSecret &&
+  !!config.previousWebhookValidUntil &&
+  new Date(config.previousWebhookValidUntil).getTime() > now.getTime();
 
 export type StripeCredentialMode = 'test' | 'live' | 'mixed' | 'unconfigured';
 
@@ -66,7 +77,7 @@ export const getTenantStripeConfig = async (
   tenantId: unknown
 ): Promise<TenantStripeConfig | null> => {
   const tenant = await Tenant.findById(tenantId as string)
-    .select('+paymentSettings.stripe.secretKeyEnc +paymentSettings.stripe.webhookSecretEnc')
+    .select('+paymentSettings.stripe.secretKeyEnc +paymentSettings.stripe.webhookSecretEnc +paymentSettings.stripe.previousWebhookSecretEnc')
     .lean();
   const s = (tenant as { paymentSettings?: { stripe?: Record<string, unknown> } } | null)
     ?.paymentSettings?.stripe;
@@ -76,6 +87,8 @@ export const getTenantStripeConfig = async (
     publishableKey: (s.publishableKey as string) || '',
     secretKey: decryptSecret(s.secretKeyEnc as string),
     webhookSecret: decryptSecret(s.webhookSecretEnc as string),
+    previousWebhookSecret: decryptSecret(s.previousWebhookSecretEnc as string),
+    previousWebhookValidUntil: s.previousWebhookValidUntil as Date | undefined,
     verifiedAccountId: (s.verifiedAccountId as string) || '',
     credentialsVerifiedAt: s.credentialsVerifiedAt as Date | undefined,
     webhookVerifiedAt: s.webhookVerifiedAt as Date | undefined,
@@ -102,7 +115,7 @@ export const saveTenantStripeConfig = async (
   // encrypted subpaths in Mongoose). Explicitly select the hidden fields so they
   // round-trip when other fields change.
   const tenant = await Tenant.findById(tenantId).select(
-    '+paymentSettings.stripe.secretKeyEnc +paymentSettings.stripe.webhookSecretEnc'
+    '+paymentSettings.stripe.secretKeyEnc +paymentSettings.stripe.webhookSecretEnc +paymentSettings.stripe.previousWebhookSecretEnc'
   );
   if (!tenant) throw new Error('Tenant not found');
 
@@ -114,8 +127,22 @@ export const saveTenantStripeConfig = async (
   if (input.publishableKey !== undefined) stripe.publishableKey = input.publishableKey.trim();
   if (input.secretKey) stripe.secretKeyEnc = encryptSecret(input.secretKey.trim());
   if (input.webhookSecret) {
-    stripe.webhookSecretEnc = encryptSecret(input.webhookSecret.trim());
-    stripe.webhookVerifiedAt = undefined;
+    const nextWebhookSecret = input.webhookSecret.trim();
+    const currentWebhookSecret = decryptSecret(stripe.webhookSecretEnc as string);
+    if (nextWebhookSecret !== currentWebhookSecret) {
+      if (currentWebhookSecret && stripe.webhookVerifiedAt) {
+        // Stripe can sign with the old or new endpoint secret during a controlled
+        // rotation. Retain the last verified secret only for a short overlap so
+        // in-flight retries are not lost while the replacement is being proven.
+        stripe.previousWebhookSecretEnc = stripe.webhookSecretEnc;
+        stripe.previousWebhookValidUntil = new Date(Date.now() + STRIPE_WEBHOOK_ROTATION_GRACE_MS);
+      } else {
+        stripe.previousWebhookSecretEnc = '';
+        stripe.previousWebhookValidUntil = undefined;
+      }
+      stripe.webhookSecretEnc = encryptSecret(nextWebhookSecret);
+      stripe.webhookVerifiedAt = undefined;
+    }
   }
   if (input.verifiedAccountId) {
     stripe.verifiedAccountId = input.verifiedAccountId;

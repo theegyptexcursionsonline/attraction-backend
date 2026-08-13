@@ -568,11 +568,29 @@ export const markBundleSettlementPaid = async (input: {
   if (!order) throw new BundleOperationsError('ORDER_NOT_FOUND', 'Bundle order not found', 404);
   const component = order.components.find((item) => item.componentId === input.componentId);
   if (!component) throw new BundleOperationsError('COMPONENT_NOT_FOUND', 'Bundle component not found', 404);
-  if (component.settlementStatus === 'paid') return order;
+  if (component.settlementStatus === 'paid') {
+    if (component.settlementOperationId === input.operationId) return order;
+    throw new BundleOperationsError(
+      'SETTLEMENT_OPERATION_CONFLICT',
+      'This component was settled by a different payout operation',
+      409
+    );
+  }
   if (component.settlementStatus !== 'payable') {
     throw new BundleOperationsError('SETTLEMENT_NOT_PAYABLE', 'Settlement is not payable', 409);
   }
+  const reusedOperation = await BundleOrder.findOne({
+    'components.settlementOperationId': input.operationId,
+  }).session(session);
+  if (reusedOperation) {
+    throw new BundleOperationsError(
+      'SETTLEMENT_OPERATION_REUSED',
+      'This payout operation is already bound to another component',
+      409
+    );
+  }
   component.settlementStatus = 'paid';
+  component.settlementOperationId = input.operationId;
   await order.save({ session });
   await Booking.updateOne(
     { bundleOrderId: order._id, bundleComponentId: component.componentId },
@@ -611,6 +629,89 @@ export const markBundleSettlementPaid = async (input: {
     command: 'mark_paid',
     fromState: 'payable',
     toState: 'paid',
+    correlationId: input.operationId,
+    metadata: { componentId: component.componentId, amountMinor: component.supplierNetTotalMinor },
+  }, session);
+  return order;
+});
+
+export const resolveBundleSettlementDispute = async (input: {
+  orderId: string;
+  componentId: string;
+  operationId: string;
+  resolution: 'recovered' | 'written_off';
+  reason: string;
+  actorId: Types.ObjectId;
+}): Promise<IBundleOrder> => runBundleTransaction(async (session) => {
+  const order = await BundleOrder.findById(input.orderId).session(session);
+  if (!order) throw new BundleOperationsError('ORDER_NOT_FOUND', 'Bundle order not found', 404);
+  const component = order.components.find((item) => item.componentId === input.componentId);
+  if (!component) throw new BundleOperationsError('COMPONENT_NOT_FOUND', 'Bundle component not found', 404);
+  if (component.settlementStatus !== 'disputed') {
+    if (
+      component.settlementDisputeOperationId === input.operationId &&
+      component.settlementDisputeResolution === input.resolution
+    ) return order;
+    throw new BundleOperationsError(
+      'SETTLEMENT_DISPUTE_STATE_INVALID',
+      'This component has no unresolved settlement dispute',
+      409
+    );
+  }
+  const reusedOperation = await BundleOrder.findOne({
+    'components.settlementDisputeOperationId': input.operationId,
+  }).session(session);
+  if (reusedOperation) {
+    throw new BundleOperationsError(
+      'SETTLEMENT_DISPUTE_OPERATION_REUSED',
+      'This dispute operation is already bound to another component',
+      409
+    );
+  }
+  component.settlementStatus = 'not_eligible';
+  component.settlementDisputeOperationId = input.operationId;
+  component.settlementDisputeResolution = input.resolution;
+  const unresolved = order.components.some((item) => item.settlementStatus === 'disputed');
+  order.recovery.required = unresolved;
+  order.recovery.reason = unresolved
+    ? 'A refunded supplier settlement still requires resolution'
+    : undefined;
+  await order.save({ session });
+  if (input.resolution === 'recovered') {
+    await appendBalancedLedger({
+      orderId: order._id,
+      operationId: `settlement-dispute:${input.operationId}`,
+      storefrontTenantId: order.storefrontTenantId,
+      currency: order.currency,
+      lines: [
+        {
+          account: 'supplier_settlement',
+          direction: 'debit',
+          amountMinor: component.supplierNetTotalMinor,
+          supplierTenantId: component.supplierTenantId,
+          componentId: component.componentId,
+        },
+        {
+          account: 'customer_refund',
+          direction: 'credit',
+          amountMinor: component.supplierNetTotalMinor,
+          supplierTenantId: component.supplierTenantId,
+          componentId: component.componentId,
+        },
+      ],
+    }, session);
+  }
+  await appendBundleEvent({
+    aggregateType: 'settlement',
+    aggregateId: order._id,
+    storefrontTenantId: order.storefrontTenantId,
+    supplierTenantId: component.supplierTenantId,
+    actorType: 'user',
+    actorId: input.actorId,
+    command: `resolve_dispute_${input.resolution}`,
+    fromState: 'disputed',
+    toState: 'not_eligible',
+    reason: input.reason,
     correlationId: input.operationId,
     metadata: { componentId: component.componentId, amountMinor: component.supplierNetTotalMinor },
   }, session);

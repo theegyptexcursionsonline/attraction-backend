@@ -176,6 +176,8 @@ const tenantSchema = new Schema<ITenant>(
         publishableKey: { type: String, default: '' },
         secretKeyEnc: { type: String, default: '', select: false },
         webhookSecretEnc: { type: String, default: '', select: false },
+        previousWebhookSecretEnc: { type: String, default: '', select: false },
+        previousWebhookValidUntil: Date,
         configuredAt: Date,
         verifiedAccountId: String,
         credentialsVerifiedAt: Date,

@@ -133,6 +133,62 @@ describe('Bundle per-tenant launch readiness', () => {
     expect(evaluateBundleLaunchReadiness(input).acceptingCheckout).toBe(true);
   });
 
+  it('keeps active checkout protected during webhook rotation but requires replacement verification for activation', () => {
+    const input = base();
+    input.tenant.activationMode = 'test';
+    input.payment.webhookVerified = false;
+    input.payment.webhookRotationProtectedUntil = '2030-01-02T00:00:00.000Z';
+
+    const readiness = evaluateBundleLaunchReadiness(
+      input,
+      new Date('2030-01-01T00:00:00.000Z')
+    );
+
+    expect(readiness.state).toBe('setup_required');
+    expect(readiness.canActivateTest).toBe(false);
+    expect(readiness.acceptingCheckout).toBe(true);
+    expect(readiness.checks).toContainEqual(expect.objectContaining({
+      key: 'payment_gateway',
+      state: 'action_required',
+      detail: expect.stringContaining('Checkout is protected by the prior verified webhook secret'),
+    }));
+  });
+
+  it('keeps normal queued outbox work visible without flapping checkout closed', () => {
+    const input = base();
+    input.tenant.activationMode = 'test';
+    input.operations.outboxPendingCount = 3;
+
+    const readiness = evaluateBundleLaunchReadiness(input);
+
+    expect(readiness.state).toBe('test_ready');
+    expect(readiness.canActivateTest).toBe(true);
+    expect(readiness.acceptingCheckout).toBe(true);
+    expect(readiness.checks).toContainEqual(expect.objectContaining({
+      key: 'notification_queue',
+      state: 'pass',
+      detail: '3 delivery item(s) are queued or retrying normally; none require manual recovery.',
+    }));
+  });
+
+  it('blocks a new activation for dead letters without taking an active checkout offline', () => {
+    const input = base();
+    input.tenant.activationMode = 'test';
+    input.operations.outboxPendingCount = 2;
+    input.operations.outboxDeadLetterCount = 1;
+
+    const readiness = evaluateBundleLaunchReadiness(input);
+
+    expect(readiness.state).toBe('blocked');
+    expect(readiness.canActivateTest).toBe(false);
+    expect(readiness.acceptingCheckout).toBe(true);
+    expect(readiness.checks).toContainEqual(expect.objectContaining({
+      key: 'notification_queue',
+      state: 'blocked',
+      detail: '1 delivery item(s) require manual recovery; 2 are queued or retrying.',
+    }));
+  });
+
   it('fails checkout closed when an activated tenant is no longer active', () => {
     const input = base();
     input.tenant.activationMode = 'test';
@@ -178,7 +234,6 @@ describe('Bundle per-tenant launch readiness', () => {
     ['disabled recovery service', (input: BundleLaunchReadinessInput) => { input.features.recovery = false; }],
     ['mixed payment keys', (input: BundleLaunchReadinessInput) => { input.payment.mode = 'mixed'; }],
     ['pending recovery work', (input: BundleLaunchReadinessInput) => { input.operations.recoveryQueueCount = 1; }],
-    ['pending notification delivery', (input: BundleLaunchReadinessInput) => { input.operations.outboxPendingCount = 1; }],
     ['dead-lettered notification delivery', (input: BundleLaunchReadinessInput) => { input.operations.outboxDeadLetterCount = 1; }],
   ])('blocks activation for %s', (_name, mutate) => {
     const input = base();

@@ -13,6 +13,7 @@ describe('Bundle to Win route permission matrix', () => {
     expect(orders).toMatch(/'\/admin\/:id\/refund',[\s\S]*requireSuperAdmin/s);
     expect(orders).toMatch(/release-settlement',[\s\S]*requireSuperAdmin/s);
     expect(orders).toMatch(/mark-settled',[\s\S]*requireSuperAdmin/s);
+    expect(orders).toMatch(/resolve-settlement-dispute',[\s\S]*requireSuperAdmin[\s\S]*validate\(bundleSettlementDisputeSchema\)/s);
     expect(orders).toMatch(/'\/admin\/:id\/recover',[\s\S]*requireBundleFeature\('recovery'\)[\s\S]*requireSuperAdmin/s);
     expect(bundles).toMatch(/router\.put\([\s\S]*'\/admin\/readiness',[\s\S]*requireSuperAdmin[\s\S]*validate\(updateBundleLaunchModeSchema\)/s);
   });

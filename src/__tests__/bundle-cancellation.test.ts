@@ -6,8 +6,11 @@ import {
   cancelBundleOrder,
   expireBundleOrder,
   fulfilBundleComponent,
+  markBundleSettlementPaid,
   releaseBundleSettlement,
+  resolveBundleSettlementDispute,
 } from '../services/bundleOperations.service';
+import { appendBalancedLedger } from '../services/bundleAudit.service';
 import { cancelPaymentIntent, createPaymentIntent } from '../services/stripe.service';
 import { getTenantStripeConfig } from '../services/tenantPayment.service';
 
@@ -234,5 +237,84 @@ describe('bundle cancellation lifecycle', () => {
       actorId: new Types.ObjectId(),
     });
     expect(released.components[0].settlementStatus).toBe('payable');
+  });
+
+  it('binds one immutable payout operation to exactly one component', async () => {
+    const payoutOperation = 'payout:provider:0001';
+    const payable = component('fulfilled', 'payable');
+    const order = {
+      _id: new Types.ObjectId(),
+      storefrontTenantId: new Types.ObjectId(),
+      currency: 'USD',
+      components: [payable],
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    (BundleOrder.findById as jest.Mock).mockReturnValue(queryResult(order));
+    (BundleOrder.findOne as jest.Mock).mockReturnValue(queryResult(null));
+    (Booking.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
+
+    await markBundleSettlementPaid({
+      orderId: order._id.toString(),
+      componentId: payable.componentId,
+      operationId: payoutOperation,
+      actorId: new Types.ObjectId(),
+    });
+
+    expect(payable).toEqual(expect.objectContaining({
+      settlementStatus: 'paid',
+      settlementOperationId: payoutOperation,
+    }));
+    await expect(markBundleSettlementPaid({
+      orderId: order._id.toString(),
+      componentId: payable.componentId,
+      operationId: 'payout:provider:0002',
+      actorId: new Types.ObjectId(),
+    })).rejects.toEqual(expect.objectContaining({ code: 'SETTLEMENT_OPERATION_CONFLICT' }));
+  });
+
+  it('resolves a refunded paid-settlement dispute with explicit cash recovery evidence', async () => {
+    const disputed = {
+      ...component('fulfilled', 'disputed'),
+      componentId: 'disputed-component',
+      refundStatus: 'full',
+      settlementOperationId: 'payout:provider:prior',
+    };
+    const order = {
+      _id: new Types.ObjectId(),
+      storefrontTenantId: new Types.ObjectId(),
+      status: 'refunded',
+      currency: 'USD',
+      recovery: { required: true, reason: 'A refunded supplier settlement still requires resolution', attempts: 0 },
+      components: [disputed],
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    (BundleOrder.findById as jest.Mock).mockReturnValue(queryResult(order));
+    (BundleOrder.findOne as jest.Mock).mockReturnValue(queryResult(null));
+
+    await resolveBundleSettlementDispute({
+      orderId: order._id.toString(),
+      componentId: disputed.componentId,
+      operationId: 'clawback:provider:0001',
+      resolution: 'recovered',
+      reason: 'Supplier payout returned and bank evidence attached',
+      actorId: new Types.ObjectId(),
+    });
+
+    expect(disputed).toEqual(expect.objectContaining({
+      settlementStatus: 'not_eligible',
+      settlementDisputeOperationId: 'clawback:provider:0001',
+      settlementDisputeResolution: 'recovered',
+    }));
+    expect(order.recovery.required).toBe(false);
+    expect(appendBalancedLedger).toHaveBeenCalledWith(
+      expect.objectContaining({
+        operationId: 'settlement-dispute:clawback:provider:0001',
+        lines: expect.arrayContaining([
+          expect.objectContaining({ account: 'supplier_settlement', direction: 'debit' }),
+          expect.objectContaining({ account: 'customer_refund', direction: 'credit' }),
+        ]),
+      }),
+      expect.anything()
+    );
   });
 });

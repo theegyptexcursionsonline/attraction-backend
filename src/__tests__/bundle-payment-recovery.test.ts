@@ -11,6 +11,7 @@ import {
 import { retrieveRefund } from '../services/stripe.service';
 import { createRefund } from '../services/stripe.service';
 import { getTenantStripeConfig } from '../services/tenantPayment.service';
+import { appendBalancedLedger } from '../services/bundleAudit.service';
 
 jest.mock('../models/Booking', () => ({
   Booking: {
@@ -204,6 +205,9 @@ describe('bundle payment recovery contracts', () => {
       paymentStatus: 'succeeded',
       currency: 'USD',
       totalMinor: 20_000,
+      platformAllocationMinor: 2_000,
+      paymentFeeReserveMinor: 1_000,
+      taxMinor: 1_000,
       refundedMinor: 0,
       refundPendingMinor: 5_000,
       recovery: { required: false, attempts: 0 },
@@ -211,6 +215,8 @@ describe('bundle payment recovery contracts', () => {
         {
           componentId: 'still-confirmed',
           customerAllocationMinor: 10_000,
+          supplierNetTotalMinor: 8_000,
+          supplierTenantId: new Types.ObjectId(),
           refundedMinor: 0,
           refundStatus: 'none',
           status: 'confirmed',
@@ -219,6 +225,8 @@ describe('bundle payment recovery contracts', () => {
         {
           componentId: 'already-fulfilled',
           customerAllocationMinor: 10_000,
+          supplierNetTotalMinor: 8_000,
+          supplierTenantId: new Types.ObjectId(),
           refundedMinor: 0,
           refundStatus: 'none',
           status: 'fulfilled',
@@ -277,6 +285,9 @@ describe('bundle payment recovery contracts', () => {
       paymentStatus: 'succeeded',
       currency: 'USD',
       totalMinor: 20_000,
+      platformAllocationMinor: 2_000,
+      paymentFeeReserveMinor: 1_000,
+      taxMinor: 1_000,
       refundedMinor: 0,
       refundPendingMinor: 20_000,
       recovery: {
@@ -293,6 +304,8 @@ describe('bundle payment recovery contracts', () => {
           time: '09:00',
           quantities: { adults: 2, children: 0, infants: 0 },
           customerAllocationMinor: 10_000,
+          supplierNetTotalMinor: 8_000,
+          supplierTenantId: new Types.ObjectId(),
           refundedMinor: 0,
           status: 'cancel_pending',
           settlementStatus: 'on_hold',
@@ -305,6 +318,8 @@ describe('bundle payment recovery contracts', () => {
           time: '09:00',
           quantities: { adults: 2, children: 0, infants: 0 },
           customerAllocationMinor: 10_000,
+          supplierNetTotalMinor: 8_000,
+          supplierTenantId: new Types.ObjectId(),
           refundedMinor: 0,
           status: 'fulfilled',
           settlementStatus: 'accrued',
@@ -359,6 +374,80 @@ describe('bundle payment recovery contracts', () => {
       expect.anything(),
       expect.objectContaining({ new: false })
     );
+    expect(appendBalancedLedger).toHaveBeenCalledWith(
+      expect.objectContaining({
+        operationId: `refund:${operationId}`,
+        lines: expect.arrayContaining([
+          expect.objectContaining({ account: 'supplier_payable', direction: 'debit', amountMinor: 8_000 }),
+          expect.objectContaining({ account: 'platform_revenue', direction: 'debit', amountMinor: 2_000 }),
+          expect.objectContaining({ account: 'cash_collected', direction: 'credit', amountMinor: 20_000 }),
+        ]),
+      }),
+      expect.anything()
+    );
+  });
+
+  it('keeps a fully refunded paid settlement in recovery until the supplier cash-out is resolved', async () => {
+    const operationId = 'refund:paid-settlement-001';
+    const order = {
+      _id: new Types.ObjectId(),
+      storefrontTenantId: new Types.ObjectId(),
+      checkoutMode: 'test',
+      stripePaymentIntentId: 'pi_paid_settlement',
+      status: 'completed',
+      paymentStatus: 'succeeded',
+      currency: 'USD',
+      totalMinor: 10_000,
+      platformAllocationMinor: 2_000,
+      paymentFeeReserveMinor: 0,
+      taxMinor: 0,
+      refundedMinor: 0,
+      refundPendingMinor: 10_000,
+      recovery: { required: false, attempts: 0 },
+      components: [{
+        componentId: 'paid-component',
+        attractionId: new Types.ObjectId(),
+        supplyOfferId: new Types.ObjectId(),
+        supplierTenantId: new Types.ObjectId(),
+        date: '2030-04-01',
+        time: '09:00',
+        quantities: { adults: 1, children: 0, infants: 0 },
+        customerAllocationMinor: 10_000,
+        supplierNetTotalMinor: 8_000,
+        refundedMinor: 0,
+        status: 'fulfilled',
+        settlementStatus: 'paid',
+      }],
+      refunds: [{ operationId, amountMinor: 10_000, status: 'requested', reason: 'Approved post-service refund' }],
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    (BundleOrder.findById as jest.Mock)
+      .mockResolvedValueOnce(order)
+      .mockReturnValueOnce(queryResult(order));
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true, publishableKey: 'pk_test_public', secretKey: 'sk_test_secret' });
+    (createRefund as jest.Mock).mockResolvedValue({ id: 're_paid_settlement', status: 'succeeded', amount: 10_000 });
+    (Booking.updateMany as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
+
+    const result = await refundBundleOrder({
+      orderId: order._id.toString(),
+      operationId,
+      amountMinor: 10_000,
+      reason: 'Approved post-service refund',
+      actorId: new Types.ObjectId(),
+    });
+
+    expect(result.order.components[0].settlementStatus).toBe('disputed');
+    expect(result.order.recovery).toEqual(expect.objectContaining({
+      required: true,
+      reason: 'A refunded supplier settlement still requires resolution',
+    }));
+    const ledger = (appendBalancedLedger as jest.Mock).mock.calls.at(-1)?.[0];
+    expect(ledger.lines).not.toContainEqual(expect.objectContaining({ account: 'supplier_payable' }));
+    expect(ledger.lines).toContainEqual(expect.objectContaining({
+      account: 'customer_refund',
+      direction: 'debit',
+      amountMinor: 8_000,
+    }));
   });
 
   it('fails closed when a full refund cannot bind future inventory to a child booking', async () => {

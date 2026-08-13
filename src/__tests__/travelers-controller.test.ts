@@ -75,6 +75,12 @@ describe('traveler directory', () => {
     expect(serialized).toContain('customer');
     expect(serialized).toContain('guest');
     expect(serialized).toContain('guestDetails.email');
+    expect(serialized).toContain('bundleOrderId');
+    expect(serialized).toContain('$exists');
+    const lookup = pipeline.find((stage: Record<string, unknown>) => '$lookup' in stage) as {
+      $lookup: { pipeline: Array<Record<string, unknown>> };
+    };
+    expect(lookup.$lookup.pipeline[0]).toEqual({ $match: { bundleOrderId: { $exists: false } } });
   });
 
   it('maps booking brands, latest activity, and currency-safe spend summaries', async () => {

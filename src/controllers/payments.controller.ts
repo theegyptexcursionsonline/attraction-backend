@@ -18,6 +18,7 @@ import type { PaymentIntentResult } from '../services/stripe.service';
 import {
   evaluateStripeConfirmation,
   getTenantStripeConfig,
+  isStripeWebhookRotationProtected,
   markTenantStripeWebhookVerified,
   saveTenantStripeConfig,
 } from '../services/tenantPayment.service';
@@ -637,11 +638,27 @@ export const handleWebhook = async (
     }
 
     let event;
+    let verifiedWithCurrentSecret = false;
     try {
       event = constructWebhookEvent(stripeCfg.secretKey, stripeCfg.webhookSecret, req.body, signature);
+      verifiedWithCurrentSecret = true;
     } catch {
-      sendError(res, 'Invalid webhook signature', 400);
-      return;
+      const previousStillValid = isStripeWebhookRotationProtected(stripeCfg);
+      if (!previousStillValid) {
+        sendError(res, 'Invalid webhook signature', 400);
+        return;
+      }
+      try {
+        event = constructWebhookEvent(
+          stripeCfg.secretKey,
+          stripeCfg.previousWebhookSecret,
+          req.body,
+          signature
+        );
+      } catch {
+        sendError(res, 'Invalid webhook signature', 400);
+        return;
+      }
     }
 
     const eventId = event?.id;
@@ -650,7 +667,9 @@ export const handleWebhook = async (
       sendError(res, 'Stripe webhook event ID is required', 400);
       return;
     }
-    await markTenantStripeWebhookVerified(tenantId);
+    if (verifiedWithCurrentSecret) {
+      await markTenantStripeWebhookVerified(tenantId);
+    }
 
     const obj = event.data.object as Stripe.PaymentIntent;
     const intentId = obj?.id;
@@ -1094,25 +1113,6 @@ export const updatePaymentGateway = async (
       return;
     }
 
-    const changesBundleEnvironment =
-      (existingMode === 'test' || existingMode === 'live') &&
-      (effectiveMode !== existingMode || enabled === false);
-    if (changesBundleEnvironment) {
-      const openBundleOrders = await BundleOrder.countDocuments({
-        storefrontTenantId: tenantId,
-        checkoutMode: existingMode,
-        status: { $nin: ['cancelled', 'refunded', 'reservation_failed'] },
-      });
-      if (openBundleOrders > 0) {
-        sendError(
-          res,
-          `${openBundleOrders} Bundle order(s) still depend on the current ${existingMode.toUpperCase()} gateway; resolve them before changing or disabling it`,
-          409
-        );
-        return;
-      }
-    }
-
     // Don't let a tenant enable the gateway without the keys it needs.
     if (enabled) {
       const willHaveSecret = !!effectiveSecretKey;
@@ -1139,6 +1139,73 @@ export const updatePaymentGateway = async (
         verifiedAccountId = verified.accountId;
       } catch {
         sendError(res, 'Stripe credentials could not be verified with the provider', 400);
+        return;
+      }
+    }
+
+    const publishableChanged = publishableKey !== undefined &&
+      String(publishableKey).trim() !== (existing?.publishableKey || '');
+    const secretKeyChanged = !!secretKey &&
+      String(secretKey).trim() !== (existing?.secretKey || '');
+    const webhookSecretChanged = !!webhookSecret &&
+      String(webhookSecret).trim() !== (existing?.webhookSecret || '');
+    const verifiedAccountChanged = !!existing?.verifiedAccountId &&
+      !!verifiedAccountId && verifiedAccountId !== existing.verifiedAccountId;
+    const webhookRotationPending = isStripeWebhookRotationProtected(existing) &&
+      !existing?.webhookVerifiedAt;
+    if (webhookSecretChanged && webhookRotationPending) {
+      sendError(
+        res,
+        'The current webhook-secret rotation must receive a verified signed event before another rotation can begin',
+        409
+      );
+      return;
+    }
+    const secretBindingUnknown = !existing?.verifiedAccountId && secretKeyChanged;
+    const gatewayBindingChanges =
+      (existingMode === 'test' || existingMode === 'live') &&
+      (
+        effectiveMode !== existingMode ||
+        enabled === false ||
+        verifiedAccountChanged ||
+        secretBindingUnknown
+      );
+    if (gatewayBindingChanges) {
+      // Protect every provider-bound order that can still need confirmation,
+      // recovery or refund. Terminal status alone is not sufficient because a
+      // completed order remains refundable until its full amount is returned.
+      const providerBoundOrders = await BundleOrder.countDocuments({
+        storefrontTenantId: tenantId,
+        checkoutMode: existingMode,
+        stripePaymentIntentId: { $exists: true, $ne: '' },
+        $expr: { $lt: [{ $ifNull: ['$refundedMinor', 0] }, '$totalMinor'] },
+      });
+      if (providerBoundOrders > 0) {
+        sendError(
+          res,
+          `${providerBoundOrders} Bundle order(s) still depend on the current ${existingMode.toUpperCase()} gateway; fully reconcile them before changing its account, public key, webhook secret, mode, or enabled state`,
+          409
+        );
+        return;
+      }
+    }
+
+    if (publishableChanged && (existingMode === 'test' || existingMode === 'live')) {
+      // A PaymentIntent client secret is account-bound. Preserve the public key
+      // until every customer session that can still confirm payment is closed.
+      const activePaymentSessions = await BundleOrder.countDocuments({
+        storefrontTenantId: tenantId,
+        checkoutMode: existingMode,
+        stripePaymentIntentId: { $exists: true, $ne: '' },
+        paymentStatus: { $ne: 'succeeded' },
+        status: { $nin: ['cancelled', 'refunded', 'reservation_failed'] },
+      });
+      if (activePaymentSessions > 0) {
+        sendError(
+          res,
+          `${activePaymentSessions} Bundle payment session(s) still depend on the current public key; expire or reconcile them before changing it`,
+          409
+        );
         return;
       }
     }

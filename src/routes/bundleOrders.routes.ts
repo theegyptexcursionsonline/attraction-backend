@@ -13,6 +13,7 @@ import {
   recoverBundleOrderHandler,
   refundBundleOrderHandler,
   releaseBundleSettlementHandler,
+  resolveBundleSettlementDisputeHandler,
 } from '../controllers/bundleOrders.controller';
 import {
   requireBundleFeature,
@@ -25,6 +26,7 @@ import {
   bundleIdParamsSchema,
   bundleReferenceParamsSchema,
   bundleSettlementPaidSchema,
+  bundleSettlementDisputeSchema,
   cancelBundleOrderSchema,
   createBundleOrderSchema,
   recoverBundleOrderSchema,
@@ -81,6 +83,14 @@ router.post(
   validateParams(bundleComponentParamsSchema),
   validate(bundleSettlementPaidSchema),
   markBundleSettlementPaidHandler
+);
+router.post(
+  '/admin/:id/components/:componentId/resolve-settlement-dispute',
+  authenticate,
+  requireSuperAdmin,
+  validateParams(bundleComponentParamsSchema),
+  validate(bundleSettlementDisputeSchema),
+  resolveBundleSettlementDisputeHandler
 );
 router.post(
   '/admin/:id/recover',

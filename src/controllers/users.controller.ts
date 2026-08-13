@@ -302,6 +302,10 @@ export const getTravelers = async (
           from: Booking.collection.name,
           let: { travelerId: '$_id', travelerEmail: { $toLower: '$email' } },
           pipeline: [
+            // Bundle children belong to the master-order projection contract.
+            // A raw aggregation bypasses Booking query middleware, so exclude
+            // them explicitly before matching customer identity or tenant.
+            { $match: { bundleOrderId: { $exists: false } } },
             { $match: { $expr: { $and: bookingExpressions } } },
             {
               $facet: {

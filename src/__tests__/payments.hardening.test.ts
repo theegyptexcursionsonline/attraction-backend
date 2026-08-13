@@ -16,7 +16,11 @@ import {
   retrieveSucceededRefundAmount,
   verifyStripeAccount,
 } from '../services/stripe.service';
-import { getTenantStripeConfig, saveTenantStripeConfig } from '../services/tenantPayment.service';
+import {
+  getTenantStripeConfig,
+  markTenantStripeWebhookVerified,
+  saveTenantStripeConfig,
+} from '../services/tenantPayment.service';
 import { BundleOrder } from '../models/BundleOrder';
 import { sendBookingConfirmation } from '../services/email.service';
 import { recordInboundEvent } from '../services/webhook.service';
@@ -65,6 +69,9 @@ jest.mock('../services/stripe.service', () => ({
 jest.mock('../services/tenantPayment.service', () => ({
   evaluateStripeConfirmation: jest.fn().mockReturnValue({ allowed: true, verifyIntent: true }),
   getTenantStripeConfig: jest.fn(),
+  isStripeWebhookRotationProtected: jest.fn((config) => !!config?.previousWebhookSecret &&
+    !!config?.previousWebhookValidUntil &&
+    new Date(config.previousWebhookValidUntil).getTime() > Date.now()),
   markTenantStripeWebhookVerified: jest.fn().mockResolvedValue(undefined),
   saveTenantStripeConfig: jest.fn(),
 }));
@@ -98,6 +105,7 @@ const stripeConfig = {
   publishableKey: 'pk_test_public',
   secretKey: 'sk_test_secret',
   webhookSecret: 'whsec_test',
+  verifiedAccountId: 'acct_verified',
 };
 
 const bookingFixture = (overrides: Record<string, unknown> = {}) => ({
@@ -241,6 +249,31 @@ describe('Stripe payment hardening', () => {
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(Booking.findOneAndUpdate).not.toHaveBeenCalled();
+    });
+
+    it('accepts an in-flight event signed by the prior secret without verifying the replacement', async () => {
+      (getTenantStripeConfig as jest.Mock).mockResolvedValue({
+        ...stripeConfig,
+        previousWebhookSecret: 'whsec_previous',
+        previousWebhookValidUntil: new Date(Date.now() + 60_000),
+      });
+      (constructWebhookEvent as jest.Mock)
+        .mockImplementationOnce(() => { throw new Error('not the replacement secret'); })
+        .mockReturnValueOnce(webhookEvent('checkout.session.completed'));
+
+      const res = await invoke(handleWebhook as never, webhookRequest());
+
+      expect(constructWebhookEvent).toHaveBeenNthCalledWith(
+        2,
+        stripeConfig.secretKey,
+        'whsec_previous',
+        expect.any(Buffer),
+        'valid-signature'
+      );
+      expect(markTenantStripeWebhookVerified).not.toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ received: true, ignored: 'checkout.session.completed' })
+      );
     });
 
     it('does not treat checkout.session.completed as payment proof', async () => {
@@ -417,6 +450,79 @@ describe('Stripe payment hardening', () => {
         expect.objectContaining({ verifiedAccountId: 'acct_verified' })
       );
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+    });
+
+    it('blocks a same-mode Stripe account change while a provider-bound Bundle order remains refundable', async () => {
+      (BundleOrder.countDocuments as jest.Mock).mockResolvedValue(1);
+      (verifyStripeAccount as jest.Mock).mockResolvedValue({
+        accountId: 'acct_replacement',
+        chargesEnabled: true,
+      });
+
+      const res = await invoke(updatePaymentGateway as never, {
+        params: { tenantId: TENANT_ID },
+        protocol: 'https',
+        get: jest.fn(() => 'api.example.test'),
+        body: {
+          enabled: true,
+          publishableKey: 'pk_test_replacement',
+          secretKey: 'sk_test_replacement',
+          webhookSecret: 'whsec_replacement',
+        },
+      });
+
+      expect(BundleOrder.countDocuments).toHaveBeenCalledWith({
+        storefrontTenantId: TENANT_ID,
+        checkoutMode: 'test',
+        stripePaymentIntentId: { $exists: true, $ne: '' },
+        $expr: { $lt: [{ $ifNull: ['$refundedMinor', 0] }, '$totalMinor'] },
+      });
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(saveTenantStripeConfig).not.toHaveBeenCalled();
+    });
+
+    it('allows a same-account API key and webhook-secret rotation with bounded overlap', async () => {
+      const res = await invoke(updatePaymentGateway as never, {
+        params: { tenantId: TENANT_ID },
+        protocol: 'https',
+        get: jest.fn(() => 'api.example.test'),
+        body: {
+          enabled: true,
+          secretKey: 'sk_test_replacement',
+          webhookSecret: 'whsec_replacement',
+        },
+      });
+
+      expect(verifyStripeAccount).toHaveBeenCalledWith('sk_test_replacement');
+      expect(BundleOrder.countDocuments).not.toHaveBeenCalled();
+      expect(saveTenantStripeConfig).toHaveBeenCalledWith(
+        TENANT_ID,
+        expect.objectContaining({
+          secretKey: 'sk_test_replacement',
+          webhookSecret: 'whsec_replacement',
+          verifiedAccountId: 'acct_verified',
+        })
+      );
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+    });
+
+    it('refuses a second webhook-secret rotation before the replacement is verified', async () => {
+      (getTenantStripeConfig as jest.Mock).mockResolvedValue({
+        ...stripeConfig,
+        webhookVerifiedAt: undefined,
+        previousWebhookSecret: 'whsec_previous',
+        previousWebhookValidUntil: new Date(Date.now() + 60_000),
+      });
+
+      const res = await invoke(updatePaymentGateway as never, {
+        params: { tenantId: TENANT_ID },
+        protocol: 'https',
+        get: jest.fn(() => 'api.example.test'),
+        body: { enabled: true, webhookSecret: 'whsec_second_replacement' },
+      });
+
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(saveTenantStripeConfig).not.toHaveBeenCalled();
     });
   });
 

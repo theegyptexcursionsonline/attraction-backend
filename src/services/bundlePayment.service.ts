@@ -573,6 +573,7 @@ export const refundBundleOrder = async (input: {
       order.components.map((component) => component.customerAllocationMinor - component.refundedMinor)
     );
     const fromState = order.status;
+    const settlementStatusesBeforeRefund = order.components.map((component) => component.settlementStatus);
     const releasableComponents = order.components.filter((component) =>
       ['reserved', 'confirmed', 'cancel_pending', 'refund_pending'].includes(component.status)
     );
@@ -597,8 +598,11 @@ export const refundBundleOrder = async (input: {
     order.paymentStatus = full ? 'refunded' : 'partially_refunded';
     order.status = full ? 'refunded' : 'partially_refunded';
     if (full) {
-      order.recovery.required = false;
-      order.recovery.reason = undefined;
+      const disputedSettlement = order.components.some((component) => component.settlementStatus === 'disputed');
+      order.recovery.required = disputedSettlement;
+      order.recovery.reason = disputedSettlement
+        ? 'A refunded supplier settlement still requires resolution'
+        : undefined;
     }
     await order.save({ session });
     if (full) {
@@ -646,15 +650,48 @@ export const refundBundleOrder = async (input: {
       { $set: { settlementStatus: 'pending' } },
       { session }
     );
+    const refundLedgerLines: LedgerLine[] = [
+      { account: 'cash_collected', direction: 'credit', amountMinor: input.amountMinor },
+    ];
+    if (full) {
+      const reversalLines: LedgerLine[] = [
+        ...order.components.flatMap((component, index) =>
+          settlementStatusesBeforeRefund[index] === 'paid'
+            ? []
+            : [{
+                account: 'supplier_payable' as const,
+                direction: 'debit' as const,
+                amountMinor: component.supplierNetTotalMinor,
+                supplierTenantId: component.supplierTenantId,
+                componentId: component.componentId,
+              }]
+        ),
+        { account: 'platform_revenue', direction: 'debit', amountMinor: order.platformAllocationMinor },
+        { account: 'payment_fee_reserve', direction: 'debit', amountMinor: order.paymentFeeReserveMinor },
+        { account: 'tax_payable', direction: 'debit', amountMinor: order.taxMinor },
+      ];
+      const reversedMinor = reversalLines.reduce((sum, line) => sum + line.amountMinor, 0);
+      refundLedgerLines.push(...reversalLines);
+      if (reversedMinor !== input.amountMinor) {
+        refundLedgerLines.push({
+          account: 'customer_refund',
+          direction: reversedMinor > input.amountMinor ? 'credit' : 'debit',
+          amountMinor: Math.abs(reversedMinor - input.amountMinor),
+        });
+      }
+    } else {
+      refundLedgerLines.push({
+        account: 'customer_refund',
+        direction: 'debit',
+        amountMinor: input.amountMinor,
+      });
+    }
     await appendBalancedLedger({
       orderId: order._id,
       operationId: `refund:${input.operationId}`,
       storefrontTenantId: order.storefrontTenantId,
       currency: order.currency,
-      lines: [
-        { account: 'customer_refund', direction: 'debit', amountMinor: input.amountMinor },
-        { account: 'cash_collected', direction: 'credit', amountMinor: input.amountMinor },
-      ],
+      lines: refundLedgerLines,
     }, session);
     await appendBundleEvent({
       aggregateType: 'order',

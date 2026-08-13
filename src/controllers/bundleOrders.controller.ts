@@ -28,6 +28,7 @@ import {
   markBundleSettlementPaid,
   recoverBundleOrder,
   releaseBundleSettlement,
+  resolveBundleSettlementDispute,
 } from '../services/bundleOperations.service';
 
 const known = (error: unknown, res: Response, next: NextFunction): void => {
@@ -100,6 +101,26 @@ export const markBundleSettlementPaidHandler = async (
       actorId: req.user!._id,
     });
     sendSuccess(res, order, 'Settlement marked paid');
+  } catch (error) {
+    known(error, res, next);
+  }
+};
+
+export const resolveBundleSettlementDisputeHandler = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const order = await resolveBundleSettlementDispute({
+      orderId: req.params.id,
+      componentId: req.params.componentId,
+      operationId: req.body.operationId,
+      resolution: req.body.resolution,
+      reason: req.body.reason,
+      actorId: req.user!._id,
+    });
+    sendSuccess(res, order, 'Settlement dispute resolved');
   } catch (error) {
     known(error, res, next);
   }

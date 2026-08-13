@@ -27,6 +27,9 @@ export interface IBundleOrderComponent {
   customerAllocationMinor: number;
   status: ComponentStatus;
   settlementStatus: BundleSettlementStatus;
+  settlementOperationId?: string;
+  settlementDisputeOperationId?: string;
+  settlementDisputeResolution?: 'recovered' | 'written_off';
   bookingId?: Types.ObjectId;
   bookingReference?: string;
   refundedMinor: number;
@@ -116,6 +119,9 @@ const componentSchema = new Schema<IBundleOrderComponent>(
     customerAllocationMinor: { type: Number, required: true, min: 0, validate: Number.isSafeInteger },
     status: { type: String, enum: [...COMPONENT_STATUSES], default: 'reserved' },
     settlementStatus: { type: String, enum: [...SETTLEMENT_STATUSES], default: 'on_hold' },
+    settlementOperationId: { type: String, maxlength: 128 },
+    settlementDisputeOperationId: { type: String, maxlength: 128 },
+    settlementDisputeResolution: { type: String, enum: ['recovered', 'written_off'] },
     bookingId: { type: Schema.Types.ObjectId, ref: 'Booking' },
     bookingReference: { type: String },
     refundedMinor: { type: Number, default: 0, min: 0, validate: Number.isSafeInteger },
@@ -188,5 +194,7 @@ bundleOrderSchema.index({ storefrontTenantId: 1, createdAt: -1, _id: -1 });
 bundleOrderSchema.index({ 'components.supplierTenantId': 1, createdAt: -1, _id: -1 });
 bundleOrderSchema.index({ status: 1, holdExpiresAt: 1 });
 bundleOrderSchema.index({ userId: 1, createdAt: -1 });
+bundleOrderSchema.index({ 'components.settlementOperationId': 1 }, { unique: true, sparse: true });
+bundleOrderSchema.index({ 'components.settlementDisputeOperationId': 1 }, { unique: true, sparse: true });
 
 export const BundleOrder = mongoose.model<IBundleOrder>('BundleOrder', bundleOrderSchema);

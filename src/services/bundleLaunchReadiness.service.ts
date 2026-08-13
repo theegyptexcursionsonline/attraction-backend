@@ -11,7 +11,11 @@ import { Tenant } from '../models/Tenant';
 import { BundleLaunchMode, ITenant } from '../types';
 import { appendBundleEvent } from './bundleAudit.service';
 import { runBundleTransaction } from './bundleInventory.service';
-import { getTenantStripeConfig, stripeCredentialMode } from './tenantPayment.service';
+import {
+  getTenantStripeConfig,
+  isStripeWebhookRotationProtected,
+  stripeCredentialMode,
+} from './tenantPayment.service';
 
 export type BundleLaunchState = 'blocked' | 'setup_required' | 'test_ready' | 'live_ready';
 export type BundleReadinessCheckState = 'pass' | 'action_required' | 'blocked';
@@ -42,6 +46,7 @@ export interface BundleLaunchReadinessInput {
     hasWebhookSecret: boolean;
     credentialsVerified: boolean;
     webhookVerified: boolean;
+    webhookRotationProtectedUntil?: string;
   };
   supply: {
     currencyPools: BundleSupplyCurrencyPool[];
@@ -112,6 +117,18 @@ export const evaluateBundleLaunchReadiness = (
     input.payment.credentialsVerified &&
     input.payment.webhookVerified &&
     !['mixed', 'unconfigured'].includes(input.payment.mode);
+  const webhookRotationProtected = !input.payment.webhookVerified &&
+    !!input.payment.webhookRotationProtectedUntil &&
+    new Date(input.payment.webhookRotationProtectedUntil).getTime() > evaluatedAt.getTime();
+  const runtimePaymentComplete = paymentComplete || (
+    input.payment.enabled &&
+    input.payment.hasPublishableKey &&
+    input.payment.hasSecretKey &&
+    input.payment.hasWebhookSecret &&
+    input.payment.credentialsVerified &&
+    webhookRotationProtected &&
+    !['mixed', 'unconfigured'].includes(input.payment.mode)
+  );
   const eligiblePools = input.supply.currencyPools.filter((pool) => pool.eligible);
   const supplyReady = eligiblePools.length > 0;
   const hasPublished = input.storefront.publishedBundleCount > 0;
@@ -120,15 +137,22 @@ export const evaluateBundleLaunchReadiness = (
   const futureCapacityReady = hasPublished &&
     input.storefront.futureCapacityReadyBundleCount === input.storefront.publishedBundleCount;
   const recoveryClear = input.operations.recoveryQueueCount === 0;
-  const notificationQueueClear = input.operations.outboxPendingCount === 0 &&
-    input.operations.outboxDeadLetterCount === 0;
+  // Pending, processing and scheduled-retry rows are the normal transactional
+  // outbox lifecycle. They must remain visible to operators, but cannot make a
+  // healthy checkout flap closed between enqueue and the next worker sweep.
+  // Dead letters are different: they require manual recovery and block a new
+  // TEST/LIVE activation. An already-active checkout remains available so an
+  // email-provider outage cannot take the money path offline.
+  const notificationQueueHealthy = input.operations.outboxDeadLetterCount === 0;
   const unsafeConfiguration = input.payment.mode === 'mixed';
-  const platformBlocked = !tenantReady || !featureReady || !recoveryClear ||
-    !notificationQueueClear || unsafeConfiguration;
+  const runtimeBlocked = !tenantReady || !featureReady || !recoveryClear || unsafeConfiguration;
+  const activationBlocked = runtimeBlocked || !notificationQueueHealthy;
   const setupComplete = paymentComplete && supplyReady && hasPublished && allPublishedSellable && futureCapacityReady;
-  const canActivateTest = !platformBlocked && setupComplete && input.payment.mode === 'test';
-  const canActivateLive = !platformBlocked && setupComplete && input.payment.mode === 'live';
-  const state: BundleLaunchState = platformBlocked
+  const runtimeSetupComplete = runtimePaymentComplete && supplyReady && hasPublished && allPublishedSellable && futureCapacityReady;
+  const runtimeReady = !runtimeBlocked && runtimeSetupComplete;
+  const canActivateTest = !activationBlocked && setupComplete && input.payment.mode === 'test';
+  const canActivateLive = !activationBlocked && setupComplete && input.payment.mode === 'live';
+  const state: BundleLaunchState = activationBlocked
     ? 'blocked'
     : !setupComplete
       ? 'setup_required'
@@ -157,6 +181,8 @@ export const evaluateBundleLaunchReadiness = (
       paymentComplete,
       paymentComplete
         ? `Stripe ${input.payment.mode.toUpperCase()} credentials and signed webhook are provider-verified.`
+        : webhookRotationProtected
+          ? `Checkout is protected by the prior verified webhook secret until ${input.payment.webhookRotationProtectedUntil}; verify the replacement before that deadline.`
         : unsafeConfiguration
           ? 'Stripe publishable and secret key modes do not match.'
           : 'Verify this tenant\'s Stripe credentials and deliver a signed webhook before activation.',
@@ -210,10 +236,12 @@ export const evaluateBundleLaunchReadiness = (
     check(
       'notification_queue',
       'Notification delivery queue',
-      notificationQueueClear,
-      notificationQueueClear
-        ? 'No Bundle notification requires delivery or manual recovery.'
-        : `${input.operations.outboxPendingCount} delivery item(s) are pending or retrying; ${input.operations.outboxDeadLetterCount} are dead-lettered.`,
+      notificationQueueHealthy,
+      notificationQueueHealthy
+        ? input.operations.outboxPendingCount === 0
+          ? 'No Bundle notification requires delivery or manual recovery.'
+          : `${input.operations.outboxPendingCount} delivery item(s) are queued or retrying normally; none require manual recovery.`
+        : `${input.operations.outboxDeadLetterCount} delivery item(s) require manual recovery; ${input.operations.outboxPendingCount} are queued or retrying.`,
       true
     ),
   ];
@@ -224,8 +252,10 @@ export const evaluateBundleLaunchReadiness = (
     canActivateTest,
     canActivateLive,
     acceptingCheckout:
-      (input.tenant.activationMode === 'test' && canActivateTest) ||
-      (input.tenant.activationMode === 'live' && canActivateLive),
+      runtimeReady && (
+        (input.tenant.activationMode === 'test' && input.payment.mode === 'test') ||
+        (input.tenant.activationMode === 'live' && input.payment.mode === 'live')
+      ),
     checks,
     evaluatedAt: evaluatedAt.toISOString(),
   };
@@ -516,7 +546,10 @@ export const getBundleLaunchReadiness = async (
         { status: { $in: ['manual_review', 'paid_allocation_pending'] } },
         {
           'recovery.required': true,
-          status: { $nin: ['cancelled', 'refunded', 'reservation_failed'] },
+          $or: [
+            { status: { $nin: ['cancelled', 'refunded', 'reservation_failed'] } },
+            { 'components.settlementStatus': 'disputed' },
+          ],
         },
       ],
     }),
@@ -545,6 +578,10 @@ export const getBundleLaunchReadiness = async (
       hasWebhookSecret: !!config?.webhookSecret,
       credentialsVerified: !!config?.verifiedAccountId && !!config?.credentialsVerifiedAt,
       webhookVerified: !!config?.webhookVerifiedAt,
+      webhookRotationProtectedUntil:
+        isStripeWebhookRotationProtected(config, now) && config?.previousWebhookValidUntil
+          ? config.previousWebhookValidUntil.toISOString()
+          : undefined,
     },
     supply: { currencyPools },
     storefront: {

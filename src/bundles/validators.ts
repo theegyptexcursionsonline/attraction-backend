@@ -177,6 +177,12 @@ export const bundleSettlementPaidSchema = z.object({
   operationId: z.string().trim().min(16).max(128).regex(/^[A-Za-z0-9._:-]+$/),
 });
 
+export const bundleSettlementDisputeSchema = z.object({
+  operationId: z.string().trim().min(16).max(128).regex(/^[A-Za-z0-9._:-]+$/),
+  resolution: z.enum(['recovered', 'written_off']),
+  reason: z.string().trim().min(3).max(500),
+});
+
 export const cancelBundleOrderSchema = z.object({
   reason: z.string().trim().min(3).max(500),
 });
