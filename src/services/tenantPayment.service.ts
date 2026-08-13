@@ -12,6 +12,8 @@ export interface TenantStripeConfig {
   verifiedCredentialFingerprint?: string;
   credentialsVerifiedAt?: Date;
   webhookVerifiedAt?: Date;
+  configRevision?: number;
+  configuredAt?: Date;
 }
 
 export const STRIPE_WEBHOOK_ROTATION_GRACE_MS = 72 * 60 * 60 * 1000;
@@ -94,6 +96,8 @@ export const getTenantStripeConfig = async (
     verifiedCredentialFingerprint: (s.verifiedCredentialFingerprint as string) || '',
     credentialsVerifiedAt: s.credentialsVerifiedAt as Date | undefined,
     webhookVerifiedAt: s.webhookVerifiedAt as Date | undefined,
+    configRevision: Number(s.configRevision || 0),
+    configuredAt: s.configuredAt as Date | undefined,
   };
 };
 
@@ -184,6 +188,9 @@ export const saveTenantStripeConfig = async (
     stripe.previousWebhookSecretEnc = '';
     stripe.previousWebhookValidUntil = undefined;
   }
+  // Advance the compare-and-set token on every configuration save. A webhook
+  // handler using an older snapshot can no longer trust a newly saved context.
+  stripe.configRevision = Number(stripe.configRevision || 0) + 1;
   stripe.configuredAt = new Date();
 
   tenant.markModified('paymentSettings');
@@ -198,9 +205,36 @@ export const saveTenantStripeConfig = async (
   };
 };
 
-export const markTenantStripeWebhookVerified = async (tenantId: string): Promise<void> => {
-  await Tenant.updateOne(
-    { _id: tenantId },
+export const markTenantStripeWebhookVerified = async (
+  tenantId: string,
+  expected: Pick<
+    TenantStripeConfig,
+    'configRevision' | 'configuredAt' | 'verifiedAccountId' | 'verifiedCredentialFingerprint'
+  >
+): Promise<boolean> => {
+  if (!expected.verifiedAccountId || !expected.verifiedCredentialFingerprint) return false;
+  const expectedRevision = Number(expected.configRevision || 0);
+  const expectedConfiguredAt = expected.configuredAt;
+  const result = await Tenant.updateOne(
+    {
+      _id: tenantId,
+      'paymentSettings.stripe.verifiedAccountId': expected.verifiedAccountId,
+      'paymentSettings.stripe.verifiedCredentialFingerprint': expected.verifiedCredentialFingerprint,
+      ...(expectedConfiguredAt ? {
+        'paymentSettings.stripe.configuredAt': expectedConfiguredAt,
+      } : {
+        'paymentSettings.stripe.configuredAt': { $exists: false },
+      }),
+      ...(expectedRevision === 0 ? {
+        $or: [
+          { 'paymentSettings.stripe.configRevision': 0 },
+          { 'paymentSettings.stripe.configRevision': { $exists: false } },
+        ],
+      } : {
+        'paymentSettings.stripe.configRevision': expectedRevision,
+      }),
+    },
     { $set: { 'paymentSettings.stripe.webhookVerifiedAt': new Date() } }
   );
+  return result.modifiedCount === 1;
 };

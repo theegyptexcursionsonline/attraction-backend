@@ -183,6 +183,7 @@ const tenantSchema = new Schema<ITenant>(
         verifiedCredentialFingerprint: String,
         credentialsVerifiedAt: Date,
         webhookVerifiedAt: Date,
+        configRevision: { type: Number, default: 0, min: 0 },
       },
     },
     // Bundle launches are tenant-specific. Existing tenants remain in safe

@@ -74,7 +74,7 @@ jest.mock('../services/tenantPayment.service', () => ({
   isStripeWebhookRotationProtected: jest.fn((config) => !!config?.previousWebhookSecret &&
     !!config?.previousWebhookValidUntil &&
     new Date(config.previousWebhookValidUntil).getTime() > Date.now()),
-  markTenantStripeWebhookVerified: jest.fn().mockResolvedValue(undefined),
+  markTenantStripeWebhookVerified: jest.fn().mockResolvedValue(true),
   saveTenantStripeConfig: jest.fn(),
 }));
 
@@ -110,6 +110,8 @@ const stripeConfig = {
   verifiedAccountId: 'acct_verified',
   verifiedCredentialFingerprint: 'fingerprint_verified',
   credentialsVerifiedAt: new Date('2030-01-01T00:00:00.000Z'),
+  configRevision: 4,
+  configuredAt: new Date('2030-01-01T00:00:00.000Z'),
 };
 
 const bookingFixture = (overrides: Record<string, unknown> = {}) => ({
@@ -273,6 +275,43 @@ describe('Stripe payment hardening', () => {
         'evt_other_account'
       );
       expect(markTenantStripeWebhookVerified).not.toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ received: true, ignored: 'checkout.session.completed' })
+      );
+    });
+
+    it('compare-and-sets trust against the exact configuration snapshot after provider verification', async () => {
+      (constructWebhookEvent as jest.Mock).mockReturnValue(
+        webhookEvent('checkout.session.completed', {}, 'evt_snapshot_bound')
+      );
+      let releaseProviderLookup: (() => void) | undefined;
+      (verifyStripeEventAccountBinding as jest.Mock).mockImplementation(() =>
+        new Promise<boolean>((resolve) => {
+          releaseProviderLookup = () => resolve(true);
+        })
+      );
+
+      const pending = invoke(handleWebhook as never, webhookRequest());
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(releaseProviderLookup).toBeDefined();
+
+      // This represents account C being saved after the handler read account B.
+      // The real persistence update will modify zero rows because configRevision
+      // and both account-bound fields are part of its atomic predicate.
+      (markTenantStripeWebhookVerified as jest.Mock).mockResolvedValueOnce(false);
+      releaseProviderLookup!();
+      const res = await pending;
+
+      expect(markTenantStripeWebhookVerified).toHaveBeenCalledWith(
+        TENANT_ID,
+        expect.objectContaining({
+          configRevision: 4,
+          configuredAt: new Date('2030-01-01T00:00:00.000Z'),
+          verifiedAccountId: 'acct_verified',
+          verifiedCredentialFingerprint: 'fingerprint_verified',
+        })
+      );
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({ received: true, ignored: 'checkout.session.completed' })
       );

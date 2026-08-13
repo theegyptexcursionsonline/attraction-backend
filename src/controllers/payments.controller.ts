@@ -673,7 +673,7 @@ export const handleWebhook = async (
       !stripeCfg.webhookVerifiedAt &&
       await verifyStripeEventAccountBinding(stripeCfg.secretKey, eventId)
     ) {
-      await markTenantStripeWebhookVerified(tenantId);
+      await markTenantStripeWebhookVerified(tenantId, stripeCfg);
     }
 
     const obj = event.data.object as Stripe.PaymentIntent;

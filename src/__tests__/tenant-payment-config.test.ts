@@ -1,8 +1,11 @@
 import { Tenant } from '../models/Tenant';
-import { saveTenantStripeConfig } from '../services/tenantPayment.service';
+import {
+  markTenantStripeWebhookVerified,
+  saveTenantStripeConfig,
+} from '../services/tenantPayment.service';
 
 jest.mock('../models/Tenant', () => ({
-  Tenant: { findById: jest.fn() },
+  Tenant: { findById: jest.fn(), updateOne: jest.fn() },
 }));
 
 jest.mock('../utils/secretCrypto', () => ({
@@ -23,6 +26,8 @@ const tenantDocument = (webhookVerified: boolean) => ({
       verifiedCredentialFingerprint: 'fingerprint_verified',
       credentialsVerifiedAt: new Date('2030-01-01T00:00:00.000Z'),
       webhookVerifiedAt: webhookVerified ? new Date('2030-01-01T00:00:00.000Z') : undefined,
+      configRevision: 4,
+      configuredAt: new Date('2030-01-01T00:00:00.000Z'),
     },
   },
   markModified: jest.fn(),
@@ -66,7 +71,53 @@ describe('tenant Stripe credential persistence', () => {
       webhookSecretEnc: 'enc:whsec_replacement',
       previousWebhookSecretEnc: '',
       previousWebhookValidUntil: undefined,
+      configRevision: 5,
     }));
+  });
+
+  it('rejects a stale webhook trust write after the configuration revision changes', async () => {
+    (Tenant.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 0 });
+
+    await expect(markTenantStripeWebhookVerified('tenant-1', {
+      configRevision: 5,
+      configuredAt: new Date('2030-01-01T00:00:00.000Z'),
+      verifiedAccountId: 'acct_b',
+      verifiedCredentialFingerprint: 'fingerprint_b',
+    })).resolves.toBe(false);
+
+    expect(Tenant.updateOne).toHaveBeenCalledWith(
+      {
+        _id: 'tenant-1',
+        'paymentSettings.stripe.configRevision': 5,
+        'paymentSettings.stripe.configuredAt': new Date('2030-01-01T00:00:00.000Z'),
+        'paymentSettings.stripe.verifiedAccountId': 'acct_b',
+        'paymentSettings.stripe.verifiedCredentialFingerprint': 'fingerprint_b',
+      },
+      { $set: { 'paymentSettings.stripe.webhookVerifiedAt': expect.any(Date) } }
+    );
+  });
+
+  it('supports the pre-revision configuration exactly once without weakening the CAS', async () => {
+    (Tenant.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
+
+    await expect(markTenantStripeWebhookVerified('tenant-1', {
+      configRevision: 0,
+      configuredAt: undefined,
+      verifiedAccountId: 'acct_legacy',
+      verifiedCredentialFingerprint: 'fingerprint_legacy',
+    })).resolves.toBe(true);
+
+    expect(Tenant.updateOne).toHaveBeenCalledWith(
+      expect.objectContaining({
+        _id: 'tenant-1',
+        $or: [
+          { 'paymentSettings.stripe.configRevision': 0 },
+          { 'paymentSettings.stripe.configRevision': { $exists: false } },
+        ],
+        'paymentSettings.stripe.configuredAt': { $exists: false },
+      }),
+      { $set: { 'paymentSettings.stripe.webhookVerifiedAt': expect.any(Date) } }
+    );
   });
 
   it('clears stale account proof whenever either account-bound key changes', async () => {
