@@ -13,6 +13,7 @@ import {
   createBundleSchema,
   createSupplyOfferSchema,
   bundleCommandSchema,
+  bundleSettlementDisputeSchema,
   cancelBundleOrderSchema,
   refundBundleOrderSchema,
   supplyOfferListQuerySchema,
@@ -148,6 +149,17 @@ describe('Bundle to Win domain invariants', () => {
       amountMinor: 0,
       reason: 'Customer request',
     }).success).toBe(false);
+    expect(bundleSettlementDisputeSchema.safeParse({
+      operationId: 'settlement-dispute-operation-001',
+      resolution: 'recovered',
+      reason: 'Supplier cash returned',
+    }).success).toBe(false);
+    expect(bundleSettlementDisputeSchema.safeParse({
+      operationId: 'settlement-dispute-operation-001',
+      resolution: 'recovered',
+      expectedOutstandingMinor: 4_000,
+      reason: 'Supplier cash returned',
+    }).success).toBe(true);
 
     expect(bundleCommandSchema.safeParse({ reason: 'Publish' }).success).toBe(false);
     expect(bundleCommandSchema.safeParse({ revision: 3, reason: 'Publish' }).success).toBe(true);

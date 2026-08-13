@@ -296,6 +296,7 @@ describe('bundle cancellation lifecycle', () => {
       componentId: disputed.componentId,
       operationId: 'clawback:provider:0001',
       resolution: 'recovered',
+      expectedOutstandingMinor: 8_000,
       reason: 'Supplier payout returned and bank evidence attached',
       actorId: new Types.ObjectId(),
     });
@@ -317,4 +318,47 @@ describe('bundle cancellation lifecycle', () => {
       expect.anything()
     );
   });
+
+  it.each(['recovered', 'written_off'] as const)(
+    'rejects a stale %s approval when the outstanding settlement exposure increased',
+    async (resolution) => {
+      const disputed = {
+        ...component('fulfilled', 'disputed'),
+        componentId: 'stale-approval-component',
+        customerAllocationMinor: 10_000,
+        refundedMinor: 10_000,
+        refundStatus: 'full',
+        settlementOperationId: 'payout:provider:stale',
+        settlementPaidMinor: 8_000,
+        settlementDisputedMinor: 8_000,
+        settlementRecoveredMinor: 0,
+        settlementWrittenOffMinor: 0,
+        settlementDisputeResolutions: [],
+      };
+      const order = {
+        _id: new Types.ObjectId(),
+        storefrontTenantId: new Types.ObjectId(),
+        status: 'refunded',
+        currency: 'USD',
+        recovery: { required: true, attempts: 0 },
+        components: [disputed],
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      (BundleOrder.findById as jest.Mock).mockReturnValue(queryResult(order));
+
+      await expect(resolveBundleSettlementDispute({
+        orderId: order._id.toString(),
+        componentId: disputed.componentId,
+        operationId: `stale:${resolution}:approval`,
+        resolution,
+        expectedOutstandingMinor: 4_000,
+        reason: 'Approval was opened before another refund completed',
+        actorId: new Types.ObjectId(),
+      })).rejects.toEqual(expect.objectContaining({ code: 'SETTLEMENT_DISPUTE_AMOUNT_CHANGED' }));
+
+      expect(disputed.settlementDisputedMinor).toBe(8_000);
+      expect(order.save).not.toHaveBeenCalled();
+      expect(appendBalancedLedger).not.toHaveBeenCalled();
+    }
+  );
 });

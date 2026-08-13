@@ -117,6 +117,7 @@ export const resolveBundleSettlementDisputeHandler = async (
       componentId: req.params.componentId,
       operationId: req.body.operationId,
       resolution: req.body.resolution,
+      expectedOutstandingMinor: req.body.expectedOutstandingMinor,
       reason: req.body.reason,
       actorId: req.user!._id,
     });

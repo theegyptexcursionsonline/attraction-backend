@@ -456,7 +456,19 @@ export const refundBundleOrder = async (input: {
 }): Promise<{ order: IBundleOrder; duplicate: boolean }> => {
   let order = await BundleOrder.findById(input.orderId);
   if (!order) throw new BundlePaymentError('ORDER_NOT_FOUND', 'Bundle order not found', 404);
+  const remainingRefundableMinor = order.totalMinor - order.refundedMinor;
   const prior = order.refunds.find((refund) => refund.operationId === input.operationId);
+  if (
+    order.status === 'cancel_pending' &&
+    input.amountMinor !== remainingRefundableMinor &&
+    !prior
+  ) {
+    throw new BundlePaymentError(
+      'CANCELLATION_REQUIRES_FULL_REFUND',
+      'A cancellation-pending order must refund its full remaining paid amount',
+      409
+    );
+  }
   if (prior) {
     if (prior.amountMinor !== input.amountMinor || prior.reason !== input.reason) {
       throw new BundlePaymentError('REFUND_OPERATION_REUSED', 'This refund operation was used with different data', 409);
@@ -466,8 +478,7 @@ export const refundBundleOrder = async (input: {
       throw new BundlePaymentError('REFUND_OPERATION_FAILED', 'This refund operation was rejected; start a new operation', 409);
     }
   } else {
-    const reserved = await BundleOrder.findOneAndUpdate(
-      {
+    const reservationQuery: Record<string, unknown> = {
         _id: order._id,
         'refunds.operationId': { $ne: input.operationId },
         $expr: {
@@ -476,7 +487,12 @@ export const refundBundleOrder = async (input: {
             '$totalMinor',
           ],
         },
-      },
+      };
+    if (input.amountMinor !== remainingRefundableMinor) {
+      reservationQuery.status = { $ne: 'cancel_pending' };
+    }
+    const reserved = await BundleOrder.findOneAndUpdate(
+      reservationQuery,
       {
         $inc: { refundPendingMinor: input.amountMinor },
         $push: {
@@ -610,14 +626,17 @@ export const refundBundleOrder = async (input: {
     order.refundPendingMinor -= input.amountMinor;
     order.refundedMinor += input.amountMinor;
     const full = order.refundedMinor === order.totalMinor;
+    const legacyCancellationPartial = fromState === 'cancel_pending' && !full;
     order.paymentStatus = full ? 'refunded' : 'partially_refunded';
-    order.status = full ? 'refunded' : 'partially_refunded';
+    order.status = full ? 'refunded' : legacyCancellationPartial ? 'cancel_pending' : 'partially_refunded';
     const disputedSettlement = order.components.some((component) =>
       (component.settlementDisputedMinor || 0) > 0 || component.settlementStatus === 'disputed'
     );
-    order.recovery.required = disputedSettlement;
+    order.recovery.required = disputedSettlement || legacyCancellationPartial;
     order.recovery.reason = disputedSettlement
       ? 'A refunded supplier settlement still requires resolution'
+      : legacyCancellationPartial
+        ? 'Cancellation has a legacy partial refund; refund the full remaining amount'
       : undefined;
     await order.save({ session });
     if (full) {

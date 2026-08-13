@@ -497,6 +497,55 @@ describe('Stripe payment hardening', () => {
       expect(saveTenantStripeConfig).not.toHaveBeenCalled();
     });
 
+    it('invalidates webhook trust after an account change even when no provider-bound order remains', async () => {
+      (verifyStripeCredentialBinding as jest.Mock).mockResolvedValue({
+        accountId: 'acct_replacement',
+        chargesEnabled: true,
+        credentialFingerprint: 'fingerprint_replacement',
+      });
+
+      const res = await invoke(updatePaymentGateway as never, {
+        params: { tenantId: TENANT_ID },
+        protocol: 'https',
+        get: jest.fn(() => 'api.example.test'),
+        body: {
+          publishableKey: 'pk_test_replacement',
+          secretKey: 'sk_test_replacement',
+        },
+      });
+
+      expect(saveTenantStripeConfig).toHaveBeenCalledWith(
+        TENANT_ID,
+        expect.objectContaining({ resetWebhookTrust: true })
+      );
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+    });
+
+    it('invalidates old-context webhook trust when TEST credentials change to LIVE credentials', async () => {
+      (verifyStripeCredentialBinding as jest.Mock).mockResolvedValue({
+        accountId: 'acct_live',
+        chargesEnabled: true,
+        credentialFingerprint: 'fingerprint_live',
+      });
+
+      const res = await invoke(updatePaymentGateway as never, {
+        params: { tenantId: TENANT_ID },
+        protocol: 'https',
+        get: jest.fn(() => 'api.example.test'),
+        body: {
+          publishableKey: 'pk_live_replacement',
+          secretKey: 'sk_live_replacement',
+          webhookSecret: 'whsec_live_replacement',
+        },
+      });
+
+      expect(saveTenantStripeConfig).toHaveBeenCalledWith(
+        TENANT_ID,
+        expect.objectContaining({ resetWebhookTrust: true })
+      );
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+    });
+
     it('allows a same-account API key and webhook-secret rotation with bounded overlap', async () => {
       const res = await invoke(updatePaymentGateway as never, {
         params: { tenantId: TENANT_ID },

@@ -1163,6 +1163,9 @@ export const updatePaymentGateway = async (
 
     const verifiedAccountChanged = !!existing?.verifiedAccountId &&
       !!verifiedAccountId && verifiedAccountId !== existing.verifiedAccountId;
+    const webhookContextChanged = effectiveMode !== existingMode ||
+      verifiedAccountChanged ||
+      (!!existing?.webhookVerifiedAt && !existing?.verifiedAccountId && secretKeyChanged);
     const webhookRotationPending = isStripeWebhookRotationProtected(existing) &&
       !existing?.webhookVerifiedAt;
     if (webhookSecretChanged && webhookRotationPending) {
@@ -1228,6 +1231,7 @@ export const updatePaymentGateway = async (
       webhookSecret,
       verifiedAccountId,
       verifiedCredentialFingerprint,
+      resetWebhookTrust: webhookContextChanged,
     });
     const savedCfg = await getTenantStripeConfig(tenantId);
     sendSuccess(

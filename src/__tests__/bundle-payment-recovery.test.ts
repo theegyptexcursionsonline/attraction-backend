@@ -275,6 +275,96 @@ describe('bundle payment recovery contracts', () => {
     expect(releaseBundleInventory).not.toHaveBeenCalled();
   });
 
+  it('rejects a new partial refund while a paid cancellation is pending', async () => {
+    const order = {
+      _id: new Types.ObjectId(),
+      status: 'cancel_pending',
+      totalMinor: 10_000,
+      refundedMinor: 0,
+      refunds: [],
+    };
+    (BundleOrder.findById as jest.Mock).mockResolvedValue(order);
+
+    await expect(refundBundleOrder({
+      orderId: order._id.toString(),
+      operationId: 'refund:cancel-partial-blocked',
+      amountMinor: 5_000,
+      reason: 'Incomplete cancellation refund',
+      actorId: new Types.ObjectId(),
+    })).rejects.toEqual(expect.objectContaining({ code: 'CANCELLATION_REQUIRES_FULL_REFUND' }));
+
+    expect(BundleOrder.findOneAndUpdate).not.toHaveBeenCalled();
+    expect(createRefund).not.toHaveBeenCalled();
+  });
+
+  it('reconciles a legacy partial cancellation refund without clearing the cancellation recovery state', async () => {
+    const operationId = 'refund:legacy-cancel-partial';
+    const order = {
+      _id: new Types.ObjectId(),
+      storefrontTenantId: new Types.ObjectId(),
+      checkoutMode: 'test',
+      stripePaymentIntentId: 'pi_legacy_cancel_partial',
+      status: 'cancel_pending',
+      paymentStatus: 'succeeded',
+      currency: 'USD',
+      totalMinor: 10_000,
+      platformAllocationMinor: 2_000,
+      paymentFeeReserveMinor: 0,
+      taxMinor: 0,
+      refundedMinor: 0,
+      refundPendingMinor: 5_000,
+      recovery: { required: true, reason: 'Cancellation review', attempts: 0 },
+      components: [{
+        componentId: 'future-component',
+        supplierTenantId: new Types.ObjectId(),
+        customerAllocationMinor: 10_000,
+        supplierNetTotalMinor: 8_000,
+        refundedMinor: 0,
+        refundStatus: 'none',
+        status: 'cancel_pending',
+        settlementStatus: 'on_hold',
+      }],
+      refunds: [{
+        operationId,
+        amountMinor: 5_000,
+        status: 'provider_pending',
+        providerRefundId: 're_legacy_partial',
+        reason: 'Legacy partial cancellation',
+      }],
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    (BundleOrder.findById as jest.Mock)
+      .mockResolvedValueOnce(order)
+      .mockReturnValueOnce(queryResult(order));
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue({
+      enabled: true,
+      publishableKey: 'pk_test_public',
+      secretKey: 'sk_test_secret',
+    });
+    (retrieveRefund as jest.Mock).mockResolvedValue({
+      id: 're_legacy_partial',
+      status: 'succeeded',
+      amount: 5_000,
+    });
+    (Booking.updateMany as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
+
+    const result = await refundBundleOrder({
+      orderId: order._id.toString(),
+      operationId,
+      amountMinor: 5_000,
+      reason: 'Legacy partial cancellation',
+      actorId: new Types.ObjectId(),
+    });
+
+    expect(result.order.status).toBe('cancel_pending');
+    expect(result.order.paymentStatus).toBe('partially_refunded');
+    expect(result.order.components[0].status).toBe('cancel_pending');
+    expect(result.order.recovery).toEqual(expect.objectContaining({
+      required: true,
+      reason: 'Cancellation has a legacy partial refund; refund the full remaining amount',
+    }));
+  });
+
   it('releases unfulfilled capacity exactly once after a full refund succeeds', async () => {
     const operationId = 'refund:full-release-001';
     const order = {
@@ -623,6 +713,7 @@ describe('bundle payment recovery contracts', () => {
         componentId: 'paid-component',
         operationId: `dispute:${resolution}:partial`,
         resolution,
+        expectedOutstandingMinor: 4_000,
         reason: 'Recorded settlement resolution evidence',
         actorId: new Types.ObjectId(),
       });

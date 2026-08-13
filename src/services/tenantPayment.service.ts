@@ -112,6 +112,7 @@ export const saveTenantStripeConfig = async (
     webhookSecret?: string;
     verifiedAccountId?: string;
     verifiedCredentialFingerprint?: string;
+    resetWebhookTrust?: boolean;
   }
 ): Promise<{ enabled: boolean; publishableKey: string; hasSecretKey: boolean; hasWebhookSecret: boolean }> => {
   // Load-mutate-save (not a dotted `$set`, which collides on the select:false
@@ -165,6 +166,14 @@ export const saveTenantStripeConfig = async (
     stripe.verifiedAccountId = input.verifiedAccountId;
     stripe.verifiedCredentialFingerprint = input.verifiedCredentialFingerprint;
     stripe.credentialsVerifiedAt = new Date();
+  }
+  if (input.resetWebhookTrust) {
+    // A signed event proves one exact Stripe account/mode/webhook context. It
+    // cannot be carried to a different account or TEST/LIVE environment, and
+    // an old-context secret cannot keep runtime checkout open during rotation.
+    stripe.webhookVerifiedAt = undefined;
+    stripe.previousWebhookSecretEnc = '';
+    stripe.previousWebhookValidUntil = undefined;
   }
   stripe.configuredAt = new Date();
 

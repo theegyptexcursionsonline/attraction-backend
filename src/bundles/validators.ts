@@ -180,6 +180,7 @@ export const bundleSettlementPaidSchema = z.object({
 export const bundleSettlementDisputeSchema = z.object({
   operationId: z.string().trim().min(16).max(128).regex(/^[A-Za-z0-9._:-]+$/),
   resolution: z.enum(['recovered', 'written_off']),
+  expectedOutstandingMinor: positiveMinor,
   reason: z.string().trim().min(3).max(500),
 });
 

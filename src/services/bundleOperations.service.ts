@@ -131,6 +131,13 @@ const requestPaidBundleCancellation = async (
   if (!['succeeded', 'partially_refunded'].includes(order.paymentStatus)) {
     throw new BundleOperationsError('PAID_ORDER_REQUIRED', 'A paid cancellation request requires a verified payment', 409);
   }
+  if (order.refundPendingMinor > 0) {
+    throw new BundleOperationsError(
+      'REFUND_OPERATION_IN_PROGRESS',
+      'A pending refund must be reconciled before cancellation review can begin',
+      409
+    );
+  }
   if (!['confirmed', 'in_progress', 'completed', 'manual_review'].includes(order.status)) {
     throw new BundleOperationsError('ORDER_NOT_CANCELLABLE', 'This order cannot enter cancellation review', 409);
   }
@@ -644,6 +651,7 @@ export const resolveBundleSettlementDispute = async (input: {
   componentId: string;
   operationId: string;
   resolution: 'recovered' | 'written_off';
+  expectedOutstandingMinor: number;
   reason: string;
   actorId: Types.ObjectId;
 }): Promise<IBundleOrder> => runBundleTransaction(async (session) => {
@@ -655,7 +663,10 @@ export const resolveBundleSettlementDispute = async (input: {
     (item) => item.operationId === input.operationId
   );
   if (priorResolution) {
-    if (priorResolution.resolution === input.resolution) return order;
+    if (
+      priorResolution.resolution === input.resolution &&
+      priorResolution.amountMinor === input.expectedOutstandingMinor
+    ) return order;
     throw new BundleOperationsError(
       'SETTLEMENT_DISPUTE_OPERATION_REUSED',
       'This dispute operation is already bound to a different resolution',
@@ -691,6 +702,13 @@ export const resolveBundleSettlementDispute = async (input: {
     throw new BundleOperationsError(
       'SETTLEMENT_DISPUTE_AMOUNT_INVALID',
       'This component has no outstanding settlement amount to resolve',
+      409
+    );
+  }
+  if (outstandingMinor !== input.expectedOutstandingMinor) {
+    throw new BundleOperationsError(
+      'SETTLEMENT_DISPUTE_AMOUNT_CHANGED',
+      'The outstanding settlement amount changed; reload and review the current amount',
       409
     );
   }

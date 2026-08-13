@@ -17,6 +17,8 @@ const tenantDocument = (webhookVerified: boolean) => ({
       publishableKey: 'pk_test_public',
       secretKeyEnc: 'enc:sk_test_secret',
       webhookSecretEnc: 'enc:whsec_current',
+      previousWebhookSecretEnc: '',
+      previousWebhookValidUntil: undefined as Date | undefined,
       verifiedAccountId: 'acct_verified',
       verifiedCredentialFingerprint: 'fingerprint_verified',
       credentialsVerifiedAt: new Date('2030-01-01T00:00:00.000Z'),
@@ -96,6 +98,27 @@ describe('tenant Stripe credential persistence', () => {
       verifiedAccountId: 'acct_verified',
       verifiedCredentialFingerprint: 'fingerprint_replacement',
       credentialsVerifiedAt: expect.any(Date),
+    }));
+  });
+
+  it('invalidates current and overlap webhook trust when the Stripe account context changes', async () => {
+    const document = tenantDocument(true);
+    document.paymentSettings.stripe.previousWebhookSecretEnc = 'enc:whsec_previous';
+    document.paymentSettings.stripe.previousWebhookValidUntil = new Date('2030-01-02T00:00:00.000Z');
+    preparePersistence(document);
+
+    await saveTenantStripeConfig('tenant-1', {
+      publishableKey: 'pk_test_account_b',
+      secretKey: 'sk_test_account_b',
+      verifiedAccountId: 'acct_b',
+      verifiedCredentialFingerprint: 'fingerprint_b',
+      resetWebhookTrust: true,
+    });
+
+    expect(document.paymentSettings.stripe).toEqual(expect.objectContaining({
+      webhookVerifiedAt: undefined,
+      previousWebhookSecretEnc: '',
+      previousWebhookValidUntil: undefined,
     }));
   });
 });
