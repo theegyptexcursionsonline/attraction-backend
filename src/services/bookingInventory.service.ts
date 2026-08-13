@@ -3,6 +3,7 @@ import { Availability } from '../models/Availability';
 import { Booking } from '../models/Booking';
 import { IBooking } from '../types';
 import { getTenantStripeConfig } from './tenantPayment.service';
+import { standaloneBookingClause } from './bookingRecordScope.service';
 import { cancelPaymentIntent, retrievePaymentIntent } from './stripe.service';
 
 const DEFAULT_CAPACITY = 25;
@@ -236,6 +237,7 @@ export const failCardBookingAndReleaseInventory = async (
 ): Promise<BookingWithInventoryMarker | null> =>
   runBookingTransaction(async (session) => {
     const query: Record<string, unknown> = {
+      ...standaloneBookingClause,
       _id: bookingId,
       tenantId,
       paymentStatus: { $in: ['pending', 'processing', 'failed'] },
@@ -265,6 +267,7 @@ export const markCardPaymentFailed = async (
 ): Promise<BookingWithInventoryMarker | null> =>
   Booking.findOneAndUpdate(
     {
+      ...standaloneBookingClause,
       _id: bookingId,
       tenantId,
       stripePaymentIntentId: paymentIntentId,
@@ -279,6 +282,7 @@ export const markCardPaymentFailed = async (
 export const expireStaleCardHolds = async (olderThanMinutes = 30): Promise<number> => {
   const staleBefore = new Date(Date.now() - olderThanMinutes * 60 * 1000);
   const candidates = await Booking.find({
+    ...standaloneBookingClause,
     paymentMethod: 'card',
     paymentStatus: { $in: ['pending', 'processing', 'failed'] },
     status: 'pending',

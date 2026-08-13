@@ -5,6 +5,7 @@ import { Booking } from '../models/Booking';
 import { BundleOrder, IBundleOrder } from '../models/BundleOrder';
 import { BundleProviderEvent } from '../models/BundleProviderEvent';
 import {
+  cancelPaymentIntent,
   createPaymentIntent,
   createRefund,
   PaymentIntentResult,
@@ -60,6 +61,9 @@ export const bundlePaymentBindingError = (
   return null;
 };
 
+export const bundlePaymentIntentIdempotencyKey = (orderId: Types.ObjectId | string): string =>
+  `bundle:${orderId}:intent:v1`;
+
 export const createBundlePaymentSession = async (
   orderId: string,
   storefrontTenantId: Types.ObjectId | string
@@ -83,20 +87,11 @@ export const createBundlePaymentSession = async (
     throw new BundlePaymentError('PAYMENT_GATEWAY_UNAVAILABLE', 'Card payment is not configured for this storefront', 503);
   }
   assertBundleStripeEnvironment(order, config);
-  const intent = await createPaymentIntent(
-    config.secretKey,
-    order.totalMinor,
-    order.currency,
-    {
-      paymentKind: 'bundle',
-      bundleOrderId: order._id.toString(),
-      storefrontTenantId: order.storefrontTenantId.toString(),
-      orderReference: order.reference,
-      checkoutMode: order.checkoutMode!,
-    },
-    { idempotencyKey: `bundle:${order._id}:intent:v1` }
-  );
-  const bindingOrder = order.stripePaymentIntentId
+  // Mark provider creation before crossing the network boundary. The expiry
+  // worker uses this durable marker to reconcile the same Stripe idempotency
+  // key before it may return capacity.
+  const claimTime = new Date();
+  const claimedOrder = order.stripePaymentIntentId
     ? order
     : await BundleOrder.findOneAndUpdate(
         {
@@ -104,6 +99,40 @@ export const createBundlePaymentSession = async (
           storefrontTenantId: order.storefrontTenantId,
           status: 'reserved',
           paymentStatus: 'not_started',
+          holdExpiresAt: { $gt: claimTime },
+          stripePaymentIntentId: { $exists: false },
+        },
+        { $set: { paymentSessionClaimedAt: claimTime } },
+        { new: true }
+      );
+  if (!claimedOrder) {
+    throw new BundlePaymentError('PAYMENT_SESSION_CONFLICT', 'This reservation expired or another payment session already won', 409);
+  }
+
+  const intent = await createPaymentIntent(
+    config.secretKey,
+    claimedOrder.totalMinor,
+    claimedOrder.currency,
+    {
+      paymentKind: 'bundle',
+      bundleOrderId: claimedOrder._id.toString(),
+      storefrontTenantId: claimedOrder.storefrontTenantId.toString(),
+      orderReference: claimedOrder.reference,
+      checkoutMode: claimedOrder.checkoutMode!,
+    },
+    { idempotencyKey: bundlePaymentIntentIdempotencyKey(claimedOrder._id) }
+  );
+  const bindTime = new Date();
+  let bindingOrder = claimedOrder.stripePaymentIntentId
+    ? claimedOrder
+    : await BundleOrder.findOneAndUpdate(
+        {
+          _id: claimedOrder._id,
+          storefrontTenantId: claimedOrder.storefrontTenantId,
+          status: 'reserved',
+          paymentStatus: 'not_started',
+          holdExpiresAt: { $gt: bindTime },
+          paymentSessionClaimedAt: { $exists: true },
           stripePaymentIntentId: { $exists: false },
         },
         {
@@ -112,15 +141,48 @@ export const createBundlePaymentSession = async (
             status: 'payment_pending',
             paymentStatus: 'intent_created',
           },
+          $unset: { paymentSessionClaimedAt: '' },
         },
         { new: true }
       );
+  if (!bindingOrder) {
+    const latest = await BundleOrder.findById(claimedOrder._id);
+    if (
+      latest?.stripePaymentIntentId === intent.id &&
+      ['payment_pending', 'manual_review'].includes(latest.status)
+    ) {
+      bindingOrder = latest;
+    } else {
+      const cancelled = await cancelPaymentIntent(config.secretKey, intent.id, {
+        idempotencyKey: `bundle:${claimedOrder._id}:late-session-cancel`,
+      });
+      if (!cancelled || cancelled.status !== 'canceled') {
+        await BundleOrder.updateOne(
+          {
+            _id: claimedOrder._id,
+            paymentStatus: { $nin: ['succeeded', 'partially_refunded', 'refunded'] },
+          },
+          {
+            $set: {
+              stripePaymentIntentId: intent.id,
+              status: 'manual_review',
+              paymentStatus: 'manual_review',
+              'recovery.required': true,
+              'recovery.reason': 'Payment session crossed the inventory hold boundary and could not be cancelled',
+            },
+            $unset: { paymentSessionClaimedAt: '' },
+            $inc: { 'recovery.attempts': 1 },
+          }
+        );
+      }
+    }
+  }
   if (!bindingOrder || bindingOrder.stripePaymentIntentId !== intent.id) {
     throw new BundlePaymentError('PAYMENT_SESSION_CONFLICT', 'A different payment session is already bound to this order', 409);
   }
   const bindingError = bundlePaymentBindingError(bindingOrder, intent, false);
   if (bindingError) throw new BundlePaymentError('PAYMENT_BINDING_INVALID', bindingError, 409);
-  if (order.status === 'reserved') {
+  if (claimedOrder.status === 'reserved') {
     await appendBundleEvent({
       aggregateType: 'order',
       aggregateId: bindingOrder._id,
@@ -209,6 +271,8 @@ export const finalizeBundlePayment = async (
     {
       _id: { $in: bookingIds },
       bundleOrderId: order._id,
+      status: 'pending',
+      inventoryReleasedAt: { $exists: false },
       paymentStatus: { $ne: 'succeeded' },
     },
     { $set: { paymentStatus: 'succeeded', status: 'confirmed' } },
@@ -328,7 +392,7 @@ export const claimBundleProviderEvent = async (input: {
   eventType: string;
   tenantId: Types.ObjectId | string;
   orderId?: Types.ObjectId;
-}): Promise<{ duplicate: boolean; recordId?: Types.ObjectId }> => {
+}): Promise<{ duplicate: boolean; recordId?: Types.ObjectId; inFlight?: boolean }> => {
   try {
     const record = await BundleProviderEvent.create({
       provider: 'stripe',
@@ -344,7 +408,11 @@ export const claimBundleProviderEvent = async (input: {
   const existing = await BundleProviderEvent.findOne({ provider: 'stripe', eventId: input.eventId });
   if (!existing) throw new BundlePaymentError('PROVIDER_EVENT_RACE', 'Please retry this event', 409);
   if (existing.status === 'completed') return { duplicate: true };
-  if (existing.status === 'processing' && existing.leaseUntil > new Date()) return { duplicate: true };
+  if (existing.status === 'processing' && existing.leaseUntil > new Date()) {
+    // The first worker has not durably completed its effects. Returning a
+    // terminal duplicate acknowledgement here would make a crash lose money.
+    return { duplicate: false, inFlight: true };
+  }
   const reclaimed = await BundleProviderEvent.findOneAndUpdate(
     {
       _id: existing._id,
@@ -357,7 +425,9 @@ export const claimBundleProviderEvent = async (input: {
     },
     { new: true }
   );
-  return reclaimed ? { duplicate: false, recordId: reclaimed._id } : { duplicate: true };
+  return reclaimed
+    ? { duplicate: false, recordId: reclaimed._id }
+    : { duplicate: false, inFlight: true };
 };
 
 export const completeBundleProviderEvent = async (recordId: Types.ObjectId): Promise<void> => {
@@ -506,20 +576,18 @@ export const refundBundleOrder = async (input: {
     const releasableComponents = order.components.filter((component) =>
       ['reserved', 'confirmed', 'cancel_pending', 'refund_pending'].includes(component.status)
     );
-    const releasableComponentIds = new Set(
-      releasableComponents.map((component) => component.componentId)
-    );
     order.components.forEach((component, index) => {
       component.refundedMinor += componentAllocations[index];
       const fullyRefunded = component.refundedMinor >= component.customerAllocationMinor;
+      component.refundStatus = fullyRefunded ? 'full' : 'partial';
       component.settlementStatus = component.settlementStatus === 'paid'
         ? 'disputed'
-        : fullyRefunded && releasableComponentIds.has(component.componentId)
+        : fullyRefunded
           ? 'not_eligible'
-          : 'on_hold';
-      component.status = fullyRefunded
-        ? 'refunded'
-        : 'partially_refunded';
+          : component.settlementStatus;
+      // Fulfilment and refund are independent dimensions. A partial refund
+      // must not make a still-booked supplier component impossible to fulfil,
+      // and a full refund must not erase whether service had been delivered.
     });
     refund.providerRefundId = providerRefund.id;
     refund.status = 'succeeded';

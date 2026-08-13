@@ -12,7 +12,11 @@ import {
   updateBundleLaunchModeHandler,
   updateBundleDefinitionHandler,
 } from '../controllers/bundles.controller';
-import { requireBundleFeature, requireTenantBundleMode } from '../bundles/featureFlags';
+import {
+  requireBundleFeature,
+  requireTenantBundleCheckoutReady,
+  requireTenantBundleMode,
+} from '../bundles/featureFlags';
 import {
   adminBundleListQuerySchema,
   bundleCommandSchema,
@@ -104,6 +108,8 @@ router.post(
   optionalTenant,
   requireTenant,
   requireTenantBundleMode(['test', 'live']),
+  requireBundleFeature('recovery'),
+  requireTenantBundleCheckoutReady,
   validate(createBundleQuoteSchema),
   createBundleQuoteHandler
 );

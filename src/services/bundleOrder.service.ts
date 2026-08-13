@@ -191,6 +191,7 @@ export const publicBundleDto = (bundle: IBundleDefinition): Record<string, unkno
 
 export const createBundleQuote = async (input: {
   storefrontTenantId: Types.ObjectId | string;
+  checkoutMode: 'test' | 'live';
   slug: string;
   request: BundleQuoteRequest;
 }): Promise<IBundleQuote> => {
@@ -313,6 +314,7 @@ export const createBundleQuote = async (input: {
   return BundleQuote.create({
     reference: bundleReference('BQ'),
     storefrontTenantId: bundle.storefrontTenantId,
+    checkoutMode: input.checkoutMode,
     bundleDefinitionId: bundle._id,
     bundleVersion: bundle.version,
     requestFingerprint: bundleFingerprint(input.request),
@@ -425,6 +427,7 @@ export const createBundleOrder = async (input: {
         _id: input.quoteId,
         status: 'active',
         expiresAt: { $gt: new Date() },
+        checkoutMode: input.checkoutMode,
       }).session(session);
       if (!quote) throw new BundleOrderError('QUOTE_EXPIRED', 'Refresh this bundle before checkout', 409);
       const offers = await BundleSupplyOffer.find({
@@ -459,6 +462,7 @@ export const createBundleOrder = async (input: {
         status: 'reserved' as const,
         settlementStatus: 'on_hold' as const,
         refundedMinor: 0,
+        refundStatus: 'none' as const,
       }));
       for (const selection of quote.selections) {
         const offer = offerById.get(selection.supplyOfferId.toString())!;
@@ -487,6 +491,7 @@ export const createBundleOrder = async (input: {
         _id: orderId,
         reference: bundleReference('BTW'),
         storefrontTenantId: quote.storefrontTenantId,
+        checkoutMode: input.checkoutMode,
         bundleDefinitionId: quote.bundleDefinitionId,
         bundleVersion: quote.bundleVersion,
         quoteId: quote._id,
@@ -578,6 +583,8 @@ export const customerBundleOrderDto = (order: IBundleOrder): Record<string, unkn
     time: component.time,
     quantities: component.quantities,
     status: component.status,
+    refundStatus: component.refundStatus,
+    refundedMinor: component.refundedMinor,
     bookingReference: component.bookingReference,
   })),
   createdAt: order.createdAt,
@@ -604,6 +611,8 @@ export const supplierBundleOrderDto = (
       time: component.time,
       quantities: component.quantities,
       status: component.status,
+      refundStatus: component.refundStatus,
+      refundedMinor: component.refundedMinor,
       settlementStatus: component.settlementStatus,
       supplierNetTotalMinor: component.supplierNetTotalMinor,
       bookingReference: component.bookingReference,

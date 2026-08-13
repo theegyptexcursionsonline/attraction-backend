@@ -30,6 +30,7 @@ export interface IBundleOrderComponent {
   bookingId?: Types.ObjectId;
   bookingReference?: string;
   refundedMinor: number;
+  refundStatus: 'none' | 'partial' | 'full';
 }
 
 export interface IBundleOrder extends Document {
@@ -63,6 +64,7 @@ export interface IBundleOrder extends Document {
   refundPendingMinor: number;
   holdExpiresAt: Date;
   stripePaymentIntentId?: string;
+  paymentSessionClaimedAt?: Date;
   paymentFailureReason?: string;
   idempotencyFingerprint: string;
   refunds: Array<{
@@ -117,6 +119,7 @@ const componentSchema = new Schema<IBundleOrderComponent>(
     bookingId: { type: Schema.Types.ObjectId, ref: 'Booking' },
     bookingReference: { type: String },
     refundedMinor: { type: Number, default: 0, min: 0, validate: Number.isSafeInteger },
+    refundStatus: { type: String, enum: ['none', 'partial', 'full'], default: 'none' },
   },
   { _id: false }
 );
@@ -151,6 +154,10 @@ const bundleOrderSchema = new Schema<IBundleOrder>(
     refundPendingMinor: { type: Number, default: 0, min: 0, validate: Number.isSafeInteger },
     holdExpiresAt: { type: Date, required: true, index: true },
     stripePaymentIntentId: { type: String },
+    // Short-lived compare-and-set lease while Stripe creates/retrieves the
+    // deterministic PaymentIntent. Expiry recovery reconciles the same
+    // idempotency key before releasing capacity.
+    paymentSessionClaimedAt: { type: Date },
     paymentFailureReason: { type: String, maxlength: 500 },
     idempotencyFingerprint: { type: String, required: true },
     refunds: [{

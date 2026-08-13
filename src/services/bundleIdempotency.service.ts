@@ -36,6 +36,7 @@ export const claimBundleIdempotency = async (input: {
       requestHash,
       status: 'processing',
       attempts: 1,
+      leaseUntil: new Date(Date.now() + 2 * 60 * 1000),
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
     });
     return { record };
@@ -62,11 +63,32 @@ export const claimBundleIdempotency = async (input: {
       existing.lastErrorMessage || 'This request previously failed and cannot be retried'
     );
   }
-  if (existing.status === 'outcome_unknown' || existing.status === 'processing') {
+  if (existing.status === 'outcome_unknown') {
     throw new BundleIdempotencyError(
       'REQUEST_ALREADY_PROCESSING',
       'The original request is still resolving; retry with the same key shortly'
     );
+  }
+
+  if (existing.status === 'processing') {
+    if (!existing.leaseUntil || existing.leaseUntil > new Date()) {
+      throw new BundleIdempotencyError(
+        'REQUEST_ALREADY_PROCESSING',
+        'The original request is still resolving; retry with the same key shortly'
+      );
+    }
+    const reclaimedProcessing = await BundleIdempotency.findOneAndUpdate(
+      { ...identity, requestHash, status: 'processing', leaseUntil: { $lte: new Date() } },
+      {
+        $set: { leaseUntil: new Date(Date.now() + 2 * 60 * 1000) },
+        $inc: { attempts: 1 },
+      },
+      { new: true }
+    );
+    if (!reclaimedProcessing) {
+      throw new BundleIdempotencyError('REQUEST_ALREADY_PROCESSING', 'Please retry this request shortly', 409);
+    }
+    return { record: reclaimedProcessing };
   }
 
   const reclaimed = await BundleIdempotency.findOneAndUpdate(
@@ -77,7 +99,7 @@ export const claimBundleIdempotency = async (input: {
       $or: [{ nextRetryAt: { $exists: false } }, { nextRetryAt: { $lte: new Date() } }],
     },
     {
-      $set: { status: 'processing' },
+      $set: { status: 'processing', leaseUntil: new Date(Date.now() + 2 * 60 * 1000) },
       $inc: { attempts: 1 },
       $unset: { lastErrorCode: 1, lastErrorMessage: 1, nextRetryAt: 1 },
     },
@@ -95,7 +117,7 @@ export const completeBundleIdempotency = async (
 ): Promise<void> => {
   const result = await BundleIdempotency.updateOne(
     { _id: recordId, status: 'processing' },
-    { $set: { status: 'completed', resourceId } }
+    { $set: { status: 'completed', resourceId }, $unset: { leaseUntil: 1 } }
   );
   if (result.modifiedCount !== 1) throw new Error('IDEMPOTENCY_COMPLETION_CONFLICT');
 };
@@ -116,6 +138,7 @@ export const failBundleIdempotency = async (
           ? { nextRetryAt: new Date(Date.now() + 30_000) }
           : {}),
       },
+      $unset: { leaseUntil: 1 },
     }
   );
 };

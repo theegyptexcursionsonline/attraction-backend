@@ -1,7 +1,8 @@
 import { RequestHandler } from 'express';
 import { env } from '../config/env';
-import { BundleLaunchMode } from '../types';
+import { BundleLaunchMode, ITenant } from '../types';
 import { sendError } from '../utils/response';
+import { getBundleLaunchReadiness } from '../services/bundleLaunchReadiness.service';
 
 export type BundleFeature = 'discovery' | 'checkout' | 'recovery';
 
@@ -47,4 +48,23 @@ export const requireTenantBundleMode = (
     return;
   }
   next();
+};
+
+/** Re-evaluate operational launch gates at the exact point a new hold starts. */
+export const requireTenantBundleCheckoutReady: RequestHandler = async (req, res, next) => {
+  const tenant = (req as typeof req & { tenant?: ITenant }).tenant;
+  if (!tenant) {
+    sendError(res, 'Tenant context required', 400);
+    return;
+  }
+  try {
+    const readiness = await getBundleLaunchReadiness(tenant);
+    if (!readiness.acceptingCheckout) {
+      sendError(res, 'Bundle checkout is temporarily unavailable for this storefront', 503);
+      return;
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
 };

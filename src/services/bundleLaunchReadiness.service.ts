@@ -4,6 +4,7 @@ import { Attraction } from '../models/Attraction';
 import { BundleDefinition } from '../models/BundleDefinition';
 import { BundleOfferInventory } from '../models/BundleOfferInventory';
 import { BundleOrder } from '../models/BundleOrder';
+import { BundleOutboxEvent } from '../models/BundleOutboxEvent';
 import { BundleSupplyOffer } from '../models/BundleSupplyOffer';
 import { Availability } from '../models/Availability';
 import { Tenant } from '../models/Tenant';
@@ -39,6 +40,8 @@ export interface BundleLaunchReadinessInput {
     hasPublishableKey: boolean;
     hasSecretKey: boolean;
     hasWebhookSecret: boolean;
+    credentialsVerified: boolean;
+    webhookVerified: boolean;
   };
   supply: {
     currencyPools: BundleSupplyCurrencyPool[];
@@ -51,6 +54,8 @@ export interface BundleLaunchReadinessInput {
   };
   operations: {
     recoveryQueueCount: number;
+    outboxPendingCount: number;
+    outboxDeadLetterCount: number;
   };
 }
 
@@ -104,16 +109,22 @@ export const evaluateBundleLaunchReadiness = (
     input.payment.hasPublishableKey &&
     input.payment.hasSecretKey &&
     input.payment.hasWebhookSecret &&
+    input.payment.credentialsVerified &&
+    input.payment.webhookVerified &&
     !['mixed', 'unconfigured'].includes(input.payment.mode);
   const eligiblePools = input.supply.currencyPools.filter((pool) => pool.eligible);
   const supplyReady = eligiblePools.length > 0;
   const hasPublished = input.storefront.publishedBundleCount > 0;
   const allPublishedSellable = hasPublished &&
     input.storefront.sellablePublishedBundleCount === input.storefront.publishedBundleCount;
-  const futureCapacityReady = input.storefront.futureCapacityReadyBundleCount > 0;
+  const futureCapacityReady = hasPublished &&
+    input.storefront.futureCapacityReadyBundleCount === input.storefront.publishedBundleCount;
   const recoveryClear = input.operations.recoveryQueueCount === 0;
+  const notificationQueueClear = input.operations.outboxPendingCount === 0 &&
+    input.operations.outboxDeadLetterCount === 0;
   const unsafeConfiguration = input.payment.mode === 'mixed';
-  const platformBlocked = !tenantReady || !featureReady || !recoveryClear || unsafeConfiguration;
+  const platformBlocked = !tenantReady || !featureReady || !recoveryClear ||
+    !notificationQueueClear || unsafeConfiguration;
   const setupComplete = paymentComplete && supplyReady && hasPublished && allPublishedSellable && futureCapacityReady;
   const canActivateTest = !platformBlocked && setupComplete && input.payment.mode === 'test';
   const canActivateLive = !platformBlocked && setupComplete && input.payment.mode === 'live';
@@ -145,10 +156,10 @@ export const evaluateBundleLaunchReadiness = (
       'Tenant-owned payment gateway',
       paymentComplete,
       paymentComplete
-        ? `Stripe ${input.payment.mode.toUpperCase()} keys and webhook signing are configured.`
+        ? `Stripe ${input.payment.mode.toUpperCase()} credentials and signed webhook are provider-verified.`
         : unsafeConfiguration
           ? 'Stripe publishable and secret key modes do not match.'
-          : 'Enable this tenant\'s Stripe gateway with matching keys and a webhook secret.',
+          : 'Verify this tenant\'s Stripe credentials and deliver a signed webhook before activation.',
       unsafeConfiguration
     ),
     check(
@@ -182,8 +193,10 @@ export const evaluateBundleLaunchReadiness = (
       'Complete future departure',
       futureCapacityReady,
       futureCapacityReady
-        ? `${input.storefront.futureCapacityReadyBundleCount} published bundle(s) have a complete future capacity path.`
-        : 'Configure aligned future capacity for every component in at least one published bundle.',
+        ? 'Every published bundle has a complete future capacity path.'
+        : hasPublished
+          ? `${input.storefront.publishedBundleCount - input.storefront.futureCapacityReadyBundleCount} published bundle(s) lack complete aligned future capacity.`
+          : 'Capacity can be checked after the first bundle is published.',
     ),
     check(
       'recovery_queue',
@@ -192,6 +205,15 @@ export const evaluateBundleLaunchReadiness = (
       recoveryClear
         ? 'No storefront orders require payment or allocation recovery.'
         : `${input.operations.recoveryQueueCount} order(s) require controlled recovery before launch.`,
+      true
+    ),
+    check(
+      'notification_queue',
+      'Notification delivery queue',
+      notificationQueueClear,
+      notificationQueueClear
+        ? 'No Bundle notification requires delivery or manual recovery.'
+        : `${input.operations.outboxPendingCount} delivery item(s) are pending or retrying; ${input.operations.outboxDeadLetterCount} are dead-lettered.`,
       true
     ),
   ];
@@ -453,12 +475,36 @@ const loadPublishedHealth = async (
   return rows[0] || { publishedBundleCount: 0, sellablePublishedBundleCount: 0 };
 };
 
+const loadOutboxHealth = async (
+  tenantId: Types.ObjectId
+): Promise<{ outboxPendingCount: number; outboxDeadLetterCount: number }> => {
+  const rows = await BundleOutboxEvent.aggregate<{ _id: string; count: number }>([
+    { $match: { status: { $in: ['pending', 'processing', 'retry', 'dead_letter'] }, orderId: { $exists: true } } },
+    {
+      $lookup: {
+        from: BundleOrder.collection.name,
+        localField: 'orderId',
+        foreignField: '_id',
+        as: 'order',
+      },
+    },
+    { $unwind: '$order' },
+    { $match: { 'order.storefrontTenantId': tenantId } },
+    { $group: { _id: '$status', count: { $sum: 1 } } },
+  ]);
+  return rows.reduce((health, row) => {
+    if (row._id === 'dead_letter') health.outboxDeadLetterCount += row.count;
+    else health.outboxPendingCount += row.count;
+    return health;
+  }, { outboxPendingCount: 0, outboxDeadLetterCount: 0 });
+};
+
 export const getBundleLaunchReadiness = async (
   tenant: ITenant,
   now = new Date()
 ): Promise<BundleLaunchReadiness> => {
   const tenantId = tenant._id;
-  const [config, currencyPools, counts, publishedHealth, futureCapacityReadyBundleCount, recoveryQueueCount] = await Promise.all([
+  const [config, currencyPools, counts, publishedHealth, futureCapacityReadyBundleCount, recoveryQueueCount, outboxHealth] = await Promise.all([
     getTenantStripeConfig(tenantId),
     loadSupplyPools(now),
     loadBundleCounts(tenantId),
@@ -474,6 +520,7 @@ export const getBundleLaunchReadiness = async (
         },
       ],
     }),
+    loadOutboxHealth(tenantId),
   ]);
   const paymentMode: StripeMode = stripeCredentialMode(config);
   return evaluateBundleLaunchReadiness({
@@ -496,6 +543,8 @@ export const getBundleLaunchReadiness = async (
       hasPublishableKey: !!config?.publishableKey,
       hasSecretKey: !!config?.secretKey,
       hasWebhookSecret: !!config?.webhookSecret,
+      credentialsVerified: !!config?.verifiedAccountId && !!config?.credentialsVerifiedAt,
+      webhookVerified: !!config?.webhookVerifiedAt,
     },
     supply: { currencyPools },
     storefront: {
@@ -503,7 +552,7 @@ export const getBundleLaunchReadiness = async (
       ...publishedHealth,
       futureCapacityReadyBundleCount,
     },
-    operations: { recoveryQueueCount },
+    operations: { recoveryQueueCount, ...outboxHealth },
   }, now);
 };
 
@@ -530,6 +579,23 @@ export const updateTenantBundleLaunchMode = async (input: {
     throw new BundleLaunchModeError(409, 'Complete every LIVE readiness check before activation');
   }
   const fromMode = tenant.bundleSettings?.mode || 'discovery';
+  if (
+    (fromMode === 'test' || fromMode === 'live') &&
+    (input.mode === 'test' || input.mode === 'live') &&
+    input.mode !== fromMode
+  ) {
+    const unresolvedInPreviousMode = await BundleOrder.countDocuments({
+      storefrontTenantId: tenant._id,
+      checkoutMode: fromMode,
+      status: { $nin: ['cancelled', 'refunded', 'reservation_failed'] },
+    });
+    if (unresolvedInPreviousMode > 0) {
+      throw new BundleLaunchModeError(
+        409,
+        `Resolve ${unresolvedInPreviousMode} ${fromMode.toUpperCase()} Bundle order(s) before changing payment environment`
+      );
+    }
+  }
   const updated = await runBundleTransaction(async (session: ClientSession) => {
     const changed = await Tenant.findOneAndUpdate(
       { _id: tenant._id, __v: input.expectedRevision },

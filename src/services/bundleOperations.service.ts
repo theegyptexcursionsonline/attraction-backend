@@ -4,10 +4,12 @@ import { Booking } from '../models/Booking';
 import { BundleOrder, IBundleOrder } from '../models/BundleOrder';
 import { appendBundleEvent, appendBalancedLedger, enqueueBundleOutbox } from './bundleAudit.service';
 import { releaseBundleInventory, runBundleTransaction } from './bundleInventory.service';
-import { cancelPaymentIntent, retrievePaymentIntent } from './stripe.service';
+import { cancelPaymentIntent, createPaymentIntent, retrievePaymentIntent } from './stripe.service';
+import type { PaymentIntentResult } from './stripe.service';
 import { getTenantStripeConfig } from './tenantPayment.service';
 import {
   bundlePaymentBindingError,
+  bundlePaymentIntentIdempotencyKey,
   finalizeBundlePayment,
 } from './bundlePayment.service';
 
@@ -302,66 +304,93 @@ export const recoverBundleOrder = async (input: {
 export const expireBundleOrder = async (
   orderId: Types.ObjectId | string
 ): Promise<'expired' | 'paid' | 'ignored' | 'manual_review'> => {
-  const snapshot = await BundleOrder.findById(orderId);
+  let snapshot = await BundleOrder.findById(orderId);
   if (!snapshot || !['reserved', 'payment_pending'].includes(snapshot.status)) return 'ignored';
   if (snapshot.holdExpiresAt > new Date()) return 'ignored';
+  const snapshotId = snapshot._id;
 
-  if (snapshot.stripePaymentIntentId) {
+  const flagManualReview = async (reason: string): Promise<'manual_review'> => {
+    await BundleOrder.updateOne(
+      { _id: snapshotId, status: { $in: ['reserved', 'payment_pending'] } },
+      {
+        $set: {
+          status: 'manual_review',
+          paymentStatus: 'manual_review',
+          'recovery.required': true,
+          'recovery.reason': reason,
+        },
+        $unset: { paymentSessionClaimedAt: '' },
+        $inc: { 'recovery.attempts': 1 },
+      }
+    );
+    return 'manual_review';
+  };
+
+  let reconciledIntent: PaymentIntentResult | undefined;
+  if (snapshot.stripePaymentIntentId || snapshot.paymentSessionClaimedAt) {
     const config = await getTenantStripeConfig(snapshot.storefrontTenantId);
-    if (!config?.enabled || !config.secretKey) {
+    if (!config?.enabled || !config.secretKey || !snapshot.checkoutMode) {
+      return flagManualReview('Payment gateway unavailable during hold expiry');
+    }
+
+    if (!snapshot.stripePaymentIntentId && snapshot.paymentSessionClaimedAt) {
+      // A request may have crossed into Stripe but crashed before binding the
+      // provider ID. Reissuing the exact idempotent call returns that same
+      // intent (or creates one we immediately reconcile and cancel).
+      reconciledIntent = await createPaymentIntent(
+        config.secretKey,
+        snapshot.totalMinor,
+        snapshot.currency,
+        {
+          paymentKind: 'bundle',
+          bundleOrderId: snapshot._id.toString(),
+          storefrontTenantId: snapshot.storefrontTenantId.toString(),
+          orderReference: snapshot.reference,
+          checkoutMode: snapshot.checkoutMode,
+        },
+        { idempotencyKey: bundlePaymentIntentIdempotencyKey(snapshot._id) }
+      );
       await BundleOrder.updateOne(
-        { _id: snapshot._id, status: { $in: ['reserved', 'payment_pending'] } },
+        {
+          _id: snapshot._id,
+          status: { $in: ['reserved', 'payment_pending'] },
+          stripePaymentIntentId: { $exists: false },
+        },
         {
           $set: {
-            status: 'manual_review',
-            paymentStatus: 'manual_review',
-            'recovery.required': true,
-            'recovery.reason': 'Payment gateway unavailable during hold expiry',
+            stripePaymentIntentId: reconciledIntent.id,
+            status: 'payment_pending',
+            paymentStatus: 'intent_created',
           },
-          $inc: { 'recovery.attempts': 1 },
+          $unset: { paymentSessionClaimedAt: '' },
         }
       );
-      return 'manual_review';
+      snapshot = await BundleOrder.findById(snapshot._id);
+      if (!snapshot || snapshot.stripePaymentIntentId !== reconciledIntent.id) {
+        return flagManualReview('Payment intent could not be bound during hold expiry');
+      }
     }
-    const intent = await retrievePaymentIntent(config.secretKey, snapshot.stripePaymentIntentId);
-    if (!intent) {
-      await BundleOrder.updateOne(
-        { _id: snapshot._id, status: { $in: ['reserved', 'payment_pending'] } },
-        {
-          $set: {
-            status: 'manual_review',
-            paymentStatus: 'manual_review',
-            'recovery.required': true,
-            'recovery.reason': 'Payment intent unavailable during hold expiry',
-          },
-          $inc: { 'recovery.attempts': 1 },
-        }
-      );
-      return 'manual_review';
-    }
+
+    const intent = reconciledIntent || await retrievePaymentIntent(
+      config.secretKey,
+      snapshot.stripePaymentIntentId!
+    );
+    if (!intent) return flagManualReview('Payment intent unavailable during hold expiry');
+    const bindingError = bundlePaymentBindingError(snapshot, intent, false);
+    if (bindingError) return flagManualReview(bindingError);
     if (intent.status === 'succeeded') {
       await finalizeBundlePayment(snapshot._id.toString(), intent, 'stripe');
       return 'paid';
     }
     const cancellation = await cancelPaymentIntent(
       config.secretKey,
-      snapshot.stripePaymentIntentId,
+      intent.id,
       { idempotencyKey: `bundle:${snapshot._id}:expire` }
     );
     if (!cancellation || cancellation.status !== 'canceled') {
-      await BundleOrder.updateOne(
-        { _id: snapshot._id, status: { $in: ['reserved', 'payment_pending'] } },
-        {
-          $set: {
-            status: 'manual_review',
-            paymentStatus: 'manual_review',
-            'recovery.required': true,
-            'recovery.reason': `Payment intent could not be cancelled (${cancellation?.status || 'unknown'})`,
-          },
-          $inc: { 'recovery.attempts': 1 },
-        }
+      return flagManualReview(
+        `Payment intent could not be cancelled (${cancellation?.status || 'unknown'})`
       );
-      return 'manual_review';
     }
   }
 
@@ -370,6 +399,7 @@ export const expireBundleOrder = async (
       _id: snapshot._id,
       status: { $in: ['reserved', 'payment_pending'] },
       holdExpiresAt: { $lte: new Date() },
+      paymentSessionClaimedAt: { $exists: false },
     }).session(session);
     if (!order) return 'ignored' as const;
     const guests = totalGuests(order.components[0].quantities);
@@ -450,12 +480,15 @@ export const fulfilBundleComponent = async (input: {
   );
   if (!component) throw new BundleOperationsError('COMPONENT_NOT_FOUND', 'Bundle component not found', 404);
   if (component.status === 'fulfilled') return order;
-  if (component.status !== 'confirmed') {
+  if (component.status !== 'confirmed' || component.refundStatus === 'full' || order.status === 'refunded') {
     throw new BundleOperationsError('COMPONENT_NOT_FULFILLABLE', 'Only a confirmed component can be fulfilled', 409);
   }
   component.status = 'fulfilled';
-  const allFulfilled = order.components.every((item) => item.status === 'fulfilled');
-  if (allFulfilled) order.status = 'completed';
+  const allResolved = order.components.every((item) =>
+    item.status === 'fulfilled' || item.refundStatus === 'full'
+  );
+  if (allResolved && order.refundedMinor === 0) order.status = 'completed';
+  else if (allResolved && order.refundedMinor > 0) order.status = 'partially_refunded';
   else if (order.status === 'confirmed') order.status = 'in_progress';
   await order.save({ session });
   await Booking.updateOne(
@@ -476,7 +509,7 @@ export const fulfilBundleComponent = async (input: {
     toState: 'fulfilled',
     metadata: { componentId: component.componentId },
   }, session);
-  if (allFulfilled) {
+  if (allResolved) {
     await enqueueBundleOutbox({
       orderId: order._id,
       tenantId: order.storefrontTenantId,
@@ -497,7 +530,11 @@ export const releaseBundleSettlement = async (input: {
   if (!order) throw new BundleOperationsError('ORDER_NOT_FOUND', 'Bundle order not found', 404);
   const component = order.components.find((item) => item.componentId === input.componentId);
   if (!component) throw new BundleOperationsError('COMPONENT_NOT_FOUND', 'Bundle component not found', 404);
-  if (order.status !== 'completed' || component.status !== 'fulfilled') {
+  if (
+    !['completed', 'partially_refunded'].includes(order.status) ||
+    component.status !== 'fulfilled' ||
+    component.refundStatus === 'full'
+  ) {
     throw new BundleOperationsError('SETTLEMENT_NOT_ELIGIBLE', 'Fulfilment must be complete before settlement', 409);
   }
   if (component.settlementStatus === 'payable') return order;

@@ -6,6 +6,9 @@ export interface TenantStripeConfig {
   publishableKey: string;
   secretKey: string;
   webhookSecret: string;
+  verifiedAccountId?: string;
+  credentialsVerifiedAt?: Date;
+  webhookVerifiedAt?: Date;
 }
 
 export type StripeCredentialMode = 'test' | 'live' | 'mixed' | 'unconfigured';
@@ -65,7 +68,7 @@ export const getTenantStripeConfig = async (
   const tenant = await Tenant.findById(tenantId as string)
     .select('+paymentSettings.stripe.secretKeyEnc +paymentSettings.stripe.webhookSecretEnc')
     .lean();
-  const s = (tenant as { paymentSettings?: { stripe?: Record<string, string | boolean> } } | null)
+  const s = (tenant as { paymentSettings?: { stripe?: Record<string, unknown> } } | null)
     ?.paymentSettings?.stripe;
   if (!s) return null;
   return {
@@ -73,6 +76,9 @@ export const getTenantStripeConfig = async (
     publishableKey: (s.publishableKey as string) || '',
     secretKey: decryptSecret(s.secretKeyEnc as string),
     webhookSecret: decryptSecret(s.webhookSecretEnc as string),
+    verifiedAccountId: (s.verifiedAccountId as string) || '',
+    credentialsVerifiedAt: s.credentialsVerifiedAt as Date | undefined,
+    webhookVerifiedAt: s.webhookVerifiedAt as Date | undefined,
   };
 };
 
@@ -84,7 +90,13 @@ export const getTenantStripeConfig = async (
  */
 export const saveTenantStripeConfig = async (
   tenantId: string,
-  input: { enabled?: boolean; publishableKey?: string; secretKey?: string; webhookSecret?: string }
+  input: {
+    enabled?: boolean;
+    publishableKey?: string;
+    secretKey?: string;
+    webhookSecret?: string;
+    verifiedAccountId?: string;
+  }
 ): Promise<{ enabled: boolean; publishableKey: string; hasSecretKey: boolean; hasWebhookSecret: boolean }> => {
   // Load-mutate-save (not a dotted `$set`, which collides on the select:false
   // encrypted subpaths in Mongoose). Explicitly select the hidden fields so they
@@ -101,7 +113,14 @@ export const saveTenantStripeConfig = async (
   if (typeof input.enabled === 'boolean') stripe.enabled = input.enabled;
   if (input.publishableKey !== undefined) stripe.publishableKey = input.publishableKey.trim();
   if (input.secretKey) stripe.secretKeyEnc = encryptSecret(input.secretKey.trim());
-  if (input.webhookSecret) stripe.webhookSecretEnc = encryptSecret(input.webhookSecret.trim());
+  if (input.webhookSecret) {
+    stripe.webhookSecretEnc = encryptSecret(input.webhookSecret.trim());
+    stripe.webhookVerifiedAt = undefined;
+  }
+  if (input.verifiedAccountId) {
+    stripe.verifiedAccountId = input.verifiedAccountId;
+    stripe.credentialsVerifiedAt = new Date();
+  }
   stripe.configuredAt = new Date();
 
   tenant.markModified('paymentSettings');
@@ -114,4 +133,11 @@ export const saveTenantStripeConfig = async (
     hasSecretKey: !!cfg?.secretKey,
     hasWebhookSecret: !!cfg?.webhookSecret,
   };
+};
+
+export const markTenantStripeWebhookVerified = async (tenantId: string): Promise<void> => {
+  await Tenant.updateOne(
+    { _id: tenantId },
+    { $set: { 'paymentSettings.stripe.webhookVerifiedAt': new Date() } }
+  );
 };

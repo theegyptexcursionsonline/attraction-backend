@@ -37,6 +37,10 @@ import {
   runBookingTransaction,
   sessionOption,
 } from '../services/bookingInventory.service';
+import {
+  isBundleComponentBooking,
+  standaloneBookingClause,
+} from '../services/bookingRecordScope.service';
 
 // Compact, tenant-safe booking summary for webhook payloads. Contains only the
 // booking's own fields — never other tenants' data.
@@ -98,6 +102,7 @@ const bookingResponse = (booking: IBooking): Record<string, unknown> => {
 };
 
 const earningsEligibilityClauses: Record<string, unknown>[] = [
+  standaloneBookingClause,
   { status: { $in: ['confirmed', 'completed'] } },
   {
     $or: [
@@ -106,6 +111,14 @@ const earningsEligibilityClauses: Record<string, unknown>[] = [
     ],
   },
 ];
+
+const rejectBundleComponentBooking = (res: Response, booking?: { bundleOrderId?: unknown } | null): boolean => {
+  if (!isBundleComponentBooking(booking)) return false;
+  // Do not reveal that an internal allocation record exists. Customers and
+  // admins must use the BundleOrder routes that own its lifecycle.
+  sendError(res, 'Booking not found', 404);
+  return true;
+};
 
 const isEarningsEligible = (booking: {
   status?: string;
@@ -841,6 +854,7 @@ export const getBookingByReference = async (
       sendError(res, 'Booking not found', 404);
       return;
     }
+    if (rejectBundleComponentBooking(res, booking)) return;
 
     const hasAuthenticatedAccess = canReadBooking(req, booking.userId, booking.tenantId);
     const suppliedGuestToken = bookingAccessTokenFromRequest(req);
@@ -888,6 +902,7 @@ export const getBookingPaymentDetails = async (
       sendError(res, 'Booking not found', 404);
       return;
     }
+    if (rejectBundleComponentBooking(res, booking)) return;
 
     const hasAuthenticatedAccess = canReadBooking(req, booking.userId, booking.tenantId);
     const suppliedGuestToken = bookingAccessTokenFromRequest(req);
@@ -940,6 +955,7 @@ export const sendBookingPaymentLink = async (
       sendError(res, 'Booking not found', 404);
       return;
     }
+    if (rejectBundleComponentBooking(res, booking)) return;
     if (!hasTenantAccess(req, booking.tenantId)) {
       sendError(res, 'Not authorized to access this booking', 403);
       return;
@@ -986,7 +1002,7 @@ export const getMyBookings = async (
     const pageNum = parseInt(page as string, 10);
     const limitNum = parseInt(limit as string, 10);
 
-    const query: Record<string, unknown> = { userId: req.user._id };
+    const query: Record<string, unknown> = { ...standaloneBookingClause, userId: req.user._id };
     if (status) {
       query.status = status;
     }
@@ -1021,6 +1037,7 @@ export const cancelBooking = async (
       sendError(res, 'Booking not found', 404);
       return;
     }
+    if (rejectBundleComponentBooking(res, booking)) return;
 
     if (!canAccessBooking(req, booking.userId, booking.tenantId)) {
       sendError(res, 'Not authorized to cancel this booking', 403);
@@ -1164,6 +1181,7 @@ export const getBookingTicket = async (
       sendError(res, 'Booking not found', 404);
       return;
     }
+    if (rejectBundleComponentBooking(res, booking)) return;
 
     const suppliedGuestToken = bookingAccessTokenFromRequest(req);
     if (!req.user && !suppliedGuestToken) {
@@ -1259,7 +1277,7 @@ export const getAllBookings = async (
     const pageNum = parseInt(page as string, 10);
     const limitNum = parseInt(limit as string, 10);
 
-    const query: Record<string, unknown> = {};
+    const query: Record<string, unknown> = { ...standaloneBookingClause };
     const andClauses: Record<string, unknown>[] = [];
 
     // Scope for non-super-admins: their own-site bookings PLUS resale bookings
@@ -1363,6 +1381,7 @@ export const updateBookingStatus = async (
       sendError(res, 'Booking not found', 404);
       return;
     }
+    if (rejectBundleComponentBooking(res, booking)) return;
 
     if (!canAccessBooking(req, booking.userId, booking.tenantId)) {
       sendError(res, 'Not authorized to update this booking', 403);
@@ -1396,7 +1415,7 @@ export const getBookingStats = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const query: Record<string, unknown> = {};
+    const query: Record<string, unknown> = { ...standaloneBookingClause };
 
     if (req.user?.role === 'super-admin' && req.tenant) {
       query.tenantId = req.tenant._id;
@@ -1676,7 +1695,10 @@ export const deleteBooking = async (
       sendError(res, 'Only a super admin can delete bookings', 403);
       return;
     }
-    const deleted = await Booking.findByIdAndDelete(req.params.id);
+    const deleted = await Booking.findOneAndDelete({
+      _id: req.params.id,
+      ...standaloneBookingClause,
+    });
     if (!deleted) {
       sendError(res, 'Booking not found', 404);
       return;
@@ -1702,6 +1724,7 @@ export const updateSettlement = async (
 
     const booking = await Booking.findById(id);
     if (!booking) { sendError(res, 'Booking not found', 404); return; }
+    if (rejectBundleComponentBooking(res, booking)) return;
     if (!booking.isResale) { sendError(res, 'Not a resale booking', 400); return; }
     if (!isEarningsEligible(booking)) {
       sendError(res, 'Only eligible confirmed or completed revenue can be settled', 400);
@@ -1752,6 +1775,7 @@ export const settleBatch = async (
     }
 
     const matchClauses: Record<string, unknown>[] = [
+      standaloneBookingClause,
       { _id: { $in: ids }, isResale: true },
       ...earningsEligibilityClauses,
     ];

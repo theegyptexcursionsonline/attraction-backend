@@ -217,6 +217,39 @@ bookingSchema.add({
   },
 } as any);
 
+// Bundle component records are internal projections. Any generic Booking query
+// must fail closed unless it explicitly opts into a BundleOrder scope. This
+// prevents future legacy routes, reports, jobs, or admin actions from silently
+// re-exposing child payment/cancellation/settlement side doors.
+const explicitlyScopesBundleChildren = (filter: Record<string, unknown>): boolean =>
+  Object.prototype.hasOwnProperty.call(filter, 'bundleOrderId');
+
+bookingSchema.pre(
+  [
+    'find',
+    'findOne',
+    'countDocuments',
+    'findOneAndUpdate',
+    'updateOne',
+    'updateMany',
+    'deleteOne',
+    'deleteMany',
+    'findOneAndDelete',
+  ],
+  function excludeBundleChildren(next) {
+    const filter = this.getFilter() as Record<string, unknown>;
+    if (!explicitlyScopesBundleChildren(filter)) {
+      this.where({ bundleOrderId: { $exists: false } });
+    }
+    next();
+  }
+);
+
+bookingSchema.pre('aggregate', function excludeBundleChildrenFromAggregates(next) {
+  this.pipeline().unshift({ $match: { bundleOrderId: { $exists: false } } });
+  next();
+});
+
 // Generate booking reference before saving
 bookingSchema.pre('save', function (this: IBooking, next) {
   if (!this.reference) {

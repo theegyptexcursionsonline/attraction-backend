@@ -1,8 +1,10 @@
 import { Types } from 'mongoose';
 import { Booking } from '../models/Booking';
 import { BundleOrder } from '../models/BundleOrder';
+import { BundleProviderEvent } from '../models/BundleProviderEvent';
 import { releaseBundleInventory } from '../services/bundleInventory.service';
 import {
+  claimBundleProviderEvent,
   failBundlePayment,
   refundBundleOrder,
 } from '../services/bundlePayment.service';
@@ -58,6 +60,24 @@ const queryResult = <T>(value: T) => ({ session: jest.fn().mockResolvedValue(val
 
 describe('bundle payment recovery contracts', () => {
   beforeEach(() => jest.clearAllMocks());
+
+  it('does not acknowledge a provider retry while the first processing lease is unfinished', async () => {
+    const duplicateError = Object.assign(new Error('duplicate'), { code: 11000 });
+    (BundleProviderEvent.create as jest.Mock).mockRejectedValue(duplicateError);
+    (BundleProviderEvent.findOne as jest.Mock).mockResolvedValue({
+      _id: new Types.ObjectId(),
+      status: 'processing',
+      leaseUntil: new Date(Date.now() + 60_000),
+    });
+
+    await expect(claimBundleProviderEvent({
+      eventId: 'evt_inflight',
+      eventType: 'payment_intent.succeeded',
+      tenantId: new Types.ObjectId(),
+    })).resolves.toEqual({ duplicate: false, inFlight: true });
+
+    expect(BundleProviderEvent.findOneAndUpdate).not.toHaveBeenCalled();
+  });
 
   it('keeps inventory reserved after a failed card attempt so the same hold can be retried', async () => {
     const order = {
@@ -173,6 +193,79 @@ describe('bundle payment recovery contracts', () => {
     );
   });
 
+  it('keeps fulfilment independent from a partial refund so remaining service can complete', async () => {
+    const operationId = 'refund:partial-service-001';
+    const order = {
+      _id: new Types.ObjectId(),
+      storefrontTenantId: new Types.ObjectId(),
+      checkoutMode: 'test',
+      stripePaymentIntentId: 'pi_partial_service',
+      status: 'confirmed',
+      paymentStatus: 'succeeded',
+      currency: 'USD',
+      totalMinor: 20_000,
+      refundedMinor: 0,
+      refundPendingMinor: 5_000,
+      recovery: { required: false, attempts: 0 },
+      components: [
+        {
+          componentId: 'still-confirmed',
+          customerAllocationMinor: 10_000,
+          refundedMinor: 0,
+          refundStatus: 'none',
+          status: 'confirmed',
+          settlementStatus: 'on_hold',
+        },
+        {
+          componentId: 'already-fulfilled',
+          customerAllocationMinor: 10_000,
+          refundedMinor: 0,
+          refundStatus: 'none',
+          status: 'fulfilled',
+          settlementStatus: 'on_hold',
+        },
+      ],
+      refunds: [{
+        operationId,
+        amountMinor: 5_000,
+        status: 'requested',
+        reason: 'Approved partial adjustment',
+      }],
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    (BundleOrder.findById as jest.Mock)
+      .mockResolvedValueOnce(order)
+      .mockReturnValueOnce(queryResult(order));
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue({
+      enabled: true,
+      publishableKey: 'pk_test_public',
+      secretKey: 'sk_test_secret',
+    });
+    (createRefund as jest.Mock).mockResolvedValue({ id: 're_partial', status: 'succeeded', amount: 5_000 });
+    (Booking.updateMany as jest.Mock).mockResolvedValue({ modifiedCount: 2 });
+
+    const result = await refundBundleOrder({
+      orderId: order._id.toString(),
+      operationId,
+      amountMinor: 5_000,
+      reason: 'Approved partial adjustment',
+      actorId: new Types.ObjectId(),
+    });
+
+    expect(result.order.status).toBe('partially_refunded');
+    expect(result.order.components[0]).toEqual(expect.objectContaining({
+      status: 'confirmed',
+      refundStatus: 'partial',
+      refundedMinor: 2_500,
+    }));
+    expect(result.order.components[1]).toEqual(expect.objectContaining({
+      status: 'fulfilled',
+      refundStatus: 'partial',
+      refundedMinor: 2_500,
+    }));
+    expect(releaseBundleInventory).not.toHaveBeenCalled();
+  });
+
   it('releases unfulfilled capacity exactly once after a full refund succeeds', async () => {
     const operationId = 'refund:full-release-001';
     const order = {
@@ -243,7 +336,9 @@ describe('bundle payment recovery contracts', () => {
 
     expect(result.order.status).toBe('refunded');
     expect(result.order.components[0].settlementStatus).toBe('not_eligible');
-    expect(result.order.components[1].settlementStatus).toBe('on_hold');
+    expect(result.order.components[1].settlementStatus).toBe('not_eligible');
+    expect(result.order.components[1].status).toBe('fulfilled');
+    expect(result.order.components[1].refundStatus).toBe('full');
     expect(result.order.recovery).toEqual(expect.objectContaining({ required: false }));
     expect(result.order.recovery.reason).toBeUndefined();
     expect(releaseBundleInventory).toHaveBeenCalledTimes(1);

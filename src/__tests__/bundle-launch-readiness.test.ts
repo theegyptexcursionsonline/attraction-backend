@@ -22,6 +22,8 @@ const base = (): BundleLaunchReadinessInput => ({
     hasPublishableKey: true,
     hasSecretKey: true,
     hasWebhookSecret: true,
+    credentialsVerified: true,
+    webhookVerified: true,
   },
   supply: {
     currencyPools: [{ currency: 'USD', activeOfferCount: 3, supplierCount: 2, eligible: true }],
@@ -32,7 +34,7 @@ const base = (): BundleLaunchReadinessInput => ({
     sellablePublishedBundleCount: 1,
     futureCapacityReadyBundleCount: 1,
   },
-  operations: { recoveryQueueCount: 0 },
+  operations: { recoveryQueueCount: 0, outboxPendingCount: 0, outboxDeadLetterCount: 0 },
 });
 
 describe('Bundle per-tenant launch readiness', () => {
@@ -145,6 +147,23 @@ describe('Bundle per-tenant launch readiness', () => {
     expect(evaluateBundleLaunchReadiness(input).acceptingCheckout).toBe(false);
   });
 
+  it('requires complete future capacity for every published bundle', () => {
+    const input = base();
+    input.storefront.publishedBundleCount = 2;
+    input.storefront.sellablePublishedBundleCount = 2;
+    input.storefront.futureCapacityReadyBundleCount = 1;
+
+    const readiness = evaluateBundleLaunchReadiness(input);
+
+    expect(readiness.state).toBe('setup_required');
+    expect(readiness.canActivateTest).toBe(false);
+    expect(readiness.checks).toContainEqual(expect.objectContaining({
+      key: 'future_capacity',
+      state: 'action_required',
+      detail: '1 published bundle(s) lack complete aligned future capacity.',
+    }));
+  });
+
   it('separates LIVE readiness from TEST credentials', () => {
     const input = base();
     input.payment.mode = 'live';
@@ -159,6 +178,8 @@ describe('Bundle per-tenant launch readiness', () => {
     ['disabled recovery service', (input: BundleLaunchReadinessInput) => { input.features.recovery = false; }],
     ['mixed payment keys', (input: BundleLaunchReadinessInput) => { input.payment.mode = 'mixed'; }],
     ['pending recovery work', (input: BundleLaunchReadinessInput) => { input.operations.recoveryQueueCount = 1; }],
+    ['pending notification delivery', (input: BundleLaunchReadinessInput) => { input.operations.outboxPendingCount = 1; }],
+    ['dead-lettered notification delivery', (input: BundleLaunchReadinessInput) => { input.operations.outboxDeadLetterCount = 1; }],
   ])('blocks activation for %s', (_name, mutate) => {
     const input = base();
     mutate(input);
@@ -170,6 +191,8 @@ describe('Bundle per-tenant launch readiness', () => {
 
   it.each([
     ['payment configuration', (input: BundleLaunchReadinessInput) => { input.payment.hasWebhookSecret = false; }],
+    ['provider credential verification', (input: BundleLaunchReadinessInput) => { input.payment.credentialsVerified = false; }],
+    ['signed webhook verification', (input: BundleLaunchReadinessInput) => { input.payment.webhookVerified = false; }],
     ['multi-supplier supply', (input: BundleLaunchReadinessInput) => { input.supply.currencyPools = []; }],
     ['published inventory', (input: BundleLaunchReadinessInput) => { input.storefront.publishedBundleCount = 0; input.storefront.sellablePublishedBundleCount = 0; }],
     ['sellable inventory', (input: BundleLaunchReadinessInput) => { input.storefront.sellablePublishedBundleCount = 0; }],

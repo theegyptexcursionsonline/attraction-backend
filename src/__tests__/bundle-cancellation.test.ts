@@ -2,7 +2,14 @@ import { Types } from 'mongoose';
 import { Booking } from '../models/Booking';
 import { BundleOrder } from '../models/BundleOrder';
 import { releaseBundleInventory } from '../services/bundleInventory.service';
-import { cancelBundleOrder } from '../services/bundleOperations.service';
+import {
+  cancelBundleOrder,
+  expireBundleOrder,
+  fulfilBundleComponent,
+  releaseBundleSettlement,
+} from '../services/bundleOperations.service';
+import { cancelPaymentIntent, createPaymentIntent } from '../services/stripe.service';
+import { getTenantStripeConfig } from '../services/tenantPayment.service';
 
 jest.mock('../models/Booking', () => ({
   Booking: { updateMany: jest.fn(), updateOne: jest.fn() },
@@ -26,6 +33,7 @@ jest.mock('../services/bundleAudit.service', () => ({
 }));
 jest.mock('../services/stripe.service', () => ({
   cancelPaymentIntent: jest.fn(),
+  createPaymentIntent: jest.fn(),
   retrievePaymentIntent: jest.fn(),
 }));
 jest.mock('../services/tenantPayment.service', () => ({
@@ -33,6 +41,7 @@ jest.mock('../services/tenantPayment.service', () => ({
 }));
 jest.mock('../services/bundlePayment.service', () => ({
   bundlePaymentBindingError: jest.fn(),
+  bundlePaymentIntentIdempotencyKey: jest.fn(() => 'bundle:stable:intent:v1'),
   finalizeBundlePayment: jest.fn(),
 }));
 
@@ -47,6 +56,9 @@ const component = (status = 'reserved', settlementStatus = 'on_hold') => ({
   quantities: { adults: 2, children: 0, infants: 0 },
   status,
   settlementStatus,
+  refundStatus: 'none',
+  refundedMinor: 0,
+  supplierNetTotalMinor: 8_000,
 });
 
 describe('bundle cancellation lifecycle', () => {
@@ -107,5 +119,120 @@ describe('bundle cancellation lifecycle', () => {
     expect(result.components[0].settlementStatus).toBe('disputed');
     expect(result.components[1].status).toBe('cancel_pending');
     expect(releaseBundleInventory).not.toHaveBeenCalled();
+  });
+
+  it('reconciles and cancels an in-flight idempotent provider intent before expiring capacity', async () => {
+    const order = {
+      _id: new Types.ObjectId(),
+      reference: 'BTW-EXPIRY01',
+      storefrontTenantId: new Types.ObjectId(),
+      checkoutMode: 'test',
+      status: 'reserved',
+      paymentStatus: 'not_started',
+      paymentSessionClaimedAt: new Date(),
+      holdExpiresAt: new Date(Date.now() - 1_000),
+      totalMinor: 20_000,
+      currency: 'USD',
+      components: [component()],
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    const intent = {
+      id: 'pi_expiry_race',
+      clientSecret: '',
+      amount: 20_000,
+      amountReceived: 0,
+      currency: 'usd',
+      status: 'requires_payment_method',
+      livemode: false,
+      metadata: {
+        paymentKind: 'bundle',
+        bundleOrderId: order._id.toString(),
+        storefrontTenantId: order.storefrontTenantId.toString(),
+        orderReference: order.reference,
+        checkoutMode: 'test',
+      },
+    };
+    const rebound = {
+      ...order,
+      status: 'payment_pending',
+      paymentStatus: 'intent_created',
+      paymentSessionClaimedAt: undefined,
+      stripePaymentIntentId: intent.id,
+    };
+    (BundleOrder.findById as jest.Mock)
+      .mockResolvedValueOnce(order)
+      .mockResolvedValueOnce(rebound);
+    (BundleOrder.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
+    (BundleOrder.findOne as jest.Mock).mockReturnValue(queryResult(rebound));
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue({
+      enabled: true,
+      publishableKey: 'pk_test_public',
+      secretKey: 'sk_test_secret',
+    });
+    (createPaymentIntent as jest.Mock).mockResolvedValue(intent);
+    (cancelPaymentIntent as jest.Mock).mockResolvedValue({ id: intent.id, status: 'canceled' });
+    (Booking.updateMany as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
+
+    await expect(expireBundleOrder(order._id)).resolves.toBe('expired');
+
+    expect(createPaymentIntent).toHaveBeenCalledWith(
+      'sk_test_secret',
+      order.totalMinor,
+      order.currency,
+      expect.objectContaining({ bundleOrderId: order._id.toString(), checkoutMode: 'test' }),
+      { idempotencyKey: 'bundle:stable:intent:v1' }
+    );
+    expect((cancelPaymentIntent as jest.Mock).mock.invocationCallOrder[0])
+      .toBeLessThan((releaseBundleInventory as jest.Mock).mock.invocationCallOrder[0]);
+    expect(releaseBundleInventory).toHaveBeenCalledTimes(1);
+  });
+
+  it('allows a partially refunded itinerary to finish and release only fulfilled supplier work', async () => {
+    const supplierTenantId = new Types.ObjectId();
+    const pending = {
+      ...component('confirmed'),
+      componentId: 'remaining-service',
+      supplierTenantId,
+      refundStatus: 'partial',
+      refundedMinor: 1_000,
+    };
+    const delivered = {
+      ...component('fulfilled'),
+      componentId: 'delivered-service',
+      supplierTenantId: new Types.ObjectId(),
+      refundStatus: 'partial',
+      refundedMinor: 1_000,
+    };
+    const order = {
+      _id: new Types.ObjectId(),
+      reference: 'BTW-PARTIAL01',
+      storefrontTenantId: new Types.ObjectId(),
+      status: 'partially_refunded',
+      paymentStatus: 'partially_refunded',
+      refundedMinor: 2_000,
+      currency: 'USD',
+      components: [pending, delivered],
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    (BundleOrder.findOne as jest.Mock).mockReturnValue(queryResult(order));
+    (Booking.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
+
+    const fulfilled = await fulfilBundleComponent({
+      orderId: order._id.toString(),
+      componentId: pending.componentId,
+      supplierTenantId: supplierTenantId.toString(),
+      actorId: new Types.ObjectId(),
+    });
+
+    expect(fulfilled.status).toBe('partially_refunded');
+    expect(fulfilled.components[0].status).toBe('fulfilled');
+
+    (BundleOrder.findById as jest.Mock).mockReturnValue(queryResult(order));
+    const released = await releaseBundleSettlement({
+      orderId: order._id.toString(),
+      componentId: pending.componentId,
+      actorId: new Types.ObjectId(),
+    });
+    expect(released.components[0].settlementStatus).toBe('payable');
   });
 });

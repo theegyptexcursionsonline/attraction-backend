@@ -110,9 +110,7 @@ const canUseCustomerOrder = (
   order: IBundleOrder | null
 ): boolean => {
   if (!order) return false;
-  if (isSuperAdmin(req.user)) return true;
   if (req.user && order.userId && String(order.userId) === String(req.user._id)) return true;
-  if (req.user && callerTenantIds(req.user).includes(order.storefrontTenantId.toString())) return true;
   return verifyBundleAccessToken(
     req.headers['x-bundle-access-token'],
     order._id.toString(),

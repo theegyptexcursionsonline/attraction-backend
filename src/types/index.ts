@@ -342,6 +342,11 @@ export interface IBooking extends Document {
     time?: string;
     guests: number;
   }>;
+  // Bundle component records are operational allocations owned by their
+  // BundleOrder. They must never enter the legacy single-booking payment,
+  // cancellation, settlement, notification, or customer-history flows.
+  bundleOrderId?: Types.ObjectId;
+  bundleComponentId?: string;
   ticketPdfUrl?: string;
   specialOfferId?: Types.ObjectId;
   // Reseller revenue split — only populated when this booking was sold by one

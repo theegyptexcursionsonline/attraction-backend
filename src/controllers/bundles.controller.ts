@@ -104,8 +104,14 @@ export const createBundleQuoteHandler = async (
       return;
     }
     const { storefrontTenantId, ...request } = req.body;
+    const checkoutMode = req.tenant.bundleSettings?.mode;
+    if (checkoutMode !== 'test' && checkoutMode !== 'live') {
+      sendError(res, 'Bundle checkout is not active for this storefront', 503);
+      return;
+    }
     const quote = await createBundleQuote({
       storefrontTenantId,
+      checkoutMode,
       slug: req.params.slug,
       request,
     });

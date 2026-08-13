@@ -14,8 +14,10 @@ import {
   createRefund as stripeCreateRefund,
   retrievePaymentIntent,
   retrieveSucceededRefundAmount,
+  verifyStripeAccount,
 } from '../services/stripe.service';
-import { getTenantStripeConfig } from '../services/tenantPayment.service';
+import { getTenantStripeConfig, saveTenantStripeConfig } from '../services/tenantPayment.service';
+import { BundleOrder } from '../models/BundleOrder';
 import { sendBookingConfirmation } from '../services/email.service';
 import { recordInboundEvent } from '../services/webhook.service';
 
@@ -47,17 +49,23 @@ jest.mock('../models/User', () => ({
   User: { findByIdAndUpdate: jest.fn().mockResolvedValue(undefined) },
 }));
 
+jest.mock('../models/BundleOrder', () => ({
+  BundleOrder: { findOne: jest.fn(), countDocuments: jest.fn() },
+}));
+
 jest.mock('../services/stripe.service', () => ({
   createPaymentIntent: jest.fn(),
   retrievePaymentIntent: jest.fn(),
   createRefund: jest.fn(),
   retrieveSucceededRefundAmount: jest.fn(),
   constructWebhookEvent: jest.fn(),
+  verifyStripeAccount: jest.fn(),
 }));
 
 jest.mock('../services/tenantPayment.service', () => ({
   evaluateStripeConfirmation: jest.fn().mockReturnValue({ allowed: true, verifyIntent: true }),
   getTenantStripeConfig: jest.fn(),
+  markTenantStripeWebhookVerified: jest.fn().mockResolvedValue(undefined),
   saveTenantStripeConfig: jest.fn(),
 }));
 
@@ -197,6 +205,9 @@ describe('Stripe payment hardening', () => {
     (getTenantStripeConfig as jest.Mock).mockResolvedValue(stripeConfig);
     (recordInboundEvent as jest.Mock).mockResolvedValue({ duplicate: false });
     (Booking.exists as jest.Mock).mockResolvedValue({ _id: BOOKING_ID });
+    (BundleOrder.countDocuments as jest.Mock).mockResolvedValue(0);
+    (verifyStripeAccount as jest.Mock).mockResolvedValue({ accountId: 'acct_verified', chargesEnabled: true });
+    (saveTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true });
   });
 
   describe('webhook authenticity and payment binding', () => {
@@ -372,6 +383,8 @@ describe('Stripe payment hardening', () => {
 
       const res = await invoke(updatePaymentGateway as never, {
         params: { tenantId: TENANT_ID },
+        protocol: 'https',
+        get: jest.fn(() => 'api.example.test'),
         body: {
           enabled: true,
           publishableKey: 'pk_test_public',
@@ -383,6 +396,27 @@ describe('Stripe payment hardening', () => {
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
         error: expect.stringMatching(/webhook signing secret/i),
       }));
+    });
+
+    it('authenticates an enabled gateway with Stripe before saving it as launch-ready', async () => {
+      const res = await invoke(updatePaymentGateway as never, {
+        params: { tenantId: TENANT_ID },
+        protocol: 'https',
+        get: jest.fn(() => 'api.example.test'),
+        body: {
+          enabled: true,
+          publishableKey: 'pk_test_public',
+          secretKey: 'sk_test_secret',
+          webhookSecret: 'whsec_test',
+        },
+      });
+
+      expect(verifyStripeAccount).toHaveBeenCalledWith('sk_test_secret');
+      expect(saveTenantStripeConfig).toHaveBeenCalledWith(
+        TENANT_ID,
+        expect.objectContaining({ verifiedAccountId: 'acct_verified' })
+      );
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
     });
   });
 
@@ -612,7 +646,11 @@ describe('Stripe payment hardening', () => {
       const res = await invoke(refundPayment as never, adminRequest(25));
 
       expect(Booking.findOneAndUpdate).toHaveBeenCalledWith(
-        { _id: BOOKING_ID, stripePaymentIntentId: INTENT_ID },
+        {
+          _id: BOOKING_ID,
+          bundleOrderId: { $exists: false },
+          stripePaymentIntentId: INTENT_ID,
+        },
         { $max: { refundedAmount: 25 } },
         { new: false }
       );
@@ -657,6 +695,7 @@ describe('Stripe payment hardening', () => {
       expect(Booking.findOneAndUpdate).toHaveBeenCalledWith(
         {
           _id: BOOKING_ID,
+          bundleOrderId: { $exists: false },
           stripePaymentIntentId: INTENT_ID,
         },
         {

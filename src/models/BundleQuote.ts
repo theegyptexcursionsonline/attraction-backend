@@ -20,6 +20,7 @@ export interface IBundleQuote extends Document {
   _id: Types.ObjectId;
   reference: string;
   storefrontTenantId: Types.ObjectId;
+  checkoutMode: 'test' | 'live';
   bundleDefinitionId: Types.ObjectId;
   bundleVersion: number;
   requestFingerprint: string;
@@ -70,6 +71,7 @@ const bundleQuoteSchema = new Schema<IBundleQuote>(
   {
     reference: { type: String, required: true, unique: true, index: true },
     storefrontTenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true, index: true },
+    checkoutMode: { type: String, enum: ['test', 'live'], required: true, immutable: true },
     bundleDefinitionId: { type: Schema.Types.ObjectId, ref: 'BundleDefinition', required: true },
     bundleVersion: { type: Number, required: true, min: 1, validate: Number.isSafeInteger },
     requestFingerprint: { type: String, required: true },

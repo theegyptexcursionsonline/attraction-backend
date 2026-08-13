@@ -12,11 +12,13 @@ import {
   retrieveSucceededRefundAmount,
   createRefund as stripeCreateRefund,
   constructWebhookEvent,
+  verifyStripeAccount,
 } from '../services/stripe.service';
 import type { PaymentIntentResult } from '../services/stripe.service';
 import {
   evaluateStripeConfirmation,
   getTenantStripeConfig,
+  markTenantStripeWebhookVerified,
   saveTenantStripeConfig,
 } from '../services/tenantPayment.service';
 import { secretHint } from '../utils/secretCrypto';
@@ -26,6 +28,10 @@ import { safeEmitEvent, recordInboundEvent } from '../services/webhook.service';
 import { env } from '../config/env';
 import { generateBookingAccessToken, verifyBookingAccessToken } from '../utils/bookingAccess';
 import { markCardPaymentFailed } from '../services/bookingInventory.service';
+import {
+  isBundleComponentBooking,
+  standaloneBookingClause,
+} from '../services/bookingRecordScope.service';
 import { BundleOrder } from '../models/BundleOrder';
 import {
   bundlePaymentBindingError,
@@ -59,6 +65,12 @@ const paymentEventPayload = (booking: {
 });
 
 const adminRoles = ['super-admin', 'brand-admin', 'manager'];
+
+const rejectBundleComponentBooking = (res: Response, booking?: { bundleOrderId?: unknown } | null): boolean => {
+  if (!isBundleComponentBooking(booking)) return false;
+  sendError(res, 'Booking not found', 404);
+  return true;
+};
 
 type StripeMode = 'test' | 'live' | 'mixed' | 'unconfigured';
 
@@ -178,6 +190,7 @@ export const createPaymentIntent = async (
       sendError(res, 'Booking not found', 404);
       return;
     }
+    if (rejectBundleComponentBooking(res, booking)) return;
 
     if (
       !canAccessBooking(req, booking.userId, booking.tenantId) &&
@@ -280,6 +293,7 @@ export const createPaymentIntent = async (
     const claimed = await Booking.findOneAndUpdate(
       {
         _id: booking._id,
+        ...standaloneBookingClause,
         paymentMethod: 'card',
         status: 'pending',
         inventoryReleasedAt: { $exists: false },
@@ -300,7 +314,7 @@ export const createPaymentIntent = async (
     );
 
     if (!claimed) {
-      const latest = await Booking.findById(booking._id);
+      const latest = await Booking.findOne({ _id: booking._id, ...standaloneBookingClause });
       if (!latest?.stripePaymentIntentId) {
         sendError(res, 'Payment session could not be bound to this booking', 409);
         return;
@@ -347,6 +361,7 @@ const finalizePaidBooking = async (
   const booking = await Booking.findOneAndUpdate(
     {
       _id: bookingId,
+      ...standaloneBookingClause,
       tenantId: expected.tenantId,
       stripePaymentIntentId: expected.paymentIntentId,
       paymentMethod: 'card',
@@ -508,12 +523,13 @@ export const confirmPayment = async (
     }
 
     const booking = await Booking.findById(bookingId).select(
-      'paymentStatus paymentMethod stripePaymentIntentId tenantId reference status total currency userId guestDetails.email inventoryReleasedAt'
+      'paymentStatus paymentMethod stripePaymentIntentId tenantId reference status total currency userId guestDetails.email inventoryReleasedAt bundleOrderId'
     );
     if (!booking) {
       sendError(res, 'Booking not found', 404);
       return;
     }
+    if (rejectBundleComponentBooking(res, booking)) return;
     if (
       !canAccessBooking(req, booking.userId, booking.tenantId) &&
       !canGuestAccessBooking(booking, guestEmail, guestAccessToken)
@@ -576,7 +592,8 @@ export const confirmPayment = async (
       paymentIntentId: booking.stripePaymentIntentId as string,
     });
 
-    const updated = await Booking.findById(booking._id).select('reference paymentStatus status total currency');
+    const updated = await Booking.findById(booking._id)
+      .select('reference paymentStatus status total currency');
     if (!finalized && updated?.paymentStatus !== 'succeeded') {
       sendError(res, 'Payment could not be atomically finalized', 409);
       return;
@@ -633,6 +650,7 @@ export const handleWebhook = async (
       sendError(res, 'Stripe webhook event ID is required', 400);
       return;
     }
+    await markTenantStripeWebhookVerified(tenantId);
 
     const obj = event.data.object as Stripe.PaymentIntent;
     const intentId = obj?.id;
@@ -671,6 +689,10 @@ export const handleWebhook = async (
           tenantId,
           orderId: bundleOrder._id,
         });
+        if (claim.inFlight) {
+          sendError(res, 'This payment event is still being processed; retry delivery', 503);
+          return;
+        }
         if (claim.duplicate || !claim.recordId) {
           res.json({ received: true, duplicate: true });
           return;
@@ -707,6 +729,7 @@ export const handleWebhook = async (
       const booking = await Booking.findOne({
         stripePaymentIntentId: intentId,
         tenantId,
+        ...standaloneBookingClause,
       });
       if (!booking) {
         res.json({ received: true, ignored: 'payment intent is not bound to this tenant' });
@@ -754,7 +777,11 @@ export const handleWebhook = async (
         sendError(res, 'Invalid failed PaymentIntent payload', 400);
         return;
       }
-      const booking = await Booking.findOne({ stripePaymentIntentId: intentId, tenantId });
+      const booking = await Booking.findOne({
+        stripePaymentIntentId: intentId,
+        tenantId,
+        ...standaloneBookingClause,
+      });
       if (booking) {
         if (
           obj?.metadata?.bookingId !== String(booking._id) ||
@@ -797,13 +824,14 @@ export const getPaymentStatus = async (
     const { bookingId } = req.params;
 
     const booking = await Booking.findById(bookingId).select(
-      'reference paymentStatus status total currency userId tenantId'
+      'reference paymentStatus status total currency userId tenantId bundleOrderId'
     );
 
     if (!booking) {
       sendError(res, 'Booking not found', 404);
       return;
     }
+    if (rejectBundleComponentBooking(res, booking)) return;
 
     if (!canAccessBooking(req, booking.userId, booking.tenantId)) {
       sendError(res, 'Not authorized to view this payment', 403);
@@ -837,6 +865,7 @@ export const refundPayment = async (
       sendError(res, 'Booking not found', 404);
       return;
     }
+    if (rejectBundleComponentBooking(res, booking)) return;
 
     if (!req.user) {
       sendError(res, 'Authentication required', 401);
@@ -887,7 +916,7 @@ export const refundPayment = async (
         ? 'failed'
         : 'pending';
     await Booking.updateOne(
-      { _id: booking._id, 'refunds.providerRefundId': { $ne: refund.id } },
+      { _id: booking._id, ...standaloneBookingClause, 'refunds.providerRefundId': { $ne: refund.id } },
       {
         $push: {
           refunds: {
@@ -900,7 +929,7 @@ export const refundPayment = async (
       }
     );
     await Booking.updateOne(
-      { _id: booking._id, 'refunds.providerRefundId': refund.id },
+      { _id: booking._id, ...standaloneBookingClause, 'refunds.providerRefundId': refund.id },
       { $set: { 'refunds.$.status': ledgerStatus, 'refunds.$.amount': refund.amount / 100 } }
     );
 
@@ -931,6 +960,7 @@ export const refundPayment = async (
     const beforeRefundUpdate = await Booking.findOneAndUpdate(
       {
         _id: booking._id,
+        ...standaloneBookingClause,
         stripePaymentIntentId: booking.stripePaymentIntentId,
       },
       {
@@ -1053,6 +1083,7 @@ export const updatePaymentGateway = async (
       ? String(webhookSecret).trim()
       : existing?.webhookSecret;
     const effectiveMode = resolveStripeMode(effectivePublishableKey, effectiveSecretKey);
+    const existingMode = resolveStripeMode(existing?.publishableKey, existing?.secretKey);
 
     if (effectiveMode === 'mixed') {
       sendError(
@@ -1061,6 +1092,25 @@ export const updatePaymentGateway = async (
         400
       );
       return;
+    }
+
+    const changesBundleEnvironment =
+      (existingMode === 'test' || existingMode === 'live') &&
+      (effectiveMode !== existingMode || enabled === false);
+    if (changesBundleEnvironment) {
+      const openBundleOrders = await BundleOrder.countDocuments({
+        storefrontTenantId: tenantId,
+        checkoutMode: existingMode,
+        status: { $nin: ['cancelled', 'refunded', 'reservation_failed'] },
+      });
+      if (openBundleOrders > 0) {
+        sendError(
+          res,
+          `${openBundleOrders} Bundle order(s) still depend on the current ${existingMode.toUpperCase()} gateway; resolve them before changing or disabling it`,
+          409
+        );
+        return;
+      }
     }
 
     // Don't let a tenant enable the gateway without the keys it needs.
@@ -1078,11 +1128,27 @@ export const updatePaymentGateway = async (
       }
     }
 
+    let verifiedAccountId: string | undefined;
+    if (enabled) {
+      try {
+        const verified = await verifyStripeAccount(effectiveSecretKey);
+        if (!verified.chargesEnabled) {
+          sendError(res, 'Stripe authenticated, but card charges are not enabled for this account', 409);
+          return;
+        }
+        verifiedAccountId = verified.accountId;
+      } catch {
+        sendError(res, 'Stripe credentials could not be verified with the provider', 400);
+        return;
+      }
+    }
+
     const summary = await saveTenantStripeConfig(tenantId, {
       enabled,
       publishableKey,
       secretKey,
       webhookSecret,
+      verifiedAccountId,
     });
     const savedCfg = await getTenantStripeConfig(tenantId);
     sendSuccess(

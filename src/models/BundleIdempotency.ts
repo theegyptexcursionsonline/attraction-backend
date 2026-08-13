@@ -18,6 +18,7 @@ export interface IBundleIdempotency extends Document {
   lastErrorCode?: string;
   lastErrorMessage?: string;
   nextRetryAt?: Date;
+  leaseUntil?: Date;
   expiresAt: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -41,6 +42,7 @@ const bundleIdempotencySchema = new Schema<IBundleIdempotency>(
     lastErrorCode: { type: String, maxlength: 120 },
     lastErrorMessage: { type: String, maxlength: 500 },
     nextRetryAt: { type: Date },
+    leaseUntil: { type: Date, index: true },
     expiresAt: { type: Date, required: true },
   },
   { timestamps: true }

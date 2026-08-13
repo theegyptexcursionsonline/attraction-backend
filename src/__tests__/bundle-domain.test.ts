@@ -69,10 +69,14 @@ describe('Bundle to Win domain invariants', () => {
   });
 
   it('binds a guest access token to both order id and reference', () => {
+    const now = jest.spyOn(Date, 'now').mockReturnValue(Date.UTC(2026, 7, 13));
     const token = generateBundleAccessToken('order-1', 'BTW-ABC');
     expect(verifyBundleAccessToken(token, 'order-1', 'BTW-ABC')).toBe(true);
     expect(verifyBundleAccessToken(token, 'order-2', 'BTW-ABC')).toBe(false);
     expect(verifyBundleAccessToken(token, 'order-1', 'BTW-OTHER')).toBe(false);
+    now.mockReturnValue(Date.UTC(2026, 8, 13));
+    expect(verifyBundleAccessToken(token, 'order-1', 'BTW-ABC')).toBe(false);
+    now.mockRestore();
   });
 
   it('validates commercial offer, bundle, quote, and refund boundaries', () => {

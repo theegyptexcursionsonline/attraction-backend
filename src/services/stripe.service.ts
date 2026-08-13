@@ -45,6 +45,16 @@ export interface StripeCallOptions {
 
 const missingKeyError = (): Error => new Error('Stripe secret key is required');
 
+/** Verify that a tenant key authenticates to a real Stripe account. */
+export const verifyStripeAccount = async (
+  secretKey: string | undefined
+): Promise<{ accountId: string; chargesEnabled: boolean }> => {
+  const stripe = getStripe(secretKey);
+  if (!stripe) throw missingKeyError();
+  const account = await stripe.accounts.retrieve();
+  return { accountId: account.id, chargesEnabled: !!account.charges_enabled };
+};
+
 /** Create a PaymentIntent on the tenant's own Stripe account. */
 export const createPaymentIntent = async (
   secretKey: string | undefined,

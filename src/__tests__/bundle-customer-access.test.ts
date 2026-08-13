@@ -100,4 +100,24 @@ describe('bundle customer order access isolation', () => {
       error: 'Bundle order not found',
     }));
   });
+
+  it('does not treat an assigned staff tenant as customer authorization', async () => {
+    (BundleOrder.findOne as jest.Mock).mockResolvedValue(order);
+    const req = {
+      params: { id: ORDER_ID.toString() },
+      headers: {},
+      tenant: { _id: TENANT_ID },
+      user: {
+        _id: new Types.ObjectId(),
+        role: 'brand-admin',
+        assignedTenants: [TENANT_ID],
+      },
+    } as unknown as AuthRequest;
+    const res = response();
+
+    await getBundleOrderHandler(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(verifyBundleAccessToken).toHaveBeenCalled();
+  });
 });

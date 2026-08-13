@@ -177,6 +177,9 @@ const tenantSchema = new Schema<ITenant>(
         secretKeyEnc: { type: String, default: '', select: false },
         webhookSecretEnc: { type: String, default: '', select: false },
         configuredAt: Date,
+        verifiedAccountId: String,
+        credentialsVerifiedAt: Date,
+        webhookVerifiedAt: Date,
       },
     },
     // Bundle launches are tenant-specific. Existing tenants remain in safe
