@@ -1,6 +1,7 @@
 import { Tenant } from '../models/Tenant';
 import { decryptSecret, encryptSecret } from '../utils/secretCrypto';
 import crypto from 'crypto';
+import { ClientSession } from 'mongoose';
 
 export interface TenantStripeConfig {
   enabled: boolean;
@@ -15,7 +16,16 @@ export interface TenantStripeConfig {
   webhookVerifiedAt?: Date;
   webhookContextFingerprint?: string;
   configRevision?: number;
+  bindingFenceRevision?: number;
   configuredAt?: Date;
+}
+
+export class TenantStripeConfigConflictError extends Error {
+  readonly code = 'TENANT_STRIPE_CONFIG_CONFLICT';
+
+  constructor() {
+    super('The Stripe configuration changed while this request was in progress');
+  }
 }
 
 export const STRIPE_WEBHOOK_ROTATION_GRACE_MS = 72 * 60 * 60 * 1000;
@@ -105,8 +115,59 @@ export const getTenantStripeConfig = async (
     webhookContextFingerprint: (s.webhookContextFingerprint as string) ||
       stripeWebhookContextFingerprint(currentWebhookSecret),
     configRevision: Number(s.configRevision || 0),
+    bindingFenceRevision: Number(s.bindingFenceRevision || 0),
     configuredAt: s.configuredAt as Date | undefined,
   };
+};
+
+const legacyOrExactNumberClause = (path: string, expected: number): Record<string, unknown> =>
+  expected === 0
+    ? {
+        $or: [
+          { [path]: 0 },
+          { [path]: { $exists: false } },
+        ],
+      }
+    : { [path]: expected };
+
+/**
+ * Claim one immutable Bundle checkout binding against an exact gateway
+ * snapshot. This Tenant write runs in the same transaction as the order claim,
+ * so a concurrent admin mutation either commits first (and this returns false)
+ * or loses its own fence CAS after this claim becomes visible.
+ */
+export const claimTenantStripePaymentBinding = async (
+  tenantId: unknown,
+  expected: Pick<
+    TenantStripeConfig,
+    'publishableKey' | 'verifiedAccountId' | 'verifiedCredentialFingerprint' |
+    'configRevision' | 'bindingFenceRevision'
+  >,
+  session: ClientSession
+): Promise<boolean> => {
+  if (
+    !expected.publishableKey ||
+    !expected.verifiedAccountId ||
+    !expected.verifiedCredentialFingerprint
+  ) return false;
+  const configRevision = Number(expected.configRevision || 0);
+  const bindingFenceRevision = Number(expected.bindingFenceRevision || 0);
+  const result = await Tenant.updateOne(
+    {
+      _id: tenantId,
+      'paymentSettings.stripe.enabled': true,
+      'paymentSettings.stripe.publishableKey': expected.publishableKey,
+      'paymentSettings.stripe.verifiedAccountId': expected.verifiedAccountId,
+      'paymentSettings.stripe.verifiedCredentialFingerprint': expected.verifiedCredentialFingerprint,
+      $and: [
+        legacyOrExactNumberClause('paymentSettings.stripe.configRevision', configRevision),
+        legacyOrExactNumberClause('paymentSettings.stripe.bindingFenceRevision', bindingFenceRevision),
+      ],
+    },
+    { $inc: { 'paymentSettings.stripe.bindingFenceRevision': 1 } },
+    { session }
+  );
+  return result.modifiedCount === 1;
 };
 
 /**
@@ -126,6 +187,8 @@ export const saveTenantStripeConfig = async (
     verifiedCredentialFingerprint?: string;
     resetWebhookTrust?: boolean;
     clearWebhookSecret?: boolean;
+    expectedConfigRevision?: number;
+    expectedBindingFenceRevision?: number;
   }
 ): Promise<{ enabled: boolean; publishableKey: string; hasSecretKey: boolean; hasWebhookSecret: boolean }> => {
   // Load-mutate-save (not a dotted `$set`, which collides on the select:false
@@ -140,6 +203,14 @@ export const saveTenantStripeConfig = async (
   const ps = (tenant as any).paymentSettings || ((tenant as any).paymentSettings = {});
   const stripe = ps.stripe || (ps.stripe = {});
 
+  const currentConfigRevision = Number(stripe.configRevision || 0);
+  const currentBindingFenceRevision = Number(stripe.bindingFenceRevision || 0);
+  const expectedConfigRevision = Number(
+    input.expectedConfigRevision ?? currentConfigRevision
+  );
+  const expectedBindingFenceRevision = Number(
+    input.expectedBindingFenceRevision ?? currentBindingFenceRevision
+  );
   const currentPublishableKey = String(stripe.publishableKey || '');
   const currentSecretKey = decryptSecret(stripe.secretKeyEnc as string);
   const nextPublishableKey = input.publishableKey !== undefined
@@ -200,11 +271,32 @@ export const saveTenantStripeConfig = async (
   }
   // Advance the compare-and-set token on every configuration save. A webhook
   // handler using an older snapshot can no longer trust a newly saved context.
-  stripe.configRevision = Number(stripe.configRevision || 0) + 1;
+  stripe.configRevision = currentConfigRevision + 1;
+  stripe.bindingFenceRevision = currentBindingFenceRevision;
   stripe.configuredAt = new Date();
 
   tenant.markModified('paymentSettings');
-  await tenant.save();
+  const persistedStripe = typeof stripe.toObject === 'function'
+    ? stripe.toObject({ depopulate: true })
+    : { ...stripe };
+  delete persistedStripe._id;
+  const persisted = await Tenant.updateOne(
+    {
+      _id: tenantId,
+      $and: [
+        legacyOrExactNumberClause(
+          'paymentSettings.stripe.configRevision',
+          expectedConfigRevision
+        ),
+        legacyOrExactNumberClause(
+          'paymentSettings.stripe.bindingFenceRevision',
+          expectedBindingFenceRevision
+        ),
+      ],
+    },
+    { $set: { 'paymentSettings.stripe': persistedStripe } }
+  );
+  if (persisted.modifiedCount !== 1) throw new TenantStripeConfigConflictError();
 
   const cfg = await getTenantStripeConfig(tenantId);
   return {

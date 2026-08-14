@@ -22,6 +22,7 @@ import {
   isStripeWebhookRotationProtected,
   markTenantStripeWebhookVerified,
   saveTenantStripeConfig,
+  TenantStripeConfigConflictError,
 } from '../services/tenantPayment.service';
 import { secretHint } from '../utils/secretCrypto';
 import { generateTicketPdf } from '../services/pdf.service';
@@ -1206,8 +1207,9 @@ export const updatePaymentGateway = async (
       (
         effectiveMode !== existingMode ||
         effectiveEnabled === false ||
-        verifiedAccountChanged ||
-        (secretKeyChanged && !existing?.verifiedAccountId)
+        publishableChanged ||
+        secretKeyChanged ||
+        verifiedAccountChanged
       );
     if (gatewayBindingChanges) {
       // Protect every provider-bound order that can still need confirmation,
@@ -1216,8 +1218,28 @@ export const updatePaymentGateway = async (
       const providerBoundOrders = await BundleOrder.countDocuments({
         storefrontTenantId: tenantId,
         checkoutMode: existingMode,
-        stripePaymentIntentId: { $exists: true, $ne: '' },
-        $expr: { $lt: [{ $ifNull: ['$refundedMinor', 0] }, '$totalMinor'] },
+        $and: [
+          {
+            $or: [
+              { stripePaymentIntentId: { $exists: true, $ne: '' } },
+              { paymentSessionClaimedAt: { $exists: true } },
+              { stripeBinding: { $exists: true } },
+            ],
+          },
+          {
+            $or: [
+              { paymentSessionClaimedAt: { $exists: true } },
+              {
+                paymentStatus: { $in: ['not_started', 'intent_created', 'processing', 'failed', 'manual_review'] },
+                status: { $nin: ['cancelled', 'refunded', 'reservation_failed'] },
+              },
+              {
+                paymentStatus: { $in: ['succeeded', 'partially_refunded'] },
+                $expr: { $lt: [{ $ifNull: ['$refundedMinor', 0] }, '$totalMinor'] },
+              },
+            ],
+          },
+        ],
       });
       if (providerBoundOrders > 0) {
         sendError(
@@ -1229,36 +1251,31 @@ export const updatePaymentGateway = async (
       }
     }
 
-    if (publishableChanged && (existingMode === 'test' || existingMode === 'live')) {
-      // A PaymentIntent client secret is account-bound. Preserve the public key
-      // until every customer session that can still confirm payment is closed.
-      const activePaymentSessions = await BundleOrder.countDocuments({
-        storefrontTenantId: tenantId,
-        checkoutMode: existingMode,
-        stripePaymentIntentId: { $exists: true, $ne: '' },
-        paymentStatus: { $ne: 'succeeded' },
-        status: { $nin: ['cancelled', 'refunded', 'reservation_failed'] },
+    let summary: Awaited<ReturnType<typeof saveTenantStripeConfig>>;
+    try {
+      summary = await saveTenantStripeConfig(tenantId, {
+        enabled,
+        publishableKey,
+        secretKey,
+        webhookSecret,
+        verifiedAccountId,
+        verifiedCredentialFingerprint,
+        resetWebhookTrust: webhookContextChanged,
+        clearWebhookSecret: credentialContextChangedWithoutFreshBinding && !webhookSecret,
+        expectedConfigRevision: Number(existing?.configRevision || 0),
+        expectedBindingFenceRevision: Number(existing?.bindingFenceRevision || 0),
       });
-      if (activePaymentSessions > 0) {
+    } catch (error) {
+      if (error instanceof TenantStripeConfigConflictError) {
         sendError(
           res,
-          `${activePaymentSessions} Bundle payment session(s) still depend on the current public key; expire or reconcile them before changing it`,
+          'The payment gateway or a Bundle checkout changed concurrently; reload and try again',
           409
         );
         return;
       }
+      throw error;
     }
-
-    const summary = await saveTenantStripeConfig(tenantId, {
-      enabled,
-      publishableKey,
-      secretKey,
-      webhookSecret,
-      verifiedAccountId,
-      verifiedCredentialFingerprint,
-      resetWebhookTrust: webhookContextChanged,
-      clearWebhookSecret: credentialContextChangedWithoutFreshBinding && !webhookSecret,
-    });
     const savedCfg = await getTenantStripeConfig(tenantId);
     sendSuccess(
       res,

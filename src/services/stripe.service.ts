@@ -271,7 +271,13 @@ export interface RefundResult {
   id: string;
   status: string;
   amount: number;
+  paymentIntentId: string;
 }
+
+const refundPaymentIntentId = (refund: Stripe.Refund): string =>
+  typeof refund.payment_intent === 'string'
+    ? refund.payment_intent
+    : refund.payment_intent?.id || '';
 
 export const retrieveRefund = async (
   secretKey: string | undefined,
@@ -281,11 +287,16 @@ export const retrieveRefund = async (
   const stripe = getStripe(secretKey);
   if (!stripe) {
     if (!options.allowMock) throw missingKeyError();
-    return { id: refundId, status: 'succeeded', amount: 0 };
+    return { id: refundId, status: 'succeeded', amount: 0, paymentIntentId: '' };
   }
   try {
     const refund = await stripe.refunds.retrieve(refundId);
-    return { id: refund.id, status: refund.status || 'pending', amount: refund.amount };
+    return {
+      id: refund.id,
+      status: refund.status || 'pending',
+      amount: refund.amount,
+      paymentIntentId: refundPaymentIntentId(refund),
+    };
   } catch {
     return null;
   }
@@ -327,7 +338,12 @@ export const createRefund = async (
       },
       { idempotencyKey }
     );
-    const result = { id: refund.id, status: refund.status || 'pending', amount: refund.amount };
+    const result = {
+      id: refund.id,
+      status: refund.status || 'pending',
+      amount: refund.amount,
+      paymentIntentId: refundPaymentIntentId(refund),
+    };
     if (result.status !== 'succeeded' && !options.allowPending) {
       throw new Error(`Stripe refund is not complete (status: ${result.status})`);
     }
@@ -339,6 +355,7 @@ export const createRefund = async (
     id: `re_mock_${crypto.randomBytes(12).toString('hex')}`,
     status: 'succeeded',
     amount: amountMinor || 0,
+    paymentIntentId,
   };
 };
 

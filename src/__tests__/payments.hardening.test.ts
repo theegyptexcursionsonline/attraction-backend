@@ -581,12 +581,17 @@ describe('Stripe payment hardening', () => {
         },
       });
 
-      expect(BundleOrder.countDocuments).toHaveBeenCalledWith({
+      expect(BundleOrder.countDocuments).toHaveBeenCalledWith(expect.objectContaining({
         storefrontTenantId: TENANT_ID,
         checkoutMode: 'test',
-        stripePaymentIntentId: { $exists: true, $ne: '' },
-        $expr: { $lt: [{ $ifNull: ['$refundedMinor', 0] }, '$totalMinor'] },
-      });
+        $and: expect.arrayContaining([
+          expect.objectContaining({ $or: expect.arrayContaining([
+            { stripePaymentIntentId: { $exists: true, $ne: '' } },
+            { paymentSessionClaimedAt: { $exists: true } },
+            { stripeBinding: { $exists: true } },
+          ]) }),
+        ]),
+      }));
       expect(res.status).toHaveBeenCalledWith(409);
       expect(saveTenantStripeConfig).not.toHaveBeenCalled();
     });
@@ -745,7 +750,7 @@ describe('Stripe payment hardening', () => {
         'sk_test_replacement',
         'pk_test_public'
       );
-      expect(BundleOrder.countDocuments).not.toHaveBeenCalled();
+      expect(BundleOrder.countDocuments).toHaveBeenCalledTimes(1);
       expect(saveTenantStripeConfig).toHaveBeenCalledWith(
         TENANT_ID,
         expect.objectContaining({

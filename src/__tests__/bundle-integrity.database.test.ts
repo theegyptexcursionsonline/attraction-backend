@@ -13,6 +13,7 @@ import { BundleEvent } from '../models/BundleEvent';
 import { BundleOrder } from '../models/BundleOrder';
 import { BundleOutboxEvent } from '../models/BundleOutboxEvent';
 import { BundleOutboxRecovery } from '../models/BundleOutboxRecovery';
+import { Tenant } from '../models/Tenant';
 import { permanentlyDeleteAttraction } from '../controllers/attractions.controller';
 import {
   BundleOutboxRecoveryError,
@@ -20,6 +21,11 @@ import {
 } from '../services/bundleOutbox.service';
 import { loadBundleOutboxHealth } from '../services/bundleLaunchReadiness.service';
 import { AuthRequest } from '../types';
+import {
+  claimTenantStripePaymentBinding,
+  saveTenantStripeConfig,
+  TenantStripeConfigConflictError,
+} from '../services/tenantPayment.service';
 
 jest.setTimeout(60_000);
 
@@ -180,6 +186,91 @@ describeWithMongo('Bundle integrity database integration', () => {
       _id: new Types.ObjectId(),
       ...base,
     })).rejects.toMatchObject({ code: 11000 });
+  });
+
+  it('atomically fences a checkout binding from a concurrent tenant gateway mutation', async () => {
+    const tenantId = new Types.ObjectId();
+    const orderId = new Types.ObjectId();
+    await Tenant.collection.insertOne({
+      _id: tenantId,
+      slug: `stripe-fence-${tenantId}`,
+      name: 'Stripe fence tenant',
+      domain: `stripe-fence-${tenantId}.example.test`,
+      logo: 'https://example.test/logo.png',
+      status: 'active',
+      paymentSettings: {
+        stripe: {
+          enabled: true,
+          publishableKey: 'pk_test_public',
+          secretKeyEnc: '',
+          webhookSecretEnc: '',
+          previousWebhookSecretEnc: '',
+          verifiedAccountId: 'acct_verified',
+          verifiedCredentialFingerprint: 'fingerprint_verified',
+          configRevision: 4,
+          bindingFenceRevision: 7,
+        },
+      },
+    });
+    await BundleOrder.collection.insertOne({
+      _id: orderId,
+      storefrontTenantId: tenantId,
+      status: 'reserved',
+      paymentStatus: 'not_started',
+    });
+
+    const session = await mongoose.startSession();
+    await session.withTransaction(async () => {
+      await expect(claimTenantStripePaymentBinding(tenantId, {
+        publishableKey: 'pk_test_public',
+        verifiedAccountId: 'acct_verified',
+        verifiedCredentialFingerprint: 'fingerprint_verified',
+        configRevision: 4,
+        bindingFenceRevision: 7,
+      }, session)).resolves.toBe(true);
+      await BundleOrder.updateOne(
+        { _id: orderId, status: 'reserved', paymentStatus: 'not_started' },
+        {
+          $set: {
+            stripeBinding: {
+              accountId: 'acct_verified',
+              credentialFingerprint: 'fingerprint_verified',
+              publishableKey: 'pk_test_public',
+              configRevision: 4,
+              bindingFenceRevision: 8,
+              claimedAt: new Date(),
+            },
+          },
+        },
+        { session }
+      );
+    });
+
+    // This is the exact stale snapshot held by an admin request that began
+    // before the checkout transaction committed. The real database must reject
+    // it after the shared fence and immutable order binding advance together.
+    await expect(saveTenantStripeConfig(tenantId.toString(), {
+      enabled: false,
+      expectedConfigRevision: 4,
+      expectedBindingFenceRevision: 7,
+    })).rejects.toBeInstanceOf(TenantStripeConfigConflictError);
+    await session.endSession();
+
+    await expect(Tenant.findById(tenantId).lean()).resolves.toEqual(expect.objectContaining({
+      paymentSettings: expect.objectContaining({
+        stripe: expect.objectContaining({
+          enabled: true,
+          configRevision: 4,
+          bindingFenceRevision: 8,
+        }),
+      }),
+    }));
+    await expect(BundleOrder.findById(orderId).lean()).resolves.toEqual(expect.objectContaining({
+      stripeBinding: expect.objectContaining({
+        accountId: 'acct_verified',
+        bindingFenceRevision: 8,
+      }),
+    }));
   });
 
   it('redrives once transactionally and replays the same operation id without duplicate audit', async () => {

@@ -185,6 +185,11 @@ const tenantSchema = new Schema<ITenant>(
         webhookVerifiedAt: Date,
         webhookContextFingerprint: String,
         configRevision: { type: Number, default: 0, min: 0 },
+        // Monotonic compare-and-set fence shared by gateway mutations and
+        // Bundle payment-session claims. It closes the cross-collection race
+        // where an admin changed accounts after checkout read the old keys but
+        // before the provider PaymentIntent was durably bound to its order.
+        bindingFenceRevision: { type: Number, default: 0, min: 0 },
       },
     },
     // Bundle launches are tenant-specific. Existing tenants remain in safe

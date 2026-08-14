@@ -44,6 +44,8 @@ jest.mock('../services/tenantPayment.service', () => ({
   getTenantStripeConfig: jest.fn(),
 }));
 jest.mock('../services/bundlePayment.service', () => ({
+  allocateCapturedBundlePayment: jest.fn(),
+  assertBundleStripeConfigBinding: jest.fn(),
   bundlePaymentBindingError: jest.fn(),
   bundlePaymentIntentIdempotencyKey: jest.fn(() => 'bundle:stable:intent:v1'),
   finalizeBundlePayment: jest.fn(),
@@ -130,6 +132,40 @@ describe('bundle cancellation lifecycle', () => {
     expect(result.components[0].settlementStatus).toBe('disputed');
     expect(result.components[1].status).toBe('cancel_pending');
     expect(result.recovery.required).toBe(false);
+    expect(releaseBundleInventory).not.toHaveBeenCalled();
+  });
+
+  it('accepts cancellation after provider capture even while child allocation recovery is pending', async () => {
+    const order = {
+      _id: new Types.ObjectId(),
+      reference: 'BTW-CANCEL03',
+      storefrontTenantId: new Types.ObjectId(),
+      status: 'paid_allocation_pending',
+      paymentStatus: 'succeeded',
+      totalMinor: 10_000,
+      refundedMinor: 0,
+      refundPendingMinor: 0,
+      components: [component('reserved', 'on_hold')],
+      recovery: {
+        required: true,
+        attempts: 1,
+        reason: 'Provider payment captured; child allocation is pending',
+      },
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    (BundleOrder.findById as jest.Mock)
+      .mockResolvedValueOnce(order)
+      .mockReturnValueOnce(queryResult(order));
+
+    const result = await cancelBundleOrder({
+      orderId: order._id.toString(),
+      reason: 'Customer requested cancellation after capture',
+      actor: { actorType: 'user', actorId: new Types.ObjectId() },
+    });
+
+    expect(result.status).toBe('cancel_pending');
+    expect(result.paymentStatus).toBe('succeeded');
+    expect(result.components[0].status).toBe('cancel_pending');
     expect(releaseBundleInventory).not.toHaveBeenCalled();
   });
 

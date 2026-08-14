@@ -57,7 +57,7 @@ describe('bundle TEST-mode outbox safety', () => {
     });
     expect(sendEmail).not.toHaveBeenCalled();
     expect(BundleOutboxEvent.updateOne).toHaveBeenCalledWith(
-      { _id: eventId, status: 'processing' },
+      { _id: eventId, status: 'processing', leaseToken: expect.any(String) },
       expect.objectContaining({
         $set: expect.objectContaining({
           status: 'suppressed',
@@ -104,8 +104,8 @@ describe('bundle TEST-mode outbox safety', () => {
       deadLetter: 0,
     });
     expect(sendEmail).toHaveBeenCalledTimes(1);
-    expect(BundleOutboxEvent.updateOne).toHaveBeenCalledWith(
-      { _id: eventId, status: 'processing' },
+    expect(BundleOutboxEvent.updateOne).toHaveBeenLastCalledWith(
+      { _id: eventId, status: 'processing', leaseToken: expect.any(String) },
       expect.objectContaining({
         $set: expect.objectContaining({
           status: 'delivered',
@@ -113,6 +113,93 @@ describe('bundle TEST-mode outbox safety', () => {
         }),
       })
     );
+  });
+
+  it('renews a slow live delivery lease so a second worker cannot send the same event', async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2030-01-01T00:00:00.000Z'));
+    try {
+      const eventId = new Types.ObjectId();
+      const tenantId = new Types.ObjectId();
+      const orderId = new Types.ObjectId();
+      const event = {
+        _id: eventId,
+        tenantId,
+        orderId,
+        audience: 'customer',
+        eventType: 'bundle.order_confirmed',
+        attempts: 0,
+      };
+      const state: {
+        status: string;
+        leaseToken?: string;
+        leaseUntil?: Date;
+        attempts: number;
+      } = { status: 'pending', attempts: 0 };
+      (BundleOutboxEvent.findOneAndUpdate as jest.Mock).mockImplementation(async (_filter, update) => {
+        const claimable = state.status === 'pending' ||
+          (state.status === 'processing' && !!state.leaseUntil && state.leaseUntil <= new Date());
+        if (!claimable) return null;
+        state.status = update.$set.status;
+        state.leaseToken = update.$set.leaseToken;
+        state.leaseUntil = update.$set.leaseUntil;
+        state.attempts += 1;
+        return { ...event, attempts: state.attempts };
+      });
+      (BundleOutboxEvent.updateOne as jest.Mock).mockImplementation(async (filter, update) => {
+        if (
+          filter._id.toString() !== eventId.toString() ||
+          filter.status !== state.status ||
+          filter.leaseToken !== state.leaseToken
+        ) return { modifiedCount: 0 };
+        if (update.$set?.leaseUntil) state.leaseUntil = update.$set.leaseUntil;
+        if (update.$set?.status) state.status = update.$set.status;
+        if (update.$unset?.leaseToken) state.leaseToken = undefined;
+        if (update.$unset?.leaseUntil) state.leaseUntil = undefined;
+        return { modifiedCount: 1 };
+      });
+      (Tenant.findById as jest.Mock).mockReturnValue({
+        lean: jest.fn().mockResolvedValue({ _id: tenantId, bundleSettings: { mode: 'live' } }),
+      });
+      (BundleOrder.findById as jest.Mock).mockResolvedValue({
+        _id: orderId,
+        checkoutMode: 'live',
+        reference: 'BND-SLOW-001',
+        status: 'confirmed',
+        guestDetails: { email: 'safe-test-recipient@example.test' },
+        components: [],
+      });
+      let releaseProvider!: () => void;
+      (sendEmail as jest.Mock).mockImplementation(() => new Promise<void>((resolve) => {
+        releaseProvider = resolve;
+      }));
+
+      const firstWorker = processBundleOutboxBatch(1);
+      for (let index = 0; index < 10 && (sendEmail as jest.Mock).mock.calls.length === 0; index += 1) {
+        await Promise.resolve();
+      }
+      expect(sendEmail).toHaveBeenCalledTimes(1);
+
+      await jest.advanceTimersByTimeAsync(25_000);
+      expect(state.leaseUntil!.getTime()).toBeGreaterThan(Date.now());
+      await expect(processBundleOutboxBatch(1)).resolves.toEqual({
+        delivered: 0,
+        suppressed: 0,
+        retried: 0,
+        deadLetter: 0,
+      });
+      expect(sendEmail).toHaveBeenCalledTimes(1);
+
+      releaseProvider();
+      await expect(firstWorker).resolves.toEqual({
+        delivered: 1,
+        suppressed: 0,
+        retried: 0,
+        deadLetter: 0,
+      });
+      expect(state.status).toBe('delivered');
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it('suppresses a TEST supplier event even when its recipient tenant is not in TEST mode', async () => {
@@ -193,8 +280,8 @@ describe('bundle TEST-mode outbox safety', () => {
       retried: 0,
       deadLetter: 1,
     });
-    expect(BundleOutboxEvent.updateOne).toHaveBeenCalledWith(
-      { _id: eventId },
+    expect(BundleOutboxEvent.updateOne).toHaveBeenLastCalledWith(
+      { _id: eventId, status: 'processing', leaseToken: expect.any(String) },
       expect.objectContaining({
         $set: expect.objectContaining({
           status: 'dead_letter',

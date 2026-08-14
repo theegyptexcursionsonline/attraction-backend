@@ -4,7 +4,11 @@ import {
   createBundlePaymentSession,
 } from '../services/bundlePayment.service';
 import { cancelPaymentIntent, createPaymentIntent } from '../services/stripe.service';
-import { getTenantStripeConfig } from '../services/tenantPayment.service';
+import {
+  claimTenantStripePaymentBinding,
+  getTenantStripeConfig,
+} from '../services/tenantPayment.service';
+import { runBundleTransaction } from '../services/bundleInventory.service';
 
 jest.mock('../models/Booking', () => ({ Booking: { updateMany: jest.fn() } }));
 jest.mock('../models/BundleOrder', () => ({
@@ -34,11 +38,16 @@ jest.mock('../services/stripe.service', () => ({
 }));
 jest.mock('../services/tenantPayment.service', () => ({
   ...jest.requireActual('../services/tenantPayment.service'),
+  claimTenantStripePaymentBinding: jest.fn(),
   getTenantStripeConfig: jest.fn(),
 }));
 
 describe('Bundle payment session versus hold expiry', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (runBundleTransaction as jest.Mock).mockImplementation(async (work) => work({ id: 'session' }));
+    (claimTenantStripePaymentBinding as jest.Mock).mockResolvedValue(true);
+  });
 
   it('marks the provider boundary first and cancels an intent when expiry wins before binding', async () => {
     const order = {
@@ -69,13 +78,20 @@ describe('Bundle payment session versus hold expiry', () => {
       enabled: true,
       publishableKey: 'pk_test_public',
       secretKey: 'sk_test_secret',
+      verifiedAccountId: 'acct_verified',
+      verifiedCredentialFingerprint: 'fingerprint_verified',
+      configRevision: 4,
+      bindingFenceRevision: 7,
     });
     (createPaymentIntent as jest.Mock).mockReturnValue(providerCall);
     (cancelPaymentIntent as jest.Mock).mockResolvedValue({ id: 'pi_race', status: 'canceled' });
 
     const result = createBundlePaymentSession(order._id.toString(), order.storefrontTenantId);
-    await Promise.resolve();
-    await Promise.resolve();
+    for (
+      let index = 0;
+      index < 20 && (BundleOrder.findOneAndUpdate as jest.Mock).mock.calls.length === 0;
+      index += 1
+    ) await Promise.resolve();
 
     expect(BundleOrder.findOneAndUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -83,8 +99,16 @@ describe('Bundle payment session versus hold expiry', () => {
         status: 'reserved',
         holdExpiresAt: { $gt: expect.any(Date) },
       }),
-      { $set: { paymentSessionClaimedAt: expect.any(Date) } },
-      { new: true }
+      { $set: {
+        paymentSessionClaimedAt: expect.any(Date),
+        stripeBinding: expect.objectContaining({
+          accountId: 'acct_verified',
+          credentialFingerprint: 'fingerprint_verified',
+          configRevision: 4,
+          bindingFenceRevision: 8,
+        }),
+      } },
+      { new: true, session: { id: 'session' } }
     );
 
     resolveProvider({
@@ -101,6 +125,10 @@ describe('Bundle payment session versus hold expiry', () => {
         storefrontTenantId: order.storefrontTenantId.toString(),
         orderReference: order.reference,
         checkoutMode: 'test',
+        gatewayAccountId: 'acct_verified',
+        gatewayCredentialFingerprint: 'fingerprint_verified',
+        gatewayConfigRevision: '4',
+        gatewayBindingFenceRevision: '8',
       },
     });
 
@@ -119,5 +147,38 @@ describe('Bundle payment session versus hold expiry', () => {
       'pi_race',
       expect.objectContaining({ idempotencyKey: expect.stringContaining('late-session-cancel') })
     );
+  });
+
+  it('does not cross the provider boundary when a concurrent gateway save wins the tenant fence', async () => {
+    const order = {
+      _id: new Types.ObjectId(),
+      storefrontTenantId: new Types.ObjectId(),
+      checkoutMode: 'test',
+      reference: 'BTW-RACE02',
+      status: 'reserved',
+      paymentStatus: 'not_started',
+      holdExpiresAt: new Date(Date.now() + 60_000),
+      totalMinor: 12_500,
+      currency: 'USD',
+    };
+    (BundleOrder.findOne as jest.Mock).mockResolvedValue(order);
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue({
+      enabled: true,
+      publishableKey: 'pk_test_public',
+      secretKey: 'sk_test_secret',
+      verifiedAccountId: 'acct_verified',
+      verifiedCredentialFingerprint: 'fingerprint_verified',
+      configRevision: 4,
+      bindingFenceRevision: 7,
+    });
+    (claimTenantStripePaymentBinding as jest.Mock).mockResolvedValue(false);
+
+    await expect(createBundlePaymentSession(
+      order._id.toString(),
+      order.storefrontTenantId
+    )).rejects.toEqual(expect.objectContaining({ code: 'PAYMENT_GATEWAY_CONFIG_CHANGED' }));
+
+    expect(BundleOrder.findOneAndUpdate).not.toHaveBeenCalled();
+    expect(createPaymentIntent).not.toHaveBeenCalled();
   });
 });

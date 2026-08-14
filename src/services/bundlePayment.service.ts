@@ -12,7 +12,12 @@ import {
   retrievePaymentIntent,
   retrieveRefund,
 } from './stripe.service';
-import { getTenantStripeConfig, stripeCredentialMode, TenantStripeConfig } from './tenantPayment.service';
+import {
+  claimTenantStripePaymentBinding,
+  getTenantStripeConfig,
+  stripeCredentialMode,
+  TenantStripeConfig,
+} from './tenantPayment.service';
 import {
   appendBalancedLedger,
   appendBundleEvent,
@@ -40,6 +45,30 @@ const assertBundleStripeEnvironment = (
   }
 };
 
+export const assertBundleStripeConfigBinding = (
+  order: IBundleOrder,
+  config: TenantStripeConfig | null
+): void => {
+  assertBundleStripeEnvironment(order, config);
+  // Orders created before the binding-snapshot rollout are still protected by
+  // tenant/mode metadata and provider account verification. Every new session
+  // writes this snapshot before crossing the provider boundary.
+  if (!order.stripeBinding) return;
+  if (
+    !config?.verifiedAccountId ||
+    !config.verifiedCredentialFingerprint ||
+    config.verifiedAccountId !== order.stripeBinding.accountId ||
+    config.verifiedCredentialFingerprint !== order.stripeBinding.credentialFingerprint ||
+    config.publishableKey !== order.stripeBinding.publishableKey
+  ) {
+    throw new BundlePaymentError(
+      'PAYMENT_GATEWAY_BINDING_MISMATCH',
+      'This order is bound to a different payment gateway configuration',
+      409
+    );
+  }
+};
+
 export const bundlePaymentBindingError = (
   order: IBundleOrder,
   intent: PaymentIntentResult,
@@ -54,6 +83,20 @@ export const bundlePaymentBindingError = (
   if (order.checkoutMode) {
     if (intent.metadata.checkoutMode !== order.checkoutMode) return 'Payment environment metadata does not match this order';
     if (intent.livemode !== (order.checkoutMode === 'live')) return 'Payment provider environment does not match this order';
+  }
+  if (order.stripeBinding) {
+    if (intent.metadata.gatewayAccountId !== order.stripeBinding.accountId) {
+      return 'Payment gateway account metadata does not match this order';
+    }
+    if (intent.metadata.gatewayCredentialFingerprint !== order.stripeBinding.credentialFingerprint) {
+      return 'Payment gateway credential metadata does not match this order';
+    }
+    if (intent.metadata.gatewayConfigRevision !== String(order.stripeBinding.configRevision)) {
+      return 'Payment gateway revision metadata does not match this order';
+    }
+    if (intent.metadata.gatewayBindingFenceRevision !== String(order.stripeBinding.bindingFenceRevision)) {
+      return 'Payment gateway fence metadata does not match this order';
+    }
   }
   if (requireSucceeded && (intent.status !== 'succeeded' || intent.amountReceived < order.totalMinor)) {
     return 'Payment has not been fully received';
@@ -86,28 +129,68 @@ export const createBundlePaymentSession = async (
   if (!config?.enabled || !config.secretKey || !config.publishableKey) {
     throw new BundlePaymentError('PAYMENT_GATEWAY_UNAVAILABLE', 'Card payment is not configured for this storefront', 503);
   }
-  assertBundleStripeEnvironment(order, config);
+  assertBundleStripeConfigBinding(order, config);
+  if (!config.verifiedAccountId || !config.verifiedCredentialFingerprint) {
+    throw new BundlePaymentError(
+      'PAYMENT_GATEWAY_UNVERIFIED',
+      'Card payment is not verified for this storefront',
+      503
+    );
+  }
   // Mark provider creation before crossing the network boundary. The expiry
   // worker uses this durable marker to reconcile the same Stripe idempotency
   // key before it may return capacity.
   const claimTime = new Date();
   const claimedOrder = order.stripePaymentIntentId
     ? order
-    : await BundleOrder.findOneAndUpdate(
-        {
-          _id: order._id,
-          storefrontTenantId: order.storefrontTenantId,
-          status: 'reserved',
-          paymentStatus: 'not_started',
-          holdExpiresAt: { $gt: claimTime },
-          stripePaymentIntentId: { $exists: false },
-        },
-        { $set: { paymentSessionClaimedAt: claimTime } },
-        { new: true }
-      );
-  if (!claimedOrder) {
-    throw new BundlePaymentError('PAYMENT_SESSION_CONFLICT', 'This reservation expired or another payment session already won', 409);
-  }
+    : await runBundleTransaction(async (session) => {
+        const tenantClaimed = await claimTenantStripePaymentBinding(
+          order.storefrontTenantId,
+          config,
+          session
+        );
+        if (!tenantClaimed) {
+          throw new BundlePaymentError(
+            'PAYMENT_GATEWAY_CONFIG_CHANGED',
+            'The payment gateway changed while checkout was starting; retry safely',
+            409
+          );
+        }
+        const claimed = await BundleOrder.findOneAndUpdate(
+          {
+            _id: order._id,
+            storefrontTenantId: order.storefrontTenantId,
+            status: 'reserved',
+            paymentStatus: 'not_started',
+            holdExpiresAt: { $gt: claimTime },
+            stripePaymentIntentId: { $exists: false },
+            stripeBinding: { $exists: false },
+          },
+          {
+            $set: {
+              paymentSessionClaimedAt: claimTime,
+              stripeBinding: {
+                accountId: config.verifiedAccountId!,
+                credentialFingerprint: config.verifiedCredentialFingerprint!,
+                publishableKey: config.publishableKey,
+                configRevision: Number(config.configRevision || 0),
+                bindingFenceRevision: Number(config.bindingFenceRevision || 0) + 1,
+                claimedAt: claimTime,
+              },
+            },
+          },
+          { new: true, session }
+        );
+        if (!claimed) {
+          throw new BundlePaymentError(
+            'PAYMENT_SESSION_CONFLICT',
+            'This reservation expired or another payment session already won',
+            409
+          );
+        }
+        return claimed;
+      });
+  assertBundleStripeConfigBinding(claimedOrder, config);
 
   const intent = await createPaymentIntent(
     config.secretKey,
@@ -119,6 +202,12 @@ export const createBundlePaymentSession = async (
       storefrontTenantId: claimedOrder.storefrontTenantId.toString(),
       orderReference: claimedOrder.reference,
       checkoutMode: claimedOrder.checkoutMode!,
+      ...(claimedOrder.stripeBinding ? {
+        gatewayAccountId: claimedOrder.stripeBinding.accountId,
+        gatewayCredentialFingerprint: claimedOrder.stripeBinding.credentialFingerprint,
+        gatewayConfigRevision: String(claimedOrder.stripeBinding.configRevision),
+        gatewayBindingFenceRevision: String(claimedOrder.stripeBinding.bindingFenceRevision),
+      } : {}),
     },
     { idempotencyKey: bundlePaymentIntentIdempotencyKey(claimedOrder._id) }
   );
@@ -233,54 +322,42 @@ const paidLedgerLines = (order: IBundleOrder): LedgerLine[] => [
   },
 ];
 
-export const finalizeBundlePayment = async (
+const persistCapturedBundlePayment = async (
   orderId: string,
   intent: PaymentIntentResult,
   actorType: 'stripe' | 'user'
 ): Promise<{ order: IBundleOrder; duplicate: boolean }> => runBundleTransaction(async (session) => {
   const order = await BundleOrder.findById(orderId).session(session);
   if (!order) throw new BundlePaymentError('ORDER_NOT_FOUND', 'Bundle order not found', 404);
-  if (order.paymentStatus === 'succeeded' && ['confirmed', 'in_progress', 'completed'].includes(order.status)) {
-    return { order, duplicate: true };
-  }
   const bindingError = bundlePaymentBindingError(order, intent, true);
   if (bindingError) throw new BundlePaymentError('PAYMENT_BINDING_INVALID', bindingError, 409);
-  if (!['payment_pending', 'manual_review'].includes(order.status)) {
+  if (
+    ['succeeded', 'partially_refunded', 'refunded'].includes(order.paymentStatus) &&
+    order.paymentCapturedAt
+  ) {
+    return { order, duplicate: true };
+  }
+  if (!['payment_pending', 'paid', 'allocating', 'paid_allocation_pending', 'manual_review'].includes(order.status)) {
     throw new BundlePaymentError('ORDER_PAYMENT_STATE_INVALID', 'Order is not waiting for payment', 409);
   }
   const fromState = order.status;
-  order.paymentStatus = 'succeeded';
   if (order.status === 'payment_pending') {
     assertTransition('order', order.status, 'paid');
     order.status = 'paid';
   }
-  assertTransition('order', order.status, 'allocating');
-  order.status = 'allocating';
-  for (const component of order.components) {
-    component.status = 'confirmed';
-    component.settlementStatus = 'on_hold';
+  if (order.status !== 'paid_allocation_pending') {
+    assertTransition('order', order.status, 'paid_allocation_pending');
   }
-  assertTransition('order', order.status, 'confirmed');
-  order.status = 'confirmed';
-  order.recovery.required = false;
-  order.recovery.reason = undefined;
+  order.status = 'paid_allocation_pending';
+  order.paymentStatus = 'succeeded';
+  order.paymentCapturedAt = order.paymentCapturedAt || new Date();
+  order.recovery.required = true;
+  order.recovery.reason = 'Provider payment captured; child allocation is pending';
   order.recovery.lastAttemptAt = new Date();
   await order.save({ session });
-  const bookingIds = order.components.map((component) => component.bookingId).filter(Boolean);
-  const childUpdate = await Booking.updateMany(
-    {
-      _id: { $in: bookingIds },
-      bundleOrderId: order._id,
-      status: 'pending',
-      inventoryReleasedAt: { $exists: false },
-      paymentStatus: { $ne: 'succeeded' },
-    },
-    { $set: { paymentStatus: 'succeeded', status: 'confirmed' } },
-    { session }
-  );
-  if (childUpdate.modifiedCount !== bookingIds.length) {
-    throw new BundlePaymentError('CHILD_ALLOCATION_CONFLICT', 'Paid order requires allocation recovery', 409);
-  }
+  // The complete balanced capture ledger is committed with the durable paid
+  // state, not with child allocation. A projection conflict can no longer roll
+  // local money truth back to an unpaid order.
   await appendBalancedLedger({
     orderId: order._id,
     operationId: `payment:${intent.id}`,
@@ -293,10 +370,80 @@ export const finalizeBundlePayment = async (
     aggregateId: order._id,
     storefrontTenantId: order.storefrontTenantId,
     actorType,
-    command: 'payment_succeeded_and_allocate',
+    command: 'payment_captured',
     fromState,
-    toState: 'confirmed',
+    toState: 'paid_allocation_pending',
     correlationId: intent.id,
+    metadata: { amountMinor: order.totalMinor, componentCount: order.components.length },
+  }, session);
+  return { order, duplicate: false };
+});
+
+export const allocateCapturedBundlePayment = async (
+  orderId: string,
+  actorType: 'stripe' | 'user' | 'system' = 'system'
+): Promise<{ order: IBundleOrder; duplicate: boolean }> => runBundleTransaction(async (session) => {
+  const order = await BundleOrder.findById(orderId).session(session);
+  if (!order) throw new BundlePaymentError('ORDER_NOT_FOUND', 'Bundle order not found', 404);
+  if (
+    ['confirmed', 'in_progress', 'completed', 'partially_refunded', 'refunded', 'cancel_pending'].includes(order.status) &&
+    ['succeeded', 'partially_refunded', 'refunded'].includes(order.paymentStatus)
+  ) {
+    return { order, duplicate: true };
+  }
+  if (order.paymentStatus !== 'succeeded' || order.status !== 'paid_allocation_pending') {
+    throw new BundlePaymentError(
+      'CAPTURED_PAYMENT_REQUIRED',
+      'Only a durably captured payment can be allocated',
+      409
+    );
+  }
+  const bookingIds = order.components.map((component) => component.bookingId).filter(Boolean);
+  if (bookingIds.length !== order.components.length) {
+    throw new BundlePaymentError('CHILD_ALLOCATION_CONFLICT', 'Paid order requires allocation recovery', 409);
+  }
+  assertTransition('order', order.status, 'allocating');
+  order.status = 'allocating';
+  await Booking.updateMany(
+    {
+      _id: { $in: bookingIds },
+      bundleOrderId: order._id,
+      status: 'pending',
+      inventoryReleasedAt: { $exists: false },
+      paymentStatus: { $ne: 'succeeded' },
+    },
+    { $set: { paymentStatus: 'succeeded', status: 'confirmed' } },
+    { session }
+  );
+  const allocatedChildren = await Booking.countDocuments({
+    _id: { $in: bookingIds },
+    bundleOrderId: order._id,
+    status: 'confirmed',
+    paymentStatus: 'succeeded',
+    inventoryReleasedAt: { $exists: false },
+  }).session(session);
+  if (allocatedChildren !== bookingIds.length) {
+    throw new BundlePaymentError('CHILD_ALLOCATION_CONFLICT', 'Paid order requires allocation recovery', 409);
+  }
+  for (const component of order.components) {
+    component.status = 'confirmed';
+    component.settlementStatus = 'on_hold';
+  }
+  assertTransition('order', order.status, 'confirmed');
+  order.status = 'confirmed';
+  order.recovery.required = false;
+  order.recovery.reason = undefined;
+  order.recovery.lastAttemptAt = new Date();
+  await order.save({ session });
+  await appendBundleEvent({
+    aggregateType: 'order',
+    aggregateId: order._id,
+    storefrontTenantId: order.storefrontTenantId,
+    actorType,
+    command: 'allocate_captured_payment',
+    fromState: 'paid_allocation_pending',
+    toState: 'confirmed',
+    correlationId: order.stripePaymentIntentId,
     metadata: { amountMinor: order.totalMinor, componentCount: order.components.length },
   }, session);
   await enqueueBundleOutbox({
@@ -331,6 +478,69 @@ export const finalizeBundlePayment = async (
   return { order, duplicate: false };
 });
 
+export const finalizeBundlePayment = async (
+  orderId: string,
+  intent: PaymentIntentResult,
+  actorType: 'stripe' | 'user'
+): Promise<{ order: IBundleOrder; duplicate: boolean }> => {
+  const captured = await persistCapturedBundlePayment(orderId, intent, actorType);
+  try {
+    const allocated = await allocateCapturedBundlePayment(orderId, actorType);
+    return {
+      order: allocated.order,
+      duplicate: captured.duplicate && allocated.duplicate,
+    };
+  } catch (error) {
+    await BundleOrder.updateOne(
+      { _id: orderId, status: 'paid_allocation_pending', paymentStatus: 'succeeded' },
+      {
+        $set: {
+          'recovery.required': true,
+          'recovery.reason': `Captured payment allocation failed: ${
+            error instanceof Error ? error.message : 'unknown error'
+          }`.slice(0, 500),
+          'recovery.lastAttemptAt': new Date(),
+        },
+        $inc: { 'recovery.attempts': 1 },
+      }
+    );
+    throw error;
+  }
+};
+
+export const processPendingBundleAllocations = async (
+  limit = 25
+): Promise<{ examined: number; recovered: number; failed: number }> => {
+  const rows = await BundleOrder.find({
+    status: 'paid_allocation_pending',
+    paymentStatus: 'succeeded',
+    'recovery.required': true,
+  }).select('_id').sort({ updatedAt: 1, _id: 1 }).limit(limit).lean();
+  const totals = { examined: rows.length, recovered: 0, failed: 0 };
+  for (const row of rows) {
+    try {
+      await allocateCapturedBundlePayment(row._id.toString(), 'system');
+      totals.recovered += 1;
+    } catch (error) {
+      totals.failed += 1;
+      await BundleOrder.updateOne(
+        { _id: row._id, status: 'paid_allocation_pending', paymentStatus: 'succeeded' },
+        {
+          $set: {
+            'recovery.required': true,
+            'recovery.reason': `Captured payment allocation failed: ${
+              error instanceof Error ? error.message : 'unknown error'
+            }`.slice(0, 500),
+            'recovery.lastAttemptAt': new Date(),
+          },
+          $inc: { 'recovery.attempts': 1 },
+        }
+      ).catch(() => undefined);
+    }
+  }
+  return totals;
+};
+
 export const confirmBundlePaymentFromProvider = async (
   orderId: string,
   storefrontTenantId: Types.ObjectId | string
@@ -344,7 +554,7 @@ export const confirmBundlePaymentFromProvider = async (
   if (!config?.enabled || !config.secretKey) {
     throw new BundlePaymentError('PAYMENT_GATEWAY_UNAVAILABLE', 'Payment verification is unavailable', 503);
   }
-  assertBundleStripeEnvironment(order, config);
+  assertBundleStripeConfigBinding(order, config);
   const intent = await retrievePaymentIntent(config.secretKey, order.stripePaymentIntentId);
   if (!intent) throw new BundlePaymentError('PAYMENT_NOT_FOUND', 'Payment could not be verified', 409);
   return finalizeBundlePayment(order._id.toString(), intent, 'user');
@@ -590,6 +800,19 @@ export const refundBundleOrder = async (input: {
 }): Promise<{ order: IBundleOrder; duplicate: boolean }> => {
   let order = await BundleOrder.findById(input.orderId);
   if (!order) throw new BundlePaymentError('ORDER_NOT_FOUND', 'Bundle order not found', 404);
+  // Replay is an immutable operation lookup, not a new refund eligibility
+  // decision. A client that lost the response to a successful full refund must
+  // receive that same success after the order itself is already `refunded`.
+  const prior = (order.refunds || []).find((refund) => refund.operationId === input.operationId);
+  if (prior) {
+    if (prior.amountMinor !== input.amountMinor || prior.reason !== input.reason) {
+      throw new BundlePaymentError('REFUND_OPERATION_REUSED', 'This refund operation was used with different data', 409);
+    }
+    if (prior.status === 'succeeded') return { order, duplicate: true };
+    if (prior.status === 'failed') {
+      throw new BundlePaymentError('REFUND_OPERATION_FAILED', 'This refund operation was rejected; start a new operation', 409);
+    }
+  }
   if (
     !order.stripePaymentIntentId ||
     !REFUNDABLE_PAYMENT_STATUSES.includes(
@@ -599,7 +822,6 @@ export const refundBundleOrder = async (input: {
     throw new BundlePaymentError('ORDER_NOT_REFUNDABLE', 'Only a captured payment can be refunded', 409);
   }
   const remainingRefundableMinor = order.totalMinor - order.refundedMinor;
-  const prior = order.refunds.find((refund) => refund.operationId === input.operationId);
   if (
     order.status === 'cancel_pending' &&
     input.amountMinor !== remainingRefundableMinor &&
@@ -611,15 +833,7 @@ export const refundBundleOrder = async (input: {
       409
     );
   }
-  if (prior) {
-    if (prior.amountMinor !== input.amountMinor || prior.reason !== input.reason) {
-      throw new BundlePaymentError('REFUND_OPERATION_REUSED', 'This refund operation was used with different data', 409);
-    }
-    if (prior.status === 'succeeded') return { order, duplicate: true };
-    if (prior.status === 'failed') {
-      throw new BundlePaymentError('REFUND_OPERATION_FAILED', 'This refund operation was rejected; start a new operation', 409);
-    }
-  } else {
+  if (!prior) {
     const reservationQuery: Record<string, unknown> = {
         _id: order._id,
         stripePaymentIntentId: order.stripePaymentIntentId,
@@ -690,7 +904,7 @@ export const refundBundleOrder = async (input: {
     throw new BundlePaymentError('PAYMENT_GATEWAY_UNAVAILABLE', 'Refund provider is unavailable', 503);
   }
   try {
-    assertBundleStripeEnvironment(order, config);
+    assertBundleStripeConfigBinding(order, config);
   } catch (error) {
     if (!currentRefund.providerAttemptedAt && !currentRefund.providerRefundId) {
       await releaseRefundReservation(
@@ -750,11 +964,15 @@ export const refundBundleOrder = async (input: {
       409
     );
   }
-  if (!providerRefund || providerRefund.amount !== input.amountMinor) {
+  if (
+    !providerRefund ||
+    providerRefund.amount !== input.amountMinor ||
+    providerRefund.paymentIntentId !== order.stripePaymentIntentId
+  ) {
     await scheduleRefundRecovery(
       order._id,
       input.operationId,
-      'Refund provider returned incomplete or mismatched evidence',
+      'Refund provider returned incomplete, mismatched, or foreign-payment evidence',
       providerRefund?.id || claimedRefund.providerRefundId
     );
     throw new BundlePaymentError('REFUND_PROVIDER_UNCERTAIN', 'Refund status could not be verified; recovery will retry this operation', 409);

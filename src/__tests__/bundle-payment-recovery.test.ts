@@ -6,6 +6,8 @@ import { releaseBundleInventory } from '../services/bundleInventory.service';
 import {
   claimBundleProviderEvent,
   failBundlePayment,
+  finalizeBundlePayment,
+  processPendingBundleAllocations,
   processPendingBundleRefunds,
   refundBundleOrder,
 } from '../services/bundlePayment.service';
@@ -21,6 +23,7 @@ jest.mock('../models/Booking', () => ({
     findOneAndUpdate: jest.fn(),
     updateMany: jest.fn(),
     updateOne: jest.fn(),
+    countDocuments: jest.fn(),
   },
 }));
 jest.mock('../models/BundleOrder', () => ({
@@ -97,6 +100,136 @@ describe('bundle payment recovery contracts', () => {
     expect(BundleProviderEvent.findOneAndUpdate).not.toHaveBeenCalled();
   });
 
+  it('commits provider capture before a child-allocation conflict and leaves a recoverable paid order', async () => {
+    const orderId = new Types.ObjectId();
+    const storefrontTenantId = new Types.ObjectId();
+    const supplierTenantId = new Types.ObjectId();
+    const bookingId = new Types.ObjectId();
+    const capturedOrder = {
+      _id: orderId,
+      storefrontTenantId,
+      reference: 'BTW-CAPTURE01',
+      checkoutMode: 'test',
+      status: 'payment_pending',
+      paymentStatus: 'intent_created',
+      stripePaymentIntentId: 'pi_capture_allocation',
+      currency: 'USD',
+      totalMinor: 10_000,
+      platformAllocationMinor: 2_000,
+      paymentFeeReserveMinor: 0,
+      taxMinor: 0,
+      components: [{
+        componentId: 'component-1',
+        bookingId,
+        supplierTenantId,
+        customerAllocationMinor: 10_000,
+        supplierNetTotalMinor: 8_000,
+        status: 'reserved',
+        settlementStatus: 'on_hold',
+      }],
+      recovery: { required: false, attempts: 0 },
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    const allocationAttempt = {
+      ...capturedOrder,
+      status: 'paid_allocation_pending',
+      paymentStatus: 'succeeded',
+      paymentCapturedAt: new Date(),
+      recovery: { required: true, attempts: 0 },
+      components: capturedOrder.components.map((component) => ({ ...component })),
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    (BundleOrder.findById as jest.Mock)
+      .mockReturnValueOnce(queryResult(capturedOrder))
+      .mockReturnValueOnce(queryResult(allocationAttempt));
+    (Booking.updateMany as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
+    (Booking.countDocuments as jest.Mock).mockReturnValue(queryResult(0));
+
+    await expect(finalizeBundlePayment(orderId.toString(), {
+      id: 'pi_capture_allocation',
+      clientSecret: '',
+      amount: 10_000,
+      amountReceived: 10_000,
+      currency: 'usd',
+      status: 'succeeded',
+      livemode: false,
+      metadata: {
+        paymentKind: 'bundle',
+        bundleOrderId: orderId.toString(),
+        storefrontTenantId: storefrontTenantId.toString(),
+        orderReference: 'BTW-CAPTURE01',
+        checkoutMode: 'test',
+      },
+    }, 'stripe')).rejects.toEqual(expect.objectContaining({ code: 'CHILD_ALLOCATION_CONFLICT' }));
+
+    expect(capturedOrder).toEqual(expect.objectContaining({
+      status: 'paid_allocation_pending',
+      paymentStatus: 'succeeded',
+      paymentCapturedAt: expect.any(Date),
+      recovery: expect.objectContaining({ required: true }),
+    }));
+    expect(appendBalancedLedger).toHaveBeenCalledTimes(1);
+    expect(BundleOrder.updateOne).toHaveBeenCalledWith(
+      { _id: orderId.toString(), status: 'paid_allocation_pending', paymentStatus: 'succeeded' },
+      expect.objectContaining({
+        $set: expect.objectContaining({ 'recovery.required': true }),
+        $inc: { 'recovery.attempts': 1 },
+      })
+    );
+  });
+
+  it('redrives a captured allocation idempotently without recording payment twice', async () => {
+    const orderId = new Types.ObjectId();
+    const bookingId = new Types.ObjectId();
+    const order = {
+      _id: orderId,
+      storefrontTenantId: new Types.ObjectId(),
+      reference: 'BTW-CAPTURE02',
+      status: 'paid_allocation_pending',
+      paymentStatus: 'succeeded',
+      paymentCapturedAt: new Date(),
+      stripePaymentIntentId: 'pi_captured_retry',
+      currency: 'USD',
+      totalMinor: 10_000,
+      platformAllocationMinor: 2_000,
+      paymentFeeReserveMinor: 0,
+      taxMinor: 0,
+      recovery: { required: true, attempts: 1 },
+      components: [{
+        componentId: 'component-1',
+        bookingId,
+        supplierTenantId: new Types.ObjectId(),
+        customerAllocationMinor: 10_000,
+        supplierNetTotalMinor: 8_000,
+        status: 'reserved',
+        settlementStatus: 'on_hold',
+      }],
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    (BundleOrder.find as jest.Mock).mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        sort: jest.fn().mockReturnValue({
+          limit: jest.fn().mockReturnValue({
+            lean: jest.fn().mockResolvedValue([{ _id: orderId }]),
+          }),
+        }),
+      }),
+    });
+    (BundleOrder.findById as jest.Mock).mockReturnValue(queryResult(order));
+    (Booking.updateMany as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
+    (Booking.countDocuments as jest.Mock).mockReturnValue(queryResult(1));
+
+    await expect(processPendingBundleAllocations()).resolves.toEqual({
+      examined: 1,
+      recovered: 1,
+      failed: 0,
+    });
+
+    expect(order.status).toBe('confirmed');
+    expect(order.recovery).toEqual(expect.objectContaining({ required: false }));
+    expect(appendBalancedLedger).not.toHaveBeenCalled();
+  });
+
   it('keeps inventory reserved after a failed card attempt so the same hold can be retried', async () => {
     const order = {
       _id: new Types.ObjectId(),
@@ -139,7 +272,7 @@ describe('bundle payment recovery contracts', () => {
     };
     (BundleOrder.findById as jest.Mock).mockResolvedValue(order);
     (getTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true, publishableKey: 'pk_test_public', secretKey: 'sk_test_secret' });
-    (retrieveRefund as jest.Mock).mockResolvedValue({ id: 're_pending', status: 'pending', amount: 5_000 });
+    (retrieveRefund as jest.Mock).mockResolvedValue({ id: 're_pending', status: 'pending', amount: 5_000, paymentIntentId: 'pi_refund' });
     (BundleOrder.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
 
     await expect(refundBundleOrder({
@@ -164,6 +297,93 @@ describe('bundle payment recovery contracts', () => {
     );
   });
 
+  it('replays a completed full-refund operation after the order is no longer newly refundable', async () => {
+    const operationId = 'refund:full-replay-001';
+    const order = {
+      _id: new Types.ObjectId(),
+      storefrontTenantId: new Types.ObjectId(),
+      status: 'refunded',
+      paymentStatus: 'refunded',
+      totalMinor: 20_000,
+      refundedMinor: 20_000,
+      refundPendingMinor: 0,
+      refunds: [{
+        operationId,
+        amountMinor: 20_000,
+        status: 'succeeded',
+        reason: 'Approved cancellation',
+        providerRefundId: 're_full_replay',
+      }],
+    };
+    (BundleOrder.findById as jest.Mock).mockResolvedValue(order);
+
+    await expect(refundBundleOrder({
+      orderId: order._id.toString(),
+      operationId,
+      amountMinor: 20_000,
+      reason: 'Approved cancellation',
+      actorId: new Types.ObjectId(),
+    })).resolves.toEqual({ order, duplicate: true });
+
+    expect(getTenantStripeConfig).not.toHaveBeenCalled();
+    expect(createRefund).not.toHaveBeenCalled();
+    expect(retrieveRefund).not.toHaveBeenCalled();
+    expect(BundleOrder.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it('rejects retrieved refund evidence owned by a different payment intent', async () => {
+    const operationId = 'refund:foreign-payment-intent';
+    const order = {
+      _id: new Types.ObjectId(),
+      storefrontTenantId: new Types.ObjectId(),
+      checkoutMode: 'test',
+      stripePaymentIntentId: 'pi_owned_payment',
+      status: 'confirmed',
+      paymentStatus: 'succeeded',
+      totalMinor: 10_000,
+      refundedMinor: 0,
+      refundPendingMinor: 5_000,
+      refunds: [{
+        operationId,
+        providerRefundId: 're_foreign_payment',
+        amountMinor: 5_000,
+        status: 'provider_pending',
+        reason: 'Customer request',
+      }],
+    };
+    (BundleOrder.findById as jest.Mock).mockResolvedValue(order);
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue({
+      enabled: true,
+      publishableKey: 'pk_test_public',
+      secretKey: 'sk_test_secret',
+    });
+    (retrieveRefund as jest.Mock).mockResolvedValue({
+      id: 're_foreign_payment',
+      status: 'succeeded',
+      amount: 5_000,
+      paymentIntentId: 'pi_someone_else',
+    });
+
+    await expect(refundBundleOrder({
+      orderId: order._id.toString(),
+      operationId,
+      amountMinor: 5_000,
+      reason: 'Customer request',
+      actorId: new Types.ObjectId(),
+    })).rejects.toEqual(expect.objectContaining({ code: 'REFUND_PROVIDER_UNCERTAIN' }));
+
+    expect(BundleOrder.updateOne).toHaveBeenLastCalledWith(
+      expect.objectContaining({ _id: order._id }),
+      expect.objectContaining({
+        $set: expect.objectContaining({
+          'recovery.required': true,
+          'refunds.$.providerRefundId': 're_foreign_payment',
+        }),
+      })
+    );
+    expect(appendBalancedLedger).not.toHaveBeenCalled();
+  });
+
   it('releases a failed refund reservation only while that operation is still pending', async () => {
     const operationId = 'refund:stable-operation-002';
     const order = {
@@ -185,7 +405,7 @@ describe('bundle payment recovery contracts', () => {
     };
     (BundleOrder.findById as jest.Mock).mockResolvedValue(order);
     (getTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true, publishableKey: 'pk_test_public', secretKey: 'sk_test_secret' });
-    (retrieveRefund as jest.Mock).mockResolvedValue({ id: 're_failed', status: 'failed', amount: 5_000 });
+    (retrieveRefund as jest.Mock).mockResolvedValue({ id: 're_failed', status: 'failed', amount: 5_000, paymentIntentId: 'pi_failed_refund' });
     (BundleOrder.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
 
     await expect(refundBundleOrder({
@@ -380,7 +600,7 @@ describe('bundle payment recovery contracts', () => {
       }
       return Promise.resolve({ modifiedCount: 1 });
     });
-    (retrieveRefund as jest.Mock).mockResolvedValue({ id: 're_concurrent', status: 'pending', amount: 5_000 });
+    (retrieveRefund as jest.Mock).mockResolvedValue({ id: 're_concurrent', status: 'pending', amount: 5_000, paymentIntentId: order.stripePaymentIntentId });
     const input = {
       orderId: order._id.toString(),
       operationId,
@@ -430,7 +650,7 @@ describe('bundle payment recovery contracts', () => {
       publishableKey: 'pk_test_public',
       secretKey: 'sk_test_secret',
     });
-    (retrieveRefund as jest.Mock).mockResolvedValue({ id: 're_worker_redrive', status: 'pending', amount: 5_000 });
+    (retrieveRefund as jest.Mock).mockResolvedValue({ id: 're_worker_redrive', status: 'pending', amount: 5_000, paymentIntentId: 'pi_worker_redrive' });
 
     await expect(processPendingBundleRefunds(10)).resolves.toEqual({
       examined: 1,
@@ -475,6 +695,7 @@ describe('bundle payment recovery contracts', () => {
       id: 're_crash_before_provider',
       status: 'pending',
       amount: 5_000,
+      paymentIntentId: 'pi_crash_before_provider',
     });
 
     await expect(processPendingBundleRefunds(10)).resolves.toEqual({
@@ -549,7 +770,7 @@ describe('bundle payment recovery contracts', () => {
       publishableKey: 'pk_test_public',
       secretKey: 'sk_test_secret',
     });
-    (createRefund as jest.Mock).mockResolvedValue({ id: 're_partial', status: 'succeeded', amount: 5_000 });
+    (createRefund as jest.Mock).mockResolvedValue({ id: 're_partial', status: 'succeeded', amount: 5_000, paymentIntentId: 'pi_partial_service' });
     (Booking.updateMany as jest.Mock).mockResolvedValue({ modifiedCount: 2 });
 
     const result = await refundBundleOrder({
@@ -648,6 +869,7 @@ describe('bundle payment recovery contracts', () => {
       id: 're_legacy_partial',
       status: 'succeeded',
       amount: 5_000,
+      paymentIntentId: 'pi_legacy_cancel_partial',
     });
     (Booking.updateMany as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
 
@@ -731,7 +953,7 @@ describe('bundle payment recovery contracts', () => {
       .mockResolvedValueOnce(order)
       .mockReturnValueOnce(queryResult(order));
     (getTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true, publishableKey: 'pk_test_public', secretKey: 'sk_test_secret' });
-    (createRefund as jest.Mock).mockResolvedValue({ id: 're_full', status: 'succeeded', amount: 20_000 });
+    (createRefund as jest.Mock).mockResolvedValue({ id: 're_full', status: 'succeeded', amount: 20_000, paymentIntentId: 'pi_full_refund' });
     (Booking.findOneAndUpdate as jest.Mock).mockResolvedValue({ _id: new Types.ObjectId() });
     (Booking.updateMany as jest.Mock).mockResolvedValue({ modifiedCount: 2 });
 
@@ -820,7 +1042,7 @@ describe('bundle payment recovery contracts', () => {
       .mockResolvedValueOnce(order)
       .mockReturnValueOnce(queryResult(order));
     (getTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true, publishableKey: 'pk_test_public', secretKey: 'sk_test_secret' });
-    (createRefund as jest.Mock).mockResolvedValue({ id: 're_paid_settlement', status: 'succeeded', amount: 10_000 });
+    (createRefund as jest.Mock).mockResolvedValue({ id: 're_paid_settlement', status: 'succeeded', amount: 10_000, paymentIntentId: 'pi_paid_settlement' });
     (Booking.updateMany as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
 
     const result = await refundBundleOrder({
@@ -898,8 +1120,8 @@ describe('bundle payment recovery contracts', () => {
       secretKey: 'sk_test_secret',
     });
     (createRefund as jest.Mock)
-      .mockResolvedValueOnce({ id: 're_paid_partial', status: 'succeeded', amount: 5_000 })
-      .mockResolvedValueOnce({ id: 're_paid_full', status: 'succeeded', amount: 5_000 });
+      .mockResolvedValueOnce({ id: 're_paid_partial', status: 'succeeded', amount: 5_000, paymentIntentId: 'pi_paid_partial_full' })
+      .mockResolvedValueOnce({ id: 're_paid_full', status: 'succeeded', amount: 5_000, paymentIntentId: 'pi_paid_partial_full' });
     (Booking.updateMany as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
 
     await refundBundleOrder({
@@ -995,8 +1217,8 @@ describe('bundle payment recovery contracts', () => {
       });
       (Booking.updateMany as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
       (createRefund as jest.Mock)
-        .mockResolvedValueOnce({ id: `re_${resolution}_partial`, status: 'succeeded', amount: 5_000 })
-        .mockResolvedValueOnce({ id: `re_${resolution}_full`, status: 'succeeded', amount: 5_000 });
+        .mockResolvedValueOnce({ id: `re_${resolution}_partial`, status: 'succeeded', amount: 5_000, paymentIntentId: `pi_paid_${resolution}` })
+        .mockResolvedValueOnce({ id: `re_${resolution}_full`, status: 'succeeded', amount: 5_000, paymentIntentId: `pi_paid_${resolution}` });
       (BundleOrder.findById as jest.Mock)
         .mockResolvedValueOnce(order)
         .mockReturnValueOnce(queryResult(order));
@@ -1101,7 +1323,7 @@ describe('bundle payment recovery contracts', () => {
       .mockResolvedValueOnce(order)
       .mockReturnValueOnce(queryResult(order));
     (getTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true, publishableKey: 'pk_test_public', secretKey: 'sk_test_secret' });
-    (createRefund as jest.Mock).mockResolvedValue({ id: 're_missing', status: 'succeeded', amount: 20_000 });
+    (createRefund as jest.Mock).mockResolvedValue({ id: 're_missing', status: 'succeeded', amount: 20_000, paymentIntentId: 'pi_missing_booking' });
     (Booking.findOneAndUpdate as jest.Mock).mockResolvedValue(null);
     (Booking.findOne as jest.Mock).mockReturnValue(queryResult(null));
 

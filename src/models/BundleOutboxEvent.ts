@@ -11,6 +11,7 @@ export interface IBundleOutboxEvent extends Document {
   attempts: number;
   nextAttemptAt: Date;
   leaseUntil?: Date;
+  leaseToken?: string;
   lastError?: string;
   deliveredAt?: Date;
   suppressedAt?: Date;
@@ -32,6 +33,7 @@ const bundleOutboxEventSchema = new Schema<IBundleOutboxEvent>(
     attempts: { type: Number, default: 0, min: 0, validate: Number.isSafeInteger },
     nextAttemptAt: { type: Date, default: Date.now, index: true },
     leaseUntil: { type: Date },
+    leaseToken: { type: String, maxlength: 128 },
     lastError: { type: String, maxlength: 1000 },
     deliveredAt: { type: Date },
     suppressedAt: { type: Date },

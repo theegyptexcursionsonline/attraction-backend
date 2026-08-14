@@ -9,7 +9,12 @@ import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest, IAttraction } from '../types';
 import { Types } from 'mongoose';
 import { escapeRegex } from '../utils/helpers';
-import { isSuperAdmin, callerTenantIds, attractionInCallerTenants } from '../utils/tenantScope';
+import {
+  isSuperAdmin,
+  callerTenantIds,
+  attractionInCallerTenants,
+  attractionOwnedByCallerTenants,
+} from '../utils/tenantScope';
 import { minimumTourPrice } from '../utils/attractionPricing';
 import { BundleOrder } from '../models/BundleOrder';
 import { runBundleTransaction } from '../services/bundleInventory.service';
@@ -100,6 +105,37 @@ const rejectIfNotOwnedAttraction = async (
     return true;
   }
   return false;
+};
+
+const rejectIfNotCommercialOwner = async (
+  req: AuthRequest,
+  res: Response,
+  attractionId: string
+): Promise<boolean> => {
+  if (!req.user || isSuperAdmin(req.user)) return false;
+  const ok = await attractionOwnedByCallerTenants(
+    attractionId,
+    callerTenantIds(req.user)
+  );
+  if (!ok) {
+    // Do not reveal whether a supplier-owned catalogue item exists to a reseller
+    // that merely distributes it.
+    sendError(res, 'Attraction not found', 404);
+    return true;
+  }
+  return false;
+};
+
+const commercialOwnerMutationScope = (req: AuthRequest): Record<string, unknown> => {
+  if (!req.user || isSuperAdmin(req.user)) return {};
+  const tenantIds = callerTenantIds(req.user);
+  return {
+    $or: [
+      { ownerTenantId: { $in: tenantIds } },
+      { ownerTenantId: { $exists: false }, tenantIds: { $in: tenantIds } },
+      { ownerTenantId: null, tenantIds: { $in: tenantIds } },
+    ],
+  };
 };
 
 interface AttractionQuery {
@@ -674,23 +710,10 @@ export const deleteAttraction = async (
   try {
     const { id } = req.params;
 
-    // Non-super-admins can only delete attractions in their assigned tenants
-    if (req.user?.role !== 'super-admin') {
-      const existing = await Attraction.findById(id);
-      if (!existing) {
-        sendError(res, 'Attraction not found', 404);
-        return;
-      }
-      const assignedSet = new Set((req.user?.assignedTenants || []).map((t: Types.ObjectId) => t.toString()));
-      const hasAccess = existing.tenantIds?.some((tid: Types.ObjectId) => assignedSet.has(tid.toString()));
-      if (!hasAccess) {
-        sendError(res, 'Access denied to this attraction', 403);
-        return;
-      }
-    }
+    if (await rejectIfNotCommercialOwner(req, res, id as string)) return;
 
-    const attraction = await Attraction.findByIdAndUpdate(
-      id,
+    const attraction = await Attraction.findOneAndUpdate(
+      { _id: id, ...commercialOwnerMutationScope(req) },
       { $set: { status: 'archived', trashedAt: new Date() }, $unset: { archivedAt: 1, statusBeforeArchive: 1 } },
       { new: true }
     );
@@ -709,24 +732,46 @@ export const deleteAttraction = async (
 export const archiveAttraction = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
-    if (await rejectIfNotOwnedAttraction(req, res, id as string)) return;
-    const existing = await Attraction.findOne({ _id: id, status: { $in: ['active', 'draft'] } });
+    if (await rejectIfNotCommercialOwner(req, res, id as string)) return;
+    const existing = await Attraction.findOne({
+      _id: id,
+      status: { $in: ['active', 'draft'] },
+      ...commercialOwnerMutationScope(req),
+    });
     if (!existing) { sendError(res, 'Active or draft attraction not found', 404); return; }
-    existing.statusBeforeArchive = existing.status as 'active' | 'draft';
-    existing.status = 'archived';
-    existing.archivedAt = new Date();
-    existing.trashedAt = undefined;
-    await existing.save();
-    sendSuccess(res, existing, 'Attraction archived');
+    const attraction = await Attraction.findOneAndUpdate(
+      {
+        _id: id,
+        status: existing.status,
+        ...commercialOwnerMutationScope(req),
+      },
+      {
+        $set: {
+          statusBeforeArchive: existing.status,
+          status: 'archived',
+          archivedAt: new Date(),
+        },
+        $unset: { trashedAt: 1 },
+      },
+      { new: true }
+    );
+    if (!attraction) { sendError(res, 'Active or draft attraction not found', 404); return; }
+    sendSuccess(res, attraction, 'Attraction archived');
   } catch (error) { next(error); }
 };
 
 export const unarchiveAttraction = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
-    if (await rejectIfNotOwnedAttraction(req, res, id as string)) return;
+    if (await rejectIfNotCommercialOwner(req, res, id as string)) return;
     const attraction = await Attraction.findOneAndUpdate(
-      { _id: id, status: 'archived', archivedAt: { $exists: true }, trashedAt: { $exists: false } },
+      {
+        _id: id,
+        status: 'archived',
+        archivedAt: { $exists: true },
+        trashedAt: { $exists: false },
+        ...commercialOwnerMutationScope(req),
+      },
       { $set: { status: 'draft' }, $unset: { archivedAt: 1, statusBeforeArchive: 1 } },
       { new: true }
     );
@@ -742,9 +787,14 @@ export const restoreAttraction = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    if (await rejectIfNotOwnedAttraction(req, res, id as string)) return;
+    if (await rejectIfNotCommercialOwner(req, res, id as string)) return;
     const attraction = await Attraction.findOneAndUpdate(
-      { _id: id, status: 'archived', archivedAt: { $exists: false } },
+      {
+        _id: id,
+        status: 'archived',
+        archivedAt: { $exists: false },
+        ...commercialOwnerMutationScope(req),
+      },
       { $set: { status: 'draft' }, $unset: { trashedAt: 1 } },
       { new: true }
     );
@@ -765,7 +815,7 @@ export const permanentlyDeleteAttraction = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    if (await rejectIfNotOwnedAttraction(req, res, id as string)) return;
+    if (await rejectIfNotCommercialOwner(req, res, id as string)) return;
 
     const outcome = await runBundleTransaction(async (session) => {
       // Booking's generic query middleware intentionally hides Bundle children.
@@ -791,6 +841,7 @@ export const permanentlyDeleteAttraction = async (
         _id: id,
         status: 'archived',
         archivedAt: { $exists: false },
+        ...commercialOwnerMutationScope(req),
       }).session(session);
       if (!attraction) return { state: 'not_found' as const };
       await Availability.deleteMany({ attractionId: id }, { session });

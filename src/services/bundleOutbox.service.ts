@@ -1,8 +1,9 @@
 import { Types } from 'mongoose';
+import crypto from 'crypto';
 import { env } from '../config/env';
 import { generateBundleAccessToken } from '../bundles/guestAccess';
 import { BundleOrder } from '../models/BundleOrder';
-import { BundleOutboxEvent } from '../models/BundleOutboxEvent';
+import { BundleOutboxEvent, IBundleOutboxEvent } from '../models/BundleOutboxEvent';
 import { BundleOutboxRecovery } from '../models/BundleOutboxRecovery';
 import { Tenant } from '../models/Tenant';
 import { appendBundleEvent } from './bundleAudit.service';
@@ -15,6 +16,14 @@ import {
 } from './email.service';
 
 const MAX_ATTEMPTS = 8;
+const OUTBOX_LEASE_MS = 60_000;
+const OUTBOX_HEARTBEAT_MS = 20_000;
+
+class BundleOutboxLeaseLostError extends Error {
+  constructor() {
+    super('Outbox delivery lease ownership was lost');
+  }
+}
 
 export class BundleOutboxRecoveryError extends Error {
   constructor(readonly statusCode: number, message: string) {
@@ -222,7 +231,7 @@ export const redriveBundleOutboxDeadLetter = async (input: {
             nextAttemptAt: new Date(),
             manualRecoveryRequired: true,
           },
-          $unset: { leaseUntil: 1, lastError: 1 },
+          $unset: { leaseUntil: 1, leaseToken: 1, lastError: 1 },
         },
         { new: true, session, runValidators: true }
       );
@@ -311,9 +320,49 @@ const renderShell = (
     </div></body></html>`;
 };
 
-const processEvent = async (eventId: string): Promise<'delivered' | 'suppressed'> => {
-  const event = await BundleOutboxEvent.findById(eventId);
-  if (!event) throw new Error('Outbox event no longer exists');
+const renewOutboxLease = async (
+  eventId: Types.ObjectId,
+  leaseToken: string
+): Promise<boolean> => {
+  const renewed = await BundleOutboxEvent.updateOne(
+    { _id: eventId, status: 'processing', leaseToken },
+    { $set: { leaseUntil: new Date(Date.now() + OUTBOX_LEASE_MS) } }
+  );
+  return renewed.modifiedCount === 1;
+};
+
+const withOutboxLeaseHeartbeat = async <T>(
+  eventId: Types.ObjectId,
+  leaseToken: string,
+  work: () => Promise<T>
+): Promise<T> => {
+  if (!await renewOutboxLease(eventId, leaseToken)) {
+    throw new BundleOutboxLeaseLostError();
+  }
+  let leaseLost = false;
+  let pendingHeartbeat = Promise.resolve();
+  const heartbeat = setInterval(() => {
+    pendingHeartbeat = pendingHeartbeat.then(async () => {
+      if (!await renewOutboxLease(eventId, leaseToken)) leaseLost = true;
+    }).catch(() => {
+      leaseLost = true;
+    });
+  }, OUTBOX_HEARTBEAT_MS);
+  heartbeat.unref();
+  try {
+    const result = await work();
+    await pendingHeartbeat;
+    if (leaseLost) throw new BundleOutboxLeaseLostError();
+    return result;
+  } finally {
+    clearInterval(heartbeat);
+  }
+};
+
+const processEvent = async (
+  event: IBundleOutboxEvent,
+  leaseToken: string
+): Promise<'delivered' | 'suppressed'> => {
   const [tenant, order] = await Promise.all([
     Tenant.findById(event.tenantId).lean(),
     event.orderId ? BundleOrder.findById(event.orderId) : null,
@@ -394,7 +443,9 @@ const processEvent = async (eventId: string): Promise<'delivered' | 'suppressed'
     );
   }
   if (!recipient) throw new Error('Outbox recipient is not configured');
-  await sendEmail({ to: recipient, subject, html, tenant });
+  await withOutboxLeaseHeartbeat(event._id, leaseToken, () =>
+    sendEmail({ to: recipient, subject, html, tenant })
+  );
   return 'delivered';
 };
 
@@ -407,6 +458,7 @@ export const processBundleOutboxBatch = async (limit = 20): Promise<{
   const result = { delivered: 0, suppressed: 0, retried: 0, deadLetter: 0 };
   for (let index = 0; index < limit; index += 1) {
     const now = new Date();
+    const leaseToken = crypto.randomUUID();
     const event = await BundleOutboxEvent.findOneAndUpdate(
       {
         status: { $in: ['pending', 'retry', 'processing'] },
@@ -417,16 +469,20 @@ export const processBundleOutboxBatch = async (limit = 20): Promise<{
         ],
       },
       {
-        $set: { status: 'processing', leaseUntil: new Date(Date.now() + 60_000) },
+        $set: {
+          status: 'processing',
+          leaseUntil: new Date(Date.now() + OUTBOX_LEASE_MS),
+          leaseToken,
+        },
         $inc: { attempts: 1 },
       },
       { sort: { nextAttemptAt: 1, _id: 1 }, new: true }
     );
     if (!event) break;
     try {
-      const outcome = await processEvent(event._id.toString());
-      await BundleOutboxEvent.updateOne(
-        { _id: event._id, status: 'processing' },
+      const outcome = await processEvent(event, leaseToken);
+      const completed = await BundleOutboxEvent.updateOne(
+        { _id: event._id, status: 'processing', leaseToken },
         outcome === 'suppressed'
           ? {
               $set: {
@@ -435,7 +491,7 @@ export const processBundleOutboxBatch = async (limit = 20): Promise<{
                 suppressionReason: 'TEST_MODE_NO_EXTERNAL_DELIVERY',
                 manualRecoveryRequired: false,
               },
-              $unset: { leaseUntil: 1, lastError: 1 },
+              $unset: { leaseUntil: 1, leaseToken: 1, lastError: 1 },
             }
           : {
               $set: {
@@ -443,14 +499,16 @@ export const processBundleOutboxBatch = async (limit = 20): Promise<{
                 deliveredAt: new Date(),
                 manualRecoveryRequired: false,
               },
-              $unset: { leaseUntil: 1, lastError: 1 },
+              $unset: { leaseUntil: 1, leaseToken: 1, lastError: 1 },
             }
       );
+      if (completed.modifiedCount !== 1) continue;
       result[outcome] += 1;
     } catch (error) {
+      if (error instanceof BundleOutboxLeaseLostError) continue;
       const dead = event.attempts >= MAX_ATTEMPTS;
-      await BundleOutboxEvent.updateOne(
-        { _id: event._id },
+      const failed = await BundleOutboxEvent.updateOne(
+        { _id: event._id, status: 'processing', leaseToken },
         {
           $set: {
             status: dead ? 'dead_letter' : 'retry',
@@ -458,9 +516,10 @@ export const processBundleOutboxBatch = async (limit = 20): Promise<{
             lastError: (error instanceof Error ? error.message : 'Outbox delivery failed').slice(0, 1000),
             ...(dead ? { manualRecoveryRequired: true } : {}),
           },
-          $unset: { leaseUntil: 1 },
+          $unset: { leaseUntil: 1, leaseToken: 1 },
         }
       );
+      if (failed.modifiedCount !== 1) continue;
       if (dead) result.deadLetter += 1;
       else result.retried += 1;
     }

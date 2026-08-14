@@ -27,7 +27,10 @@ import routes from './routes';
 import { notFoundHandler, errorHandler, apiLimiter } from './middleware';
 import { expireStaleCardHolds } from './services/bookingInventory.service';
 import { expireStaleBundleOrders } from './services/bundleOperations.service';
-import { processPendingBundleRefunds } from './services/bundlePayment.service';
+import {
+  processPendingBundleAllocations,
+  processPendingBundleRefunds,
+} from './services/bundlePayment.service';
 import { processBundleOutboxBatch } from './services/bundleOutbox.service';
 import { redactUrlForLogs } from './utils/safe-logging';
 import { startImageGenerationWorker } from './services/image-generation-job.service';
@@ -163,6 +166,14 @@ export const startServer = async (): Promise<void> => {
         }
       } catch (error) {
         console.error('[bundle-orders] expired-hold sweep failed:', error);
+      }
+      try {
+        const result = await processPendingBundleAllocations();
+        if (result.recovered || result.failed) {
+          console.log('[bundle-orders] captured-payment allocation sweep', result);
+        }
+      } catch (error) {
+        console.error('[bundle-orders] captured-payment allocation sweep failed:', error);
       }
       try {
         const result = await processPendingBundleRefunds();

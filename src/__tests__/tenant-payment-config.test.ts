@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import {
   markTenantStripeWebhookVerified,
   saveTenantStripeConfig,
+  TenantStripeConfigConflictError,
 } from '../services/tenantPayment.service';
 
 jest.mock('../models/Tenant', () => ({
@@ -28,6 +29,7 @@ const tenantDocument = (webhookVerified: boolean) => ({
       credentialsVerifiedAt: new Date('2030-01-01T00:00:00.000Z'),
       webhookVerifiedAt: webhookVerified ? new Date('2030-01-01T00:00:00.000Z') : undefined,
       configRevision: 4,
+      bindingFenceRevision: 7,
       configuredAt: new Date('2030-01-01T00:00:00.000Z'),
       webhookContextFingerprint: 'webhook-fingerprint-a',
     },
@@ -47,7 +49,42 @@ const preparePersistence = (document: ReturnType<typeof tenantDocument>) => {
 };
 
 describe('tenant Stripe credential persistence', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (Tenant.findById as jest.Mock).mockReset();
+    (Tenant.updateOne as jest.Mock).mockReset();
+    (Tenant.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
+  });
+
+  it('fails the configuration save when a checkout advances the tenant binding fence concurrently', async () => {
+    const document = tenantDocument(true);
+    preparePersistence(document);
+    (Tenant.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 0 });
+
+    await expect(saveTenantStripeConfig('tenant-1', {
+      secretKey: 'sk_test_replacement',
+      expectedConfigRevision: 4,
+      expectedBindingFenceRevision: 7,
+    })).rejects.toBeInstanceOf(TenantStripeConfigConflictError);
+
+    expect(Tenant.updateOne).toHaveBeenCalledWith(
+      expect.objectContaining({
+        _id: 'tenant-1',
+        $and: [
+          { 'paymentSettings.stripe.configRevision': 4 },
+          { 'paymentSettings.stripe.bindingFenceRevision': 7 },
+        ],
+      }),
+      expect.objectContaining({
+        $set: expect.objectContaining({
+          'paymentSettings.stripe': expect.objectContaining({
+            configRevision: 5,
+            bindingFenceRevision: 7,
+          }),
+        }),
+      })
+    );
+  });
 
   it('retains a verified webhook secret for a bounded overlap during rotation', async () => {
     const document = tenantDocument(true);

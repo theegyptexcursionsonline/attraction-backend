@@ -118,7 +118,7 @@ const transitions: Record<StateMachineName, Record<string, readonly string[]>> =
     cancelled: ['partially_refunded', 'refunded', 'manual_review'],
     partially_refunded: ['refunded', 'manual_review'],
     refunded: [],
-    manual_review: ['allocating', 'confirmed', 'cancel_pending', 'partially_refunded', 'refunded'],
+    manual_review: ['paid_allocation_pending', 'allocating', 'confirmed', 'cancel_pending', 'partially_refunded', 'refunded'],
   },
   component: {
     planned: ['reserved', 'failed'],

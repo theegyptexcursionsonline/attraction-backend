@@ -150,7 +150,7 @@ describe('Bundle outbox dead-letter recovery', () => {
           attempts: 0,
           manualRecoveryRequired: true,
         }),
-        $unset: { leaseUntil: 1, lastError: 1 },
+        $unset: { leaseUntil: 1, leaseToken: 1, lastError: 1 },
       }),
       expect.objectContaining({ new: true, session, runValidators: true })
     );

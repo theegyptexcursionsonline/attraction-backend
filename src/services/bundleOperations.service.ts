@@ -8,6 +8,8 @@ import { cancelPaymentIntent, createPaymentIntent, retrievePaymentIntent } from 
 import type { PaymentIntentResult } from './stripe.service';
 import { getTenantStripeConfig } from './tenantPayment.service';
 import {
+  allocateCapturedBundlePayment,
+  assertBundleStripeConfigBinding,
   bundlePaymentBindingError,
   bundlePaymentIntentIdempotencyKey,
   finalizeBundlePayment,
@@ -138,7 +140,7 @@ const requestPaidBundleCancellation = async (
       409
     );
   }
-  if (!['confirmed', 'in_progress', 'completed', 'manual_review'].includes(order.status)) {
+  if (!['paid_allocation_pending', 'confirmed', 'in_progress', 'completed', 'manual_review'].includes(order.status)) {
     throw new BundleOperationsError('ORDER_NOT_CANCELLABLE', 'This order cannot enter cancellation review', 409);
   }
   const fromState = order.status;
@@ -209,6 +211,15 @@ export const cancelBundleOrder = async (input: {
       input.actor
     );
   }
+  try {
+    assertBundleStripeConfigBinding(order, config);
+  } catch {
+    return markBundleManualReview(
+      order._id,
+      'Payment gateway binding changed during cancellation',
+      input.actor
+    );
+  }
   const intent = await retrievePaymentIntent(config.secretKey, order.stripePaymentIntentId);
   if (!intent || bundlePaymentBindingError(order, intent, false)) {
     return markBundleManualReview(
@@ -255,6 +266,10 @@ export const recoverBundleOrder = async (input: {
   if (['cancelled', 'refunded'].includes(order.status)) {
     return { order, outcome: 'cancelled' };
   }
+  if (order.paymentStatus === 'succeeded' && order.status === 'paid_allocation_pending') {
+    const allocated = await allocateCapturedBundlePayment(order._id.toString(), 'user');
+    return { order: allocated.order, outcome: 'confirmed' };
+  }
   if (!order.stripePaymentIntentId) {
     if (order.holdExpiresAt <= new Date()) {
       const cancelled = await releaseUnpaidBundleOrder(
@@ -276,6 +291,16 @@ export const recoverBundleOrder = async (input: {
     const pending = await markBundleManualReview(
       order._id,
       'Payment gateway unavailable during recovery',
+      { actorType: 'user', actorId: input.actorId }
+    );
+    return { order: pending, outcome: 'pending' };
+  }
+  try {
+    assertBundleStripeConfigBinding(order, config);
+  } catch {
+    const pending = await markBundleManualReview(
+      order._id,
+      'Payment gateway binding changed during recovery',
       { actorType: 'user', actorId: input.actorId }
     );
     return { order: pending, outcome: 'pending' };
@@ -340,6 +365,11 @@ export const expireBundleOrder = async (
     if (!config?.enabled || !config.secretKey || !snapshot.checkoutMode) {
       return flagManualReview('Payment gateway unavailable during hold expiry');
     }
+    try {
+      assertBundleStripeConfigBinding(snapshot, config);
+    } catch {
+      return flagManualReview('Payment gateway binding changed during hold expiry');
+    }
 
     if (!snapshot.stripePaymentIntentId && snapshot.paymentSessionClaimedAt) {
       // A request may have crossed into Stripe but crashed before binding the
@@ -355,6 +385,12 @@ export const expireBundleOrder = async (
           storefrontTenantId: snapshot.storefrontTenantId.toString(),
           orderReference: snapshot.reference,
           checkoutMode: snapshot.checkoutMode,
+          ...(snapshot.stripeBinding ? {
+            gatewayAccountId: snapshot.stripeBinding.accountId,
+            gatewayCredentialFingerprint: snapshot.stripeBinding.credentialFingerprint,
+            gatewayConfigRevision: String(snapshot.stripeBinding.configRevision),
+            gatewayBindingFenceRevision: String(snapshot.stripeBinding.bindingFenceRevision),
+          } : {}),
         },
         { idempotencyKey: bundlePaymentIntentIdempotencyKey(snapshot._id) }
       );

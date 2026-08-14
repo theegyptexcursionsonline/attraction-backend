@@ -80,6 +80,15 @@ export interface IBundleOrder extends Document {
   holdExpiresAt: Date;
   stripePaymentIntentId?: string;
   paymentSessionClaimedAt?: Date;
+  stripeBinding?: {
+    accountId: string;
+    credentialFingerprint: string;
+    publishableKey: string;
+    configRevision: number;
+    bindingFenceRevision: number;
+    claimedAt: Date;
+  };
+  paymentCapturedAt?: Date;
   paymentFailureReason?: string;
   idempotencyFingerprint: string;
   refunds: Array<{
@@ -161,6 +170,18 @@ const componentSchema = new Schema<IBundleOrderComponent>(
   { _id: false }
 );
 
+const stripeBindingSchema = new Schema(
+  {
+    accountId: { type: String, required: true, immutable: true },
+    credentialFingerprint: { type: String, required: true, immutable: true },
+    publishableKey: { type: String, required: true, immutable: true },
+    configRevision: { type: Number, required: true, immutable: true, min: 0, validate: Number.isSafeInteger },
+    bindingFenceRevision: { type: Number, required: true, immutable: true, min: 0, validate: Number.isSafeInteger },
+    claimedAt: { type: Date, required: true, immutable: true },
+  },
+  { _id: false }
+);
+
 const bundleOrderSchema = new Schema<IBundleOrder>(
   {
     reference: { type: String, required: true, unique: true, index: true },
@@ -195,6 +216,14 @@ const bundleOrderSchema = new Schema<IBundleOrder>(
     // deterministic PaymentIntent. Expiry recovery reconciles the same
     // idempotency key before releasing capacity.
     paymentSessionClaimedAt: { type: Date },
+    // Immutable provider-account evidence captured in the same transaction as
+    // the session claim. Recovery/refund paths must match this snapshot before
+    // using the tenant's current secret key.
+    stripeBinding: { type: stripeBindingSchema },
+    // Set only after provider evidence proves the full charge. It deliberately
+    // precedes allocation so a child-record conflict cannot erase captured
+    // money from local truth.
+    paymentCapturedAt: { type: Date, immutable: true },
     paymentFailureReason: { type: String, maxlength: 500 },
     idempotencyFingerprint: { type: String, required: true },
     refunds: [{
@@ -230,6 +259,7 @@ bundleOrderSchema.index(
 bundleOrderSchema.index({ storefrontTenantId: 1, createdAt: -1, _id: -1 });
 bundleOrderSchema.index({ 'components.supplierTenantId': 1, createdAt: -1, _id: -1 });
 bundleOrderSchema.index({ status: 1, holdExpiresAt: 1 });
+bundleOrderSchema.index({ status: 1, paymentStatus: 1, 'recovery.required': 1, updatedAt: 1 });
 bundleOrderSchema.index({ userId: 1, createdAt: -1 });
 bundleOrderSchema.index({ 'refunds.status': 1, 'refunds.nextAttemptAt': 1 });
 bundleOrderSchema.index({ 'components.settlementOperationId': 1 }, { unique: true, sparse: true });
