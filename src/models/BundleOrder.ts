@@ -222,8 +222,17 @@ const bundleOrderSchema = new Schema<IBundleOrder>(
     stripeBinding: { type: stripeBindingSchema },
     // Set only after provider evidence proves the full charge. It deliberately
     // precedes allocation so a child-record conflict cannot erase captured
-    // money from local truth.
-    paymentCapturedAt: { type: Date, immutable: true },
+    // money from local truth. Do not use Mongoose's `immutable` option here:
+    // the order exists before capture, so that option silently discards the
+    // first legitimate transition from undefined to a timestamp. The payment
+    // service owns the write-once transition. The functional guard allows the
+    // first post-create value and makes later document writes immutable.
+    paymentCapturedAt: {
+      type: Date,
+      immutable: function (this: IBundleOrder) {
+        return Boolean(this.paymentCapturedAt);
+      },
+    },
     paymentFailureReason: { type: String, maxlength: 500 },
     idempotencyFingerprint: { type: String, required: true },
     refunds: [{

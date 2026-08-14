@@ -178,6 +178,62 @@ describe('bundle payment recovery contracts', () => {
     );
   });
 
+  it('repairs a webhook-first captured order and replays browser confirmation idempotently', async () => {
+    const orderId = new Types.ObjectId();
+    const storefrontTenantId = new Types.ObjectId();
+    const order = {
+      _id: orderId,
+      storefrontTenantId,
+      reference: 'BTW-WEBHOOK01',
+      checkoutMode: 'test',
+      status: 'confirmed',
+      paymentStatus: 'succeeded',
+      paymentCapturedAt: undefined as Date | undefined,
+      stripePaymentIntentId: 'pi_webhook_first',
+      stripeBinding: {
+        accountId: 'acct_test',
+        credentialFingerprint: 'fingerprint_test',
+        publishableKey: 'pk_test_public',
+        configRevision: 1,
+        bindingFenceRevision: 1,
+        claimedAt: new Date(),
+      },
+      currency: 'USD',
+      totalMinor: 26_000,
+      components: [],
+      recovery: { required: false, attempts: 0 },
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    (BundleOrder.findById as jest.Mock)
+      .mockReturnValueOnce(queryResult(order))
+      .mockReturnValueOnce(queryResult(order));
+
+    await expect(finalizeBundlePayment(orderId.toString(), {
+      id: 'pi_webhook_first',
+      clientSecret: '',
+      amount: 26_000,
+      amountReceived: 26_000,
+      currency: 'usd',
+      status: 'succeeded',
+      livemode: false,
+      metadata: {
+        paymentKind: 'bundle',
+        bundleOrderId: orderId.toString(),
+        storefrontTenantId: storefrontTenantId.toString(),
+        orderReference: 'BTW-WEBHOOK01',
+        checkoutMode: 'test',
+        gatewayAccountId: 'acct_test',
+        gatewayCredentialFingerprint: 'fingerprint_test',
+        gatewayConfigRevision: '1',
+        gatewayBindingFenceRevision: '1',
+      },
+    }, 'user')).resolves.toEqual({ order, duplicate: true });
+
+    expect(order.paymentCapturedAt).toEqual(expect.any(Date));
+    expect(order.save).toHaveBeenCalledTimes(1);
+    expect(appendBalancedLedger).not.toHaveBeenCalled();
+  });
+
   it('redrives a captured allocation idempotently without recording payment twice', async () => {
     const orderId = new Types.ObjectId();
     const bookingId = new Types.ObjectId();

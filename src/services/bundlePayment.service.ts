@@ -331,10 +331,16 @@ const persistCapturedBundlePayment = async (
   if (!order) throw new BundlePaymentError('ORDER_NOT_FOUND', 'Bundle order not found', 404);
   const bindingError = bundlePaymentBindingError(order, intent, true);
   if (bindingError) throw new BundlePaymentError('PAYMENT_BINDING_INVALID', bindingError, 409);
-  if (
-    ['succeeded', 'partially_refunded', 'refunded'].includes(order.paymentStatus) &&
-    order.paymentCapturedAt
-  ) {
+  if (['succeeded', 'partially_refunded', 'refunded'].includes(order.paymentStatus)) {
+    // Older captured orders may be missing this timestamp because the former
+    // schema-level immutable option discarded the first post-create write.
+    // Provider binding and success evidence were verified above, so repair the
+    // write-once marker before acknowledging a webhook/client confirmation
+    // replay. This also makes a webhook-first browser confirmation idempotent.
+    if (!order.paymentCapturedAt) {
+      order.paymentCapturedAt = new Date();
+      await order.save({ session });
+    }
     return { order, duplicate: true };
   }
   if (!['payment_pending', 'paid', 'allocating', 'paid_allocation_pending', 'manual_review'].includes(order.status)) {

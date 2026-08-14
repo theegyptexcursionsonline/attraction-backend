@@ -197,6 +197,36 @@ describeWithMongo('Bundle integrity database integration', () => {
     })).rejects.toMatchObject({ code: 11000 });
   });
 
+  it('persists the first provider-capture timestamp on an existing order document', async () => {
+    const orderId = new Types.ObjectId();
+    await BundleOrder.collection.insertOne({
+      _id: orderId,
+      storefrontTenantId: new Types.ObjectId(),
+      status: 'payment_pending',
+      paymentStatus: 'intent_created',
+    });
+
+    const order = await BundleOrder.findById(orderId);
+    expect(order).not.toBeNull();
+    order!.paymentCapturedAt = new Date('2026-08-14T09:36:12.000Z');
+    await order!.save({ validateBeforeSave: false });
+
+    await expect(BundleOrder.findById(orderId).lean()).resolves.toEqual(
+      expect.objectContaining({
+        paymentCapturedAt: new Date('2026-08-14T09:36:12.000Z'),
+      })
+    );
+
+    const captured = await BundleOrder.findById(orderId);
+    captured!.paymentCapturedAt = new Date('2026-08-15T09:36:12.000Z');
+    await captured!.save({ validateBeforeSave: false });
+    await expect(BundleOrder.findById(orderId).lean()).resolves.toEqual(
+      expect.objectContaining({
+        paymentCapturedAt: new Date('2026-08-14T09:36:12.000Z'),
+      })
+    );
+  });
+
   it('atomically fences a checkout binding from a concurrent tenant gateway mutation', async () => {
     const tenantId = new Types.ObjectId();
     const orderId = new Types.ObjectId();
