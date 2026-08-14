@@ -166,11 +166,15 @@ export const createBundleDefinition = async (
 
 export const updateDraftBundleDefinition = async (
   bundleId: string,
+  storefrontTenantId: string,
   patch: Partial<Omit<BundleDefinitionInput, 'storefrontTenantId' | 'slug' | 'components'>>,
   expectedRevision: number,
   actor: BundleActor & { actorId: Types.ObjectId }
 ): Promise<IBundleDefinition> => runBundleTransaction(async (session) => {
-  const bundle = await BundleDefinition.findById(bundleId).session(session);
+  const bundle = await BundleDefinition.findOne({
+    _id: bundleId,
+    storefrontTenantId,
+  }).session(session);
   if (!bundle) throw new BundleCatalogError('BUNDLE_NOT_FOUND', 'Bundle not found', 404);
   if (bundle.status !== 'draft') {
     throw new BundleCatalogError('BUNDLE_NOT_EDITABLE', 'Only draft bundles can be edited', 409);
@@ -201,11 +205,15 @@ export const updateDraftBundleDefinition = async (
 
 export const replaceDraftBundleComponents = async (
   bundleId: string,
+  storefrontTenantId: string,
   componentsInput: BundleComponentInput[],
   expectedRevision: number,
   actor: BundleActor & { actorId: Types.ObjectId }
 ): Promise<IBundleDefinition> => runBundleTransaction(async (session) => {
-  const bundle = await BundleDefinition.findById(bundleId).session(session);
+  const bundle = await BundleDefinition.findOne({
+    _id: bundleId,
+    storefrontTenantId,
+  }).session(session);
   if (!bundle) throw new BundleCatalogError('BUNDLE_NOT_FOUND', 'Bundle not found', 404);
   if (bundle.status !== 'draft') {
     throw new BundleCatalogError('BUNDLE_NOT_EDITABLE', 'Only draft bundles can be edited', 409);
@@ -240,9 +248,13 @@ export const transitionBundleDefinition = async (
   toStatus: BundleStatus,
   actor: BundleActor & { actorId: Types.ObjectId },
   reason: string | undefined,
-  expectedRevision: number
+  expectedRevision: number,
+  storefrontTenantId: string
 ): Promise<IBundleDefinition> => runBundleTransaction(async (session) => {
-  const bundle = await BundleDefinition.findById(bundleId).session(session);
+  const bundle = await BundleDefinition.findOne({
+    _id: bundleId,
+    storefrontTenantId,
+  }).session(session);
   if (!bundle) throw new BundleCatalogError('BUNDLE_NOT_FOUND', 'Bundle not found', 404);
   if (bundle.get('revision') !== expectedRevision) {
     throw new BundleCatalogError('REVISION_CONFLICT', 'The bundle changed; refresh and try again', 409);

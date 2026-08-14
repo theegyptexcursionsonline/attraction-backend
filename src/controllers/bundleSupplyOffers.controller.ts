@@ -34,18 +34,36 @@ const resolveSupplierTenant = (
   return tenantId;
 };
 
+const selectedSupplierMatches = (req: AuthRequest, supplierTenantId: string): boolean =>
+  !req.tenant || String(req.tenant._id) === supplierTenantId;
+
+const rejectOfferOwnerMismatch = (
+  req: AuthRequest,
+  res: Response,
+  supplierTenantId: string
+): boolean => {
+  if (selectedSupplierMatches(req, supplierTenantId)) return false;
+  sendError(res, 'Supply offer not found', 404);
+  return true;
+};
+
 export const listBundleSupplyOffers = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
+    const requestedTenantId = req.query.tenantId
+      ? String(req.query.tenantId)
+      : undefined;
+    if (requestedTenantId && rejectOfferOwnerMismatch(req, res, requestedTenantId)) return;
     const allSuppliers =
       isSuperAdmin(req.user) &&
+      !req.tenant &&
       (req.query as Record<string, unknown>).allSuppliers === true;
     const tenantId = allSuppliers
       ? null
-      : resolveSupplierTenant(req, req.query.tenantId as string | undefined);
+      : resolveSupplierTenant(req, requestedTenantId);
     if (!isSuperAdmin(req.user) && !tenantId) {
       sendError(res, 'An assigned supplier tenant is required', 403);
       return;
@@ -73,16 +91,17 @@ export const getBundleSupplyOffer = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const query: Record<string, unknown> = { _id: req.params.id };
-    if (!isSuperAdmin(req.user)) {
-      const tenantIds = callerTenantIds(req.user);
-      if (tenantIds.length === 0) {
-        sendError(res, 'An assigned supplier tenant is required', 403);
-        return;
-      }
-      query.supplierTenantId = { $in: tenantIds };
+    const requestedTenantId = String(req.query.tenantId);
+    if (rejectOfferOwnerMismatch(req, res, requestedTenantId)) return;
+    const supplierTenantId = resolveSupplierTenant(req, requestedTenantId);
+    if (!supplierTenantId) {
+      sendError(res, 'An assigned supplier tenant is required', 403);
+      return;
     }
-    const offer = await BundleSupplyOffer.findOne(query);
+    const offer = await BundleSupplyOffer.findOne({
+      _id: req.params.id,
+      supplierTenantId,
+    });
     if (!offer) {
       sendError(res, 'Supply offer not found', 404);
       return;
@@ -99,6 +118,10 @@ export const createBundleSupplyOfferHandler = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    if (!selectedSupplierMatches(req, req.body.supplierTenantId)) {
+      sendError(res, 'Supplier tenant does not match the selected scope', 403);
+      return;
+    }
     const tenantId = resolveSupplierTenant(req, req.body.supplierTenantId);
     if (!tenantId || !req.user?._id) {
       sendError(res, 'Access denied to this supplier tenant', 403);
@@ -128,20 +151,23 @@ export const reviseBundleSupplyOfferHandler = async (
       sendError(res, 'Authentication required', 401);
       return;
     }
-    const supplierTenantId = isSuperAdmin(req.user)
-      ? undefined
-      : resolveSupplierTenant(req, req.tenant?._id.toString());
-    if (!isSuperAdmin(req.user) && !supplierTenantId) {
-      sendError(res, 'An assigned supplier tenant is required', 403);
+    const { revision, supplierTenantId: requestedTenantId, ...patch } = req.body;
+    if (rejectOfferOwnerMismatch(req, res, requestedTenantId)) return;
+    const supplierTenantId = resolveSupplierTenant(req, requestedTenantId);
+    if (!supplierTenantId) {
+      sendError(res, 'Access denied to this supplier tenant', 403);
       return;
     }
-    const { revision, ...patch } = req.body;
     const offer = await reviseBundleSupplyOffer(
       req.params.id,
       patch,
       revision,
-      { actorType: 'user', actorId: req.user._id, actorTenantId: req.tenant?._id },
-      supplierTenantId || undefined
+      {
+        actorType: 'user',
+        actorId: req.user._id,
+        actorTenantId: isSuperAdmin(req.user) ? undefined : new Types.ObjectId(supplierTenantId),
+      },
+      supplierTenantId
     );
     sendSuccess(res, offer, 'Supply offer revised');
   } catch (error) {
@@ -165,19 +191,23 @@ export const transitionBundleSupplyOfferHandler = async (
       sendError(res, 'Super admin approval is required', 403);
       return;
     }
-    const supplierTenantId = isSuperAdmin(req.user)
-      ? undefined
-      : resolveSupplierTenant(req, req.tenant?._id.toString());
-    if (!isSuperAdmin(req.user) && !supplierTenantId) {
-      sendError(res, 'An assigned supplier tenant is required', 403);
+    const requestedTenantId = req.body.supplierTenantId;
+    if (rejectOfferOwnerMismatch(req, res, requestedTenantId)) return;
+    const supplierTenantId = resolveSupplierTenant(req, requestedTenantId);
+    if (!supplierTenantId) {
+      sendError(res, 'Access denied to this supplier tenant', 403);
       return;
     }
     const offer = await transitionBundleSupplyOffer(
       req.params.id,
       toStatus,
-      { actorType: 'user', actorId: req.user._id, actorTenantId: req.tenant?._id },
       {
-        supplierTenantId: supplierTenantId || undefined,
+        actorType: 'user',
+        actorId: req.user._id,
+        actorTenantId: isSuperAdmin(req.user) ? undefined : new Types.ObjectId(supplierTenantId),
+      },
+      {
+        supplierTenantId,
         reason: req.body.reason,
         expectedRevision: req.body.revision,
       }

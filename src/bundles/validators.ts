@@ -54,7 +54,10 @@ export const createSupplyOfferSchema = supplyOfferFieldsSchema.superRefine((valu
 export const updateSupplyOfferSchema = supplyOfferFieldsSchema
   .omit({ supplierTenantId: true, attractionId: true })
   .partial()
-  .extend({ revision: z.number().int().nonnegative() })
+  .extend({
+    supplierTenantId: objectId,
+    revision: z.number().int().nonnegative(),
+  })
   .superRefine((value, ctx) => {
     if (
       value.supplierNetPricesMinor &&
@@ -74,6 +77,14 @@ export const updateSupplyOfferSchema = supplyOfferFieldsSchema
 export const bundleCommandSchema = z.object({
   revision: z.number().int().nonnegative(),
   reason: z.string().trim().min(1).max(500).optional(),
+});
+
+export const bundleDefinitionCommandSchema = bundleCommandSchema.extend({
+  storefrontTenantId: objectId,
+});
+
+export const supplyOfferCommandSchema = bundleCommandSchema.extend({
+  supplierTenantId: objectId,
 });
 
 const bundleComponentSchema = z.object({
@@ -129,9 +140,13 @@ export const createBundleSchema = bundleFieldsSchema.superRefine((value, ctx) =>
 export const updateBundleSchema = bundleFieldsSchema
   .omit({ storefrontTenantId: true, slug: true, components: true })
   .partial()
-  .extend({ revision: z.number().int().nonnegative() });
+  .extend({
+    storefrontTenantId: objectId,
+    revision: z.number().int().nonnegative(),
+  });
 
 export const replaceBundleComponentsSchema = z.object({
+  storefrontTenantId: objectId,
   revision: z.number().int().nonnegative(),
   components: z.array(bundleComponentSchema).min(3).max(4),
 }).superRefine((value, ctx) => validateBundleComponents(value.components, ctx));
@@ -229,6 +244,10 @@ export const adminBundleListQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 
+export const adminBundleOwnerQuerySchema = z.object({
+  tenantId: objectId,
+});
+
 export const supplyOfferListQuerySchema = z.object({
   tenantId: objectId.optional(),
   allSuppliers: queryBoolean.optional(),
@@ -243,6 +262,20 @@ export const bundleOrderListQuerySchema = z.object({
   cursor: objectId.optional(),
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
+
+const tenantQueryIdentifier = z.string()
+  .trim()
+  .min(1)
+  .max(255)
+  .regex(/^[A-Za-z0-9.-]+$/, 'Invalid tenant identifier');
+
+// Bundle capabilities are accepted only through X-Bundle-Access-Token. A
+// strict query contract prevents legacy accessToken/guestAccessToken URLs from
+// being silently tolerated by customer order endpoints or intermediary logs.
+export const bundleCustomerCapabilityQuerySchema = z.object({
+  tenantId: tenantQueryIdentifier.optional(),
+  tenant: tenantQueryIdentifier.optional(),
+}).strict();
 
 export const bundleReadinessQuerySchema = z.object({
   tenantId: objectId,

@@ -149,10 +149,12 @@ export const reviseBundleSupplyOffer = async (
   patch: Partial<Omit<SupplyOfferInput, 'supplierTenantId' | 'attractionId'>>,
   expectedRevision: number,
   actor: BundleActor & { actorId: Types.ObjectId },
-  supplierTenantId?: string
+  supplierTenantId: string
 ): Promise<IBundleSupplyOffer> => runBundleTransaction(async (session) => {
-  const scope = supplierTenantId ? { supplierTenantId } : {};
-  const current = await BundleSupplyOffer.findOne({ _id: offerId, ...scope }).session(session);
+  const current = await BundleSupplyOffer.findOne({
+    _id: offerId,
+    supplierTenantId,
+  }).session(session);
   if (!current) throw new BundleSupplyOfferError('OFFER_NOT_FOUND', 'Supply offer not found', 404);
   if (!['draft', 'rejected'].includes(current.status)) {
     throw new BundleSupplyOfferError('OFFER_NOT_EDITABLE', 'Only draft or rejected offers can be revised', 409);
@@ -216,12 +218,12 @@ export const transitionBundleSupplyOffer = async (
   offerId: string,
   toStatus: SupplyOfferStatus,
   actor: BundleActor & { actorId: Types.ObjectId },
-  options: { supplierTenantId?: string; reason?: string; expectedRevision: number }
+  options: { supplierTenantId: string; reason?: string; expectedRevision: number }
 ): Promise<IBundleSupplyOffer> => runBundleTransaction(async (session) => {
-  const filter = options.supplierTenantId
-    ? { _id: offerId, supplierTenantId: options.supplierTenantId }
-    : { _id: offerId };
-  const offer = await BundleSupplyOffer.findOne(filter).session(session);
+  const offer = await BundleSupplyOffer.findOne({
+    _id: offerId,
+    supplierTenantId: options.supplierTenantId,
+  }).session(session);
   if (!offer) throw new BundleSupplyOfferError('OFFER_NOT_FOUND', 'Supply offer not found', 404);
   if (offer.get('revision') !== options.expectedRevision) {
     throw new BundleSupplyOfferError('REVISION_CONFLICT', 'The offer changed; refresh and try again', 409);

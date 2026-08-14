@@ -98,6 +98,11 @@ describeWithMongo('Bundle integrity database integration', () => {
       '--bind_ip', '127.0.0.1',
       '--port', String(port),
       '--replSet', 'bundleIntegrityRs',
+      // Homebrew MongoDB 8.2 can briefly hold the collection lock while its
+      // first model indexes settle. The production invariant under test is the
+      // transaction/CAS result, not whether that local lock clears within the
+      // server's 5 ms default transaction wait.
+      '--setParameter', 'maxTransactionLockRequestTimeoutMillis=1000',
       '--quiet',
     ], { stdio: 'ignore' });
     await waitForPort(port);
@@ -123,6 +128,10 @@ describeWithMongo('Bundle integrity database integration', () => {
       { aggregateId: 1, sequence: 1 },
       { unique: true }
     );
+    // Finish lazy Mongoose index creation before any transaction starts. MongoDB
+    // correctly aborts a transaction if the collection catalog changes midway,
+    // which otherwise makes this real-database proof timing-dependent.
+    await Promise.all([Tenant.init(), BundleOrder.init()]);
   });
 
   afterAll(async () => {

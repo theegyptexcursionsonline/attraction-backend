@@ -21,7 +21,8 @@ import {
 } from '../bundles/featureFlags';
 import {
   adminBundleListQuerySchema,
-  bundleCommandSchema,
+  adminBundleOwnerQuerySchema,
+  bundleDefinitionCommandSchema,
   bundleIdParamsSchema,
   bundleTransitionParamsSchema,
   createBundleQuoteSchema,
@@ -78,6 +79,7 @@ router.get(
   authenticate,
   requireSuperAdmin,
   validateQuery(adminBundleListQuerySchema),
+  optionalAdminTenant,
   listAdminBundles
 );
 router.get(
@@ -85,15 +87,25 @@ router.get(
   authenticate,
   requireSuperAdmin,
   validateParams(bundleIdParamsSchema),
+  validateQuery(adminBundleOwnerQuerySchema),
+  optionalAdminTenant,
   getAdminBundle
 );
-router.post('/admin', authenticate, requireSuperAdmin, validate(createBundleSchema), createBundleDefinitionHandler);
+router.post(
+  '/admin',
+  authenticate,
+  requireSuperAdmin,
+  validate(createBundleSchema),
+  optionalAdminTenant,
+  createBundleDefinitionHandler
+);
 router.patch(
   '/admin/:id',
   authenticate,
   requireSuperAdmin,
   validateParams(bundleIdParamsSchema),
   validate(updateBundleSchema),
+  optionalAdminTenant,
   updateBundleDefinitionHandler
 );
 router.put(
@@ -102,6 +114,7 @@ router.put(
   requireSuperAdmin,
   validateParams(bundleIdParamsSchema),
   validate(replaceBundleComponentsSchema),
+  optionalAdminTenant,
   replaceBundleComponentsHandler
 );
 router.post(
@@ -109,7 +122,8 @@ router.post(
   authenticate,
   requireSuperAdmin,
   validateParams(bundleTransitionParamsSchema),
-  validate(bundleCommandSchema),
+  validate(bundleDefinitionCommandSchema),
+  optionalAdminTenant,
   transitionBundleDefinitionHandler
 );
 

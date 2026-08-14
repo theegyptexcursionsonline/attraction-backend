@@ -101,6 +101,50 @@ describe('bundle customer order access isolation', () => {
     }));
   });
 
+  it.each(['accessToken', 'guestAccessToken'])(
+    'never treats the legacy %s query parameter as a Bundle capability',
+    async (queryKey) => {
+      (BundleOrder.findOne as jest.Mock).mockResolvedValue(order);
+      const req = {
+        params: { id: ORDER_ID.toString() },
+        query: { [queryKey]: 'legacy-query-token' },
+        headers: {},
+        tenant: { _id: TENANT_ID },
+      } as unknown as AuthRequest;
+      const res = response();
+
+      await getBundleOrderHandler(req, res, next);
+
+      expect(verifyBundleAccessToken).toHaveBeenCalledWith(
+        undefined,
+        ORDER_ID.toString(),
+        order.reference
+      );
+      expect(res.status).toHaveBeenCalledWith(404);
+    }
+  );
+
+  it('uses only X-Bundle-Access-Token when a legacy query token is also present', async () => {
+    (BundleOrder.findOne as jest.Mock).mockResolvedValue(order);
+    (verifyBundleAccessToken as jest.Mock).mockReturnValue(true);
+    const req = {
+      params: { id: ORDER_ID.toString() },
+      query: { accessToken: 'legacy-query-token' },
+      headers: { 'x-bundle-access-token': 'header-capability' },
+      tenant: { _id: TENANT_ID },
+    } as unknown as AuthRequest;
+    const res = response();
+
+    await getBundleOrderHandler(req, res, next);
+
+    expect(verifyBundleAccessToken).toHaveBeenCalledWith(
+      'header-capability',
+      ORDER_ID.toString(),
+      order.reference
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
   it('does not treat an assigned staff tenant as customer authorization', async () => {
     (BundleOrder.findOne as jest.Mock).mockResolvedValue(order);
     const req = {

@@ -44,6 +44,19 @@ if (isProd && configuredBookingAccessSecret === jwtSecret) {
 }
 const bookingAccessSecret = configuredBookingAccessSecret || jwtSecret;
 
+const configuredBundleAccessTokenEpoch = process.env.BUNDLE_ACCESS_TOKEN_EPOCH?.trim() || '';
+if (isProd && !configuredBundleAccessTokenEpoch) {
+  throw new Error('BUNDLE_ACCESS_TOKEN_EPOCH environment variable is required in production');
+}
+const bundleAccessTokenEpochText = configuredBundleAccessTokenEpoch || '1';
+if (!/^\d{1,9}$/.test(bundleAccessTokenEpochText)) {
+  throw new Error('BUNDLE_ACCESS_TOKEN_EPOCH must be a positive integer');
+}
+const bundleAccessTokenEpoch = Number(bundleAccessTokenEpochText);
+if (!Number.isSafeInteger(bundleAccessTokenEpoch) || bundleAccessTokenEpoch < 1) {
+  throw new Error('BUNDLE_ACCESS_TOKEN_EPOCH must be a positive integer');
+}
+
 const envFlag = (value: string | undefined, defaultValue: boolean): boolean => {
   if (value === undefined) return defaultValue;
   return value.trim().toLowerCase() === 'true';
@@ -96,6 +109,11 @@ export const env = {
   // HMAC key for guest booking-access tokens. Production keeps it separate from
   // JWT signing so either credential can rotate without invalidating the other.
   bookingAccessSecret,
+
+  // Stateless Bundle capabilities embed this non-secret epoch. Incrementing it
+  // invalidates every outstanding Bundle link without rotating the shared HMAC
+  // secret or affecting ordinary booking capabilities.
+  bundleAccessTokenEpoch,
 
   // Bundle discovery and checkout are separately reversible. Production fails
   // closed until each flag is explicitly enabled after its acceptance gate.

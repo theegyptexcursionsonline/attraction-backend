@@ -47,6 +47,19 @@ const known = (error: unknown, res: Response, next: NextFunction): void => {
   next(error);
 };
 
+const selectedTenantMatches = (req: AuthRequest, ownerTenantId: string): boolean =>
+  !req.tenant || String(req.tenant._id) === ownerTenantId;
+
+const rejectBundleOwnerMismatch = (
+  req: AuthRequest,
+  res: Response,
+  ownerTenantId: string
+): boolean => {
+  if (selectedTenantMatches(req, ownerTenantId)) return false;
+  sendError(res, 'Bundle not found', 404);
+  return true;
+};
+
 export const listPublicBundles = async (
   req: AuthRequest,
   res: Response,
@@ -225,7 +238,10 @@ export const listAdminBundles = async (
   try {
     const limit = Number(req.query.limit || 20);
     const query: Record<string, unknown> = {};
-    if (req.query.tenantId) query.storefrontTenantId = req.query.tenantId;
+    const requestedTenantId = req.query.tenantId ? String(req.query.tenantId) : undefined;
+    if (requestedTenantId && rejectBundleOwnerMismatch(req, res, requestedTenantId)) return;
+    const ownerTenantId = req.tenant?._id.toString() || requestedTenantId;
+    if (ownerTenantId) query.storefrontTenantId = ownerTenantId;
     if (req.query.status) query.status = req.query.status;
     if (req.query.cursor) query._id = { $lt: req.query.cursor };
     const rows = await BundleDefinition.find(query).sort({ _id: -1 }).limit(limit + 1);
@@ -246,7 +262,12 @@ export const getAdminBundle = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const bundle = await BundleDefinition.findById(req.params.id);
+    const storefrontTenantId = String(req.query.tenantId);
+    if (rejectBundleOwnerMismatch(req, res, storefrontTenantId)) return;
+    const bundle = await BundleDefinition.findOne({
+      _id: req.params.id,
+      storefrontTenantId,
+    });
     if (!bundle) {
       sendError(res, 'Bundle not found', 404);
       return;
@@ -263,6 +284,10 @@ export const createBundleDefinitionHandler = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    if (!selectedTenantMatches(req, req.body.storefrontTenantId)) {
+      sendError(res, 'Storefront tenant does not match the selected scope', 403);
+      return;
+    }
     const bundle = await createBundleDefinition(req.body, {
       actorType: 'user',
       actorId: req.user!._id,
@@ -279,9 +304,11 @@ export const updateBundleDefinitionHandler = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { revision, ...patch } = req.body;
+    const { revision, storefrontTenantId, ...patch } = req.body;
+    if (rejectBundleOwnerMismatch(req, res, storefrontTenantId)) return;
     const bundle = await updateDraftBundleDefinition(
       req.params.id,
+      storefrontTenantId,
       patch,
       revision,
       { actorType: 'user', actorId: req.user!._id }
@@ -298,8 +325,10 @@ export const replaceBundleComponentsHandler = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    if (rejectBundleOwnerMismatch(req, res, req.body.storefrontTenantId)) return;
     const bundle = await replaceDraftBundleComponents(
       req.params.id,
+      req.body.storefrontTenantId,
       req.body.components,
       req.body.revision,
       { actorType: 'user', actorId: req.user!._id }
@@ -316,12 +345,14 @@ export const transitionBundleDefinitionHandler = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    if (rejectBundleOwnerMismatch(req, res, req.body.storefrontTenantId)) return;
     const bundle = await transitionBundleDefinition(
       req.params.id,
       req.params.status as BundleStatus,
       { actorType: 'user', actorId: req.user!._id },
       req.body.reason,
-      req.body.revision
+      req.body.revision,
+      req.body.storefrontTenantId
     );
     sendSuccess(res, bundle, `Bundle moved to ${req.params.status}`);
   } catch (error) {

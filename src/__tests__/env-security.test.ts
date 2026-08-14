@@ -16,6 +16,7 @@ describe('production secret separation', () => {
     process.env.ENCRYPTION_KEY = 'encryption-production-secret';
     process.env.REQUIRE_DEDICATED_ENCRYPTION_KEY = 'false';
     process.env.BOOKING_ACCESS_SECRET = 'booking-access-production-secret';
+    process.env.BUNDLE_ACCESS_TOKEN_EPOCH = '7';
   });
 
   afterEach(() => {
@@ -55,6 +56,13 @@ describe('production secret separation', () => {
     expect(loadEnv).toThrow('BOOKING_ACCESS_SECRET must be distinct from JWT_SECRET in production');
   });
 
+  it('requires an explicit Bundle capability epoch in production', () => {
+    process.env.BUNDLE_ACCESS_TOKEN_EPOCH = '';
+    expect(loadEnv).toThrow(
+      'BUNDLE_ACCESS_TOKEN_EPOCH environment variable is required in production'
+    );
+  });
+
   it('accepts independent production secrets', () => {
     expect(loadEnv()).toMatchObject({
       jwtSecret: 'jwt-production-secret',
@@ -62,16 +70,27 @@ describe('production secret separation', () => {
       legacyEncryptionKey: 'jwt-production-secret',
       hasDedicatedEncryptionKey: true,
       bookingAccessSecret: 'booking-access-production-secret',
+      bundleAccessTokenEpoch: 7,
     });
   });
+
+  it.each(['0', '-1', '1.5', 'not-a-number'])(
+    'rejects an invalid Bundle capability epoch (%s)',
+    (epoch) => {
+      process.env.BUNDLE_ACCESS_TOKEN_EPOCH = epoch;
+      expect(loadEnv).toThrow('BUNDLE_ACCESS_TOKEN_EPOCH must be a positive integer');
+    }
+  );
 
   it('keeps development workable with local fallbacks', () => {
     process.env.NODE_ENV = 'development';
     process.env.ENCRYPTION_KEY = '';
     process.env.BOOKING_ACCESS_SECRET = '';
+    delete process.env.BUNDLE_ACCESS_TOKEN_EPOCH;
     expect(loadEnv()).toMatchObject({
       encryptionKey: 'jwt-production-secret',
       bookingAccessSecret: 'jwt-production-secret',
+      bundleAccessTokenEpoch: 1,
     });
   });
 

@@ -22,6 +22,7 @@ import {
 } from '../bundles/featureFlags';
 import {
   bundleOrderListQuerySchema,
+  bundleCustomerCapabilityQuerySchema,
   bundleComponentParamsSchema,
   bundleIdParamsSchema,
   bundleReferenceParamsSchema,
@@ -118,6 +119,7 @@ router.post(
 router.get(
   '/reference/:reference',
   optionalAuth,
+  validateQuery(bundleCustomerCapabilityQuerySchema),
   optionalTenant,
   validateParams(bundleReferenceParamsSchema),
   getBundleOrderByReferenceHandler
@@ -125,6 +127,7 @@ router.get(
 router.get(
   '/:id',
   optionalAuth,
+  validateQuery(bundleCustomerCapabilityQuerySchema),
   optionalTenant,
   validateParams(bundleIdParamsSchema),
   getBundleOrderHandler
@@ -134,6 +137,7 @@ router.post(
   requireBundleFeature('checkout'),
   bookingLimiter,
   optionalAuth,
+  validateQuery(bundleCustomerCapabilityQuerySchema),
   optionalTenant,
   validateParams(bundleIdParamsSchema),
   validate(cancelBundleOrderSchema),
@@ -144,6 +148,7 @@ router.post(
   requireBundleFeature('checkout'),
   paymentLimiter,
   optionalAuth,
+  validateQuery(bundleCustomerCapabilityQuerySchema),
   optionalTenant,
   requireTenant,
   requireTenantBundleMode(['test', 'live']),
@@ -156,6 +161,7 @@ router.post(
   requireBundleFeature('checkout'),
   paymentLimiter,
   optionalAuth,
+  validateQuery(bundleCustomerCapabilityQuerySchema),
   optionalTenant,
   requireTenant,
   validateParams(bundleIdParamsSchema),

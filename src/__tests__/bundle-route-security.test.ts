@@ -8,7 +8,7 @@ describe('Bundle to Win route permission matrix', () => {
   it('keeps bundle composition, publishing, refunds, and settlement release Super Admin only', () => {
     const bundles = source('bundles.routes.ts');
     const orders = source('bundleOrders.routes.ts');
-    expect(bundles).toMatch(/router\.post\('\/admin', authenticate, requireSuperAdmin/s);
+    expect(bundles).toMatch(/router\.post\([\s\S]*'\/admin',[\s\S]*authenticate,[\s\S]*requireSuperAdmin,[\s\S]*validate\(createBundleSchema\)/s);
     expect(bundles).toMatch(/'\/admin\/:id\/status\/:status',[\s\S]*requireSuperAdmin/s);
     expect(orders).toMatch(/'\/admin\/:id\/refund',[\s\S]*requireSuperAdmin/s);
     expect(orders).toMatch(/release-settlement',[\s\S]*requireSuperAdmin/s);
@@ -28,10 +28,31 @@ describe('Bundle to Win route permission matrix', () => {
 
   it('allows only commercial supplier admins to mutate offers', () => {
     const offers = source('bundleSupplyOffers.routes.ts');
-    expect(offers).toContain("router.use(authenticate, requireRole('super-admin', 'brand-admin'), optionalTenant)");
+    expect(offers).toContain("router.use(authenticate, requireRole('super-admin', 'brand-admin'))");
     expect(offers).not.toContain("'manager'");
     expect(offers).not.toContain("'editor'");
     expect(offers).not.toContain("'viewer'");
+  });
+
+  it('requires explicit immutable owners on Bundle and offer detail or mutation routes', () => {
+    const bundles = source('bundles.routes.ts');
+    const offers = source('bundleSupplyOffers.routes.ts');
+    expect(bundles).toMatch(/'\/admin\/:id',[\s\S]*validateQuery\(adminBundleOwnerQuerySchema\)[\s\S]*optionalAdminTenant[\s\S]*getAdminBundle/s);
+    expect(bundles).toMatch(/'\/admin\/:id',[\s\S]*validate\(updateBundleSchema\)[\s\S]*optionalAdminTenant[\s\S]*updateBundleDefinitionHandler/s);
+    expect(bundles).toMatch(/'\/admin\/:id\/components',[\s\S]*validate\(replaceBundleComponentsSchema\)[\s\S]*optionalAdminTenant/s);
+    expect(bundles).toMatch(/'\/admin\/:id\/status\/:status',[\s\S]*validate\(bundleDefinitionCommandSchema\)[\s\S]*optionalAdminTenant/s);
+    expect(offers).toMatch(/'\/:id',[\s\S]*validateQuery\(adminBundleOwnerQuerySchema\)[\s\S]*optionalTenant[\s\S]*getBundleSupplyOffer/s);
+    expect(offers).toMatch(/router\.patch\([\s\S]*validate\(updateSupplyOfferSchema\)[\s\S]*optionalTenant/s);
+    expect(offers).toMatch(/'\/:id\/status\/:status',[\s\S]*validate\(supplyOfferCommandSchema\)[\s\S]*optionalTenant/s);
+  });
+
+  it('rejects query-string capabilities before every protected customer order handler', () => {
+    const orders = source('bundleOrders.routes.ts');
+    expect(orders).toMatch(/'\/reference\/:reference',[\s\S]*validateQuery\(bundleCustomerCapabilityQuerySchema\)[\s\S]*getBundleOrderByReferenceHandler/s);
+    expect(orders).toMatch(/'\/:id',[\s\S]*validateQuery\(bundleCustomerCapabilityQuerySchema\)[\s\S]*getBundleOrderHandler/s);
+    expect(orders).toMatch(/'\/:id\/cancel',[\s\S]*validateQuery\(bundleCustomerCapabilityQuerySchema\)[\s\S]*cancelBundleOrderHandler/s);
+    expect(orders).toMatch(/'\/:id\/payment-intent',[\s\S]*validateQuery\(bundleCustomerCapabilityQuerySchema\)[\s\S]*createBundlePaymentSessionHandler/s);
+    expect(orders).toMatch(/'\/:id\/confirm',[\s\S]*validateQuery\(bundleCustomerCapabilityQuerySchema\)[\s\S]*confirmBundlePaymentHandler/s);
   });
 
   it('requires feature gates, tenant context, validation, and rate limits on checkout writes', () => {

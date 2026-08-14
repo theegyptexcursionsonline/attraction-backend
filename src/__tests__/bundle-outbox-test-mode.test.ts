@@ -17,6 +17,7 @@ jest.mock('../models/Tenant', () => ({ Tenant: { findById: jest.fn() } }));
 jest.mock('../config/env', () => ({
   env: {
     bookingAccessSecret: 'test-booking-access-secret',
+    bundleAccessTokenEpoch: 1,
     mailgunApiKey: 'test-mailgun-key',
     mailgunDomain: 'example.test',
   },

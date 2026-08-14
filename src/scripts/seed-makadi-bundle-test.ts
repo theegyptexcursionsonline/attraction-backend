@@ -111,7 +111,11 @@ const activateOffer = async (
       current._id.toString(),
       status,
       { actorType: 'user', actorId },
-      { expectedRevision: revision(current), reason: 'Authorized Makadi TEST catalogue seed' }
+      {
+        supplierTenantId: current.supplierTenantId.toString(),
+        expectedRevision: revision(current),
+        reason: 'Authorized Makadi TEST catalogue seed',
+      }
     );
   }
   return current;
@@ -128,7 +132,8 @@ const publishBundle = async (
       status,
       { actorType: 'user', actorId },
       'Authorized Makadi TEST catalogue seed',
-      revision(current)
+      revision(current),
+      current.storefrontTenantId.toString()
     );
   }
   return current;

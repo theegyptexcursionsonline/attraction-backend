@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 import { assertTransition, canTransition, InvalidBundleTransitionError } from '../bundles/domain';
 import { bundleFingerprint, bundleReference } from '../bundles/hash';
 import { generateBundleAccessToken, verifyBundleAccessToken } from '../bundles/guestAccess';
+import { env } from '../config/env';
 import {
   addGuestPrices,
   allocateProportionally,
@@ -12,11 +13,17 @@ import {
   createBundleQuoteSchema,
   createBundleSchema,
   createSupplyOfferSchema,
+  adminBundleOwnerQuerySchema,
   bundleCommandSchema,
+  bundleCustomerCapabilityQuerySchema,
+  bundleDefinitionCommandSchema,
   bundleSettlementDisputeSchema,
   cancelBundleOrderSchema,
   refundBundleOrderSchema,
   supplyOfferListQuerySchema,
+  supplyOfferCommandSchema,
+  updateBundleSchema,
+  updateSupplyOfferSchema,
   updateBundleLaunchModeSchema,
 } from '../bundles/validators';
 import { assertOfferTravelRules } from '../services/bundleOrder.service';
@@ -72,12 +79,45 @@ describe('Bundle to Win domain invariants', () => {
   it('binds a guest access token to both order id and reference', () => {
     const now = jest.spyOn(Date, 'now').mockReturnValue(Date.UTC(2026, 7, 13));
     const token = generateBundleAccessToken('order-1', 'BTW-ABC');
+    expect(token).toMatch(/^v3\.\d+\.\d{10}\.[A-Za-z0-9_-]+$/);
     expect(verifyBundleAccessToken(token, 'order-1', 'BTW-ABC')).toBe(true);
     expect(verifyBundleAccessToken(token, 'order-2', 'BTW-ABC')).toBe(false);
     expect(verifyBundleAccessToken(token, 'order-1', 'BTW-OTHER')).toBe(false);
     now.mockReturnValue(Date.UTC(2026, 8, 13));
     expect(verifyBundleAccessToken(token, 'order-1', 'BTW-ABC')).toBe(false);
     now.mockRestore();
+  });
+
+  it('revokes stateless Bundle capabilities by epoch and rejects legacy tokens', () => {
+    const originalEpoch = env.bundleAccessTokenEpoch;
+    const token = generateBundleAccessToken('order-1', 'BTW-ABC');
+    try {
+      env.bundleAccessTokenEpoch = originalEpoch + 1;
+      expect(verifyBundleAccessToken(token, 'order-1', 'BTW-ABC')).toBe(false);
+      expect(verifyBundleAccessToken('1780000000.legacy-v2-signature', 'order-1', 'BTW-ABC')).toBe(false);
+    } finally {
+      env.bundleAccessTokenEpoch = originalEpoch;
+    }
+  });
+
+  it('requires immutable owner bindings and rejects query-string Bundle capabilities', () => {
+    const tenantId = new Types.ObjectId().toString();
+    expect(adminBundleOwnerQuerySchema.safeParse({ tenantId }).success).toBe(true);
+    expect(adminBundleOwnerQuerySchema.safeParse({}).success).toBe(false);
+    expect(bundleDefinitionCommandSchema.safeParse({
+      storefrontTenantId: tenantId,
+      revision: 2,
+    }).success).toBe(true);
+    expect(bundleDefinitionCommandSchema.safeParse({ revision: 2 }).success).toBe(false);
+    expect(supplyOfferCommandSchema.safeParse({
+      supplierTenantId: tenantId,
+      revision: 2,
+    }).success).toBe(true);
+    expect(updateBundleSchema.safeParse({ revision: 2, title: 'Revised' }).success).toBe(false);
+    expect(updateSupplyOfferSchema.safeParse({ revision: 2, termsVersion: 'v2' }).success).toBe(false);
+    expect(bundleCustomerCapabilityQuerySchema.safeParse({ tenant: 'makadi-horse-club' }).success).toBe(true);
+    expect(bundleCustomerCapabilityQuerySchema.safeParse({ accessToken: 'legacy-token' }).success).toBe(false);
+    expect(bundleCustomerCapabilityQuerySchema.safeParse({ guestAccessToken: 'legacy-token' }).success).toBe(false);
   });
 
   it('validates commercial offer, bundle, quote, and refund boundaries', () => {
