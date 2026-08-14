@@ -39,6 +39,7 @@ export interface MakadiTestSeedOffer {
   entryWindowLabels: string[];
   dayNumber: number;
   startTime: string;
+  capacityDate: string;
 }
 
 export interface MakadiTestSeedManifest {
@@ -84,6 +85,7 @@ export const buildMakadiTestSeedManifest = (): MakadiTestSeedManifest => {
         entryWindowLabels: ['Morning Session'],
         dayNumber: 1,
         startTime: '08:00',
+        capacityDate: '2027-01-12T00:00:00.000Z',
       },
       {
         supplierTenantSlug: 'makadi-bay-safari-center',
@@ -93,6 +95,7 @@ export const buildMakadiTestSeedManifest = (): MakadiTestSeedManifest => {
         entryWindowLabels: ['Morning Session'],
         dayNumber: 2,
         startTime: '08:00',
+        capacityDate: '2027-01-13T00:00:00.000Z',
       },
       {
         supplierTenantSlug: 'desert-fox-safari',
@@ -102,6 +105,7 @@ export const buildMakadiTestSeedManifest = (): MakadiTestSeedManifest => {
         entryWindowLabels: ['Morning Session'],
         dayNumber: 3,
         startTime: '08:00',
+        capacityDate: '2027-01-14T00:00:00.000Z',
       },
     ],
     bundle: {

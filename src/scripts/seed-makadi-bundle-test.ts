@@ -5,6 +5,8 @@
  *   railway run npx ts-node src/scripts/seed-makadi-bundle-test.ts
  * Apply:
  *   railway run npx ts-node src/scripts/seed-makadi-bundle-test.ts --apply
+ * Remove only unused capacity rows owned by this TEST seed:
+ *   railway run npx ts-node src/scripts/seed-makadi-bundle-test.ts --cleanup-capacity
  */
 import 'dotenv/config';
 import mongoose, { Types } from 'mongoose';
@@ -16,6 +18,7 @@ import {
   pendingOfferSeedTransitions,
 } from '../bundles/makadiTestSeed';
 import { Attraction } from '../models/Attraction';
+import { Availability } from '../models/Availability';
 import { Booking } from '../models/Booking';
 import { BundleDefinition, IBundleDefinition } from '../models/BundleDefinition';
 import { BundleOrder } from '../models/BundleOrder';
@@ -35,6 +38,7 @@ import {
 } from '../services/bundleSupplyOffer.service';
 
 const apply = process.argv.includes('--apply');
+const cleanupCapacity = process.argv.includes('--cleanup-capacity');
 const mongoUri = process.env.MONGODB_URI;
 
 if (!mongoUri) {
@@ -43,6 +47,59 @@ if (!mongoUri) {
 
 const revision = (document: { get(path: string): unknown }): number =>
   Number(document.get('revision') || 0);
+
+const capacitySeedKey = (componentId: string): string =>
+  `bundle-test:${MAKADI_TEST_TERMS_VERSION}:${componentId}`;
+
+const seedTestCapacity = async (
+  offers: ReturnType<typeof buildMakadiTestSeedManifest>['offers'],
+  attractionBySlug: Map<string, InstanceType<typeof Attraction>>
+): Promise<Array<{ seedKey: string; date: Date }>> => {
+  const seeded: Array<{ seedKey: string; date: Date }> = [];
+  for (const [index, offer] of offers.entries()) {
+    const attraction = attractionBySlug.get(offer.attractionSlug);
+    if (!attraction) throw new Error(`TEST capacity attraction missing for ${offer.attractionSlug}`);
+    const seedKey = capacitySeedKey(`test-day-${index + 1}`);
+    const date = new Date(offer.capacityDate);
+    const existing = await Availability.findOne({ attractionId: attraction._id, date });
+    if (existing) {
+      const slot = existing.timeSlots.find((item) => item.time === offer.startTime);
+      if (
+        existing.seedKey !== seedKey ||
+        existing.isBlocked ||
+        !slot ||
+        slot.capacity !== 8
+      ) {
+        throw new Error(`Existing non-seed capacity blocks ${offer.attractionSlug} on ${offer.capacityDate}`);
+      }
+      seeded.push({ seedKey, date });
+      continue;
+    }
+    await Availability.create({
+      attractionId: attraction._id,
+      date,
+      timeSlots: [{ time: offer.startTime, capacity: 8, booked: 0 }],
+      isBlocked: false,
+      seedKey,
+    });
+    seeded.push({ seedKey, date });
+  }
+  return seeded;
+};
+
+const removeTestCapacity = async (): Promise<number> => {
+  const seedKeys = [1, 2, 3].map((day) => capacitySeedKey(`test-day-${day}`));
+  const unsafe = await Availability.findOne({
+    seedKey: { $in: seedKeys },
+    $or: [
+      { 'timeSlots.booked': { $gt: 0 } },
+      { allDayBooked: { $gt: 0 } },
+    ],
+  }).select('_id seedKey');
+  if (unsafe) throw new Error(`TEST capacity ${unsafe.seedKey} still has booked inventory`);
+  const result = await Availability.deleteMany({ seedKey: { $in: seedKeys } });
+  return result.deletedCount;
+};
 
 const activateOffer = async (
   offer: IBundleSupplyOffer,
@@ -204,7 +261,7 @@ const run = async (): Promise<void> => {
   });
 
   console.log(JSON.stringify({
-    mode: apply ? 'apply' : 'dry-run',
+    mode: cleanupCapacity ? 'cleanup-capacity' : apply ? 'apply' : 'dry-run',
     storefront: manifest.storefrontTenantSlug,
     suppliers: manifest.offers.map((offer) => offer.supplierTenantSlug),
     attractions: manifest.offers.map((offer) => offer.attractionSlug),
@@ -212,7 +269,14 @@ const run = async (): Promise<void> => {
     existingSeedBundle: existingBundle?.status || null,
     activationMode: storefront.bundleSettings?.mode || 'discovery',
   }, null, 2));
+  if (cleanupCapacity) {
+    const removedCapacity = await removeTestCapacity();
+    console.log(JSON.stringify({ cleaned: true, removedCapacity }, null, 2));
+    return;
+  }
   if (!apply) return;
+
+  const seededCapacity = await seedTestCapacity(manifest.offers, attractionBySlug);
 
   const activeOffers: IBundleSupplyOffer[] = [];
   for (const offerPlan of manifest.offers) {
@@ -282,6 +346,7 @@ const run = async (): Promise<void> => {
       slug: publishedBundle.slug,
     },
     clearedRecoveryItems,
+    seededCapacity,
     readiness: {
       state: readiness.state,
       canActivateTest: readiness.canActivateTest,

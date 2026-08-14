@@ -12,6 +12,12 @@ describe('Makadi TEST Bundle seed contract', () => {
     expect(manifest.offers).toHaveLength(3);
     expect(new Set(manifest.offers.map((offer) => offer.attractionSlug))).toHaveProperty('size', 3);
     expect(new Set(manifest.offers.map((offer) => offer.supplierTenantSlug))).toHaveProperty('size', 3);
+    expect(manifest.offers.map((offer) => offer.capacityDate)).toEqual([
+      '2027-01-12T00:00:00.000Z',
+      '2027-01-13T00:00:00.000Z',
+      '2027-01-14T00:00:00.000Z',
+    ]);
+    expect(manifest.offers.every((offer) => offer.startTime === '08:00')).toBe(true);
   });
 
   it('is visibly TEST-only and keeps a stable idempotency identity', () => {

@@ -10,6 +10,7 @@ export interface IAvailability extends Document {
   attractionId: mongoose.Types.ObjectId;
   date: Date;
   timeSlots: ITimeSlot[];
+  seedKey?: string;
   allDayCapacity?: number;
   allDayBooked?: number;
   isBlocked: boolean;
@@ -41,6 +42,11 @@ const availabilitySchema = new Schema<IAvailability>(
       index: true,
     },
     timeSlots: [timeSlotSchema],
+    seedKey: {
+      type: String,
+      trim: true,
+      maxlength: 160,
+    },
     allDayCapacity: {
       type: Number,
       min: 0,
@@ -73,5 +79,6 @@ const availabilitySchema = new Schema<IAvailability>(
 
 // Compound index for efficient queries
 availabilitySchema.index({ attractionId: 1, date: 1 }, { unique: true });
+availabilitySchema.index({ seedKey: 1 }, { unique: true, sparse: true });
 
 export const Availability = mongoose.model<IAvailability>('Availability', availabilitySchema);
