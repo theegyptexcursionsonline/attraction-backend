@@ -16,6 +16,8 @@ describe('Bundle to Win route permission matrix', () => {
     expect(orders).toMatch(/resolve-settlement-dispute',[\s\S]*requireSuperAdmin[\s\S]*validate\(bundleSettlementDisputeSchema\)/s);
     expect(orders).toMatch(/'\/admin\/:id\/recover',[\s\S]*requireBundleFeature\('recovery'\)[\s\S]*requireSuperAdmin/s);
     expect(bundles).toMatch(/router\.put\([\s\S]*'\/admin\/readiness',[\s\S]*requireSuperAdmin[\s\S]*validate\(updateBundleLaunchModeSchema\)/s);
+    expect(bundles).toMatch(/'\/admin\/outbox\/dead-letters',[\s\S]*requireSuperAdmin[\s\S]*validateQuery\(bundleOutboxDeadLetterListQuerySchema\)/s);
+    expect(bundles).toMatch(/'\/admin\/outbox\/:id\/redrive',[\s\S]*requireSuperAdmin[\s\S]*validateParams\(bundleOutboxRedriveParamsSchema\)[\s\S]*validate\(bundleOutboxRedriveSchema\)/s);
   });
 
   it('exposes tenant-scoped readiness without exposing cross-tenant launch mutation', () => {

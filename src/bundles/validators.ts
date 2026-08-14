@@ -248,6 +248,20 @@ export const bundleReadinessQuerySchema = z.object({
   tenantId: objectId,
 });
 
+export const bundleOutboxDeadLetterListQuerySchema = z.object({
+  tenantId: objectId,
+  cursor: objectId.optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+});
+
+export const bundleOutboxRedriveParamsSchema = z.object({ id: objectId });
+
+export const bundleOutboxRedriveSchema = z.object({
+  tenantId: objectId,
+  operationId: z.string().trim().min(16).max(128).regex(/^[A-Za-z0-9._:-]+$/),
+  reason: z.string().trim().min(3).max(500),
+});
+
 export const updateBundleLaunchModeSchema = z.object({
   tenantId: objectId,
   mode: z.enum(['off', 'discovery', 'test', 'live']),

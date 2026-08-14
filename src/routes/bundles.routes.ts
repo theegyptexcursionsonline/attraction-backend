@@ -5,8 +5,10 @@ import {
   getAdminBundle,
   getBundleLaunchReadinessHandler,
   getPublicBundle,
+  listBundleOutboxDeadLettersHandler,
   listAdminBundles,
   listPublicBundles,
+  redriveBundleOutboxDeadLetterHandler,
   replaceBundleComponentsHandler,
   transitionBundleDefinitionHandler,
   updateBundleLaunchModeHandler,
@@ -28,6 +30,9 @@ import {
   replaceBundleComponentsSchema,
   updateBundleSchema,
   bundleReadinessQuerySchema,
+  bundleOutboxDeadLetterListQuerySchema,
+  bundleOutboxRedriveParamsSchema,
+  bundleOutboxRedriveSchema,
   updateBundleLaunchModeSchema,
 } from '../bundles/validators';
 import { authenticate, requireRole, requireSuperAdmin } from '../middleware/auth.middleware';
@@ -51,6 +56,21 @@ router.put(
   requireSuperAdmin,
   validate(updateBundleLaunchModeSchema),
   updateBundleLaunchModeHandler
+);
+router.get(
+  '/admin/outbox/dead-letters',
+  authenticate,
+  requireSuperAdmin,
+  validateQuery(bundleOutboxDeadLetterListQuerySchema),
+  listBundleOutboxDeadLettersHandler
+);
+router.post(
+  '/admin/outbox/:id/redrive',
+  authenticate,
+  requireSuperAdmin,
+  validateParams(bundleOutboxRedriveParamsSchema),
+  validate(bundleOutboxRedriveSchema),
+  redriveBundleOutboxDeadLetterHandler
 );
 
 router.get(

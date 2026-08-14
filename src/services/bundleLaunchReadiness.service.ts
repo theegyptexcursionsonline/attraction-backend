@@ -505,10 +505,13 @@ const loadPublishedHealth = async (
   return rows[0] || { publishedBundleCount: 0, sellablePublishedBundleCount: 0 };
 };
 
-const loadOutboxHealth = async (
+export const loadBundleOutboxHealth = async (
   tenantId: Types.ObjectId
 ): Promise<{ outboxPendingCount: number; outboxDeadLetterCount: number }> => {
-  const rows = await BundleOutboxEvent.aggregate<{ _id: string; count: number }>([
+  const rows = await BundleOutboxEvent.aggregate<{
+    outboxPendingCount: number;
+    outboxDeadLetterCount: number;
+  }>([
     { $match: { status: { $in: ['pending', 'processing', 'retry', 'dead_letter'] }, orderId: { $exists: true } } },
     {
       $lookup: {
@@ -520,13 +523,42 @@ const loadOutboxHealth = async (
     },
     { $unwind: '$order' },
     { $match: { 'order.storefrontTenantId': tenantId } },
-    { $group: { _id: '$status', count: { $sum: 1 } } },
+    {
+      $group: {
+        _id: null,
+        outboxDeadLetterCount: {
+          $sum: {
+            $cond: [
+              {
+                $or: [
+                  { $eq: ['$status', 'dead_letter'] },
+                  { $eq: ['$manualRecoveryRequired', true] },
+                ],
+              },
+              1,
+              0,
+            ],
+          },
+        },
+        outboxPendingCount: {
+          $sum: {
+            $cond: [
+              {
+                $or: [
+                  { $eq: ['$status', 'dead_letter'] },
+                  { $eq: ['$manualRecoveryRequired', true] },
+                ],
+              },
+              0,
+              1,
+            ],
+          },
+        },
+      },
+    },
+    { $project: { _id: 0, outboxPendingCount: 1, outboxDeadLetterCount: 1 } },
   ]);
-  return rows.reduce((health, row) => {
-    if (row._id === 'dead_letter') health.outboxDeadLetterCount += row.count;
-    else health.outboxPendingCount += row.count;
-    return health;
-  }, { outboxPendingCount: 0, outboxDeadLetterCount: 0 });
+  return rows[0] || { outboxPendingCount: 0, outboxDeadLetterCount: 0 };
 };
 
 export const getBundleLaunchReadiness = async (
@@ -553,7 +585,7 @@ export const getBundleLaunchReadiness = async (
         },
       ],
     }),
-    loadOutboxHealth(tenantId),
+    loadBundleOutboxHealth(tenantId),
   ]);
   const paymentMode: StripeMode = stripeCredentialMode(config);
   return evaluateBundleLaunchReadiness({

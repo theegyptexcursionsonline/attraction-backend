@@ -21,6 +21,11 @@ import {
   getBundleLaunchReadiness,
   updateTenantBundleLaunchMode,
 } from '../services/bundleLaunchReadiness.service';
+import {
+  BundleOutboxRecoveryError,
+  listBundleOutboxDeadLetters,
+  redriveBundleOutboxDeadLetter,
+} from '../services/bundleOutbox.service';
 
 const known = (error: unknown, res: Response, next: NextFunction): void => {
   if (
@@ -33,6 +38,10 @@ const known = (error: unknown, res: Response, next: NextFunction): void => {
   }
   if (error instanceof Error && error.name === 'InvalidBundleTransitionError') {
     sendError(res, error.message, 409);
+    return;
+  }
+  if (error instanceof BundleOutboxRecoveryError) {
+    sendError(res, error.message, error.statusCode);
     return;
   }
   next(error);
@@ -161,6 +170,50 @@ export const updateBundleLaunchModeHandler = async (
       return;
     }
     next(error);
+  }
+};
+
+export const listBundleOutboxDeadLettersHandler = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const tenantId = String(req.query.tenantId);
+    const result = await listBundleOutboxDeadLetters({
+      storefrontTenantId: tenantId,
+      cursor: req.query.cursor ? String(req.query.cursor) : undefined,
+      limit: Number(req.query.limit),
+    });
+    sendSuccess(res, result);
+  } catch (error) {
+    known(error, res, next);
+  }
+};
+
+export const redriveBundleOutboxDeadLetterHandler = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    if (!req.user?._id) {
+      sendError(res, 'Authentication required', 401);
+      return;
+    }
+    const result = await redriveBundleOutboxDeadLetter({
+      eventId: req.params.id,
+      storefrontTenantId: req.body.tenantId,
+      operationId: req.body.operationId,
+      reason: req.body.reason,
+      actorId: req.user._id,
+    });
+    if (result.replayed) res.setHeader('Idempotency-Replayed', 'true');
+    sendSuccess(res, result, result.replayed
+      ? 'Dead-letter redrive already accepted'
+      : 'Dead-letter delivery item queued for retry');
+  } catch (error) {
+    known(error, res, next);
   }
 };
 

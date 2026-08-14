@@ -11,6 +11,8 @@ import { Types } from 'mongoose';
 import { escapeRegex } from '../utils/helpers';
 import { isSuperAdmin, callerTenantIds, attractionInCallerTenants } from '../utils/tenantScope';
 import { minimumTourPrice } from '../utils/attractionPricing';
+import { BundleOrder } from '../models/BundleOrder';
+import { runBundleTransaction } from '../services/bundleInventory.service';
 
 const PUBLIC_ATTRACTION_FIELDS = [
   '_id',
@@ -764,17 +766,45 @@ export const permanentlyDeleteAttraction = async (
   try {
     const { id } = req.params;
     if (await rejectIfNotOwnedAttraction(req, res, id as string)) return;
-    const hasBookings = await Booking.exists({ attractionId: id });
-    if (hasBookings) {
+
+    const outcome = await runBundleTransaction(async (session) => {
+      // Booking's generic query middleware intentionally hides Bundle children.
+      // Scope both sides explicitly so the permanent-delete integrity check sees
+      // legacy bookings and Bundle projections. The master-order check also
+      // protects reserved capacity before/without a child projection.
+      const [hasLegacyBooking, hasBundleChild, hasBundleOrder] = await Promise.all([
+        Booking.exists({
+          attractionId: id,
+          bundleOrderId: { $exists: false },
+        }).session(session),
+        Booking.exists({
+          attractionId: id,
+          bundleOrderId: { $exists: true },
+        }).session(session),
+        BundleOrder.exists({ 'components.attractionId': id }).session(session),
+      ]);
+      if (hasLegacyBooking || hasBundleChild || hasBundleOrder) {
+        return { state: 'blocked' as const };
+      }
+
+      const attraction = await Attraction.findOneAndDelete({
+        _id: id,
+        status: 'archived',
+        archivedAt: { $exists: false },
+      }).session(session);
+      if (!attraction) return { state: 'not_found' as const };
+      await Availability.deleteMany({ attractionId: id }, { session });
+      return { state: 'deleted' as const };
+    });
+
+    if (outcome.state === 'blocked') {
       sendError(res, 'This tour has booking history and cannot be permanently deleted', 409);
       return;
     }
-    const attraction = await Attraction.findOneAndDelete({ _id: id, status: 'archived', archivedAt: { $exists: false } });
-    if (!attraction) {
+    if (outcome.state === 'not_found') {
       sendError(res, 'Archived attraction not found', 404);
       return;
     }
-    await Availability.deleteMany({ attractionId: id });
     sendSuccess(res, null, 'Attraction permanently deleted');
   } catch (error) {
     next(error);

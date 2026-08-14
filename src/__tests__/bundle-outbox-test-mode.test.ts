@@ -62,6 +62,7 @@ describe('bundle TEST-mode outbox safety', () => {
         $set: expect.objectContaining({
           status: 'suppressed',
           suppressionReason: 'TEST_MODE_NO_EXTERNAL_DELIVERY',
+          manualRecoveryRequired: false,
         }),
       })
     );
@@ -106,7 +107,10 @@ describe('bundle TEST-mode outbox safety', () => {
     expect(BundleOutboxEvent.updateOne).toHaveBeenCalledWith(
       { _id: eventId, status: 'processing' },
       expect.objectContaining({
-        $set: expect.objectContaining({ status: 'delivered' }),
+        $set: expect.objectContaining({
+          status: 'delivered',
+          manualRecoveryRequired: false,
+        }),
       })
     );
   });
@@ -150,5 +154,54 @@ describe('bundle TEST-mode outbox safety', () => {
       deadLetter: 0,
     });
     expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it('marks an exhausted delivery as requiring manual recovery until a redrive succeeds', async () => {
+    const eventId = new Types.ObjectId();
+    const tenantId = new Types.ObjectId();
+    const orderId = new Types.ObjectId();
+    const event = {
+      _id: eventId,
+      tenantId,
+      orderId,
+      audience: 'customer',
+      eventType: 'bundle.order_confirmed',
+      attempts: 8,
+    };
+
+    (BundleOutboxEvent.findOneAndUpdate as jest.Mock)
+      .mockResolvedValueOnce(event)
+      .mockResolvedValueOnce(null);
+    (BundleOutboxEvent.findById as jest.Mock).mockResolvedValue(event);
+    (Tenant.findById as jest.Mock).mockReturnValue({
+      lean: jest.fn().mockResolvedValue({ _id: tenantId }),
+    });
+    (BundleOrder.findById as jest.Mock).mockResolvedValue({
+      _id: orderId,
+      checkoutMode: 'live',
+      reference: 'BND-TEST-002',
+      status: 'confirmed',
+      guestDetails: { email: 'safe-test-recipient@example.test' },
+      components: [],
+    });
+    (sendEmail as jest.Mock).mockRejectedValue(new Error('Provider rejected delivery'));
+    (BundleOutboxEvent.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
+
+    await expect(processBundleOutboxBatch()).resolves.toEqual({
+      delivered: 0,
+      suppressed: 0,
+      retried: 0,
+      deadLetter: 1,
+    });
+    expect(BundleOutboxEvent.updateOne).toHaveBeenCalledWith(
+      { _id: eventId },
+      expect.objectContaining({
+        $set: expect.objectContaining({
+          status: 'dead_letter',
+          manualRecoveryRequired: true,
+          lastError: 'Provider rejected delivery',
+        }),
+      })
+    );
   });
 });

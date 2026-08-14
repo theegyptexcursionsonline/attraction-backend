@@ -15,6 +15,7 @@ export interface IBundleOutboxEvent extends Document {
   deliveredAt?: Date;
   suppressedAt?: Date;
   suppressionReason?: string;
+  manualRecoveryRequired: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -35,10 +36,14 @@ const bundleOutboxEventSchema = new Schema<IBundleOutboxEvent>(
     deliveredAt: { type: Date },
     suppressedAt: { type: Date },
     suppressionReason: { type: String, maxlength: 160 },
+    // Once a delivery dead-letters, launch readiness stays fail-closed through
+    // every manual redrive attempt until delivery reaches a terminal success.
+    manualRecoveryRequired: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
 bundleOutboxEventSchema.index({ status: 1, nextAttemptAt: 1, leaseUntil: 1 });
+bundleOutboxEventSchema.index({ manualRecoveryRequired: 1, _id: -1 });
 
 export const BundleOutboxEvent = mongoose.model<IBundleOutboxEvent>(
   'BundleOutboxEvent',

@@ -1,8 +1,12 @@
+import { Types } from 'mongoose';
 import { env } from '../config/env';
 import { generateBundleAccessToken } from '../bundles/guestAccess';
 import { BundleOrder } from '../models/BundleOrder';
 import { BundleOutboxEvent } from '../models/BundleOutboxEvent';
+import { BundleOutboxRecovery } from '../models/BundleOutboxRecovery';
 import { Tenant } from '../models/Tenant';
+import { appendBundleEvent } from './bundleAudit.service';
+import { runBundleTransaction } from './bundleInventory.service';
 import {
   brandedLink,
   escapeEmailHtml,
@@ -11,6 +15,273 @@ import {
 } from './email.service';
 
 const MAX_ATTEMPTS = 8;
+
+export class BundleOutboxRecoveryError extends Error {
+  constructor(readonly statusCode: number, message: string) {
+    super(message);
+  }
+}
+
+export interface BundleOutboxDeadLetterDto {
+  id: string;
+  eventId: string;
+  orderId: string;
+  storefrontTenantId: string;
+  recipientTenantId: string;
+  audience: 'customer' | 'supplier' | 'storefront';
+  eventType: string;
+  status: string;
+  attempts: number;
+  lastError?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface DeadLetterAggregateRow {
+  _id: Types.ObjectId;
+  eventId: string;
+  orderId: Types.ObjectId;
+  storefrontTenantId: Types.ObjectId;
+  tenantId: Types.ObjectId;
+  audience: BundleOutboxDeadLetterDto['audience'];
+  eventType: string;
+  status: string;
+  attempts: number;
+  lastError?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const deadLetterDto = (row: DeadLetterAggregateRow): BundleOutboxDeadLetterDto => ({
+  id: row._id.toString(),
+  eventId: row.eventId,
+  orderId: row.orderId.toString(),
+  storefrontTenantId: row.storefrontTenantId.toString(),
+  recipientTenantId: row.tenantId.toString(),
+  audience: row.audience,
+  eventType: row.eventType,
+  status: row.status,
+  attempts: row.attempts,
+  lastError: row.lastError,
+  createdAt: row.createdAt,
+  updatedAt: row.updatedAt,
+});
+
+export const listBundleOutboxDeadLetters = async (input: {
+  storefrontTenantId: string;
+  cursor?: string;
+  limit: number;
+}): Promise<{
+  data: BundleOutboxDeadLetterDto[];
+  pageInfo: { hasMore: boolean; nextCursor: string | null };
+}> => {
+  const rows = await BundleOutboxEvent.aggregate<DeadLetterAggregateRow>([
+    {
+      $match: {
+        $or: [
+          { status: 'dead_letter' },
+          { manualRecoveryRequired: true },
+        ],
+        orderId: { $exists: true },
+        ...(input.cursor ? { _id: { $lt: new Types.ObjectId(input.cursor) } } : {}),
+      },
+    },
+    {
+      $lookup: {
+        from: BundleOrder.collection.name,
+        localField: 'orderId',
+        foreignField: '_id',
+        as: 'order',
+      },
+    },
+    { $unwind: '$order' },
+    {
+      $match: {
+        'order.storefrontTenantId': new Types.ObjectId(input.storefrontTenantId),
+      },
+    },
+    { $sort: { _id: -1 } },
+    { $limit: input.limit + 1 },
+    {
+      $project: {
+        _id: 1,
+        eventId: 1,
+        orderId: 1,
+        storefrontTenantId: '$order.storefrontTenantId',
+        tenantId: 1,
+        audience: 1,
+        eventType: 1,
+        status: 1,
+        attempts: 1,
+        lastError: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    },
+  ]);
+  const hasMore = rows.length > input.limit;
+  const page = hasMore ? rows.slice(0, input.limit) : rows;
+  return {
+    data: page.map(deadLetterDto),
+    pageInfo: {
+      hasMore,
+      nextCursor: hasMore ? page[page.length - 1]._id.toString() : null,
+    },
+  };
+};
+
+const loadRedriveReplay = async (input: {
+  eventId: string;
+  storefrontTenantId: string;
+  operationId: string;
+}): Promise<BundleOutboxDeadLetterDto | null> => {
+  const recovery = await BundleOutboxRecovery.findOne({
+    outboxEventId: input.eventId,
+    storefrontTenantId: input.storefrontTenantId,
+    operationId: input.operationId,
+  }).lean();
+  if (!recovery) return null;
+  const event = await BundleOutboxEvent.findOne({
+    _id: recovery.outboxEventId,
+    orderId: recovery.orderId,
+  }).lean();
+  if (!event) {
+    throw new BundleOutboxRecoveryError(409, 'The redriven delivery item is no longer available');
+  }
+  return deadLetterDto({
+    ...event,
+    storefrontTenantId: recovery.storefrontTenantId,
+  } as unknown as DeadLetterAggregateRow);
+};
+
+/**
+ * Reset one dead letter to the normal retry queue.
+ *
+ * Storefront ownership is resolved through the immutable parent order rather
+ * than `BundleOutboxEvent.tenantId`, because supplier notifications are sent to
+ * a recipient tenant while still belonging to the storefront's readiness gate.
+ */
+export const redriveBundleOutboxDeadLetter = async (input: {
+  eventId: string;
+  storefrontTenantId: string;
+  operationId: string;
+  reason: string;
+  actorId: Types.ObjectId;
+}): Promise<{ event: BundleOutboxDeadLetterDto; replayed: boolean }> => {
+  const prior = await loadRedriveReplay(input);
+  if (prior) return { event: prior, replayed: true };
+
+  try {
+    return await runBundleTransaction(async (session) => {
+      const event = await BundleOutboxEvent.findById(input.eventId).session(session);
+      if (!event?.orderId) {
+        throw new BundleOutboxRecoveryError(404, 'Dead-letter delivery item not found');
+      }
+      const order = await BundleOrder.findOne({
+        _id: event.orderId,
+        storefrontTenantId: input.storefrontTenantId,
+      })
+        .select('_id storefrontTenantId')
+        .session(session)
+        .lean();
+      if (!order) {
+        // Deliberately return the same result for an absent event and an event
+        // owned by a different storefront tenant.
+        throw new BundleOutboxRecoveryError(404, 'Dead-letter delivery item not found');
+      }
+
+      const replay = await BundleOutboxRecovery.findOne({
+        outboxEventId: event._id,
+        storefrontTenantId: order.storefrontTenantId,
+        operationId: input.operationId,
+      }).session(session).lean();
+      if (replay) {
+        return {
+          event: deadLetterDto({
+            ...event.toObject(),
+            storefrontTenantId: order.storefrontTenantId,
+          } as DeadLetterAggregateRow),
+          replayed: true,
+        };
+      }
+      if (event.status !== 'dead_letter') {
+        throw new BundleOutboxRecoveryError(
+          409,
+          'Only a dead-letter delivery item can be redriven'
+        );
+      }
+
+      const attemptsBefore = event.attempts;
+      const errorBefore = event.lastError || 'No provider error was recorded';
+      const changed = await BundleOutboxEvent.findOneAndUpdate(
+        { _id: event._id, status: 'dead_letter' },
+        {
+          $set: {
+            status: 'retry',
+            attempts: 0,
+            nextAttemptAt: new Date(),
+            manualRecoveryRequired: true,
+          },
+          $unset: { leaseUntil: 1, lastError: 1 },
+        },
+        { new: true, session, runValidators: true }
+      );
+      if (!changed) {
+        throw new BundleOutboxRecoveryError(
+          409,
+          'Delivery item changed while it was being redriven; refresh and try again'
+        );
+      }
+
+      await BundleOutboxRecovery.create([{
+        outboxEventId: event._id,
+        eventKey: event.eventId,
+        orderId: order._id,
+        storefrontTenantId: order.storefrontTenantId,
+        recipientTenantId: event.tenantId,
+        operationId: input.operationId,
+        actorId: input.actorId,
+        reason: input.reason,
+        attemptsBefore,
+        errorBefore,
+      }], { session });
+      await appendBundleEvent({
+        aggregateType: 'order',
+        aggregateId: order._id,
+        storefrontTenantId: order.storefrontTenantId,
+        actorType: 'user',
+        actorId: input.actorId,
+        command: 'redrive_bundle_outbox_dead_letter',
+        fromState: 'dead_letter',
+        toState: 'retry',
+        reason: input.reason,
+        correlationId: input.operationId,
+        metadata: {
+          outboxEventId: event._id.toString(),
+          eventKey: event.eventId,
+          audience: event.audience,
+          eventType: event.eventType,
+          recipientTenantId: event.tenantId.toString(),
+          attemptsBefore,
+        },
+      }, session);
+
+      return {
+        event: deadLetterDto({
+          ...changed.toObject(),
+          storefrontTenantId: order.storefrontTenantId,
+        } as DeadLetterAggregateRow),
+        replayed: false,
+      };
+    });
+  } catch (error) {
+    if ((error as { code?: number }).code === 11000) {
+      const replay = await loadRedriveReplay(input);
+      if (replay) return { event: replay, replayed: true };
+    }
+    throw error;
+  }
+};
 
 export const bundleOrderGuestLink = (
   tenant: Parameters<typeof getEmailBrand>[0],
@@ -162,11 +433,16 @@ export const processBundleOutboxBatch = async (limit = 20): Promise<{
                 status: 'suppressed',
                 suppressedAt: new Date(),
                 suppressionReason: 'TEST_MODE_NO_EXTERNAL_DELIVERY',
+                manualRecoveryRequired: false,
               },
               $unset: { leaseUntil: 1, lastError: 1 },
             }
           : {
-              $set: { status: 'delivered', deliveredAt: new Date() },
+              $set: {
+                status: 'delivered',
+                deliveredAt: new Date(),
+                manualRecoveryRequired: false,
+              },
               $unset: { leaseUntil: 1, lastError: 1 },
             }
       );
@@ -180,6 +456,7 @@ export const processBundleOutboxBatch = async (limit = 20): Promise<{
             status: dead ? 'dead_letter' : 'retry',
             nextAttemptAt: new Date(Date.now() + Math.min(60 * 60 * 1000, 30_000 * 2 ** event.attempts)),
             lastError: (error instanceof Error ? error.message : 'Outbox delivery failed').slice(0, 1000),
+            ...(dead ? { manualRecoveryRequired: true } : {}),
           },
           $unset: { leaseUntil: 1 },
         }
