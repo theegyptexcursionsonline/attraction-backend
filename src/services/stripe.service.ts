@@ -50,13 +50,21 @@ export interface StripeCallOptions {
  */
 export const verifyStripeEventAccountBinding = async (
   secretKey: string | undefined,
-  eventId: string
+  eventId: string,
+  expectedAccountId?: string
 ): Promise<boolean> => {
   const stripe = getStripe(secretKey);
   if (!stripe) throw missingKeyError();
   try {
     const event = await stripe.events.retrieve(eventId);
-    return event.id === eventId;
+    // Direct-account webhook events do not carry `account`. Connect events do,
+    // and must be bound to the exact account previously verified for this
+    // tenant. Retrieving the immutable event through the configured secret is
+    // still required in both cases; a valid endpoint signature alone is not an
+    // account-binding proof.
+    return event.id === eventId && (
+      !event.account || (!!expectedAccountId && event.account === expectedAccountId)
+    );
   } catch {
     return false;
   }

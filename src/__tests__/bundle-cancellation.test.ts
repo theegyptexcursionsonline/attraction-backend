@@ -5,6 +5,7 @@ import { releaseBundleInventory } from '../services/bundleInventory.service';
 import {
   cancelBundleOrder,
   expireBundleOrder,
+  expireStaleBundleOrders,
   fulfilBundleComponent,
   markBundleSettlementPaid,
   releaseBundleSettlement,
@@ -49,6 +50,13 @@ jest.mock('../services/bundlePayment.service', () => ({
 }));
 
 const queryResult = <T>(value: T) => ({ session: jest.fn().mockResolvedValue(value) });
+const expiryRows = (rows: unknown[]) => ({
+  select: jest.fn().mockReturnValue({
+    sort: jest.fn().mockReturnValue({
+      limit: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(rows) }),
+    }),
+  }),
+});
 const component = (status = 'reserved', settlementStatus = 'on_hold') => ({
   componentId: new Types.ObjectId().toString(),
   attractionId: new Types.ObjectId(),
@@ -121,7 +129,50 @@ describe('bundle cancellation lifecycle', () => {
     expect(result.components[0].status).toBe('fulfilled');
     expect(result.components[0].settlementStatus).toBe('disputed');
     expect(result.components[1].status).toBe('cancel_pending');
+    expect(result.recovery.required).toBe(false);
     expect(releaseBundleInventory).not.toHaveBeenCalled();
+  });
+
+  it('isolates an expiry poison row and continues releasing later eligible holds', async () => {
+    const poisonId = new Types.ObjectId();
+    const healthyId = new Types.ObjectId();
+    const poisonReview = {
+      _id: poisonId,
+      storefrontTenantId: new Types.ObjectId(),
+      status: 'payment_pending',
+      paymentStatus: 'intent_created',
+      recovery: { required: false, attempts: 0 },
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    const healthy = {
+      _id: healthyId,
+      storefrontTenantId: new Types.ObjectId(),
+      status: 'reserved',
+      paymentStatus: 'not_started',
+      holdExpiresAt: new Date(Date.now() - 60_000),
+      components: [component()],
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    (BundleOrder.find as jest.Mock).mockReturnValue(expiryRows([
+      { _id: poisonId },
+      { _id: healthyId },
+    ]));
+    (BundleOrder.findById as jest.Mock)
+      .mockRejectedValueOnce(new Error('provider unavailable'))
+      .mockReturnValueOnce(queryResult(poisonReview))
+      .mockResolvedValueOnce(healthy);
+    (BundleOrder.findOne as jest.Mock).mockReturnValue(queryResult(healthy));
+    (Booking.updateMany as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
+
+    await expect(expireStaleBundleOrders()).resolves.toEqual({
+      expired: 1,
+      paid: 0,
+      manualReview: 1,
+      failed: 1,
+    });
+    expect(poisonReview.status).toBe('manual_review');
+    expect(releaseBundleInventory).toHaveBeenCalledTimes(1);
+    expect(healthy.status).toBe('cancelled');
   });
 
   it('reconciles and cancels an in-flight idempotent provider intent before expiring capacity', async () => {

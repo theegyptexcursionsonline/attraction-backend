@@ -148,8 +148,9 @@ const requestPaidBundleCancellation = async (
     if (component.settlementStatus === 'paid') component.settlementStatus = 'disputed';
     else if (component.settlementStatus !== 'disputed') component.settlementStatus = 'on_hold';
   }
-  order.recovery.required = true;
-  order.recovery.reason = `Cancellation review: ${reason}`.slice(0, 500);
+  // A customer-requested cancellation is a normal operational queue state,
+  // not a payment-recovery incident. The explicit `cancel_pending` status and
+  // outbox events keep it visible without disabling checkout for the tenant.
   await order.save({ session });
   await appendBundleEvent({
     aggregateType: 'order',
@@ -454,17 +455,33 @@ export const expireStaleBundleOrders = async (limit = 50): Promise<{
   expired: number;
   paid: number;
   manualReview: number;
+  failed: number;
 }> => {
   const rows = await BundleOrder.find({
     status: { $in: ['reserved', 'payment_pending'] },
     holdExpiresAt: { $lte: new Date() },
   }).select('_id').sort({ holdExpiresAt: 1 }).limit(limit).lean();
-  const totals = { expired: 0, paid: 0, manualReview: 0 };
+  const totals = { expired: 0, paid: 0, manualReview: 0, failed: 0 };
   for (const row of rows) {
-    const result = await expireBundleOrder(row._id);
-    if (result === 'expired') totals.expired += 1;
-    if (result === 'paid') totals.paid += 1;
-    if (result === 'manual_review') totals.manualReview += 1;
+    try {
+      const result = await expireBundleOrder(row._id);
+      if (result === 'expired') totals.expired += 1;
+      if (result === 'paid') totals.paid += 1;
+      if (result === 'manual_review') totals.manualReview += 1;
+    } catch (error) {
+      totals.failed += 1;
+      try {
+        await markBundleManualReview(
+          row._id,
+          error instanceof Error ? `Hold expiry failed: ${error.message}` : 'Hold expiry failed',
+          { actorType: 'scheduler' }
+        );
+        totals.manualReview += 1;
+      } catch {
+        // The sweep must continue so one poison order cannot starve every
+        // newer expiry. This row remains eligible for the next bounded pass.
+      }
+    }
   }
   return totals;
 };

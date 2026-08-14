@@ -90,6 +90,12 @@ export interface IBundleOrder extends Document {
     reason: string;
     requestedBy: Types.ObjectId;
     createdAt: Date;
+    providerAttemptedAt?: Date;
+    lastAttemptAt?: Date;
+    nextAttemptAt?: Date;
+    leaseUntil?: Date;
+    attempts: number;
+    lastError?: string;
   }>;
   recovery: {
     required: boolean;
@@ -200,6 +206,12 @@ const bundleOrderSchema = new Schema<IBundleOrder>(
       reason: { type: String, required: true, maxlength: 500 },
       requestedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
       createdAt: { type: Date, default: Date.now },
+      providerAttemptedAt: { type: Date },
+      lastAttemptAt: { type: Date },
+      nextAttemptAt: { type: Date },
+      leaseUntil: { type: Date },
+      attempts: { type: Number, default: 0, min: 0, validate: Number.isSafeInteger },
+      lastError: { type: String, maxlength: 500 },
     }],
     recovery: {
       required: { type: Boolean, default: false },
@@ -219,6 +231,7 @@ bundleOrderSchema.index({ storefrontTenantId: 1, createdAt: -1, _id: -1 });
 bundleOrderSchema.index({ 'components.supplierTenantId': 1, createdAt: -1, _id: -1 });
 bundleOrderSchema.index({ status: 1, holdExpiresAt: 1 });
 bundleOrderSchema.index({ userId: 1, createdAt: -1 });
+bundleOrderSchema.index({ 'refunds.status': 1, 'refunds.nextAttemptAt': 1 });
 bundleOrderSchema.index({ 'components.settlementOperationId': 1 }, { unique: true, sparse: true });
 bundleOrderSchema.index({ 'components.settlementDisputeOperationId': 1 }, { unique: true, sparse: true });
 bundleOrderSchema.index(

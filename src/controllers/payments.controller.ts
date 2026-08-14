@@ -668,12 +668,27 @@ export const handleWebhook = async (
       sendError(res, 'Stripe webhook event ID is required', 400);
       return;
     }
-    if (
-      verifiedWithCurrentSecret &&
-      !stripeCfg.webhookVerifiedAt &&
-      await verifyStripeEventAccountBinding(stripeCfg.secretKey, eventId)
-    ) {
-      await markTenantStripeWebhookVerified(tenantId, stripeCfg);
+    const movesMoney = eventType === 'payment_intent.succeeded' ||
+      eventType === 'payment_intent.payment_failed';
+    const accountBound = !!stripeCfg.verifiedAccountId &&
+      !!stripeCfg.verifiedCredentialFingerprint &&
+      await verifyStripeEventAccountBinding(
+        stripeCfg.secretKey,
+        eventId,
+        stripeCfg.verifiedAccountId
+      );
+    if (movesMoney && !accountBound) {
+      sendError(res, 'Stripe webhook account binding could not be verified', 409);
+      return;
+    }
+    if (verifiedWithCurrentSecret && !stripeCfg.webhookVerifiedAt && accountBound) {
+      const persisted = await markTenantStripeWebhookVerified(tenantId, stripeCfg);
+      if (movesMoney && !persisted) {
+        // Configuration changed after this request loaded its credentials. No
+        // payment effect may run against that stale tenant/account snapshot.
+        sendError(res, 'Stripe configuration changed while verifying this event; retry delivery', 409);
+        return;
+      }
     }
 
     const obj = event.data.object as Stripe.PaymentIntent;

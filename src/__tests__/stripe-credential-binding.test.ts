@@ -106,4 +106,27 @@ describe('Stripe credential account binding', () => {
       'evt_other_account'
     )).resolves.toBe(false);
   });
+
+  it('requires a Connect event account to match the tenant account binding', async () => {
+    const secretClient = {
+      events: {
+        retrieve: jest.fn().mockResolvedValue({
+          id: 'evt_connect_account',
+          account: 'acct_connected_b',
+        }),
+      },
+    };
+    (Stripe as unknown as jest.Mock).mockReturnValue(secretClient);
+
+    await expect(verifyStripeEventAccountBinding(
+      'sk_test_connect_binding_5',
+      'evt_connect_account',
+      'acct_connected_a'
+    )).resolves.toBe(false);
+    await expect(verifyStripeEventAccountBinding(
+      'sk_test_connect_binding_5',
+      'evt_connect_account',
+      'acct_connected_b'
+    )).resolves.toBe(true);
+  });
 });

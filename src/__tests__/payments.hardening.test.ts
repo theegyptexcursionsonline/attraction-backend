@@ -273,12 +273,44 @@ describe('Stripe payment hardening', () => {
 
       expect(verifyStripeEventAccountBinding).toHaveBeenCalledWith(
         stripeConfig.secretKey,
-        'evt_other_account'
+        'evt_other_account',
+        'acct_verified'
       );
       expect(markTenantStripeWebhookVerified).not.toHaveBeenCalled();
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({ received: true, ignored: 'checkout.session.completed' })
       );
+    });
+
+    it('hard-gates money events on a fresh provider account lookup even after prior webhook trust', async () => {
+      (getTenantStripeConfig as jest.Mock).mockResolvedValue({
+        ...stripeConfig,
+        webhookVerifiedAt: new Date('2030-01-02T00:00:00.000Z'),
+      });
+      (constructWebhookEvent as jest.Mock).mockReturnValue(
+        webhookEvent('payment_intent.succeeded', {}, 'evt_stale_account_proof')
+      );
+      (verifyStripeEventAccountBinding as jest.Mock).mockResolvedValue(false);
+
+      const res = await invoke(handleWebhook as never, webhookRequest());
+
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(Booking.findOne).not.toHaveBeenCalled();
+      expect(Booking.findOneAndUpdate).not.toHaveBeenCalled();
+      expect(recordInboundEvent).not.toHaveBeenCalled();
+    });
+
+    it('rejects a money event when its verified account snapshot loses the configuration race', async () => {
+      (constructWebhookEvent as jest.Mock).mockReturnValue(
+        webhookEvent('payment_intent.succeeded', {}, 'evt_config_race_money')
+      );
+      (markTenantStripeWebhookVerified as jest.Mock).mockResolvedValueOnce(false);
+
+      const res = await invoke(handleWebhook as never, webhookRequest());
+
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(Booking.findOne).not.toHaveBeenCalled();
+      expect(recordInboundEvent).not.toHaveBeenCalled();
     });
 
     it('compare-and-sets trust against the exact configuration snapshot after provider verification', async () => {

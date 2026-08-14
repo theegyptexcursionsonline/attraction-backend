@@ -27,6 +27,7 @@ import routes from './routes';
 import { notFoundHandler, errorHandler, apiLimiter } from './middleware';
 import { expireStaleCardHolds } from './services/bookingInventory.service';
 import { expireStaleBundleOrders } from './services/bundleOperations.service';
+import { processPendingBundleRefunds } from './services/bundlePayment.service';
 import { processBundleOutboxBatch } from './services/bundleOutbox.service';
 import { redactUrlForLogs } from './utils/safe-logging';
 import { startImageGenerationWorker } from './services/image-generation-job.service';
@@ -157,11 +158,19 @@ export const startServer = async (): Promise<void> => {
     const sweepExpiredBundles = async (): Promise<void> => {
       try {
         const result = await expireStaleBundleOrders();
-        if (result.expired || result.paid || result.manualReview) {
+        if (result.expired || result.paid || result.manualReview || result.failed) {
           console.log('[bundle-orders] expired-hold sweep', result);
         }
       } catch (error) {
         console.error('[bundle-orders] expired-hold sweep failed:', error);
+      }
+      try {
+        const result = await processPendingBundleRefunds();
+        if (result.reconciled || result.pending || result.failed) {
+          console.log('[bundle-orders] refund recovery sweep', result);
+        }
+      } catch (error) {
+        console.error('[bundle-orders] refund recovery sweep failed:', error);
       }
     };
     if (env.bundleRecoveryEnabled) {

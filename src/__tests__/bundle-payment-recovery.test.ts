@@ -6,6 +6,7 @@ import { releaseBundleInventory } from '../services/bundleInventory.service';
 import {
   claimBundleProviderEvent,
   failBundlePayment,
+  processPendingBundleRefunds,
   refundBundleOrder,
 } from '../services/bundlePayment.service';
 import { retrieveRefund } from '../services/stripe.service';
@@ -28,6 +29,8 @@ jest.mock('../models/BundleOrder', () => ({
     findOne: jest.fn(),
     findOneAndUpdate: jest.fn(),
     updateOne: jest.fn(),
+    updateMany: jest.fn(),
+    find: jest.fn(),
   },
 }));
 jest.mock('../models/BundleProviderEvent', () => ({
@@ -59,9 +62,22 @@ jest.mock('../services/tenantPayment.service', () => ({
 }));
 
 const queryResult = <T>(value: T) => ({ session: jest.fn().mockResolvedValue(value) });
+const refundSweepRows = (rows: unknown[]) => ({
+  select: jest.fn().mockReturnValue({
+    sort: jest.fn().mockReturnValue({
+      limit: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(rows),
+      }),
+    }),
+  }),
+});
 
 describe('bundle payment recovery contracts', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (BundleOrder.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
+    (BundleOrder.updateMany as jest.Mock).mockResolvedValue({ modifiedCount: 0 });
+  });
 
   it('does not acknowledge a provider retry while the first processing lease is unfinished', async () => {
     const duplicateError = Object.assign(new Error('duplicate'), { code: 11000 });
@@ -137,8 +153,14 @@ describe('bundle payment recovery contracts', () => {
     expect(BundleOrder.findOneAndUpdate).not.toHaveBeenCalled();
     expect(retrieveRefund).toHaveBeenCalledWith('sk_test_secret', 're_pending');
     expect(BundleOrder.updateOne).toHaveBeenCalledWith(
-      { _id: order._id, 'refunds.operationId': operationId },
-      { $set: { 'refunds.$.providerRefundId': 're_pending', 'refunds.$.status': 'provider_pending' } }
+      expect.objectContaining({ _id: order._id }),
+      expect.objectContaining({
+        $set: expect.objectContaining({
+          'refunds.$.providerRefundId': 're_pending',
+          'refunds.$.status': 'provider_pending',
+          'recovery.required': true,
+        }),
+      })
     );
   });
 
@@ -187,10 +209,287 @@ describe('bundle payment recovery contracts', () => {
       },
       {
         $inc: { refundPendingMinor: -5_000 },
-        $set: {
+        $set: expect.objectContaining({
           'refunds.$.providerRefundId': 're_failed',
           'refunds.$.status': 'failed',
-        },
+        }),
+        $unset: expect.objectContaining({ 'refunds.$.leaseUntil': '' }),
+      }
+    );
+  });
+
+  it('rejects an uncaptured payment before reserving any refund amount', async () => {
+    const order = {
+      _id: new Types.ObjectId(),
+      stripePaymentIntentId: 'pi_not_captured',
+      paymentStatus: 'intent_created',
+      totalMinor: 10_000,
+      refundedMinor: 0,
+      refundPendingMinor: 0,
+      refunds: [],
+    };
+    (BundleOrder.findById as jest.Mock).mockResolvedValue(order);
+
+    await expect(refundBundleOrder({
+      orderId: order._id.toString(),
+      operationId: 'refund:not-captured',
+      amountMinor: 5_000,
+      reason: 'Invalid early refund',
+      actorId: new Types.ObjectId(),
+    })).rejects.toEqual(expect.objectContaining({ code: 'ORDER_NOT_REFUNDABLE' }));
+
+    expect(BundleOrder.findOneAndUpdate).not.toHaveBeenCalled();
+    expect(createRefund).not.toHaveBeenCalled();
+    expect(retrieveRefund).not.toHaveBeenCalled();
+  });
+
+  it('releases a new reservation when configuration fails before any provider attempt', async () => {
+    const operationId = 'refund:pre-provider-config-failure';
+    const order = {
+      _id: new Types.ObjectId(),
+      storefrontTenantId: new Types.ObjectId(),
+      checkoutMode: 'test',
+      stripePaymentIntentId: 'pi_pre_provider',
+      paymentStatus: 'succeeded',
+      status: 'confirmed',
+      totalMinor: 10_000,
+      refundedMinor: 0,
+      refundPendingMinor: 0,
+      refunds: [],
+    };
+    const reserved = {
+      ...order,
+      refundPendingMinor: 5_000,
+      refunds: [{
+        operationId,
+        amountMinor: 5_000,
+        status: 'requested',
+        reason: 'Customer adjustment',
+        requestedBy: new Types.ObjectId(),
+        attempts: 0,
+      }],
+    };
+    (BundleOrder.findById as jest.Mock).mockResolvedValue(order);
+    (BundleOrder.findOneAndUpdate as jest.Mock).mockResolvedValue(reserved);
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue(null);
+
+    await expect(refundBundleOrder({
+      orderId: order._id.toString(),
+      operationId,
+      amountMinor: 5_000,
+      reason: 'Customer adjustment',
+      actorId: reserved.refunds[0].requestedBy,
+    })).rejects.toEqual(expect.objectContaining({ code: 'PAYMENT_GATEWAY_UNAVAILABLE' }));
+
+    expect(BundleOrder.updateOne).toHaveBeenCalledWith(
+      expect.objectContaining({ refundPendingMinor: { $gte: 5_000 } }),
+      expect.objectContaining({
+        $inc: { refundPendingMinor: -5_000 },
+        $set: expect.objectContaining({ 'refunds.$.status': 'failed' }),
+      })
+    );
+    expect(createRefund).not.toHaveBeenCalled();
+  });
+
+  it('keeps an uncertain provider attempt reserved and queues automatic recovery', async () => {
+    const operationId = 'refund:provider-timeout';
+    const order = {
+      _id: new Types.ObjectId(),
+      storefrontTenantId: new Types.ObjectId(),
+      checkoutMode: 'test',
+      stripePaymentIntentId: 'pi_provider_timeout',
+      paymentStatus: 'succeeded',
+      status: 'confirmed',
+      totalMinor: 10_000,
+      refundedMinor: 0,
+      refundPendingMinor: 5_000,
+      refunds: [{
+        operationId,
+        amountMinor: 5_000,
+        status: 'requested',
+        reason: 'Customer adjustment',
+        requestedBy: new Types.ObjectId(),
+        providerAttemptedAt: new Date(),
+        attempts: 1,
+      }],
+    };
+    (BundleOrder.findById as jest.Mock).mockResolvedValue(order);
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue({
+      enabled: true,
+      publishableKey: 'pk_test_public',
+      secretKey: 'sk_test_secret',
+    });
+    (createRefund as jest.Mock).mockRejectedValue(new Error('provider timeout'));
+
+    await expect(refundBundleOrder({
+      orderId: order._id.toString(),
+      operationId,
+      amountMinor: 5_000,
+      reason: 'Customer adjustment',
+      actorId: order.refunds[0].requestedBy,
+    })).rejects.toEqual(expect.objectContaining({ code: 'REFUND_PROVIDER_UNCERTAIN' }));
+
+    expect(BundleOrder.updateOne).toHaveBeenCalledWith(
+      expect.objectContaining({ _id: order._id }),
+      expect.objectContaining({
+        $set: expect.objectContaining({
+          'refunds.$.status': 'provider_pending',
+          'recovery.required': true,
+        }),
+      })
+    );
+    expect(BundleOrder.updateOne).not.toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ $inc: { refundPendingMinor: -5_000 } })
+    );
+  });
+
+  it('leases a duplicate refund operation so concurrent retries call the provider once', async () => {
+    const operationId = 'refund:concurrent-provider-reconcile';
+    const order = {
+      _id: new Types.ObjectId(),
+      storefrontTenantId: new Types.ObjectId(),
+      checkoutMode: 'test',
+      stripePaymentIntentId: 'pi_concurrent_refund',
+      paymentStatus: 'succeeded',
+      totalMinor: 10_000,
+      refundedMinor: 0,
+      refundPendingMinor: 5_000,
+      refunds: [{
+        operationId,
+        providerRefundId: 're_concurrent',
+        amountMinor: 5_000,
+        status: 'provider_pending',
+        reason: 'Customer adjustment',
+        requestedBy: new Types.ObjectId(),
+        providerAttemptedAt: new Date(),
+        attempts: 1,
+      }],
+    };
+    (BundleOrder.findById as jest.Mock).mockResolvedValue(order);
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue({
+      enabled: true,
+      publishableKey: 'pk_test_public',
+      secretKey: 'sk_test_secret',
+    });
+    let providerClaims = 0;
+    (BundleOrder.updateOne as jest.Mock).mockImplementation((_query, update) => {
+      if (update?.$inc?.['refunds.$.attempts']) {
+        providerClaims += 1;
+        return Promise.resolve({ modifiedCount: providerClaims === 1 ? 1 : 0 });
+      }
+      return Promise.resolve({ modifiedCount: 1 });
+    });
+    (retrieveRefund as jest.Mock).mockResolvedValue({ id: 're_concurrent', status: 'pending', amount: 5_000 });
+    const input = {
+      orderId: order._id.toString(),
+      operationId,
+      amountMinor: 5_000,
+      reason: 'Customer adjustment',
+      actorId: order.refunds[0].requestedBy,
+    };
+
+    const results = await Promise.allSettled([
+      refundBundleOrder(input),
+      refundBundleOrder(input),
+    ]);
+
+    expect(results.every((result) => result.status === 'rejected')).toBe(true);
+    expect(retrieveRefund).toHaveBeenCalledTimes(1);
+    expect(providerClaims).toBe(2);
+  });
+
+  it('redrives a due provider-pending refund without creating a second provider operation', async () => {
+    const operationId = 'refund:worker-redrive';
+    const requestedBy = new Types.ObjectId();
+    const order = {
+      _id: new Types.ObjectId(),
+      storefrontTenantId: new Types.ObjectId(),
+      checkoutMode: 'test',
+      stripePaymentIntentId: 'pi_worker_redrive',
+      paymentStatus: 'succeeded',
+      totalMinor: 10_000,
+      refundedMinor: 0,
+      refundPendingMinor: 5_000,
+      refunds: [{
+        operationId,
+        providerRefundId: 're_worker_redrive',
+        amountMinor: 5_000,
+        status: 'provider_pending',
+        reason: 'Customer adjustment',
+        requestedBy,
+        providerAttemptedAt: new Date(Date.now() - 120_000),
+        nextAttemptAt: new Date(Date.now() - 60_000),
+        attempts: 1,
+      }],
+    };
+    (BundleOrder.find as jest.Mock).mockReturnValue(refundSweepRows([order]));
+    (BundleOrder.findById as jest.Mock).mockResolvedValue(order);
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue({
+      enabled: true,
+      publishableKey: 'pk_test_public',
+      secretKey: 'sk_test_secret',
+    });
+    (retrieveRefund as jest.Mock).mockResolvedValue({ id: 're_worker_redrive', status: 'pending', amount: 5_000 });
+
+    await expect(processPendingBundleRefunds(10)).resolves.toEqual({
+      examined: 1,
+      reconciled: 0,
+      pending: 1,
+      failed: 0,
+    });
+    expect(retrieveRefund).toHaveBeenCalledWith('sk_test_secret', 're_worker_redrive');
+    expect(createRefund).not.toHaveBeenCalled();
+  });
+
+  it('recovers a crash immediately after reservation with the stable provider idempotency key', async () => {
+    const operationId = 'refund:crash-before-provider-claim';
+    const requestedBy = new Types.ObjectId();
+    const order = {
+      _id: new Types.ObjectId(),
+      storefrontTenantId: new Types.ObjectId(),
+      checkoutMode: 'test',
+      stripePaymentIntentId: 'pi_crash_before_provider',
+      paymentStatus: 'succeeded',
+      totalMinor: 10_000,
+      refundedMinor: 0,
+      refundPendingMinor: 5_000,
+      refunds: [{
+        operationId,
+        amountMinor: 5_000,
+        status: 'requested',
+        reason: 'Customer adjustment',
+        requestedBy,
+        nextAttemptAt: new Date(Date.now() - 60_000),
+        attempts: 0,
+      }],
+    };
+    (BundleOrder.find as jest.Mock).mockReturnValue(refundSweepRows([order]));
+    (BundleOrder.findById as jest.Mock).mockResolvedValue(order);
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue({
+      enabled: true,
+      publishableKey: 'pk_test_public',
+      secretKey: 'sk_test_secret',
+    });
+    (createRefund as jest.Mock).mockResolvedValue({
+      id: 're_crash_before_provider',
+      status: 'pending',
+      amount: 5_000,
+    });
+
+    await expect(processPendingBundleRefunds(10)).resolves.toEqual({
+      examined: 1,
+      reconciled: 0,
+      pending: 1,
+      failed: 0,
+    });
+    expect(createRefund).toHaveBeenCalledWith(
+      'sk_test_secret',
+      'pi_crash_before_provider',
+      5_000,
+      {
+        idempotencyKey: `bundle-refund:${order._id}:${operationId}`,
+        allowPending: true,
       }
     );
   });
@@ -278,9 +577,13 @@ describe('bundle payment recovery contracts', () => {
   it('rejects a new partial refund while a paid cancellation is pending', async () => {
     const order = {
       _id: new Types.ObjectId(),
+      storefrontTenantId: new Types.ObjectId(),
+      stripePaymentIntentId: 'pi_cancel_partial_blocked',
       status: 'cancel_pending',
+      paymentStatus: 'succeeded',
       totalMinor: 10_000,
       refundedMinor: 0,
+      refundPendingMinor: 0,
       refunds: [],
     };
     (BundleOrder.findById as jest.Mock).mockResolvedValue(order);
@@ -811,5 +1114,15 @@ describe('bundle payment recovery contracts', () => {
     })).rejects.toEqual(expect.objectContaining({ code: 'REFUND_INVENTORY_BINDING_MISSING' }));
 
     expect(releaseBundleInventory).not.toHaveBeenCalled();
+    const persistedProviderEvidence = (BundleOrder.updateOne as jest.Mock).mock.calls.find(
+      ([, update]) => update?.$set?.['refunds.$.providerRefundId'] === 're_missing'
+    )?.[1];
+    expect(persistedProviderEvidence).toEqual(expect.objectContaining({
+      $set: expect.objectContaining({
+        'refunds.$.status': 'provider_pending',
+        'recovery.required': true,
+      }),
+    }));
+    expect(persistedProviderEvidence.$unset).toBeUndefined();
   });
 });

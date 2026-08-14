@@ -447,6 +447,140 @@ export const failBundleProviderEvent = async (
   );
 };
 
+const REFUND_ATTEMPT_LEASE_MS = 60_000;
+const REFUND_RETRY_DELAY_MS = 60_000;
+const REFUNDABLE_PAYMENT_STATUSES = ['succeeded', 'partially_refunded'] as const;
+
+const clearResolvedRefundRecovery = async (orderId: Types.ObjectId): Promise<void> => {
+  await BundleOrder.updateOne(
+    {
+      _id: orderId,
+      refundPendingMinor: 0,
+      'recovery.required': true,
+      'recovery.reason': /^Refund recovery required:/,
+      refunds: {
+        $not: {
+          $elemMatch: { status: { $in: ['requested', 'provider_pending'] } },
+        },
+      },
+      'components.settlementStatus': { $ne: 'disputed' },
+    },
+    {
+      $set: {
+        'recovery.required': false,
+        'recovery.lastAttemptAt': new Date(),
+      },
+      $unset: { 'recovery.reason': '' },
+    }
+  );
+};
+
+const releaseRefundReservation = async (
+  orderId: Types.ObjectId,
+  operationId: string,
+  amountMinor: number,
+  reason: string,
+  providerRefundId?: string
+): Promise<void> => {
+  await BundleOrder.updateOne(
+    {
+      _id: orderId,
+      refundPendingMinor: { $gte: amountMinor },
+      refunds: {
+        $elemMatch: {
+          operationId,
+          status: { $in: ['requested', 'provider_pending'] },
+        },
+      },
+    },
+    {
+      $inc: { refundPendingMinor: -amountMinor },
+      $set: {
+        ...(providerRefundId ? { 'refunds.$.providerRefundId': providerRefundId } : {}),
+        'refunds.$.status': 'failed',
+        'refunds.$.lastAttemptAt': new Date(),
+        'refunds.$.lastError': reason.slice(0, 500),
+      },
+      $unset: {
+        'refunds.$.leaseUntil': '',
+        'refunds.$.nextAttemptAt': '',
+      },
+    }
+  );
+  await clearResolvedRefundRecovery(orderId);
+};
+
+const scheduleRefundRecovery = async (
+  orderId: Types.ObjectId,
+  operationId: string,
+  reason: string,
+  providerRefundId?: string,
+  releaseLease = true
+): Promise<void> => {
+  const now = new Date();
+  const update: Record<string, unknown> = {
+    $set: {
+      ...(providerRefundId ? { 'refunds.$.providerRefundId': providerRefundId } : {}),
+      'refunds.$.status': 'provider_pending',
+      'refunds.$.lastAttemptAt': now,
+      'refunds.$.nextAttemptAt': new Date(now.getTime() + REFUND_RETRY_DELAY_MS),
+      'refunds.$.lastError': reason.slice(0, 500),
+      'recovery.required': true,
+      'recovery.reason': `Refund recovery required: ${reason}`.slice(0, 500),
+      'recovery.lastAttemptAt': now,
+    },
+    $inc: { 'recovery.attempts': 1 },
+  };
+  if (releaseLease) update.$unset = { 'refunds.$.leaseUntil': '' };
+  await BundleOrder.updateOne(
+    {
+      _id: orderId,
+      refunds: {
+        $elemMatch: {
+          operationId,
+          status: { $in: ['requested', 'provider_pending'] },
+        },
+      },
+    },
+    update
+  );
+};
+
+const claimRefundProviderAttempt = async (
+  orderId: Types.ObjectId,
+  operationId: string
+): Promise<boolean> => {
+  const now = new Date();
+  const result = await BundleOrder.updateOne(
+    {
+      _id: orderId,
+      refunds: {
+        $elemMatch: {
+          operationId,
+          status: { $in: ['requested', 'provider_pending'] },
+          $or: [
+            { leaseUntil: { $exists: false } },
+            { leaseUntil: { $lte: now } },
+          ],
+        },
+      },
+    },
+    {
+      $set: {
+        'refunds.$.providerAttemptedAt': now,
+        'refunds.$.lastAttemptAt': now,
+        'refunds.$.leaseUntil': new Date(now.getTime() + REFUND_ATTEMPT_LEASE_MS),
+      },
+      $unset: {
+        'refunds.$.nextAttemptAt': '',
+        'refunds.$.lastError': '',
+      },
+      $inc: { 'refunds.$.attempts': 1 },
+    }
+  );
+  return result.modifiedCount === 1;
+};
+
 export const refundBundleOrder = async (input: {
   orderId: string;
   operationId: string;
@@ -456,6 +590,14 @@ export const refundBundleOrder = async (input: {
 }): Promise<{ order: IBundleOrder; duplicate: boolean }> => {
   let order = await BundleOrder.findById(input.orderId);
   if (!order) throw new BundlePaymentError('ORDER_NOT_FOUND', 'Bundle order not found', 404);
+  if (
+    !order.stripePaymentIntentId ||
+    !REFUNDABLE_PAYMENT_STATUSES.includes(
+      order.paymentStatus as (typeof REFUNDABLE_PAYMENT_STATUSES)[number]
+    )
+  ) {
+    throw new BundlePaymentError('ORDER_NOT_REFUNDABLE', 'Only a captured payment can be refunded', 409);
+  }
   const remainingRefundableMinor = order.totalMinor - order.refundedMinor;
   const prior = order.refunds.find((refund) => refund.operationId === input.operationId);
   if (
@@ -480,6 +622,8 @@ export const refundBundleOrder = async (input: {
   } else {
     const reservationQuery: Record<string, unknown> = {
         _id: order._id,
+        stripePaymentIntentId: order.stripePaymentIntentId,
+        paymentStatus: { $in: [...REFUNDABLE_PAYMENT_STATUSES] },
         'refunds.operationId': { $ne: input.operationId },
         $expr: {
           $lte: [
@@ -503,6 +647,10 @@ export const refundBundleOrder = async (input: {
             reason: input.reason,
             requestedBy: input.actorId,
             createdAt: new Date(),
+            // If this process dies after reserving money but before claiming
+            // the provider lease, the bounded worker can safely resume it.
+            nextAttemptAt: new Date(Date.now() + REFUND_RETRY_DELAY_MS),
+            attempts: 0,
           },
         },
       },
@@ -521,63 +669,125 @@ export const refundBundleOrder = async (input: {
       order = reserved;
     }
   }
-  if (!order.stripePaymentIntentId || order.paymentStatus === 'failed') {
-    throw new BundlePaymentError('ORDER_NOT_REFUNDABLE', 'This order has no refundable payment', 409);
-  }
+  const currentRefund = order.refunds.find((item) => item.operationId === input.operationId)!;
   const config = await getTenantStripeConfig(order.storefrontTenantId);
   if (!config?.enabled || !config.secretKey) {
+    if (!currentRefund.providerAttemptedAt && !currentRefund.providerRefundId) {
+      await releaseRefundReservation(
+        order._id,
+        input.operationId,
+        input.amountMinor,
+        'Refund provider is unavailable before submission'
+      );
+    } else {
+      await scheduleRefundRecovery(
+        order._id,
+        input.operationId,
+        'Refund provider is temporarily unavailable',
+        currentRefund.providerRefundId
+      );
+    }
     throw new BundlePaymentError('PAYMENT_GATEWAY_UNAVAILABLE', 'Refund provider is unavailable', 503);
   }
-  assertBundleStripeEnvironment(order, config);
-  const currentRefund = order.refunds.find((item) => item.operationId === input.operationId)!;
-  const providerRefund = currentRefund.providerRefundId
-    ? await retrieveRefund(config.secretKey, currentRefund.providerRefundId)
-    : await createRefund(
-        config.secretKey,
-        order.stripePaymentIntentId,
+  try {
+    assertBundleStripeEnvironment(order, config);
+  } catch (error) {
+    if (!currentRefund.providerAttemptedAt && !currentRefund.providerRefundId) {
+      await releaseRefundReservation(
+        order._id,
+        input.operationId,
         input.amountMinor,
-        {
-          idempotencyKey: `bundle-refund:${order._id}:${input.operationId}`,
-          allowPending: true,
-        }
+        error instanceof Error ? error.message : 'Payment environment mismatch'
       );
+    } else {
+      await scheduleRefundRecovery(
+        order._id,
+        input.operationId,
+        error instanceof Error ? error.message : 'Payment environment mismatch',
+        currentRefund.providerRefundId
+      );
+    }
+    throw error;
+  }
+
+  const claimed = await claimRefundProviderAttempt(order._id, input.operationId);
+  if (!claimed) {
+    const latest = await BundleOrder.findById(order._id);
+    const latestRefund = latest?.refunds.find((item) => item.operationId === input.operationId);
+    if (latest && latestRefund?.status === 'succeeded') return { order: latest, duplicate: true };
+    throw new BundlePaymentError(
+      'REFUND_OPERATION_IN_PROGRESS',
+      'This refund operation is already being reconciled',
+      409
+    );
+  }
+  const claimedRefund = currentRefund;
+  let providerRefund: Awaited<ReturnType<typeof retrieveRefund>>;
+  try {
+    providerRefund = claimedRefund.providerRefundId
+      ? await retrieveRefund(config.secretKey, claimedRefund.providerRefundId)
+      : await createRefund(
+          config.secretKey,
+          order.stripePaymentIntentId!,
+          input.amountMinor,
+          {
+            // Reusing this key makes a crash after Stripe accepted the request
+            // safe: every retry retrieves/returns the same provider operation.
+            idempotencyKey: `bundle-refund:${order._id}:${input.operationId}`,
+            allowPending: true,
+          }
+        );
+  } catch (error) {
+    await scheduleRefundRecovery(
+      order._id,
+      input.operationId,
+      error instanceof Error ? error.message : 'Refund provider request was uncertain',
+      claimedRefund.providerRefundId
+    );
+    throw new BundlePaymentError(
+      'REFUND_PROVIDER_UNCERTAIN',
+      'Refund status could not be verified; recovery will retry this operation',
+      409
+    );
+  }
   if (!providerRefund || providerRefund.amount !== input.amountMinor) {
-    throw new BundlePaymentError('REFUND_PROVIDER_UNCERTAIN', 'Refund status could not be verified; retry this operation', 409);
+    await scheduleRefundRecovery(
+      order._id,
+      input.operationId,
+      'Refund provider returned incomplete or mismatched evidence',
+      providerRefund?.id || claimedRefund.providerRefundId
+    );
+    throw new BundlePaymentError('REFUND_PROVIDER_UNCERTAIN', 'Refund status could not be verified; recovery will retry this operation', 409);
   }
   if (providerRefund.status === 'failed' || providerRefund.status === 'canceled') {
-    await BundleOrder.updateOne(
-      {
-        _id: order._id,
-        refundPendingMinor: { $gte: input.amountMinor },
-        refunds: {
-          $elemMatch: {
-            operationId: input.operationId,
-            status: { $in: ['requested', 'provider_pending'] },
-          },
-        },
-      },
-      {
-        $inc: { refundPendingMinor: -input.amountMinor },
-        $set: {
-          'refunds.$.providerRefundId': providerRefund.id,
-          'refunds.$.status': 'failed',
-        },
-      }
+    await releaseRefundReservation(
+      order._id,
+      input.operationId,
+      input.amountMinor,
+      `Refund provider returned ${providerRefund.status}`,
+      providerRefund.id
     );
     throw new BundlePaymentError('REFUND_FAILED', 'The payment provider rejected this refund', 409);
   }
   if (providerRefund.status !== 'succeeded') {
-    await BundleOrder.updateOne(
-      { _id: order._id, 'refunds.operationId': input.operationId },
-      {
-        $set: {
-          'refunds.$.providerRefundId': providerRefund.id,
-          'refunds.$.status': 'provider_pending',
-        },
-      }
+    await scheduleRefundRecovery(
+      order._id,
+      input.operationId,
+      `Refund provider status is ${providerRefund.status}`,
+      providerRefund.id
     );
-    throw new BundlePaymentError('REFUND_PENDING', 'The refund is processing; retry the same operation to reconcile it', 409);
+    throw new BundlePaymentError('REFUND_PENDING', 'The refund is processing and will be reconciled automatically', 409);
   }
+  // Persist provider evidence before the local transaction. If the process
+  // crashes or a local invariant fails, the recovery worker can retrieve this
+  // exact succeeded refund rather than creating a second one.
+  await scheduleRefundRecovery(
+    order._id,
+    input.operationId,
+    'Provider refund succeeded; local accounting is pending',
+    providerRefund.id,
+    false
+  );
   return runBundleTransaction(async (session) => {
     order = await BundleOrder.findById(input.orderId).session(session);
     if (!order) throw new BundlePaymentError('ORDER_NOT_FOUND', 'Bundle order not found', 404);
@@ -623,6 +833,10 @@ export const refundBundleOrder = async (input: {
     });
     refund.providerRefundId = providerRefund.id;
     refund.status = 'succeeded';
+    refund.lastAttemptAt = new Date();
+    refund.nextAttemptAt = undefined;
+    refund.leaseUntil = undefined;
+    refund.lastError = undefined;
     order.refundPendingMinor -= input.amountMinor;
     order.refundedMinor += input.amountMinor;
     const full = order.refundedMinor === order.totalMinor;
@@ -749,4 +963,97 @@ export const refundBundleOrder = async (input: {
     }, session);
     return { order, duplicate: false };
   });
+};
+
+export const processPendingBundleRefunds = async (
+  limit = 25,
+  now = new Date()
+): Promise<{ examined: number; reconciled: number; pending: number; failed: number }> => {
+  // Repairs the narrow crash window between a terminal provider result and
+  // clearing the order-level recovery flag. The predicate cannot clear a real
+  // pending refund or a supplier-settlement dispute.
+  await BundleOrder.updateMany(
+    {
+      refundPendingMinor: 0,
+      'recovery.required': true,
+      'recovery.reason': /^Refund recovery required:/,
+      refunds: {
+        $not: {
+          $elemMatch: { status: { $in: ['requested', 'provider_pending'] } },
+        },
+      },
+      'components.settlementStatus': { $ne: 'disputed' },
+    },
+    {
+      $set: { 'recovery.required': false, 'recovery.lastAttemptAt': now },
+      $unset: { 'recovery.reason': '' },
+    }
+  );
+  const rows = await BundleOrder.find({
+    refunds: {
+      $elemMatch: {
+        status: { $in: ['requested', 'provider_pending'] },
+        $and: [
+          {
+            $or: [
+              { nextAttemptAt: { $exists: false } },
+              { nextAttemptAt: { $lte: now } },
+            ],
+          },
+          {
+            $or: [
+              { leaseUntil: { $exists: false } },
+              { leaseUntil: { $lte: now } },
+            ],
+          },
+        ],
+      },
+    },
+  })
+    .select('_id refunds')
+    .sort({ 'refunds.nextAttemptAt': 1, _id: 1 })
+    .limit(limit)
+    .lean();
+
+  const totals = { examined: 0, reconciled: 0, pending: 0, failed: 0 };
+  for (const row of rows) {
+    for (const refund of row.refunds) {
+      if (totals.examined >= limit) return totals;
+      if (!['requested', 'provider_pending'].includes(refund.status)) continue;
+      if (refund.nextAttemptAt && new Date(refund.nextAttemptAt) > now) continue;
+      if (refund.leaseUntil && new Date(refund.leaseUntil) > now) continue;
+      totals.examined += 1;
+      try {
+        await refundBundleOrder({
+          orderId: row._id.toString(),
+          operationId: refund.operationId,
+          amountMinor: refund.amountMinor,
+          reason: refund.reason,
+          actorId: refund.requestedBy,
+        });
+        totals.reconciled += 1;
+      } catch (error) {
+        const code = error instanceof BundlePaymentError ? error.code : '';
+        if (code === 'REFUND_FAILED' || code === 'REFUND_OPERATION_FAILED') {
+          totals.failed += 1;
+        } else {
+          totals.pending += 1;
+          if (!code) {
+            try {
+              await scheduleRefundRecovery(
+                row._id,
+                refund.operationId,
+                error instanceof Error ? error.message : 'Unexpected refund recovery failure',
+                refund.providerRefundId
+              );
+            } catch {
+              // Keep processing independent operations. The provider lease or
+              // due timestamp leaves this operation eligible on a later pass.
+            }
+          }
+        }
+      }
+    }
+  }
+  return totals;
 };
