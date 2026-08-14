@@ -59,7 +59,6 @@ export const listBundleSupplyOffers = async (
     if (requestedTenantId && rejectOfferOwnerMismatch(req, res, requestedTenantId)) return;
     const allSuppliers =
       isSuperAdmin(req.user) &&
-      !req.tenant &&
       (req.query as Record<string, unknown>).allSuppliers === true;
     const tenantId = allSuppliers
       ? null

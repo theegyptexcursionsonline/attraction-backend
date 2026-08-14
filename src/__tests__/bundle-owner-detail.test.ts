@@ -79,7 +79,7 @@ describe('Bundle admin detail owner scopes', () => {
     });
   });
 
-  it('preserves explicit all-supplier aggregate browsing only without selected tenant context', async () => {
+  it('preserves explicit Super Admin all-supplier browsing with or without selected tenant context', async () => {
     const aggregateReq = {
       query: { limit: 20, allSuppliers: true },
       user: superAdmin,
@@ -95,9 +95,7 @@ describe('Bundle admin detail owner scopes', () => {
     } as unknown as AuthRequest;
     const scopedRes = response();
     await listBundleSupplyOffers(scopedReq, scopedRes, next);
-    expect(BundleSupplyOffer.find).toHaveBeenLastCalledWith({
-      supplierTenantId: selectedTenantId.toString(),
-    });
+    expect(BundleSupplyOffer.find).toHaveBeenLastCalledWith({});
   });
 
   it('queries Bundle definitions by id and explicit storefront owner', async () => {
