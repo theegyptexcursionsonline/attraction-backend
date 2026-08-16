@@ -26,6 +26,7 @@ import {
   reserveBundleInventory,
   runBundleTransaction,
 } from './bundleInventory.service';
+import { assertTenantIdsBookingCreationAllowed } from './tenantBookingPolicy.service';
 
 export class BundleOrderError extends Error {
   constructor(readonly code: string, message: string, readonly statusCode = 400) {
@@ -422,6 +423,14 @@ export const createBundleOrder = async (input: {
   }
 
   try {
+    // A bundle may create Makadi child bookings even when sold by another
+    // storefront. Check the storefront and every supplier before inventory or
+    // child Booking writes. Completed idempotent replays returned above.
+    await assertTenantIdsBookingCreationAllowed([
+      quoteSnapshot.storefrontTenantId,
+      ...quoteSnapshot.selections.map((selection) => selection.supplierTenantId),
+    ]);
+
     const order = await runBundleTransaction(async (session) => {
       const quote = await BundleQuote.findOne({
         _id: input.quoteId,

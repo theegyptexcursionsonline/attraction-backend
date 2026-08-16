@@ -42,6 +42,7 @@ import {
   standaloneBookingClause,
 } from '../services/bookingRecordScope.service';
 import { calculateTourLinePrice } from '../utils/attractionPricing';
+import { assertTenantIdsBookingCreationAllowed } from '../services/tenantBookingPolicy.service';
 
 // Compact, tenant-safe booking summary for webhook payloads. Contains only the
 // booking's own fields — never other tenants' data.
@@ -495,6 +496,11 @@ export const createBooking = async (
       sendError(res, 'An identical booking request is already processing', 409);
       return;
     }
+
+    // Preserve completed idempotent replays above, but reject every genuinely
+    // new booking for a closed tenant before inventory, discounts, or Booking
+    // records can be mutated. This also covers direct API calls with no host.
+    await assertTenantIdsBookingCreationAllowed([tenantId]);
 
     // Reseller revenue split. When this booking is made on a reseller's site
     // (sellerTenant) for an attraction owned by a different supplier tenant, we

@@ -16,6 +16,7 @@ import {
   OctoTenantLike,
   OctoAttractionLike,
 } from '../octo/mappers';
+import { assertTenantBookingCreationAllowed } from '../services/tenantBookingPolicy.service';
 
 // OCTO (octo.travel) supplier API — the standard channel-manager / OTA contract.
 //   Increment 1: catalogue (supplier + products)
@@ -320,6 +321,12 @@ router.post('/bookings', requireScope('write'), async (req: AuthRequest, res: Re
     const supplierTenantId = (a as { ownerTenantId?: unknown }).ownerTenantId || (a.tenantIds && a.tenantIds[0]);
     const idempotencyHeader = req.get('Idempotency-Key');
     const holdUuid = (typeof uuid === 'string' ? uuid.trim() : idempotencyHeader?.trim()) || randomUUID();
+    const replayedHold = await OctoHold.exists({ uuid: holdUuid, tenantId: req.tenant?._id });
+    if (!replayedHold) {
+      // New holds can become bookings, so close this side door too. Existing
+      // idempotent hold replays remain readable and return their original state.
+      assertTenantBookingCreationAllowed(req.tenant);
+    }
     const expected = {
       productId: String(a._id), optionId, availabilityId, currency, totalMinor, unitItems: items,
     };
@@ -466,6 +473,9 @@ router.post('/bookings/:uuid/confirm', requireScope('write'), async (req: AuthRe
         unitItems: hold.unitItems, reference: b?.reference ?? null, contact: hold.contact,
       }));
     }
+    // Preserve idempotent confirmation reads above, while refusing to turn an
+    // existing hold into a new Booking after the tenant has been closed.
+    assertTenantBookingCreationAllowed(req.tenant);
     if (hold.status !== 'ON_HOLD') return void octoErr(res, 400, 'BOOKING_NOT_ON_HOLD', `Booking is ${hold.status}`);
 
     const contact = (req.body?.contact || {}) as { firstName?: string; lastName?: string; emailAddress?: string; phoneNumber?: string };
