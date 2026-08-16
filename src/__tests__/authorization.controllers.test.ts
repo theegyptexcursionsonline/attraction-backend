@@ -176,6 +176,31 @@ describe('authorization controller defenses', () => {
     expect(Attraction.findByIdAndUpdate).not.toHaveBeenCalled();
   });
 
+  it('rejects publishing an incomplete draft with exact missing-field guidance', async () => {
+    const assignedTenantId = new Types.ObjectId();
+    (Attraction.findById as jest.Mock).mockResolvedValue({
+      slug: 'unfinished-tour',
+      title: 'Unfinished tour',
+      status: 'draft',
+      tenantIds: [assignedTenantId],
+    });
+    const req = authRequest({
+      params: { id: new Types.ObjectId().toString() },
+      body: { status: 'active' },
+      user: { role: 'manager', assignedTenants: [assignedTenantId] },
+    });
+    const res = response();
+
+    await updateAttraction(req, res, jest.fn());
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      success: false,
+      error: expect.stringContaining('shortDescription: Required'),
+    }));
+    expect(Attraction.findByIdAndUpdate).not.toHaveBeenCalled();
+  });
+
   it('does not let a delegated admin create a globally unscoped attraction', async () => {
     const req = authRequest({
       body: { tenantIds: [] },

@@ -21,6 +21,25 @@ const response = () => {
 describe('attraction category normalization', () => {
   beforeEach(() => jest.clearAllMocks());
 
+  it('creates a title-only draft without requiring a category', async () => {
+    (Attraction.create as jest.Mock).mockResolvedValue({ _id: new Types.ObjectId(), status: 'draft' });
+    const req = {
+      body: { slug: 'unfinished-tour', title: 'Unfinished tour', status: 'draft', tenantIds: [] },
+      user: { _id: new Types.ObjectId(), role: 'super-admin', assignedTenants: [] },
+    } as unknown as AuthRequest;
+    const res = response();
+
+    await createAttraction(req, res, jest.fn());
+
+    expect(Category.findById).not.toHaveBeenCalled();
+    expect(Attraction.create).toHaveBeenCalledWith(expect.objectContaining({
+      slug: 'unfinished-tour',
+      title: 'Unfinished tour',
+      status: 'draft',
+    }));
+    expect(res.status).toHaveBeenCalledWith(201);
+  });
+
   it('converts a legacy category ObjectId to the canonical slug before create', async () => {
     const categoryId = new Types.ObjectId().toString();
     const lean = jest.fn().mockResolvedValue({ slug: 'desert-safari', isActive: true });

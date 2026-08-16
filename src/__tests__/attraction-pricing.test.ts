@@ -1,5 +1,5 @@
 import { calculateTourLinePrice, minimumTourPrice } from '../utils/attractionPricing';
-import { createAttractionSchema } from '../utils/validators';
+import { createAttractionRequestSchema, createAttractionSchema } from '../utils/validators';
 
 const baseTour = {
   slug: 'reef-trip',
@@ -15,6 +15,22 @@ const baseTour = {
 };
 
 describe('tour pricing options', () => {
+  it('accepts a title-only draft but keeps the publish contract complete', () => {
+    expect(createAttractionRequestSchema.safeParse({
+      slug: 'unfinished-reef-trip',
+      title: 'Unfinished reef trip',
+      status: 'draft',
+      tenantIds: [],
+    }).success).toBe(true);
+
+    expect(createAttractionRequestSchema.safeParse({
+      slug: 'unfinished-reef-trip',
+      title: 'Unfinished reef trip',
+      status: 'active',
+      tenantIds: [],
+    }).success).toBe(false);
+  });
+
   it('prices adults, children and infants independently and applies the option discount', () => {
     expect(calculateTourLinePrice({
       option: { price: 100, childPrice: 50, infantPrice: 10, discountPercentage: 20 },

@@ -151,6 +151,18 @@ export const createAttractionSchema = z.object({
   sortOrder: z.number().optional(),
 });
 
+export const createAttractionDraftSchema = createAttractionSchema.partial().extend({
+  slug: z.string().trim().min(1, 'Slug is required'),
+  title: z.string().trim().min(1, 'Title is required'),
+  tenantIds: z.array(z.string()).optional().default([]),
+  status: z.literal('draft'),
+});
+
+export const createAttractionRequestSchema = z.union([
+  createAttractionDraftSchema,
+  createAttractionSchema,
+]);
+
 export const updateAttractionSchema = createAttractionSchema.partial();
 
 const objectIdSchema = z.string().trim().regex(/^[a-f\d]{24}$/i, 'Must be a valid MongoDB ObjectId');

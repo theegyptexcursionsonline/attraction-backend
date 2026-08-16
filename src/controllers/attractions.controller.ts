@@ -18,6 +18,7 @@ import {
 import { minimumTourPrice } from '../utils/attractionPricing';
 import { BundleOrder } from '../models/BundleOrder';
 import { runBundleTransaction } from '../services/bundleInventory.service';
+import { createAttractionSchema } from '../utils/validators';
 
 const PUBLIC_ATTRACTION_FIELDS = [
   '_id',
@@ -579,8 +580,10 @@ export const createAttraction = async (
       return;
     }
 
-    const normalizedCategory = await normalizeCategoryValue(req.body.category);
-    if (!normalizedCategory) {
+    const normalizedCategory = req.body.category
+      ? await normalizeCategoryValue(req.body.category)
+      : undefined;
+    if (req.body.category && !normalizedCategory) {
       sendError(res, 'Select a valid active category', 400);
       return;
     }
@@ -595,7 +598,7 @@ export const createAttraction = async (
 
     const attractionData = {
       ...req.body,
-      category: normalizedCategory,
+      ...(normalizedCategory ? { category: normalizedCategory } : {}),
       priceFrom: Array.isArray(req.body.pricingOptions) && req.body.pricingOptions.length > 0
         ? minimumTourPrice(req.body.pricingOptions)
         : req.body.priceFrom,
@@ -620,15 +623,17 @@ export const updateAttraction = async (
   try {
     const { id } = req.params;
 
+    let existingAttraction: IAttraction | null | undefined;
+
     // Non-super-admins can only update attractions in their assigned tenants
     if (req.user?.role !== 'super-admin') {
-      const existing = await Attraction.findById(id);
-      if (!existing) {
+      existingAttraction = await Attraction.findById(id);
+      if (!existingAttraction) {
         sendError(res, 'Attraction not found', 404);
         return;
       }
       const assignedSet = new Set((req.user?.assignedTenants || []).map((t: Types.ObjectId) => t.toString()));
-      const hasAccess = existing.tenantIds?.some((tid: Types.ObjectId) => assignedSet.has(tid.toString()));
+      const hasAccess = existingAttraction.tenantIds?.some((tid: Types.ObjectId) => assignedSet.has(tid.toString()));
       if (!hasAccess) {
         sendError(res, 'Access denied to this attraction', 403);
         return;
@@ -642,6 +647,31 @@ export const updateAttraction = async (
           sendError(res, 'Cannot assign attraction to a tenant you do not manage', 403);
           return;
         }
+      }
+    }
+
+    if (req.body.status === 'active') {
+      if (!existingAttraction) existingAttraction = await Attraction.findById(id);
+      if (!existingAttraction) {
+        sendError(res, 'Attraction not found', 404);
+        return;
+      }
+      const stored = typeof existingAttraction.toObject === 'function'
+        ? existingAttraction.toObject()
+        : existingAttraction;
+      const publishCandidate = {
+        ...stored,
+        ...req.body,
+        status: 'active',
+        tenantIds: (req.body.tenantIds || stored.tenantIds || []).map((tenantId: unknown) => String(tenantId)),
+      };
+      const publishValidation = createAttractionSchema.safeParse(publishCandidate);
+      if (!publishValidation.success) {
+        const missing = publishValidation.error.issues
+          .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+          .join('\n');
+        sendError(res, missing || 'Complete all required fields before publishing', 400);
+        return;
       }
     }
 
@@ -668,7 +698,7 @@ export const updateAttraction = async (
 
     const targetTenantIds = Array.isArray(req.body.tenantIds)
       ? req.body.tenantIds
-      : (await Attraction.findById(id).select('tenantIds').lean())?.tenantIds || [];
+      : existingAttraction?.tenantIds || (await Attraction.findById(id).select('tenantIds').lean())?.tenantIds || [];
     if (req.body.pathSlug && await Attraction.exists({
       _id: { $ne: id },
       pathSlug: req.body.pathSlug,

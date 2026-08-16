@@ -1,6 +1,11 @@
 import mongoose, { Schema } from 'mongoose';
 import { IAttraction } from '../types';
 
+function requiredWhenPublished(this: { status?: string; ownerDocument?: () => { status?: string } }): boolean {
+  const owner = typeof this.ownerDocument === 'function' ? this.ownerDocument() : this;
+  return owner.status !== 'draft';
+}
+
 const attractionSchema = new Schema<IAttraction>(
   {
     slug: {
@@ -32,11 +37,11 @@ const attractionSchema = new Schema<IAttraction>(
     },
     shortDescription: {
       type: String,
-      required: true,
+      required: requiredWhenPublished,
     },
     description: {
       type: String,
-      required: true,
+      required: requiredWhenPublished,
     },
     images: [{
       type: String,
@@ -44,7 +49,7 @@ const attractionSchema = new Schema<IAttraction>(
     }],
     category: {
       type: String,
-      required: true,
+      required: requiredWhenPublished,
       index: true,
     },
     subcategory: {
@@ -53,22 +58,22 @@ const attractionSchema = new Schema<IAttraction>(
     destination: {
       city: {
         type: String,
-        required: true,
+        required: requiredWhenPublished,
         index: true,
       },
       country: {
         type: String,
-        required: true,
+        required: requiredWhenPublished,
         index: true,
       },
       coordinates: {
-        lat: { type: Number, required: true },
-        lng: { type: Number, required: true },
+        lat: { type: Number, required: requiredWhenPublished },
+        lng: { type: Number, required: requiredWhenPublished },
       },
     },
     duration: {
       type: String,
-      required: true,
+      required: requiredWhenPublished,
     },
     languages: [{
       type: String,
@@ -85,7 +90,7 @@ const attractionSchema = new Schema<IAttraction>(
     },
     priceFrom: {
       type: Number,
-      required: true,
+      required: requiredWhenPublished,
       min: 0,
     },
     currency: {
