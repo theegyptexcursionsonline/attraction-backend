@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express';
-import type { PipelineStage } from 'mongoose';
+import { Types, type PipelineStage } from 'mongoose';
 import { User } from '../models/User';
 import { Booking } from '../models/Booking';
 import { Attraction } from '../models/Attraction';
@@ -133,15 +133,31 @@ export const getUsers = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { page = 1, limit = 20, role, status, search } = req.query;
+    const { page = 1, limit = 20, role, status, search, tenantId } = req.query;
     const pageNum = parseInt(page as string, 10);
     const limitNum = parseInt(limit as string, 10);
 
     const query: Record<string, unknown> = {};
     const scopedAdmin = Boolean(req.user && req.user.role !== 'super-admin');
 
-    // Non-super-admins can only see users who share at least one of their assigned tenants
-    if (scopedAdmin && req.user) {
+    const requestedTenantId = typeof tenantId === 'string' ? tenantId.trim() : '';
+
+    if (requestedTenantId) {
+      if (!Types.ObjectId.isValid(requestedTenantId)) {
+        sendError(res, 'Invalid tenantId', 400);
+        return;
+      }
+
+      if (scopedAdmin && req.user && !callerTenantIds(req.user).includes(requestedTenantId)) {
+        sendError(res, 'Access denied to this tenant', 403);
+        return;
+      }
+
+      query.assignedTenants = new Types.ObjectId(requestedTenantId);
+      // An explicit request is constrained to exactly one assigned site.
+    } else if (scopedAdmin && req.user) {
+      // Without an explicit site, non-super-admins can only see users who share
+      // at least one of their assigned tenants.
       const userTenantIds = req.user.assignedTenants || [];
       if (userTenantIds.length > 0) {
         query.assignedTenants = { $in: userTenantIds };

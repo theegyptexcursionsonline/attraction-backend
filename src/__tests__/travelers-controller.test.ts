@@ -52,6 +52,50 @@ describe('traveler directory', () => {
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
+  it('scopes a site team list to the requested tenant', async () => {
+    const tenantId = new Types.ObjectId();
+    const lean = jest.fn().mockResolvedValue([]);
+    const limit = jest.fn().mockReturnValue({ lean });
+    const skip = jest.fn().mockReturnValue({ limit });
+    const sort = jest.fn().mockReturnValue({ skip });
+    const populate = jest.fn().mockReturnValue({ sort });
+    const select = jest.fn().mockReturnValue({ populate });
+    (User.find as jest.Mock).mockReturnValue({ select });
+    (User.countDocuments as jest.Mock).mockResolvedValue(0);
+    const res = response();
+
+    await getUsers(request({ query: { tenantId: tenantId.toString() } }), res, jest.fn());
+
+    expect(User.find).toHaveBeenCalledWith(expect.objectContaining({
+      assignedTenants: tenantId,
+      role: { $in: ['super-admin', 'brand-admin', 'manager', 'editor', 'viewer'] },
+    }));
+    expect(User.countDocuments).toHaveBeenCalledWith(expect.objectContaining({ assignedTenants: tenantId }));
+  });
+
+  it('rejects a delegated admin requesting another site team', async () => {
+    const assignedTenant = new Types.ObjectId();
+    const otherTenant = new Types.ObjectId();
+    const res = response();
+
+    await getUsers(request({
+      query: { tenantId: otherTenant.toString() },
+      user: { role: 'brand-admin', assignedTenants: [assignedTenant] },
+    }), res, jest.fn());
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(User.find).not.toHaveBeenCalled();
+  });
+
+  it('rejects an invalid site id before querying team records', async () => {
+    const res = response();
+
+    await getUsers(request({ query: { tenantId: 'not-an-object-id' } }), res, jest.fn());
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(User.find).not.toHaveBeenCalled();
+  });
+
   it('returns no traveler PII when a delegated admin has no assigned tenants', async () => {
     const res = response();
     await getTravelers(request({ user: { role: 'manager', assignedTenants: [] } }), res, jest.fn());

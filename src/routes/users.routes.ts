@@ -164,6 +164,7 @@ router.get(
         role: z.string().optional(),
         status: z.enum(['active', 'inactive', 'pending', 'suspended']).optional(),
         search: z.string().optional(),
+        tenantId: z.string().optional(),
       })
     )
   ),
