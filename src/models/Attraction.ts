@@ -1,9 +1,40 @@
 import mongoose, { Schema } from 'mongoose';
 import { IAttraction } from '../types';
 
-function requiredWhenPublished(this: { status?: string; ownerDocument?: () => { status?: string } }): boolean {
-  const owner = typeof this.ownerDocument === 'function' ? this.ownerDocument() : this;
-  return owner.status !== 'draft';
+type ValidatorContext = {
+  status?: string;
+  ownerDocument?: () => { status?: string };
+  // Present when Mongoose runs this as an UPDATE validator with query context.
+  getUpdate?: () => Record<string, unknown> | null;
+  getQuery?: () => Record<string, unknown> | null;
+};
+
+/**
+ * A field is only mandatory once the tour leaves draft.
+ *
+ * This runs in three different contexts and must resolve the status in each:
+ *  - saving a document        → `this` is the document
+ *  - saving a nested path     → `this` is the subdocument (`ownerDocument()`)
+ *  - `findByIdAndUpdate`      → `this` is the QUERY, and the status lives in
+ *                               the update payload, not on `this`
+ *
+ * The update case was previously unhandled: `this.status` was undefined, so
+ * `undefined !== 'draft'` made every field required and re-saving an existing
+ * draft failed with "Path `destination.city` is required" (ATN row 114).
+ */
+function requiredWhenPublished(this: ValidatorContext): boolean {
+  if (typeof this?.getUpdate === 'function') {
+    const update = this.getUpdate() || {};
+    const set = (update.$set as Record<string, unknown> | undefined) || {};
+    const status = (set.status ?? update.status) as string | undefined;
+    // An update that does not touch status cannot be judged from the payload
+    // alone; treat it as a draft-safe write rather than forcing publish rules
+    // onto a partial edit.
+    if (status === undefined) return false;
+    return status !== 'draft';
+  }
+  const owner = typeof this?.ownerDocument === 'function' ? this.ownerDocument() : this;
+  return owner?.status !== 'draft';
 }
 
 const attractionSchema = new Schema<IAttraction>(

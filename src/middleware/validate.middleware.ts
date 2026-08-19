@@ -1,5 +1,32 @@
 import { Request, Response, NextFunction } from 'express';
-import { ZodSchema, ZodError } from 'zod';
+import { ZodSchema, ZodError, ZodIssue } from 'zod';
+
+/**
+ * Flattens Zod issues into named field errors.
+ *
+ * A failing `z.union` (e.g. the draft-or-publish attraction schema) reports a
+ * single `invalid_union` issue whose own path is EMPTY, which surfaced to
+ * admins as an unnamed ": Invalid input" with nothing to act on (ATN row 81).
+ * Unwrapping the union's sub-errors restores the real field paths.
+ */
+export const flattenZodIssues = (issues: ZodIssue[]): Array<{ field: string; message: string }> =>
+  issues.flatMap((issue) => {
+    if (issue.code === 'invalid_union') {
+      const nested = issue.unionErrors.flatMap((unionError) => flattenZodIssues(unionError.errors));
+      const named = nested.filter((entry) => entry.field);
+      if (named.length > 0) {
+        // De-duplicate: the same field usually fails in several union branches.
+        const seen = new Set<string>();
+        return named.filter((entry) => {
+          const key = `${entry.field}: ${entry.message}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      }
+    }
+    return [{ field: issue.path.join('.'), message: issue.message }];
+  });
 
 export const validate = (schema: ZodSchema) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -9,10 +36,7 @@ export const validate = (schema: ZodSchema) => {
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const errors = error.errors.map((e) => ({
-          field: e.path.join('.'),
-          message: e.message,
-        }));
+        const errors = flattenZodIssues(error.errors);
 
         res.status(400).json({
           success: false,
@@ -34,10 +58,7 @@ export const validateQuery = (schema: ZodSchema) => {
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const errors = error.errors.map((e) => ({
-          field: e.path.join('.'),
-          message: e.message,
-        }));
+        const errors = flattenZodIssues(error.errors);
 
         res.status(400).json({
           success: false,
@@ -59,10 +80,7 @@ export const validateParams = (schema: ZodSchema) => {
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const errors = error.errors.map((e) => ({
-          field: e.path.join('.'),
-          message: e.message,
-        }));
+        const errors = flattenZodIssues(error.errors);
 
         res.status(400).json({
           success: false,

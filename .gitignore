@@ -41,3 +41,9 @@ RUNBOOK.md
 DECISIONS.md
 GLOSSARY.md
 PROJECT-TRACKER.md
+
+# internal working docs (never commit)
+PRODUCT-PLAN.md
+
+# verification proof — never commit
+readiness-proof/

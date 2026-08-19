@@ -151,11 +151,46 @@ export const createAttractionSchema = z.object({
   sortOrder: z.number().optional(),
 });
 
+// A draft is work in progress: the author may save at any stage with nothing
+// but a title (client request, ATN row 109). `.partial()` alone is not enough —
+// it only makes TOP-LEVEL keys optional, so a submitted-but-blank
+// `destination.city` and an empty `pricingOptions` array still failed and the
+// save was rejected with an unnamed "Invalid input" (ATN rows 81 / 114).
+// These overrides relax the nested publish constraints; the publish schema
+// keeps enforcing the full contract, and any pricing option the author DID
+// supply is still validated in full so bad money data can never reach a draft.
+const draftRelaxedFields = {
+  destination: z.object({
+    city: z.string().optional().default(''),
+    country: z.string().optional().default(''),
+    coordinates: z.object({
+      lat: z.number(),
+      lng: z.number(),
+    }).optional(),
+  }).optional(),
+  pricingOptions: z.array(createAttractionSchema.shape.pricingOptions.element).optional(),
+  priceFrom: z.number().nonnegative().optional(),
+  duration: z.string().optional(),
+  category: z.string().optional(),
+  shortDescription: z.string().optional(),
+  description: z.string().optional(),
+  currency: z.string().optional(),
+};
+
 export const createAttractionDraftSchema = createAttractionSchema.partial().extend({
   slug: z.string().trim().min(1, 'Slug is required'),
   title: z.string().trim().min(1, 'Title is required'),
   tenantIds: z.array(z.string()).optional().default([]),
   status: z.literal('draft'),
+  ...draftRelaxedFields,
+});
+
+// Editing an existing draft hits PATCH, which used the same shallow
+// `.partial()` — so the SECOND save of a draft failed exactly like the first
+// one did. The draft branch has to be relaxed on both verbs.
+export const updateAttractionDraftSchema = createAttractionSchema.partial().extend({
+  status: z.literal('draft'),
+  ...draftRelaxedFields,
 });
 
 export const createAttractionRequestSchema = z.union([
@@ -164,6 +199,11 @@ export const createAttractionRequestSchema = z.union([
 ]);
 
 export const updateAttractionSchema = createAttractionSchema.partial();
+
+export const updateAttractionRequestSchema = z.union([
+  updateAttractionDraftSchema,
+  updateAttractionSchema,
+]);
 
 const objectIdSchema = z.string().trim().regex(/^[a-f\d]{24}$/i, 'Must be a valid MongoDB ObjectId');
 const specialOfferFields = z.object({

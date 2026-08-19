@@ -29,7 +29,7 @@ import { authenticate, optionalAuth, requireAdmin, requireRole } from '../middle
 import { optionalTenant } from '../middleware/tenant.middleware';
 import { publicWriteLimiter } from '../middleware/rate-limit.middleware';
 import { validate, validateParams, validateQuery } from '../middleware/validate.middleware';
-import { createAttractionRequestSchema, updateAttractionSchema, paginationSchema, attractionFiltersSchema } from '../utils/validators';
+import { createAttractionRequestSchema, updateAttractionRequestSchema, paginationSchema, attractionFiltersSchema } from '../utils/validators';
 import { createReview as submitReview } from '../controllers/reviews.controller';
 import { z } from 'zod';
 
@@ -447,7 +447,7 @@ router.patch(
   '/:id',
   authenticate,
   requireRole('super-admin', 'brand-admin', 'manager', 'editor'),
-  validate(updateAttractionSchema),
+  validate(updateAttractionRequestSchema),
   updateAttraction
 );
 

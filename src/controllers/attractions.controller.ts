@@ -718,7 +718,9 @@ export const updateAttraction = async (
             : {}),
         },
       },
-      { new: true, runValidators: true }
+      // `context: 'query'` lets the draft-aware required validators read the
+      // status from the update payload instead of an absent document.
+      { new: true, runValidators: true, context: 'query' }
     );
 
     if (!attraction) {
