@@ -380,6 +380,8 @@ export const attractionFiltersSchema = z.object({
   search: z.string().optional(),
   status: z.enum(['active', 'draft', 'archived']).optional(),
   lifecycle: z.enum(['archive', 'trash']).optional(),
+  /** Admin surfaces send scope=admin so a silently expired session 401s instead of degrading to the public catalog. */
+  scope: z.enum(['admin']).optional(),
 });
 
 // Payment Validators

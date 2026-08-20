@@ -177,6 +177,17 @@ export const getAttractions = async (
     const pageNum = parseInt(page as string, 10);
     const limitNum = parseInt(limit as string, 10);
 
+    // Admin listings must fail closed. This route is public-optional, so a
+    // silently expired admin session would otherwise degrade to the PUBLIC
+    // branch and answer 200 with the whole network's catalog — which is how
+    // "All Assigned Sites" showed every brand's tours (client report
+    // 2026-08-20). A 401 here lets the client's refresh-and-retry repair
+    // the session instead of rendering wrong-scope data.
+    if (req.query.scope === 'admin' && (!req.user || req.user.role === 'customer')) {
+      sendError(res, 'Authentication required', 401);
+      return;
+    }
+
     // Build query
     const query: AttractionQuery = {};
 
