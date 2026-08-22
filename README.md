@@ -24,6 +24,7 @@ Express + TypeScript REST API for the Attractions Network multi-tenant tours & a
 - Public tenant config exposing branding, pricing settings, flat URLs and custom pages
 - Tenant-admin tooling including a portfolio-stats aggregation endpoint
 - Media upload, tenant-scoped page resolution / sitemap endpoints, and seed/rollout scripts
+- Fail-closed Content Engine blog receiver with exact tenant/locale isolation and transactional UUID replay
 
 ## Getting started
 
@@ -48,6 +49,7 @@ Copy `.env.example` to `.env` and fill in values:
 - **Email:** `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_FROM_EMAIL`
 - **Uploads:** `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
 - **CORS:** `FRONTEND_URL` (comma-separated for multiple origins)
+- **Content receiver:** `CONTENT_ENGINE_API_KEY`, `CONTENT_ENGINE_ALLOWED_TENANTS`
 - **Rate limiting:** `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX_REQUESTS`
 
 ### Run

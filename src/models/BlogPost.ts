@@ -1,7 +1,9 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, Types } from 'mongoose';
 
 export interface IBlogPost extends Document {
   tenantId?: string;
+  tenantRef?: Types.ObjectId;
+  defaultLocale?: string;
   slug: string;
   title: string;
   excerpt: string;
@@ -24,8 +26,13 @@ export interface IBlogPost extends Document {
       content?: string;
       metaTitle?: string;
       metaDescription?: string;
+      slug?: string;
+      category?: string;
+      tags?: string[];
+      faqs?: { question: string; answer: string }[];
     }
   >;
+  lastContentPublicationId?: Types.ObjectId;
   // FAQ pairs from the content engine → FAQPage JSON-LD (rich results).
   faqs?: { question: string; answer: string }[];
   createdAt: Date;
@@ -39,14 +46,24 @@ const BlogTranslationSchema = new Schema(
     content: { type: String },
     metaTitle: { type: String, trim: true },
     metaDescription: { type: String, trim: true },
+    slug: { type: String, lowercase: true, trim: true },
+    category: { type: String, trim: true },
+    tags: [{ type: String, trim: true }],
+    faqs: {
+      type: [{ question: { type: String, trim: true }, answer: { type: String, trim: true }, _id: false }],
+      default: undefined,
+    },
   },
   { _id: false }
 );
 
 const blogPostSchema = new Schema<IBlogPost>(
   {
-    // Optional tenant scope. Posts with no tenantId belong to the default site.
+    // Legacy posts may omit tenantId. Receiver-created posts always carry both
+    // the stable tenant slug and its database reference.
     tenantId: { type: String, trim: true, index: true },
+    tenantRef: { type: Schema.Types.ObjectId, ref: 'Tenant' },
+    defaultLocale: { type: String, trim: true, default: 'en' },
     slug: { type: String, required: true, lowercase: true, trim: true, index: true },
     title: { type: String, required: true, trim: true },
     excerpt: { type: String, required: true, trim: true },
@@ -66,6 +83,7 @@ const blogPostSchema = new Schema<IBlogPost>(
       type: [{ question: { type: String, trim: true }, answer: { type: String, trim: true }, _id: false }],
       default: [],
     },
+    lastContentPublicationId: { type: Schema.Types.ObjectId, ref: 'ContentPublication' },
   },
   {
     timestamps: true,

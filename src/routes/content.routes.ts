@@ -1,146 +1,147 @@
-import { Router, Request, Response } from 'express';
-import { BlogPost } from '../models/BlogPost';
-import { authenticateContentEngine } from '../middleware/contentEngineAuth';
-import { sendError } from '../utils/response';
+import { Request, Response, Router } from 'express';
 import { env } from '../config';
-import { sanitizeRichText, sanitizeTranslations } from '../utils/sanitizeHtml';
+import { authenticateContentEngine } from '../middleware/contentEngineAuth';
+import {
+  assertContentReceiverIndexesReady,
+  ContentReceiverError,
+  findBlogContentForTenant,
+  publishBlogContent,
+  resolveContentTenant,
+} from '../services/contentReceiver.service';
+import {
+  ContentBlogPublishRequestSchema,
+  ContentSlugSchema,
+  ContentTenantIdSchema,
+} from '../utils/contentReceiverContract';
+import { sendError } from '../utils/response';
 
 const router = Router();
 
-function liveUrl(slug: string): string {
-  const base = (env.frontendUrl || 'https://foxes-network.netlify.app').replace(/\/$/, '');
-  return `${base}/blog/${slug}`;
+// Every route below this boundary—including capability discovery and explicit
+// unsupported-type failures—requires the dedicated receiver bearer token.
+router.use(authenticateContentEngine);
+
+function receiverError(res: Response, error: unknown): void {
+  if (error instanceof ContentReceiverError) {
+    if (error.code === 'CONTENT_RECEIVER_REQUEST_IN_PROGRESS') {
+      res.setHeader('Retry-After', '2');
+    }
+    res.status(error.statusCode).json({
+      success: false,
+      error: error.message,
+      code: error.code,
+    });
+    return;
+  }
+  sendError(res, 'Content receiver failed safely', 503);
 }
-
-function asStringArray(v: unknown, max = 12): string[] {
-  if (!Array.isArray(v)) return [];
-  return v
-    .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
-    .slice(0, max);
-}
-
-function sanitizeFaqs(v: unknown): { question: string; answer: string }[] {
-  if (!Array.isArray(v)) return [];
-  return v
-    .map((f) => {
-      const o = (f ?? {}) as { question?: unknown; answer?: unknown };
-      return {
-        question: typeof o.question === 'string' ? o.question.trim() : '',
-        answer: typeof o.answer === 'string' ? o.answer.trim() : '',
-      };
-    })
-    .filter((f) => f.question.length > 0 && f.answer.length > 0)
-    .slice(0, 10);
-}
-
-type IncomingPayload = {
-  title?: string;
-  slug?: string;
-  excerpt?: string;
-  content?: string;
-  featuredImage?: string;
-  category?: string;
-  tags?: unknown;
-  author?: string;
-  metaTitle?: string;
-  metaDescription?: string;
-  readTime?: number;
-  status?: string;
-  featured?: boolean;
-  faqs?: unknown;
-};
-
-type IncomingBody = {
-  tenantId?: string;
-  payload?: IncomingPayload;
-  translations?: Record<string, Record<string, unknown>>;
-};
 
 /**
- * POST /api/admin/content/blog — create or update a blog post (by tenant+slug).
- * Bridge for foxes-content-engine. Idempotent upsert.
+ * Code/config capability truth. Blog is the only current model + storefront
+ * combination that satisfies the receiver contract. Readiness remains false
+ * until the explicit database indexes and tenant allowlist exist.
  */
-router.post('/blog', authenticateContentEngine, async (req: Request, res: Response) => {
-  const body = (req.body || {}) as IncomingBody;
-  const p = body.payload;
-  if (!p) {
-    sendError(res, 'payload is required', 400);
-    return;
-  }
-  if (!p.title || p.title.length < 5) {
-    sendError(res, 'title must be >= 5 chars', 400);
-    return;
-  }
-  if (!p.slug || !/^[a-z0-9-]+$/.test(p.slug)) {
-    sendError(res, 'slug must contain only lowercase letters, numbers, and hyphens', 400);
-    return;
-  }
-  if (!p.excerpt || p.excerpt.length < 10) {
-    sendError(res, 'excerpt must be >= 10 chars', 400);
-    return;
-  }
-  if (!p.content || p.content.length < 50) {
-    sendError(res, 'content must be >= 50 chars', 400);
-    return;
-  }
-
-  const tenantId = body.tenantId || 'default';
+router.get('/capabilities', async (_req: Request, res: Response) => {
+  let databaseMigrationReady = true;
   try {
-    const saved = await BlogPost.findOneAndUpdate(
-      { tenantId, slug: p.slug },
-      {
-        $set: {
-          tenantId,
-          slug: p.slug,
-          title: p.title,
-          excerpt: p.excerpt,
-          content: sanitizeRichText(p.content),
-          featuredImage: p.featuredImage,
-          category: p.category,
-          tags: asStringArray(p.tags),
-          author: p.author?.trim() || 'Editorial Team',
-          metaTitle: p.metaTitle,
-          metaDescription: p.metaDescription,
-          readTime: p.readTime,
-          status: p.status === 'draft' ? 'draft' : 'published',
-          featured: p.featured === true,
-          translations: sanitizeTranslations(body.translations),
-          faqs: sanitizeFaqs(p.faqs),
-        },
-      },
-      { new: true, upsert: true, setDefaultsOnInsert: true }
-    );
-    // Flat shape — the content-engine's publishToAdapter expects { id, slug,
-    // liveUrl } at the top level (matches the other receivers), not a wrapped
-    // { success, data } envelope.
-    res.status(201).json({ id: String(saved._id), slug: saved.slug, liveUrl: liveUrl(saved.slug) });
-  } catch (err) {
-    sendError(res, err instanceof Error ? err.message : 'Insert failed', 500);
+    await assertContentReceiverIndexesReady();
+  } catch {
+    databaseMigrationReady = false;
   }
-});
-
-/**
- * GET /api/admin/content/blog/:slug — slug-uniqueness preflight for the engine
- * (404 = available, 200 = exists).
- */
-router.get('/blog/:slug', authenticateContentEngine, async (req: Request, res: Response) => {
-  const tenantId = typeof req.query.tenantId === 'string' && req.query.tenantId.trim()
-    ? req.query.tenantId.trim()
-    : 'default';
-  const doc = await BlogPost.findOne({ tenantId, slug: req.params.slug })
-    .select('slug title status updatedAt')
-    .lean();
-  if (!doc) {
-    sendError(res, 'Not found', 404);
-    return;
-  }
+  const configuredTenants = env.contentEngineAllowedTenants;
+  const configuredTenantSet = new Set(configuredTenants);
+  const tenantAllowlistValid =
+    configuredTenants.length > 0 &&
+    configuredTenantSet.size === configuredTenants.length &&
+    configuredTenants.every((tenant) => ContentTenantIdSchema.safeParse(tenant).success);
   res.json({
-    id: String((doc as { _id: unknown })._id),
-    slug: doc.slug,
-    title: doc.title,
-    isPublished: doc.status === 'published',
-    updatedAt: doc.updatedAt,
+    contractVersion: 1,
+    supportedTypes: ['blog'],
+    unsupportedTypes: ['tour', 'destination', 'category'],
+    requiredIdempotencyKey: 'uuid',
+    transactionRequired: true,
+    canonicalUrlScheme: 'https',
+    tenantAllowlistConfigured: configuredTenants.length > 0,
+    tenantAllowlistValid,
+    configuredTenantCount: tenantAllowlistValid ? configuredTenantSet.size : 0,
+    databaseMigrationReady,
+    receiverConfigurationReady: tenantAllowlistValid && databaseMigrationReady,
   });
 });
+
+/**
+ * Claim-before-effects receiver endpoint. The UUID receipt and tenant-scoped
+ * blog upsert commit in one MongoDB transaction; completed calls replay the
+ * exact canonical result.
+ */
+router.post('/blog', async (req: Request, res: Response) => {
+  const parsed = ContentBlogPublishRequestSchema.safeParse({
+    ...(req.body || {}),
+    idempotencyKey: req.header('Idempotency-Key'),
+  });
+  if (!parsed.success) {
+    sendError(
+      res,
+      'Content publish request violates the receiver contract',
+      400,
+      parsed.error.issues.map((issue) => ({
+        field: issue.path.join('.') || 'request',
+        message: issue.message,
+      }))
+    );
+    return;
+  }
+
+  try {
+    // Allowlist + active tenant lookup precede the publication receipt and blog
+    // write, so a wrong tenant cannot leave either an audit or content effect.
+    const tenant = await resolveContentTenant(parsed.data.tenantId);
+    const published = await publishBlogContent(tenant, parsed.data);
+    if (published.replayed) res.setHeader('Idempotency-Replayed', 'true');
+    res.status(published.replayed ? 200 : 201).json(published.result);
+  } catch (error) {
+    receiverError(res, error);
+  }
+});
+
+/** Slug-uniqueness preflight, scoped through the allowlisted tenant join. */
+router.get('/blog/:slug', async (req: Request, res: Response) => {
+  const tenantId = ContentTenantIdSchema.safeParse(req.query.tenantId);
+  const slug = ContentSlugSchema.safeParse(req.params.slug);
+  if (!tenantId.success || !slug.success) {
+    sendError(res, 'A valid tenantId and slug are required', 400);
+    return;
+  }
+  try {
+    const tenant = await resolveContentTenant(tenantId.data);
+    const doc = await findBlogContentForTenant(tenant, slug.data);
+    if (!doc) {
+      sendError(res, 'Not found', 404);
+      return;
+    }
+    res.json({
+      id: String(doc._id),
+      slug: doc.slug,
+      title: doc.title,
+      isPublished: doc.status === 'published',
+      defaultLocale: doc.defaultLocale || tenant.defaultLanguage,
+      updatedAt: doc.updatedAt,
+    });
+  } catch (error) {
+    receiverError(res, error);
+  }
+});
+
+function unsupportedType(req: Request, res: Response): void {
+  res.status(422).json({
+    success: false,
+    error: `Unsupported content receiver type: ${req.params.type}`,
+    code: 'CONTENT_RECEIVER_TYPE_UNSUPPORTED',
+    supportedTypes: ['blog'],
+  });
+}
+
+router.all('/:type', unsupportedType);
+router.all('/:type/*', unsupportedType);
 
 export default router;

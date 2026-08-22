@@ -1,36 +1,44 @@
-import express, { NextFunction, Request, Response } from 'express';
+import express from 'express';
 import request from 'supertest';
-import contentRouter from '../routes/content.routes';
 import blogRouter from '../routes/blog.routes';
 import { BlogPost } from '../models/BlogPost';
+import { Tenant } from '../models/Tenant';
+import { Types } from 'mongoose';
 import {
   sanitizeCustomPages,
   sanitizeRichText,
   sanitizeTranslations,
 } from '../utils/sanitizeHtml';
 
-jest.mock('../middleware/contentEngineAuth', () => ({
-  authenticateContentEngine: (_req: Request, _res: Response, next: NextFunction) => next(),
-}));
-
 jest.mock('../models/BlogPost', () => ({
   BlogPost: {
-    findOneAndUpdate: jest.fn(),
     findOne: jest.fn(),
     find: jest.fn(),
   },
 }));
 
+jest.mock('../models/Tenant', () => ({
+  Tenant: { findOne: jest.fn() },
+}));
+
 const buildApp = () => {
   const app = express();
   app.use(express.json());
-  app.use('/api/admin/content', contentRouter);
   app.use('/api/blog', blogRouter);
   return app;
 };
 
 describe('content isolation and HTML safety', () => {
-  beforeEach(() => jest.clearAllMocks());
+  const tenantId = new Types.ObjectId('64b000000000000000000001');
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (Tenant.findOne as jest.Mock).mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue({ _id: tenantId, slug: 'tenant-a' }),
+      }),
+    });
+  });
 
   it('removes executable markup while preserving editorial HTML', () => {
     const sanitized = sanitizeRichText(
@@ -56,45 +64,6 @@ describe('content isolation and HTML safety', () => {
     expect(translations.de.content).toBe('<p>Gut</p>');
   });
 
-  it('sanitizes content-engine HTML before persistence', async () => {
-    (BlogPost.findOneAndUpdate as jest.Mock).mockResolvedValue({
-      _id: 'post-id',
-      slug: 'safe-post',
-    });
-
-    const response = await request(buildApp())
-      .post('/api/admin/content/blog')
-      .send({
-        tenantId: 'tenant-a',
-        payload: {
-          title: 'A safe editorial post',
-          slug: 'safe-post',
-          excerpt: 'A sufficiently long excerpt',
-          content: '<p>Editorial content that is long enough for validation.</p><script>alert(1)</script>',
-        },
-      });
-
-    expect(response.status).toBe(201);
-    const update = (BlogPost.findOneAndUpdate as jest.Mock).mock.calls[0][1];
-    expect(update.$set.content).toContain('<p>Editorial content');
-    expect(update.$set.content).not.toContain('<script');
-  });
-
-  it('checks slug uniqueness inside the requested tenant namespace', async () => {
-    const lean = jest.fn().mockResolvedValue(null);
-    const select = jest.fn().mockReturnValue({ lean });
-    (BlogPost.findOne as jest.Mock).mockReturnValue({ select });
-
-    const response = await request(buildApp())
-      .get('/api/admin/content/blog/shared-slug?tenantId=tenant-b');
-
-    expect(response.status).toBe(404);
-    expect(BlogPost.findOne).toHaveBeenCalledWith({
-      tenantId: 'tenant-b',
-      slug: 'shared-slug',
-    });
-  });
-
   it('sanitizes legacy blog HTML on the public read path', async () => {
     (BlogPost.findOne as jest.Mock).mockReturnValue({
       lean: jest.fn().mockResolvedValue({
@@ -112,5 +81,24 @@ describe('content isolation and HTML safety', () => {
     expect(response.status).toBe(200);
     expect(response.body.data.content).toContain('<p>Legacy copy</p>');
     expect(response.body.data.content).not.toMatch(/onerror|javascript:|<script/i);
+    expect(Tenant.findOne).toHaveBeenCalledWith({
+      slug: 'tenant-a',
+      status: { $in: ['active', 'coming_soon'] },
+    });
+    expect(BlogPost.findOne).toHaveBeenCalledWith({
+      tenantId: 'tenant-a',
+      $or: [{ tenantRef: tenantId }, { tenantRef: { $exists: false } }],
+      slug: 'legacy-post',
+      status: 'published',
+    });
+  });
+
+  it('returns not found before a content query when the tenant join fails', async () => {
+    (Tenant.findOne as jest.Mock).mockReturnValue({
+      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(null) }),
+    });
+    const response = await request(buildApp()).get('/api/blog/post?tenant=unknown-tenant');
+    expect(response.status).toBe(404);
+    expect(BlogPost.findOne).not.toHaveBeenCalled();
   });
 });

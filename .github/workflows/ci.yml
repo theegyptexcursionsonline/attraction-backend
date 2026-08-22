@@ -5,9 +5,13 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -15,21 +19,42 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      # actions/checkout v4.4.0, resolved from the upstream immutable tag.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
 
-      - uses: actions/setup-node@v4
+      - name: Verify exact source revision
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          ACTUAL_SHA="$(git rev-parse HEAD)"
+          test "$ACTUAL_SHA" = "$EXPECTED_SHA"
+          printf 'Verified source revision %s\n' "$ACTUAL_SHA"
+
+      # actions/setup-node v4.4.0, resolved from the upstream immutable tag.
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: 22
           cache: npm
 
-      - name: Install dependencies
+      - name: Install locked dependencies
         run: npm ci
 
       - name: Typecheck
+        run: npm exec -- tsc --noEmit --pretty false
+
+      - name: Lint
         run: npm run lint
 
-      - name: Build
+      - name: Full tests
+        run: npm test
+
+      - name: Production build
+        env:
+          NODE_ENV: production
         run: npm run build
 
-      - name: Tests
-        run: npm test
+      - name: Secret and identity hygiene
+        run: npm run test:secrets

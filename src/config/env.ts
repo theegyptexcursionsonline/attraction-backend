@@ -62,6 +62,12 @@ const envFlag = (value: string | undefined, defaultValue: boolean): boolean => {
   return value.trim().toLowerCase() === 'true';
 };
 
+const csvValues = (value: string | undefined): string[] =>
+  (value || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+
 export const env = {
   nodeEnv,
   port: parseInt(process.env.PORT || '5000', 10),
@@ -97,6 +103,10 @@ export const env = {
 
   // foxes-content-engine publishing key (Bearer token on /api/admin/content/*)
   contentEngineApiKey: process.env.CONTENT_ENGINE_API_KEY || '',
+
+  // Exact tenant slugs that the content receiver may mutate. An empty or
+  // malformed allowlist keeps every receiver write disabled.
+  contentEngineAllowedTenants: csvValues(process.env.CONTENT_ENGINE_ALLOWED_TENANTS),
 
   // A dedicated production key keeps encrypted tenant credentials independent
   // from auth-token rotation. The legacy JWT key is decrypt-only in production
