@@ -81,4 +81,4 @@ src/
 
 ## Deployment
 
-Deploys to Railway via `railway.json` (Nixpacks, `npm run build` → `npm start`, health check at `/api/health`).
+Deploys to Railway via `railway.json` (Nixpacks, `npm run build` → `npm start`). Railway gates deployment on `/api/ready`; `/api/health` remains the lightweight liveness endpoint.
