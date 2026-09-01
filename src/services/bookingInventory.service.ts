@@ -7,13 +7,16 @@ import { standaloneBookingClause } from './bookingRecordScope.service';
 import { cancelPaymentIntent, retrievePaymentIntent } from './stripe.service';
 
 const DEFAULT_CAPACITY = 25;
-const DEFAULT_TIME_SLOTS = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'];
+const LEGACY_DEFAULT_TIME_SLOTS = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'];
+const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 export type InventoryEntry = {
   attractionId: unknown;
   date: Date;
   time?: string;
   guests: number;
+  /** Explicit catalog schedule. Undefined preserves legacy stored-slot behavior. */
+  configuredTimes?: string[];
 };
 
 export type BookingWithInventoryMarker = IBooking & {
@@ -64,18 +67,32 @@ export const inventoryEntriesForItems = (
     time?: string;
     quantities: { adults: number; children: number; infants: number };
   }>,
-  useTimeSlots = true
+  useTimeSlots = true,
+  configuredTimes?: readonly string[],
 ): InventoryEntry[] => {
+  const normalizedConfiguredTimes = configuredTimes
+    ? [...new Set(configuredTimes.map((time) => time.trim()).filter((time) => TIME_PATTERN.test(time)))]
+    : undefined;
+  const hasConfiguredSchedule = Boolean(normalizedConfiguredTimes?.length);
   const grouped = new Map<string, InventoryEntry>();
   for (const item of items) {
     const guests = item.quantities.adults + item.quantities.children + item.quantities.infants;
     const date = bookingDate(item.date);
     const time = useTimeSlots ? item.time : undefined;
     if (useTimeSlots && !time) throw new Error('SLOT_UNAVAILABLE');
+    if (time && hasConfiguredSchedule && !normalizedConfiguredTimes?.includes(time)) {
+      throw new Error('SLOT_UNAVAILABLE');
+    }
     const key = `${date.toISOString()}|${time || 'all-day'}`;
     const existing = grouped.get(key);
     if (existing) existing.guests += guests;
-    else grouped.set(key, { attractionId, date, time, guests });
+    else grouped.set(key, {
+      attractionId,
+      date,
+      time,
+      guests,
+      ...(hasConfiguredSchedule ? { configuredTimes: normalizedConfiguredTimes } : {}),
+    });
   }
   return Array.from(grouped.values());
 };
@@ -85,6 +102,14 @@ export const reserveInventory = async (
   session?: ClientSession
 ): Promise<void> => {
   for (const entry of entries) {
+    const configuredTimes = entry.configuredTimes?.length
+      ? [...new Set(entry.configuredTimes)]
+      : undefined;
+    if (entry.time && configuredTimes && !configuredTimes.includes(entry.time)) {
+      throw new Error('SLOT_UNAVAILABLE');
+    }
+    const initialTimes = configuredTimes || LEGACY_DEFAULT_TIME_SLOTS;
+
     // The public availability endpoint advertises a default capacity when a
     // date has not been materialized yet. Create that same row before the
     // conditional increment so the read and booking contracts cannot diverge.
@@ -93,7 +118,7 @@ export const reserveInventory = async (
       {
         $setOnInsert: entry.time
           ? {
-              timeSlots: DEFAULT_TIME_SLOTS.map((time) => ({
+              timeSlots: initialTimes.map((time) => ({
                 time,
                 capacity: DEFAULT_CAPACITY,
                 booked: 0,

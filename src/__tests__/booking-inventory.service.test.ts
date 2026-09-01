@@ -92,6 +92,117 @@ describe('booking inventory lifecycle', () => {
     })]);
   });
 
+  it('materializes and reserves the configured catalog departures', async () => {
+    (Availability.findOneAndUpdate as jest.Mock).mockResolvedValue({});
+    const date = new Date('2026-08-01T00:00:00.000Z');
+    const entries = inventoryEntriesForItems(
+      'attraction-1',
+      [{
+        date: '2026-08-01',
+        time: '07:00',
+        quantities: { adults: 2, children: 1, infants: 0 },
+      }],
+      true,
+      ['07:00', '10:00', '13:00'],
+    );
+
+    await reserveInventory(entries);
+
+    expect(entries).toEqual([expect.objectContaining({
+      time: '07:00',
+      guests: 3,
+      configuredTimes: ['07:00', '10:00', '13:00'],
+    })]);
+    expect(Availability.updateOne).toHaveBeenNthCalledWith(
+      1,
+      { attractionId: 'attraction-1', date },
+      {
+        $setOnInsert: {
+          timeSlots: [
+            { time: '07:00', capacity: 25, booked: 0 },
+            { time: '10:00', capacity: 25, booked: 0 },
+            { time: '13:00', capacity: 25, booked: 0 },
+          ],
+          isBlocked: false,
+        },
+      },
+      { upsert: true },
+    );
+    expect(Availability.updateOne).toHaveBeenCalledTimes(1);
+    expect(Availability.findOneAndUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        attractionId: 'attraction-1',
+        date,
+        isBlocked: { $ne: true },
+        $expr: expect.any(Object),
+      }),
+      { $inc: { 'timeSlots.$[slot].booked': 3 } },
+      { new: true, arrayFilters: [{ 'slot.time': '07:00' }] },
+    );
+  });
+
+  it('rejects an unknown configured departure before creating inventory', async () => {
+    expect(() => inventoryEntriesForItems(
+      'attraction-1',
+      [{
+        date: '2026-08-01',
+        time: '08:00',
+        quantities: { adults: 1, children: 0, infants: 0 },
+      }],
+      true,
+      ['07:00', '10:00'],
+    )).toThrow('SLOT_UNAVAILABLE');
+
+    await expect(reserveInventory([{
+      attractionId: 'attraction-1',
+      date: new Date('2026-08-01T00:00:00.000Z'),
+      time: '08:00',
+      guests: 1,
+      configuredTimes: ['07:00', '10:00'],
+    }])).rejects.toThrow('SLOT_UNAVAILABLE');
+
+    expect(Availability.updateOne).not.toHaveBeenCalled();
+    expect(Availability.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it('keeps concurrent capacity claims on one atomic conditional update', async () => {
+    let booked = 0;
+    (Availability.findOneAndUpdate as jest.Mock).mockImplementation(
+      async (_query: unknown, update: { $inc: Record<string, number> }) => {
+        const guests = update.$inc['timeSlots.$[slot].booked'];
+        if (booked + guests > 25) return null;
+        booked += guests;
+        return { booked };
+      }
+    );
+
+    const entry = (guests: number) => inventoryEntriesForItems(
+      'attraction-1',
+      [{
+        date: '2026-08-01',
+        time: '07:00',
+        quantities: { adults: guests, children: 0, infants: 0 },
+      }],
+      true,
+      ['07:00'],
+    );
+    const results = await Promise.allSettled([
+      reserveInventory(entry(15)),
+      reserveInventory(entry(15)),
+    ]);
+
+    expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
+    expect(results.filter((result) => result.status === 'rejected')).toHaveLength(1);
+    expect(booked).toBe(15);
+    expect(Availability.findOneAndUpdate).toHaveBeenCalledTimes(2);
+    for (const [query] of (Availability.findOneAndUpdate as jest.Mock).mock.calls) {
+      expect(query).toEqual(expect.objectContaining({
+        isBlocked: { $ne: true },
+        $expr: expect.any(Object),
+      }));
+    }
+  });
+
   it('atomically releases all guests and cancels a failed card booking', async () => {
     const booking = {
       _id: 'booking-1',

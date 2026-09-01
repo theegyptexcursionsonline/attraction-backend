@@ -19,7 +19,10 @@ import { minimumTourPrice } from '../utils/attractionPricing';
 import { BundleOrder } from '../models/BundleOrder';
 import { runBundleTransaction } from '../services/bundleInventory.service';
 import { createAttractionSchema } from '../utils/validators';
-import { publicDefaultTimeSlots } from '../utils/publicAvailability';
+import {
+  publicAvailabilityTimeSlots,
+  publicDefaultTimeSlots,
+} from '../utils/publicAvailability';
 
 const PUBLIC_ATTRACTION_FIELDS = [
   '_id',
@@ -473,16 +476,20 @@ export const getAttractionAvailability = async (
           continue;
         }
 
-        // Use real data from database
-        if (record.timeSlots && record.timeSlots.length > 0) {
+        // Project stored counters onto the catalog schedule. Explicit catalog
+        // windows are authoritative, so stale generic rows cannot be advertised
+        // as bookable. A date-specific row remains an operator capacity override:
+        // configured times absent from that row are not manufactured here.
+        if (attraction.availability?.type === 'time-slots') {
+          const timeSlots = publicAvailabilityTimeSlots(
+            attraction,
+            record.timeSlots || [],
+            defaultCapacity,
+          );
           availability.push({
             date: dateStr,
-            available: record.timeSlots.some((s) => s.capacity - s.booked > 0),
-            timeSlots: record.timeSlots.map((s) => ({
-              time: s.time,
-              available: s.capacity - s.booked > 0,
-              spotsLeft: Math.max(0, s.capacity - s.booked),
-            })),
+            available: timeSlots.some((slot) => slot.available),
+            timeSlots,
           });
         } else {
           const spotsLeft = (record.allDayCapacity || defaultCapacity) - (record.allDayBooked || 0);

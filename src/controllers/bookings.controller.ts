@@ -43,6 +43,7 @@ import {
 } from '../services/bookingRecordScope.service';
 import { calculateAddonPrice, calculateTourLinePrice } from '../utils/attractionPricing';
 import { assertTenantIdsBookingCreationAllowed } from '../services/tenantBookingPolicy.service';
+import { configuredAvailabilityTimes } from '../utils/publicAvailability';
 
 // Compact, tenant-safe booking summary for webhook payloads. Contains only the
 // booking's own fields — never other tenants' data.
@@ -562,10 +563,12 @@ export const createBooking = async (
     const reference = generateBookingReference();
     const bookingId = new mongoose.Types.ObjectId();
     const guestAccessToken = generateBookingAccessToken(String(bookingId), reference);
+    const configuredTimes = configuredAvailabilityTimes(attraction);
     const inventoryEntries = inventoryEntriesForItems(
       attractionId,
       normalizedItems,
-      attraction.availability?.type === 'time-slots'
+      attraction.availability?.type === 'time-slots',
+      configuredTimes.length > 0 ? configuredTimes : undefined,
     );
 
     const booking = await runBookingTransaction<IBooking>(async (session) => {

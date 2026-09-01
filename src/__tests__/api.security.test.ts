@@ -269,6 +269,87 @@ describe('API security and pricing guards', () => {
     expect(response.body.data.items[0]).toMatchObject({ unitPrice: 75, totalPrice: 75 });
   });
 
+  it('materializes the exact configured departures before reserving a booking', async () => {
+    (Attraction.findById as jest.Mock).mockResolvedValue({
+      _id: ATTR_ID,
+      status: 'active',
+      currency: 'EUR',
+      tenantIds: [TENANT_ID],
+      availability: { type: 'time-slots' },
+      pricingOptions: [{ id: 'ride', name: 'Makadi ride', price: 15 }],
+      entryWindows: [
+        { label: 'Early', startTime: '07:00', endTime: '09:00' },
+        { label: 'Midday', startTime: '13:00', endTime: '15:00' },
+      ],
+    });
+
+    const response = await request(app)
+      .post('/api/bookings')
+      .set('Idempotency-Key', 'booking-configured-slot-0001')
+      .send({
+        ...validBookingPayload(),
+        items: [{
+          ...validBookingPayload().items[0],
+          optionId: 'ride',
+          time: '07:00',
+        }],
+      });
+
+    expect(response.status).toBe(201);
+    expect(Availability.updateOne).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ attractionId: ATTR_ID }),
+      {
+        $setOnInsert: {
+          timeSlots: [
+            { time: '07:00', capacity: 25, booked: 0 },
+            { time: '13:00', capacity: 25, booked: 0 },
+          ],
+          isBlocked: false,
+        },
+      },
+      { upsert: true },
+    );
+    expect(Availability.findOneAndUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        attractionId: ATTR_ID,
+        isBlocked: { $ne: true },
+      }),
+      { $inc: { 'timeSlots.$[slot].booked': 1 } },
+      { new: true, arrayFilters: [{ 'slot.time': '07:00' }] },
+    );
+  });
+
+  it('rejects a time outside the configured catalog without touching inventory', async () => {
+    (Attraction.findById as jest.Mock).mockResolvedValue({
+      _id: ATTR_ID,
+      status: 'active',
+      currency: 'EUR',
+      tenantIds: [TENANT_ID],
+      availability: { type: 'time-slots' },
+      pricingOptions: [{ id: 'ride', name: 'Makadi ride', price: 15 }],
+      entryWindows: [{ label: 'Early', startTime: '07:00', endTime: '09:00' }],
+    });
+
+    const response = await request(app)
+      .post('/api/bookings')
+      .set('Idempotency-Key', 'booking-configured-slot-0002')
+      .send({
+        ...validBookingPayload(),
+        items: [{
+          ...validBookingPayload().items[0],
+          optionId: 'ride',
+          time: '08:00',
+        }],
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe('Select an available time slot for this tour');
+    expect(Availability.updateOne).not.toHaveBeenCalled();
+    expect(Availability.findOneAndUpdate).not.toHaveBeenCalled();
+    expect(Booking.create).not.toHaveBeenCalled();
+  });
+
   it('charges a package once and enforces its participant range server-side', async () => {
     (Attraction.findById as jest.Mock).mockResolvedValue({
       _id: ATTR_ID,

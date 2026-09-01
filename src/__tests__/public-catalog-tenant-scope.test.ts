@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
 import { Attraction } from '../models/Attraction';
+import { Availability } from '../models/Availability';
 import { Destination } from '../models/Destination';
 import { SpecialOffer } from '../models/SpecialOffer';
 import { getAttractionAvailability, getAttractionBySlug } from '../controllers/attractions.controller';
@@ -12,6 +13,11 @@ jest.mock('../models/Attraction', () => ({
     find: jest.fn(),
     countDocuments: jest.fn(),
     aggregate: jest.fn(),
+  },
+}));
+jest.mock('../models/Availability', () => ({
+  Availability: {
+    find: jest.fn(),
   },
 }));
 jest.mock('../models/Destination', () => ({ Destination: { findOne: jest.fn() } }));
@@ -68,6 +74,54 @@ describe('public catalogue tenant boundaries', () => {
       tenantIds: { $in: [tenantId] },
     });
     expect(res.status).toHaveBeenCalledWith(404);
+  });
+
+  it('returns only catalog departures while preserving their stored capacity', async () => {
+    const attractionId = new Types.ObjectId().toHexString();
+    (Attraction.findOne as jest.Mock).mockResolvedValue({
+      _id: attractionId,
+      status: 'active',
+      availability: { type: 'time-slots' },
+      entryWindows: [
+        { startTime: '07:00' },
+        { startTime: '13:00' },
+      ],
+      pricingOptions: [],
+    });
+    (Availability.find as jest.Mock).mockReturnValue({
+      sort: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue([{
+          date: new Date('2030-03-10T00:00:00.000Z'),
+          isBlocked: false,
+          timeSlots: [
+            { time: '09:00', capacity: 25, booked: 0 },
+            { time: '13:00', capacity: 8, booked: 3 },
+          ],
+        }]),
+      }),
+    });
+    const res = response();
+
+    await getAttractionAvailability(
+      {
+        params: { id: attractionId },
+        query: { date: '2030-03-10' },
+      } as never,
+      res,
+      jest.fn(),
+    );
+
+    const payload = (res.json as jest.Mock).mock.calls[0][0];
+    const selectedDay = payload.data.availability.find(
+      (entry: { date: string }) => entry.date === '2030-03-10',
+    );
+    expect(selectedDay).toEqual({
+      date: '2030-03-10',
+      available: true,
+      timeSlots: [
+        { time: '13:00', available: true, spotsLeft: 5 },
+      ],
+    });
   });
 
   it('does not return a destination with no attractions in the active tenant', async () => {
