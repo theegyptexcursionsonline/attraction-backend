@@ -108,6 +108,7 @@ export const assertOrderSelectionsTravelRules = async (input: {
     attractionId: Types.ObjectId;
     supplyOfferId: Types.ObjectId;
     supplierTenantId: Types.ObjectId;
+    optionId?: string;
     date: string;
     time?: string;
   }>;
@@ -129,7 +130,7 @@ export const assertOrderSelectionsTravelRules = async (input: {
     status: 'active',
     instantConfirmation: true,
   })
-    .select('ownerTenantId entryWindows')
+    .select('ownerTenantId entryWindows pricingOptions')
     .session(input.session || null)
     .lean();
   if (attractions.length !== input.selections.length) {
@@ -153,6 +154,16 @@ export const assertOrderSelectionsTravelRules = async (input: {
       throw new BundleOrderError(
         'BUNDLE_SUPPLY_CHANGED',
         'Supplier ownership or terms changed before checkout',
+        409
+      );
+    }
+    const selectedOption = selection.optionId
+      ? attraction.pricingOptions?.find((option) => option.id === selection.optionId)
+      : undefined;
+    if (selection.optionId && (!selectedOption || selectedOption.pricingModel === 'per-booking')) {
+      throw new BundleOrderError(
+        'BUNDLE_OPTION_UNSUPPORTED',
+        'This package-priced option is not available inside a bundle',
         409
       );
     }
@@ -269,6 +280,13 @@ export const createBundleQuote = async (input: {
     assertOfferTravelRules(offer, selection.date, selection.time, attraction.entryWindows || []);
     const option = attraction.pricingOptions.find((item) => item.id === selection.optionId);
     if (!option) throw new BundleOrderError('OPTION_NO_LONGER_AVAILABLE', 'A selected option is no longer available', 409);
+    if (option.pricingModel === 'per-booking') {
+      throw new BundleOrderError(
+        'BUNDLE_OPTION_UNSUPPORTED',
+        'This package-priced option is not available inside a bundle',
+        409
+      );
+    }
     return {
       componentId: component.componentId,
       supplyOfferId: offer._id,

@@ -13,6 +13,7 @@ import {
   toOctoAvailability,
   toOctoBooking,
   octoUnitType,
+  isOctoCompatibleProduct,
   OctoTenantLike,
   OctoAttractionLike,
 } from '../octo/mappers';
@@ -166,7 +167,11 @@ async function releaseCapacity(
 const tenantOf = (req: AuthRequest) => req.tenant as unknown as OctoTenantLike;
 async function findProduct(req: AuthRequest, productId: string) {
   const byId = /^[a-f\d]{24}$/i.test(productId) ? { _id: productId } : { slug: productId };
-  return Attraction.findOne({ ...byId, tenantIds: req.tenant?._id }).lean();
+  return Attraction.findOne({
+    ...byId,
+    tenantIds: req.tenant?._id,
+    pricingOptions: { $not: { $elemMatch: { pricingModel: 'per-booking' } } },
+  }).lean();
 }
 
 // Unit lookup (id → { name, priceMinor }) from a product's pricing options.
@@ -211,6 +216,7 @@ export function validateReservationRequest(
   availabilityId: unknown,
   unitItems: unknown,
 ): { localDate: string; startTime: string | null; items: ValidatedUnitItem[]; totalQty: number; totalMinor: number } | { error: string } {
+  if (!isOctoCompatibleProduct(product)) return { error: 'Package-priced products are not available through OCTO' };
   if (optionId !== 'DEFAULT') return { error: 'optionId is not valid for this product' };
   const parsed = parseAvailabilityId(String(availabilityId || ''));
   if (!parsed) return { error: 'availabilityId must be a valid local date or local start time' };
@@ -252,7 +258,9 @@ router.get('/supplier', (req: AuthRequest, res: Response) => {
 router.get('/products', requireScope('read'), async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const list = await Attraction.find({ tenantIds: req.tenant?._id, status: 'active' }).limit(500).lean();
-    res.json(list.map((a) => toOctoProduct(a as unknown as OctoAttractionLike, tenantOf(req))));
+    res.json(list
+      .filter((a) => isOctoCompatibleProduct(a as unknown as OctoAttractionLike))
+      .map((a) => toOctoProduct(a as unknown as OctoAttractionLike, tenantOf(req))));
   } catch (err) { next(err); }
 });
 

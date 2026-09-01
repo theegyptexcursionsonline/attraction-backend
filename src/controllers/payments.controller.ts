@@ -436,7 +436,12 @@ const finalizePaidBooking = async (
         infants: item.quantities?.infants || 0,
       })),
       addons: firstItem?.addons?.length
-        ? firstItem.addons.map((a: { name: string; price: number }) => ({ name: a.name, price: a.price }))
+        ? firstItem.addons.map((a: { name: string; price: number; quantity?: number; totalPrice?: number }) => ({
+            name: a.name,
+            price: a.price,
+            quantity: a.quantity,
+            totalPrice: a.totalPrice ?? a.price,
+          }))
         : undefined,
       subtotal: booking.subtotal,
       fees: booking.fees,

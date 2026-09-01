@@ -19,6 +19,7 @@ import { minimumTourPrice } from '../utils/attractionPricing';
 import { BundleOrder } from '../models/BundleOrder';
 import { runBundleTransaction } from '../services/bundleInventory.service';
 import { createAttractionSchema } from '../utils/validators';
+import { publicDefaultTimeSlots } from '../utils/publicAvailability';
 
 const PUBLIC_ATTRACTION_FIELDS = [
   '_id',
@@ -496,14 +497,7 @@ export const getAttractionAvailability = async (
           availability.push({
             date: dateStr,
             available: true,
-            timeSlots: [
-              { time: '09:00', available: true, spotsLeft: defaultCapacity },
-              { time: '10:00', available: true, spotsLeft: defaultCapacity },
-              { time: '11:00', available: true, spotsLeft: defaultCapacity },
-              { time: '14:00', available: true, spotsLeft: defaultCapacity },
-              { time: '15:00', available: true, spotsLeft: defaultCapacity },
-              { time: '16:00', available: true, spotsLeft: defaultCapacity },
-            ],
+            timeSlots: publicDefaultTimeSlots(attraction, defaultCapacity),
           });
         } else {
           availability.push({

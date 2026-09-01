@@ -16,6 +16,9 @@ export interface TourPricingSlot {
 
 export interface TourPricingOption {
   price: number;
+  pricingModel?: 'per-person' | 'per-booking';
+  minParticipants?: number;
+  maxParticipants?: number;
   childPrice?: number;
   infantPrice?: number;
   discountPercentage?: number;
@@ -36,6 +39,11 @@ export interface PricingResult {
     childUnitPrice: number;
     infantUnitPrice: number;
     discountPercentage: number;
+    pricingModel: 'per-person' | 'per-booking';
+    packagePrice?: number;
+    participantCount?: number;
+    minParticipants?: number;
+    maxParticipants?: number;
   };
 }
 
@@ -79,25 +87,64 @@ export const calculateTourLinePrice = ({
   // infants keep their explicit tour price (or remain free).
   const baseInfant = slot?.infantPrice ?? option.infantPrice ?? 0;
 
+  const pricingModel = option.pricingModel || 'per-person';
   const adultUnitPrice = discounted(baseAdult, percentage);
-  const childUnitPrice = discounted(baseChild, percentage);
-  const infantUnitPrice = discounted(baseInfant, percentage);
-  const totalPrice = round2(
-    adultUnitPrice * quantities.adults +
-    childUnitPrice * quantities.children +
-    infantUnitPrice * quantities.infants
-  );
+  const childUnitPrice = pricingModel === 'per-booking' ? 0 : discounted(baseChild, percentage);
+  const infantUnitPrice = pricingModel === 'per-booking' ? 0 : discounted(baseInfant, percentage);
+  const totalPrice = pricingModel === 'per-booking'
+    ? adultUnitPrice
+    : round2(
+        adultUnitPrice * quantities.adults +
+        childUnitPrice * quantities.children +
+        infantUnitPrice * quantities.infants
+      );
   const chargedGuests = quantities.adults + quantities.children + quantities.infants;
 
   return {
     totalPrice,
-    unitPrice: chargedGuests > 0 ? round2(totalPrice / chargedGuests) : 0,
+    unitPrice: pricingModel === 'per-booking'
+      ? totalPrice
+      : chargedGuests > 0 ? round2(totalPrice / chargedGuests) : 0,
     pricingBreakdown: {
       adultUnitPrice,
       childUnitPrice,
       infantUnitPrice,
       discountPercentage: percentage,
+      pricingModel,
+      ...(pricingModel === 'per-booking'
+        ? {
+            packagePrice: totalPrice,
+            participantCount: chargedGuests,
+            minParticipants: option.minParticipants ?? 1,
+            maxParticipants: option.maxParticipants ?? 50,
+          }
+        : {}),
     },
+  };
+};
+
+export interface TourAddon {
+  price: number;
+  pricingModel?: 'per-person' | 'per-booking';
+}
+
+/**
+ * Add-ons historically represented one charge per booking, so missing models
+ * keep that behavior. Per-person add-ons charge paying adults and children;
+ * infants remain free unless a future category-aware add-on contract says otherwise.
+ */
+export const calculateAddonPrice = (
+  addon: TourAddon,
+  quantities: GuestQuantities
+): { pricingModel: 'per-person' | 'per-booking'; quantity: number; totalPrice: number } => {
+  const pricingModel = addon.pricingModel || 'per-booking';
+  const quantity = pricingModel === 'per-person'
+    ? quantities.adults + quantities.children
+    : 1;
+  return {
+    pricingModel,
+    quantity,
+    totalPrice: round2(addon.price * quantity),
   };
 };
 

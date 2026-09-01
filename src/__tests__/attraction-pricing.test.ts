@@ -1,5 +1,6 @@
-import { calculateTourLinePrice, minimumTourPrice } from '../utils/attractionPricing';
+import { calculateAddonPrice, calculateTourLinePrice, minimumTourPrice } from '../utils/attractionPricing';
 import { createAttractionRequestSchema, createAttractionSchema } from '../utils/validators';
+import { Attraction } from '../models/Attraction';
 
 const baseTour = {
   slug: 'reef-trip',
@@ -43,7 +44,39 @@ describe('tour pricing options', () => {
         childUnitPrice: 40,
         infantUnitPrice: 8,
         discountPercentage: 20,
+        pricingModel: 'per-person',
       },
+    });
+  });
+
+  it('charges a fixed package once and snapshots the pricing model', () => {
+    expect(calculateTourLinePrice({
+      option: { price: 75, pricingModel: 'per-booking', minParticipants: 3, maxParticipants: 4 },
+      quantities: { adults: 2, children: 2, infants: 0 },
+    })).toEqual({
+      totalPrice: 75,
+      unitPrice: 75,
+      pricingBreakdown: {
+        adultUnitPrice: 75,
+        childUnitPrice: 0,
+        infantUnitPrice: 0,
+        discountPercentage: 0,
+        pricingModel: 'per-booking',
+        packagePrice: 75,
+        participantCount: 4,
+        minParticipants: 3,
+        maxParticipants: 4,
+      },
+    });
+  });
+
+  it('keeps legacy add-ons per booking and supports paying-guest add-ons', () => {
+    const quantities = { adults: 2, children: 1, infants: 1 };
+    expect(calculateAddonPrice({ price: 10 }, quantities)).toEqual({
+      pricingModel: 'per-booking', quantity: 1, totalPrice: 10,
+    });
+    expect(calculateAddonPrice({ price: 10, pricingModel: 'per-person' }, quantities)).toEqual({
+      pricingModel: 'per-person', quantity: 3, totalPrice: 30,
     });
   });
 
@@ -89,6 +122,83 @@ describe('tour pricing options', () => {
       path: ['pricingOptions', 0, 'discountPercentage'],
       message: 'Discount must be below 100%',
     });
+  });
+
+  it('validates package participant bounds and rejects category prices on a package', () => {
+    const accepted = createAttractionSchema.safeParse({
+      ...baseTour,
+      pricingOptions: [{
+        id: 'buggy-3-4', name: 'Buggy for 3-4 people', price: 75,
+        pricingModel: 'per-booking', minParticipants: 3, maxParticipants: 4,
+      }],
+      addons: [{ id: 'transfer', name: 'El Gouna transfer', price: 10, pricingModel: 'per-person' }],
+    });
+    expect(accepted.success).toBe(true);
+
+    const reversed = createAttractionSchema.safeParse({
+      ...baseTour,
+      pricingOptions: [{
+        id: 'bad-package', name: 'Bad package', price: 75,
+        pricingModel: 'per-booking', minParticipants: 4, maxParticipants: 2,
+      }],
+    });
+    expect(reversed.success).toBe(false);
+    expect(reversed.error?.issues[0]).toMatchObject({
+      path: ['pricingOptions', 0, 'maxParticipants'],
+    });
+
+    const categoryPrice = createAttractionSchema.safeParse({
+      ...baseTour,
+      pricingOptions: [{
+        id: 'bad-package', name: 'Bad package', price: 75,
+        pricingModel: 'per-booking', childPrice: 20,
+      }],
+    });
+    expect(categoryPrice.success).toBe(false);
+    expect(categoryPrice.error?.issues[0]).toMatchObject({
+      path: ['pricingOptions', 0, 'pricingModel'],
+    });
+  });
+
+  it('rejects duplicate catalog ids in both the HTTP and direct-model paths', () => {
+    const duplicateHttp = createAttractionSchema.safeParse({
+      ...baseTour,
+      pricingOptions: [
+        { id: 'same', name: 'One', price: 10 },
+        { id: 'same', name: 'Two', price: 20 },
+      ],
+      addons: [
+        { id: 'transfer', name: 'Transfer one', price: 5 },
+        { id: 'transfer', name: 'Transfer two', price: 6 },
+      ],
+    });
+    expect(duplicateHttp.success).toBe(false);
+    expect(duplicateHttp.error?.issues.map((issue) => issue.path.join('.'))).toEqual(
+      expect.arrayContaining(['pricingOptions.1.id', 'addons.1.id'])
+    );
+
+    const duplicateModel = new Attraction({
+      ...baseTour,
+      images: ['https://res.cloudinary.com/example/image/upload/tour.jpg'],
+      pricingOptions: [
+        { id: 'same', name: 'One', price: 10 },
+        { id: 'same', name: 'Two', price: 20 },
+      ],
+    });
+    expect(duplicateModel.validateSync()?.errors.pricingOptions?.message).toBe('Pricing option IDs must be unique');
+  });
+
+  it('enforces package bounds for scripts that bypass the HTTP schema', () => {
+    const direct = new Attraction({
+      ...baseTour,
+      images: ['https://res.cloudinary.com/example/image/upload/tour.jpg'],
+      pricingOptions: [{
+        id: 'buggy', name: 'Buggy', price: 75, pricingModel: 'per-booking',
+        minParticipants: 4, maxParticipants: 2,
+      }],
+    });
+    expect(direct.validateSync()?.errors['pricingOptions.0.maxParticipants']?.message)
+      .toBe('Maximum participants must be at least the minimum participants');
   });
 
   it('derives the listing price from the lowest adult option or slot after discount', () => {

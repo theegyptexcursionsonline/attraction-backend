@@ -74,7 +74,7 @@ export interface ITenant extends Document {
     heading: string;
     body: string;
   };
-  designMode?: 'default' | 'luxury' | 'minimal' | 'nautical' | 'equestrian' | 'marine' | 'desert' | 'safari' | 'travel' | 'stable' | 'sunmarine' | 'rittal' | 'speedboat' | 'ancient' | 'pyramid' | 'skyride' | 'temple' | 'ranch' | 'reef' | 'obelisk' | 'dune' | 'savanna' | 'expedition' | 'dolphin' | 'safarisahara' | 'quadtour';
+  designMode?: 'default' | 'luxury' | 'minimal' | 'nautical' | 'equestrian' | 'marine' | 'desert' | 'safari' | 'travel' | 'stable' | 'sunmarine' | 'rittal' | 'speedboat' | 'ancient' | 'pyramid' | 'skyride' | 'temple' | 'ranch' | 'reef' | 'obelisk' | 'dune' | 'savanna' | 'expedition' | 'dolphin' | 'safarisahara' | 'quadtour' | 'desertfox' | 'pharaonic' | 'luxorballoon' | 'nilenight' | 'seascope' | 'pirates' | 'nefertari' | 'elitevip' | 'classic' | 'majestic' | 'bazaar' | 'abyss' | 'island' | 'angler' | 'lagoon' | 'sandbar' | 'evening' | 'atlas' | 'premium' | 'caravan' | 'pod' | 'overland' | 'azure' | 'concierge' | 'mirage' | 'meridian';
   defaultCurrency: string;
   defaultLanguage: string;
   supportedLanguages: string[];
@@ -165,6 +165,7 @@ export interface ITenant extends Document {
 // Attraction Types
 export type AttractionStatus = 'active' | 'draft' | 'archived';
 export type Badge = 'bestseller' | 'free-cancellation' | 'skip-line' | 'instant-confirm';
+export type PricingModel = 'per-person' | 'per-booking';
 
 export interface IAttraction extends Document {
   _id: Types.ObjectId;
@@ -197,6 +198,10 @@ export interface IAttraction extends Document {
     description: string;
     /** Adult price. Kept as `price` for rolling compatibility with existing clients. */
     price: number;
+    /** Defaults to per-person for every legacy record. */
+    pricingModel?: PricingModel;
+    minParticipants?: number;
+    maxParticipants?: number;
     childPrice?: number;
     infantPrice?: number;
     discountPercentage?: number;
@@ -217,6 +222,8 @@ export interface IAttraction extends Document {
     name: string;
     description?: string;
     price: number;
+    /** Defaults to per-booking for every legacy add-on. */
+    pricingModel?: PricingModel;
   }>;
   entryWindows: Array<{
     label: string;
@@ -308,12 +315,20 @@ export interface IBooking extends Document {
       childUnitPrice: number;
       infantUnitPrice: number;
       discountPercentage: number;
+      pricingModel?: PricingModel;
+      packagePrice?: number;
+      participantCount?: number;
+      minParticipants?: number;
+      maxParticipants?: number;
     };
     category?: 'foreigner' | 'resident';
     addons?: Array<{
       id: string;
       name: string;
       price: number;
+      pricingModel?: PricingModel;
+      quantity?: number;
+      totalPrice?: number;
     }>;
     hotelPickup?: {
       hotelName: string;

@@ -54,7 +54,7 @@ describe('bundle order entry-window revalidation', () => {
       session,
     })).resolves.toBeUndefined();
 
-    expect(query.select).toHaveBeenCalledWith('ownerTenantId entryWindows');
+    expect(query.select).toHaveBeenCalledWith('ownerTenantId entryWindows pricingOptions');
     expect(query.withSession).toHaveBeenCalledWith(session);
   });
 

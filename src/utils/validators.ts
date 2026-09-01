@@ -46,6 +46,86 @@ export const updateProfileSchema = z.object({
 });
 
 // Attraction Validators
+const pricingOptionSchema = z.object({
+  id: z.string().trim().min(1, 'Pricing option ID is required'),
+  name: z.string().trim().min(1, 'Pricing option name is required'),
+  description: z.string().optional().default(''),
+  price: z.number().finite().positive('Adult price must be greater than zero'),
+  pricingModel: z.enum(['per-person', 'per-booking']).optional().default('per-person'),
+  minParticipants: z.number().int().min(1).max(50).optional(),
+  maxParticipants: z.number().int().min(1).max(50).optional(),
+  childPrice: z.number().finite().min(0, 'Child price cannot be negative').optional(),
+  infantPrice: z.number().finite().min(0, 'Infant price cannot be negative').optional(),
+  residentPrice: z.number().finite().min(0, 'Resident price cannot be negative').optional(),
+  discountPercentage: z.number().finite().min(0).max(99.99, 'Discount must be below 100%').optional(),
+  timeSlots: z.array(z.object({
+    id: z.string().trim().min(1, 'Time-slot ID is required'),
+    label: z.string().trim().min(1, 'Time-slot label is required'),
+    startTime: z.string().trim().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Start time must use 24-hour HH:mm format'),
+    endTime: z.string().trim().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'End time must use 24-hour HH:mm format'),
+    adultPrice: z.number().finite().min(0, 'Adult slot price cannot be negative').optional(),
+    childPrice: z.number().finite().min(0, 'Child slot price cannot be negative').optional(),
+    infantPrice: z.number().finite().min(0, 'Infant slot price cannot be negative').optional(),
+  })).max(48, 'A pricing option cannot contain more than 48 time slots').superRefine((slots, ctx) => {
+    const ids = new Set<string>();
+    const starts = new Set<string>();
+    slots.forEach((slot, index) => {
+      if (ids.has(slot.id)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: [index, 'id'], message: 'Time-slot IDs must be unique within an option' });
+      if (starts.has(slot.startTime)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: [index, 'startTime'], message: 'Start times must be unique within an option' });
+      if (slot.endTime <= slot.startTime) ctx.addIssue({ code: z.ZodIssueCode.custom, path: [index, 'endTime'], message: 'End time must be after start time' });
+      ids.add(slot.id);
+      starts.add(slot.startTime);
+    });
+  }).optional().default([]),
+  originalPrice: z.number().positive().optional(),
+}).superRefine((option, ctx) => {
+  if (
+    option.minParticipants !== undefined &&
+    option.maxParticipants !== undefined &&
+    option.minParticipants > option.maxParticipants
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['maxParticipants'],
+      message: 'Maximum participants must be at least the minimum participants',
+    });
+  }
+  if (option.pricingModel === 'per-booking' && (option.childPrice !== undefined || option.infantPrice !== undefined)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['pricingModel'],
+      message: 'Per-booking options use one package price and cannot define child or infant prices',
+    });
+  }
+  if (option.residentPrice !== undefined && option.residentPrice > option.price) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['residentPrice'],
+      message: 'Resident price cannot exceed the regular price',
+    });
+  }
+  if (
+    option.pricingModel === 'per-booking' &&
+    option.timeSlots.some((slot) => slot.childPrice !== undefined || slot.infantPrice !== undefined)
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['pricingModel'],
+      message: 'Per-booking time slots cannot define child or infant prices',
+    });
+  }
+});
+
+const pricingOptionsSchema = z.array(pricingOptionSchema).min(1).superRefine((options, ctx) => {
+  const ids = new Set<string>();
+  options.forEach((option, index) => {
+    if (ids.has(option.id)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: [index, 'id'], message: 'Pricing option IDs must be unique' });
+    }
+    ids.add(option.id);
+  });
+});
+
 export const createAttractionSchema = z.object({
   slug: z.string().min(1, 'Slug is required'),
   pathSlug: z.string().trim().min(1).max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'URL slug may contain lowercase letters, numbers, and hyphens only').optional(),
@@ -71,35 +151,7 @@ export const createAttractionSchema = z.object({
   languages: z.array(z.string()).optional().default(['English']),
   priceFrom: z.number().positive(),
   currency: z.string().min(1),
-  pricingOptions: z.array(z.object({
-    id: z.string().trim().min(1, 'Pricing option ID is required'),
-    name: z.string().trim().min(1, 'Pricing option name is required'),
-    description: z.string().optional().default(''),
-    price: z.number().finite().positive('Adult price must be greater than zero'),
-    childPrice: z.number().finite().min(0, 'Child price cannot be negative').optional(),
-    infantPrice: z.number().finite().min(0, 'Infant price cannot be negative').optional(),
-    discountPercentage: z.number().finite().min(0).max(99.99, 'Discount must be below 100%').optional(),
-    timeSlots: z.array(z.object({
-      id: z.string().trim().min(1, 'Time-slot ID is required'),
-      label: z.string().trim().min(1, 'Time-slot label is required'),
-      startTime: z.string().trim().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Start time must use 24-hour HH:mm format'),
-      endTime: z.string().trim().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'End time must use 24-hour HH:mm format'),
-      adultPrice: z.number().finite().min(0, 'Adult slot price cannot be negative').optional(),
-      childPrice: z.number().finite().min(0, 'Child slot price cannot be negative').optional(),
-      infantPrice: z.number().finite().min(0, 'Infant slot price cannot be negative').optional(),
-    })).max(48, 'A pricing option cannot contain more than 48 time slots').superRefine((slots, ctx) => {
-      const ids = new Set<string>();
-      const starts = new Set<string>();
-      slots.forEach((slot, index) => {
-        if (ids.has(slot.id)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: [index, 'id'], message: 'Time-slot IDs must be unique within an option' });
-        if (starts.has(slot.startTime)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: [index, 'startTime'], message: 'Start times must be unique within an option' });
-        if (slot.endTime <= slot.startTime) ctx.addIssue({ code: z.ZodIssueCode.custom, path: [index, 'endTime'], message: 'End time must be after start time' });
-        ids.add(slot.id);
-        starts.add(slot.startTime);
-      });
-    }).optional().default([]),
-    originalPrice: z.number().positive().optional(),
-  })).min(1),
+  pricingOptions: pricingOptionsSchema,
   entryWindows: z.array(z.object({
     label: z.string().min(1),
     startTime: z.string().trim().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Time must use 24-hour HH:mm format'),
@@ -145,7 +197,16 @@ export const createAttractionSchema = z.object({
     name: z.string(),
     description: z.string().optional().default(''),
     price: z.number().min(0),
-  })).optional().default([]),
+    pricingModel: z.enum(['per-person', 'per-booking']).optional().default('per-booking'),
+  })).max(50).superRefine((addons, ctx) => {
+    const ids = new Set<string>();
+    addons.forEach((addon, index) => {
+      if (ids.has(addon.id)) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: [index, 'id'], message: 'Add-on IDs must be unique' });
+      }
+      ids.add(addon.id);
+    });
+  }).optional().default([]),
   status: z.enum(['active', 'draft', 'archived']).optional(),
   featured: z.boolean().optional(),
   sortOrder: z.number().optional(),
@@ -168,7 +229,7 @@ const draftRelaxedFields = {
       lng: z.number(),
     }).optional(),
   }).optional(),
-  pricingOptions: z.array(createAttractionSchema.shape.pricingOptions.element).optional(),
+  pricingOptions: z.array(pricingOptionSchema).optional(),
   priceFrom: z.number().nonnegative().optional(),
   duration: z.string().optional(),
   category: z.string().optional(),
@@ -288,8 +349,10 @@ export const createBookingSchema = z.object({
     totalPrice: z.number().finite().min(0).max(100_000_000).optional(),
     addons: z.array(z.object({
       id: z.string().trim().min(1).max(100),
-      name: z.string().trim().min(1).max(200),
-      price: z.number().finite().min(0).max(10_000_000),
+      // Accepted only for rolling compatibility; booking authority reloads
+      // name and price from the selected attraction catalog.
+      name: z.string().trim().min(1).max(200).optional(),
+      price: z.number().finite().min(0).max(10_000_000).optional(),
     })).max(20).optional().default([]),
     hotelPickup: z.object({
       hotelName: z.string().trim().min(1).max(200),

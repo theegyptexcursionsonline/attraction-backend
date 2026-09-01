@@ -101,6 +101,13 @@ describe('OCTO product mapper', () => {
     expect(p.availabilityRequired).toBe(true);
     expect(p.instantConfirmation).toBe(true);
   });
+
+  it('fails closed for package-priced products until OCTO can model participant bounds', () => {
+    expect(() => toOctoProduct({
+      ...base,
+      pricingOptions: [{ id: 'buggy', name: 'Private buggy', price: 75, pricingModel: 'per-booking' }],
+    }, tenant)).toThrow('OCTO_PACKAGE_PRICING_UNSUPPORTED');
+  });
 });
 
 describe('OCTO availability mapper', () => {

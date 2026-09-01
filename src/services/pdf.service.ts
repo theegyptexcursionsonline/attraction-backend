@@ -18,7 +18,7 @@ interface TicketData {
     children: number;
     infants: number;
   }>;
-  addons?: Array<{ name: string; price: number }>;
+  addons?: Array<{ name: string; price: number; quantity?: number; totalPrice?: number }>;
   subtotal?: number;
   fees?: number;
   discount?: number;
@@ -321,12 +321,12 @@ export const generateTicketPdf = async (data: TicketData): Promise<Buffer> => {
             .font('Helvetica')
             .fontSize(9)
             .fillColor('#475569')
-            .text(`+  ${addon.name}`, col1x, y, { width: 350 });
+            .text(`+  ${addon.name}${addon.quantity && addon.quantity > 1 ? ` × ${addon.quantity}` : ''}`, col1x, y, { width: 350 });
           doc
             .font('Helvetica-Bold')
             .fontSize(9)
             .fillColor('#1e293b')
-            .text(fmt(addon.price, data.currency), 460, y, {
+            .text(fmt(addon.totalPrice ?? addon.price, data.currency), 460, y, {
               width: 85,
               align: 'right',
             });

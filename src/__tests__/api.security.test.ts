@@ -269,6 +269,109 @@ describe('API security and pricing guards', () => {
     expect(response.body.data.items[0]).toMatchObject({ unitPrice: 75, totalPrice: 75 });
   });
 
+  it('charges a package once and enforces its participant range server-side', async () => {
+    (Attraction.findById as jest.Mock).mockResolvedValue({
+      _id: ATTR_ID,
+      status: 'active',
+      currency: 'EUR',
+      tenantIds: [TENANT_ID],
+      pricingOptions: [{
+        id: 'buggy-3-4',
+        name: 'Buggy for 3-4 people',
+        price: 75,
+        pricingModel: 'per-booking',
+        minParticipants: 3,
+        maxParticipants: 4,
+      }],
+    });
+
+    const accepted = await request(app)
+      .post('/api/bookings')
+      .set('Idempotency-Key', 'booking-package-price-0001')
+      .send({
+        ...validBookingPayload(),
+        items: [{
+          ...validBookingPayload().items[0],
+          optionId: 'buggy-3-4',
+          quantities: { adults: 2, children: 2, infants: 0 },
+          unitPrice: 1,
+          totalPrice: 4,
+        }],
+      });
+    expect(accepted.status).toBe(201);
+    expect(accepted.body.data.items[0]).toMatchObject({
+      unitPrice: 75,
+      totalPrice: 75,
+      pricingBreakdown: {
+        pricingModel: 'per-booking',
+        packagePrice: 75,
+        participantCount: 4,
+        minParticipants: 3,
+        maxParticipants: 4,
+      },
+    });
+
+    const rejected = await request(app)
+      .post('/api/bookings')
+      .set('Idempotency-Key', 'booking-package-price-0002')
+      .send({
+        ...validBookingPayload(),
+        items: [{
+          ...validBookingPayload().items[0],
+          optionId: 'buggy-3-4',
+          quantities: { adults: 1, children: 1, infants: 0 },
+        }],
+      });
+    expect(rejected.status).toBe(400);
+    expect(rejected.body.error).toBe('This option is available for 3 to 4 participants');
+  });
+
+  it('prices catalog add-ons by model and rejects unknown or duplicate ids', async () => {
+    (Attraction.findById as jest.Mock).mockResolvedValue({
+      _id: ATTR_ID,
+      status: 'active',
+      currency: 'EUR',
+      tenantIds: [TENANT_ID],
+      pricingOptions: [{ id: 'adult-option', name: 'Quad ride', price: 15 }],
+      addons: [{ id: 'transfer', name: 'El Gouna transfer', price: 10, pricingModel: 'per-person' }],
+    });
+
+    const accepted = await request(app)
+      .post('/api/bookings')
+      .set('Idempotency-Key', 'booking-addon-price-0001')
+      .send({
+        ...validBookingPayload(),
+        items: [{
+          ...validBookingPayload().items[0],
+          quantities: { adults: 2, children: 1, infants: 1 },
+          addons: [{ id: 'transfer', name: 'Tampered', price: 0.01 }],
+        }],
+      });
+    expect(accepted.status).toBe(201);
+    expect(accepted.body.data.items[0].addons[0]).toEqual({
+      id: 'transfer',
+      name: 'El Gouna transfer',
+      price: 10,
+      pricingModel: 'per-person',
+      quantity: 3,
+      totalPrice: 30,
+    });
+    expect(accepted.body.data.subtotal).toBe(75);
+
+    const invalid = await request(app)
+      .post('/api/bookings')
+      .set('Idempotency-Key', 'booking-addon-price-0002')
+      .send({
+        ...validBookingPayload(),
+        items: [{
+          ...validBookingPayload().items[0],
+          addons: [{ id: 'unknown', name: 'Unknown', price: 1 }],
+        }],
+      });
+    expect(invalid.status).toBe(400);
+    expect(invalid.body.error).toBe('Invalid or duplicate add-on selected');
+  });
+
   it('requires a valid idempotency key before looking up an attraction', async () => {
     const response = await request(app)
       .post('/api/bookings')

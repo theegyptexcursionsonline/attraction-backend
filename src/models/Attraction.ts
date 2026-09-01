@@ -134,6 +134,31 @@ const attractionSchema = new Schema<IAttraction>(
       name: { type: String, required: true },
       description: { type: String },
       price: { type: Number, required: true },
+      pricingModel: {
+        type: String,
+        enum: ['per-person', 'per-booking'],
+        default: 'per-person',
+      },
+      minParticipants: {
+        type: Number,
+        min: 1,
+        max: 50,
+        validate: { validator: Number.isSafeInteger, message: 'Minimum participants must be a whole number' },
+      },
+      maxParticipants: {
+        type: Number,
+        min: 1,
+        max: 50,
+        validate: [
+          { validator: Number.isSafeInteger, message: 'Maximum participants must be a whole number' },
+          {
+            validator: function (this: { minParticipants?: number }, value: number) {
+              return this.minParticipants === undefined || value >= this.minParticipants;
+            },
+            message: 'Maximum participants must be at least the minimum participants',
+          },
+        ],
+      },
       childPrice: { type: Number, min: 0 },
       infantPrice: { type: Number, min: 0 },
       discountPercentage: { type: Number, min: 0, max: 99.99 },
@@ -156,6 +181,11 @@ const attractionSchema = new Schema<IAttraction>(
       name: { type: String, required: true },
       description: { type: String },
       price: { type: Number, required: true, min: 0 },
+      pricingModel: {
+        type: String,
+        enum: ['per-person', 'per-booking'],
+        default: 'per-booking',
+      },
     }],
     entryWindows: [{
       label: { type: String, required: true },
@@ -279,6 +309,15 @@ const attractionSchema = new Schema<IAttraction>(
       },
     },
   }
+);
+
+attractionSchema.path('pricingOptions').validate(
+  (options: Array<{ id?: string }> = []) => new Set(options.map((option) => option.id)).size === options.length,
+  'Pricing option IDs must be unique'
+);
+attractionSchema.path('addons').validate(
+  (addons: Array<{ id?: string }> = []) => new Set(addons.map((addon) => addon.id)).size === addons.length,
+  'Add-on IDs must be unique'
 );
 
 // Indexes for search and filtering

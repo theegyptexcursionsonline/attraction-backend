@@ -41,7 +41,7 @@ import {
   isBundleComponentBooking,
   standaloneBookingClause,
 } from '../services/bookingRecordScope.service';
-import { calculateTourLinePrice } from '../utils/attractionPricing';
+import { calculateAddonPrice, calculateTourLinePrice } from '../utils/attractionPricing';
 import { assertTenantIdsBookingCreationAllowed } from '../services/tenantBookingPolicy.service';
 
 // Compact, tenant-safe booking summary for webhook payloads. Contains only the
@@ -272,7 +272,7 @@ export const createBooking = async (
       time?: string;
       category?: 'foreigner' | 'resident';
       quantities: { adults: number; children: number; infants: number };
-      addons?: Array<{ id: string; name: string; price: number }>;
+      addons?: Array<{ id: string; name?: string; price?: number }>;
       hotelPickup?: { hotelName?: string; roomNumber?: string; pickupTime?: string };
     }) => {
       const option = attraction.pricingOptions.find((o) => o.id === item.optionId);
@@ -295,7 +295,13 @@ export const createBooking = async (
       if (payableGuests <= 0) {
         throw new Error('INVALID_QUANTITY');
       }
-      if (capacityGuests > 100) throw new Error('INVALID_QUANTITY');
+      if (capacityGuests > 50) throw new Error('INVALID_QUANTITY');
+
+      const minimumParticipants = option.minParticipants ?? 1;
+      const maximumParticipants = option.maxParticipants ?? 50;
+      if (capacityGuests < minimumParticipants || capacityGuests > maximumParticipants) {
+        throw new Error(`PARTICIPANT_LIMIT:${minimumParticipants}:${maximumParticipants}`);
+      }
 
       // Reject a date in the past. The booking widget greys out past days in the UI,
       // but nothing enforced it server-side, so a stale cart or a direct API call could
@@ -340,15 +346,22 @@ export const createBooking = async (
           : 'foreigner'
         : undefined;
 
-      // Validate add-ons against attraction's add-on catalog
-      const validAddons = (item.addons || []).filter((addon) =>
-        attraction.addons?.some((a) => a.id === addon.id)
-      ).map((addon) => {
-        const catalogAddon = attraction.addons?.find((a) => a.id === addon.id);
+      // Add-ons are catalog-owned money data. Unknown or repeated ids fail
+      // closed instead of being silently discarded or charged twice.
+      const requestedAddonIds = new Set<string>();
+      const validAddons = (item.addons || []).map((addon) => {
+        if (requestedAddonIds.has(addon.id)) throw new Error('INVALID_ADDON');
+        requestedAddonIds.add(addon.id);
+        const catalogAddon = attraction.addons?.find((candidate) => candidate.id === addon.id);
+        if (!catalogAddon) throw new Error('INVALID_ADDON');
+        const calculated = calculateAddonPrice(catalogAddon, quantities);
         return {
-          id: addon.id,
-          name: catalogAddon?.name || addon.name,
-          price: catalogAddon?.price ?? 0,
+          id: catalogAddon.id,
+          name: catalogAddon.name,
+          price: catalogAddon.price,
+          pricingModel: calculated.pricingModel,
+          quantity: calculated.quantity,
+          totalPrice: calculated.totalPrice,
         };
       });
 
@@ -379,8 +392,8 @@ export const createBooking = async (
     });
 
     const subtotal = normalizedItems.reduce(
-      (acc: number, item: { totalPrice: number; addons?: Array<{ price: number }> }) => {
-        const addonsTotal = (item.addons || []).reduce((s, a) => s + a.price, 0);
+      (acc: number, item: { totalPrice: number; addons?: Array<{ totalPrice: number }> }) => {
+        const addonsTotal = (item.addons || []).reduce((sum, addon) => sum + addon.totalPrice, 0);
         return acc + item.totalPrice + addonsTotal;
       },
       0
@@ -772,6 +785,15 @@ export const createBooking = async (
       sendError(res, 'At least one paid guest is required', 400);
       return;
     }
+    if (error instanceof Error && error.message.startsWith('PARTICIPANT_LIMIT:')) {
+      const [, minimum, maximum] = error.message.split(':');
+      sendError(res, `This option is available for ${minimum} to ${maximum} participants`, 400);
+      return;
+    }
+    if (error instanceof Error && error.message === 'INVALID_ADDON') {
+      sendError(res, 'Invalid or duplicate add-on selected', 400);
+      return;
+    }
     if (error instanceof Error && error.message === 'PAST_DATE') {
       sendError(res, 'Cannot book a date in the past', 400);
       return;
@@ -828,6 +850,9 @@ const confirmationSafeBooking = (booking: IBooking): Record<string, unknown> => 
       addons: (item.addons || []).map((addon: Record<string, unknown>) => ({
         name: addon.name,
         price: addon.price,
+        pricingModel: addon.pricingModel,
+        quantity: addon.quantity,
+        totalPrice: addon.totalPrice ?? addon.price,
       })),
     })),
     subtotal: raw.subtotal,
@@ -1240,7 +1265,12 @@ export const getBookingTicket = async (
           infants: item.quantities?.infants || 0,
         })),
         addons: firstItem?.addons?.length
-          ? firstItem.addons.map((a: any) => ({ name: a.name, price: a.price }))
+          ? firstItem.addons.map((a: any) => ({
+              name: a.name,
+              price: a.price,
+              quantity: a.quantity,
+              totalPrice: a.totalPrice ?? a.price,
+            }))
           : undefined,
         subtotal: booking.subtotal,
         fees: booking.fees,

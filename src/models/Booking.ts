@@ -43,6 +43,11 @@ const bookingSchema = new Schema<IBooking>(
         childUnitPrice: { type: Number, min: 0 },
         infantUnitPrice: { type: Number, min: 0 },
         discountPercentage: { type: Number, min: 0, max: 99.99 },
+        pricingModel: { type: String, enum: ['per-person', 'per-booking'] },
+        packagePrice: { type: Number, min: 0 },
+        participantCount: { type: Number, min: 1, max: 50 },
+        minParticipants: { type: Number, min: 1, max: 50 },
+        maxParticipants: { type: Number, min: 1, max: 50 },
       },
       // Which pricing tier was applied — only set when tenant has resident pricing enabled
       category: { type: String, enum: ['foreigner', 'resident'] },
@@ -50,6 +55,9 @@ const bookingSchema = new Schema<IBooking>(
         id: { type: String },
         name: { type: String },
         price: { type: Number },
+        pricingModel: { type: String, enum: ['per-person', 'per-booking'] },
+        quantity: { type: Number, min: 1 },
+        totalPrice: { type: Number, min: 0 },
       }],
       // Hotel pickup details — only populated when the booked attraction
       // has `hasHotelPickup === true`. The operator uses these to dispatch

@@ -23,6 +23,7 @@ export interface OctoPricingOptionLike {
   name: string;
   price: number;
   originalPrice?: number;
+  pricingModel?: 'per-person' | 'per-booking';
 }
 
 export interface OctoEntryWindowLike {
@@ -50,6 +51,9 @@ export interface OctoAttractionLike {
 
 const asId = (v: unknown): string => (v == null ? '' : String(v));
 const minor = (n: number | undefined): number => Math.round((n || 0) * 100);
+
+export const isOctoCompatibleProduct = (attraction: OctoAttractionLike): boolean =>
+  !(attraction.pricingOptions || []).some((option) => option.pricingModel === 'per-booking');
 
 /** OCTO unit type inferred from a human pricing-option name (Adult / Child / …). */
 export function octoUnitType(name?: string): string {
@@ -82,6 +86,9 @@ export function toOctoSupplier(t: OctoTenantLike, endpoint = '') {
 }
 
 export function toOctoProduct(a: OctoAttractionLike, t: OctoTenantLike) {
+  if (!isOctoCompatibleProduct(a)) {
+    throw new Error('OCTO_PACKAGE_PRICING_UNSUPPORTED');
+  }
   const currency = a.currency || t.defaultCurrency || 'USD';
   const startTimes = (a.entryWindows || []).map((w) => w.startTime).filter(Boolean);
   const availabilityType =
