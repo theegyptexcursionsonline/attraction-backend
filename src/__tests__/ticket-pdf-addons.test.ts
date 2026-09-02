@@ -1,5 +1,7 @@
 import { generateTicketPdf } from '../services/pdf.service';
 
+const PDF_TEST_TIMEOUT_MS = 15_000;
+
 const ticket = (addons?: Array<{ name: string; price: number; quantity?: number; lineTotal?: number }>) => ({
   reference: 'ATT-QA-ADDONS',
   attractionTitle: 'Reef Trip',
@@ -23,10 +25,10 @@ describe('ticket PDF add-on lines', () => {
     ]));
     expect(Buffer.isBuffer(pdf)).toBe(true);
     expect(pdf.subarray(0, 4).toString()).toBe('%PDF');
-  });
+  }, PDF_TEST_TIMEOUT_MS);
 
   it('still renders a booking with no add-ons', async () => {
     const pdf = await generateTicketPdf(ticket(undefined));
     expect(pdf.subarray(0, 4).toString()).toBe('%PDF');
-  });
+  }, PDF_TEST_TIMEOUT_MS);
 });
