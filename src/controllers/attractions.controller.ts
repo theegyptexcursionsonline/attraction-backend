@@ -262,6 +262,10 @@ export const getAttractions = async (
     else if (sort === 'rating') sortOption = { rating: -1 };
     else if (sort === 'popularity') sortOption = { reviewCount: -1 };
     else if (sort === 'recommended') sortOption = { featured: -1, rating: -1 };
+    // The curated order admins set per tour. Without this the storefront asked
+    // for `sortOrder` and silently got newest-first, so curation never shipped.
+    // Ties fall back to featured then rating so the order stays deterministic.
+    else if (sort === 'sortOrder') sortOption = { sortOrder: 1, featured: -1, rating: -1 };
 
     const isAdminRequest = !!req.user && req.user.role !== 'customer';
     const attractionsQuery = Attraction.find(query).select(
