@@ -44,6 +44,7 @@ interface SeedTour {
   inclusions: string[];
   exclusions: string[];
   itinerary: Array<{ time: string; duration: string; title: string; description: string }>;
+  participantRequirements?: string[];
   availabilityType?: 'time-slots' | 'date-only';
 }
 
@@ -180,6 +181,7 @@ export const MAKADI_EXCURSIONS_TOURS: SeedTour[] = [
     pricingOptions: [personOption(15, 10)], entryWindows: slots(['Dawn ride', '05:00', '07:00'], ['Morning ride', '08:00', '10:00'], ['Afternoon ride', '15:00', '17:00'], ['Sunset ride', '17:00', '19:00']), addons: [TRANSFER_ADDON],
     highlights: ['Four daily ride times', 'Two-hour guided route', 'Dawn and sunset choices'], inclusions: commonInclusions, exclusions: commonExclusions,
     itinerary: [{ time: 'Selected time', duration: '2 hours', title: 'Guided horse ride', description: 'Horse introduction followed by the selected desert route.' }],
+    participantRequirements: ['Children must be 12 or older'],
   },
   {
     slug: 'makadi-excursions-marsa-alam-spider-buggy', pathSlug: 'marsa-alam-spider-buggy', title: 'Marsa Alam Spider Buggy Tour',
@@ -201,6 +203,7 @@ export const MAKADI_EXCURSIONS_TOURS: SeedTour[] = [
     pricingOptions: [personOption(50, 10)], entryWindows: slots(['Early ride', '07:00', '09:00'], ['Morning ride', '10:00', '12:00'], ['Afternoon ride', '15:00', '17:00'], ['Sunset ride', '17:00', '19:00']), addons: [],
     highlights: ['Four daily ride times', 'Two-hour guided route', 'Marsa Alam landscape'], inclusions: commonInclusions, exclusions: ['Personal expenses', 'Optional gratuities'],
     itinerary: [{ time: 'Selected time', duration: '2 hours', title: 'Guided horse ride', description: 'Horse introduction followed by the selected route.' }],
+    participantRequirements: ['Children must be 12 or older'],
   },
   {
     slug: 'makadi-excursions-marsa-alam-desert-dinner', pathSlug: 'marsa-alam-desert-dinner-show', title: 'Marsa Alam Desert Adventure, Dinner & Show',
@@ -346,6 +349,7 @@ async function applyPlan(): Promise<void> {
             addons: tour.addons,
             entryWindows: tour.entryWindows,
             itinerary: tour.itinerary,
+            participantRequirements: tour.participantRequirements || [],
             highlights: tour.highlights,
             inclusions: tour.inclusions,
             exclusions: tour.exclusions,

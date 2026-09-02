@@ -237,6 +237,7 @@ export interface IAttraction extends Document {
     title: string;
     description: string;
   }>;
+  participantRequirements: string[];
   whatToBring: string[];
   accessibility: string[];
   gettingThere: Array<{

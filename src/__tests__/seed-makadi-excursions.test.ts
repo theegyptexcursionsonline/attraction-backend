@@ -66,4 +66,15 @@ describe('Makadi Excursions seed contract', () => {
       }
     }
   });
+
+  it('preserves the source-published child age notice on both horse rides only', () => {
+    const horseTours = MAKADI_EXCURSIONS_TOURS.filter((tour) => tour.category === 'Horse Riding');
+    expect(horseTours).toHaveLength(2);
+    expect(horseTours.every((tour) => (
+      tour.participantRequirements?.[0] === 'Children must be 12 or older'
+    ))).toBe(true);
+    expect(MAKADI_EXCURSIONS_TOURS.filter((tour) => tour.category !== 'Horse Riding').every((tour) => (
+      tour.participantRequirements === undefined
+    ))).toBe(true);
+  });
 });

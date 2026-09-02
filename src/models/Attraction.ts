@@ -199,6 +199,7 @@ const attractionSchema = new Schema<IAttraction>(
       title: { type: String },
       description: { type: String },
     }],
+    participantRequirements: [{ type: String, trim: true }],
     whatToBring: [{ type: String }],
     accessibility: [{ type: String }],
     gettingThere: [{
