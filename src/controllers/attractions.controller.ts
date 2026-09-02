@@ -46,6 +46,7 @@ const PUBLIC_ATTRACTION_FIELDS = [
   'addons',
   'entryWindows',
   'itinerary',
+  'participantRequirements',
   'whatToBring',
   'accessibility',
   'gettingThere',

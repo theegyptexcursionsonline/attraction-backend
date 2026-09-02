@@ -50,6 +50,7 @@ describe('public API DTO contracts', () => {
       slug: 'reef-tour',
       title: 'Reef Tour',
       pricingOptions: [{ id: 'adult', price: 50 }],
+      participantRequirements: ['Children must be 12 or older'],
       availability: { type: 'time-slots', advanceBooking: 30 },
       tenantIds: ['tenant-1'],
       ownerTenantId: 'tenant-1',
@@ -64,6 +65,7 @@ describe('public API DTO contracts', () => {
       slug: 'reef-tour',
       title: 'Reef Tour',
       pricingOptions: [{ id: 'adult', price: 50 }],
+      participantRequirements: ['Children must be 12 or older'],
       availability: { type: 'time-slots', advanceBooking: 30 },
     });
     expect(dto).not.toHaveProperty('tenantIds');
