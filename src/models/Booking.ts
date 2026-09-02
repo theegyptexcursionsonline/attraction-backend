@@ -54,9 +54,11 @@ const bookingSchema = new Schema<IBooking>(
       addons: [{
         id: { type: String },
         name: { type: String },
+        // Unit price from the catalogue at booking time; line total = price × quantity.
         price: { type: Number },
         pricingModel: { type: String, enum: ['per-person', 'per-booking'] },
-        quantity: { type: Number, min: 1 },
+        quantity: { type: Number, default: 1, min: 1 },
+        pricingType: { type: String, enum: ['per_unit', 'per_person'] },
         totalPrice: { type: Number, min: 0 },
       }],
       // Hotel pickup details — only populated when the booked attraction

@@ -24,6 +24,7 @@ import {
   getResellerConfig,
   updateResellerConfig,
   updateResellerVisibilityBulk,
+  duplicateAttraction,
 } from '../controllers/attractions.controller';
 import { authenticate, optionalAuth, requireAdmin, requireRole } from '../middleware/auth.middleware';
 import { optionalTenant } from '../middleware/tenant.middleware';
@@ -297,6 +298,34 @@ router.get('/:id/blocked-dates', optionalAuth, optionalTenant, getBlockedDates);
 router.post('/:id/block-dates', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), blockDates);
 router.delete('/:id/block-dates/:date', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), unblockDate);
 
+/**
+ * @swagger
+ * /attractions/{id}/duplicate:
+ *   post:
+ *     summary: Duplicate a tour into a new draft ("<title> (Copy)", "<slug>-copy[-n]")
+ *     tags: [Attractions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       201:
+ *         description: The new draft attraction
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       404:
+ *         description: Not found (also returned for an attraction outside the caller's sites)
+ *       409:
+ *         description: A concurrent duplicate already claimed the generated copy identifier
+ */
+// Owner-scoped in the query; a cross-tenant id is a 404.
+router.post('/:id/duplicate', authenticate, requireRole('super-admin', 'brand-admin', 'manager', 'editor'), duplicateAttraction);
 router.post('/:id/restore', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), restoreAttraction);
 router.post('/:id/archive', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), archiveAttraction);
 router.post('/:id/unarchive', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), unarchiveAttraction);

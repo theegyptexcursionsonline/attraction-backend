@@ -70,7 +70,7 @@ export const assertOfferTravelRules = (
   },
   date: string,
   time?: string,
-  entryWindows: Array<{ label: string; startTime: string; endTime: string }> = []
+  entryWindows: Array<{ label: string; startTime: string; endTime?: string }> = []
 ): void => {
   const now = new Date();
   const travel = travelInstant(date, time);
@@ -91,9 +91,15 @@ export const assertOfferTravelRules = (
   }
   if (offer.entryWindowLabels?.length) {
     const allowedWindows = entryWindows.filter((window) => offer.entryWindowLabels!.includes(window.label));
+    // A window without an end time is a fixed departure: only its exact start
+    // time is inside it. Never treat an open end as "any later time".
+    const insideWindow = (window: { startTime: string; endTime?: string }, candidate: string): boolean =>
+      window.endTime
+        ? candidate >= window.startTime && candidate < window.endTime
+        : candidate === window.startTime;
     if (
       !time ||
-      !allowedWindows.some((window) => time >= window.startTime && time < window.endTime)
+      !allowedWindows.some((window) => insideWindow(window, time))
     ) {
       throw new BundleOrderError(
         'OFFER_ENTRY_WINDOW',

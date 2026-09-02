@@ -41,7 +41,14 @@ import {
   isBundleComponentBooking,
   standaloneBookingClause,
 } from '../services/bookingRecordScope.service';
-import { calculateAddonPrice, calculateTourLinePrice } from '../utils/attractionPricing';
+import { calculateTourLinePrice } from '../utils/attractionPricing';
+import {
+  AddonSelectionError,
+  addonLineTotal,
+  addonQuantity,
+  addonsTotal,
+  normalizeBookingAddons,
+} from '../utils/bookingAddons';
 import { assertTenantIdsBookingCreationAllowed } from '../services/tenantBookingPolicy.service';
 import { configuredAvailabilityTimes } from '../utils/publicAvailability';
 
@@ -273,7 +280,7 @@ export const createBooking = async (
       time?: string;
       category?: 'foreigner' | 'resident';
       quantities: { adults: number; children: number; infants: number };
-      addons?: Array<{ id: string; name?: string; price?: number }>;
+      addons?: Array<{ id: string; name?: string; price?: number; quantity?: number }>;
       hotelPickup?: { hotelName?: string; roomNumber?: string; pickupTime?: string };
     }) => {
       const option = attraction.pricingOptions.find((o) => o.id === item.optionId);
@@ -347,23 +354,12 @@ export const createBooking = async (
           : 'foreigner'
         : undefined;
 
-      // Add-ons are catalog-owned money data. Unknown or repeated ids fail
-      // closed instead of being silently discarded or charged twice.
-      const requestedAddonIds = new Set<string>();
-      const validAddons = (item.addons || []).map((addon) => {
-        if (requestedAddonIds.has(addon.id)) throw new Error('INVALID_ADDON');
-        requestedAddonIds.add(addon.id);
-        const catalogAddon = attraction.addons?.find((candidate) => candidate.id === addon.id);
-        if (!catalogAddon) throw new Error('INVALID_ADDON');
-        const calculated = calculateAddonPrice(catalogAddon, quantities);
-        return {
-          id: catalogAddon.id,
-          name: catalogAddon.name,
-          price: catalogAddon.price,
-          pricingModel: calculated.pricingModel,
-          quantity: calculated.quantity,
-          totalPrice: calculated.totalPrice,
-        };
+      // Add-ons: catalogue is the price authority; quantity is validated against
+      // the add-on's pricing type (per_unit → once, per_person → ≤ participants).
+      const validAddons = normalizeBookingAddons({
+        catalog: attraction.addons,
+        requested: item.addons,
+        participants: capacityGuests,
       });
 
       return {
@@ -392,13 +388,11 @@ export const createBooking = async (
       };
     });
 
-    const subtotal = normalizedItems.reduce(
-      (acc: number, item: { totalPrice: number; addons?: Array<{ totalPrice: number }> }) => {
-        const addonsTotal = (item.addons || []).reduce((sum, addon) => sum + addon.totalPrice, 0);
-        return acc + item.totalPrice + addonsTotal;
-      },
+    const subtotal = round2(normalizedItems.reduce(
+      (acc: number, item: { totalPrice: number; addons?: Array<{ price: number; quantity?: number }> }) =>
+        acc + item.totalPrice + addonsTotal(item.addons),
       0
-    );
+    ));
 
     const fees = round2(subtotal * 0.05); // 5% service fee
     const tenantId = bookingTenant?._id || attraction.tenantIds[0];
@@ -784,6 +778,10 @@ export const createBooking = async (
       sendError(res, 'Invalid pricing option selected', 400);
       return;
     }
+    if (error instanceof AddonSelectionError) {
+      sendError(res, error.message, 400);
+      return;
+    }
     if (error instanceof Error && error.message === 'INVALID_QUANTITY') {
       sendError(res, 'At least one paid guest is required', 400);
       return;
@@ -850,12 +848,14 @@ const confirmationSafeBooking = (booking: IBooking): Record<string, unknown> => 
       unitPrice: item.unitPrice,
       totalPrice: item.totalPrice,
       category: item.category,
-      addons: (item.addons || []).map((addon: Record<string, unknown>) => ({
+      addons: (item.addons || []).map((addon: Record<string, any>) => ({
         name: addon.name,
         price: addon.price,
         pricingModel: addon.pricingModel,
-        quantity: addon.quantity,
-        totalPrice: addon.totalPrice ?? addon.price,
+        quantity: addonQuantity(addon),
+        pricingType: addon.pricingType,
+        totalPrice: addon.totalPrice ?? addonLineTotal(addon),
+        lineTotal: addonLineTotal(addon),
       })),
     })),
     subtotal: raw.subtotal,
@@ -1271,8 +1271,9 @@ export const getBookingTicket = async (
           ? firstItem.addons.map((a: any) => ({
               name: a.name,
               price: a.price,
-              quantity: a.quantity,
-              totalPrice: a.totalPrice ?? a.price,
+              quantity: addonQuantity(a),
+              totalPrice: a.totalPrice ?? addonLineTotal(a),
+              lineTotal: addonLineTotal(a),
             }))
           : undefined,
         subtotal: booking.subtotal,

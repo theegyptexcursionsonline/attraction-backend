@@ -46,7 +46,90 @@ export const updateProfileSchema = z.object({
 });
 
 // Attraction Validators
-const pricingOptionSchema = z.object({
+const hhmmRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
+const hhmmSchema = (label: string) => z.string().trim().regex(hhmmRegex, `${label} must use 24-hour HH:mm format`);
+
+export const ADDON_PRICING_TYPES = ['per_unit', 'per_person'] as const;
+export type AddonPricingType = (typeof ADDON_PRICING_TYPES)[number];
+const addonPricingTypeSchema = z.enum(ADDON_PRICING_TYPES);
+
+const refineAddonPricingFields = (
+  addon: { pricingType?: AddonPricingType; pricingModel?: 'per-person' | 'per-booking' },
+  ctx: z.RefinementCtx
+): void => {
+  if (
+    addon.pricingType
+    && addon.pricingModel
+    && (addon.pricingType === 'per_person') !== (addon.pricingModel === 'per-person')
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['pricingType'],
+      message: 'Add-on pricing fields must describe the same charging rule',
+    });
+  }
+};
+
+const withCanonicalAddonPricingType = <T extends {
+  pricingType?: AddonPricingType;
+  pricingModel?: 'per-person' | 'per-booking';
+}>(addon: T): T & { pricingType: AddonPricingType } => ({
+  ...addon,
+  pricingType: addon.pricingType
+    ?? (addon.pricingModel === 'per-person' ? 'per_person' : 'per_unit'),
+});
+
+/**
+ * Publish-grade time slot. `endTime` is optional (client request): a slot may be
+ * a departure time only. When it IS supplied it must be HH:mm and later than
+ * the start.
+ */
+const publishTimeSlotSchema = z.object({
+  id: z.string().trim().min(1, 'Time-slot ID is required'),
+  label: z.string().trim().min(1, 'Time-slot label is required'),
+  startTime: hhmmSchema('Start time'),
+  endTime: hhmmSchema('End time').optional(),
+  adultPrice: z.number().finite().min(0, 'Adult slot price cannot be negative').optional(),
+  childPrice: z.number().finite().min(0, 'Child slot price cannot be negative').optional(),
+  infantPrice: z.number().finite().min(0, 'Infant slot price cannot be negative').optional(),
+});
+
+/**
+ * Shared slot-list rules for both the publish and the draft branch. Every check
+ * only fires when the values it needs are present, so a partially filled draft
+ * slot never trips it while a complete slot is still held to the full contract.
+ */
+const refineTimeSlots = (
+  slots: Array<{ id?: string; startTime?: string; endTime?: string }>,
+  ctx: z.RefinementCtx
+): void => {
+  const ids = new Set<string>();
+  const starts = new Set<string>();
+  slots.forEach((slot, index) => {
+    if (slot.id) {
+      if (ids.has(slot.id)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: [index, 'id'], message: 'Time-slot IDs must be unique within an option' });
+      ids.add(slot.id);
+    }
+    if (slot.startTime) {
+      if (starts.has(slot.startTime)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: [index, 'startTime'], message: 'Start times must be unique within an option' });
+      starts.add(slot.startTime);
+    }
+    if (slot.startTime && slot.endTime && slot.endTime <= slot.startTime) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: [index, 'endTime'], message: 'End time must be after start time' });
+    }
+  });
+};
+
+const refineEntryWindow = (
+  window: { startTime?: string; endTime?: string },
+  ctx: z.RefinementCtx
+): void => {
+  if (window.startTime && window.endTime && window.endTime <= window.startTime) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['endTime'], message: 'End time must be after start time' });
+  }
+};
+
+const publishPricingOptionSchema = z.object({
   id: z.string().trim().min(1, 'Pricing option ID is required'),
   name: z.string().trim().min(1, 'Pricing option name is required'),
   description: z.string().optional().default(''),
@@ -58,25 +141,11 @@ const pricingOptionSchema = z.object({
   infantPrice: z.number().finite().min(0, 'Infant price cannot be negative').optional(),
   residentPrice: z.number().finite().min(0, 'Resident price cannot be negative').optional(),
   discountPercentage: z.number().finite().min(0).max(99.99, 'Discount must be below 100%').optional(),
-  timeSlots: z.array(z.object({
-    id: z.string().trim().min(1, 'Time-slot ID is required'),
-    label: z.string().trim().min(1, 'Time-slot label is required'),
-    startTime: z.string().trim().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Start time must use 24-hour HH:mm format'),
-    endTime: z.string().trim().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'End time must use 24-hour HH:mm format'),
-    adultPrice: z.number().finite().min(0, 'Adult slot price cannot be negative').optional(),
-    childPrice: z.number().finite().min(0, 'Child slot price cannot be negative').optional(),
-    infantPrice: z.number().finite().min(0, 'Infant slot price cannot be negative').optional(),
-  })).max(48, 'A pricing option cannot contain more than 48 time slots').superRefine((slots, ctx) => {
-    const ids = new Set<string>();
-    const starts = new Set<string>();
-    slots.forEach((slot, index) => {
-      if (ids.has(slot.id)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: [index, 'id'], message: 'Time-slot IDs must be unique within an option' });
-      if (starts.has(slot.startTime)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: [index, 'startTime'], message: 'Start times must be unique within an option' });
-      if (slot.endTime <= slot.startTime) ctx.addIssue({ code: z.ZodIssueCode.custom, path: [index, 'endTime'], message: 'End time must be after start time' });
-      ids.add(slot.id);
-      starts.add(slot.startTime);
-    });
-  }).optional().default([]),
+  timeSlots: z.array(publishTimeSlotSchema)
+    .max(48, 'A pricing option cannot contain more than 48 time slots')
+    .superRefine(refineTimeSlots)
+    .optional()
+    .default([]),
   originalPrice: z.number().positive().optional(),
 }).superRefine((option, ctx) => {
   if (
@@ -116,7 +185,7 @@ const pricingOptionSchema = z.object({
   }
 });
 
-const pricingOptionsSchema = z.array(pricingOptionSchema).min(1).superRefine((options, ctx) => {
+const pricingOptionsSchema = z.array(publishPricingOptionSchema).min(1).superRefine((options, ctx) => {
   const ids = new Set<string>();
   options.forEach((option, index) => {
     if (ids.has(option.id)) {
@@ -126,6 +195,33 @@ const pricingOptionsSchema = z.array(pricingOptionSchema).min(1).superRefine((op
   });
 });
 
+const publishAddonSchema = z.object({
+  id: z.string().trim().min(1, 'Add-on ID is required'),
+  name: z.string().trim().min(1, 'Add-on name is required'),
+  description: z.string().optional().default(''),
+  price: z.number().finite().min(0, 'Add-on price cannot be negative'),
+  // `per_unit` = charged once per booking line (legacy behaviour);
+  // `per_person` = charged per participant, quantity chosen at booking time.
+  pricingType: addonPricingTypeSchema.optional(),
+  /** Accepted while older storefronts still submit the previous spelling. */
+  pricingModel: z.enum(['per-person', 'per-booking']).optional(),
+}).superRefine(refineAddonPricingFields).transform(withCanonicalAddonPricingType);
+
+// Only the step title is mandatory (client request); the schedule columns are
+// free text the author may leave blank.
+const publishItineraryStepSchema = z.object({
+  time: z.string().trim().optional().default(''),
+  duration: z.string().trim().optional().default(''),
+  title: z.string().trim().min(1, 'Itinerary step title is required'),
+  description: z.string().optional().default(''),
+});
+
+const publishEntryWindowSchema = z.object({
+  label: z.string().min(1),
+  startTime: hhmmSchema('Time'),
+  endTime: hhmmSchema('Time').optional(),
+  price: z.number().positive().optional(),
+}).superRefine(refineEntryWindow);
 export const createAttractionSchema = z.object({
   slug: z.string().min(1, 'Slug is required'),
   pathSlug: z.string().trim().min(1).max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'URL slug may contain lowercase letters, numbers, and hyphens only').optional(),
@@ -152,12 +248,7 @@ export const createAttractionSchema = z.object({
   priceFrom: z.number().positive(),
   currency: z.string().min(1),
   pricingOptions: pricingOptionsSchema,
-  entryWindows: z.array(z.object({
-    label: z.string().min(1),
-    startTime: z.string().trim().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Time must use 24-hour HH:mm format'),
-    endTime: z.string().trim().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Time must use 24-hour HH:mm format'),
-    price: z.number().positive().optional(),
-  })).optional().default([]),
+  entryWindows: z.array(publishEntryWindowSchema).optional().default([]),
   highlights: z.array(z.string()).optional().default([]),
   inclusions: z.array(z.string()).optional().default([]),
   exclusions: z.array(z.string()).optional().default([]),
@@ -169,6 +260,7 @@ export const createAttractionSchema = z.object({
   cancellationPolicy: z.string().optional().default('Free cancellation up to 24 hours before'),
   instantConfirmation: z.boolean().optional().default(true),
   mobileTicket: z.boolean().optional().default(true),
+  hasHotelPickup: z.boolean().optional(),
   badges: z.array(z.enum(['bestseller', 'free-cancellation', 'skip-line', 'instant-confirm'])).optional().default([]),
   availability: z.object({
     type: z.enum(['time-slots', 'date-only', 'flexible']),
@@ -179,26 +271,16 @@ export const createAttractionSchema = z.object({
     metaDescription: z.string().optional().default(''),
     keywords: z.array(z.string()).optional(),
   }).optional(),
-  itinerary: z.array(z.object({
-    time: z.string(),
-    duration: z.string(),
-    title: z.string(),
-    description: z.string().optional().default(''),
-  })).optional().default([]),
+  itinerary: z.array(publishItineraryStepSchema).optional().default([]),
   whatToBring: z.array(z.string()).optional().default([]),
+  needToKnow: z.array(z.string()).optional().default([]),
   accessibility: z.array(z.string()).optional().default([]),
   gettingThere: z.array(z.object({
     mode: z.string(),
     description: z.string(),
   })).optional().default([]),
   tenantIds: z.array(z.string()).optional().default([]),
-  addons: z.array(z.object({
-    id: z.string(),
-    name: z.string(),
-    description: z.string().optional().default(''),
-    price: z.number().min(0),
-    pricingModel: z.enum(['per-person', 'per-booking']).optional().default('per-booking'),
-  })).max(50).superRefine((addons, ctx) => {
+  addons: z.array(publishAddonSchema).max(50).superRefine((addons, ctx) => {
     const ids = new Set<string>();
     addons.forEach((addon, index) => {
       if (ids.has(addon.id)) {
@@ -217,9 +299,65 @@ export const createAttractionSchema = z.object({
 // it only makes TOP-LEVEL keys optional, so a submitted-but-blank
 // `destination.city` and an empty `pricingOptions` array still failed and the
 // save was rejected with an unnamed "Invalid input" (ATN rows 81 / 114).
-// These overrides relax the nested publish constraints; the publish schema
-// keeps enforcing the full contract, and any pricing option the author DID
-// supply is still validated in full so bad money data can never reach a draft.
+//
+// The nested documents are deep-partial too: a draft may hold a pricing option
+// with only a name, a slot with only a start time, an add-on with no price yet.
+// Every value the author DID supply is still validated (HH:mm, non-negative
+// money, unique slot ids/starts, end after start), so bad data never reaches a
+// draft — it just does not have to be complete. The publish schema keeps the
+// full contract and the publish gate re-checks the merged document.
+const draftTimeSlotSchema = z.object({
+  id: z.string().trim().optional(),
+  label: z.string().trim().optional(),
+  startTime: hhmmSchema('Start time').optional(),
+  endTime: hhmmSchema('End time').optional(),
+  adultPrice: z.number().finite().min(0, 'Adult slot price cannot be negative').optional(),
+  childPrice: z.number().finite().min(0, 'Child slot price cannot be negative').optional(),
+  infantPrice: z.number().finite().min(0, 'Infant slot price cannot be negative').optional(),
+});
+
+const draftPricingOptionSchema = z.object({
+  id: z.string().trim().optional(),
+  name: z.string().trim().optional(),
+  description: z.string().optional(),
+  price: z.number().finite().min(0, 'Adult price cannot be negative').optional(),
+  pricingModel: z.enum(['per-person', 'per-booking']).optional(),
+  minParticipants: z.number().int().min(1).max(50).optional(),
+  maxParticipants: z.number().int().min(1).max(50).optional(),
+  childPrice: z.number().finite().min(0, 'Child price cannot be negative').optional(),
+  infantPrice: z.number().finite().min(0, 'Infant price cannot be negative').optional(),
+  discountPercentage: z.number().finite().min(0).max(99.99, 'Discount must be below 100%').optional(),
+  timeSlots: z.array(draftTimeSlotSchema)
+    .max(48, 'A pricing option cannot contain more than 48 time slots')
+    .superRefine(refineTimeSlots)
+    .optional(),
+  originalPrice: z.number().finite().min(0).optional(),
+  residentPrice: z.number().finite().min(0, 'Resident price cannot be negative').optional(),
+});
+
+const draftAddonSchema = z.object({
+  id: z.string().trim().optional(),
+  name: z.string().trim().optional(),
+  description: z.string().optional(),
+  price: z.number().finite().min(0, 'Add-on price cannot be negative').optional(),
+  pricingType: addonPricingTypeSchema.optional(),
+  pricingModel: z.enum(['per-person', 'per-booking']).optional(),
+}).superRefine(refineAddonPricingFields).transform(withCanonicalAddonPricingType);
+
+const draftItineraryStepSchema = z.object({
+  time: z.string().trim().optional(),
+  duration: z.string().trim().optional(),
+  title: z.string().trim().optional(),
+  description: z.string().optional(),
+});
+
+const draftEntryWindowSchema = z.object({
+  label: z.string().trim().optional(),
+  startTime: hhmmSchema('Time').optional(),
+  endTime: hhmmSchema('Time').optional(),
+  price: z.number().finite().min(0).optional(),
+}).superRefine(refineEntryWindow);
+
 const draftRelaxedFields = {
   destination: z.object({
     city: z.string().optional().default(''),
@@ -229,7 +367,10 @@ const draftRelaxedFields = {
       lng: z.number(),
     }).optional(),
   }).optional(),
-  pricingOptions: z.array(pricingOptionSchema).optional(),
+  pricingOptions: z.array(draftPricingOptionSchema).optional(),
+  entryWindows: z.array(draftEntryWindowSchema).optional(),
+  addons: z.array(draftAddonSchema).optional(),
+  itinerary: z.array(draftItineraryStepSchema).optional(),
   priceFrom: z.number().nonnegative().optional(),
   duration: z.string().optional(),
   category: z.string().optional(),
@@ -250,6 +391,7 @@ export const createAttractionDraftSchema = createAttractionSchema.partial().exte
 // `.partial()` — so the SECOND save of a draft failed exactly like the first
 // one did. The draft branch has to be relaxed on both verbs.
 export const updateAttractionDraftSchema = createAttractionSchema.partial().extend({
+  title: z.string().trim().min(1, 'Title is required').optional(),
   status: z.literal('draft'),
   ...draftRelaxedFields,
 });
@@ -353,6 +495,9 @@ export const createBookingSchema = z.object({
       // name and price from the selected attraction catalog.
       name: z.string().trim().min(1).max(200).optional(),
       price: z.number().finite().min(0).max(10_000_000).optional(),
+      // How many units of the add-on. The server re-checks it against the
+      // catalogue pricing type (per_unit → exactly 1, per_person → ≤ participants).
+      quantity: z.number().int().min(1).max(50).optional().default(1),
     })).max(20).optional().default([]),
     hotelPickup: z.object({
       hotelName: z.string().trim().min(1).max(200),

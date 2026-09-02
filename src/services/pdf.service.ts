@@ -18,7 +18,7 @@ interface TicketData {
     children: number;
     infants: number;
   }>;
-  addons?: Array<{ name: string; price: number; quantity?: number; totalPrice?: number }>;
+  addons?: Array<{ name: string; price: number; quantity?: number; totalPrice?: number; lineTotal?: number }>;
   subtotal?: number;
   fees?: number;
   discount?: number;
@@ -317,16 +317,28 @@ export const generateTicketPdf = async (data: TicketData): Promise<Buffer> => {
         y = sectionHeader(doc, 'Add-ons', y + 4, brand);
 
         for (const addon of data.addons) {
+          // Legacy bookings carry no quantity: render them as a single unit.
+          const quantity = Number.isInteger(addon.quantity) && (addon.quantity as number) >= 1
+            ? (addon.quantity as number)
+            : 1;
+          const lineTotal = typeof addon.lineTotal === 'number'
+            ? addon.lineTotal
+            : typeof addon.totalPrice === 'number'
+              ? addon.totalPrice
+              : Math.round(addon.price * quantity * 100) / 100;
+          const label = quantity > 1
+            ? `+  ${addon.name}  ×${quantity} @ ${fmt(addon.price, data.currency)}`
+            : `+  ${addon.name}`;
           doc
             .font('Helvetica')
             .fontSize(9)
             .fillColor('#475569')
-            .text(`+  ${addon.name}${addon.quantity && addon.quantity > 1 ? ` × ${addon.quantity}` : ''}`, col1x, y, { width: 350 });
+            .text(label, col1x, y, { width: 350 });
           doc
             .font('Helvetica-Bold')
             .fontSize(9)
             .fillColor('#1e293b')
-            .text(fmt(addon.totalPrice ?? addon.price, data.currency), 460, y, {
+            .text(fmt(lineTotal, data.currency), 460, y, {
               width: 85,
               align: 'right',
             });

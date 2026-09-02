@@ -407,7 +407,7 @@ describe('API security and pricing guards', () => {
     expect(rejected.body.error).toBe('This option is available for 3 to 4 participants');
   });
 
-  it('prices catalog add-ons by model and rejects unknown or duplicate ids', async () => {
+  it('prices the manually chosen add-on quantity from the catalog and rejects unknown ids', async () => {
     (Attraction.findById as jest.Mock).mockResolvedValue({
       _id: ATTR_ID,
       status: 'active',
@@ -425,7 +425,7 @@ describe('API security and pricing guards', () => {
         items: [{
           ...validBookingPayload().items[0],
           quantities: { adults: 2, children: 1, infants: 1 },
-          addons: [{ id: 'transfer', name: 'Tampered', price: 0.01 }],
+          addons: [{ id: 'transfer', name: 'Tampered', price: 0.01, quantity: 3 }],
         }],
       });
     expect(accepted.status).toBe(201);
@@ -434,6 +434,7 @@ describe('API security and pricing guards', () => {
       name: 'El Gouna transfer',
       price: 10,
       pricingModel: 'per-person',
+      pricingType: 'per_person',
       quantity: 3,
       totalPrice: 30,
     });
@@ -450,7 +451,7 @@ describe('API security and pricing guards', () => {
         }],
       });
     expect(invalid.status).toBe(400);
-    expect(invalid.body.error).toBe('Invalid or duplicate add-on selected');
+    expect(invalid.body.error).toBe('A selected add-on is no longer available');
   });
 
   it('requires a valid idempotency key before looking up an attraction', async () => {

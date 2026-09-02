@@ -164,6 +164,7 @@ export interface ITenant extends Document {
 
 // Attraction Types
 export type AttractionStatus = 'active' | 'draft' | 'archived';
+export type AddonPricingType = 'per_unit' | 'per_person';
 export type Badge = 'bestseller' | 'free-cancellation' | 'skip-line' | 'instant-confirm';
 export type PricingModel = 'per-person' | 'per-booking';
 
@@ -209,7 +210,8 @@ export interface IAttraction extends Document {
       id: string;
       label: string;
       startTime: string;
-      endTime: string;
+      /** Optional — a slot may be a departure time with no fixed end. */
+      endTime?: string;
       adultPrice?: number;
       childPrice?: number;
       infantPrice?: number;
@@ -224,11 +226,13 @@ export interface IAttraction extends Document {
     price: number;
     /** Defaults to per-booking for every legacy add-on. */
     pricingModel?: PricingModel;
+    /** `per_unit` (default, charged once per line) or `per_person` (× participants chosen at booking). */
+    pricingType?: AddonPricingType;
   }>;
   entryWindows: Array<{
     label: string;
     startTime: string;
-    endTime: string;
+    endTime?: string;
     price?: number;
   }>;
   itinerary: Array<{
@@ -239,6 +243,7 @@ export interface IAttraction extends Document {
   }>;
   participantRequirements: string[];
   whatToBring: string[];
+  needToKnow: string[];
   accessibility: string[];
   gettingThere: Array<{
     mode: string;
@@ -326,10 +331,14 @@ export interface IBooking extends Document {
     addons?: Array<{
       id: string;
       name: string;
+      /** Catalogue unit price at booking time. */
       price: number;
       pricingModel?: PricingModel;
+      /** Units booked; legacy bookings written before this field carry none and mean 1. */
       quantity?: number;
       totalPrice?: number;
+      /** Canonical catalogue charging rule captured at booking time. */
+      pricingType?: AddonPricingType;
     }>;
     hotelPickup?: {
       hotelName: string;

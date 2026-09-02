@@ -62,7 +62,10 @@ describe('tour draft request validation', () => {
     }
   });
 
-  it('still validates pricing options that were supplied on a draft', () => {
+  it('still validates pricing option VALUES that were supplied on a draft', () => {
+    // Contract change (client request): while a tour is a draft, nested
+    // documents may be incomplete — a blank option name is allowed. Values the
+    // author did type are still checked, so a negative price is rejected.
     const result = createAttractionDraftSchema.safeParse({
       slug: 'bad-pricing',
       title: 'Bad pricing',
@@ -73,7 +76,7 @@ describe('tour draft request validation', () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       const paths = result.error.issues.map((issue) => issue.path.join('.'));
-      expect(paths).toContain('pricingOptions.0.name');
+      expect(paths).not.toContain('pricingOptions.0.name');
       expect(paths).toContain('pricingOptions.0.price');
     }
   });
@@ -140,7 +143,9 @@ describe('re-saving an existing draft (PATCH)', () => {
     expect(updateAttractionRequestSchema.safeParse({ featured: true }).success).toBe(true);
   });
 
-  it('still validates pricing options supplied on a draft update', () => {
+  it('still validates pricing option VALUES supplied on a draft update', () => {
+    // Same contract change as the create branch: a blank name is fine on a
+    // draft, a negative price never is.
     const result = updateAttractionRequestSchema.safeParse({
       status: 'draft',
       pricingOptions: [{ id: 'opt-1', name: '', price: -1 }],
@@ -149,7 +154,8 @@ describe('re-saving an existing draft (PATCH)', () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       const paths = result.error.issues.map((issue) => issue.path.join('.'));
-      expect(paths).toContain('pricingOptions.0.name');
+      expect(paths).not.toContain('pricingOptions.0.name');
+      expect(paths).toContain('pricingOptions.0.price');
     }
   });
 });

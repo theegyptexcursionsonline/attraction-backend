@@ -1,4 +1,5 @@
 import { Response, NextFunction, Request } from 'express';
+import { addonLineTotal, addonQuantity } from '../utils/bookingAddons';
 import type Stripe from 'stripe';
 import { Booking } from '../models/Booking';
 import { Attraction } from '../models/Attraction';
@@ -439,8 +440,9 @@ const finalizePaidBooking = async (
         ? firstItem.addons.map((a: { name: string; price: number; quantity?: number; totalPrice?: number }) => ({
             name: a.name,
             price: a.price,
-            quantity: a.quantity,
-            totalPrice: a.totalPrice ?? a.price,
+            quantity: addonQuantity(a),
+            totalPrice: a.totalPrice ?? addonLineTotal(a),
+            lineTotal: addonLineTotal(a),
           }))
         : undefined,
       subtotal: booking.subtotal,

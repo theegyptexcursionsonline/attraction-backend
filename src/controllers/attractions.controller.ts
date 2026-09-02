@@ -48,6 +48,7 @@ const PUBLIC_ATTRACTION_FIELDS = [
   'itinerary',
   'participantRequirements',
   'whatToBring',
+  'needToKnow',
   'accessibility',
   'gettingThere',
   'highlights',
@@ -743,6 +744,164 @@ export const updateAttraction = async (
 
     sendSuccess(res, attraction, 'Attraction updated successfully');
   } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Authoring fields carried over by "Duplicate". Everything operational or
+ * commercial-state related (status, slug, ratings, archive/trash markers,
+ * featured flag, reseller exposure, timestamps, author) is deliberately NOT in
+ * this list — the copy starts life as a fresh, unpublished draft.
+ */
+const DUPLICATE_AUTHORING_FIELDS = [
+  'parentPage',
+  'shortDescription',
+  'description',
+  'images',
+  'category',
+  'subcategory',
+  'destination',
+  'duration',
+  'languages',
+  'priceFrom',
+  'currency',
+  'pricingOptions',
+  'addons',
+  'entryWindows',
+  'itinerary',
+  'whatToBring',
+  'needToKnow',
+  'accessibility',
+  'gettingThere',
+  'highlights',
+  'inclusions',
+  'exclusions',
+  'meetingPoint',
+  'cancellationPolicy',
+  'instantConfirmation',
+  'mobileTicket',
+  'hasHotelPickup',
+  'badges',
+  'availability',
+  'seo',
+  'tenantIds',
+  'ownerTenantId',
+] as const;
+
+const isObjectIdLike = (value: object): boolean =>
+  value instanceof Types.ObjectId ||
+  (value as { _bsontype?: string })._bsontype === 'ObjectId' ||
+  (value as { _bsontype?: string })._bsontype === 'ObjectID';
+
+const isDuplicateKeyError = (error: unknown): boolean =>
+  Boolean(error && typeof error === 'object' && (error as { code?: unknown }).code === 11000);
+
+/** Deep-copies a value while dropping every subdocument `_id` so the copy owns fresh ids. */
+const stripSubdocumentIds = (value: unknown): unknown => {
+  if (Array.isArray(value)) return value.map(stripSubdocumentIds);
+  if (value && typeof value === 'object' && !isObjectIdLike(value) && !(value instanceof Date)) {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .filter(([key]) => key !== '_id')
+        .map(([key, nested]) => [key, stripSubdocumentIds(nested)])
+    );
+  }
+  return value;
+};
+
+/**
+ * First free `<base>-copy`, `<base>-copy-2`, … for `field` within `scope`,
+ * resolved with ONE bounded read of the existing candidates instead of
+ * probing one slug at a time (B7).
+ */
+const nextCopySlug = async (
+  base: string,
+  field: 'slug' | 'pathSlug',
+  scope: Record<string, unknown> = {}
+): Promise<string> => {
+  const root = `${base}-copy`;
+  const existing = await Attraction.find({
+    ...scope,
+    [field]: { $regex: `^${escapeRegex(root)}(-\\d+)?$` },
+  })
+    .select(field)
+    .limit(1000)
+    .lean();
+  const taken = new Set(existing.map((doc) => String((doc as Record<string, unknown>)[field])));
+  if (!taken.has(root)) return root;
+  for (let n = 2; n <= 1001; n += 1) {
+    const candidate = `${root}-${n}`;
+    if (!taken.has(candidate)) return candidate;
+  }
+  // 1000+ copies of one tour: fall back to a random suffix rather than scanning further.
+  return `${root}-${new Types.ObjectId().toHexString().slice(-6)}`;
+};
+
+export const duplicateAttraction = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    if (!Types.ObjectId.isValid(id as string)) {
+      sendError(res, 'Attraction not found', 404);
+      return;
+    }
+
+    // Tenant scope lives IN the query (B1): only the commercial owner (or a
+    // super-admin) may clone a tour, and a foreign id is indistinguishable
+    // from a missing one. A reseller that merely distributes a supplier's
+    // tour must never be able to copy it into its own catalogue.
+    const source = await Attraction.findOne({
+      _id: id,
+      ...commercialOwnerMutationScope(req),
+    }).lean();
+    if (!source) {
+      sendError(res, 'Attraction not found', 404);
+      return;
+    }
+
+    const record = source as unknown as Record<string, unknown>;
+    const authoring = Object.fromEntries(
+      DUPLICATE_AUTHORING_FIELDS
+        .filter((field) => record[field] !== undefined)
+        .map((field) => [field, stripSubdocumentIds(record[field])])
+    );
+
+    const tenantIds = Array.isArray(record.tenantIds) ? (record.tenantIds as unknown[]) : [];
+    const slug = await nextCopySlug(String(record.slug), 'slug');
+    // pathSlug uniqueness is per site (see createAttraction), so scope the scan
+    // to the tenants the copy will belong to.
+    const pathSlug = typeof record.pathSlug === 'string' && record.pathSlug
+      ? await nextCopySlug(record.pathSlug, 'pathSlug', { tenantIds: { $in: tenantIds } })
+      : undefined;
+
+    const copy = await Attraction.create({
+      ...authoring,
+      slug,
+      ...(pathSlug ? { pathSlug } : {}),
+      title: `${String(record.title || '').trim()} (Copy)`,
+      status: 'draft',
+      featured: false,
+      rating: 0,
+      reviewCount: 0,
+      sortOrder: 0,
+      reseller: { enabled: false, value: 0, allowedTenants: [] },
+      createdBy: req.user?._id,
+    });
+
+    sendSuccess(res, copy, 'Attraction duplicated successfully', 201);
+  } catch (error) {
+    // A concurrent duplicate request can win after nextCopySlug's bounded
+    // read. Do not pass Mongo's index/key details to the shared error handler:
+    // they can disclose slugs, tenant/provider identifiers, or schema names.
+    // The caller can retry and receive the next available copy suffix.
+    if (isDuplicateKeyError(error)) {
+      sendError(res, 'The attraction could not be duplicated because a copy already exists', 409);
+      return;
+    }
     next(error);
   }
 };

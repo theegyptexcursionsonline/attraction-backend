@@ -34,7 +34,16 @@ function requiredWhenPublished(this: ValidatorContext): boolean {
     return status !== 'draft';
   }
   const owner = typeof this?.ownerDocument === 'function' ? this.ownerDocument() : this;
-  return owner?.status !== 'draft';
+  const status = owner?.status;
+  // Nested array elements (pricing options, their time slots, add-ons) that are
+  // validated by an UPDATE validator have no root document: `ownerDocument()`
+  // is the element itself and carries no status. The status is unknowable
+  // there, so — like the query branch above — treat it as a draft-safe write.
+  // The route schemas and the publish gate remain the authority for updates;
+  // this rule is defence in depth for document saves, where the root status
+  // is always known.
+  if (typeof status !== 'string') return false;
+  return status !== 'draft';
 }
 
 const attractionSchema = new Schema<IAttraction>(
@@ -129,11 +138,14 @@ const attractionSchema = new Schema<IAttraction>(
       required: true,
       default: 'USD',
     },
+    // Nested authoring documents are only complete once the tour is published:
+    // a draft may hold a pricing option with just a name, a slot with just a
+    // start time, or an add-on with no price yet (client request).
     pricingOptions: [{
-      id: { type: String, required: true },
-      name: { type: String, required: true },
+      id: { type: String, required: requiredWhenPublished },
+      name: { type: String, required: requiredWhenPublished },
       description: { type: String },
-      price: { type: Number, required: true },
+      price: { type: Number, required: requiredWhenPublished, min: 0 },
       pricingModel: {
         type: String,
         enum: ['per-person', 'per-booking'],
@@ -163,10 +175,11 @@ const attractionSchema = new Schema<IAttraction>(
       infantPrice: { type: Number, min: 0 },
       discountPercentage: { type: Number, min: 0, max: 99.99 },
       timeSlots: [{
-        id: { type: String, required: true },
-        label: { type: String, required: true },
-        startTime: { type: String, required: true },
-        endTime: { type: String, required: true },
+        id: { type: String, required: requiredWhenPublished },
+        label: { type: String, required: requiredWhenPublished },
+        startTime: { type: String, required: requiredWhenPublished },
+        // Optional: a slot may be a departure time with no fixed end.
+        endTime: { type: String },
         adultPrice: { type: Number, min: 0 },
         childPrice: { type: Number, min: 0 },
         infantPrice: { type: Number, min: 0 },
@@ -177,20 +190,30 @@ const attractionSchema = new Schema<IAttraction>(
       residentPrice: { type: Number, min: 0 },
     }],
     addons: [{
-      id: { type: String, required: true },
-      name: { type: String, required: true },
+      id: { type: String, required: requiredWhenPublished },
+      name: { type: String, required: requiredWhenPublished },
       description: { type: String },
-      price: { type: Number, required: true, min: 0 },
+      price: { type: Number, required: requiredWhenPublished, min: 0 },
       pricingModel: {
         type: String,
         enum: ['per-person', 'per-booking'],
-        default: 'per-booking',
+      },
+      // per_unit → charged once per booking line (legacy default);
+      // per_person → charged per participant, quantity chosen at booking time.
+      pricingType: {
+        type: String,
+        enum: ['per_unit', 'per_person'],
+        default: function (this: { pricingModel?: string }): 'per_unit' | 'per_person' {
+          return this.pricingModel === 'per-person' ? 'per_person' : 'per_unit';
+        },
       },
     }],
     entryWindows: [{
-      label: { type: String, required: true },
-      startTime: { type: String, required: true },
-      endTime: { type: String, required: true },
+      label: { type: String, required: requiredWhenPublished },
+      startTime: { type: String, required: requiredWhenPublished },
+      // Optional: the storefront derives these from option time slots, which
+      // may carry no end time.
+      endTime: { type: String },
       price: { type: Number, min: 0.01 },
     }],
     itinerary: [{
@@ -201,6 +224,8 @@ const attractionSchema = new Schema<IAttraction>(
     }],
     participantRequirements: [{ type: String, trim: true }],
     whatToBring: [{ type: String }],
+    // "Need to know" bullet list shown on the storefront detail page.
+    needToKnow: [{ type: String }],
     accessibility: [{ type: String }],
     gettingThere: [{
       mode: { type: String },

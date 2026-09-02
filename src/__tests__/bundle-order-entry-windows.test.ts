@@ -91,3 +91,27 @@ describe('bundle order entry-window revalidation', () => {
     }));
   });
 });
+
+describe('entry windows without an end time', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  const windows = [{ label: 'Morning Session', startTime: '08:00' }];
+
+  it('accepts only the exact departure time of an open-ended window', async () => {
+    mockAttractions([{ _id: attractionId, ownerTenantId: supplierTenantId, entryWindows: windows }]);
+    await expect(assertOrderSelectionsTravelRules({
+      selections: [selection],
+      offers: [offer],
+      session,
+    })).resolves.toBeUndefined();
+  });
+
+  it('never treats an open end as "any later time"', async () => {
+    mockAttractions([{ _id: attractionId, ownerTenantId: supplierTenantId, entryWindows: windows }]);
+    await expect(assertOrderSelectionsTravelRules({
+      selections: [{ ...selection, time: '09:30' }],
+      offers: [offer],
+      session,
+    })).rejects.toMatchObject({ code: 'OFFER_ENTRY_WINDOW' } as Partial<BundleOrderError>);
+  });
+});
