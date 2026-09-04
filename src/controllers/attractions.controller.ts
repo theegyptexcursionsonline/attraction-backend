@@ -8,7 +8,7 @@ import { Category } from '../models/Category';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest, IAttraction } from '../types';
 import { Types } from 'mongoose';
-import { escapeRegex } from '../utils/helpers';
+import { escapeRegex, MAX_REGEX_SEARCH_LENGTH, searchRegexValue } from '../utils/helpers';
 import {
   isSuperAdmin,
   callerTenantIds,
@@ -233,8 +233,9 @@ export const getAttractions = async (
       query.category = category as string;
     }
 
-    if (destination) {
-      query['destination.city'] = { $regex: new RegExp(escapeRegex(destination as string), 'i') };
+    const safeDestination = searchRegexValue(destination);
+    if (safeDestination) {
+      query['destination.city'] = { $regex: new RegExp(safeDestination, 'i') };
     }
 
     if (minPrice || maxPrice) {
@@ -824,7 +825,11 @@ const nextCopySlug = async (
   field: 'slug' | 'pathSlug',
   scope: Record<string, unknown> = {}
 ): Promise<string> => {
-  const root = `${base}-copy`;
+  const copySuffix = '-copy';
+  const boundedBase = Array.from(base.trim())
+    .slice(0, MAX_REGEX_SEARCH_LENGTH - Array.from(copySuffix).length)
+    .join('');
+  const root = `${boundedBase}${copySuffix}`;
   const existing = await Attraction.find({
     ...scope,
     [field]: { $regex: `^${escapeRegex(root)}(-\\d+)?$` },
@@ -1095,7 +1100,7 @@ export const getResellableAttractions = async (
     const currentTenantId = resolveResellerTenantId(req);
     const page = Math.max(Number(req.query.page) || 1, 1);
     const limit = Math.min(Math.max(Number(req.query.limit) || 24, 1), 100);
-    const search = typeof req.query.search === 'string' ? req.query.search.trim().slice(0, 120) : '';
+    const safeSearch = searchRegexValue(req.query.search);
     const ownerTenantIds = typeof req.query.ownerTenantIds === 'string'
       ? [...new Set(req.query.ownerTenantIds.split(',').map((id) => id.trim()).filter((id) => Types.ObjectId.isValid(id)))].slice(0, 100)
       : [];
@@ -1134,8 +1139,8 @@ export const getResellableAttractions = async (
       };
     }
 
-    if (search) {
-      const searchRegex = new RegExp(escapeRegex(search), 'i');
+    if (safeSearch) {
+      const searchRegex = new RegExp(safeSearch, 'i');
       const matchingOwners = await Tenant.find({
         status: 'active',
         $or: [{ name: searchRegex }, { slug: searchRegex }],

@@ -5,7 +5,7 @@ import { Attraction } from '../models/Attraction';
 import { Booking } from '../models/Booking';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
-import { escapeRegex } from '../utils/helpers';
+import { searchRegexValue } from '../utils/helpers';
 import { sanitizeCustomPages } from '../utils/sanitizeHtml';
 import { DomainClaim } from '../models/DomainClaim';
 import {
@@ -115,8 +115,8 @@ export const getTenants = async (
       query.status = status;
     }
 
-    if (search) {
-      const safeSearch = escapeRegex(search as string);
+    const safeSearch = searchRegexValue(search);
+    if (safeSearch) {
       query.$or = [
         { name: { $regex: safeSearch, $options: 'i' } },
         { slug: { $regex: safeSearch, $options: 'i' } },

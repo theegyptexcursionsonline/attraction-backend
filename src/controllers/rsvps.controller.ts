@@ -5,7 +5,7 @@ import { Tenant } from '../models/Tenant';
 import { AuthRequest } from '../types';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { sendEventRsvpNotification, sendEventRsvpConfirmation } from '../services/email.service';
-import { escapeRegex } from '../utils/helpers';
+import { searchRegexValue } from '../utils/helpers';
 
 const adminRoles = ['super-admin', 'brand-admin', 'manager'];
 const emailPattern = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
@@ -199,8 +199,9 @@ export const getAllRsvps = async (
     if (eventSlug) {
       query.eventSlug = eventSlug;
     }
-    if (search && search.trim()) {
-      const rx = new RegExp(escapeRegex(search.trim()), 'i');
+    const safeSearch = searchRegexValue(search);
+    if (safeSearch) {
+      const rx = new RegExp(safeSearch, 'i');
       query.$or = [{ firstName: rx }, { lastName: rx }, { email: rx }, { phone: rx }];
     }
 

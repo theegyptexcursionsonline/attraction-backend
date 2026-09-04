@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MAX_REGEX_SEARCH_LENGTH } from './helpers';
 
 // Auth Validators
 export const registerSchema = z.object({
@@ -578,14 +579,23 @@ export const paginationSchema = z.object({
   sort: z.string().optional(),
 });
 
+/** Shared contract for every query that reaches a regex-backed search. */
+export const regexSearchSchema = z
+  .string()
+  .trim()
+  .refine((value) => Array.from(value).length <= MAX_REGEX_SEARCH_LENGTH, {
+    message: `Search must be at most ${MAX_REGEX_SEARCH_LENGTH} characters`,
+  })
+  .optional();
+
 export const attractionFiltersSchema = z.object({
   category: z.string().optional(),
-  destination: z.string().optional(),
+  destination: regexSearchSchema,
   minPrice: z.coerce.number().optional(),
   maxPrice: z.coerce.number().optional(),
   rating: z.coerce.number().optional(),
   badges: z.string().optional(), // comma-separated
-  search: z.string().optional(),
+  search: z.string().trim().max(MAX_REGEX_SEARCH_LENGTH).optional(),
   status: z.enum(['active', 'draft', 'archived']).optional(),
   lifecycle: z.enum(['archive', 'trash']).optional(),
   /** Admin surfaces send scope=admin so a silently expired session 401s instead of degrading to the public catalog. */

@@ -12,8 +12,15 @@ import {
 import { optionalAuth, authenticate, requireRole } from '../middleware/auth.middleware';
 import { optionalTenant } from '../middleware/tenant.middleware';
 import { publicWriteLimiter } from '../middleware/rate-limit.middleware';
+import { validateQuery } from '../middleware/validate.middleware';
+import { paginationSchema, regexSearchSchema } from '../utils/validators';
+import { z } from 'zod';
 
 const router = Router();
+const adminReviewListQuerySchema = paginationSchema.extend({
+  status: z.enum(['all', 'pending', 'approved', 'rejected']).optional(),
+  search: regexSearchSchema,
+});
 
 /**
  * @swagger
@@ -129,7 +136,7 @@ router.post('/', publicWriteLimiter, optionalAuth, optionalTenant, createReview)
  *         description: Paginated reviews for the attraction
  */
 // Admin routes (must be before /:reviewId to avoid param conflict)
-router.get('/admin', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), getAdminReviews);
+router.get('/admin', authenticate, validateQuery(adminReviewListQuerySchema), requireRole('super-admin', 'brand-admin', 'manager'), getAdminReviews);
 router.patch('/:id/status', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), updateReviewStatus);
 router.post('/:id/reply', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), replyToReview);
 

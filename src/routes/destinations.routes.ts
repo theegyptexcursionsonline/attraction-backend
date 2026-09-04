@@ -10,7 +10,7 @@ import {
 import { authenticate, optionalAuth, requireSuperAdmin } from '../middleware/auth.middleware';
 import { optionalTenant } from '../middleware/tenant.middleware';
 import { validate, validateQuery } from '../middleware/validate.middleware';
-import { createDestinationSchema, updateDestinationSchema, paginationSchema } from '../utils/validators';
+import { createDestinationSchema, updateDestinationSchema, paginationSchema, regexSearchSchema } from '../utils/validators';
 import { z } from 'zod';
 
 const router = Router();
@@ -73,7 +73,7 @@ router.get(
     paginationSchema.merge(
       z.object({
         continent: z.string().optional(),
-        search: z.string().optional(),
+        search: regexSearchSchema,
         includeCount: z.enum(['true', 'false']).optional(),
       })
     )

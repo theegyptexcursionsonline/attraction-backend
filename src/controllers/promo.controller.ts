@@ -2,7 +2,7 @@ import { Response, NextFunction } from 'express';
 import { PromoCode } from '../models/PromoCode';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
-import { escapeRegex } from '../utils/helpers';
+import { searchRegexValue } from '../utils/helpers';
 import { isSuperAdmin, callerTenantIds } from '../utils/tenantScope';
 
 const adminTenantScope = (req: AuthRequest): string[] | undefined => {
@@ -101,8 +101,9 @@ export const getPromoCodes = async (
     if (status === 'active') query.isActive = true;
     else if (status === 'inactive') query.isActive = false;
 
-    if (search) {
-      query.code = { $regex: escapeRegex(search as string), $options: 'i' };
+    const safeSearch = searchRegexValue(search);
+    if (safeSearch) {
+      query.code = { $regex: safeSearch, $options: 'i' };
     }
 
     const [promoCodes, total] = await Promise.all([

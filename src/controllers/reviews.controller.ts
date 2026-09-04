@@ -3,7 +3,7 @@ import { Review } from '../models/Review';
 import { Attraction } from '../models/Attraction';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
-import { sanitizeHtml, escapeRegex } from '../utils/helpers';
+import { sanitizeHtml, searchRegexValue } from '../utils/helpers';
 import { createAdminNotifications } from '../services/notification.service';
 import {
   isSuperAdmin,
@@ -270,8 +270,8 @@ export const getAdminReviews = async (
       query.status = status;
     }
 
-    if (search) {
-      const safeSearch = escapeRegex(search as string);
+    const safeSearch = searchRegexValue(search);
+    if (safeSearch) {
       query.$or = [
         { title: { $regex: safeSearch, $options: 'i' } },
         { content: { $regex: safeSearch, $options: 'i' } },

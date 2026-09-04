@@ -4,6 +4,7 @@ import { Attraction } from '../models/Attraction';
 import mongoose from 'mongoose';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
+import { searchRegexValue } from '../utils/helpers';
 import {
   isSuperAdmin,
   callerTenantIds,
@@ -111,8 +112,9 @@ export const getAllOffers = async (
       query.isActive = false;
     }
 
-    if (search) {
-      query.title = { $regex: new RegExp(search as string, 'i') };
+    const safeSearch = searchRegexValue(search);
+    if (safeSearch) {
+      query.title = { $regex: new RegExp(safeSearch, 'i') };
     }
 
     const [offers, total] = await Promise.all([

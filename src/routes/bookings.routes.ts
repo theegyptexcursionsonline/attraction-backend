@@ -19,7 +19,7 @@ import {
 import { authenticate, optionalAuth, requireAdmin, requireRole } from '../middleware/auth.middleware';
 import { optionalTenant } from '../middleware/tenant.middleware';
 import { validate, validateQuery } from '../middleware/validate.middleware';
-import { createBookingSchema, paginationSchema } from '../utils/validators';
+import { createBookingSchema, paginationSchema, regexSearchSchema } from '../utils/validators';
 import { bookingLimiter } from '../middleware/rate-limit.middleware';
 import { z } from 'zod';
 
@@ -227,7 +227,7 @@ router.get(
         status: z.enum(['pending', 'confirmed', 'cancelled', 'completed', 'refunded']).optional(),
         startDate: z.string().optional(),
         endDate: z.string().optional(),
-        search: z.string().optional(),
+        search: regexSearchSchema,
       })
     )
   ),

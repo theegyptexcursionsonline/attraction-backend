@@ -13,7 +13,7 @@ import {
 } from '../controllers/users.controller';
 import { authenticate, requireRole, requireSuperAdmin } from '../middleware/auth.middleware';
 import { validate, validateQuery } from '../middleware/validate.middleware';
-import { paginationSchema } from '../utils/validators';
+import { paginationSchema, regexSearchSchema } from '../utils/validators';
 import { z } from 'zod';
 
 const router = Router();
@@ -163,7 +163,7 @@ router.get(
       z.object({
         role: z.string().optional(),
         status: z.enum(['active', 'inactive', 'pending', 'suspended']).optional(),
-        search: z.string().optional(),
+        search: regexSearchSchema,
         tenantId: z.string().optional(),
       })
     )
@@ -180,7 +180,7 @@ router.get(
       limit: z.coerce.number().int().min(1).max(50).optional(),
       cursor: z.string().optional(),
       status: z.enum(['active', 'inactive', 'pending', 'suspended']).optional(),
-      search: z.string().max(120).optional(),
+      search: regexSearchSchema,
     })
   ),
   getTravelers

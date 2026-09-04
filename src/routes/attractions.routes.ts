@@ -30,14 +30,14 @@ import { authenticate, optionalAuth, requireAdmin, requireRole } from '../middle
 import { optionalTenant } from '../middleware/tenant.middleware';
 import { publicWriteLimiter } from '../middleware/rate-limit.middleware';
 import { validate, validateParams, validateQuery } from '../middleware/validate.middleware';
-import { createAttractionRequestSchema, updateAttractionRequestSchema, paginationSchema, attractionFiltersSchema } from '../utils/validators';
+import { createAttractionRequestSchema, updateAttractionRequestSchema, paginationSchema, attractionFiltersSchema, regexSearchSchema } from '../utils/validators';
 import { createReview as submitReview } from '../controllers/reviews.controller';
 import { z } from 'zod';
 
 const router = Router();
 
 const marketplaceQuerySchema = paginationSchema.extend({
-  search: z.string().trim().max(120).optional(),
+  search: regexSearchSchema,
   ownerTenantIds: z.string().trim().max(2499).regex(/^[a-f\d]{24}(,[a-f\d]{24})*$/i, 'Brand filters must contain valid IDs').optional(),
   addedOnly: z.enum(['true', 'false']).transform((value) => value === 'true').optional(),
 });

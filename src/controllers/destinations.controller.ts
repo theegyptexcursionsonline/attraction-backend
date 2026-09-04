@@ -3,7 +3,7 @@ import { Destination } from '../models/Destination';
 import { Attraction } from '../models/Attraction';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
-import { escapeRegex } from '../utils/helpers';
+import { searchRegexValue } from '../utils/helpers';
 
 export const getDestinations = async (
   req: AuthRequest,
@@ -41,8 +41,8 @@ export const getDestinations = async (
       query.continent = continent;
     }
 
-    if (search) {
-      const safeSearch = escapeRegex(search as string);
+    const safeSearch = searchRegexValue(search);
+    if (safeSearch) {
       query.$or = [
         { name: { $regex: safeSearch, $options: 'i' } },
         { country: { $regex: safeSearch, $options: 'i' } },

@@ -20,7 +20,7 @@ import {
 } from '../controllers/tenants.controller';
 import { authenticate, requireSuperAdmin, requireAdmin, requireRole, canAccessTenant } from '../middleware/auth.middleware';
 import { validate, validateQuery } from '../middleware/validate.middleware';
-import { createTenantSchema, updateTenantSchema, paginationSchema } from '../utils/validators';
+import { createTenantSchema, updateTenantSchema, paginationSchema, regexSearchSchema } from '../utils/validators';
 import { z } from 'zod';
 
 const router = Router();
@@ -142,7 +142,7 @@ router.get(
     paginationSchema.merge(
       z.object({
         status: z.enum(['active', 'inactive', 'pending', 'suspended', 'coming_soon']).optional(),
-        search: z.string().optional(),
+        search: regexSearchSchema,
       })
     )
   ),

@@ -8,7 +8,7 @@ import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { generateRandomToken, hashToken } from '../utils/hash';
 import { sendUserInvitation } from '../services/email.service';
-import { escapeRegex } from '../utils/helpers';
+import { searchRegexValue } from '../utils/helpers';
 import {
   isSuperAdmin,
   callerTenantIds,
@@ -195,8 +195,8 @@ export const getUsers = async (
       query.status = status;
     }
 
-    if (search) {
-      const safeSearch = escapeRegex(search as string);
+    const safeSearch = searchRegexValue(search);
+    if (safeSearch) {
       query.$or = [
         { email: { $regex: safeSearch, $options: 'i' } },
         { firstName: { $regex: safeSearch, $options: 'i' } },
@@ -292,8 +292,8 @@ export const getTravelers = async (
     };
     if (cursor) userMatch._id = { $lt: new mongoose.Types.ObjectId(cursor) };
     if (status) userMatch.status = status;
-    if (search) {
-      const safeSearch = escapeRegex(search);
+    const safeSearch = searchRegexValue(search);
+    if (safeSearch) {
       userMatch.$or = [
         { email: { $regex: safeSearch, $options: 'i' } },
         { firstName: { $regex: safeSearch, $options: 'i' } },

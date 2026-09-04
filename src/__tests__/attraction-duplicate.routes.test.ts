@@ -169,6 +169,27 @@ describe('POST /attractions/:id/duplicate', () => {
     expect(pathSlugScan.tenantIds).toEqual({ $in: [ownerTenantId] });
   });
 
+  it('bounds and escapes a legacy stored slug before compiling the copy lookup regex', async () => {
+    authenticateAs('brand-admin', [ownerTenantId]);
+    mockSourceLookup({
+      ...sourceAttraction(),
+      slug: `.${'a'.repeat(200)}`,
+      pathSlug: undefined,
+    });
+
+    const response = await request(app)
+      .post(`/attractions/${sourceId}/duplicate`)
+      .set('Authorization', 'Bearer token');
+
+    expect(response.status).toBe(201);
+    const expectedRoot = `.${'a'.repeat(122)}-copy`;
+    const created = (Attraction.create as jest.Mock).mock.calls[0][0];
+    const slugScan = (Attraction.find as jest.Mock).mock.calls.find(([filter]) => 'slug' in filter)[0];
+    expect(Array.from(created.slug)).toHaveLength(128);
+    expect(created.slug).toBe(expectedRoot);
+    expect(slugScan.slug.$regex).toBe(`^\\.${'a'.repeat(122)}-copy(-\\d+)?$`);
+  });
+
   it('is a 404 for a cross-tenant id — the scope lives in the query', async () => {
     authenticateAs('brand-admin', [otherTenantId]);
     mockSourceLookup(sourceAttraction());

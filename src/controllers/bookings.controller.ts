@@ -20,7 +20,7 @@ import {
 } from '../services/email.service';
 import { Tenant } from '../models/Tenant';
 import { IdempotencyKey } from '../models/IdempotencyKey';
-import { escapeRegex } from '../utils/helpers';
+import { searchRegexValue } from '../utils/helpers';
 import { safeEmitEvent } from '../services/webhook.service';
 import { IBooking } from '../types';
 import { isPlatformHeld, settlementHeldBy } from '../utils/settlement';
@@ -1350,8 +1350,8 @@ export const getAllBookings = async (
       if (endDate) (query.createdAt as Record<string, unknown>).$lte = new Date(endDate as string);
     }
 
-    if (search) {
-      const safeSearch = escapeRegex(search as string);
+    const safeSearch = searchRegexValue(search);
+    if (safeSearch) {
       andClauses.push({
         $or: [
           { reference: { $regex: safeSearch, $options: 'i' } },
