@@ -598,6 +598,7 @@ export const attractionFiltersSchema = z.object({
   search: z.string().trim().max(MAX_REGEX_SEARCH_LENGTH).optional(),
   status: z.enum(['active', 'draft', 'archived']).optional(),
   lifecycle: z.enum(['archive', 'trash']).optional(),
+  ownership: z.enum(['all', 'owned', 'assigned']).optional(),
   /** Admin surfaces send scope=admin so a silently expired session 401s instead of degrading to the public catalog. */
   scope: z.enum(['admin']).optional(),
 });

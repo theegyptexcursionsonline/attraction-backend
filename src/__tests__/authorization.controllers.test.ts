@@ -176,6 +176,56 @@ describe('authorization controller defenses', () => {
     expect(Attraction.findByIdAndUpdate).not.toHaveBeenCalled();
   });
 
+  it('lets a delegated admin remove its assignment without stripping another brand', async () => {
+    const assignedTenantId = new Types.ObjectId();
+    const ownerTenantId = new Types.ObjectId();
+    const attractionId = new Types.ObjectId();
+    (Attraction.findById as jest.Mock).mockResolvedValue({
+      _id: attractionId,
+      ownerTenantId,
+      tenantIds: [ownerTenantId, assignedTenantId],
+    });
+    (Attraction.findByIdAndUpdate as jest.Mock).mockResolvedValue({ _id: attractionId });
+    const req = authRequest({
+      params: { id: attractionId.toString() },
+      body: { tenantIds: [ownerTenantId.toString()] },
+      user: { role: 'manager', assignedTenants: [assignedTenantId] },
+    });
+    const res = response();
+
+    await updateAttraction(req, res, jest.fn());
+
+    expect(Attraction.findByIdAndUpdate).toHaveBeenCalledWith(
+      attractionId.toString(),
+      expect.objectContaining({
+        $set: expect.objectContaining({ tenantIds: [ownerTenantId.toString()] }),
+      }),
+      expect.any(Object)
+    );
+    expect(res.status).not.toHaveBeenCalledWith(403);
+  });
+
+  it('does not let a delegated admin change the commercial owner', async () => {
+    const assignedTenantId = new Types.ObjectId();
+    const otherTenantId = new Types.ObjectId();
+    (Attraction.findById as jest.Mock).mockResolvedValue({
+      _id: new Types.ObjectId(),
+      ownerTenantId: assignedTenantId,
+      tenantIds: [assignedTenantId],
+    });
+    const req = authRequest({
+      params: { id: new Types.ObjectId().toString() },
+      body: { ownerTenantId: otherTenantId.toString() },
+      user: { role: 'manager', assignedTenants: [assignedTenantId] },
+    });
+    const res = response();
+
+    await updateAttraction(req, res, jest.fn());
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(Attraction.findByIdAndUpdate).not.toHaveBeenCalled();
+  });
+
   it('rejects publishing an incomplete draft with exact missing-field guidance', async () => {
     const assignedTenantId = new Types.ObjectId();
     (Attraction.findById as jest.Mock).mockResolvedValue({

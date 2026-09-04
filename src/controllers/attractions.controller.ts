@@ -23,6 +23,10 @@ import {
   publicAvailabilityTimeSlots,
   publicDefaultTimeSlots,
 } from '../utils/publicAvailability';
+import {
+  AttractionOwnership,
+  attractionOwnershipFilter,
+} from '../utils/attractionOwnership';
 
 const PUBLIC_ATTRACTION_FIELDS = [
   '_id',
@@ -81,7 +85,8 @@ export const toPublicAttractionDto = (source: unknown): Record<string, unknown> 
 
 export const toAdminAttractionDto = (
   source: unknown,
-  allowedTenantIds?: string[]
+  allowedTenantIds?: string[],
+  scopeTenantId?: string
 ): Record<string, unknown> => {
   const dto = toPublicAttractionDto(source);
   if (!source || typeof source !== 'object') return dto;
@@ -89,9 +94,16 @@ export const toAdminAttractionDto = (
     ? ((source as Record<string, unknown>).tenantIds as unknown[]).map(String)
     : [];
   const allowed = allowedTenantIds ? new Set(allowedTenantIds) : null;
+  const recordedOwner = (source as Record<string, unknown>).ownerTenantId;
+  const ownerTenantId = recordedOwner ? String(recordedOwner) : tenantIds[0];
+  const relationshipScope = scopeTenantId ? new Set([scopeTenantId]) : allowed;
   return {
     ...dto,
     tenantIds: allowed ? tenantIds.filter((id) => allowed.has(id)) : tenantIds,
+    ...(ownerTenantId && (!allowed || allowed.has(ownerTenantId)) ? { ownerTenantId } : {}),
+    ...(relationshipScope
+      ? { ownership: ownerTenantId && relationshipScope.has(ownerTenantId) ? 'owned' : 'assigned' }
+      : {}),
   };
 };
 
@@ -157,6 +169,7 @@ interface AttractionQuery {
   archivedAt?: { $exists: boolean };
   trashedAt?: { $exists: boolean };
   $or?: Array<Record<string, unknown>>;
+  $and?: Array<Record<string, unknown>>;
 }
 
 export const getAttractions = async (
@@ -178,6 +191,7 @@ export const getAttractions = async (
       search,
       status = 'active',
       lifecycle,
+      ownership = 'all',
     } = req.query;
 
     const pageNum = parseInt(page as string, 10);
@@ -229,6 +243,27 @@ export const getAttractions = async (
       }
     }
 
+    if (ownership !== 'all') {
+      if (!req.user || req.user.role === 'customer') {
+        sendError(res, 'Ownership filter is only available to administrators', 400);
+        return;
+      }
+      const ownershipTenantIds = req.tenant
+        ? [req.tenant._id]
+        : req.user.role === 'super-admin'
+          ? []
+          : req.user.assignedTenants || [];
+      const ownershipQuery = attractionOwnershipFilter(
+        ownership as AttractionOwnership,
+        ownershipTenantIds
+      );
+      if (!ownershipQuery) {
+        sendError(res, 'Select a site before filtering by ownership', 400);
+        return;
+      }
+      query.$and = [ownershipQuery];
+    }
+
     if (category) {
       query.category = category as string;
     }
@@ -270,7 +305,7 @@ export const getAttractions = async (
 
     const isAdminRequest = !!req.user && req.user.role !== 'customer';
     const attractionsQuery = Attraction.find(query).select(
-      isAdminRequest ? `${PUBLIC_ATTRACTION_PROJECTION} tenantIds` : PUBLIC_ATTRACTION_PROJECTION
+      isAdminRequest ? `${PUBLIC_ATTRACTION_PROJECTION} tenantIds ownerTenantId` : PUBLIC_ATTRACTION_PROJECTION
     );
 
     // Execute query
@@ -294,7 +329,7 @@ export const getAttractions = async (
         const allowedTenantIds = req.user?.role === 'super-admin'
           ? undefined
           : (req.user?.assignedTenants || []).map(String);
-        return toAdminAttractionDto(attraction, allowedTenantIds);
+        return toAdminAttractionDto(attraction, allowedTenantIds, req.tenant?._id.toString());
       }),
       pageNum,
       limitNum,
@@ -659,14 +694,35 @@ export const updateAttraction = async (
       }
 
       if (Array.isArray(req.body.tenantIds)) {
-        const unauthorizedTenant = req.body.tenantIds.some(
-          (tenantId: string) => !assignedSet.has(tenantId)
+        const existingTenantIds = (existingAttraction.tenantIds || []).map((tenantId) => tenantId.toString());
+        const existingSet = new Set(existingTenantIds);
+        const introducesUnauthorizedTenant = req.body.tenantIds.some(
+          (tenantId: string) => !assignedSet.has(tenantId) && !existingSet.has(tenantId)
         );
-        if (unauthorizedTenant) {
+        if (introducesUnauthorizedTenant) {
           sendError(res, 'Cannot assign attraction to a tenant you do not manage', 403);
           return;
         }
+
+        // A delegated admin edits only the memberships they manage. Existing
+        // memberships belonging to other brands are preserved, preventing a
+        // save from silently stripping another brand's catalogue assignment.
+        const preservedTenantIds = existingTenantIds.filter((tenantId) => !assignedSet.has(tenantId));
+        const requestedManagedTenantIds = req.body.tenantIds.filter((tenantId: string) => assignedSet.has(tenantId));
+        req.body.tenantIds = [...new Set([...preservedTenantIds, ...requestedManagedTenantIds])];
+        if (req.body.tenantIds.length === 0) {
+          sendError(res, 'An attraction must remain assigned to at least one site', 400);
+          return;
+        }
       }
+
+      const currentOwnerTenantId = existingAttraction.ownerTenantId?.toString()
+        || existingAttraction.tenantIds?.[0]?.toString();
+      if (req.body.ownerTenantId && req.body.ownerTenantId !== currentOwnerTenantId) {
+        sendError(res, 'Only a super administrator can change the owner site', 403);
+        return;
+      }
+      delete req.body.ownerTenantId;
     }
 
     if (req.body.status === 'active') {

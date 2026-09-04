@@ -88,6 +88,7 @@ describe('public API DTO contracts', () => {
       _id: 'attraction-1',
       slug: 'reef-tour',
       tenantIds: ['tenant-a'],
+      ownership: 'assigned',
     });
     expect(dto).not.toHaveProperty('ownerTenantId');
   });
