@@ -96,12 +96,14 @@ async function seedMigrationState(): Promise<{ manifest: SafariQuadManifest; med
     tenantIds: [tenantId], ownerTenantId: tenantId, status: 'draft',
   })));
   for (const plan of manifest.tours) {
+    plan.expectedStatus = 'draft';
     const saved = canonical.find(tour => String(tour._id) === plan.targetId)!;
     plan.expectedUpdatedAt = saved.updatedAt.toISOString();
   }
 
   const retired = await Attraction.create(manifest.retireRecords.map((plan, index) => basePublishedTour(plan.id, `superseded-quad-${index + 1}`, tenantId)));
   for (const plan of manifest.retireRecords) {
+    plan.expectedStatus = 'active';
     const saved = retired.find(tour => String(tour._id) === plan.id)!;
     plan.expectedUpdatedAt = saved.updatedAt.toISOString();
   }
@@ -201,6 +203,27 @@ describe('Safari Sahara quad catalogue database migration', () => {
 
     const retry = await applySafariQuadDatabaseMigration(manifest, media, new Date('2026-09-08T20:00:00.000Z'));
     expect(retry.changed).toBe(false);
+  });
+
+  it('reconciles explicitly snapshotted active tours and preserves existing archival dates', async () => {
+    const { manifest, media } = await seedMigrationState();
+    for (const plan of manifest.tours) {
+      await Attraction.updateOne({ _id: plan.targetId }, { $set: { status: 'active' } });
+      const current = await Attraction.findById(plan.targetId);
+      plan.expectedStatus = 'active';
+      plan.expectedUpdatedAt = current!.updatedAt.toISOString();
+    }
+    const archivedAt = new Date('2026-09-08T18:00:00Z');
+    for (const plan of manifest.retireRecords) {
+      await Attraction.updateOne({ _id: plan.id }, { $set: { status: 'archived', archivedAt } });
+      const current = await Attraction.findById(plan.id);
+      plan.expectedStatus = 'archived';
+      plan.expectedUpdatedAt = current!.updatedAt.toISOString();
+    }
+    expect((await applySafariQuadDatabaseMigration(manifest, media)).changed).toBe(true);
+    const retired = await Attraction.find({ _id: { $in: manifest.retireRecords.map(plan => plan.id) } });
+    expect(retired.every(tour => tour.archivedAt?.getTime() === archivedAt.getTime())).toBe(true);
+    expect((await applySafariQuadDatabaseMigration(manifest, media)).changed).toBe(false);
   });
 
   it('aborts without partial writes when a canonical record changed after the snapshot', async () => {

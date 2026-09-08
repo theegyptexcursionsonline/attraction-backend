@@ -55,6 +55,7 @@ type TargetFields = PlainObject & {
   status: 'active';
 };
 export interface SafariTourPlan {
+  expectedStatus?: 'draft' | 'active';
   sourceUrl: string;
   targetId: string;
   expectedUpdatedAt: string;
@@ -62,6 +63,7 @@ export interface SafariTourPlan {
   sourceImages: string[];
 }
 export interface SafariRetirementPlan {
+  expectedStatus?: 'active' | 'archived';
   id: string;
   replacementId: string;
   expectedUpdatedAt: string;
@@ -291,13 +293,13 @@ const navigationMatches = (state: LoadedState, manifest: SafariQuadManifest): bo
 function assertPreimages(state: LoadedState, manifest: SafariQuadManifest): void {
   for (const plan of manifest.tours) {
     const current = state.targets.get(plan.targetId)!;
-    if (current.status !== 'draft') throw new Error(`Canonical tour is no longer a draft: ${plan.target.pathSlug}`);
+    if (current.status !== (plan.expectedStatus || 'draft')) throw new Error(`Canonical tour status changed after the migration snapshot: ${plan.target.pathSlug}`);
     if (dateString(current.updatedAt) !== plan.expectedUpdatedAt) throw new Error(`Canonical tour changed after the migration snapshot: ${plan.target.pathSlug}`);
     if (current.pricingOptions?.length !== 1 || current.pricingOptions[0].id !== plan.target.pricingOptions[0].id) throw new Error(`Pricing-option identity changed: ${plan.target.pathSlug}`);
   }
   for (const plan of manifest.retireRecords) {
     const current = state.retirements.get(plan.id)!;
-    if (current.status !== 'active' || dateString(current.updatedAt) !== plan.expectedUpdatedAt) throw new Error(`Superseded tour changed after the migration snapshot: ${plan.id}`);
+    if (current.status !== (plan.expectedStatus || 'active') || dateString(current.updatedAt) !== plan.expectedUpdatedAt) throw new Error(`Superseded tour changed after the migration snapshot: ${plan.id}`);
   }
   if (Number(state.page.revision || 0) !== manifest.expectedPageRevision) throw new Error('Landing page changed after the migration snapshot.');
   if (Number(state.tenant.navigationRevision || 0) !== manifest.expectedNavigationRevision) throw new Error('Website menu changed after the migration snapshot.');
@@ -492,6 +494,7 @@ export async function applySafariQuadDatabaseMigration(
 
       for (const plan of manifest.retireRecords) {
         const tour = state.retirements.get(plan.id)!;
+        if (retirementMatches(tour)) continue;
         tour.statusBeforeArchive = 'active';
         tour.status = 'archived';
         tour.archivedAt = now;

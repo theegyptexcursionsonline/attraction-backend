@@ -4,12 +4,12 @@
   "sourceLandingUrl": "https://safari-sahara.com/hurghada-quad-biking/",
   "pageId": "6aa02b8a4b855923b5398c85",
   "expectedPageRevision": 0,
-  "expectedNavigationRevision": 1,
+  "expectedNavigationRevision": 2,
   "tours": [
     {
       "sourceUrl": "https://safari-sahara.com/hurghada-quad-bike-easy-ride/",
       "targetId": "6a9f16808b3092549c203ffa",
-      "expectedUpdatedAt": "2026-09-08T19:03:14.083Z",
+      "expectedUpdatedAt": "2026-09-08T19:21:50.019Z",
       "target": {
         "title": "Hurghada Quad Bike Easy Ride",
         "pathSlug": "hurghada-quad-bike-easy-ride",
@@ -147,12 +147,13 @@
         "https://safari-sahara.com/wp-content/uploads/SAS-HRG001/Hurghada-Quad-Bike-Easy-Ride-8.jpg",
         "https://safari-sahara.com/wp-content/uploads/SAS-HRG001/Hurghada-Quad-Bike-Easy-Ride-9.jpg",
         "https://safari-sahara.com/wp-content/uploads/SAS-HRG001/Hurghada-Quad-Bike-Easy-Ride-10.jpg"
-      ]
+      ],
+      "expectedStatus": "active"
     },
     {
       "sourceUrl": "https://safari-sahara.com/hurghada-quad-bike-power-tour/",
       "targetId": "6a9f24688b3092549c204d76",
-      "expectedUpdatedAt": "2026-09-08T19:03:19.909Z",
+      "expectedUpdatedAt": "2026-09-08T19:22:01.761Z",
       "target": {
         "title": "Hurghada Quad Bike Power Tour",
         "pathSlug": "hurghada-quad-bike-power-tour",
@@ -279,12 +280,13 @@
         "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR002/Hurghada-Quad-Bike-Power-Tour-8.jpg",
         "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR002/Hurghada-Quad-Bike-Power-Tour-9.jpg",
         "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR002/Hurghada-Quad-Bike-Power-Tour-10.jpg"
-      ]
+      ],
+      "expectedStatus": "active"
     },
     {
       "sourceUrl": "https://safari-sahara.com/morning-quad-biking-tour-hurghada/",
       "targetId": "6aa04471df25536329b9adae",
-      "expectedUpdatedAt": "2026-09-08T19:03:32.984Z",
+      "expectedUpdatedAt": "2026-09-08T19:26:00.887Z",
       "target": {
         "title": "Morning Quad Biking Tour Hurghada",
         "pathSlug": "morning-quad-biking-tour-hurghada",
@@ -411,12 +413,13 @@
         "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR006/Morning-quad-bike-tour-in-Hurghada-8.jpg",
         "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR006/Morning-quad-bike-tour-in-Hurghada-9.jpg",
         "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR006/Morning-quad-bike-tour-in-Hurghada-10.jpg"
-      ]
+      ],
+      "expectedStatus": "active"
     },
     {
       "sourceUrl": "https://safari-sahara.com/hurghada-sunset-desert-safari-trip-by-quad-bike/",
       "targetId": "6a9f2bec8b3092549c2056f3",
-      "expectedUpdatedAt": "2026-09-08T18:59:51.037Z",
+      "expectedUpdatedAt": "2026-09-08T19:22:45.620Z",
       "target": {
         "title": "Hurghada Sunset Desert Safari Trip by Quad Bike",
         "pathSlug": "hurghada-sunset-desert-safari-trip-by-quad-bike",
@@ -548,12 +551,13 @@
         "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR007/Hurghada-sunset-desert-safari-trip-by-quad-bike-8.jpg",
         "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR007/Hurghada-sunset-desert-safari-trip-by-quad-bike-9.jpg",
         "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR007/Hurghada-sunset-desert-safari-trip-by-quad-bike-10.jpg"
-      ]
+      ],
+      "expectedStatus": "active"
     },
     {
       "sourceUrl": "https://safari-sahara.com/quad-bike-safari-half-day-trip-to-sahara-park/",
       "targetId": "6aa04aece8da09289e126fef",
-      "expectedUpdatedAt": "2026-09-08T19:10:57.123Z",
+      "expectedUpdatedAt": "2026-09-08T19:27:07.495Z",
       "target": {
         "title": "Quad Bike Safari: Half-Day Trip to Sahara Park",
         "pathSlug": "quad-bike-safari-half-day-trip-to-sahara-park",
@@ -685,12 +689,13 @@
         "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR011/Quad-Bike-Safari-Half-Day-Trip-to-Sahara-Park-8.jpg",
         "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR011/Quad-Bike-Safari-Half-Day-Trip-to-Sahara-Park-9.jpg",
         "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR011/Quad-Bike-Safari-Half-Day-Trip-to-Sahara-Park-10.jpg"
-      ]
+      ],
+      "expectedStatus": "active"
     },
     {
       "sourceUrl": "https://safari-sahara.com/hurghada-quad-bike-tour-including-stargazing-telescope/",
       "targetId": "6a9f29518b3092549c205246",
-      "expectedUpdatedAt": "2026-09-08T18:59:32.322Z",
+      "expectedUpdatedAt": "2026-09-08T19:22:32.303Z",
       "target": {
         "title": "Hurghada Quad Bike Tour including Stargazing Telescope",
         "pathSlug": "hurghada-quad-bike-tour-including-stargazing-telescope",
@@ -820,12 +825,13 @@
         "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR004/Hurghada-Quad-Bike-Tour-including-Stargazing-Telescope-8.jpg",
         "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR004/Hurghada-Quad-Bike-Tour-including-Stargazing-Telescope-9.jpg",
         "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR004/Hurghada-Quad-Bike-Tour-including-Stargazing-Telescope-10.jpg"
-      ]
+      ],
+      "expectedStatus": "active"
     },
     {
       "sourceUrl": "https://safari-sahara.com/private-quad-bike-safari-trip-sahara-park/",
       "targetId": "6aa0498fdf25536329b9c231",
-      "expectedUpdatedAt": "2026-09-08T19:10:28.090Z",
+      "expectedUpdatedAt": "2026-09-08T19:26:56.329Z",
       "target": {
         "title": "Private Quad Bike Safari Trip: Sahara Park Hurghada",
         "pathSlug": "private-quad-bike-safari-trip-sahara-park",
@@ -958,12 +964,13 @@
         "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR012/Private-Quad-Bike-Safari-Full-Day-Trip-to-Sahara-Park-8.jpg",
         "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR012/Private-Quad-Bike-Safari-Full-Day-Trip-to-Sahara-Park-9.jpg",
         "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR012/Private-Quad-Bike-Safari-Full-Day-Trip-to-Sahara-Park-10.jpg"
-      ]
+      ],
+      "expectedStatus": "active"
     },
     {
       "sourceUrl": "https://safari-sahara.com/discover-makadi-bay-quads-by-the-sea-camel-ride/",
       "targetId": "6aa04121df25536329b99dc6",
-      "expectedUpdatedAt": "2026-09-08T19:02:48.046Z",
+      "expectedUpdatedAt": "2026-09-08T19:23:17.213Z",
       "target": {
         "title": "Makadi Bay: Quads by the Sea & Camel Ride",
         "pathSlug": "discover-makadi-bay-quads-by-the-sea-camel-ride",
@@ -1107,29 +1114,34 @@
         "https://safari-sahara.com/wp-content/uploads/16.jpeg",
         "https://safari-sahara.com/wp-content/uploads/DSC_0247-scaled.jpg",
         "https://safari-sahara.com/wp-content/uploads/6.jpeg"
-      ]
+      ],
+      "expectedStatus": "active"
     }
   ],
   "retireRecords": [
     {
       "id": "69fc40563ac583b3163b999b",
       "replacementId": "6aa04471df25536329b9adae",
-      "expectedUpdatedAt": "2026-09-08T17:22:50.719Z"
+      "expectedUpdatedAt": "2026-09-08T19:19:01.497Z",
+      "expectedStatus": "archived"
     },
     {
       "id": "69fc40633ac583b3163b99b6",
       "replacementId": "6a9f24688b3092549c204d76",
-      "expectedUpdatedAt": "2026-09-07T21:25:43.393Z"
+      "expectedUpdatedAt": "2026-09-08T19:19:12.603Z",
+      "expectedStatus": "archived"
     },
     {
       "id": "69fc40693ac583b3163b99bf",
       "replacementId": "6aa0498fdf25536329b9c231",
-      "expectedUpdatedAt": "2026-09-08T17:44:38.757Z"
+      "expectedUpdatedAt": "2026-09-08T19:19:16.184Z",
+      "expectedStatus": "archived"
     },
     {
       "id": "69fc406c3ac583b3163b99c8",
       "replacementId": "6a9f2bec8b3092549c2056f3",
-      "expectedUpdatedAt": "2026-09-07T21:25:25.358Z"
+      "expectedUpdatedAt": "2026-09-08T19:19:19.272Z",
+      "expectedStatus": "archived"
     }
   ]
 }
