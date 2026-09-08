@@ -75,6 +75,7 @@ router.get(
         continent: z.string().optional(),
         search: regexSearchSchema,
         includeCount: z.enum(['true', 'false']).optional(),
+        forEditor: z.enum(['true', 'false']).optional(),
       })
     )
   ),
