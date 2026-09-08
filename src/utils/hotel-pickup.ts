@@ -9,12 +9,17 @@ export interface HotelPickupSelection {
 export class HotelPickupError extends Error {}
 
 /** The persisted attraction, never the browser flag, determines pickup availability. */
-export function normalizeHotelPickup(enabled: boolean, selection?: HotelPickupSelection) {
+export function normalizeHotelPickup(enabled: boolean, selection?: HotelPickupSelection, selectionVersion?: 1) {
   if (!enabled) {
     if (selection) throw new HotelPickupError('Hotel pickup is not available for this tour');
     return undefined;
   }
-  if (!selection) throw new HotelPickupError('Choose your hotel pickup details or provide them later');
+  if (!selection) {
+    // Older checkouts never collected a choice. Preserve availability without
+    // inventing hotel details; new checkouts must collect an explicit choice.
+    if (selectionVersion === undefined) return { status: 'provide_later' as const, hotelName: '' };
+    throw new HotelPickupError('Choose your hotel pickup details or provide them later');
+  }
   if (selection.status === 'provide_later') return { status: 'provide_later' as const, hotelName: '' };
   if (selection.status !== undefined && selection.status !== 'confirmed') throw new HotelPickupError('Invalid hotel pickup selection');
   const hotelName = selection.hotelName?.trim();

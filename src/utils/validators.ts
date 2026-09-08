@@ -474,6 +474,7 @@ const quantitiesSchema = z.object({
 );
 
 export const createBookingSchema = z.object({
+  pickupSelectionVersion: z.literal(1).optional(),
   attractionId: z.string()
     .trim()
     .regex(/^[a-f\d]{24}$/i, 'Attraction ID must be a valid MongoDB ObjectId'),

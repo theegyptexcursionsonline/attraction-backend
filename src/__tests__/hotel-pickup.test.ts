@@ -4,8 +4,13 @@ import { Booking } from '../models/Booking';
 
 describe('hotel pickup authority', () => {
   it('requires an explicit choice when the catalogue includes pickup', () => {
-    expect(() => normalizeHotelPickup(true)).toThrow('Choose your hotel');
+    expect(() => normalizeHotelPickup(true, undefined, 1)).toThrow('Choose your hotel');
     expect(() => normalizeHotelPickup(true, {hotelName:'  '})).toThrow('Enter your hotel');
+  });
+  it('keeps legacy checkouts usable without inventing confirmed hotel details', () => {
+    expect(normalizeHotelPickup(true)).toEqual({ status: 'provide_later', hotelName: '' });
+    expect(normalizeHotelPickup(true, { hotelName: 'Legacy Hotel' })).toEqual({ status: 'confirmed', hotelName: 'Legacy Hotel' });
+    expect(createBookingSchema.shape.pickupSelectionVersion.safeParse(2).success).toBe(false);
   });
   it('preserves later choice without stale hotel information', () => {
     expect(normalizeHotelPickup(true, {status:'provide_later',hotelName:'old hotel',address:'old address'})).toEqual({status:'provide_later',hotelName:''});

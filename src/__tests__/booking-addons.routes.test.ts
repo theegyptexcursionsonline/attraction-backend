@@ -74,6 +74,7 @@ const catalogAttraction = () => ({
 
 const payload = (addons: unknown[], quantities = { adults: 2, children: 1, infants: 0 }) => ({
   attractionId: ATTR_ID,
+  pickupSelectionVersion: 1,
   items: [{ optionId: 'adult-option', date: '2030-03-10', quantities, addons }],
   guestDetails: {
     firstName: 'Egypt Excursions',
@@ -107,6 +108,24 @@ describe('POST /api/bookings — add-on quantities', () => {
     expect(IdempotencyKey.deleteOne).toHaveBeenCalledWith(expect.objectContaining({ status: 'processing' }));
   });
 
+  it('accepts missing pickup from legacy checkouts and records non-personal compatibility telemetry', async () => {
+    (Attraction.findById as jest.Mock).mockResolvedValue({ ...catalogAttraction(), hasHotelPickup: true });
+    const { pickupSelectionVersion: _version, ...legacyBody } = payload([]);
+    const info = jest.spyOn(console, 'info').mockImplementation(() => undefined);
+    try {
+      const response = await post(legacyBody);
+      expect(response.status).toBe(201);
+      expect(response.body.data.items[0].hotelPickup).toEqual({ status: 'provide_later', hotelName: '' });
+      expect(info).toHaveBeenCalledWith('booking.pickup.legacy_missing', { count: 1, paymentMethod: 'pay-later' });
+    } finally { info.mockRestore(); }
+  });
+
+  it('rejects unsupported contract versions before creating a booking', async () => {
+    const response = await post({ ...payload([]), pickupSelectionVersion: 2 });
+    expect(response.status).toBe(400);
+    expect(Booking.create).not.toHaveBeenCalled();
+  });
+
   it('persists the explicit later choice on pickup-enabled tours', async () => {
     (Attraction.findById as jest.Mock).mockResolvedValue({...catalogAttraction(),hasHotelPickup:true});
     const body = payload([]);
@@ -120,7 +139,8 @@ describe('POST /api/bookings — add-on quantities', () => {
     const base = payload([]);
     const body = wasEnabled ? { ...base, items: base.items.map((item) => ({ ...item, hotelPickup: { hotelName: 'Original Hotel' } })) } : base;
     const key = `qa-pickup-replay-${wasEnabled}-0001`;
-    const created = await post(body, key);
+    const { pickupSelectionVersion: _originalVersion, ...legacyBody } = body;
+    const created = await post(legacyBody, key);
     expect(created.status).toBe(201);
     const claim = (IdempotencyKey.create as jest.Mock).mock.calls[0][0];
     const originalBooking = await (Booking.create as jest.Mock).mock.results[0].value;

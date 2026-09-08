@@ -207,7 +207,7 @@ export const createBooking = async (
 ): Promise<void> => {
   let idempotencyRecordId: mongoose.Types.ObjectId | undefined;
   try {
-    const { attractionId, tenantId: requestedTenantId, items, guestDetails, promoCode, paymentMethod } = req.body;
+    const { attractionId, tenantId: requestedTenantId, items, guestDetails, promoCode, paymentMethod, pickupSelectionVersion } = req.body;
     const idempotencyKey = req.headers['idempotency-key'];
 
     if (
@@ -446,6 +446,7 @@ export const createBooking = async (
     const total = round2(Math.max(subtotal + fees - discount, 0));
 
     const keyHash = hashValue(idempotencyKey);
+    // Compatibility metadata must not change the identity of an existing retry.
     const requestHash = hashValue(stableStringify({
       tenantId: String(tenantId),
       attractionId,
@@ -501,8 +502,11 @@ export const createBooking = async (
     // A completed request must replay its original receipt even if an admin has
     // since changed pickup availability. Validate new requests before inventory,
     // promotion usage or booking writes; the catch releases this processing claim.
+    const legacyPickupCount = attraction.hasHotelPickup === true && pickupSelectionVersion === undefined
+      ? normalizedItems.filter((item: IBooking['items'][number]) => !item.hotelPickup).length
+      : 0;
     normalizedItems = normalizedItems.map((item: IBooking['items'][number]) => {
-      const hotelPickup = normalizeHotelPickup(attraction.hasHotelPickup === true, item.hotelPickup);
+      const hotelPickup = normalizeHotelPickup(attraction.hasHotelPickup === true, item.hotelPickup, pickupSelectionVersion);
       if (hotelPickup) return { ...item, hotelPickup };
       const withoutPickup = { ...item };
       delete withoutPickup.hotelPickup;
@@ -651,6 +655,10 @@ export const createBooking = async (
       }
       return created;
     });
+
+    if (legacyPickupCount > 0) {
+      console.info('booking.pickup.legacy_missing', { count: legacyPickupCount, paymentMethod: paymentMethod || 'pay-later' });
+    }
 
     // Outbound webhooks: booking.created always; booking.confirmed when the
     // booking is immediately confirmed (pay-later). Tenant-scoped emit.
