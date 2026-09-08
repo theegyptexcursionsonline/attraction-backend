@@ -7,6 +7,7 @@ import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { searchRegexValue } from '../utils/helpers';
 import { sanitizeCustomPages } from '../utils/sanitizeHtml';
+import { navigationSchema } from '../utils/siteContent';
 import { DomainClaim } from '../models/DomainClaim';
 import {
   NetlifyDomainError,
@@ -44,6 +45,7 @@ const PUBLIC_TENANT_FIELDS = [
   'socialLinks',
   'aiSettings',
   'navigation',
+  'navigationRevision',
   'pricingSettings',
   'flatUrls',
   'customPages',
@@ -66,8 +68,10 @@ export const toPublicTenantDto = (source: unknown): Record<string, unknown> => {
   ) as Record<string, unknown>;
 
   if (dto.customPages !== undefined) {
-    dto.customPages = sanitizeCustomPages(dto.customPages);
+    dto.customPages = sanitizeCustomPages(dto.customPages).filter(page => { const p = page as Record<string, unknown>; return p.status !== 'archived' && p.isPublished !== false; });
   }
+
+  if (dto.navigation !== undefined) { const parsed = navigationSchema.safeParse(dto.navigation); dto.navigation = parsed.success ? parsed.data : []; }
 
   const paymentSettings = record.paymentSettings;
   if (paymentSettings && typeof paymentSettings === 'object') {
@@ -625,6 +629,7 @@ export const updateTenant = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
+    if (req.body.navigation !== undefined || req.body.navigationRevision !== undefined) { sendError(res, 'Use the Menus editor to update navigation', 400); return; }
 
     const updates = {
       ...req.body,
@@ -687,6 +692,8 @@ export const updateTenantSettings = async (
   try {
     const { id } = req.params;
 
+    if (req.body.navigation !== undefined || req.body.navigationRevision !== undefined) { sendError(res, 'Use the Menus editor to update navigation', 400); return; }
+
     // Allow-list of fields brand-admins may change on their own sites
     const allowedFields = [
       'contactInfo',
@@ -710,7 +717,7 @@ export const updateTenantSettings = async (
       'supportedLanguages',
       'timezone',
       'pricingSettings',
-      'navigation', // custom nav menu links per tenant
+      // Navigation has a dedicated versioned endpoint to prevent lost updates.
     ];
 
     const updates: Record<string, unknown> = {};

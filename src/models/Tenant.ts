@@ -150,9 +150,11 @@ const tenantSchema = new Schema<ITenant>(
         maxSuggestions: { type: Number, default: 6 },
       },
     },
+    navigationRevision: { type: Number, default: 0 },
     navigation: [{
       label: { type: String, required: true },
       href: { type: String, required: true },
+      columns: [{ label: { type: String, required: true }, links: [{ label: { type: String, required: true }, href: { type: String, required: true } }] }],
     }],
     seoSettings: {
       metaTitle: String,
@@ -242,7 +244,18 @@ const tenantSchema = new Schema<ITenant>(
         title: { type: String, required: true },
         metaTitle: { type: String },
         metaDescription: { type: String },
-        body: { type: String, required: true }, // HTML or Markdown
+        body: { type: String, default: '' },
+        revision: { type: Number, default: 0 },
+        sections: { type: [{
+          _id: false,
+          id: { type: String, required: true },
+          type: { type: String, enum: ['content', 'tours', 'pages'], required: true },
+          title: String, body: String,
+          layout: { type: String, enum: ['vertical', 'horizontal'] },
+          attractionIds: { type: [String], default: undefined },
+          categoryIds: { type: [String], default: undefined },
+          pageIds: { type: [String], default: undefined },
+        }], default: undefined },
         pageType: { type: String, enum: ['attraction', 'category'], default: 'attraction' },
         parentPath: { type: String, default: '/' },
         categoryIds: [{ type: String }],

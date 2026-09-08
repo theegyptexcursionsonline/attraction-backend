@@ -15,14 +15,14 @@ describe('tenant page management', () => {
     const tenantId = new Types.ObjectId();
     (Tenant.exists as jest.Mock).mockResolvedValue(null);
     (Attraction.exists as jest.Mock).mockResolvedValue(null);
-    (Tenant.findByIdAndUpdate as jest.Mock).mockResolvedValue({ customPages: [{ _id: 'page-1', title: 'Family Tours' }] });
+    (Tenant.findOneAndUpdate as jest.Mock).mockResolvedValue({ customPages: [{ _id: 'page-1', title: 'Family Tours' }] });
     const res = response();
     await createAdminPage({
       tenant: { _id: tenantId }, user: { role: 'brand-admin', assignedTenants: [tenantId] },
       body: { slug: 'family-tours', title: 'Family Tours', body: '<p>Safe</p><script>bad()</script>', pageType: 'category', parentPath: '/', categoryIds: ['family'] },
     } as never, res, jest.fn());
 
-    expect(Tenant.findByIdAndUpdate).toHaveBeenCalledWith(tenantId, expect.objectContaining({
+    expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith({ _id: tenantId, 'customPages.slug': { $ne: expect.any(String) } }, expect.objectContaining({
       $push: { customPages: expect.objectContaining({ slug: 'family-tours', body: '<p>Safe</p>', isPublished: true }) },
     }), expect.anything());
     expect(res.status).not.toHaveBeenCalledWith(403);
@@ -32,13 +32,13 @@ describe('tenant page management', () => {
     const tenantId = new Types.ObjectId();
     (Tenant.exists as jest.Mock).mockResolvedValue(null);
     (Attraction.exists as jest.Mock).mockResolvedValue(null);
-    (Tenant.findByIdAndUpdate as jest.Mock).mockResolvedValue({ customPages: [{ _id: 'page-draft', title: 'Draft' }] });
+    (Tenant.findOneAndUpdate as jest.Mock).mockResolvedValue({ customPages: [{ _id: 'page-draft', title: 'Draft' }] });
     await createAdminPage({
       tenant: { _id: tenantId }, user: { role: 'brand-admin', assignedTenants: [tenantId] },
       body: { slug: 'draft-page', title: 'Draft', body: '<p>Not live</p>', pageType: 'attraction', parentPath: '/', isPublished: false },
     } as never, response(), jest.fn());
 
-    expect(Tenant.findByIdAndUpdate).toHaveBeenCalledWith(tenantId, expect.objectContaining({
+    expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith({ _id: tenantId, 'customPages.slug': { $ne: expect.any(String) } }, expect.objectContaining({
       $push: { customPages: expect.objectContaining({ isPublished: false }) },
     }), expect.anything());
 
@@ -72,7 +72,7 @@ describe('tenant page management', () => {
       tenant: { _id: tenantId },
       user: { role: 'brand-admin', assignedTenants: [tenantId] },
       params: { id: new Types.ObjectId().toString() },
-      body: { slug: 'already-used' },
+      body: { slug: 'already-used', expectedRevision: 0 },
     } as never, res, jest.fn());
 
     expect(res.status).toHaveBeenCalledWith(409);

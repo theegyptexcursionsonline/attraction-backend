@@ -1,4 +1,5 @@
 import sanitizeHtml from 'sanitize-html';
+import { pageSectionsSchema } from './siteContent';
 
 const options: sanitizeHtml.IOptions = {
   allowedTags: [
@@ -59,5 +60,11 @@ export const sanitizeCustomPages = (value: unknown): unknown[] => {
 
   return value
     .filter((page): page is Record<string, unknown> => !!page && typeof page === 'object')
-    .map((page) => ({ ...page, body: sanitizeRichText(page.body) }));
+    .map((page) => ({ ...page, body: sanitizeRichText(page.body), ...(page.sections !== undefined ? { sections: sanitizePageSections(page.sections) } : {}) }));
+};
+
+export const sanitizePageSections = (value: unknown) => {
+  const parsed = pageSectionsSchema.safeParse(value);
+  if (!parsed.success) return [];
+  return parsed.data.map(section => section.type === 'content' ? { ...section, body: sanitizeRichText(section.body) } : section);
 };

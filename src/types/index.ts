@@ -1,3 +1,4 @@
+import type { PageSection } from '../utils/siteContent';
 import { Request } from 'express';
 import { Document, Types } from 'mongoose';
 
@@ -118,9 +119,11 @@ export interface ITenant extends Document {
       maxSuggestions: number;
     };
   };
+  navigationRevision?: number;
   navigation?: {
     label: string;
     href: string;
+    columns?: { label: string; links: { label: string; href: string }[] }[];
   }[];
   seoSettings?: {
     metaTitle: string;
@@ -149,6 +152,8 @@ export interface ITenant extends Document {
     metaTitle?: string;
     metaDescription?: string;
     body: string;
+    revision?: number;
+    sections?: PageSection[];
     pageType?: 'attraction' | 'category';
     parentPath?: string;
     categoryIds?: string[];
