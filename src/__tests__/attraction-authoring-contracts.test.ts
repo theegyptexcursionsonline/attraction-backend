@@ -184,6 +184,23 @@ describe('needToKnow', () => {
   });
 });
 
+describe('participantRequirements', () => {
+  it('survives the authoring schema and rejects blank or unbounded entries', () => {
+    const present = createAttractionSchema.safeParse({
+      ...publishable(),
+      participantRequirements: ['Drivers must be 16 or older'],
+    });
+    expect(present.success && present.data.participantRequirements).toEqual(['Drivers must be 16 or older']);
+
+    expect(issuePaths(createAttractionSchema.safeParse({
+      ...publishable(), participantRequirements: ['   '],
+    }))).toContain('participantRequirements.0');
+    expect(issuePaths(createAttractionSchema.safeParse({
+      ...publishable(), participantRequirements: ['x'.repeat(501)],
+    }))).toContain('participantRequirements.0');
+  });
+});
+
 describe('draft lifecycle — nothing but the title is required', () => {
   const partialNested = {
     pricingOptions: [

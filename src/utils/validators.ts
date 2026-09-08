@@ -273,6 +273,7 @@ export const createAttractionSchema = z.object({
     keywords: z.array(z.string()).optional(),
   }).optional(),
   itinerary: z.array(publishItineraryStepSchema).optional().default([]),
+  participantRequirements: z.array(z.string().trim().min(1).max(500)).max(50).optional().default([]),
   whatToBring: z.array(z.string()).optional().default([]),
   needToKnow: z.array(z.string()).optional().default([]),
   accessibility: z.array(z.string()).optional().default([]),

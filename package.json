@@ -13,6 +13,7 @@
     "seed:makadi-excursions": "ts-node src/scripts/seed-makadi-excursions.ts",
     "enrich:makadi-quad-gallery": "ts-node src/scripts/enrich-makadi-quad-gallery.ts",
     "set:makadi-participant-requirements": "ts-node src/scripts/set-makadi-participant-requirements.ts",
+    "migrate:safari-sahara-quads": "ts-node src/scripts/migrate-safari-sahara-quad-catalog.ts",
     "audit:booking-integrity": "ts-node src/scripts/audit-booking-integrity.ts",
     "inspect:content-receiver": "ts-node src/scripts/inspect-content-receiver-migration.ts",
     "ops:verify-backup": "bash scripts/verify-backup-restore.sh",

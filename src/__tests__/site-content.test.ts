@@ -7,7 +7,7 @@ import { navigationSchema, pageSectionsSchema, pageSlugSchema, isSafeNavigationH
 import { sanitizePageSections } from '../utils/sanitizeHtml';
 
 jest.mock('../models/Tenant', () => ({ Tenant: { exists: jest.fn(), findById: jest.fn(), findOne: jest.fn(), findOneAndUpdate: jest.fn(), aggregate: jest.fn() } }));
-jest.mock('../models/Attraction', () => ({ Attraction: { exists: jest.fn(), find: jest.fn() } }));
+jest.mock('../models/Attraction', () => ({ Attraction: { exists: jest.fn(), find: jest.fn(), aggregate: jest.fn() } }));
 const tenantId = new Types.ObjectId();
 const pageId = new Types.ObjectId().toString();
 const res = () => { const r: any = {}; r.status = jest.fn().mockReturnValue(r); r.json = jest.fn().mockReturnValue(r); r.setHeader = jest.fn(); return r; };
@@ -90,15 +90,35 @@ describe('public section resolution', () => {
     expect(Tenant.findOne).toHaveBeenCalledWith({ _id: tenantId, customPages: { $elemMatch: { _id: pageId, status: { $ne: 'archived' }, isPublished: { $ne: false } } } });
     expect(response.status).toHaveBeenCalledWith(404); expect(Attraction.find).not.toHaveBeenCalled();
   });
-  it('queries only active scoped tours, supports the next cursor and omits internal fields', async () => {
-    const ids = [new Types.ObjectId(), new Types.ObjectId()];
+  it('keeps explicit tour order, paginates in MongoDB and omits internal fields', async () => {
+    const ids = [new Types.ObjectId(), new Types.ObjectId(), new Types.ObjectId()];
     (Tenant.findOne as jest.Mock).mockReturnValue(lean({ customPages: [{ _id: pageId, sections: [{ id: 'tours', type: 'tours', layout: 'vertical', attractionIds: ids.map(String), categoryIds: ['desert'] }] }] }));
-    const chain: any = { select: jest.fn().mockReturnThis(), sort: jest.fn().mockReturnThis(), limit: jest.fn().mockReturnThis(), lean: jest.fn().mockResolvedValue(ids.map(_id => ({ _id, title: 'Tour' }))) };
-    (Attraction.find as jest.Mock).mockReturnValue(chain);
+    (Attraction.aggregate as jest.Mock).mockResolvedValue(ids.slice(1).map(_id => ({ _id, title: 'Tour' })));
     const response = res(); await getPageSection(req({ query: { limit: 1, cursor: ids[0].toString() } }), response, jest.fn());
-    expect(Attraction.find).toHaveBeenCalledWith({ tenantIds: tenantId, status: 'active', _id: { $in: ids.map(String), $gt: ids[0].toString() }, category: { $in: ['desert'] } });
-    expect(chain.limit).toHaveBeenCalledWith(2); expect(chain.select.mock.calls[0][0]).not.toMatch(/ownerTenant|reseller|createdBy/);
-    expect(response.json).toHaveBeenCalledWith(expect.objectContaining({ data: { type: 'tours', items: [{ _id: ids[0], title: 'Tour' }], nextCursor: ids[0].toString() } }));
+    const pipeline = (Attraction.aggregate as jest.Mock).mock.calls[0][0];
+    expect(pipeline[0]).toEqual({ $match: { tenantIds: tenantId, status: 'active', category: { $in: ['desert'] }, _id: { $in: ids.slice(1) } } });
+    expect(pipeline[1]).toEqual({ $addFields: { __selectionOrder: { $indexOfArray: [ids, '$_id'] } } });
+    expect(pipeline[2]).toEqual({ $sort: { __selectionOrder: 1 } });
+    expect(pipeline[3]).toEqual({ $limit: 2 });
+    expect(pipeline[4].$project).not.toHaveProperty('ownerTenantId');
+    expect(response.json).toHaveBeenCalledWith(expect.objectContaining({ data: { type: 'tours', items: [{ _id: ids[1], title: 'Tour' }], nextCursor: ids[1].toString() } }));
+  });
+  it('rejects a valid ObjectId cursor from outside an explicit selection', async () => {
+    const ids = [new Types.ObjectId(), new Types.ObjectId()];
+    (Tenant.findOne as jest.Mock).mockReturnValue(lean({ customPages: [{ _id: pageId, sections: [{ id: 'tours', type: 'tours', layout: 'vertical', attractionIds: ids.map(String) }] }] }));
+    const response = res();
+    await getPageSection(req({ query: { cursor: new Types.ObjectId().toString() } }), response, jest.fn());
+    expect(response.status).toHaveBeenCalledWith(400);
+    expect(Attraction.aggregate).not.toHaveBeenCalled();
+  });
+  it('uses ObjectId cursor pagination for a category-only tour section', async () => {
+    const id = new Types.ObjectId();
+    (Tenant.findOne as jest.Mock).mockReturnValue(lean({ customPages: [{ _id: pageId, sections: [{ id: 'tours', type: 'tours', layout: 'vertical', categoryIds: ['desert'] }] }] }));
+    const chain: any = { select: jest.fn().mockReturnThis(), sort: jest.fn().mockReturnThis(), limit: jest.fn().mockReturnThis(), lean: jest.fn().mockResolvedValue([{ _id: id, title: 'Tour' }]) };
+    (Attraction.find as jest.Mock).mockReturnValue(chain);
+    const response = res(); await getPageSection(req({ query: { cursor: id.toString() } }), response, jest.fn());
+    expect(Attraction.find).toHaveBeenCalledWith({ tenantIds: tenantId, status: 'active', category: { $in: ['desert'] }, _id: { $gt: id.toString() } });
+    expect(chain.select.mock.calls[0][0]).not.toMatch(/ownerTenant|reseller|createdBy/);
   });
   it('preserves selected page order and hides cross-tenant, draft and archived references', async () => {
     const second = new Types.ObjectId().toString(), draft = new Types.ObjectId().toString();

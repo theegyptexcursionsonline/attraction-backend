@@ -56,8 +56,17 @@ export async function runSiteContentDatabaseIntegration() {
     assert.equal(results.payload.data.items.length, 2); assert.ok(results.payload.data.nextCursor);
     const tail = await call(getPageSection, {}, undefined, { params: { pageId: String(mixed.payload.data._id), sectionId: 'tours' }, query: { limit: 2, cursor: results.payload.data.nextCursor } });
     assert.equal(tail.payload.data.items.length, 1); assert.equal(tail.payload.data.nextCursor, null);
+    const selectedOrder = [ownIds[2], ownIds[0], ownIds[1]];
+    const curated = await call(createAdminPage, { ...page, slug: 'curated', body: '', sections: [{ id: 'tours', type: 'tours', layout: 'vertical', attractionIds: selectedOrder.map(String) }] });
+    assert.equal(curated.statusCode, 201);
+    const curatedFirst = await call(getPageSection, {}, undefined, { params: { pageId: String(curated.payload.data._id), sectionId: 'tours' }, query: { limit: 2 } });
+    assert.deepEqual(curatedFirst.payload.data.items.map((item: { _id: Types.ObjectId }) => String(item._id)), selectedOrder.slice(0, 2).map(String));
+    assert.equal(curatedFirst.payload.data.nextCursor, String(selectedOrder[1]));
+    const curatedTail = await call(getPageSection, {}, undefined, { params: { pageId: String(curated.payload.data._id), sectionId: 'tours' }, query: { limit: 2, cursor: curatedFirst.payload.data.nextCursor } });
+    assert.deepEqual(curatedTail.payload.data.items.map((item: { _id: Types.ObjectId }) => String(item._id)), [String(selectedOrder[2])]);
+    assert.equal(curatedTail.payload.data.nextCursor, null);
     const crossPage = await call(createAdminPage, { ...page, slug: 'cross-page', sections: [{ id: 'pages', type: 'pages', layout: 'vertical', pageIds: [String(new Types.ObjectId())] }] }); assert.equal(crossPage.statusCode, 400);
-    console.log('PASS real MongoDB integration: duplicate creation, rename collision, page/menu stale edits, draft publication, scoped tour/page references, category normalization, cursor tail.');
+    console.log('PASS real MongoDB integration: duplicate creation, rename collision, page/menu stale edits, draft publication, scoped tour/page references, category normalization, ordered selection and cursor tail.');
   } finally {
     await mongoose.disconnect();
     await mongo.stop();

@@ -1,0 +1,1143 @@
+{
+  "schemaVersion": 1,
+  "tenantSlug": "safari-sahara-hurghada",
+  "sourceLandingUrl": "https://safari-sahara.com/hurghada-quad-biking/",
+  "pageId": "6aa02b8a4b855923b5398c85",
+  "expectedPageRevision": 0,
+  "expectedNavigationRevision": 1,
+  "tours": [
+    {
+      "sourceUrl": "https://safari-sahara.com/hurghada-quad-bike-easy-ride/",
+      "targetId": "6a9f16808b3092549c203ffa",
+      "expectedUpdatedAt": "2026-09-08T18:51:38.194Z",
+      "target": {
+        "title": "Hurghada Quad Bike Easy Ride",
+        "pathSlug": "hurghada-quad-bike-easy-ride",
+        "parentPage": {
+          "label": "Hurghada Quad Biking Tours",
+          "path": "/hurghada-quad-biking-tours"
+        },
+        "shortDescription": "A beginner-friendly 30 km quad-bike ride through Hurghada’s Eastern Desert, with a Bedouin village visit, tea, camel ride and hotel transfers.",
+        "description": "Escape the resort and find your inner adventurer. Whether you’ve never touched a quad bike or you’re looking for a relaxing way to see the Desert, this “Easy Ride” is designed for you.\n\nWhy You’ll Love This Experience?\n\nMost desert tours feel like a race. Our Easy Ride is different. It’s about the journey, the scenery, and the stories. Perfect for beginners, families, and those who want to soak in the majestic landscape of the Eastern Desert without the pressure of high-speed racing.\n\nThe Adventure Highlights:\n\n* The Thrill of the Ride: Master the sands on your own quad bike. Our expert guides ensure you’re comfortable and confident before we head into the dunes.\n\n* A Journey Through Time: Ride 30km into the heart of the mountains to discover a hidden Bedouin village.\n\n* Authentic Hospitality: Sip on traditional Bedouin tea, share stories, and experience a lifestyle that hasn’t changed in centuries.\n\n* The “Desert Ship”: Complete your Desert dream with a gentle camel ride across the golden sands—the ultimate photo opportunity.\n\nWhat to Expect (Tour Itinerary)\n\n1. Door-to-Desert Service\n\nWe’ll pick you up from your Hurghada hotel in a comfortable, air-conditioned vehicle. No stress, no navigation—just sit back and watch the city fade into the horizon.\n\n2. Safety First, Fun Second\n\nAt our professional safari center, you’ll receive a safety briefing and a quick test drive. We specialize in beginners, so we take the time to make sure you feel like a pro before we set off.\n\n3. Into the Mountains\n\nFollow your guide on a 45-minute trek through dramatic mountain passes and open plains. The scenery is breathtaking, and the pace is steady—perfect for taking it all in.\n\n4. The Bedouin Village\n\nStep off your bike and into another world. In the village, you’ll enjoy:\n\n* Freshly brewed Bedouin tea.\n\n* A guided look into local traditions and culture.\n\n* A peaceful camel ride to see the desert from a different perspective.\n\n5. The Return Journey\n\nAs we head back to the base, enjoy one last look at the vast Egyptian wilderness before we drop you safely back at your hotel in time for your next meal.",
+        "category": "adventures",
+        "duration": "3 Hours",
+        "languages": [
+          "English",
+          "Arabic",
+          "German",
+          "French",
+          "Russian",
+          "Italian",
+          "Romanian",
+          "Spanish"
+        ],
+        "priceFrom": 20,
+        "currency": "EUR",
+        "pricingOptions": [
+          {
+            "id": "1",
+            "name": "Standard tour",
+            "price": 20,
+            "pricingModel": "per-person",
+            "originalPrice": 30,
+            "timeSlots": [
+              {
+                "id": "departure-1",
+                "label": "08:00",
+                "startTime": "08:00",
+                "endTime": "11:00"
+              },
+              {
+                "id": "departure-2",
+                "label": "13:00",
+                "startTime": "13:00",
+                "endTime": "16:00"
+              }
+            ]
+          }
+        ],
+        "entryWindows": [
+          {
+            "label": "08:00",
+            "startTime": "08:00",
+            "endTime": "11:00"
+          },
+          {
+            "label": "13:00",
+            "startTime": "13:00",
+            "endTime": "16:00"
+          }
+        ],
+        "hasHotelPickup": true,
+        "participantRequirements": [
+          "The minimum age for driving is 16 yrs.",
+          "Children under 16 years are not allowed to drive a quad and must be accompanied by an adult.",
+          "Disclaimer form against damage and personal injury is required to be signed.",
+          "This is a guided tour and not a racing session."
+        ],
+        "needToKnow": [
+          "Tour Type: Group Tour but private options are available.",
+          "Pickup is available from hotels in Hurghada. Pickup from Sahl Hasheesh, Makadi Bay, El Gouna, Soma Bay, and Safaga is available for an additional fee.",
+          "Customers outside Hurghada have to pay 5-10 Euro for the transfer.",
+          "Goggles and scarves are provided with extra charge.",
+          "Tailor-made packages can be arranged for larger groups by offering additional Hurghada desert safari activities."
+        ],
+        "inclusions": [
+          "Hotel pickup and drop-off",
+          "Soft drinks, tea, and water",
+          "Professional guide",
+          "Camel ride",
+          "Safety helmet",
+          "Quad Bike ride",
+          "Air-conditioned car"
+        ],
+        "exclusions": [
+          "Photo & Video (DVD)",
+          "Personal expenses",
+          "Scarf",
+          "Protective goggles"
+        ],
+        "highlights": [
+          "Enjoy a beginner-friendly quad bike adventure in the Hurghada desert",
+          "Explore scenic desert trails at an easy pace",
+          "Visit a traditional Bedouin village",
+          "Enjoy Bedouin tea and local hospitality",
+          "Experience a relaxing camel ride in the desert"
+        ],
+        "itinerary": [
+          {
+            "title": "Hotel transfer",
+            "description": "Air-conditioned pickup in Hurghada."
+          },
+          {
+            "title": "Safety preparation",
+            "description": "Instruction and practice ride at the safari centre."
+          },
+          {
+            "title": "Desert ride",
+            "description": "Guided journey through mountain passes toward a Bedouin village; approximately 45 minutes and 30km."
+          },
+          {
+            "title": "Village visit",
+            "description": "Tea, local culture and a camel ride."
+          },
+          {
+            "title": "Return",
+            "description": "Ride back to the base and transfer to the hotel."
+          }
+        ],
+        "instantConfirmation": true,
+        "mobileTicket": true,
+        "cancellationPolicy": "Cancel up to 24 hours before departure for a full refund",
+        "seo": {
+          "metaTitle": "Hurghada Quad Bike Easy Ride | Perfect for Beginners & Families",
+          "metaDescription": "Experience an unforgettable adventure with the Hurghada Quad Bike Easy Ride, perfect for beginners and families. Book your desert tour today for 20 EUROS only!"
+        },
+        "sortOrder": 1,
+        "status": "active"
+      },
+      "sourceImages": [
+        "https://safari-sahara.com/wp-content/uploads/SAS-HRG001/Hurghada-Quad-Bike-Easy-Ride-C.jpg",
+        "https://safari-sahara.com/wp-content/uploads/SAS-HRG001/Hurghada-Quad-Bike-Easy-Ride-1.jpg",
+        "https://safari-sahara.com/wp-content/uploads/SAS-HRG001/Hurghada-Quad-Bike-Easy-Ride-2.jpg",
+        "https://safari-sahara.com/wp-content/uploads/SAS-HRG001/Hurghada-Quad-Bike-Easy-Ride-3.jpg",
+        "https://safari-sahara.com/wp-content/uploads/SAS-HRG001/Hurghada-Quad-Bike-Easy-Ride-4.jpg",
+        "https://safari-sahara.com/wp-content/uploads/SAS-HRG001/Hurghada-Quad-Bike-Easy-Ride-5.jpg",
+        "https://safari-sahara.com/wp-content/uploads/SAS-HRG001/Hurghada-Quad-Bike-Easy-Ride-6.jpg",
+        "https://safari-sahara.com/wp-content/uploads/SAS-HRG001/Hurghada-Quad-Bike-Easy-Ride-7.jpg",
+        "https://safari-sahara.com/wp-content/uploads/SAS-HRG001/Hurghada-Quad-Bike-Easy-Ride-8.jpg",
+        "https://safari-sahara.com/wp-content/uploads/SAS-HRG001/Hurghada-Quad-Bike-Easy-Ride-9.jpg",
+        "https://safari-sahara.com/wp-content/uploads/SAS-HRG001/Hurghada-Quad-Bike-Easy-Ride-10.jpg"
+      ]
+    },
+    {
+      "sourceUrl": "https://safari-sahara.com/hurghada-quad-bike-power-tour/",
+      "targetId": "6a9f24688b3092549c204d76",
+      "expectedUpdatedAt": "2026-09-08T18:50:57.694Z",
+      "target": {
+        "title": "Hurghada Quad Bike Power Tour",
+        "pathSlug": "hurghada-quad-bike-power-tour",
+        "parentPage": {
+          "label": "Hurghada Quad Biking Tours",
+          "path": "/hurghada-quad-biking-tours"
+        },
+        "shortDescription": "A faster 30 km desert ride for experienced quad-bike drivers, including hotel transfer, a Bedouin village visit, tea and a camel ride.",
+        "description": "Join us on the Hurghada Quad Bike Power Tour and dive into the thrilling atmosphere of the desert! You’ll ride a Quad Bike to a traditional Bedouin village, where refreshing soft drinks, warm tea, and an exciting camel ride await you. Don’t miss out on this unforgettable adventure!\n\nHurghada Quad Bike Power Tour – Full Info.\n\nExperience the thrill of the desert on a Quad Bike and feel the adrenaline surge as you navigate through stunning landscapes. Your adventure begins with a comfortable pickup from your hotel in an air-conditioned vehicle, taking you to the safari center. There, you’ll receive essential instructions and a quick test drive to ensure your safety before hitting the trails.\n\nDive into the excitement as you ride your Quad Bike across the dunes for 45 minutes (about 30 km) until you reach a charming Bedouin village. Immerse yourself in the Bedouin way of life, sip on traditional Bedouin tea, and enjoy a camel ride before returning to the starting point on your Quad Bike.\n\nThis Hurghada Quad Bike Power Tour is perfect for those who have experience in Quad Bike riding and crave speed, excitement, and an exhilarating rush. It’s tailored for adventurous souls eager for an unforgettable ride!",
+        "category": "adventures",
+        "duration": "3 Hours",
+        "languages": [
+          "English",
+          "Arabic",
+          "German",
+          "French",
+          "Russian",
+          "Italian",
+          "Romanian",
+          "Spanish"
+        ],
+        "priceFrom": 35,
+        "currency": "EUR",
+        "pricingOptions": [
+          {
+            "id": "1",
+            "name": "Standard tour",
+            "price": 35,
+            "pricingModel": "per-person",
+            "originalPrice": 45,
+            "timeSlots": [
+              {
+                "id": "departure-1",
+                "label": "14:00",
+                "startTime": "14:00",
+                "endTime": "17:00"
+              }
+            ]
+          }
+        ],
+        "entryWindows": [
+          {
+            "label": "14:00",
+            "startTime": "14:00",
+            "endTime": "17:00"
+          }
+        ],
+        "hasHotelPickup": true,
+        "participantRequirements": [
+          "The minimum age for driving is 16 yrs.",
+          "Children under 16 years are not allowed to drive a quad and must be accompanied by an adult.",
+          "Disclaimer form against damage and personal injury is required to be signed.",
+          "This is a guided tour and not a racing session."
+        ],
+        "needToKnow": [
+          "Tour Type: Group Tour but private options are available.",
+          "Pickup is available from hotels in Hurghada. Pickup from Sahl Hasheesh, Makadi Bay, El Gouna, Soma Bay, and Safaga is available for an additional fee.",
+          "Customers outside Hurghada have to pay 5-10 Euro for the transfer.",
+          "Goggles and scarves are provided with extra charge.",
+          "Tailor-made packages can be arranged for larger groups by offering additional Hurghada desert safari activities."
+        ],
+        "inclusions": [
+          "Hotel pickup and drop-off",
+          "Soft drinks, tea, and water",
+          "Professional guide",
+          "Camel ride",
+          "Safety helmet",
+          "Quad Bike ride",
+          "Air-conditioned car"
+        ],
+        "exclusions": [
+          "Photo & Video (DVD)",
+          "Personal expenses",
+          "Scarf",
+          "Protective goggles"
+        ],
+        "highlights": [
+          "Ride a powerful quad bike through the Hurghada desert",
+          "Cover approximately 30 km of exciting desert terrain",
+          "Visit a traditional Bedouin village",
+          "Enjoy Bedouin tea and discover local traditions",
+          "Experience a camel ride in the desert"
+        ],
+        "itinerary": [
+          {
+            "title": "Hotel transfer",
+            "description": "Travel by air-conditioned vehicle to the safari centre."
+          },
+          {
+            "title": "Safety preparation",
+            "description": "Instructions and test drive before setting off."
+          },
+          {
+            "title": "Quad ride",
+            "description": "Approximately45 minutes and 30km to a Bedouin village; aimed at experienced quad riders."
+          },
+          {
+            "title": "Village visit",
+            "description": "Bedouin culture, tea and a camel ride."
+          },
+          {
+            "title": "Return",
+            "description": "Ride the quad back to the starting point."
+          }
+        ],
+        "instantConfirmation": true,
+        "mobileTicket": true,
+        "cancellationPolicy": "Cancel up to 24 hours before departure for a full refund",
+        "seo": {
+          "metaTitle": "Hurghada Quad Bike Power Tour: Discover the Thrills!",
+          "metaDescription": "Hurghada Quad Bike Power Tour: Join us on a 60-kilometer power tour by ATV through the eastern desert and feel the real adrenaline rush."
+        },
+        "sortOrder": 2,
+        "status": "active"
+      },
+      "sourceImages": [
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR002/Hurghada-Quad-Bike-Power-Tour-c.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR002/Hurghada-Quad-Bike-Power-Tour-1.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR002/Hurghada-Quad-Bike-Power-Tour-2.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR002/Hurghada-Quad-Bike-Power-Tour-3.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR002/Hurghada-Quad-Bike-Power-Tour-4.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR002/Hurghada-Quad-Bike-Power-Tour-5.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR002/Hurghada-Quad-Bike-Power-Tour-6.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR002/Hurghada-Quad-Bike-Power-Tour-7.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR002/Hurghada-Quad-Bike-Power-Tour-8.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR002/Hurghada-Quad-Bike-Power-Tour-9.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR002/Hurghada-Quad-Bike-Power-Tour-10.jpg"
+      ]
+    },
+    {
+      "sourceUrl": "https://safari-sahara.com/morning-quad-biking-tour-hurghada/",
+      "targetId": "6aa04471df25536329b9adae",
+      "expectedUpdatedAt": "2026-09-08T18:43:02.106Z",
+      "target": {
+        "title": "Morning Quad Biking Tour Hurghada",
+        "pathSlug": "morning-quad-biking-tour-hurghada",
+        "parentPage": {
+          "label": "Hurghada Quad Biking Tours",
+          "path": "/hurghada-quad-biking-tours"
+        },
+        "shortDescription": "Start the day with a guided 30 km desert quad ride, then visit a Bedouin village for tea, soft drinks and a camel ride.",
+        "description": "Join us on a Morning Quad Biking Tour and start your day with an exciting adventure. On this tour, you will ride a Quad Bike to a Bedouin village, where you can enjoy soft drinks, tea, and a camel ride.\n\nMorning Quad Biking Tour Hurghada – Full Info.\n\nFollow us on a Morning Quad Biking Tour and experience a wonderful adventure. You will be picked up at your hotel with an air-conditioned car taken to the safari center, where you will have a quick test drive and get important instructions to start your tour safely.\n\nGet ready and start exploring the desert in the early morning hours. After 45 minutes (30 km) of driving through dunes, you will arrive at a small Bedouin village.\n\nHere you can sit and relax, enjoy soft drinks, Bedouin tea and have a camel ride before riding your Quad Bike back to base.",
+        "category": "adventures",
+        "duration": "3 Hours",
+        "languages": [
+          "English",
+          "Arabic",
+          "German",
+          "French",
+          "Russian",
+          "Italian",
+          "Romanian",
+          "Spanish"
+        ],
+        "priceFrom": 20,
+        "currency": "EUR",
+        "pricingOptions": [
+          {
+            "id": "1",
+            "name": "Standard tour",
+            "price": 20,
+            "pricingModel": "per-person",
+            "timeSlots": [
+              {
+                "id": "departure-1",
+                "label": "08:00",
+                "startTime": "08:00",
+                "endTime": "11:00"
+              }
+            ]
+          }
+        ],
+        "entryWindows": [
+          {
+            "label": "08:00",
+            "startTime": "08:00",
+            "endTime": "11:00"
+          }
+        ],
+        "hasHotelPickup": true,
+        "participantRequirements": [
+          "The minimum age for driving is 16 yrs.",
+          "Children under 16 years are not allowed to drive a quad and must be accompanied by an adult.",
+          "Disclaimer form against damage and personal injury is required to be signed.",
+          "This is a guided tour and not a racing session."
+        ],
+        "needToKnow": [
+          "Tour Type: Group Tour but private options are available.",
+          "Pickup is available from hotels in Hurghada. Pickup from Sahl Hasheesh, Makadi Bay, El Gouna, Soma Bay, and Safaga is available for an additional fee.",
+          "Customers outside Hurghada have to pay 5-10 Euro for the transfer.",
+          "Goggles and scarves are provided with extra charge.",
+          "Tailor-made packages can be arranged for larger groups by offering additional Hurghada desert safari activities."
+        ],
+        "inclusions": [
+          "Hotel pickup and drop-off",
+          "Soft drinks, tea, and water",
+          "Professional guide",
+          "Camel ride",
+          "Safety helmet",
+          "Quad Bike ride",
+          "Air-conditioned car"
+        ],
+        "exclusions": [
+          "Photo & Video (DVD)",
+          "Personal expenses",
+          "Scarf",
+          "Protective goggles"
+        ],
+        "highlights": [
+          "Ride a quad bike through the desert in the cool morning hours",
+          "Explore dunes, mountain trails, and scenic desert landscapes",
+          "Visit a traditional Bedouin village",
+          "Enjoy authentic Bedouin tea and refreshing soft drinks",
+          "Experience a relaxing camel ride in the desert",
+          "Hotel transfers included from Hurghada hotels"
+        ],
+        "itinerary": [
+          {
+            "title": "Hotel transfer",
+            "description": "Morning pickup and air-conditioned transfer."
+          },
+          {
+            "title": "Safety preparation",
+            "description": "Briefing and practice ride."
+          },
+          {
+            "title": "Morning quad ride",
+            "description": "Approximately45 minutes and 30km through desert dunes."
+          },
+          {
+            "title": "Village visit",
+            "description": "Soft drinks, tea and a camel ride."
+          },
+          {
+            "title": "Return",
+            "description": "Ride back to base and return to the hotel."
+          }
+        ],
+        "instantConfirmation": true,
+        "mobileTicket": true,
+        "cancellationPolicy": "Cancel up to 24 hours before departure for a full refund",
+        "seo": {
+          "metaTitle": "Extraordinary Morning Quad Biking Tour Hurghada - Explore the Desert",
+          "metaDescription": "Experience the thrill of a Morning Quad Biking Tour Hurghada and explore the desert, enjoy camel rides, and meet local guides in a unique Bedouin experience."
+        },
+        "sortOrder": 3,
+        "status": "active"
+      },
+      "sourceImages": [
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR006/Morning-quad-bike-tour-in-Hurghada-c.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR006/Morning-quad-bike-tour-in-Hurghada-1.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR006/Morning-quad-bike-tour-in-Hurghada-2.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR006/Morning-quad-bike-tour-in-Hurghada-3.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR006/Morning-quad-bike-tour-in-Hurghada-4.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR006/Morning-quad-bike-tour-in-Hurghada-5.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR006/Morning-quad-bike-tour-in-Hurghada-6.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR006/Morning-quad-bike-tour-in-Hurghada-7.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR006/Morning-quad-bike-tour-in-Hurghada-8.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR006/Morning-quad-bike-tour-in-Hurghada-9.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR006/Morning-quad-bike-tour-in-Hurghada-10.jpg"
+      ]
+    },
+    {
+      "sourceUrl": "https://safari-sahara.com/hurghada-sunset-desert-safari-trip-by-quad-bike/",
+      "targetId": "6a9f2bec8b3092549c2056f3",
+      "expectedUpdatedAt": "2026-09-08T18:48:28.487Z",
+      "target": {
+        "title": "Hurghada Sunset Desert Safari Trip by Quad Bike",
+        "pathSlug": "hurghada-sunset-desert-safari-trip-by-quad-bike",
+        "parentPage": {
+          "label": "Hurghada Quad Biking Tours",
+          "path": "/hurghada-quad-biking-tours"
+        },
+        "shortDescription": "Ride 30 km by quad to a Bedouin village, then enjoy a camel ride, desert sunset, barbecue dinner, soft drinks and an oriental show.",
+        "description": "Embark on the thrilling Hurghada Sunset Desert Safari Trip by Quad Bike and venture deep into the desert! Experience a camel ride, savor a delicious barbecue dinner, and be entertained by a mesmerizing oriental show. Join us for an unforgettable adventure!\n\nHurghada Sunset Desert Safari Trip by Quad Bike – Tour Full Info.\n\nExperience the magic of the desert on a Quad Bike adventure. Begin by getting picked up from your hotel in a cool, air-conditioned car and heading to the safari center. There, you’ll have a brief test drive and receive essential instructions for a safe tour.\n\nRide your Quad Bike for 45 minutes (30 km) until you reach a Bedouin village. Immerse yourself in the Bedouin way of life, savor some Bedouin tea, and take a thrilling camel ride across the dunes.\n\nNext, soak in the breathtaking Hurghada desert sunset while relishing a delicious open-buffet barbecue dinner with unlimited soft drinks and water. Cap off the evening with our special oriental show before returning to the starting point on your Quad Bike.\n\nEmbark on an unforgettable Hurghada Sunset Desert Safari Trip by Quad Bike!",
+        "category": "adventures",
+        "duration": "4-5 hours",
+        "languages": [
+          "English",
+          "Arabic",
+          "German",
+          "French",
+          "Russian",
+          "Italian",
+          "Romanian",
+          "Spanish"
+        ],
+        "priceFrom": 25,
+        "currency": "EUR",
+        "pricingOptions": [
+          {
+            "id": "1",
+            "name": "Standard tour",
+            "price": 25,
+            "pricingModel": "per-person",
+            "timeSlots": [
+              {
+                "id": "departure-1",
+                "label": "14:00",
+                "startTime": "14:00",
+                "endTime": "19:00"
+              }
+            ]
+          }
+        ],
+        "entryWindows": [
+          {
+            "label": "14:00",
+            "startTime": "14:00",
+            "endTime": "19:00"
+          }
+        ],
+        "hasHotelPickup": true,
+        "participantRequirements": [
+          "The minimum age for driving is 16 yrs.",
+          "Children under 16 years are not allowed to drive a quad and must be accompanied by an adult.",
+          "Disclaimer form against damage and personal injury is required to be signed.",
+          "This is a guided tour and not a racing session."
+        ],
+        "needToKnow": [
+          "Tour Type: Group Tour but private options are available.",
+          "Pickup is available from hotels in Hurghada. Pickup from Sahl Hasheesh, Makadi Bay, El Gouna, Soma Bay, and Safaga is available for an additional fee.",
+          "Customers outside Hurghada have to pay 5-10 Euro for the transfer.",
+          "Goggles and scarves are provided with extra charge.",
+          "Tailor-made packages can be arranged for larger groups by offering additional Hurghada desert safari activities."
+        ],
+        "inclusions": [
+          "Hotel pickup and drop-off",
+          "Soft drinks, tea, and water",
+          "Professional guide",
+          "Camel ride",
+          "Safety helmet",
+          "Quad Bike ride",
+          "Air-conditioned car",
+          "BBQ dinner & entertaining show"
+        ],
+        "exclusions": [
+          "Photo & Video (DVD)",
+          "Personal expenses",
+          "Scarf",
+          "Protective goggles"
+        ],
+        "highlights": [
+          "Ride a quad bike through the desert at sunset",
+          "Visit a traditional Bedouin village and enjoy Bedouin tea",
+          "Experience a camel ride in the desert",
+          "Watch the spectacular desert sunset",
+          "Enjoy an open-buffet BBQ dinner with unlimited soft drinks and water",
+          "Experience traditional oriental entertainment"
+        ],
+        "itinerary": [
+          {
+            "title": "Hotel transfer",
+            "description": "Pickup in an air-conditioned vehicle."
+          },
+          {
+            "title": "Safety preparation",
+            "description": "Test drive and riding instructions."
+          },
+          {
+            "title": "Quad ride",
+            "description": "Approximately45 minutes and 30km to the Bedouin village."
+          },
+          {
+            "title": "Village visit",
+            "description": "Bedouin tea and a camel ride."
+          },
+          {
+            "title": "Sunset dinner and show",
+            "description": "Sunset views, buffet barbecue, soft drinks, water and oriental entertainment."
+          },
+          {
+            "title": "Return",
+            "description": "Quad ride back to the starting point."
+          }
+        ],
+        "instantConfirmation": true,
+        "mobileTicket": true,
+        "cancellationPolicy": "Cancel up to 24 hours before departure for a full refund",
+        "seo": {
+          "metaTitle": "Hurghada Sunset Desert Safari Trip by Quad Bike",
+          "metaDescription": "Experience an unforgettable Hurghada sunset desert safari trip by quad bike with a cultural Bedouin village show and traditions."
+        },
+        "sortOrder": 4,
+        "status": "active"
+      },
+      "sourceImages": [
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR007/Hurghada-sunset-desert-safari-trip-by-quad-bike-c.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR007/Hurghada-sunset-desert-safari-trip-by-quad-bike-1.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR007/Hurghada-sunset-desert-safari-trip-by-quad-bike-2.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR007/Hurghada-sunset-desert-safari-trip-by-quad-bike-3.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR007/Hurghada-sunset-desert-safari-trip-by-quad-bike-4.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR007/Hurghada-sunset-desert-safari-trip-by-quad-bike-5.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR007/Hurghada-sunset-desert-safari-trip-by-quad-bike-6.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR007/Hurghada-sunset-desert-safari-trip-by-quad-bike-7.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR007/Hurghada-sunset-desert-safari-trip-by-quad-bike-8.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR007/Hurghada-sunset-desert-safari-trip-by-quad-bike-9.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR007/Hurghada-sunset-desert-safari-trip-by-quad-bike-10.jpg"
+      ]
+    },
+    {
+      "sourceUrl": "https://safari-sahara.com/quad-bike-safari-half-day-trip-to-sahara-park/",
+      "targetId": "6aa04aece8da09289e126fef",
+      "expectedUpdatedAt": "2026-09-08T18:41:19.150Z",
+      "target": {
+        "title": "Quad Bike Safari: Half-Day Trip to Sahara Park",
+        "pathSlug": "quad-bike-safari-half-day-trip-to-sahara-park",
+        "parentPage": {
+          "label": "Hurghada Quad Biking Tours",
+          "path": "/hurghada-quad-biking-tours"
+        },
+        "shortDescription": "A half-day quad-bike trip to Sahara Park with Bedouin tea and bread, a camel and spider-car ride, barbecue dinner and an oriental show.",
+        "description": "Take an adventure by Quad Bike Safari: Half-Day Trip to Sahara Park. On this tour, you will meet Bedouin people, taste Bedouin tea, enjoy a BBQ dinner & oriental show.\n\nQuad Bike Safari: Half-Day Trip to Sahara Park – Tour Full Info.\n\nClimb your Quad Bike and start your Half-Day trip to Sahara Park. The tour starts when you’re picked up at your hotel by an air-conditioned car taken to the Safari center, where you will have a quick test drive and get important instructions to begin your tour safely.\n\nGet ready and invade the hills by your Quad Bike and enjoy the desert dramatic scenery. On the way, we will make a stop to see a mirage and climb a sandy dune with a beautiful view. After riding your Quad Bike for 45 minutes (30 km) approximately through the mountains, you will arrive at Sahara Park.\n\nHere you can learn about Bedouin traditions and habits, taste Bedouin bread and Bedouin tea; have a camel ride, spider car ride (10 minutes), and visit our terrarium.\n\nFinally, enjoy sunset views of Hurghada desert along with an open-buffet BBQ dinner with unlimited soft drinks and water followed by an entertaining show (Tanura, belly dancing, etc.…) before returning with your Quad Bike to where we started.",
+        "category": "adventures",
+        "duration": "5-6 hours",
+        "languages": [
+          "English",
+          "Arabic",
+          "German",
+          "French",
+          "Russian",
+          "Italian",
+          "Romanian",
+          "Spanish"
+        ],
+        "priceFrom": 25,
+        "currency": "EUR",
+        "pricingOptions": [
+          {
+            "id": "1",
+            "name": "Standard tour",
+            "price": 25,
+            "pricingModel": "per-person",
+            "timeSlots": [
+              {
+                "id": "departure-1",
+                "label": "13:00",
+                "startTime": "13:00",
+                "endTime": "19:00"
+              }
+            ]
+          }
+        ],
+        "entryWindows": [
+          {
+            "label": "13:00",
+            "startTime": "13:00",
+            "endTime": "19:00"
+          }
+        ],
+        "hasHotelPickup": true,
+        "participantRequirements": [
+          "The minimum age for driving is 16 yrs.",
+          "Children under 16 years are not allowed to drive a quad and must be accompanied by an adult.",
+          "Disclaimer form against damage and personal injury is required to be signed.",
+          "This is a guided tour and not a racing session."
+        ],
+        "needToKnow": [
+          "Tour Type: Group Tour.",
+          "Pickup is available from hotels in Hurghada. Pickup from Sahl Hasheesh, Makadi Bay, El Gouna, Soma Bay, and Safaga is available for an additional fee.",
+          "Customers outside Hurghada have to pay 5-10 Euro for the transfer.",
+          "Goggles and scarves are provided with extra charge.",
+          "Tailor-made packages can be arranged for larger groups by offering additional Hurghada desert safari activities."
+        ],
+        "inclusions": [
+          "Hotel pickup and drop-off",
+          "Soft drinks, tea, and water",
+          "Professional guide",
+          "Camel ride",
+          "Safety helmet",
+          "Air-conditioned car",
+          "Spider car ride",
+          "BBQ dinner & entertaining show",
+          "Quad Bike ride"
+        ],
+        "exclusions": [
+          "Photo & Video (DVD)",
+          "Personal expenses",
+          "Scarf",
+          "Protective goggles"
+        ],
+        "highlights": [
+          "Exciting quad bike ride through the Hurghada desert and mountains",
+          "Stop at a desert mirage and climb a sandy dune for panoramic views",
+          "Visit Sahara Park and discover traditional Bedouin culture",
+          "Enjoy a camel ride, spider car experience, and terrarium visit",
+          "Savor a Bedouin-style BBQ dinner with an entertaining oriental show"
+        ],
+        "itinerary": [
+          {
+            "title": "Hotel transfer",
+            "description": "Pickup and transfer to the safari centre."
+          },
+          {
+            "title": "Safety preparation",
+            "description": "Instructions and test drive."
+          },
+          {
+            "title": "Desert route",
+            "description": "Quad riding with a mirage stop and sand-dune viewpoint; approximately 45 minutes and 30km toward Sahara Park."
+          },
+          {
+            "title": "Sahara Park",
+            "description": "Bedouin culture, bread, tea, camel ride, 10-minute spider-car ride and terrarium visit."
+          },
+          {
+            "title": "Evening meal and show",
+            "description": "Sunset, buffet barbecue, unlimited soft drinks and water, and entertainment."
+          },
+          {
+            "title": "Return",
+            "description": "Quad ride back to the starting point."
+          }
+        ],
+        "instantConfirmation": true,
+        "mobileTicket": true,
+        "cancellationPolicy": "Cancel up to 24 hours before departure for a full refund",
+        "seo": {
+          "metaTitle": "Quad Bike Safari: Half-Day Trip to Sahara Park",
+          "metaDescription": "Quad Bike Safari: Half-Day Trip to Sahara Park into Hurghada Desert, look at the Bedouin life on this trip to Sahara Park"
+        },
+        "sortOrder": 5,
+        "status": "active"
+      },
+      "sourceImages": [
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR011/Quad-Bike-Safari-Half-Day-Trip-to-Sahara-Park-c.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR011/Quad-Bike-Safari-Half-Day-Trip-to-Sahara-Park-1.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR011/Quad-Bike-Safari-Half-Day-Trip-to-Sahara-Park-2.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR011/Quad-Bike-Safari-Half-Day-Trip-to-Sahara-Park-3.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR011/Quad-Bike-Safari-Half-Day-Trip-to-Sahara-Park-4.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR011/Quad-Bike-Safari-Half-Day-Trip-to-Sahara-Park-5.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR011/Quad-Bike-Safari-Half-Day-Trip-to-Sahara-Park-6.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR011/Quad-Bike-Safari-Half-Day-Trip-to-Sahara-Park-7.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR011/Quad-Bike-Safari-Half-Day-Trip-to-Sahara-Park-8.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR011/Quad-Bike-Safari-Half-Day-Trip-to-Sahara-Park-9.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR011/Quad-Bike-Safari-Half-Day-Trip-to-Sahara-Park-10.jpg"
+      ]
+    },
+    {
+      "sourceUrl": "https://safari-sahara.com/hurghada-quad-bike-tour-including-stargazing-telescope/",
+      "targetId": "6a9f29518b3092549c205246",
+      "expectedUpdatedAt": "2026-09-08T18:49:20.132Z",
+      "target": {
+        "title": "Hurghada Quad Bike Tour including Stargazing Telescope",
+        "pathSlug": "hurghada-quad-bike-tour-including-stargazing-telescope",
+        "parentPage": {
+          "label": "Hurghada Quad Biking Tours",
+          "path": "/hurghada-quad-biking-tours"
+        },
+        "shortDescription": "Ride by quad to a Bedouin village for tea and a camel ride, then watch the desert sky through digital telescopes.",
+        "description": "Experience our special Hurghada Quad Bike tour including Stargazing Telescope. On this tour, you will have a Quad Bike ride to a Bedouin village, where you can enjoy soft drinks, tea, a camel ride, and watching the stars in the sky.\n\nHurghada Quad Bike Tour including Stargazing Telescope – Tour Full Info.\n\nGet in gear with a Quad Bike ride and conquer the sandy dunes. You will be picked up at your hotel with an air-conditioned car taken to the safari center, where you will have a quick test drive and get important instructions to start your tour safely.\n\nAfter riding your Quad Bike for 45 minutes (30km) you will arrive in a Bedouin village. Here you can discover Bedouin habits and traditions, enjoy Bedouin tea and have a magical camel ride.\n\nAt the end of the day, you will watch the stars and planets above the sky through our digital telescopes before returning to where we started.",
+        "category": "adventures",
+        "duration": "3-4 hours",
+        "languages": [
+          "English",
+          "Arabic",
+          "German",
+          "French",
+          "Russian",
+          "Italian",
+          "Romanian",
+          "Spanish"
+        ],
+        "priceFrom": 50,
+        "currency": "EUR",
+        "pricingOptions": [
+          {
+            "id": "1",
+            "name": "Standard tour",
+            "price": 50,
+            "pricingModel": "per-person",
+            "timeSlots": [
+              {
+                "id": "departure-1",
+                "label": "14:00",
+                "startTime": "14:00",
+                "endTime": "18:00"
+              }
+            ]
+          }
+        ],
+        "entryWindows": [
+          {
+            "label": "14:00",
+            "startTime": "14:00",
+            "endTime": "18:00"
+          }
+        ],
+        "hasHotelPickup": true,
+        "participantRequirements": [
+          "The minimum age for driving is 16 yrs.",
+          "Children under 16 years are not allowed to drive a quad and must be accompanied by an adult.",
+          "Disclaimer form against damage and personal injury is required to be signed.",
+          "This is a guided tour and not a racing session."
+        ],
+        "needToKnow": [
+          "Tour Type: Group Tour but private options are available.",
+          "Pickup is available from hotels in Hurghada. Pickup from Sahl Hasheesh, Makadi Bay, El Gouna, Soma Bay, and Safaga is available for an additional fee.",
+          "Customers outside Hurghada have to pay 5-10 Euro for the transfer.",
+          "Goggles and scarves are provided with extra charge.",
+          "Tailor-made packages can be arranged for larger groups by offering additional Hurghada desert safari activities."
+        ],
+        "inclusions": [
+          "Hotel pickup and drop-off",
+          "Soft drinks, tea, and water",
+          "Professional guide",
+          "Camel ride",
+          "Safety helmet",
+          "Quad Bike ride",
+          "Air-conditioned car",
+          "Stargazing by telescope"
+        ],
+        "exclusions": [
+          "Photo & Video (DVD)",
+          "Personal expenses",
+          "Scarf",
+          "Protective goggles"
+        ],
+        "highlights": [
+          "Ride a quad bike through the Hurghada desert",
+          "Explore approximately 30 km of desert and mountain terrain",
+          "Visit a traditional Bedouin village",
+          "Enjoy Bedouin tea and a camel ride",
+          "Observe stars and planets through digital telescopes"
+        ],
+        "itinerary": [
+          {
+            "title": "Hotel transfer",
+            "description": "Air-conditioned pickup and transfer."
+          },
+          {
+            "title": "Safety preparation",
+            "description": "Test drive and riding instructions."
+          },
+          {
+            "title": "Quad ride",
+            "description": "Approximately45 minutes and 30km to a Bedouin village."
+          },
+          {
+            "title": "Village visit",
+            "description": "Local customs, tea and a camel ride."
+          },
+          {
+            "title": "Stargazing",
+            "description": "Observe stars and planets through digital telescopes."
+          },
+          {
+            "title": "Return",
+            "description": "Return to the starting point."
+          }
+        ],
+        "instantConfirmation": true,
+        "mobileTicket": true,
+        "cancellationPolicy": "Cancel up to 24 hours before departure for a full refund",
+        "seo": {
+          "metaTitle": "Hurghada Quad Bike Tour including Stargazing Telescope",
+          "metaDescription": "Hurghada Quad Bike Tour including Stargazing Telescope Follow us on an amazing trip through the desert to see amazing Spots"
+        },
+        "sortOrder": 6,
+        "status": "active"
+      },
+      "sourceImages": [
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR004/Hurghada-Quad-Bike-Tour-including-Stargazing-Telescope-c.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR004/Hurghada-Quad-Bike-Tour-including-Stargazing-Telescope-1.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR004/Hurghada-Quad-Bike-Tour-including-Stargazing-Telescope-2.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR004/Hurghada-Quad-Bike-Tour-including-Stargazing-Telescope-3.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR004/Hurghada-Quad-Bike-Tour-including-Stargazing-Telescope-4.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR004/Hurghada-Quad-Bike-Tour-including-Stargazing-Telescope-5.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR004/Hurghada-Quad-Bike-Tour-including-Stargazing-Telescope-7.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR004/Hurghada-Quad-Bike-Tour-including-Stargazing-Telescope-8.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR004/Hurghada-Quad-Bike-Tour-including-Stargazing-Telescope-9.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR004/Hurghada-Quad-Bike-Tour-including-Stargazing-Telescope-10.jpg"
+      ]
+    },
+    {
+      "sourceUrl": "https://safari-sahara.com/private-quad-bike-safari-trip-sahara-park/",
+      "targetId": "6aa0498fdf25536329b9c231",
+      "expectedUpdatedAt": "2026-09-08T18:41:11.571Z",
+      "target": {
+        "title": "Private Quad Bike Safari Trip: Sahara Park Hurghada",
+        "pathSlug": "private-quad-bike-safari-trip-sahara-park",
+        "parentPage": {
+          "label": "Hurghada Quad Biking Tours",
+          "path": "/hurghada-quad-biking-tours"
+        },
+        "shortDescription": "A private quad-bike ride to Sahara Park with Bedouin culture, camel and spider-car rides, sunset, barbecue dinner and an oriental show.",
+        "description": "Join our Private Quad Bike Safari Trip: Sahara Park Hurghada. On this tour, you will meet Bedouin people, have a private Quad Bike ride, and enjoy a BBQ dinner & entertaining show.\n\nPrivate Quad Bike Safari Trip: Sahara Park Hurghada – Tour Full Info.\n\nJump on your Quad Bike and start your Private Quad Bike Safari Trip: Sahara Park Hurghada. The tour starts when you’re picked up at your hotel by an air-conditioned car and taken to the Safari center, where you will have a quick test drive and get important instructions to begin your tour safely.\n\nGet ready and conquer the desert by your private Quad bike and enjoy desert views. On the way, we will make a stop to see a mirage and climb a sandy dune with a magical view. After riding your Quad Bike for 45 minutes (30 km) approximately through the hills, you will arrive at Sahara Park.\n\nSahara Park is where you can combine adventure with the wonders of the desert. Here you can learn about the Bedouin lifestyle and habits, taste Bedouin bread and Bedouin tea; have a camel ride, spider car ride (10 minutes), and visit our terrarium.\n\nFinally, enjoy the Hurghada desert’s sunset landscapes and an open-buffet BBQ dinner with unlimited soft drinks and water followed by an entertaining show (Tanura, belly dancing, etc.…) before heading back with your own Quad Bike to where we started.",
+        "category": "adventures",
+        "duration": "5-6 hours",
+        "languages": [
+          "English",
+          "Arabic",
+          "German",
+          "French",
+          "Russian",
+          "Italian",
+          "Romanian",
+          "Spanish"
+        ],
+        "priceFrom": 30,
+        "currency": "EUR",
+        "pricingOptions": [
+          {
+            "id": "1",
+            "name": "Private tour",
+            "price": 30,
+            "pricingModel": "per-person",
+            "timeSlots": [
+              {
+                "id": "departure-1",
+                "label": "13:00",
+                "startTime": "13:00",
+                "endTime": "19:00"
+              }
+            ]
+          }
+        ],
+        "entryWindows": [
+          {
+            "label": "13:00",
+            "startTime": "13:00",
+            "endTime": "19:00"
+          }
+        ],
+        "hasHotelPickup": true,
+        "participantRequirements": [
+          "The minimum age for driving is 16 yrs.",
+          "Children under 16 years are not allowed to drive a quad and must be accompanied by an adult.",
+          "Disclaimer form against damage and personal injury is required to be signed.",
+          "This is a guided tour and not a racing session."
+        ],
+        "needToKnow": [
+          "Tour Type: Private Tour.",
+          "Pickup is available from hotels in Hurghada. Pickup from Sahl Hasheesh, Makadi Bay, El Gouna, Soma Bay, and Safaga is available for an additional fee.",
+          "Customers outside Hurghada have to pay 5-10 Euro for the transfer.",
+          "Goggles and scarves are provided with extra charge.",
+          "Tailor-made packages can be arranged for larger groups by offering additional Hurghada desert safari activities."
+        ],
+        "inclusions": [
+          "Hotel pickup and drop-off",
+          "Soft drinks, tea, and water",
+          "Private guide",
+          "Camel ride",
+          "Safety helmet",
+          "Air-conditioned car",
+          "Spider car ride",
+          "BBQ dinner & entertaining show",
+          "Private Quad Bike ride"
+        ],
+        "exclusions": [
+          "Photo & Video (DVD)",
+          "Personal expenses",
+          "Scarf",
+          "Protective goggles"
+        ],
+        "highlights": [
+          "Enjoy a private quad bike ride through the Hurghada desert",
+          "Stop at a desert mirage and climb a scenic sandy dune",
+          "Visit Sahara Park and discover traditional Bedouin culture",
+          "Enjoy Bedouin bread, traditional tea, camel riding, and a spider car ride",
+          "Watch the spectacular desert sunset and enjoy mountain landscapes",
+          "Savor a BBQ dinner with unlimited soft drinks and traditional oriental entertainment"
+        ],
+        "itinerary": [
+          {
+            "title": "Hotel transfer",
+            "description": "Air-conditioned pickup and transfer."
+          },
+          {
+            "title": "Safety preparation",
+            "description": "Test ride and instructions."
+          },
+          {
+            "title": "Private quad route",
+            "description": "Mirage stop and dune viewpoint; approximately 45 minutes and 30km to Sahara Park."
+          },
+          {
+            "title": "Sahara Park",
+            "description": "Bedouin culture, bread, tea, camel ride, 10-minute spider-car ride and terrarium."
+          },
+          {
+            "title": "Evening meal and show",
+            "description": "Sunset views, buffet barbecue, soft drinks, water and entertainment."
+          },
+          {
+            "title": "Return",
+            "description": "Return by private quad to the starting point."
+          }
+        ],
+        "instantConfirmation": true,
+        "mobileTicket": true,
+        "cancellationPolicy": "Cancel up to 24 hours before departure for a full refund",
+        "seo": {
+          "metaTitle": "Private Quad Bike Safari Trip: Sahara Park Hurghada",
+          "metaDescription": "Private Quad Bike Safari Trip: Sahara Park Hurghada into the desert and look at the Bedouin life on this trip to Sahara Park"
+        },
+        "sortOrder": 7,
+        "status": "active"
+      },
+      "sourceImages": [
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR012/Private-Quad-Bike-Safari-Full-Day-Trip-to-Sahara-Park-c.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR012/Private-Quad-Bike-Safari-Full-Day-Trip-to-Sahara-Park-1.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR012/Private-Quad-Bike-Safari-Full-Day-Trip-to-Sahara-Park-2.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR012/Private-Quad-Bike-Safari-Full-Day-Trip-to-Sahara-Park-3.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR012/Private-Quad-Bike-Safari-Full-Day-Trip-to-Sahara-Park-4.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR012/Private-Quad-Bike-Safari-Full-Day-Trip-to-Sahara-Park-5.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR012/Private-Quad-Bike-Safari-Full-Day-Trip-to-Sahara-Park-6.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR012/Private-Quad-Bike-Safari-Full-Day-Trip-to-Sahara-Park-7.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR012/Private-Quad-Bike-Safari-Full-Day-Trip-to-Sahara-Park-8.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR012/Private-Quad-Bike-Safari-Full-Day-Trip-to-Sahara-Park-9.jpg",
+        "https://safari-sahara.com/wp-content/uploads/Hurghada-Safari/SSR012/Private-Quad-Bike-Safari-Full-Day-Trip-to-Sahara-Park-10.jpg"
+      ]
+    },
+    {
+      "sourceUrl": "https://safari-sahara.com/discover-makadi-bay-quads-by-the-sea-camel-ride/",
+      "targetId": "6aa04121df25536329b99dc6",
+      "expectedUpdatedAt": "2026-09-08T18:45:37.096Z",
+      "target": {
+        "title": "Makadi Bay: Quads by the Sea & Camel Ride",
+        "pathSlug": "discover-makadi-bay-quads-by-the-sea-camel-ride",
+        "parentPage": {
+          "label": "Hurghada Quad Biking Tours",
+          "path": "/hurghada-quad-biking-tours"
+        },
+        "shortDescription": "A two-hour quad-bike route through Makadi Bay’s desert and Red Sea coast, with Bedouin tea and a camel ride.",
+        "description": "Discover an unforgettable adventure in Makadi Bay with our Quads by the Sea & Camel Ride experience! Immerse yourself in the thrill of the desert as you unwind in a cozy Bedouin tent, sipping complimentary Egyptian tea. Enjoy a delightful camel ride around the camp, then rev up your excitement as you race through the desert on a quad bike. Explore the hidden beaches, enchanting caves, and vibrant coral reefs that Makadi Bay has to offer!\n\nMakadi Bay: Quads by the Sea & Camel Ride – Tour Full Info\n\nKick off your adventure with a hassle-free pick-up from your hotel. Our cheerful driver will take you to Makadi Bay, where you’ll meet our skilled guides and get a quick safety briefing.\n\nGet ready for an exciting 2-hour quad bike journey through the breathtaking desert scenery. Feel the thrill as you cruise over the golden sands and soak in the spectacular views of the expansive desert.\n\nThen, head over to the coastline for a refreshing ride along the crystal-clear sea. Enjoy the striking contrast of the turquoise waters against the desert landscape and snap some fantastic photos.\n\nAfter your thrilling ride, you’ll return to Makadi to unwind and share your stories. Finally, our driver will bring you back to your hotel, ensuring your adventure wraps up comfortably.",
+        "category": "adventures",
+        "duration": "2 Hours",
+        "languages": [
+          "English",
+          "Arabic",
+          "German",
+          "French",
+          "Russian",
+          "Italian",
+          "Romanian",
+          "Spanish"
+        ],
+        "priceFrom": 30,
+        "currency": "EUR",
+        "pricingOptions": [
+          {
+            "id": "1",
+            "name": "Standard tour",
+            "price": 30,
+            "pricingModel": "per-person",
+            "timeSlots": [
+              {
+                "id": "departure-1",
+                "label": "09:00",
+                "startTime": "09:00"
+              },
+              {
+                "id": "departure-2",
+                "label": "13:00",
+                "startTime": "13:00"
+              },
+              {
+                "id": "departure-3",
+                "label": "15:00",
+                "startTime": "15:00"
+              }
+            ]
+          }
+        ],
+        "entryWindows": [
+          {
+            "label": "09:00",
+            "startTime": "09:00"
+          },
+          {
+            "label": "13:00",
+            "startTime": "13:00"
+          },
+          {
+            "label": "15:00",
+            "startTime": "15:00"
+          }
+        ],
+        "hasHotelPickup": true,
+        "participantRequirements": [
+          "The minimum age for driving is 16 yrs.",
+          "Children under 16 years are not allowed to drive a quad and must be accompanied by an adult.",
+          "Disclaimer form against damage and personal injury is required to be signed.",
+          "This is a guided tour and not a racing session."
+        ],
+        "needToKnow": [
+          "Tour Type: Group or Private Tour.",
+          "Pickup is available from hotels in Makadi Bay. Pickup from Sahl Hasheesh, Hurghada, El Gouna, Soma Bay, and Safaga is available for an additional fee.",
+          "Customers outside Makadi Bay have to pay 5-10 Euro for the transfer.",
+          "Goggles and scarves are provided with extra charge."
+        ],
+        "inclusions": [
+          "Hotel pickup and drop-off",
+          "Professional guide",
+          "Camel Ride",
+          "Quad Bike"
+        ],
+        "exclusions": [
+          "Photo & Video (DVD)",
+          "Personal expenses",
+          "Scarf",
+          "Protective goggles"
+        ],
+        "highlights": [
+          "Ride for two hours through Makadi Bay’s desert landscape.",
+          "Follow the Red Sea coastline past hidden beaches, caves and coral reefs.",
+          "Relax in a Bedouin tent with complimentary Egyptian tea.",
+          "Enjoy a camel ride around the desert camp."
+        ],
+        "itinerary": [
+          {
+            "title": "Hotel transfer",
+            "description": "Pickup and transfer to Makadi Bay."
+          },
+          {
+            "title": "Safety preparation",
+            "description": "Meet the guide and receive a safety briefing."
+          },
+          {
+            "title": "Desert quad ride",
+            "description": "Explore desert landscapes by quad."
+          },
+          {
+            "title": "Coastal ride",
+            "description": "Continue beside the Red Sea and stop for views/photos."
+          },
+          {
+            "title": "Camp experience",
+            "description": "The description includes Bedouin tea and a camel ride; its precise sequence is not specified."
+          },
+          {
+            "title": "Return",
+            "description": "Return to Makadi and transfer to the hotel."
+          }
+        ],
+        "instantConfirmation": true,
+        "mobileTicket": true,
+        "cancellationPolicy": "Cancel up to 24 hours before departure for a full refund",
+        "seo": {
+          "metaTitle": "7 Unforgettable Adventures in Makadi Bay: Quads by the Sea & Camel Ride",
+          "metaDescription": "Experience unforgettable adventures in Makadi Bay with thrilling quads by the sea and serene camel rides: Makadi Bay: Quads by the Sea & Camel Ride."
+        },
+        "sortOrder": 8,
+        "status": "active"
+      },
+      "sourceImages": [
+        "https://safari-sahara.com/wp-content/uploads/2-1.jpeg",
+        "https://safari-sahara.com/wp-content/uploads/7.jpeg",
+        "https://safari-sahara.com/wp-content/uploads/11.jpeg",
+        "https://safari-sahara.com/wp-content/uploads/12.jpeg",
+        "https://safari-sahara.com/wp-content/uploads/DSC_000100-309-scaled.jpg",
+        "https://safari-sahara.com/wp-content/uploads/15.jpeg",
+        "https://safari-sahara.com/wp-content/uploads/13.jpeg",
+        "https://safari-sahara.com/wp-content/uploads/14.jpeg",
+        "https://safari-sahara.com/wp-content/uploads/10.jpeg",
+        "https://safari-sahara.com/wp-content/uploads/9.jpeg",
+        "https://safari-sahara.com/wp-content/uploads/1.jpeg",
+        "https://safari-sahara.com/wp-content/uploads/16.jpeg",
+        "https://safari-sahara.com/wp-content/uploads/DSC_0247-scaled.jpg",
+        "https://safari-sahara.com/wp-content/uploads/6.jpeg"
+      ]
+    }
+  ],
+  "retireRecords": [
+    {
+      "id": "69fc40563ac583b3163b999b",
+      "replacementId": "6aa04471df25536329b9adae",
+      "expectedUpdatedAt": "2026-09-08T17:22:50.719Z"
+    },
+    {
+      "id": "69fc40633ac583b3163b99b6",
+      "replacementId": "6a9f24688b3092549c204d76",
+      "expectedUpdatedAt": "2026-09-07T21:25:43.393Z"
+    },
+    {
+      "id": "69fc40693ac583b3163b99bf",
+      "replacementId": "6aa0498fdf25536329b9c231",
+      "expectedUpdatedAt": "2026-09-08T17:44:38.757Z"
+    },
+    {
+      "id": "69fc406c3ac583b3163b99c8",
+      "replacementId": "6a9f2bec8b3092549c2056f3",
+      "expectedUpdatedAt": "2026-09-07T21:25:25.358Z"
+    }
+  ]
+}

@@ -393,12 +393,45 @@ export const getPageSection = async (req: AuthRequest, res: Response, next: Next
     }
     const limit = Number(req.query.limit || 12);
     const query: Record<string, unknown> = { tenantIds: req.tenant._id, status: 'active' };
-    const ids: Record<string, unknown> = {};
-    if (section.attractionIds?.length) ids.$in = section.attractionIds;
-    if (req.query.cursor) ids.$gt = String(req.query.cursor);
-    if (Object.keys(ids).length) query._id = ids;
     if (section.categoryIds?.length) query.category = { $in: section.categoryIds };
-    const results = await Attraction.find(query).select('_id slug pathSlug title shortDescription images category destination duration rating reviewCount priceFrom currency badges').sort({ _id: 1 }).limit(limit + 1).lean();
+    const publicFields = {
+      _id: 1, slug: 1, pathSlug: 1, title: 1, shortDescription: 1, images: 1,
+      category: 1, destination: 1, duration: 1, rating: 1, reviewCount: 1,
+      priceFrom: 1, currency: 1, badges: 1,
+    } as const;
+    let results: Array<Record<string, unknown>>;
+
+    if (section.attractionIds?.length) {
+      const orderedIds = section.attractionIds.map(id => new Types.ObjectId(id));
+      let remainingIds = orderedIds;
+      if (req.query.cursor) {
+        const cursor = String(req.query.cursor);
+        const cursorIndex = section.attractionIds.findIndex(id => id === cursor);
+        if (cursorIndex < 0) { sendError(res, 'Cursor does not belong to this section', 400); return; }
+        remainingIds = orderedIds.slice(cursorIndex + 1);
+      }
+      if (!remainingIds.length) { sendSuccess(res, { type: 'tours', items: [], nextCursor: null }); return; }
+
+      // Explicit selections are curated by the editor. Keep that order in the
+      // public response while still applying tenant/status/category filters and
+      // pagination inside MongoDB. Sorting by ObjectId silently rearranged a
+      // saved landing page and made its final selected item unreachable after a
+      // cursor crossed an earlier ObjectId.
+      results = await Attraction.aggregate([
+        { $match: { ...query, _id: { $in: remainingIds } } },
+        { $addFields: { __selectionOrder: { $indexOfArray: [orderedIds, '$_id'] } } },
+        { $sort: { __selectionOrder: 1 } },
+        { $limit: limit + 1 },
+        { $project: publicFields },
+      ]);
+    } else {
+      if (req.query.cursor) query._id = { $gt: String(req.query.cursor) };
+      results = await Attraction.find(query)
+        .select(Object.keys(publicFields).join(' '))
+        .sort({ _id: 1 })
+        .limit(limit + 1)
+        .lean();
+    }
     const more = results.length > limit;
     const items = results.slice(0, limit);
     sendSuccess(res, { type: 'tours', items, nextCursor: more ? String(items[items.length - 1]._id) : null });
