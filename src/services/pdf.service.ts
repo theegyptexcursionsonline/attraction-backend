@@ -1,5 +1,6 @@
 import PDFDocument from 'pdfkit';
 import QRCode from 'qrcode';
+import type { HotelPickupSelection } from '../utils/hotel-pickup';
 
 interface TicketData {
   reference: string;
@@ -26,6 +27,7 @@ interface TicketData {
   currency: string;
   paymentStatus?: string;
   paymentMethod?: string;
+  hotelPickups?: HotelPickupSelection[];
   meetingPoint?: {
     address: string;
     instructions?: string;
@@ -410,6 +412,17 @@ export const generateTicketPdf = async (data: TicketData): Promise<Buffer> => {
       /* ============================================================ */
       /*  MEETING POINT                                                */
       /* ============================================================ */
+
+      for (const pickup of data.hotelPickups || []) {
+        if (y > 650) { doc.addPage(); y = 50; }
+        const details = pickup.status === 'provide_later'
+          ? 'Hotel details to be provided later'
+          : [pickup.hotelName, pickup.address, pickup.roomNumber ? `Room ${pickup.roomNumber}` : '', pickup.pickupTime].filter(Boolean).join(', ');
+        if (!details) continue;
+        y = sectionHeader(doc, 'Hotel Pickup', y + 4, brand);
+        doc.font('Helvetica').fontSize(9).fillColor('#1e293b').text(details, col1x, y, { width: 495 });
+        y = doc.y + 12;
+      }
 
       if (data.meetingPoint?.address) {
         y = sectionHeader(doc, 'Meeting Point', y + 4, brand);

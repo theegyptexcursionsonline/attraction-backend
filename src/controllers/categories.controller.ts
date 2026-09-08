@@ -10,6 +10,11 @@ export const getCategories = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    const forEditor = req.query.forEditor === 'true';
+    if (forEditor && (!req.user || !['super-admin', 'brand-admin', 'manager', 'editor', 'viewer'].includes(req.user.role))) {
+      sendError(res, 'Staff access is required for editor options', req.user ? 403 : 401);
+      return;
+    }
     const { includeCount = 'true' } = req.query;
 
     // Build match filter – scope to tenant or user's assigned tenants
@@ -34,6 +39,11 @@ export const getCategories = async (
     const categories = await Category.find({ isActive: true })
       .sort({ sortOrder: 1, name: 1 })
       .lean();
+
+    if (forEditor) {
+      sendSuccess(res, categories);
+      return;
+    }
 
     if (includeCount === 'true') {
       // Get attraction counts for each category

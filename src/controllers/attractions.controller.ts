@@ -1,3 +1,4 @@
+import { publicBookingTenantSlug } from '../utils/public-booking-tenant';
 import { Response, NextFunction } from 'express';
 import { Attraction } from '../models/Attraction';
 import { Booking } from '../models/Booking';
@@ -359,7 +360,7 @@ export const getAttractionBySlug = async (
     if (req.tenant) query.tenantIds = { $in: [req.tenant._id] };
 
     const attraction = await Attraction.findOne(query)
-      .select(PUBLIC_ATTRACTION_PROJECTION)
+      .select(`${PUBLIC_ATTRACTION_PROJECTION} tenantIds ownerTenantId`)
       .lean();
 
     if (!attraction) {
@@ -367,7 +368,8 @@ export const getAttractionBySlug = async (
       return;
     }
 
-    sendSuccess(res, toPublicAttractionDto(attraction));
+    const bookingTenantSlug = req.tenant?.slug || await publicBookingTenantSlug(attraction);
+    sendSuccess(res, { ...toPublicAttractionDto(attraction), ...(bookingTenantSlug ? { bookingTenantSlug } : {}) });
   } catch (error) {
     next(error);
   }

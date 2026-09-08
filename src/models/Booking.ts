@@ -65,6 +65,8 @@ const bookingSchema = new Schema<IBooking>(
       // has `hasHotelPickup === true`. The operator uses these to dispatch
       // a pickup driver.
       hotelPickup: {
+        status: { type: String, enum: ['confirmed', 'provide_later'] },
+        address: { type: String },
         hotelName: { type: String },
         roomNumber: { type: String },
         pickupTime: { type: String },

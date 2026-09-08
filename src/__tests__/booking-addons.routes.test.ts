@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 import app from '../app';
 import { Attraction } from '../models/Attraction';
 import { Booking } from '../models/Booking';
+import { Availability } from '../models/Availability';
 import { IdempotencyKey } from '../models/IdempotencyKey';
 import { generateBookingAccessToken } from '../utils/bookingAccess';
 
@@ -94,6 +95,51 @@ describe('POST /api/bookings — add-on quantities', () => {
     (IdempotencyKey.findByIdAndUpdate as jest.Mock).mockResolvedValue({});
     (IdempotencyKey.deleteOne as jest.Mock).mockResolvedValue({ deletedCount: 1 });
     (Booking.create as jest.Mock).mockImplementation(async (doc) => ({ ...doc, _id: new Types.ObjectId() }));
+  });
+
+  it('rejects missing pickup before inventory or booking writes when enabled', async () => {
+    (Attraction.findById as jest.Mock).mockResolvedValue({...catalogAttraction(),hasHotelPickup:true});
+    const response = await post(payload([]));
+    expect(response.status).toBe(400);
+    expect(Booking.create).not.toHaveBeenCalled();
+    expect(Availability.updateOne).not.toHaveBeenCalled();
+    expect(Availability.findOneAndUpdate).not.toHaveBeenCalled();
+    expect(IdempotencyKey.deleteOne).toHaveBeenCalledWith(expect.objectContaining({ status: 'processing' }));
+  });
+
+  it('persists the explicit later choice on pickup-enabled tours', async () => {
+    (Attraction.findById as jest.Mock).mockResolvedValue({...catalogAttraction(),hasHotelPickup:true});
+    const body = payload([]);
+    const response = await post({...body,items:body.items.map(item=>({...item,hotelPickup:{status:'provide_later',hotelName:''}}))});
+    expect(response.status).toBe(201);
+    expect(Booking.create).toHaveBeenCalledWith(expect.objectContaining({items:expect.arrayContaining([expect.objectContaining({hotelPickup:{status:'provide_later',hotelName:''}})])}));
+  });
+
+  it.each([true, false])('replays the original receipt after pickup availability changes from %s', async (wasEnabled) => {
+    (Attraction.findById as jest.Mock).mockResolvedValue({ ...catalogAttraction(), hasHotelPickup: wasEnabled });
+    const base = payload([]);
+    const body = wasEnabled ? { ...base, items: base.items.map((item) => ({ ...item, hotelPickup: { hotelName: 'Original Hotel' } })) } : base;
+    const key = `qa-pickup-replay-${wasEnabled}-0001`;
+    const created = await post(body, key);
+    expect(created.status).toBe(201);
+    const claim = (IdempotencyKey.create as jest.Mock).mock.calls[0][0];
+    const originalBooking = await (Booking.create as jest.Mock).mock.results[0].value;
+    (Attraction.findById as jest.Mock).mockResolvedValue({ ...catalogAttraction(), hasHotelPickup: !wasEnabled });
+    (IdempotencyKey.create as jest.Mock).mockRejectedValueOnce({ code: 11000 });
+    (IdempotencyKey.findOne as jest.Mock).mockReturnValue({ lean: jest.fn().mockResolvedValue({
+      ...claim, status: 'completed', resourceId: originalBooking._id,
+    }) });
+    (Booking.findById as jest.Mock).mockResolvedValue(originalBooking);
+    const inventoryWrites = (Availability.updateOne as jest.Mock).mock.calls.length;
+    const inventoryClaims = (Availability.findOneAndUpdate as jest.Mock).mock.calls.length;
+    const replay = await post(body, key);
+    expect(replay.status).toBe(200);
+    expect(replay.headers['idempotency-replayed']).toBe('true');
+    expect(replay.body.data.reference).toBe(created.body.data.reference);
+    expect(replay.body.data.items).toEqual(created.body.data.items);
+    expect(Booking.create).toHaveBeenCalledTimes(1);
+    expect(Availability.updateOne).toHaveBeenCalledTimes(inventoryWrites);
+    expect(Availability.findOneAndUpdate).toHaveBeenCalledTimes(inventoryClaims);
   });
 
   it('charges price × quantity from the catalogue and persists quantity + pricing type', async () => {

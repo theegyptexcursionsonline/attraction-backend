@@ -1,3 +1,4 @@
+import type { HotelPickupSelection } from '../utils/hotel-pickup';
 import Mailgun from 'mailgun.js';
 import formData from 'form-data';
 import sanitizeMarkup from 'sanitize-html';
@@ -234,7 +235,8 @@ export interface BookingEmailDetails {
   currency: string;
   paymentMethod?: string;
   guests?: number;
-  hotelPickup?: { hotelName?: string; roomNumber?: string; pickupTime?: string };
+  hotelPickups?: HotelPickupSelection[];
+  hotelPickup?: { status?: 'confirmed' | 'provide_later'; address?: string; hotelName?: string; roomNumber?: string; pickupTime?: string };
   meetingPoint?: { lat?: number; lng?: number; label?: string };
 }
 
@@ -330,6 +332,11 @@ export const renderBookingConfirmationHtml = (
   bookingDetails: BookingEmailDetails,
   hasTicket = false
 ): string => {
+  const pickupLabels = (bookingDetails.hotelPickups || (bookingDetails.hotelPickup ? [bookingDetails.hotelPickup] : []))
+    .map(pickup => pickup.status === 'provide_later' ? 'Hotel details to be provided later'
+      : [pickup.hotelName, pickup.address, pickup.roomNumber ? `Room ${pickup.roomNumber}` : '', pickup.pickupTime].filter(Boolean).join(', '))
+    .filter(Boolean).map(escapeEmailHtml);
+
   const viewUrl = brandedLink(brand, '/checkout/confirmation', {
     ref: bookingDetails.reference,
     ...(bookingDetails.guestAccessToken ? { accessToken: bookingDetails.guestAccessToken } : {}),
@@ -347,7 +354,9 @@ export const renderBookingConfirmationHtml = (
       : undefined,
     hotelPickup: bookingDetails.hotelPickup
       ? {
-          hotelName: escapeEmailHtml(bookingDetails.hotelPickup.hotelName),
+          hotelName: bookingDetails.hotelPickup.status === 'provide_later'
+            ? 'Hotel details to be provided later'
+            : escapeEmailHtml([bookingDetails.hotelPickup.hotelName, bookingDetails.hotelPickup.address].filter(Boolean).join(', ')),
           roomNumber: escapeEmailHtml(bookingDetails.hotelPickup.roomNumber),
           pickupTime: escapeEmailHtml(bookingDetails.hotelPickup.pickupTime),
         }
@@ -419,7 +428,7 @@ export const renderBookingConfirmationHtml = (
 ${row('Booking reference', `<span style="font-family:'SF Mono',Menlo,Consolas,monospace;font-weight:700;letter-spacing:0.5px;">${bookingDetails.reference}</span>`, { first: true })}
 ${row('Date &amp; time', dateStr)}
 ${bookingDetails.guests ? row('Guests', String(bookingDetails.guests)) : ''}
-${bookingDetails.hotelPickup?.hotelName ? row('Hotel pickup', `${bookingDetails.hotelPickup.hotelName}${bookingDetails.hotelPickup.roomNumber ? `, Room ${bookingDetails.hotelPickup.roomNumber}` : ''}${bookingDetails.hotelPickup.pickupTime ? ` &middot; ${bookingDetails.hotelPickup.pickupTime}` : ''}`) : ''}
+${pickupLabels.map((label, index) => row(pickupLabels.length > 1 ? `Hotel pickup ${index + 1}` : 'Hotel pickup', label)).join('')}
 ${row(totalLabel, `<span style="font-size:18px;font-weight:800;color:${brand.color};">${bookingDetails.currency} ${bookingDetails.total.toFixed(2)}</span>`, { note: totalNote })}
               </table>
             </td></tr>
@@ -537,7 +546,8 @@ export interface AdminBookingDetails {
   total: number;
   currency: string;
   paymentMethod: string;
-  hotelPickup?: { hotelName?: string; roomNumber?: string; pickupTime?: string };
+  hotelPickups?: HotelPickupSelection[];
+  hotelPickup?: { status?: 'confirmed' | 'provide_later'; address?: string; hotelName?: string; roomNumber?: string; pickupTime?: string };
   meetingPoint?: { lat?: number; lng?: number; label?: string };
 }
 
@@ -548,6 +558,11 @@ export const renderAdminBookingNotificationHtml = (
   details: AdminBookingDetails,
   adminUrl: string
 ): string => {
+  const pickupLabels = (details.hotelPickups || (details.hotelPickup ? [details.hotelPickup] : []))
+    .map(pickup => pickup.status === 'provide_later' ? 'Hotel details to be provided later'
+      : [pickup.hotelName, pickup.address, pickup.roomNumber ? `Room ${pickup.roomNumber}` : '', pickup.pickupTime].filter(Boolean).join(', '))
+    .filter(Boolean).map(escapeEmailHtml);
+
   const emailHref = safeMailtoAddress(details.guestEmail);
   const phoneHref = details.guestPhone.replace(/[^+0-9]/g, '');
   details = {
@@ -627,7 +642,7 @@ export const renderAdminBookingNotificationHtml = (
 ${row('Experience', title, true)}
 ${row('Date &amp; time', dateStr)}
 ${row('Guests', guestsText)}
-${details.hotelPickup?.hotelName ? row('Hotel pickup', `${details.hotelPickup.hotelName}${details.hotelPickup.roomNumber ? `, Room ${details.hotelPickup.roomNumber}` : ''}${details.hotelPickup.pickupTime ? ` &middot; ${details.hotelPickup.pickupTime}` : ''}`) : ''}
+${pickupLabels.map((label, index) => row(pickupLabels.length > 1 ? `Hotel pickup ${index + 1}` : 'Hotel pickup', label)).join('')}
 ${row('Lead traveller', details.guestName)}
 ${row('Email', emailHref
   ? `<a href="mailto:${escapeEmailHtml(emailHref)}" style="color:${brand.color};text-decoration:none;font-weight:600;">${details.guestEmail}</a>`

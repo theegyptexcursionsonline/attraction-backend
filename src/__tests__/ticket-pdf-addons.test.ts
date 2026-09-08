@@ -1,3 +1,4 @@
+import PDFDocument from 'pdfkit';
 import { generateTicketPdf } from '../services/pdf.service';
 
 const PDF_TEST_TIMEOUT_MS = 15_000;
@@ -30,5 +31,49 @@ describe('ticket PDF add-on lines', () => {
   it('still renders a booking with no add-ons', async () => {
     const pdf = await generateTicketPdf(ticket(undefined));
     expect(pdf.subarray(0, 4).toString()).toBe('%PDF');
+  }, PDF_TEST_TIMEOUT_MS);
+});
+
+
+describe('ticket PDF hotel pickup details', () => {
+  it('writes every confirmed hotel and deferred choice into the PDF drawing stream', async () => {
+    const text = jest.spyOn(PDFDocument.prototype, 'text');
+    try {
+      const pdf = await generateTicketPdf({
+        ...ticket(undefined),
+        hotelPickups: [
+          { status: 'confirmed', hotelName: 'Harbour Hotel', address: 'Marina road', roomNumber: '12', pickupTime: '08:30' },
+          { status: 'confirmed', hotelName: 'Garden Hotel', address: 'South road' },
+          { status: 'provide_later', hotelName: 'Stale hotel must not appear', address: 'Stale address must not appear' },
+        ],
+      });
+      expect(pdf.subarray(0, 4).toString()).toBe('%PDF');
+      const renderedText = text.mock.calls.map(([value]) => String(value)).join('\n');
+      expect(renderedText).toContain('Harbour Hotel, Marina road, Room 12, 08:30');
+      expect(renderedText).toContain('Garden Hotel, South road');
+      expect(renderedText).toContain('Hotel details to be provided later');
+      expect(renderedText).not.toContain('Stale hotel must not appear');
+      expect(renderedText).not.toContain('Stale address must not appear');
+    } finally {
+      text.mockRestore();
+    }
+  }, PDF_TEST_TIMEOUT_MS);
+
+  it('keeps the final pickup visible when long pickup details require another page', async () => {
+    const text = jest.spyOn(PDFDocument.prototype, 'text');
+    const addPage = jest.spyOn(PDFDocument.prototype, 'addPage');
+    try {
+      const hotelPickups = Array.from({ length: 10 }, (_, index) => ({
+        hotelName: `Hotel ${index + 1}`,
+        address: 'Long hotel address '.repeat(25),
+      }));
+      await generateTicketPdf({ ...ticket(undefined), hotelPickups });
+      const renderedText = text.mock.calls.map(([value]) => String(value)).join('\n');
+      for (const pickup of hotelPickups) expect(renderedText).toContain(`${pickup.hotelName}, ${pickup.address}`);
+      expect(addPage.mock.calls.length).toBeGreaterThan(1);
+    } finally {
+      text.mockRestore();
+      addPage.mockRestore();
+    }
   }, PDF_TEST_TIMEOUT_MS);
 });

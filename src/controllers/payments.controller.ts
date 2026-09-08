@@ -430,6 +430,7 @@ const finalizePaidBooking = async (
       guestEmail: booking.guestDetails.email,
       guestPhone: booking.guestDetails.phone,
       guestCountry: booking.guestDetails.country,
+      hotelPickups: booking.items.map(item => item.hotelPickup).filter((pickup): pickup is NonNullable<typeof pickup> => Boolean(pickup)),
       items: booking.items.map((item: { optionName?: string; quantities?: { adults?: number; children?: number; infants?: number } }) => ({
         name: item.optionName || 'Experience',
         adults: item.quantities?.adults || 0,
@@ -473,6 +474,7 @@ const finalizePaidBooking = async (
         paymentMethod: 'card',
         guests: totalAdults + totalChildren,
         hotelPickup,
+        hotelPickups: booking.items.map(item => item.hotelPickup).filter((pickup): pickup is NonNullable<typeof pickup> => Boolean(pickup)),
         meetingPoint,
         guestAccessToken: generateBookingAccessToken(String(booking._id), booking.reference),
       },
@@ -500,6 +502,7 @@ const finalizePaidBooking = async (
             currency: booking.currency,
             paymentMethod: 'card',
             hotelPickup,
+            hotelPickups: booking.items.map(item => item.hotelPickup).filter((pickup): pickup is NonNullable<typeof pickup> => Boolean(pickup)),
             meetingPoint,
           },
           tenantBrand

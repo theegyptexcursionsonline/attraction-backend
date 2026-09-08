@@ -1,3 +1,4 @@
+import { normalizeHotelPickup, HotelPickupError, HotelPickupSelection } from '../utils/hotel-pickup';
 import { Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import mongoose from 'mongoose';
@@ -274,14 +275,14 @@ export const createBooking = async (
     const residentPricingEnabled = bookingTenant?.pricingSettings?.enableResidentPricing === true;
 
     // Recalculate line items on the server to prevent client-side price tampering.
-    const normalizedItems = items.map((item: {
+    let normalizedItems = items.map((item: {
       optionId: string;
       date: string;
       time?: string;
       category?: 'foreigner' | 'resident';
       quantities: { adults: number; children: number; infants: number };
       addons?: Array<{ id: string; name?: string; price?: number; quantity?: number }>;
-      hotelPickup?: { hotelName?: string; roomNumber?: string; pickupTime?: string };
+      hotelPickup?: HotelPickupSelection;
     }) => {
       const option = attraction.pricingOptions.find((o) => o.id === item.optionId);
       if (!option) {
@@ -362,6 +363,9 @@ export const createBooking = async (
         participants: capacityGuests,
       });
 
+      // Catalog pickup validation runs after completed idempotent replays below.
+      const hotelPickup = item.hotelPickup;
+
       return {
         optionId: option.id,
         optionName: option.name,
@@ -373,18 +377,7 @@ export const createBooking = async (
         pricingBreakdown: linePricing.pricingBreakdown,
         ...(appliedCategory ? { category: appliedCategory } : {}),
         ...(validAddons.length > 0 ? { addons: validAddons } : {}),
-        // Persist hotel pickup when the guest supplied it (the widget only collects it
-        // for attractions with hasHotelPickup). Was previously dropped here, so pickup
-        // never reached the booking, admin, voucher or emails.
-        ...(item.hotelPickup?.hotelName
-          ? {
-              hotelPickup: {
-                hotelName: item.hotelPickup.hotelName,
-                roomNumber: item.hotelPickup.roomNumber,
-                pickupTime: item.hotelPickup.pickupTime,
-              },
-            }
-          : {}),
+        ...(hotelPickup ? { hotelPickup } : {}),
       };
     });
 
@@ -504,6 +497,17 @@ export const createBooking = async (
       sendError(res, 'An identical booking request is already processing', 409);
       return;
     }
+
+    // A completed request must replay its original receipt even if an admin has
+    // since changed pickup availability. Validate new requests before inventory,
+    // promotion usage or booking writes; the catch releases this processing claim.
+    normalizedItems = normalizedItems.map((item: IBooking['items'][number]) => {
+      const hotelPickup = normalizeHotelPickup(attraction.hasHotelPickup === true, item.hotelPickup);
+      if (hotelPickup) return { ...item, hotelPickup };
+      const withoutPickup = { ...item };
+      delete withoutPickup.hotelPickup;
+      return withoutPickup;
+    });
 
     // Preserve completed idempotent replays above, but reject every genuinely
     // new booking for a closed tenant before inventory, discounts, or Booking
@@ -719,6 +723,7 @@ export const createBooking = async (
             paymentMethod: paymentMethod || 'pay-later',
             guests: totalAdults + totalChildren,
             hotelPickup: firstItem?.hotelPickup,
+            hotelPickups: booking.items.map(item => item.hotelPickup).filter((pickup): pickup is NonNullable<typeof pickup> => Boolean(pickup)),
             meetingPoint,
           },
           undefined,
@@ -747,6 +752,7 @@ export const createBooking = async (
               currency: attraction.currency,
               paymentMethod: paymentMethod || 'pay-later',
               hotelPickup: firstItem?.hotelPickup,
+            hotelPickups: booking.items.map(item => item.hotelPickup).filter((pickup): pickup is NonNullable<typeof pickup> => Boolean(pickup)),
               meetingPoint,
             }, tenantDoc);
           } catch (err) {
@@ -776,6 +782,10 @@ export const createBooking = async (
     }
     if (error instanceof Error && error.message.startsWith('INVALID_OPTION:')) {
       sendError(res, 'Invalid pricing option selected', 400);
+      return;
+    }
+    if (error instanceof HotelPickupError) {
+      sendError(res, error.message, 400);
       return;
     }
     if (error instanceof AddonSelectionError) {
@@ -1283,6 +1293,7 @@ export const getBookingTicket = async (
         currency: booking.currency,
         paymentStatus: booking.paymentStatus,
         paymentMethod: booking.paymentMethod,
+        hotelPickups: booking.items.map((item) => item.hotelPickup).filter((pickup): pickup is NonNullable<typeof pickup> => Boolean(pickup)),
         meetingPoint: attraction?.meetingPoint?.address
           ? {
               address: attraction.meetingPoint.address,

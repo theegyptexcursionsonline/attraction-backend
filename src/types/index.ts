@@ -341,6 +341,8 @@ export interface IBooking extends Document {
       pricingType?: AddonPricingType;
     }>;
     hotelPickup?: {
+      status?: 'confirmed' | 'provide_later';
+      address?: string;
       hotelName: string;
       roomNumber?: string;
       pickupTime?: string;

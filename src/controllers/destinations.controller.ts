@@ -11,6 +11,11 @@ export const getDestinations = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    const forEditor = req.query.forEditor === 'true';
+    if (forEditor && (!req.user || !['super-admin', 'brand-admin', 'manager', 'editor', 'viewer'].includes(req.user.role))) {
+      sendError(res, 'Staff access is required for editor options', req.user ? 403 : 401);
+      return;
+    }
     const { page = 1, limit = 20, continent, search, includeCount = 'true' } = req.query;
 
     const pageNum = parseInt(page as string, 10);
@@ -50,7 +55,7 @@ export const getDestinations = async (
     }
 
     // If scoped to tenant, only return destinations that have matching attractions
-    if (scopedToTenant) {
+    if (scopedToTenant && !forEditor) {
       const destinationCities = await Attraction.distinct('destination.city', attractionFilter);
       query.name = { $in: destinationCities };
     }
@@ -64,7 +69,7 @@ export const getDestinations = async (
       Destination.countDocuments(query),
     ]);
 
-    if (includeCount === 'true') {
+    if (includeCount === 'true' && !forEditor) {
       // Get attraction counts scoped to tenant
       const counts = await Attraction.aggregate([
         { $match: attractionFilter },

@@ -313,3 +313,14 @@ describe('renderBookingStatusEmailHtml', () => {
     expect(html).toContain('&lt;script&gt;');
   });
 });
+
+ it('renders explicit deferred pickup and escapes confirmed hotel addresses', () => {
+   expect(renderBookingConfirmationHtml(brand, {...base, hotelPickup:{status:'provide_later',hotelName:''}})).toContain('Hotel details to be provided later');
+   const html = renderBookingConfirmationHtml(brand, {...base, hotelPickup:{status:'confirmed',hotelName:'Hotel',address:'<script>bad</script>'}});
+   expect(html).toContain('&lt;script&gt;');
+   expect(html).not.toContain('<script>bad</script>');
+ });
+ it('includes pickup details for every booked item', () => {
+   const html = renderBookingConfirmationHtml(brand, {...base,hotelPickups:[{hotelName:'First Hotel'},{status:'provide_later',hotelName:''},{hotelName:'Third Hotel',address:'Harbour Road'}]});
+   expect(html).toContain('First Hotel');expect(html).toContain('Hotel details to be provided later');expect(html).toContain('Third Hotel, Harbour Road');
+ });

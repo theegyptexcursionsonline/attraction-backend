@@ -501,9 +501,14 @@ export const createBookingSchema = z.object({
       quantity: z.number().int().min(1).max(50).optional().default(1),
     })).max(20).optional().default([]),
     hotelPickup: z.object({
-      hotelName: z.string().trim().min(1).max(200),
+      status: z.enum(['confirmed', 'provide_later']).optional(),
+      address: z.string().trim().max(500).optional(),
+      hotelName: z.string().trim().max(200),
       roomNumber: z.string().trim().max(50).optional(),
       pickupTime: timeSchema.optional(),
+    }).refine((pickup) => pickup.status === 'provide_later' || pickup.hotelName.length > 0, {
+      message: 'Enter your hotel name or choose to provide it later',
+      path: ['hotelName'],
     }).optional(),
   })).min(1).max(10),
   guestDetails: z.object({
