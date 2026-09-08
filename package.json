@@ -23,7 +23,8 @@
     "test": "jest --runInBand",
     "test:secrets": "node src/scripts/check-secret-hygiene.mjs",
     "test:watch": "jest --watch",
-    "test:site-content-db": "node -r ts-node/register/transpile-only src/__tests__/site-content.mongodb.integration.ts"
+    "test:site-content-db": "node -r ts-node/register/transpile-only src/__tests__/site-content.mongodb.integration.ts",
+    "audit:url-namespace": "ts-node src/scripts/audit-url-namespace.ts"
   },
   "dependencies": {
     "@sentry/node": "^10.67.0",

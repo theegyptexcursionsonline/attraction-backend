@@ -1,3 +1,4 @@
+import { urlNamespaceReadiness } from '../plugins/urlNamespace';
 import { Router } from 'express';
 import mongoose from 'mongoose';
 import authRoutes from './auth.routes';
@@ -36,6 +37,7 @@ router.get('/health', (req, res) => {
     success: true,
     message: 'API is running',
     status: 'operational',
+    urlNamespace: urlNamespaceReadiness(),
     timestamp: new Date().toISOString(),
   });
 });

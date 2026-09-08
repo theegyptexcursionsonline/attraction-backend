@@ -1,3 +1,4 @@
+import { urlNamespacePlugin } from '../plugins/urlNamespace';
 import mongoose, { Schema } from 'mongoose';
 import { IAttraction } from '../types';
 
@@ -352,7 +353,12 @@ attractionSchema.index({ 'destination.city': 1, category: 1, status: 1 });
 attractionSchema.index({ priceFrom: 1, rating: -1 });
 attractionSchema.index({ featured: 1, sortOrder: 1 });
 attractionSchema.index({ tenantIds: 1, status: 1 });
+// Namespace collision checks resolve both public aliases within one tenant.
+attractionSchema.index({ tenantIds: 1, pathSlug: 1 });
+attractionSchema.index({ tenantIds: 1, slug: 1 });
 // Marketplace discovery: attractions a tenant has opened up for resale.
 attractionSchema.index({ 'reseller.enabled': 1, ownerTenantId: 1, status: 1 });
+
+attractionSchema.plugin(urlNamespacePlugin, { kind: 'attraction' });
 
 export const Attraction = mongoose.model<IAttraction>('Attraction', attractionSchema);

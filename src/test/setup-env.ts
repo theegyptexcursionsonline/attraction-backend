@@ -9,3 +9,6 @@ process.env.JWT_SECRET =
 // once sent real "Test User booked …" mail to the client inbox — never again.
 process.env.MAILGUN_API_KEY = '';
 process.env.MAILGUN_DOMAIN = '';
+
+// Namespace integration tests exercise the activated protocol; individual pause tests override it.
+process.env.URL_NAMESPACE_WRITES_READY = 'true';

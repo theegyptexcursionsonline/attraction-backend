@@ -1,6 +1,6 @@
 /** Explicit local integration check: starts its own disposable MongoDB (pinned downloadable fallback for CI), never reads application DB configuration. */
 import { spawnSync } from 'child_process';
-import { MongoMemoryServer } from 'mongodb-memory-server';
+import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import assert from 'assert/strict';
 import mongoose, { Types } from 'mongoose';
 import { Tenant } from '../models/Tenant';
@@ -9,10 +9,12 @@ import { Category } from '../models/Category';
 import { createAdminPage, updateAdminPage, updateAdminMenu, getPageSection } from '../controllers/page.controller';
 
 export async function runSiteContentDatabaseIntegration() {
+  const previousReady = process.env.URL_NAMESPACE_WRITES_READY;
+  process.env.URL_NAMESPACE_WRITES_READY = 'true';
   const located = spawnSync('which', ['mongod'], { encoding: 'utf8' });
   const systemBinary = located.status === 0 ? located.stdout.trim() : undefined;
   const localVersion = systemBinary ? spawnSync(systemBinary, ['--version'], { encoding: 'utf8' }).stdout.match(/db version v([\d.]+)/)?.[1] : undefined;
-  const mongo = await MongoMemoryServer.create({ binary: { version: localVersion || '7.0.14', ...(systemBinary ? { systemBinary } : {}) } });
+  const mongo = await MongoMemoryReplSet.create({ replSet: { count: 1 }, binary: { version: localVersion || '7.0.14', ...(systemBinary ? { systemBinary } : {}) } });
   try {
     await mongoose.connect(mongo.getUri('site_content_integration'));
     const owner = new Types.ObjectId(), other = new Types.ObjectId();
@@ -23,7 +25,8 @@ export async function runSiteContentDatabaseIntegration() {
       const response: any = { statusCode: 200, status(code: number) { this.statusCode = code; return this; }, json(value: any) { this.payload = value; return this; } };
       let thrown: unknown;
       await handler({ tenant: { _id: owner }, user: { role: 'brand-admin', assignedTenants: [owner] }, body, params: { id, ...extra.params }, query: extra.query || {} }, response, (error: unknown) => { thrown = error; });
-      if (thrown) throw thrown;
+      if (thrown && typeof (thrown as any).statusCode === 'number') { response.statusCode = (thrown as any).statusCode; response.payload = { success: false, error: (thrown as Error).message }; }
+      else if (thrown) throw thrown;
       return response;
     };
     const page = { slug: 'desert', title: 'Desert', body: '<p>Original</p>', pageType: 'category', parentPath: '/' };
@@ -58,6 +61,7 @@ export async function runSiteContentDatabaseIntegration() {
   } finally {
     await mongoose.disconnect();
     await mongo.stop();
+    if (previousReady === undefined) delete process.env.URL_NAMESPACE_WRITES_READY; else process.env.URL_NAMESPACE_WRITES_READY = previousReady;
   }
 }
 if (require.main === module) runSiteContentDatabaseIntegration().catch(error => { console.error(error instanceof Error ? error.message : 'Integration failed'); process.exitCode = 1; });

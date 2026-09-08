@@ -1,3 +1,4 @@
+import { urlNamespacePlugin } from '../plugins/urlNamespace';
 import mongoose, { Schema } from 'mongoose';
 import { ITenant } from '../types';
 
@@ -286,5 +287,7 @@ const tenantSchema = new Schema<ITenant>(
 // Index for domain lookups
 tenantSchema.index({ domain: 1, status: 1 });
 tenantSchema.index({ customDomain: 1, status: 1 });
+
+tenantSchema.plugin(urlNamespacePlugin, { kind: 'page' });
 
 export const Tenant = mongoose.model<ITenant>('Tenant', tenantSchema);
