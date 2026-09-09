@@ -4,12 +4,13 @@ import { optionalTenant, optionalAdminTenant, requireTenant } from '../middlewar
 import { authenticate, requireRole } from '../middleware/auth.middleware';
 import { validate } from '../middleware/validate.middleware';
 import { z } from 'zod';
-import { menuUpdateSchema, pageSectionsSchema, pageSlugSchema, sectionQuerySchema } from '../utils/siteContent';
+import { menuUpdateSchema, pagePresentationSchema, pageSectionsSchema, pageSlugSchema, sectionQuerySchema } from '../utils/siteContent';
 import { validateQuery } from '../middleware/validate.middleware';
 
 const router = Router();
 router.param('id', (req, res, next, id) => { if (!/^[a-f0-9]{24}$/i.test(id)) { res.status(400).json({ success: false, error: 'Invalid page ID' }); return; } next(); });
 const pageSchema = z.object({
+  ...pagePresentationSchema.shape,
   slug: pageSlugSchema,
   title: z.string().trim().min(1).max(160),
   metaTitle: z.string().max(160).optional(), metaDescription: z.string().max(320).optional(),

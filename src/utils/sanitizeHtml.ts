@@ -60,7 +60,7 @@ export const sanitizeCustomPages = (value: unknown): unknown[] => {
 
   return value
     .filter((page): page is Record<string, unknown> => !!page && typeof page === 'object')
-    .map((page) => ({ ...page, body: sanitizeRichText(page.body), ...(page.sections !== undefined ? { sections: sanitizePageSections(page.sections) } : {}) }));
+    .map((page) => ({ ...page, layoutMode: page.layoutMode ?? 'website', body: sanitizeRichText(page.body), ...(page.sections !== undefined ? { sections: sanitizePageSections(page.sections) } : {}) }));
 };
 
 export const sanitizePageSections = (value: unknown) => {

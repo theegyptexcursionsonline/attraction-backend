@@ -31,3 +31,10 @@ export const menuUpdateSchema = z.object({ navigation: navigationSchema, expecte
 export const reservedPageSlugs = new Set(['about', 'accept-invitation', 'account', 'admin', 'adventures', 'api', 'attractions', 'auth', 'blog', 'booking', 'bookings', 'bundle-orders', 'bundles', 'camel-treks', 'cart', 'categories', 'charters', 'checkout', 'contact', 'cookies', 'cruises', 'dashboard', 'day-trips', 'deals', 'desert-safari', 'destinations', 'discover', 'dives', 'dolphin-trips', 'evenings', 'excursions', 'experiences', 'faq', 'flights', 'forgot-password', 'heritage', 'islands', 'jeep-tours', 'journeys', 'license', 'login', 'logout', 'luxury-cruises', 'makadi-adventures', 'opening', 'orangebay', 'payment', 'payments', 'preview', 'preview-unlock', 'privacy', 'private-tours', 'profile', 'reeftrips', 'refunds', 'register', 'reset-password', 'riding', 'robots', 'safaris', 'sailing', 'search', 'signup', 'sitemap', 'snorkeling', 'submarines', 'terms', 'tours', 'trips', 'verify-email', 'water-activities', 'water-sports', 'yachts']);
 export const pageSlugSchema = z.string().trim().min(1).max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).refine(slug => !reservedPageSlugs.has(slug), 'This URL belongs to a built-in website page');
 export const sectionQuerySchema = z.object({ cursor: objectId.optional(), limit: z.coerce.number().int().min(1).max(100).default(12) });
+
+// Presentation is authored independently from search metadata. Empty strings clear optional fields.
+export const pagePresentationSchema = z.object({
+  layoutMode: z.enum(['website', 'standalone']).optional(),
+  heroImage: z.string().trim().max(2048).refine(value => value === '' || (value.startsWith('https://') && isSafeNavigationHref(value)), 'Use a secure HTTPS image URL').optional(),
+  heroDescription: z.string().trim().max(1000).optional(),
+});

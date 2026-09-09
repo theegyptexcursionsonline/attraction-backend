@@ -94,3 +94,13 @@ describe('tenant page management', () => {
     expect(trashUpdate.$unset['customPages.$.archivedAt']).toBe(1);
   });
 });
+
+
+it('exposes authored presentation independently from metadata in the public resolver', async () => {
+  const tenantId = new Types.ObjectId();
+  (Attraction.findOne as jest.Mock).mockReturnValue({ lean: jest.fn().mockResolvedValue(null) });
+  const page = { slug: 'landing', title: 'Landing', body: '<p>Body</p>', metaDescription: 'SEO only', heroDescription: 'Authored intro', heroImage: 'https://images.example/hero.jpg', layoutMode: 'standalone' };
+  (Tenant.findById as jest.Mock).mockReturnValue({ select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue({ customPages: [page] }) }) });
+  const res = response(); await resolvePage({ tenant: { _id: tenantId }, query: { slug: 'landing' } } as never, res, jest.fn());
+  expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ data: { type: 'page', page } }));
+});

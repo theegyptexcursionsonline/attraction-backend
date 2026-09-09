@@ -20,7 +20,7 @@ export function safariLegacyPage(tenantId: string, slug: string, pages: any[], o
   const page = pages.find(candidate => String(candidate._id) === mapping.pageId);
   if (!page || page.status !== 'active' || page.isPublished !== true || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(page.slug) || hasSafariLegacyPage(page.slug)) return null;
   return { type: 'page' as const, redirectTo: `/${page.slug}`, page: {
-    ...page, body: sanitizeRichText(page.body),
+    ...page, layoutMode: page.layoutMode ?? 'website', body: sanitizeRichText(page.body),
     ...(page.sections !== undefined ? { sections: sanitizePageSections(page.sections) } : {}),
   } };
 }

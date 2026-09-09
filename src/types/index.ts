@@ -151,6 +151,9 @@ export interface ITenant extends Document {
     title: string;
     metaTitle?: string;
     metaDescription?: string;
+    layoutMode?: 'website' | 'standalone';
+    heroImage?: string;
+    heroDescription?: string;
     body: string;
     revision?: number;
     sections?: PageSection[];

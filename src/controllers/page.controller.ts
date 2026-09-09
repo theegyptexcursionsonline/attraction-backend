@@ -73,10 +73,10 @@ export const listAdminPages = async (req: AuthRequest, res: Response, next: Next
         { $sort: { 'customPages.sortOrder': 1, 'customPages._id': 1 } },
         { $facet: { items: [{ $skip: (page - 1) * limit }, { $limit: limit }, { $replaceRoot: { newRoot: '$customPages' } }], total: [{ $count: 'count' }] } },
       ]);
-      sendPaginated(res, (result[0]?.items || []).map((p: Record<string, unknown>) => ({ ...p, revision: p.revision ?? 0 })), page, limit, result[0]?.total?.[0]?.count || 0); return;
+      sendPaginated(res, (result[0]?.items || []).map((p: Record<string, unknown>) => ({ ...p, layoutMode: p.layoutMode ?? 'website', revision: p.revision ?? 0 })), page, limit, result[0]?.total?.[0]?.count || 0); return;
     }
     const tenant = await Tenant.findById(tenantId).select('customPages').lean();
-    sendSuccess(res, (tenant?.customPages || []).map(page => ({ ...page, revision: page.revision ?? 0 })));
+    sendSuccess(res, (tenant?.customPages || []).map(page => ({ ...page, layoutMode: page.layoutMode ?? 'website', revision: page.revision ?? 0 })));
   } catch (error) { next(error); }
 };
 
@@ -92,6 +92,7 @@ export const createAdminPage = async (req: AuthRequest, res: Response, next: Nex
     const page = {
       ...req.body,
       slug,
+      layoutMode: req.body.layoutMode ?? 'website',
       body: sanitizeRichText(req.body.body),
       isPublished: req.body.isPublished ?? true,
       status: 'active',
@@ -267,7 +268,7 @@ export const resolvePage = async (
     if (page) {
       sendSuccess(res, {
         type: 'page',
-        page: { ...page, body: sanitizeRichText(page.body), ...(page.sections !== undefined ? { sections: sanitizePageSections(page.sections) } : {}) },
+        page: { ...page, layoutMode: page.layoutMode ?? 'website', body: sanitizeRichText(page.body), ...(page.sections !== undefined ? { sections: sanitizePageSections(page.sections) } : {}) },
       });
       return;
     }
@@ -394,7 +395,7 @@ export const getPageSection = async (req: AuthRequest, res: Response, next: Next
     if (!section || section.type === 'content') { sendError(res, 'Section not found', 404); return; }
     if (section.type === 'pages') {
       const pages = new Map((tenant?.customPages || []).filter(p => p.status !== 'archived' && p.isPublished !== false).map(p => [String((p as unknown as { _id: unknown })._id), p]));
-      const items = section.pageIds.flatMap(id => { const p = pages.get(id); return p ? [{ _id: id, slug: p.slug, title: p.title, metaDescription: p.metaDescription }] : []; });
+      const items = section.pageIds.flatMap(id => { const p = pages.get(id); return p ? [{ _id: id, slug: p.slug, title: p.title, shortDescription: p.heroDescription || '', images: p.heroImage ? [p.heroImage] : [] }] : []; });
       sendSuccess(res, { type: 'pages', items, nextCursor: null }); return;
     }
     const limit = Number(req.query.limit || 12);

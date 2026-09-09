@@ -3,7 +3,7 @@ import { Tenant } from '../models/Tenant';
 import { Attraction } from '../models/Attraction';
 import { createAdminPage, updateAdminPage, getAdminMenu, updateAdminMenu, getPageSection, listAdminPages } from '../controllers/page.controller';
 import { toPublicTenantDto, updateTenantSettings } from '../controllers/tenants.controller';
-import { navigationSchema, pageSectionsSchema, pageSlugSchema, isSafeNavigationHref } from '../utils/siteContent';
+import { pagePresentationSchema, navigationSchema, pageSectionsSchema, pageSlugSchema, isSafeNavigationHref } from '../utils/siteContent';
 import { sanitizePageSections } from '../utils/sanitizeHtml';
 
 jest.mock('../models/Tenant', () => ({ Tenant: { exists: jest.fn(), findById: jest.fn(), findOne: jest.fn(), findOneAndUpdate: jest.fn(), aggregate: jest.fn() } }));
@@ -138,5 +138,38 @@ describe('public section resolution', () => {
     expect(pipeline[2].$match.$or[0]['customPages.title'].$regex).toBe('a\\.b');
     expect(pipeline[4].$facet.items[0]).toEqual({ $skip: 100 });
     expect(response.json.mock.calls[0][0].pagination).toEqual({ page: 6, limit: 20, total: 101, totalPages: 6 });
+  });
+});
+
+
+describe('page presentation authoring', () => {
+  test.each(['http://images.example/a.jpg', '//images.example/a.jpg', 'javascript:alert(1)', 'https://user:password@images.example/a.jpg', 'https://images.example/\\bad'])('rejects unsafe image URL %s', heroImage => {
+    expect(pagePresentationSchema.safeParse({ heroImage }).success).toBe(false);
+  });
+  it('accepts clearable authored fields and rejects invalid mode or oversized description', () => {
+    expect(pagePresentationSchema.parse({ heroImage: '', heroDescription: '' })).toEqual({ heroImage: '', heroDescription: '' });
+    expect(pagePresentationSchema.parse({ heroImage: 'https://images.example/a.jpg', layoutMode: 'standalone', heroDescription: ' Authored ' }).heroDescription).toBe('Authored');
+    expect(pagePresentationSchema.safeParse({ layoutMode: 'other' }).success).toBe(false);
+    expect(pagePresentationSchema.safeParse({ heroDescription: 'a'.repeat(1001) }).success).toBe(false);
+    expect(pagePresentationSchema.parse({})).toEqual({});
+  });
+  it('preserves omitted presentation values and clears explicitly within revision guard', async () => {
+    (Tenant.findOneAndUpdate as jest.Mock).mockResolvedValue({ customPages: [{ _id: pageId, revision: 4 }] });
+    await updateAdminPage(req({ body: { title: 'Changed', expectedRevision: 3 } }), res(), jest.fn());
+    const [filter, write] = (Tenant.findOneAndUpdate as jest.Mock).mock.calls[0];
+    expect(filter.customPages.$elemMatch).toEqual({ _id: pageId, revision: 3 });
+    expect(write.$set).toEqual({ 'customPages.$.title': 'Changed' });
+    await updateAdminPage(req({ body: { heroImage: '', heroDescription: '', layoutMode: 'website', expectedRevision: 4 } }), res(), jest.fn());
+    expect((Tenant.findOneAndUpdate as jest.Mock).mock.calls[1][1].$set).toEqual({ 'customPages.$.heroImage': '', 'customPages.$.heroDescription': '', 'customPages.$.layoutMode': 'website' });
+  });
+  it('never substitutes SEO metadata for visible page-card content', async () => {
+    const linked = new Types.ObjectId().toString();
+    (Tenant.findOne as jest.Mock).mockReturnValue(lean({ customPages: [{ _id: pageId, sections: [{ id: 'tours', type: 'pages', pageIds: [linked, pageId] }] }, { _id: linked, slug: 'linked', title: 'Linked', metaDescription: 'SEO only', heroDescription: 'Authored', heroImage: 'https://images.example/a.jpg' }] }));
+    const response = res(); await getPageSection(req(), response, jest.fn());
+    const items = response.json.mock.calls[0][0].data.items;
+    expect(items[0]).toEqual({ _id: linked, slug: 'linked', title: 'Linked', shortDescription: 'Authored', images: ['https://images.example/a.jpg'] });
+    expect(items[1].shortDescription).toBe('');
+    expect(items[1].images).toEqual([]);
+    expect(JSON.stringify(items)).not.toContain('SEO only');
   });
 });

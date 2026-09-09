@@ -1,3 +1,4 @@
+import { pagePresentationSchema } from '../utils/siteContent';
 import { urlNamespacePlugin } from '../plugins/urlNamespace';
 import mongoose, { Schema } from 'mongoose';
 import { ITenant } from '../types';
@@ -245,6 +246,9 @@ const tenantSchema = new Schema<ITenant>(
         title: { type: String, required: true },
         metaTitle: { type: String },
         metaDescription: { type: String },
+        layoutMode: { type: String, enum: ['website', 'standalone'], default: 'website' },
+        heroImage: { type: String, maxlength: 2048, validate: (value: string) => pagePresentationSchema.shape.heroImage.safeParse(value).success },
+        heroDescription: { type: String, maxlength: 1000 },
         body: { type: String, default: '' },
         revision: { type: Number, default: 0 },
         sections: { type: [{
