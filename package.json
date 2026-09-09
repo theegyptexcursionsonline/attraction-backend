@@ -13,6 +13,7 @@
     "seed:makadi-excursions": "ts-node src/scripts/seed-makadi-excursions.ts",
     "seed:cave-divers": "ts-node src/scripts/seed-cave-divers.ts",
     "images:cave-divers": "ts-node src/scripts/generate-cave-divers-images.ts",
+    "images:cave-divers:import": "ts-node src/scripts/import-cave-divers-images.ts",
     "enrich:makadi-quad-gallery": "ts-node src/scripts/enrich-makadi-quad-gallery.ts",
     "set:makadi-participant-requirements": "ts-node src/scripts/set-makadi-participant-requirements.ts",
     "migrate:safari-sahara-quads": "ts-node src/scripts/migrate-safari-sahara-quad-catalog.ts",
