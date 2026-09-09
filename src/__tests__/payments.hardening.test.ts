@@ -846,6 +846,29 @@ describe('Stripe payment hardening', () => {
   });
 
   describe('PaymentIntent creation and confirmation', () => {
+    it('rejects payment for a booking whose programme is now enquiry-only', async () => {
+      const booking = bookingFixture({
+        attractionId: { title: 'Secure Tour', enquiryOnly: true },
+        paymentStatus: 'pending',
+        stripePaymentIntentId: undefined,
+      });
+      const populate = jest.fn().mockResolvedValue(booking);
+      (Booking.findById as jest.Mock).mockReturnValue({ populate });
+
+      const res = await invoke(createPaymentIntent as never, {
+        body: {
+          bookingId: BOOKING_ID,
+          guestEmail: 'info@rdmiwebservices.com',
+          guestAccessToken: 'guest-access-token',
+        },
+      });
+
+      expect(populate).toHaveBeenCalledWith('attractionId', 'title enquiryOnly');
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(stripeCreatePaymentIntent).not.toHaveBeenCalled();
+      expect(getTenantStripeConfig).not.toHaveBeenCalled();
+    });
+
     it('rejects guest payment access without the booking access token', async () => {
       const booking = bookingFixture({ paymentStatus: 'pending', stripePaymentIntentId: undefined });
       (Booking.findById as jest.Mock).mockReturnValue({

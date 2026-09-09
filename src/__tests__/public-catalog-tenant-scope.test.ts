@@ -76,6 +76,25 @@ describe('public catalogue tenant boundaries', () => {
     expect(res.status).toHaveBeenCalledWith(404);
   });
 
+  it('does not manufacture availability for an enquiry-only programme', async () => {
+    const attractionId = new Types.ObjectId().toHexString();
+    (Attraction.findOne as jest.Mock).mockResolvedValue({
+      _id: attractionId,
+      status: 'active',
+      enquiryOnly: true,
+    });
+    const res = response();
+
+    await getAttractionAvailability(
+      { params: { id: attractionId }, query: { date: '2030-03-10' } } as never,
+      res,
+      jest.fn(),
+    );
+
+    expect(res.status).toHaveBeenCalledWith(409);
+    expect(Availability.find).not.toHaveBeenCalled();
+  });
+
   it('returns only catalog departures while preserving their stored capacity', async () => {
     const attractionId = new Types.ObjectId().toHexString();
     (Attraction.findOne as jest.Mock).mockResolvedValue({

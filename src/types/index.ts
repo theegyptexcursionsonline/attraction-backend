@@ -200,6 +200,8 @@ export interface IAttraction extends Document {
   rating: number;
   reviewCount: number;
   priceFrom: number;
+  /** Public catalogue record that can be discussed, but cannot be priced or booked. */
+  enquiryOnly?: boolean;
   currency: string;
   pricingOptions: Array<{
     id: string;

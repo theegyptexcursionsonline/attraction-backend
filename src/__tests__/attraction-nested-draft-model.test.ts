@@ -82,6 +82,23 @@ describe('nested authoring documents on a draft', () => {
     expect(active.pricingOptions[0].timeSlots?.[0].endTime).toBeUndefined();
   });
 
+  it('allows an active enquiry-only record without a duration or price', async () => {
+    const enquiry = new Attraction({
+      slug: 'open-water-enquiry',
+      title: 'Open Water Diver Course',
+      status: 'active',
+      enquiryOnly: true,
+      shortDescription: 'Ask the centre for the current course arrangement.',
+      description: 'Course information is published for discussion before booking.',
+      category: 'Dive training',
+      destination: { city: 'Hurghada', country: 'Egypt', coordinates: { lat: 27.29, lng: 33.76 } },
+      currency: 'EUR',
+    });
+    await expect(enquiry.validate()).resolves.toBeUndefined();
+    expect(enquiry.duration).toBeUndefined();
+    expect(enquiry.priceFrom).toBeUndefined();
+  });
+
   it('defaults add-on pricingType to per_unit and rejects unknown types', async () => {
     const doc = new Attraction({
       slug: 'a', title: 'A', status: 'draft',

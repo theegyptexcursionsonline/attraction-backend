@@ -46,6 +46,7 @@ const PUBLIC_ATTRACTION_FIELDS = [
   'rating',
   'reviewCount',
   'priceFrom',
+  'enquiryOnly',
   'currency',
   'pricingOptions',
   'addons',
@@ -77,11 +78,26 @@ export const PUBLIC_ATTRACTION_PROJECTION = PUBLIC_ATTRACTION_FIELDS.join(' ');
 export const toPublicAttractionDto = (source: unknown): Record<string, unknown> => {
   if (!source || typeof source !== 'object') return {};
   const record = source as Record<string, unknown>;
-  return Object.fromEntries(
+  const dto = Object.fromEntries(
     PUBLIC_ATTRACTION_FIELDS
       .filter((field) => record[field] !== undefined)
       .map((field) => [field, record[field]])
   );
+  if (dto.enquiryOnly === true) {
+    for (const field of [
+      'priceFrom',
+      'pricingOptions',
+      'addons',
+      'entryWindows',
+      'cancellationPolicy',
+      'instantConfirmation',
+      'mobileTicket',
+      'hasHotelPickup',
+      'badges',
+      'availability',
+    ]) delete dto[field];
+  }
+  return dto;
 };
 
 export const toAdminAttractionDto = (
@@ -472,6 +488,11 @@ export const getAttractionAvailability = async (
       return;
     }
 
+    if (attraction.enquiryOnly === true) {
+      sendError(res, 'This programme is available by enquiry only', 409);
+      return;
+    }
+
     // Calculate date range
     const startDate = date ? new Date(date as string) : new Date();
     startDate.setHours(0, 0, 0, 0);
@@ -652,7 +673,7 @@ export const createAttraction = async (
       return;
     }
 
-    const attractionData = {
+    const attractionData: Record<string, unknown> = {
       ...req.body,
       ...(normalizedCategory ? { category: normalizedCategory } : {}),
       priceFrom: Array.isArray(req.body.pricingOptions) && req.body.pricingOptions.length > 0
@@ -662,6 +683,21 @@ export const createAttraction = async (
       ownerTenantId: req.body.ownerTenantId || req.body.tenantIds?.[0],
       createdBy: req.user?._id,
     };
+
+    if (req.body.enquiryOnly === true) {
+      for (const field of [
+        'priceFrom',
+        'pricingOptions',
+        'addons',
+        'entryWindows',
+        'availability',
+        'cancellationPolicy',
+        'instantConfirmation',
+        'mobileTicket',
+        'hasHotelPickup',
+        'badges',
+      ]) delete attractionData[field];
+    }
 
     const attraction = await Attraction.create(attractionData);
 
@@ -736,12 +772,15 @@ export const updateAttraction = async (
       const stored = typeof existingAttraction.toObject === 'function'
         ? existingAttraction.toObject()
         : existingAttraction;
-      const publishCandidate = {
+      const publishCandidate: Record<string, unknown> = {
         ...stored,
         ...req.body,
         status: 'active',
         tenantIds: (req.body.tenantIds || stored.tenantIds || []).map((tenantId: unknown) => String(tenantId)),
       };
+      if (publishCandidate.enquiryOnly === true) {
+        for (const field of ['priceFrom', 'pricingOptions', 'entryWindows']) delete publishCandidate[field];
+      }
       const publishValidation = createAttractionSchema.safeParse(publishCandidate);
       if (!publishValidation.success) {
         const missing = publishValidation.error.issues
@@ -785,6 +824,20 @@ export const updateAttraction = async (
       return;
     }
 
+    const enquiryOnlyUnset = req.body.enquiryOnly === true
+      ? {
+          priceFrom: 1,
+          pricingOptions: 1,
+          addons: 1,
+          entryWindows: 1,
+          availability: 1,
+          cancellationPolicy: 1,
+          instantConfirmation: 1,
+          mobileTicket: 1,
+          hasHotelPickup: 1,
+          badges: 1,
+        }
+      : undefined;
     const attraction = await Attraction.findByIdAndUpdate(
       id,
       {
@@ -794,6 +847,7 @@ export const updateAttraction = async (
             ? { priceFrom: minimumTourPrice(req.body.pricingOptions) }
             : {}),
         },
+        ...(enquiryOnlyUnset ? { $unset: enquiryOnlyUnset } : {}),
       },
       // `context: 'query'` lets the draft-aware required validators read the
       // status from the update payload instead of an absent document.

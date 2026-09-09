@@ -270,6 +270,11 @@ export const createBooking = async (
       return;
     }
 
+    if (attraction.enquiryOnly === true) {
+      sendError(res, 'This programme is available by enquiry only', 409);
+      return;
+    }
+
     // Whether THIS booking's tenant has opted into dual (Foreigner/Resident) pricing.
     // The Resident rate is honoured only when the tenant flag is on AND the option has a residentPrice set.
     const residentPricingEnabled = bookingTenant?.pricingSettings?.enableResidentPricing === true;

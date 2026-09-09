@@ -77,6 +77,28 @@ describe('public API DTO contracts', () => {
     expect(PUBLIC_ATTRACTION_PROJECTION).not.toMatch(/tenantIds|ownerTenantId|reseller|createdBy|__v/);
   });
 
+  it('marks enquiry-only records while withholding every booking promise', () => {
+    const dto = toPublicAttractionDto({
+      _id: 'enquiry-1',
+      title: 'Open Water Diver Course',
+      enquiryOnly: true,
+      priceFrom: 70,
+      pricingOptions: [{ id: 'adult', price: 70 }],
+      entryWindows: [{ label: 'Morning', startTime: '09:00' }],
+      availability: { type: 'time-slots', advanceBooking: 30 },
+      cancellationPolicy: 'Free cancellation',
+      instantConfirmation: true,
+      mobileTicket: true,
+      badges: ['instant-confirm'],
+    });
+
+    expect(dto).toMatchObject({ _id: 'enquiry-1', title: 'Open Water Diver Course', enquiryOnly: true });
+    for (const field of [
+      'priceFrom', 'pricingOptions', 'entryWindows', 'availability',
+      'cancellationPolicy', 'instantConfirmation', 'mobileTicket', 'badges',
+    ]) expect(dto).not.toHaveProperty(field);
+  });
+
   it('returns only authorized assignment ids to authenticated admin lists', () => {
     const dto = toAdminAttractionDto({
       _id: 'attraction-1',

@@ -188,10 +188,14 @@ export const createPaymentIntent = async (
       return;
     }
 
-    const booking = await Booking.findById(bookingId).populate('attractionId', 'title');
+    const booking = await Booking.findById(bookingId).populate('attractionId', 'title enquiryOnly');
 
     if (!booking) {
       sendError(res, 'Booking not found', 404);
+      return;
+    }
+    if ((booking.attractionId as unknown as { enquiryOnly?: boolean } | undefined)?.enquiryOnly === true) {
+      sendError(res, 'This programme is available by enquiry only', 409);
       return;
     }
     if (rejectBundleComponentBooking(res, booking)) return;

@@ -258,6 +258,7 @@ export const createBundleQuote = async (input: {
   const attractions = await Attraction.find({
     _id: { $in: bundle.components.map((component) => component.attractionId) },
     status: 'active',
+    enquiryOnly: { $ne: true },
     instantConfirmation: true,
   }).select('title pricingOptions ownerTenantId entryWindows');
   if (attractions.length !== bundle.components.length) {

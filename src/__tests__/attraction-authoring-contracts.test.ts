@@ -201,6 +201,33 @@ describe('participantRequirements', () => {
   });
 });
 
+describe('enquiry-only publishing', () => {
+  it('publishes complete editorial content without price, pricing options, or duration', () => {
+    const { duration: _duration, priceFrom: _priceFrom, pricingOptions: _pricingOptions, ...editorial } = publishable();
+    const result = createAttractionSchema.safeParse({
+      ...editorial,
+      enquiryOnly: true,
+      status: 'active',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('keeps the existing price, duration, and option requirements for bookable records', () => {
+    const { duration: _duration, priceFrom: _priceFrom, pricingOptions: _pricingOptions, ...incomplete } = publishable();
+    const result = createAttractionSchema.safeParse({ ...incomplete, status: 'active' });
+    expect(issuePaths(result)).toEqual(expect.arrayContaining(['duration', 'priceFrom', 'pricingOptions']));
+  });
+
+  it('rejects commercial fields on an enquiry-only record', () => {
+    const result = createAttractionSchema.safeParse({
+      ...publishable(),
+      enquiryOnly: true,
+      entryWindows: [{ label: 'Morning', startTime: '09:00' }],
+    });
+    expect(issuePaths(result)).toEqual(expect.arrayContaining(['priceFrom', 'pricingOptions', 'entryWindows']));
+  });
+});
+
 describe('draft lifecycle — nothing but the title is required', () => {
   const partialNested = {
     pricingOptions: [

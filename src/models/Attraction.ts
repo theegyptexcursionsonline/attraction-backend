@@ -4,7 +4,8 @@ import { IAttraction } from '../types';
 
 type ValidatorContext = {
   status?: string;
-  ownerDocument?: () => { status?: string };
+  enquiryOnly?: boolean;
+  ownerDocument?: () => { status?: string; enquiryOnly?: boolean };
   // Present when Mongoose runs this as an UPDATE validator with query context.
   getUpdate?: () => Record<string, unknown> | null;
   getQuery?: () => Record<string, unknown> | null;
@@ -45,6 +46,18 @@ function requiredWhenPublished(this: ValidatorContext): boolean {
   // is always known.
   if (typeof status !== 'string') return false;
   return status !== 'draft';
+}
+
+/** Price and duration are mandatory only for catalogue records that can book. */
+function requiredWhenBookable(this: ValidatorContext): boolean {
+  if (!requiredWhenPublished.call(this)) return false;
+  if (typeof this?.getUpdate === 'function') {
+    const update = this.getUpdate() || {};
+    const set = (update.$set as Record<string, unknown> | undefined) || {};
+    return (set.enquiryOnly ?? update.enquiryOnly) !== true;
+  }
+  const owner = typeof this?.ownerDocument === 'function' ? this.ownerDocument() : this;
+  return owner?.enquiryOnly !== true;
 }
 
 const attractionSchema = new Schema<IAttraction>(
@@ -114,7 +127,7 @@ const attractionSchema = new Schema<IAttraction>(
     },
     duration: {
       type: String,
-      required: requiredWhenPublished,
+      required: requiredWhenBookable,
     },
     languages: [{
       type: String,
@@ -131,8 +144,13 @@ const attractionSchema = new Schema<IAttraction>(
     },
     priceFrom: {
       type: Number,
-      required: requiredWhenPublished,
+      required: requiredWhenBookable,
       min: 0,
+    },
+    enquiryOnly: {
+      type: Boolean,
+      default: false,
+      index: true,
     },
     currency: {
       type: String,

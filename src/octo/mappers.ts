@@ -41,6 +41,7 @@ export interface OctoAttractionLike {
   images?: string[];
   duration?: string;
   priceFrom?: number;
+  enquiryOnly?: boolean;
   currency?: string;
   pricingOptions?: OctoPricingOptionLike[];
   entryWindows?: OctoEntryWindowLike[];
@@ -53,7 +54,8 @@ const asId = (v: unknown): string => (v == null ? '' : String(v));
 const minor = (n: number | undefined): number => Math.round((n || 0) * 100);
 
 export const isOctoCompatibleProduct = (attraction: OctoAttractionLike): boolean =>
-  !(attraction.pricingOptions || []).some((option) => option.pricingModel === 'per-booking');
+  attraction.enquiryOnly !== true
+  && !(attraction.pricingOptions || []).some((option) => option.pricingModel === 'per-booking');
 
 /** OCTO unit type inferred from a human pricing-option name (Adult / Child / …). */
 export function octoUnitType(name?: string): string {

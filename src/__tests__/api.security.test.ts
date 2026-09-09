@@ -254,6 +254,27 @@ describe('API security and pricing guards', () => {
     expect(JSON.stringify(idempotencyClaim)).not.toContain('info@rdmiwebservices.com');
   });
 
+  it('rejects a direct booking request for an enquiry-only programme', async () => {
+    (Attraction.findById as jest.Mock).mockResolvedValue({
+      _id: ATTR_ID,
+      status: 'active',
+      enquiryOnly: true,
+      currency: 'EUR',
+      tenantIds: [TENANT_ID],
+      pricingOptions: [],
+    });
+
+    const response = await request(app)
+      .post('/api/bookings')
+      .set('Idempotency-Key', 'booking-enquiry-only-0001')
+      .send(validBookingPayload());
+
+    expect(response.status).toBe(409);
+    expect(response.body.error).toBe('This programme is available by enquiry only');
+    expect(Booking.create).not.toHaveBeenCalled();
+    expect(Availability.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
   it('uses the selected time-window price instead of client or base-option price', async () => {
     (Attraction.findById as jest.Mock).mockResolvedValue({
       _id: ATTR_ID, status: 'active', currency: 'USD', tenantIds: [TENANT_ID],

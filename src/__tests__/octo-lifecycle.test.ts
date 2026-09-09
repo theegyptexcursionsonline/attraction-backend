@@ -27,6 +27,15 @@ describe('OCTO reservation validation', () => {
     expect(parseAvailabilityId('2026-07-10T25:00')).toBeNull();
   });
 
+  it('rejects enquiry-only records before price or availability validation', () => {
+    expect(validateReservationRequest(
+      { ...product, enquiryOnly: true },
+      'DEFAULT',
+      '2026-07-10T09:00:00',
+      [{ unitId: 'adult', quantity: 1 }],
+    )).toEqual({ error: 'Enquiry-only products are not available through OCTO' });
+  });
+
   it('accepts only units, option, and start times belonging to the product', () => {
     expect(validateReservationRequest(product, 'OTHER', '2026-07-10T09:00:00', [{ unitId: 'adult', quantity: 1 }]))
       .toEqual({ error: 'optionId is not valid for this product' });

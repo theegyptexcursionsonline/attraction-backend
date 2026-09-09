@@ -186,7 +186,7 @@ const publishPricingOptionSchema = z.object({
   }
 });
 
-const pricingOptionsSchema = z.array(publishPricingOptionSchema).min(1).superRefine((options, ctx) => {
+const pricingOptionsSchema = z.array(publishPricingOptionSchema).superRefine((options, ctx) => {
   const ids = new Set<string>();
   options.forEach((option, index) => {
     if (ids.has(option.id)) {
@@ -223,7 +223,7 @@ const publishEntryWindowSchema = z.object({
   endTime: hhmmSchema('Time').optional(),
   price: z.number().positive().optional(),
 }).superRefine(refineEntryWindow);
-export const createAttractionSchema = z.object({
+const attractionAuthoringSchema = z.object({
   slug: z.string().min(1, 'Slug is required'),
   pathSlug: z.string().trim().min(1).max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'URL slug may contain lowercase letters, numbers, and hyphens only').optional(),
   parentPage: z.object({
@@ -244,11 +244,12 @@ export const createAttractionSchema = z.object({
       lng: z.number(),
     }),
   }),
-  duration: z.string().min(1),
+  duration: z.string().min(1).optional(),
   languages: z.array(z.string()).optional().default(['English']),
-  priceFrom: z.number().positive(),
+  priceFrom: z.number().positive().optional(),
+  enquiryOnly: z.boolean().optional().default(false),
   currency: z.string().min(1),
-  pricingOptions: pricingOptionsSchema,
+  pricingOptions: pricingOptionsSchema.optional().default([]),
   entryWindows: z.array(publishEntryWindowSchema).optional().default([]),
   highlights: z.array(z.string()).optional().default([]),
   inclusions: z.array(z.string()).optional().default([]),
@@ -294,6 +295,48 @@ export const createAttractionSchema = z.object({
   status: z.enum(['active', 'draft', 'archived']).optional(),
   featured: z.boolean().optional(),
   sortOrder: z.number().optional(),
+});
+
+/**
+ * A published enquiry-only record is intentionally visible without commercial
+ * terms. Every other published attraction keeps the existing complete,
+ * bookable contract.
+ */
+export const createAttractionSchema = attractionAuthoringSchema.superRefine((value, ctx) => {
+  if (value.enquiryOnly) {
+    if (value.priceFrom !== undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['priceFrom'],
+        message: 'Enquiry-only attractions cannot publish a price',
+      });
+    }
+    if (value.pricingOptions.length > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['pricingOptions'],
+        message: 'Enquiry-only attractions cannot publish pricing options',
+      });
+    }
+    if (value.entryWindows.length > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['entryWindows'],
+        message: 'Enquiry-only attractions cannot publish bookable entry windows',
+      });
+    }
+    return;
+  }
+
+  if (!value.duration) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['duration'], message: 'Duration is required' });
+  }
+  if (value.priceFrom === undefined) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['priceFrom'], message: 'Price is required' });
+  }
+  if (value.pricingOptions.length === 0) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['pricingOptions'], message: 'At least one pricing option is required' });
+  }
 });
 
 // A draft is work in progress: the author may save at any stage with nothing
@@ -381,7 +424,7 @@ const draftRelaxedFields = {
   currency: z.string().optional(),
 };
 
-export const createAttractionDraftSchema = createAttractionSchema.partial().extend({
+export const createAttractionDraftSchema = attractionAuthoringSchema.partial().extend({
   slug: z.string().trim().min(1, 'Slug is required'),
   title: z.string().trim().min(1, 'Title is required'),
   tenantIds: z.array(z.string()).optional().default([]),
@@ -392,7 +435,7 @@ export const createAttractionDraftSchema = createAttractionSchema.partial().exte
 // Editing an existing draft hits PATCH, which used the same shallow
 // `.partial()` — so the SECOND save of a draft failed exactly like the first
 // one did. The draft branch has to be relaxed on both verbs.
-export const updateAttractionDraftSchema = createAttractionSchema.partial().extend({
+export const updateAttractionDraftSchema = attractionAuthoringSchema.partial().extend({
   title: z.string().trim().min(1, 'Title is required').optional(),
   status: z.literal('draft'),
   ...draftRelaxedFields,
@@ -403,7 +446,7 @@ export const createAttractionRequestSchema = z.union([
   createAttractionSchema,
 ]);
 
-export const updateAttractionSchema = createAttractionSchema.partial();
+export const updateAttractionSchema = attractionAuthoringSchema.partial();
 
 export const updateAttractionRequestSchema = z.union([
   updateAttractionDraftSchema,

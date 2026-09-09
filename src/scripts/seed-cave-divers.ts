@@ -1,11 +1,10 @@
 /**
- * Cave Divers tenant and provisional catalogue package.
+ * Cave Divers tenant and enquiry-only catalogue package.
  *
- * The seven catalogue records are intentionally DRAFTS. They carry no price,
- * availability, booking promise, imported image, review, cancellation term, or
- * wildlife guarantee. The tenant is active only so the code-gated shared
- * preview can render the new storefront; the existing custom domain is merely
- * recorded as unconfigured and is never migrated by this script.
+ * The seven catalogue records are visible but explicitly ENQUIRY ONLY. They
+ * carry no price, availability, booking promise, imported image, review,
+ * cancellation term, or wildlife guarantee. The custom domain is recorded as
+ * unconfigured and is never migrated by this script.
  *
  * Dry run (no database or Cloudinary connection):
  *   npm run seed:cave-divers
@@ -28,7 +27,7 @@ interface CaveSourceNote {
   used: string;
 }
 
-interface CaveDraftTour {
+interface CaveDiversTour {
   slug: string;
   pathSlug: string;
   title: string;
@@ -38,7 +37,7 @@ interface CaveDraftTour {
   /** Only set where the first-party page states it unambiguously. */
   duration?: string;
   languages: string[];
-  destination: { city: string; country: string };
+  destination: { city: string; country: string; coordinates: { lat: number; lng: number } };
   highlights: string[];
   itinerary: CaveItineraryStep[];
   inclusions: string[];
@@ -54,7 +53,7 @@ interface CaveDraftTour {
   referenceNotes: CaveSourceNote[];
   /** Internal-only. Never rendered to a customer. */
   openDecisions: string[];
-  status: 'draft';
+  status: 'active';
 }
 
 const TENANT_SLUG = 'cave-divers';
@@ -84,7 +83,7 @@ export const CAVE_DIVERS_TENANT = {
   heroImages: [] as string[],
   tagline: 'Red Sea diving, charted with care.',
   description:
-    'A private Cave Divers preview for daily diving, diver training and Red Sea trips. Programme terms remain under supplier review.',
+    'A Hurghada dive centre offering daily diving, diver training and Red Sea boat trips from its Palm Beach Resort base.',
   theme: {
     primaryColor: '#061C24',
     secondaryColor: '#087F8C',
@@ -111,9 +110,9 @@ export const CAVE_DIVERS_TENANT = {
     { label: 'Contact', href: '/contact' },
   ],
   seoSettings: {
-    metaTitle: 'Cave Divers | Red Sea Diving Preview',
+    metaTitle: 'Cave Divers | Red Sea Diving in Hurghada',
     metaDescription:
-      'Preview Cave Divers daily diving, training and Red Sea trip programme families while operational details are confirmed.',
+      'Explore Cave Divers daily diving, training and Red Sea boat programmes in Hurghada, then contact the centre for current details.',
     keywords: ['Cave Divers', 'Red Sea diving', 'Hurghada diving', 'diver training'],
   },
   paymentSettings: {
@@ -148,7 +147,12 @@ export const CAVE_DIVERS_TENANT = {
 
 const CHECKED = '2026-09-10';
 const CENTRE_LANGUAGES = ['English', 'German', 'French', 'Italian', 'Polish', 'Russian', 'Arabic'];
-const HURGHADA = { city: 'Hurghada', country: 'Egypt' };
+// Coordinates published by the Cave Divers website's embedded location map.
+const HURGHADA = {
+  city: 'Hurghada',
+  country: 'Egypt',
+  coordinates: { lat: 27.291187482966045, lng: 33.759873815053 },
+};
 
 /** Every boat programme on the first-party Trips page publishes the same 09:30-15:30 day. */
 const BOAT_DAY_SOURCE: CaveSourceNote = {
@@ -190,7 +194,7 @@ const TRIP_EXCLUSIONS = [
   'Anything not listed above',
 ];
 
-export const CAVE_DIVERS_DRAFT_TOURS: CaveDraftTour[] = [
+export const CAVE_DIVERS_TOURS: CaveDiversTour[] = [
   {
     slug: 'cave-divers-red-sea-daily-diving',
     pathSlug: 'red-sea-daily-diving',
@@ -254,7 +258,7 @@ export const CAVE_DIVERS_DRAFT_TOURS: CaveDraftTour[] = [
       'Equipment rental, dive permission fee and transfer figures.',
       'Departure marina and which pickup areas the centre serves.',
     ],
-    status: 'draft',
+    status: 'active',
   },
   {
     slug: 'cave-divers-multi-day-daily-diving',
@@ -307,7 +311,7 @@ export const CAVE_DIVERS_DRAFT_TOURS: CaveDraftTour[] = [
       'Whether diving days must run consecutively and how far apart they may be spread.',
       'Per-day equipment rental and dive permission fee figures.',
     ],
-    status: 'draft',
+    status: 'active',
   },
   {
     slug: 'cave-divers-discover-scuba-diving',
@@ -368,7 +372,7 @@ export const CAVE_DIVERS_DRAFT_TOURS: CaveDraftTour[] = [
       'Maximum depth and instructor-to-guest ratio for the supervised dive.',
       'Whether the programme runs from the boat, from shore, or either.',
     ],
-    status: 'draft',
+    status: 'active',
   },
   {
     slug: 'cave-divers-open-water-diver-course',
@@ -428,7 +432,7 @@ export const CAVE_DIVERS_DRAFT_TOURS: CaveDraftTour[] = [
       'Whether eLearning or a printed manual is used, and the separate certification charge.',
       'Minimum age, and whether a junior version is offered.',
     ],
-    status: 'draft',
+    status: 'active',
   },
   {
     slug: 'cave-divers-dolphin-house-sea-trip',
@@ -489,7 +493,7 @@ export const CAVE_DIVERS_DRAFT_TOURS: CaveDraftTour[] = [
       'Which reef stops the day includes besides the dolphin area.',
       'Marine park or permission fees payable on the day.',
     ],
-    status: 'draft',
+    status: 'active',
   },
   {
     slug: 'cave-divers-orange-bay-giftun-island',
@@ -544,7 +548,7 @@ export const CAVE_DIVERS_DRAFT_TOURS: CaveDraftTour[] = [
       'Whether snorkelling equipment can be rented on board.',
       'How long the boat stays at the bay.',
     ],
-    status: 'draft',
+    status: 'active',
   },
   {
     slug: 'cave-divers-glass-boat-half-day',
@@ -602,7 +606,7 @@ export const CAVE_DIVERS_DRAFT_TOURS: CaveDraftTour[] = [
       'Whether snorkelling equipment can be rented on board.',
       'Which island the landing uses, and any charge payable there.',
     ],
-    status: 'draft',
+    status: 'active',
   },
 ];
 
@@ -626,7 +630,7 @@ const forbiddenDraftKeys = [
  * open decisions are NOT in here: they stay in this file and in the dated
  * handover note, never on a customer-facing field.
  */
-export function customerFacingContent(tour: CaveDraftTour): Record<string, unknown> {
+export function customerFacingContent(tour: CaveDiversTour): Record<string, unknown> {
   return {
     title: tour.title,
     shortDescription: tour.shortDescription,
@@ -654,7 +658,7 @@ const PROCESS_MARKERS = /supplier approval|approval gate|review gate|editorial s
 
 export function validateCaveDiversPlan(): string[] {
   const errors: string[] = [];
-  if (CAVE_DIVERS_DRAFT_TOURS.length < 5 || CAVE_DIVERS_DRAFT_TOURS.length > 7) {
+  if (CAVE_DIVERS_TOURS.length < 5 || CAVE_DIVERS_TOURS.length > 7) {
     errors.push('Catalogue must hold between five and seven distinct records.');
   }
   if (CAVE_DIVERS_TENANT.domainMigrated !== false || CAVE_DIVERS_TENANT.customDomainStatus !== 'unconfigured') {
@@ -666,13 +670,13 @@ export function validateCaveDiversPlan(): string[] {
 
   const slugs = new Set<string>();
   const pathSlugs = new Set<string>();
-  for (const tour of CAVE_DIVERS_DRAFT_TOURS) {
+  for (const tour of CAVE_DIVERS_TOURS) {
     const id = tour.slug;
     if (slugs.has(tour.slug)) errors.push(`Duplicate storage slug: ${id}`);
     if (pathSlugs.has(tour.pathSlug)) errors.push(`Duplicate public path slug: ${id}`);
     slugs.add(tour.slug);
     pathSlugs.add(tour.pathSlug);
-    if (tour.status !== 'draft') errors.push(`Non-draft catalogue record: ${id}`);
+    if (tour.status !== 'active') errors.push(`Inactive catalogue record: ${id}`);
 
     // Provenance: first-party evidence is required; references are optional but
     // must be one of the four traders supplied at intake, and always dated.
@@ -722,9 +726,9 @@ export function validateCaveDiversPlan(): string[] {
 
   // The two known source contradictions must stay recorded as blocking
   // decisions rather than being quietly resolved with a plausible number.
-  const blocking = CAVE_DIVERS_DRAFT_TOURS.flatMap((tour) => tour.openDecisions.filter((item) => item.startsWith('BLOCKING:')));
+  const blocking = CAVE_DIVERS_TOURS.flatMap((tour) => tour.openDecisions.filter((item) => item.startsWith('BLOCKING:')));
   if (blocking.length < 2) errors.push('Both published source contradictions must remain recorded as blocking decisions.');
-  const openWater = CAVE_DIVERS_DRAFT_TOURS.find((tour) => tour.pathSlug === 'open-water-diver-course');
+  const openWater = CAVE_DIVERS_TOURS.find((tour) => tour.pathSlug === 'open-water-diver-course');
   if (openWater?.duration) errors.push('Open Water duration must stay unpublished while the source contradicts itself.');
 
   return errors;
@@ -733,6 +737,7 @@ export function validateCaveDiversPlan(): string[] {
 export interface ExistingCatalogueRecord {
   slug: string;
   status: string;
+  enquiryOnly: boolean;
   /** True only when the record is already owned by the Cave Divers tenant. */
   ownedByCaveTenant: boolean;
   /** True when any tenant owns the record. */
@@ -741,17 +746,18 @@ export interface ExistingCatalogueRecord {
 
 /**
  * Returns the reason this run must not write, or null when every matched
- * record is a Cave-owned (or unowned) draft.
+ * record is Cave-owned (or unowned) and either a draft or already in the exact
+ * enquiry-only public state managed by this seed.
  *
  * An owned record is foreign unless this exact tenant already owns it. On a
  * first run there is no Cave tenant yet, so ANY owner is foreign — checking
  * ownership only when the tenant already exists would let a first run adopt
- * another tenant's draft that happens to share a target slug.
+ * another tenant's record that happens to share a target slug.
  */
 export function catalogueOverwriteBlocker(records: ExistingCatalogueRecord[]): string | null {
   for (const record of records) {
-    if (record.status !== 'draft') {
-      return `Refusing to overwrite non-draft record: ${record.slug}.`;
+    if (record.status !== 'draft' && !(record.status === 'active' && record.enquiryOnly)) {
+      return `Refusing to overwrite a record outside the enquiry-only lifecycle: ${record.slug}.`;
     }
     if (record.hasOwner && !record.ownedByCaveTenant) {
       return `Refusing cross-tenant catalogue overwrite: ${record.slug}.`;
@@ -849,22 +855,24 @@ async function applyPlan(): Promise<void> {
     }
 
     if (existingTenant) {
-      const activeCount = await Attraction.countDocuments({
+      const bookableActiveCount = await Attraction.countDocuments({
         status: 'active',
+        enquiryOnly: { $ne: true },
         $or: [{ ownerTenantId: existingTenant._id }, { tenantIds: existingTenant._id }],
       });
-      if (activeCount > 0) {
-        throw new Error('Refusing to reseed while Cave Divers has active catalogue records.');
+      if (bookableActiveCount > 0) {
+        throw new Error('Refusing to reseed while Cave Divers has bookable active catalogue records.');
       }
     }
 
     const existingTargetTours = await Attraction.find({
-      slug: { $in: CAVE_DIVERS_DRAFT_TOURS.map((tour) => tour.slug) },
-    }).select('_id slug status ownerTenantId');
+      slug: { $in: CAVE_DIVERS_TOURS.map((tour) => tour.slug) },
+    }).select('_id slug status enquiryOnly ownerTenantId images');
     const overwriteBlock = catalogueOverwriteBlocker(
       existingTargetTours.map((record) => ({
         slug: record.slug,
         status: record.status,
+        enquiryOnly: record.enquiryOnly === true,
         ownedByCaveTenant: Boolean(
           existingTenant && record.ownerTenantId && record.ownerTenantId.equals(existingTenant._id),
         ),
@@ -884,14 +892,14 @@ async function applyPlan(): Promise<void> {
           : { action: 'create', slug: TENANT_SLUG },
         customDomain: { value: CUSTOM_DOMAIN, status: 'unconfigured', migrated: false, dnsChanged: false },
       },
-      catalogue: CAVE_DIVERS_DRAFT_TOURS.map((tour) => {
+      catalogue: CAVE_DIVERS_TOURS.map((tour) => {
         const existing = existingTargetTours.find((record) => record.slug === tour.slug);
         return {
           slug: tour.slug,
           path: `/dive-programs/${tour.pathSlug}`,
-          action: existing ? 'update-draft' : 'create-draft',
+          action: existing ? 'update-enquiry-only' : 'create-enquiry-only',
           existingStatus: existing?.status ?? null,
-          resultStatus: 'draft',
+          resultStatus: 'active',
         };
       }),
     }, null, 2));
@@ -907,6 +915,9 @@ async function applyPlan(): Promise<void> {
       {
         $set: {
           ...CAVE_DIVERS_TENANT,
+          heroImages: existingTenant?.heroImages?.length
+            ? existingTenant.heroImages
+            : CAVE_DIVERS_TENANT.heroImages,
           logo,
           logoDark: logo,
           favicon: logo,
@@ -923,7 +934,8 @@ async function applyPlan(): Promise<void> {
       { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true },
     );
 
-    for (const [index, tour] of CAVE_DIVERS_DRAFT_TOURS.entries()) {
+    for (const [index, tour] of CAVE_DIVERS_TOURS.entries()) {
+      const existingTour = existingTargetTours.find((record) => record.slug === tour.slug);
       await Attraction.findOneAndUpdate(
         { slug: tour.slug },
         {
@@ -932,14 +944,15 @@ async function applyPlan(): Promise<void> {
             pathSlug: tour.pathSlug,
             parentPage: { label: 'Dive programmes', path: '/dive-programs' },
             ...customerFacingContent(tour),
-            images: [],
+            images: existingTour?.images || [],
             currency: 'EUR',
             rating: 0,
             reviewCount: 0,
             tenantIds: [tenant._id],
             ownerTenantId: tenant._id,
             reseller: { enabled: false, value: 0, allowedTenants: [] },
-            status: 'draft',
+            enquiryOnly: true,
+            status: 'active',
             featured: false,
             sortOrder: index + 1,
           },
@@ -958,15 +971,19 @@ async function applyPlan(): Promise<void> {
 
     const targetCount = await Attraction.countDocuments({
       ownerTenantId: tenant._id,
-      slug: { $in: CAVE_DIVERS_DRAFT_TOURS.map((tour) => tour.slug) },
-      status: 'draft',
-    });
-    const activeCount = await Attraction.countDocuments({
+      slug: { $in: CAVE_DIVERS_TOURS.map((tour) => tour.slug) },
       status: 'active',
+      enquiryOnly: true,
+    });
+    const bookableActiveCount = await Attraction.countDocuments({
+      status: 'active',
+      enquiryOnly: { $ne: true },
       $or: [{ ownerTenantId: tenant._id }, { tenantIds: tenant._id }],
     });
-    if (targetCount !== CAVE_DIVERS_DRAFT_TOURS.length || activeCount !== 0) {
-      throw new Error(`Post-apply safety check failed (drafts=${targetCount}, active=${activeCount}).`);
+    if (targetCount !== CAVE_DIVERS_TOURS.length || bookableActiveCount !== 0) {
+      throw new Error(
+        `Post-apply safety check failed (enquiryOnly=${targetCount}, bookableActive=${bookableActiveCount}).`,
+      );
     }
 
     console.log(JSON.stringify({
@@ -978,7 +995,7 @@ async function applyPlan(): Promise<void> {
         domainMigrated: tenant.domainMigrated,
         customDomainStatus: tenant.customDomainStatus,
       },
-      catalogue: { drafts: targetCount, active: activeCount },
+      catalogue: { enquiryOnly: targetCount, bookableActive: bookableActiveCount },
       safeguards: [
         'preview access code retained or generated but never printed',
         'original provisional logo uploaded; no source imagery imported',
@@ -1007,7 +1024,7 @@ export async function main(): Promise<void> {
         customDomainStatus: CAVE_DIVERS_TENANT.customDomainStatus,
         domainMigrated: CAVE_DIVERS_TENANT.domainMigrated,
       },
-      catalogue: CAVE_DIVERS_DRAFT_TOURS.map((tour) => ({
+      catalogue: CAVE_DIVERS_TOURS.map((tour) => ({
         path: `/dive-programs/${tour.pathSlug}`,
         title: tour.title,
         category: tour.category,
@@ -1019,7 +1036,7 @@ export async function main(): Promise<void> {
         'no asset upload',
         'no competitor copy, imagery, prices, ratings or reviews',
         'no DNS, domain alias, deployment, notification or admin mutation',
-        'all seven catalogue records remain draft',
+        'all seven catalogue records are visible but remain enquiry-only',
       ],
     }, null, 2));
     return;

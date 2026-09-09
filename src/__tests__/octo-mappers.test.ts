@@ -51,6 +51,11 @@ describe('OCTO product mapper', () => {
     instantConfirmation: true,
   };
 
+  it('never exposes an enquiry-only record as an OCTO product', () => {
+    expect(() => toOctoProduct({ ...base, enquiryOnly: true }, tenant))
+      .toThrow('OCTO_PACKAGE_PRICING_UNSUPPORTED');
+  });
+
   it('maps a time-slot product to START_TIME with start times + units in minor currency', () => {
     const p = toOctoProduct(
       {

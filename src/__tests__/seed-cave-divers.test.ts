@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  CAVE_DIVERS_DRAFT_TOURS,
+  CAVE_DIVERS_TOURS,
   CAVE_DIVERS_INSPIRATION_REFERENCES,
   CAVE_DIVERS_TENANT,
   catalogueOverwriteBlocker,
@@ -10,7 +10,7 @@ import {
 } from '../scripts/seed-cave-divers';
 
 describe('Cave Divers launch package', () => {
-  it('keeps the shared preview active while the custom domain and catalogue stay gated', () => {
+  it('keeps the catalogue enquiry-only while the custom domain and payments stay gated', () => {
     expect(validateCaveDiversPlan()).toEqual([]);
     expect(CAVE_DIVERS_TENANT.status).toBe('active');
     expect(CAVE_DIVERS_TENANT.designMode).toBe('depth');
@@ -21,11 +21,11 @@ describe('Cave Divers launch package', () => {
     expect(CAVE_DIVERS_TENANT.bundleSettings.mode).toBe('off');
   });
 
-  it('creates exactly seven uniquely routed draft records', () => {
-    expect(CAVE_DIVERS_DRAFT_TOURS).toHaveLength(7);
-    expect(new Set(CAVE_DIVERS_DRAFT_TOURS.map((tour) => tour.slug)).size).toBe(7);
-    expect(new Set(CAVE_DIVERS_DRAFT_TOURS.map((tour) => tour.pathSlug)).size).toBe(7);
-    expect(CAVE_DIVERS_DRAFT_TOURS.every((tour) => tour.status === 'draft')).toBe(true);
+  it('creates exactly seven uniquely routed enquiry-only records', () => {
+    expect(CAVE_DIVERS_TOURS).toHaveLength(7);
+    expect(new Set(CAVE_DIVERS_TOURS.map((tour) => tour.slug)).size).toBe(7);
+    expect(new Set(CAVE_DIVERS_TOURS.map((tour) => tour.pathSlug)).size).toBe(7);
+    expect(CAVE_DIVERS_TOURS.every((tour) => tour.status === 'active')).toBe(true);
   });
 
   it('withholds every price, availability and booking promise while the terms are unconfirmed', () => {
@@ -34,7 +34,7 @@ describe('Cave Divers launch package', () => {
       'cancellationPolicy', 'instantConfirmation', 'mobileTicket',
       'hasHotelPickup', 'images', 'rating', 'reviewCount',
     ];
-    for (const tour of CAVE_DIVERS_DRAFT_TOURS) {
+    for (const tour of CAVE_DIVERS_TOURS) {
       const record = tour as unknown as Record<string, unknown>;
       for (const key of forbidden) expect(record).not.toHaveProperty(key);
       // The same fields must be absent from what actually gets written.
@@ -44,8 +44,21 @@ describe('Cave Divers launch package', () => {
     }
   });
 
+  it('uses the first-party location and preserves generated imagery across re-runs', () => {
+    for (const tour of CAVE_DIVERS_TOURS) {
+      expect(tour.destination.coordinates).toEqual({
+        lat: 27.291187482966045,
+        lng: 33.759873815053,
+      });
+    }
+    const script = readFileSync(join(__dirname, '../scripts/seed-cave-divers.ts'), 'utf8');
+    expect(script).toContain('images: existingTour?.images || []');
+    expect(script).not.toContain('images: [],');
+    expect(script).toContain('heroImages: existingTenant?.heroImages?.length');
+  });
+
   it('carries substantive original content on every record rather than an editorial shell', () => {
-    for (const tour of CAVE_DIVERS_DRAFT_TOURS) {
+    for (const tour of CAVE_DIVERS_TOURS) {
       expect(tour.description.length).toBeGreaterThanOrEqual(700);
       expect(tour.shortDescription.length).toBeGreaterThanOrEqual(90);
       expect(tour.highlights.length).toBeGreaterThanOrEqual(4);
@@ -63,14 +76,14 @@ describe('Cave Divers launch package', () => {
   });
 
   it('keeps every record distinct instead of repeating one description', () => {
-    const descriptions = new Set(CAVE_DIVERS_DRAFT_TOURS.map((tour) => tour.description));
-    const titles = new Set(CAVE_DIVERS_DRAFT_TOURS.map((tour) => tour.title));
-    expect(descriptions.size).toBe(CAVE_DIVERS_DRAFT_TOURS.length);
-    expect(titles.size).toBe(CAVE_DIVERS_DRAFT_TOURS.length);
+    const descriptions = new Set(CAVE_DIVERS_TOURS.map((tour) => tour.description));
+    const titles = new Set(CAVE_DIVERS_TOURS.map((tour) => tour.title));
+    expect(descriptions.size).toBe(CAVE_DIVERS_TOURS.length);
+    expect(titles.size).toBe(CAVE_DIVERS_TOURS.length);
   });
 
   it('sources every record from Cave Divers and keeps the four comparison traders structure-only', () => {
-    for (const tour of CAVE_DIVERS_DRAFT_TOURS) {
+    for (const tour of CAVE_DIVERS_TOURS) {
       expect(tour.firstPartySources.length).toBeGreaterThan(0);
       for (const note of tour.firstPartySources) {
         expect(new URL(note.url).hostname).toBe('www.cave-divers.com');
@@ -90,7 +103,7 @@ describe('Cave Divers launch package', () => {
   });
 
   it('reviewed all four supplied comparison suppliers', () => {
-    const reviewed = new Set(CAVE_DIVERS_DRAFT_TOURS.flatMap((tour) => tour.referenceNotes.map((note) => note.url)));
+    const reviewed = new Set(CAVE_DIVERS_TOURS.flatMap((tour) => tour.referenceNotes.map((note) => note.url)));
     // Each of the four intake suppliers must appear through one of its pages.
     const suppliers = ['t1196989', 't1300885', 't792868', 't330276', 't439309', 't1328891'];
     const seen = suppliers.filter((id) => [...reviewed].some((url) => url.includes(id)));
@@ -98,19 +111,19 @@ describe('Cave Divers launch package', () => {
   });
 
   it('never lets trader material or internal process wording reach a customer field', () => {
-    for (const tour of CAVE_DIVERS_DRAFT_TOURS) {
+    for (const tour of CAVE_DIVERS_TOURS) {
       const customerCopy = JSON.stringify(customerFacingContent(tour));
       expect(customerCopy).not.toMatch(/getyourguide|white dolphin|diving star|pure coastal|dive red sea/i);
       expect(customerCopy).not.toMatch(/supplier approval|approval gate|review gate|rights-cleared|content rights/i);
     }
     // Provenance and open decisions are deliberately outside the written payload.
-    const written = JSON.stringify(CAVE_DIVERS_DRAFT_TOURS.map(customerFacingContent));
+    const written = JSON.stringify(CAVE_DIVERS_TOURS.map(customerFacingContent));
     expect(written).not.toMatch(/openDecisions|referenceNotes|firstPartySources|BLOCKING/);
   });
 
   it('records source contradictions instead of turning them into claims', () => {
-    const openWater = CAVE_DIVERS_DRAFT_TOURS.find((tour) => tour.pathSlug === 'open-water-diver-course');
-    const glassBoat = CAVE_DIVERS_DRAFT_TOURS.find((tour) => tour.pathSlug === 'glass-boat-half-day');
+    const openWater = CAVE_DIVERS_TOURS.find((tour) => tour.pathSlug === 'open-water-diver-course');
+    const glassBoat = CAVE_DIVERS_TOURS.find((tour) => tour.pathSlug === 'glass-boat-half-day');
 
     // The course length is contradicted by its own source, so no length ships.
     expect(openWater?.duration).toBeUndefined();
@@ -128,7 +141,7 @@ describe('Cave Divers launch package', () => {
   });
 
   it('never presents wildlife as guaranteed', () => {
-    const dolphinTrip = CAVE_DIVERS_DRAFT_TOURS.find((tour) => tour.pathSlug === 'dolphin-house-sea-trip');
+    const dolphinTrip = CAVE_DIVERS_TOURS.find((tour) => tour.pathSlug === 'dolphin-house-sea-trip');
     expect(dolphinTrip?.description).toMatch(/nobody can promise/i);
     expect(dolphinTrip?.highlights.join(' ')).toMatch(/never guaranteed/i);
     expect(dolphinTrip?.needToKnow[0]).toMatch(/^Will I definitely see dolphins\? No\./);
@@ -139,22 +152,24 @@ describe('Cave Divers launch package', () => {
     const record = (overrides: Partial<Parameters<typeof catalogueOverwriteBlocker>[0][number]> = {}) => ({
       slug: 'cave-divers-red-sea-daily-diving',
       status: 'draft',
+      enquiryOnly: false,
       ownedByCaveTenant: true,
       hasOwner: true,
       ...overrides,
     });
 
-    it('allows a re-run over this tenant\u2019s own drafts', () => {
+    it('allows a re-run over this tenant\u2019s own draft or enquiry-only record', () => {
       expect(catalogueOverwriteBlocker([])).toBeNull();
       expect(catalogueOverwriteBlocker([record()])).toBeNull();
+      expect(catalogueOverwriteBlocker([record({ status: 'active', enquiryOnly: true })])).toBeNull();
       expect(catalogueOverwriteBlocker([record({ hasOwner: false, ownedByCaveTenant: false })])).toBeNull();
     });
 
-    it('refuses to touch a published or archived record', () => {
-      expect(catalogueOverwriteBlocker([record({ status: 'active' })]))
-        .toMatch(/Refusing to overwrite non-draft record/);
+    it('refuses to touch a bookable active or archived record', () => {
+      expect(catalogueOverwriteBlocker([record({ status: 'active', enquiryOnly: false })]))
+        .toMatch(/outside the enquiry-only lifecycle/);
       expect(catalogueOverwriteBlocker([record({ status: 'archived' })]))
-        .toMatch(/Refusing to overwrite non-draft record/);
+        .toMatch(/outside the enquiry-only lifecycle/);
     });
 
     it('refuses another tenant\u2019s draft even on the very first run', () => {

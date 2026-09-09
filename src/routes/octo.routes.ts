@@ -170,6 +170,8 @@ async function findProduct(req: AuthRequest, productId: string) {
   return Attraction.findOne({
     ...byId,
     tenantIds: req.tenant?._id,
+    status: 'active',
+    enquiryOnly: { $ne: true },
     pricingOptions: { $not: { $elemMatch: { pricingModel: 'per-booking' } } },
   }).lean();
 }
@@ -216,6 +218,7 @@ export function validateReservationRequest(
   availabilityId: unknown,
   unitItems: unknown,
 ): { localDate: string; startTime: string | null; items: ValidatedUnitItem[]; totalQty: number; totalMinor: number } | { error: string } {
+  if (product.enquiryOnly === true) return { error: 'Enquiry-only products are not available through OCTO' };
   if (!isOctoCompatibleProduct(product)) return { error: 'Package-priced products are not available through OCTO' };
   if (optionId !== 'DEFAULT') return { error: 'optionId is not valid for this product' };
   const parsed = parseAvailabilityId(String(availabilityId || ''));
@@ -257,7 +260,11 @@ router.get('/supplier', (req: AuthRequest, res: Response) => {
 
 router.get('/products', requireScope('read'), async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const list = await Attraction.find({ tenantIds: req.tenant?._id, status: 'active' }).limit(500).lean();
+    const list = await Attraction.find({
+      tenantIds: req.tenant?._id,
+      status: 'active',
+      enquiryOnly: { $ne: true },
+    }).limit(500).lean();
     res.json(list
       .filter((a) => isOctoCompatibleProduct(a as unknown as OctoAttractionLike))
       .map((a) => toOctoProduct(a as unknown as OctoAttractionLike, tenantOf(req))));
