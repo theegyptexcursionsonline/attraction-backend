@@ -75,7 +75,7 @@ export interface ITenant extends Document {
     heading: string;
     body: string;
   };
-  designMode?: 'default' | 'luxury' | 'minimal' | 'nautical' | 'equestrian' | 'marine' | 'desert' | 'safari' | 'travel' | 'stable' | 'sunmarine' | 'rittal' | 'speedboat' | 'ancient' | 'pyramid' | 'skyride' | 'temple' | 'ranch' | 'reef' | 'obelisk' | 'dune' | 'savanna' | 'expedition' | 'dolphin' | 'safarisahara' | 'quadtour' | 'desertfox' | 'pharaonic' | 'luxorballoon' | 'nilenight' | 'seascope' | 'pirates' | 'nefertari' | 'elitevip' | 'classic' | 'majestic' | 'bazaar' | 'abyss' | 'island' | 'angler' | 'lagoon' | 'sandbar' | 'evening' | 'atlas' | 'premium' | 'caravan' | 'pod' | 'overland' | 'azure' | 'concierge' | 'mirage' | 'meridian';
+  designMode?: 'default' | 'luxury' | 'minimal' | 'nautical' | 'equestrian' | 'marine' | 'desert' | 'safari' | 'travel' | 'stable' | 'sunmarine' | 'rittal' | 'speedboat' | 'ancient' | 'pyramid' | 'skyride' | 'temple' | 'ranch' | 'reef' | 'obelisk' | 'dune' | 'savanna' | 'expedition' | 'dolphin' | 'safarisahara' | 'quadtour' | 'desertfox' | 'pharaonic' | 'luxorballoon' | 'nilenight' | 'seascope' | 'pirates' | 'nefertari' | 'elitevip' | 'classic' | 'majestic' | 'bazaar' | 'abyss' | 'island' | 'angler' | 'lagoon' | 'sandbar' | 'evening' | 'atlas' | 'premium' | 'caravan' | 'pod' | 'overland' | 'azure' | 'concierge' | 'mirage' | 'meridian' | 'depth';
   defaultCurrency: string;
   defaultLanguage: string;
   supportedLanguages: string[];
