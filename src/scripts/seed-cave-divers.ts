@@ -83,7 +83,7 @@ export const CAVE_DIVERS_TENANT = {
   heroImages: [] as string[],
   tagline: 'Red Sea diving, charted with care.',
   description:
-    'A Hurghada dive centre offering daily diving, diver training and Red Sea boat trips from its Palm Beach Resort base.',
+    'A PADI dive centre offering daily diving, diver training and Red Sea boat trips, with bases at Palm Beach Resort, Long Beach Hotel and Soma Bay.',
   theme: {
     primaryColor: '#061C24',
     secondaryColor: '#087F8C',
