@@ -8,6 +8,7 @@ import { sanitizeRichText, sanitizePageSections } from '../utils/sanitizeHtml';
 import { navigationSchema, PageSection } from '../utils/siteContent';
 import { Category } from '../models/Category';
 import { escapeRegex } from '../utils/helpers';
+import { SAFARI_TENANT_ID, SAFARI_LEGACY_PAGES, safariLegacyPage } from '../utils/safariLegacyPages';
 
 const requirePageTenant = (req: AuthRequest, res: Response): Types.ObjectId | null => {
   if (!req.tenant?._id) {
@@ -271,6 +272,11 @@ export const resolvePage = async (
       return;
     }
 
+    if (String(req.tenant._id) === SAFARI_TENANT_ID && SAFARI_LEGACY_PAGES[slug]) {
+      const owners = await Attraction.find({ tenantIds: req.tenant._id, $or: [{ pathSlug: slug }, { slug }] }).select('_id status').lean();
+      const compatibility = safariLegacyPage(String(req.tenant._id), slug, tenant?.customPages || [], owners);
+      if (compatibility) { sendSuccess(res, compatibility); return; }
+    }
     sendSuccess(res, { type: 'none' });
   } catch (error) {
     next(error);
