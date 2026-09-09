@@ -1,6 +1,8 @@
 /** Run through the scoped environment. Dry-run writes an approval plan; apply requires that exact plan. */
 import 'dotenv/config';
 import mongoose, { Types } from 'mongoose';
+import { Tenant } from '../models/Tenant';
+import { Attraction } from '../models/Attraction';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { SAFARI_TENANT_ID, SAFARI_QUAD_PAGE_ID } from '../utils/safariLegacyPages';
 import manifest from '../data/safari-sahara-quad-catalog.json';
@@ -33,11 +35,11 @@ export async function applyParentRepair(db: any, session: any, expected: ReturnT
     if (actual.rows.every(row => row.complete)) { count = 0; return; }
     if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error('Content changed since dry-run; create a new plan');
     // Write lock serializes concurrent page/menu updates with the target revision check.
-    const locked = await db.collection('tenants').updateOne({ _id: tenant._id, customPages: { $elemMatch: { _id: new Types.ObjectId(actual.pageId), revision: actual.pageRevision, status: 'active', isPublished: true, slug: actual.parentPage.path.slice(1) } } }, { $inc: { __v: 1 } }, { session });
+    const locked = await Tenant.updateOne({ _id: tenant._id, customPages: { $elemMatch: { _id: new Types.ObjectId(actual.pageId), revision: actual.pageRevision, status: 'active', isPublished: true, slug: actual.parentPage.path.slice(1) } } }, { $inc: { __v: 1 } }, { session });
     if (locked.modifiedCount !== 1) throw new Error('Target page changed');
     count = 0;
     for (const row of actual.rows.filter(row => !row.complete)) {
-      const result = await db.collection('attractions').updateOne({ _id: new Types.ObjectId(row.id), status: 'active', tenantIds: [tenant._id], updatedAt: new Date(row.updatedAt), 'parentPage.path': OLD_PATH }, { $set: { parentPage: actual.parentPage, updatedAt: new Date() } }, { session });
+      const result = await Attraction.updateOne({ _id: new Types.ObjectId(row.id), status: 'active', tenantIds: [tenant._id], updatedAt: new Date(row.updatedAt), 'parentPage.path': OLD_PATH }, { $set: { parentPage: actual.parentPage, updatedAt: new Date() } }, { session });
       if (result.modifiedCount !== 1) throw new Error('Tour changed during repair');
       count++;
     }

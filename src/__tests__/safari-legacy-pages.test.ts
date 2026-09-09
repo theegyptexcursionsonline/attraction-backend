@@ -1,5 +1,6 @@
 import mongoose, { Types } from 'mongoose';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
+import { Attraction } from '../models/Attraction';
 import { safariLegacyPage, SAFARI_TENANT_ID, SAFARI_QUAD_PAGE_ID } from '../utils/safariLegacyPages';
 import { buildParentRepairPlan, applyParentRepair } from '../scripts/repair-safari-parent-pages';
 import manifest from '../data/safari-sahara-quad-catalog.json';
@@ -37,7 +38,7 @@ jest.setTimeout(120000);
 describe('parent repair guarded transaction', () => {
   let mongo: MongoMemoryReplSet;
   const tenant = { _id: new Types.ObjectId(SAFARI_TENANT_ID), slug: 'safari-sahara-hurghada', customPages: [{ ...page, _id: new Types.ObjectId(page._id) }] };
-  const tours = () => manifest.tours.map(t => ({ _id: new Types.ObjectId(t.targetId), tenantIds: [tenant._id], status: 'active', updatedAt: new Date('2026-09-08T00:00:00Z'), parentPage: { label: 'Old', path: '/hurghada-quad-biking-tours' } }));
+  const tours = () => manifest.tours.map(t => ({ _id: new Types.ObjectId(t.targetId), slug: t.target.pathSlug, tenantIds: [tenant._id], status: 'active', updatedAt: new Date('2026-09-08T00:00:00Z'), parentPage: { label: 'Old', path: '/hurghada-quad-biking-tours' } }));
   beforeAll(async () => { mongo = await MongoMemoryReplSet.create({ replSet: { count: 1 } }); await mongoose.connect(mongo.getUri()); });
   afterAll(async () => { await mongoose.disconnect(); await mongo.stop(); });
   beforeEach(async () => { await mongoose.connection.db!.dropDatabase(); await mongoose.connection.db!.collection('tenants').insertOne(tenant); await mongoose.connection.db!.collection('attractions').insertMany(tours()); });
@@ -57,6 +58,19 @@ describe('parent repair guarded transaction', () => {
     try { await expect(applyParentRepair(db, session, plan)).rejects.toThrow('Content changed');
       expect(await db.collection('attractions').countDocuments({ 'parentPage.path': '/hurghada-quad-biking-tours' })).toBe(8);
     } finally { await session.endSession(); }
+  });
+  test('guarded model failure rolls back earlier parent writes', async () => {
+    const db = mongoose.connection.db!, session = await mongoose.startSession(), plan = buildParentRepairPlan(tenant, tours());
+    const original = Attraction.updateOne.bind(Attraction);
+    let writes = 0;
+    const spy = jest.spyOn(Attraction, 'updateOne').mockImplementation(((...args: any[]) => {
+      if (++writes === 2) throw new Error('Simulated write failure');
+      return (original as any)(...args);
+    }) as any);
+    try {
+      await expect(applyParentRepair(db, session, plan)).rejects.toThrow('Simulated write failure');
+      expect(await db.collection('attractions').countDocuments({ 'parentPage.path': '/hurghada-quad-biking-tours' })).toBe(8);
+    } finally { spy.mockRestore(); await session.endSession(); }
   });
   test('scoped database read refuses missing cross-tenant source', async () => {
     const db = mongoose.connection.db!, session = await mongoose.startSession(), plan = buildParentRepairPlan(tenant, tours());
