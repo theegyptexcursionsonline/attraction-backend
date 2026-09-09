@@ -4,6 +4,7 @@ import {
   CAVE_DIVERS_IMAGE_PLAN,
   validateCaveDiversImagePlan,
 } from '../scripts/generate-cave-divers-images';
+import { CAVE_DIVERS_TOURS } from '../scripts/seed-cave-divers';
 
 describe('Cave Divers generated-image plan', () => {
   it('has four original scene prompts for each of the seven exact records', () => {
@@ -11,6 +12,9 @@ describe('Cave Divers generated-image plan', () => {
     expect(CAVE_DIVERS_IMAGE_PLAN).toHaveLength(7);
     expect(new Set(CAVE_DIVERS_IMAGE_PLAN.map((item) => item.slug)).size).toBe(7);
     expect(CAVE_DIVERS_IMAGE_PLAN.every((item) => item.scenes.length === 4)).toBe(true);
+    expect(CAVE_DIVERS_IMAGE_PLAN.map((item) => item.slug).sort()).toEqual(
+      CAVE_DIVERS_TOURS.map((item) => item.slug).sort(),
+    );
   });
 
   it('uses the project image service, stable uploads, and compare-and-set persistence', () => {

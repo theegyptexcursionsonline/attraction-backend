@@ -47,7 +47,7 @@ export const CAVE_DIVERS_IMAGE_PLAN: readonly CaveDiversImagePlanItem[] = [
     ],
   },
   {
-    slug: 'cave-divers-red-sea-multi-day-diving',
+    slug: 'cave-divers-multi-day-daily-diving',
     scenes: [
       'Experienced divers reviewing a multi-day reef plan around a clean map table on a Red Sea boat, with no readable map labels or writing.',
       'A calm morning equipment check with several assembled scuba sets lined neatly along an unbranded Hurghada dive boat.',
@@ -83,7 +83,7 @@ export const CAVE_DIVERS_IMAGE_PLAN: readonly CaveDiversImagePlanItem[] = [
     ],
   },
   {
-    slug: 'cave-divers-orange-bay-sea-trip',
+    slug: 'cave-divers-orange-bay-giftun-island',
     scenes: [
       'A classic Red Sea island beach with pale sand, clear turquoise shallows and a small unbranded excursion boat anchored offshore.',
       'Guests stepping carefully from a tender into shallow water for an island landing, relaxed family-friendly atmosphere and generic faces.',
@@ -208,7 +208,7 @@ async function applyImagePlan(): Promise<void> {
       'cave-divers-red-sea-daily-diving',
       'cave-divers-discover-scuba-diving',
       'cave-divers-dolphin-house-sea-trip',
-      'cave-divers-orange-bay-sea-trip',
+      'cave-divers-orange-bay-giftun-island',
     ];
     const heroImages = heroSlugs.map((slug) => {
       const image = refreshed.find((tour) => tour.slug === slug)?.images?.[0];
