@@ -16,12 +16,16 @@ describe('Safari legacy page compatibility', () => {
     ['active owner', SAFARI_TENANT_ID, [page], [{ ...owner, status: 'active' }]],
     ['wrong retired owner', SAFARI_TENANT_ID, [page], [{ ...owner, _id: 'wrong' }]],
     ['missing retired owner', SAFARI_TENANT_ID, [page], []],
+    ['duplicate owners', SAFARI_TENANT_ID, [page], [owner, owner]],
     ['unpublished target', SAFARI_TENANT_ID, [{ ...page, isPublished: false }], [owner]],
     ['archived target', SAFARI_TENANT_ID, [{ ...page, status: 'archived' }], [owner]],
     ['explicit unpublished source page', SAFARI_TENANT_ID, [page, { slug: 'hurghada-quad-biking', isPublished: false }], [owner]],
     ['redirect chain', SAFARI_TENANT_ID, [{ ...page, slug: 'hurghada-jeep-safari' }], [owner]],
   ])('%s fails closed', (_name, tenant, pages, owners) => {
     expect(safariLegacyPage(tenant as string, 'hurghada-quad-biking', pages as any[], owners as any[])).toBeNull();
+  });
+  test.each(['__proto__', 'constructor', 'toString'])('rejects inherited mapping key %s', slug => {
+    expect(safariLegacyPage(SAFARI_TENANT_ID, slug, [page], [])).toBeNull();
   });
   test('ownerless removed page only aliases while unclaimed', () => {
     expect(safariLegacyPage(SAFARI_TENANT_ID, 'hurghada-quad-biking-tours', [page], [])?.redirectTo).toBe('/quad-biking');
@@ -53,6 +57,11 @@ describe('parent repair guarded transaction', () => {
     try { await expect(applyParentRepair(db, session, plan)).rejects.toThrow('Content changed');
       expect(await db.collection('attractions').countDocuments({ 'parentPage.path': '/hurghada-quad-biking-tours' })).toBe(8);
     } finally { await session.endSession(); }
+  });
+  test('scoped database read refuses missing cross-tenant source', async () => {
+    const db = mongoose.connection.db!, session = await mongoose.startSession(), plan = buildParentRepairPlan(tenant, tours());
+    await db.collection('attractions').updateOne({ _id: tours()[0]._id }, { $set: { tenantIds: [new Types.ObjectId()] } });
+    try { await expect(applyParentRepair(db, session, plan)).rejects.toThrow('exactly eight'); } finally { await session.endSession(); }
   });
   test('rejects unknown edited parent and cross-tenant tour', () => {
     const changed = tours(); changed[0].parentPage.path = '/other';

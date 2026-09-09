@@ -28,7 +28,7 @@ export async function applyParentRepair(db: any, session: any, expected: ReturnT
   let count = 0;
   await session.withTransaction(async () => {
     const tenant = await db.collection('tenants').findOne({ _id: new Types.ObjectId(SAFARI_TENANT_ID) }, { session });
-    const tours = await db.collection('attractions').find({ _id: { $in: IDS.map(id => new Types.ObjectId(id)) } }, { session }).toArray();
+    const tours = await db.collection('attractions').find({ tenantIds: new Types.ObjectId(SAFARI_TENANT_ID), _id: { $in: IDS.map(id => new Types.ObjectId(id)) } }, { session }).toArray();
     const actual = buildParentRepairPlan(tenant, tours);
     if (actual.rows.every(row => row.complete)) { count = 0; return; }
     if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error('Content changed since dry-run; create a new plan');
@@ -53,7 +53,7 @@ async function main() {
   try {
     const db = mongoose.connection.db!;
     const tenant = await db.collection('tenants').findOne({ _id: new Types.ObjectId(SAFARI_TENANT_ID) });
-    const tours = await db.collection('attractions').find({ _id: { $in: IDS.map(id => new Types.ObjectId(id)) } }).toArray();
+    const tours = await db.collection('attractions').find({ tenantIds: new Types.ObjectId(SAFARI_TENANT_ID), _id: { $in: IDS.map(id => new Types.ObjectId(id)) } }).toArray();
     const plan = buildParentRepairPlan(tenant, tours);
     if (!args.includes('--apply')) {
       writeFileSync(arg('--plan-file')!, JSON.stringify(plan, null, 2), { mode: 0o600, flag: 'wx' });
@@ -72,7 +72,7 @@ async function main() {
     try {
       const changed = await applyParentRepair(db, session, expected);
       const freshTenant = await db.collection('tenants').findOne({ _id: new Types.ObjectId(SAFARI_TENANT_ID) });
-      const freshTours = await db.collection('attractions').find({ _id: { $in: IDS.map(id => new Types.ObjectId(id)) } }).toArray();
+      const freshTours = await db.collection('attractions').find({ tenantIds: new Types.ObjectId(SAFARI_TENANT_ID), _id: { $in: IDS.map(id => new Types.ObjectId(id)) } }).toArray();
       if (!buildParentRepairPlan(freshTenant, freshTours).rows.every(row => row.complete)) throw new Error('Post-repair verification failed');
       const receipt = { state: changed ? 'applied' : 'already-complete', changed, tenantId: SAFARI_TENANT_ID, target: plan.parentPage, at: new Date().toISOString() };
       writeFileSync(arg('--receipt-file')!, JSON.stringify(receipt, null, 2), { mode: 0o600 }); console.log(JSON.stringify(receipt));

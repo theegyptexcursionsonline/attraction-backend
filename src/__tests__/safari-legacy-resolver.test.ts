@@ -11,7 +11,7 @@ const req = () => ({ tenant: { _id: new Types.ObjectId(SAFARI_TENANT_ID) }, quer
 beforeEach(() => {
   jest.resetAllMocks();
   (Attraction.findOne as jest.Mock).mockReturnValue({ lean: jest.fn().mockResolvedValue(null) });
-  (Attraction.find as jest.Mock).mockReturnValue({ select: () => ({ lean: jest.fn().mockResolvedValue([]) }) });
+  (Attraction.find as jest.Mock).mockReturnValue({ select: () => ({ limit: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue([]) }) }) });
   (Tenant.findById as jest.Mock).mockReturnValue({ select: () => ({ lean: jest.fn().mockResolvedValue({ customPages: [page] }) }) });
 });
 test('public compatibility retains sanitized page response plus redirect', async () => {
