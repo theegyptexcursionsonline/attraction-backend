@@ -8,9 +8,11 @@ export async function auditTenantUrlNamespace(slug: string, page = 1, limit = 10
   const result = await Tenant.aggregate([
     { $match: { _id: tenant._id } },
     { $unwind: '$customPages' },
+    // Archived and trashed records are off the website and hold no URL, so they are not collisions.
+    { $match: { 'customPages.status': { $ne: 'archived' } } },
     { $project: { path: '$customPages.slug', owner: { $concat: ['page:', { $toString: '$customPages._id' }] } } },
     { $unionWith: { coll: 'attractions', pipeline: [
-      { $match: { tenantIds: tenant._id } },
+      { $match: { tenantIds: tenant._id, status: { $ne: 'archived' } } },
       { $project: { paths: { $setUnion: [['$slug'], ['$pathSlug']] }, owner: { $concat: ['attraction:', { $toString: '$_id' }] } } },
       { $unwind: '$paths' },
       { $project: { path: '$paths', owner: 1 } },

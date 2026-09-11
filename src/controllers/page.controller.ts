@@ -23,6 +23,47 @@ const requirePageTenant = (req: AuthRequest, res: Response): Types.ObjectId | nu
   return req.tenant._id;
 };
 
+/**
+ * A page or tour holds its public URL only while it is on the website. Archive and Trash both
+ * park a record off the site (status `archived`), which releases its address for reuse — the
+ * editor no longer has to invent a new URL after retiring a page. Restoring a retired record
+ * checks the address again and fails closed when it has since been taken, so two records can
+ * never serve the same URL. Records with no stored status are treated as live.
+ */
+const RETIRED = 'archived';
+const servingPage = (slug: string, exceptPageId?: string) => ({
+  $elemMatch: { slug, status: { $ne: RETIRED }, ...(exceptPageId ? { _id: { $ne: exceptPageId } } : {}) },
+});
+
+/** The page or tour currently serving `slug`, so the editor can be told what to change. */
+const urlOwner = async (tenantId: Types.ObjectId, slug: string, exceptPageId?: string): Promise<{ kind: 'page' | 'tour'; title: string } | null> => {
+  const [site, tour] = await Promise.all([
+    Tenant.findOne({ _id: tenantId, customPages: servingPage(slug, exceptPageId) }).select('customPages').lean(),
+    Attraction.findOne({ tenantIds: tenantId, status: { $ne: RETIRED }, $or: [{ pathSlug: slug }, { slug }] }).select('title').lean(),
+  ]);
+  const page = site?.customPages?.find(candidate => candidate.slug === slug && candidate.status !== RETIRED
+    && String((candidate as unknown as { _id: unknown })._id) !== exceptPageId);
+  if (page) return { kind: 'page', title: page.title };
+  if (tour) return { kind: 'tour', title: tour.title };
+  return null;
+};
+
+const urlOwnerMessage = async (tenantId: Types.ObjectId, slug: string, exceptPageId?: string): Promise<string | null> => {
+  const owner = await urlOwner(tenantId, slug, exceptPageId);
+  return owner ? `This URL is already used by the ${owner.kind} “${owner.title}” on the selected site` : null;
+};
+
+/** Guards a revival: a restored page must not land on a URL another page or tour now serves. */
+const revivalBlocked = async (tenantId: Types.ObjectId, pageId: string, lifecycle: Record<string, unknown>): Promise<string | null> => {
+  const site = await Tenant.findOne({ _id: tenantId, customPages: { $elemMatch: { _id: pageId, ...lifecycle } } }).select('customPages').lean();
+  const stored = site?.customPages?.find(candidate => String((candidate as unknown as { _id: unknown })._id) === pageId);
+  if (!stored) return null;
+  const owner = await urlOwner(tenantId, stored.slug, pageId);
+  return owner
+    ? `Restoring “${stored.title}” would reuse /${stored.slug}, which the ${owner.kind} “${owner.title}” now serves. Change one of the two URLs first`
+    : null;
+};
+
 const preparePageContent = async (tenantId: Types.ObjectId, value: Record<string, any>): Promise<string | null> => {
   if (value.sections !== undefined) {
     value.sections = sanitizePageSections(value.sections);
@@ -84,11 +125,8 @@ export const createAdminPage = async (req: AuthRequest, res: Response, next: Nex
   try {
     const tenantId = requirePageTenant(req, res); if (!tenantId) return;
     const slug = String(req.body.slug).toLowerCase();
-    const collision = await Promise.all([
-      Tenant.exists({ _id: tenantId, 'customPages.slug': slug }),
-      Attraction.exists({ tenantIds: tenantId, $or: [{ pathSlug: slug }, { slug }] }),
-    ]);
-    if (collision.some(Boolean)) { sendError(res, 'This URL is already used on the selected site', 409); return; }
+    const owner = await urlOwnerMessage(tenantId, slug);
+    if (owner) { sendError(res, owner, 409); return; }
     const page = {
       ...req.body,
       slug,
@@ -101,7 +139,7 @@ export const createAdminPage = async (req: AuthRequest, res: Response, next: Nex
     };
     const contentError = await preparePageContent(tenantId, page);
     if (contentError) { sendError(res, contentError, 400); return; }
-    const tenant = await Tenant.findOneAndUpdate({ _id: tenantId, 'customPages.slug': { $ne: slug } }, { $push: { customPages: page } }, { new: true, runValidators: true });
+    const tenant = await Tenant.findOneAndUpdate({ _id: tenantId, $nor: [{ customPages: servingPage(slug) }] }, { $push: { customPages: page } }, { new: true, runValidators: true });
     if (!tenant) { sendError(res, 'This URL is already used on the selected site', 409); return; }
     sendSuccess(res, tenant?.customPages?.at(-1), 'Page created', 201);
   } catch (error) { next(error); }
@@ -116,15 +154,9 @@ export const updateAdminPage = async (req: AuthRequest, res: Response, next: Nex
     const updates = { ...body, ...(body.body !== undefined ? { body: sanitizeRichText(body.body) } : {}), ...(body.sections !== undefined ? { sections: sanitizePageSections(body.sections) } : {}) };
     if (req.body.slug !== undefined) {
       const slug = String(req.body.slug).toLowerCase();
-      const collision = await Promise.all([
-        Tenant.exists({
-          _id: tenantId,
-          customPages: { $elemMatch: { slug, _id: { $ne: pageId } } },
-        }),
-        Attraction.exists({ tenantIds: tenantId, $or: [{ pathSlug: slug }, { slug }] }),
-      ]);
-      if (collision.some(Boolean)) {
-        sendError(res, 'This URL is already used on the selected site', 409);
+      const owner = await urlOwnerMessage(tenantId, slug, pageId);
+      if (owner) {
+        sendError(res, owner, 409);
         return;
       }
       updates.slug = slug;
@@ -145,7 +177,7 @@ export const updateAdminPage = async (req: AuthRequest, res: Response, next: Nex
       else pageMatch.revision = expectedRevision;
     }
     const filter: Record<string, unknown> = { _id: tenantId, customPages: { $elemMatch: pageMatch } };
-    if (updates.slug !== undefined) filter.$nor = [{ customPages: { $elemMatch: { slug: updates.slug, _id: { $ne: pageId } } } }];
+    if (updates.slug !== undefined) filter.$nor = [{ customPages: servingPage(updates.slug, pageId) }];
     const tenant = await Tenant.findOneAndUpdate(filter, { $set, $inc: { 'customPages.$.revision': 1 } }, { new: true, runValidators: true });
     if (!tenant) {
       const exists = await Tenant.exists({ _id: tenantId, 'customPages._id': pageId });
@@ -184,6 +216,8 @@ export const trashAdminPage = async (req: AuthRequest, res: Response, next: Next
 export const restoreAdminPage = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const tenantId = requirePageTenant(req, res); if (!tenantId) return;
+    const blocked = await revivalBlocked(tenantId, req.params.id, { status: RETIRED, archivedAt: { $exists: false } });
+    if (blocked) { sendError(res, blocked, 409); return; }
     const tenant = await Tenant.findOneAndUpdate(
       { _id: tenantId, customPages: { $elemMatch: { _id: req.params.id, status: 'archived', archivedAt: { $exists: false } } } },
       { $inc: { 'customPages.$.revision': 1 }, $set: { 'customPages.$.status': 'active' }, $unset: { 'customPages.$.trashedAt': 1 } },
@@ -197,6 +231,8 @@ export const restoreAdminPage = async (req: AuthRequest, res: Response, next: Ne
 export const unarchiveAdminPage = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const tenantId = requirePageTenant(req, res); if (!tenantId) return;
+    const blocked = await revivalBlocked(tenantId, req.params.id, { status: RETIRED, archivedAt: { $exists: true } });
+    if (blocked) { sendError(res, blocked, 409); return; }
     const tenant = await Tenant.findOneAndUpdate(
       { _id: tenantId, customPages: { $elemMatch: { _id: req.params.id, status: 'archived', archivedAt: { $exists: true } } } },
       { $inc: { 'customPages.$.revision': 1 }, $set: { 'customPages.$.status': 'active' }, $unset: { 'customPages.$.archivedAt': 1 } },

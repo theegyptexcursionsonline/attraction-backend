@@ -12,8 +12,16 @@ const installed = Symbol('urlNamespaceInstalled');
 const executed = Symbol('urlNamespaceQueryExecuted');
 const QUERY_WRITES = new Set(['updateOne', 'updateMany', 'findOneAndUpdate', 'replaceOne', 'findOneAndReplace', 'deleteOne', 'deleteMany', 'findOneAndDelete']);
 const projection = (kind: Kind) => kind === 'page'
-  ? { _id: 1, 'customPages._id': 1, 'customPages.slug': 1 }
-  : { _id: 1, slug: 1, pathSlug: 1, tenantIds: 1 };
+  ? { _id: 1, 'customPages._id': 1, 'customPages.slug': 1, 'customPages.status': 1 }
+  : { _id: 1, slug: 1, pathSlug: 1, tenantIds: 1, status: 1 };
+/**
+ * Archive and Trash both park a page or tour off the website, so a retired record holds no
+ * public URL: an editor can build a new page on the same address. Reviving one re-enters this
+ * protocol and fails closed when its old address has since been taken. A record with no stored
+ * status is treated as serving, so legacy data keeps its URL.
+ */
+const RETIRED = 'archived';
+const serving = (record: RecordValue): boolean => record?.status !== RETIRED;
 const objectId = (value: unknown): string | undefined => {
   const raw = value && typeof value === 'object' && '_id' in value ? (value as { _id: unknown })._id : value;
   const text = String(raw ?? '');
@@ -22,8 +30,9 @@ const objectId = (value: unknown): string | undefined => {
 const claims = (kind: Kind, records: RecordValue[]): Claim[] => records.flatMap(record => {
   if (kind === 'page') return (record.customPages || []).flatMap((page: RecordValue, index: number) => {
     const tenant = objectId(record._id), path = typeof page.slug === 'string' ? page.slug.trim().toLowerCase() : '';
-    return tenant && path ? [{ tenant, path, owner: String(page._id || `legacy-${index}`), kind }] : [];
+    return tenant && path && serving(page) ? [{ tenant, path, owner: String(page._id || `legacy-${index}`), kind }] : [];
   });
+  if (!serving(record)) return [];
   const paths = [...new Set([record.slug, record.pathSlug].filter(value => typeof value === 'string' && value.trim()).map(value => String(value).trim().toLowerCase()))];
   return (record.tenantIds || []).flatMap((id: unknown) => {
     const tenant = objectId(id);
@@ -31,16 +40,34 @@ const claims = (kind: Kind, records: RecordValue[]): Claim[] => records.flatMap(
   });
 });
 const claimKey = (claim: Claim) => `${claim.tenant}:${claim.kind}:${claim.owner}:${claim.path}`;
+/** Websites a record belongs to, whether or not it currently claims a URL there: a retired record
+ *  claims nothing, yet reviving it must still be serialized against that website's namespace. */
+const tenantsOf = (kind: Kind, records: RecordValue[]): string[] => records.flatMap(record => {
+  const owners: unknown[] = kind === 'page' ? [record._id] : (record.tenantIds || []);
+  return owners.map(owner => objectId(owner)).filter((id): id is string => Boolean(id));
+});
 const pathAffected = (kind: Kind, key: string): boolean => kind === 'attraction'
   ? ['slug', 'pathSlug', 'tenantIds'].includes(key.split('.')[0])
   : key === 'customPages' || /^customPages\.(?:\$[^.]*|\d+)(?:\.(?:slug|_id))?$/.test(key);
+/** Lifecycle field of a single record. Retiring one only releases a URL, so it stays outside the
+ *  protocol and keeps working while namespace writes are paused; reviving one claims a URL. */
+const lifecyclePath = (kind: Kind, key: string): boolean => kind === 'attraction'
+  ? key.split('.')[0] === 'status'
+  : /^customPages\.(?:\$[^.]*|\d+)\.status$/.test(key);
+const claimsUrl = (kind: Kind, key: string, value: unknown, operator?: string): boolean => {
+  if (pathAffected(kind, key)) return true;
+  if (!lifecyclePath(kind, key)) return false;
+  // Only an explicit retirement releases; every other lifecycle write can put the record back on the site.
+  return operator === '$set' || operator === '$setOnInsert' || operator === undefined ? value !== RETIRED : true;
+};
 const affectsNamespace = (kind: Kind, update: unknown): boolean => {
   if (Array.isArray(update)) return true; // Pipeline effects cannot be inferred safely.
   if (!update || typeof update !== 'object') return false;
   return Object.entries(update).some(([key, value]) => {
-    if (pathAffected(kind, key)) return true;
+    if (claimsUrl(kind, key, value)) return true;
     if (!key.startsWith('$') || !value || typeof value !== 'object') return false;
-    return Object.entries(value).some(([path, target]) => pathAffected(kind, path) || (key === '$rename' && typeof target === 'string' && pathAffected(kind, target)));
+    return Object.entries(value).some(([path, target]) => claimsUrl(kind, path, target, key)
+      || (key === '$rename' && typeof target === 'string' && (pathAffected(kind, target) || lifecyclePath(kind, target))));
   });
 };
 const incomingTenants = (kind: Kind, value: unknown): string[] => {
@@ -99,7 +126,7 @@ async function validateNewClaims(operation: Operation, before: RecordValue[], se
       if (matchingPages.some(page => claim.kind !== 'page' || page.owner !== claim.owner) || (claim.kind === 'page' && matchingPages.length > 1)) throw conflict();
     }
     const paths = [...group.keys()];
-    const tours = operation.model.db.collection('attractions').find({ tenantIds: tenantId, $or: [{ slug: { $in: paths } }, { pathSlug: { $in: paths } }] }, { projection: { _id: 1, slug: 1, pathSlug: 1 }, session }).batchSize(100);
+    const tours = operation.model.db.collection('attractions').find({ tenantIds: tenantId, status: { $ne: RETIRED }, $or: [{ slug: { $in: paths } }, { pathSlug: { $in: paths } }] }, { projection: { _id: 1, slug: 1, pathSlug: 1 }, session }).batchSize(100);
     try {
       for await (const tour of tours) {
         for (const path of [tour.slug, tour.pathSlug]) {
@@ -113,7 +140,7 @@ async function validateNewClaims(operation: Operation, before: RecordValue[], se
 
 async function runNamespace(operation: Operation): Promise<any> {
   const preliminary = await operation.read(operation.session);
-  const tenants = new Set([...claims(operation.kind, preliminary).map(claim => claim.tenant), ...operation.extraTenants]);
+  const tenants = new Set([...tenantsOf(operation.kind, preliminary), ...operation.extraTenants]);
   if (!tenants.size) return operation.execute(operation.session as ClientSession);
   if (process.env.URL_NAMESPACE_WRITES_READY !== 'true') throw unavailable();
   if (tenants.size > MAX_BATCH) throw new AppError('Split this URL update into smaller batches.', 400);
@@ -128,7 +155,7 @@ async function runNamespace(operation: Operation): Promise<any> {
       await operation.model.db.collection('url_namespace_locks').updateOne({ _id: new Types.ObjectId(id) }, { $inc: { revision: 1 } }, { upsert: true, session });
     }
     const before = await operation.read(session);
-    const additional = claims(operation.kind, before).map(claim => claim.tenant).filter(id => !tenants.has(id));
+    const additional = tenantsOf(operation.kind, before).filter(id => !tenants.has(id));
     if (additional.length) {
       additional.forEach(id => tenants.add(id));
       const changed = new operation.model.db.base.mongo.MongoServerError({ message: 'Website assignment changed during URL update', code: 112 });
@@ -183,13 +210,13 @@ export function urlNamespacePlugin(schema: Schema, options: { kind: Kind }): voi
     const save = model.prototype.save;
     model.prototype.save = async function(saveOptions: RecordValue = {}) {
       if (managedSaves.getStore()?.has(`${model.db.id}:${kind}:${this._id}`)) return save.call(this, saveOptions);
-      const relevant = this.isNew ? claims(kind, [this.toObject()]).length > 0 : this.modifiedPaths().some((path: string) => pathAffected(kind, path));
+      const relevant = this.isNew ? claims(kind, [this.toObject()]).length > 0 : this.modifiedPaths().some((path: string) => claimsUrl(kind, path, this.get(path)));
       if (!relevant) return save.call(this, saveOptions);
       const originalSession = saveOptions.session || this.$session();
       const doc = this;
       const snapshot = this.toObject();
       try {
-        return await runNamespace({ model, kind, ids: [String(this._id)], extraTenants: claims(kind, [snapshot]).map(claim => claim.tenant), session: originalSession || undefined,
+        return await runNamespace({ model, kind, ids: [String(this._id)], extraTenants: tenantsOf(kind, [snapshot]), session: originalSession || undefined,
           read: session => readMatching(model, kind, { _id: doc._id }, session),
           execute: session => save.call(doc, { ...saveOptions, ...(session ? { session } : {}) }),
         });
@@ -241,7 +268,7 @@ export function urlNamespacePlugin(schema: Schema, options: { kind: Kind }): voi
         if (writeOptions.lean === true) throw new AppError('Website URL batches require schema normalization. Remove the lean option.', 400);
         if (writeOptions.ordered === false || writeOptions.aggregateErrors === true) throw new AppError('Website URL batches must be ordered and atomic.', 400);
         const ids = documents.map((doc: RecordValue) => String(doc._id));
-        const result = await runNamespace({ model, kind, ids, extraTenants: claims(kind, documents).map(claim => claim.tenant), session: writeOptions.session,
+        const result = await runNamespace({ model, kind, ids, extraTenants: tenantsOf(kind, documents), session: writeOptions.session,
           read: session => readMatching(model, kind, { _id: { $in: ids.map((id: string) => new Types.ObjectId(id)) } }, session),
           execute: session => original.call(model, documents, { ...writeOptions, ordered: true, session }),
         });
@@ -257,7 +284,7 @@ export function urlNamespacePlugin(schema: Schema, options: { kind: Kind }): voi
       const normalized = operations.map(op => {
         const type = Object.keys(op)[0], spec = { ...op[type] };
         if (Array.isArray(spec.update)) throw new AppError('Pipeline writes cannot change website URLs. Use an explicit update.', 400);
-        if (type === 'insertOne') { spec.document = { ...spec.document, _id: spec.document._id || new Types.ObjectId() }; ids.push(String(spec.document._id)); extras.push(...claims(kind, [spec.document]).map(claim => claim.tenant)); }
+        if (type === 'insertOne') { spec.document = { ...spec.document, _id: spec.document._id || new Types.ObjectId() }; ids.push(String(spec.document._id)); extras.push(...tenantsOf(kind, [spec.document])); }
         else {
           const query = model.find(spec.filter || {}); spec.filter = query.cast(model);
           extras.push(...incomingTenants(kind, spec.update || spec.replacement), ...incomingTenants(kind, spec.filter));

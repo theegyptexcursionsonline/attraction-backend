@@ -665,8 +665,10 @@ export const createAttraction = async (
       return;
     }
 
+    // Archived and trashed tours are off the website and release their public URL for reuse.
     if (req.body.pathSlug && await Attraction.exists({
       pathSlug: req.body.pathSlug,
+      status: { $ne: 'archived' },
       tenantIds: { $in: req.body.tenantIds },
     })) {
       sendError(res, 'This public URL is already used on one of the selected sites', 409);
@@ -818,6 +820,7 @@ export const updateAttraction = async (
     if (req.body.pathSlug && await Attraction.exists({
       _id: { $ne: id },
       pathSlug: req.body.pathSlug,
+      status: { $ne: 'archived' },
       tenantIds: { $in: targetTenantIds },
     })) {
       sendError(res, 'This public URL is already used on one of the selected sites', 409);

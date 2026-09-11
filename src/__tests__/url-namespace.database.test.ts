@@ -11,6 +11,12 @@ let site: Types.ObjectId;
 let otherSite: Types.ObjectId;
 const fixtureSite = (slug: string) => ({ slug, name: slug, domain: `${slug}.invalid`, logo: '/logo.png', theme: { primaryColor: '#000', secondaryColor: '#fff', accentColor: '#999' }, defaultCurrency: 'USD', defaultLanguage: 'en', supportedLanguages: ['en'] });
 const tourData = (slug: string, pathSlug: string, tenant = site) => ({ slug, pathSlug, title: 'Tour', status: 'draft' as const, tenantIds: [tenant] });
+/** A published tour must be complete, so retiring one through a document save validates it. */
+const publishedTour = (slug: string, pathSlug: string, tenant = site) => ({
+  ...tourData(slug, pathSlug, tenant), status: 'active' as const, shortDescription: 'Short', description: 'Full description',
+  category: 'desert-safari', destination: { city: 'Hurghada', country: 'Egypt', coordinates: { lat: 27.25, lng: 33.81 } },
+  duration: '4 hours', priceFrom: 40,
+});
 const addPage = (slug: string, tenant = site) => Tenant.findOneAndUpdate({ _id: tenant }, { $push: { customPages: { _id: new Types.ObjectId(), slug, title: 'Page', body: '<p>Content</p>' } } }, { new: true, runValidators: true });
 const status = (result: PromiseSettledResult<unknown>) => result.status === 'fulfilled' ? 200 : result.reason.statusCode;
 
@@ -158,6 +164,51 @@ it('releases paths atomically when their owning page or tour is removed', async 
   await addPage('reusable');
   await Tenant.updateOne({ _id: site }, { $pull: { customPages: { slug: 'reusable' } } });
   await Attraction.create(tourData('new-owner-global', 'reusable'));
+});
+it('frees the URL of a retired tour for a new page and refuses to bring the tour back onto it', async () => {
+  const tour = await Attraction.create(tourData('retired-global', 'jeep-safari'));
+  await Attraction.updateOne({ _id: tour._id }, { $set: { status: 'archived', trashedAt: new Date() } });
+  await addPage('jeep-safari');
+  const pages = (await Tenant.findById(site).lean())!.customPages!;
+  expect(pages.map(page => page.slug)).toEqual(['jeep-safari']);
+  await expect(Attraction.updateOne({ _id: tour._id }, { $set: { status: 'draft' } })).rejects.toMatchObject({ statusCode: 409 });
+  expect((await Attraction.findById(tour._id).lean())!.status).toBe('archived');
+  await Tenant.updateOne({ _id: site }, { $pull: { customPages: { slug: 'jeep-safari' } } });
+  await Attraction.updateOne({ _id: tour._id }, { $set: { status: 'draft' } });
+  expect((await Attraction.findById(tour._id).lean())!.status).toBe('draft');
+});
+it('frees the URL of an archived or trashed page and refuses to restore it over the replacement', async () => {
+  const created = await addPage('reusable-page');
+  const retired = (created!.customPages![0] as any)._id;
+  await Tenant.updateOne({ _id: site, 'customPages._id': retired }, { $set: { 'customPages.$.status': 'archived', 'customPages.$.trashedAt': new Date() } });
+  const replaced = await addPage('reusable-page');
+  expect(replaced!.customPages!.filter(page => page.slug === 'reusable-page')).toHaveLength(2);
+  await expect(Tenant.updateOne({ _id: site, 'customPages._id': retired }, { $set: { 'customPages.$.status': 'active' } })).rejects.toMatchObject({ statusCode: 409 });
+  const stored = (await Tenant.findById(site).lean())!.customPages!.find(page => String((page as any)._id) === String(retired));
+  expect(stored!.status).toBe('archived');
+});
+it('keeps retiring a record available while namespace writes are paused, and holds reviving back', async () => {
+  const tour = await Attraction.create(tourData('paused-global', 'paused-path'));
+  const document = await Attraction.create(publishedTour('paused-save-global', 'paused-save-path'));
+  process.env.URL_NAMESPACE_WRITES_READY = 'false';
+  await Attraction.updateOne({ _id: tour._id }, { $set: { status: 'archived', trashedAt: new Date() } });
+  document.status = 'archived';
+  await document.save();
+  expect((await Attraction.findById(tour._id).lean())!.status).toBe('archived');
+  expect((await Attraction.findById(document._id).lean())!.status).toBe('archived');
+  await expect(Attraction.updateOne({ _id: tour._id }, { $set: { status: 'draft' } })).rejects.toMatchObject({ statusCode: 503 });
+  document.status = 'draft';
+  await expect(document.save()).rejects.toMatchObject({ statusCode: 503 });
+});
+it('does not report a retired page or tour as a URL collision', async () => {
+  const tour = await Attraction.create(tourData('audit-global', 'audit-path'));
+  await Attraction.updateOne({ _id: tour._id }, { $set: { status: 'archived', archivedAt: new Date() } });
+  await addPage('audit-path');
+  const retiredPage = await addPage('audit-page');
+  const retiredId = (retiredPage!.customPages!.find(page => page.slug === 'audit-page') as any)._id;
+  await Tenant.updateOne({ _id: site, 'customPages._id': retiredId }, { $set: { 'customPages.$.status': 'archived' } });
+  await Attraction.create(tourData('audit-second-global', 'audit-page'));
+  expect((await auditTenantUrlNamespace('site')).pagination.total).toBe(0);
 });
 it('reports unsupported transaction configuration without persisting the attempted URL', async () => {
   const transaction = jest.spyOn(mongoose.connection, 'transaction').mockRejectedValueOnce(Object.assign(new Error('Transactions unavailable'), { code: 20 }));

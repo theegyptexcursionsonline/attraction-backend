@@ -7,7 +7,7 @@ import { pagePresentationSchema, navigationSchema, pageSectionsSchema, pageSlugS
 import { sanitizePageSections } from '../utils/sanitizeHtml';
 
 jest.mock('../models/Tenant', () => ({ Tenant: { exists: jest.fn(), findById: jest.fn(), findOne: jest.fn(), findOneAndUpdate: jest.fn(), aggregate: jest.fn() } }));
-jest.mock('../models/Attraction', () => ({ Attraction: { exists: jest.fn(), find: jest.fn(), aggregate: jest.fn() } }));
+jest.mock('../models/Attraction', () => ({ Attraction: { exists: jest.fn(), find: jest.fn(), findOne: jest.fn(), aggregate: jest.fn() } }));
 const tenantId = new Types.ObjectId();
 const pageId = new Types.ObjectId().toString();
 const res = () => { const r: any = {}; r.status = jest.fn().mockReturnValue(r); r.json = jest.fn().mockReturnValue(r); r.setHeader = jest.fn(); return r; };
@@ -69,10 +69,10 @@ describe('site content authorization and atomic persistence', () => {
     expect(Tenant.findOneAndUpdate).not.toHaveBeenCalled();
   });
   it('guards concurrent duplicate create at the actual mutation', async () => {
-    (Tenant.exists as jest.Mock).mockResolvedValue(null); (Attraction.exists as jest.Mock).mockResolvedValue(null);
+    (Tenant.findOne as jest.Mock).mockReturnValue(lean(null)); (Attraction.findOne as jest.Mock).mockReturnValue(lean(null));
     (Tenant.findOneAndUpdate as jest.Mock).mockResolvedValue(null);
     const response = res(); await createAdminPage(req({ body: { slug: 'desert', body: '<p>Content</p>', title: 'Desert' } }), response, jest.fn());
-    expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith({ _id: tenantId, 'customPages.slug': { $ne: 'desert' } }, expect.anything(), expect.anything());
+    expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith({ _id: tenantId, $nor: [{ customPages: { $elemMatch: { slug: 'desert', status: { $ne: 'archived' } } } }] }, expect.anything(), expect.anything());
     expect(response.status).toHaveBeenCalledWith(409);
   });
   it('uses a same-element revision match and distinguishes stale from missing', async () => {
