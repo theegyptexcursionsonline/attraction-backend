@@ -7,6 +7,7 @@ import {
   updatePaymentGateway,
 } from '../controllers/payments.controller';
 import { Booking } from '../models/Booking';
+import { bookingStripeContextMatches, claimBookingStripePaymentSession, BookingPaymentBindingConflict } from '../services/bookingPaymentBinding.service';
 import { User } from '../models/User';
 import {
   constructWebhookEvent,
@@ -26,12 +27,19 @@ import { BundleOrder } from '../models/BundleOrder';
 import { sendBookingConfirmation } from '../services/email.service';
 import { recordInboundEvent } from '../services/webhook.service';
 
+jest.mock('../services/bookingPaymentBinding.service', () => ({
+  bookingStripeContextMatches: jest.fn().mockReturnValue(true),
+  claimBookingStripePaymentSession: jest.fn().mockResolvedValue(undefined),
+  BookingPaymentBindingConflict: class extends Error {},
+}));
+
 jest.mock('../models/Booking', () => ({
   Booking: {
     findById: jest.fn(),
     findOne: jest.fn(),
     findOneAndUpdate: jest.fn(),
     exists: jest.fn(),
+    countDocuments: jest.fn().mockResolvedValue(0),
     updateOne: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
   },
 }));
@@ -216,7 +224,10 @@ const invoke = async (
 
 describe('Stripe payment hardening', () => {
   beforeEach(() => {
+    jest.spyOn(console, 'info').mockImplementation(() => undefined);
     jest.clearAllMocks();
+    (bookingStripeContextMatches as jest.Mock).mockReset().mockReturnValue(true);
+    (claimBookingStripePaymentSession as jest.Mock).mockReset().mockResolvedValue(undefined);
     (getTenantStripeConfig as jest.Mock).mockResolvedValue(stripeConfig);
     (recordInboundEvent as jest.Mock).mockResolvedValue({ duplicate: false });
     (Booking.exists as jest.Mock).mockResolvedValue({ _id: BOOKING_ID });
@@ -506,6 +517,18 @@ describe('Stripe payment hardening', () => {
   });
 
   describe('gateway configuration', () => {
+    it.each([
+      { secretKey: 42 }, { publishableKey: [] }, { webhookSecret: {} },
+      { enabled: 'true' }, { enabled: null }, { secretKey: 'sk_test_' },
+      { secretKey: 'sk_test_' + 'a'.repeat(513) }, { unexpected: 'field' }, {}, null,
+    ])('rejects malformed gateway settings before reading or writing configuration: %p', async body => {
+      const res = await invoke(updatePaymentGateway as never, { params: { tenantId: TENANT_ID }, body });
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(getTenantStripeConfig).not.toHaveBeenCalled();
+      expect(saveTenantStripeConfig).not.toHaveBeenCalled();
+      expect(verifyStripeCredentialBinding).not.toHaveBeenCalled();
+    });
+
     it('cannot enable card payments without a webhook signing secret', async () => {
       (getTenantStripeConfig as jest.Mock).mockResolvedValue({
         enabled: false,
@@ -734,6 +757,46 @@ describe('Stripe payment hardening', () => {
       expect(markTenantStripeWebhookVerified).not.toHaveBeenCalled();
     });
 
+    it('names missing account verification permission without returning provider details', async () => {
+      const permissionError = new Error('Provider details must never leave the server');
+      permissionError.name = 'StripeAccountVerificationPermissionError';
+      (verifyStripeCredentialBinding as jest.Mock).mockRejectedValueOnce(permissionError);
+      const res = await invoke(updatePaymentGateway as never, { params: { tenantId: TENANT_ID }, body: { secretKey: 'rk_live_replacement', publishableKey: 'pk_live_replacement' } });
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: expect.stringMatching(/Accounts.*Read/) }));
+      expect(JSON.stringify((res.json as jest.Mock).mock.calls)).not.toContain('Provider details');
+      expect(saveTenantStripeConfig).not.toHaveBeenCalled();
+    });
+
+    it('accepts restricted key rotation and emits an audit event without credential values', async () => {
+      await invoke(updatePaymentGateway as never, {
+        params: { tenantId: TENANT_ID }, protocol: 'https', get: jest.fn(() => 'api.example.test'),
+        body: { secretKey: 'rk_test_replacement' },
+      });
+      expect(verifyStripeCredentialBinding).toHaveBeenCalledWith('rk_test_replacement', 'pk_test_public');
+      expect(console.info).toHaveBeenCalledWith('payment_gateway_updated', expect.objectContaining({ tenantId: TENANT_ID, secretKeyChanged: true }));
+      expect(JSON.stringify((console.info as jest.Mock).mock.calls)).not.toContain('rk_test_replacement');
+      expect(JSON.stringify((console.info as jest.Mock).mock.calls)).not.toContain('whsec_');
+    });
+
+    it('blocks changing account while ordinary card bookings still need confirmation or refund', async () => {
+      (Booking.countDocuments as jest.Mock).mockResolvedValueOnce(1);
+      (verifyStripeCredentialBinding as jest.Mock).mockResolvedValueOnce({ accountId: 'acct_other', chargesEnabled: true, credentialFingerprint: 'other' });
+      const res = await invoke(updatePaymentGateway as never, {
+        params: { tenantId: TENANT_ID }, body: { secretKey: 'sk_test_replacement' },
+      });
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(Booking.countDocuments).toHaveBeenCalledWith(expect.objectContaining({ tenantId: TENANT_ID, paymentMethod: 'card' }));
+      expect(saveTenantStripeConfig).not.toHaveBeenCalled();
+    });
+
+    it('does not strand ordinary card bookings by disabling their gateway', async () => {
+      (Booking.countDocuments as jest.Mock).mockResolvedValueOnce(1);
+      const res = await invoke(updatePaymentGateway as never, { params: { tenantId: TENANT_ID }, body: { enabled: false } });
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(saveTenantStripeConfig).not.toHaveBeenCalled();
+    });
+
     it('allows a same-account API key and webhook-secret rotation with bounded overlap', async () => {
       const res = await invoke(updatePaymentGateway as never, {
         params: { tenantId: TENANT_ID },
@@ -751,6 +814,7 @@ describe('Stripe payment hardening', () => {
         'pk_test_public'
       );
       expect(BundleOrder.countDocuments).toHaveBeenCalledTimes(1);
+      expect(Booking.countDocuments).not.toHaveBeenCalled();
       expect(saveTenantStripeConfig).toHaveBeenCalledWith(
         TENANT_ID,
         expect.objectContaining({
@@ -928,6 +992,23 @@ describe('Stripe payment hardening', () => {
       expect(res.status).toHaveBeenCalledWith(409);
       expect(retrievePaymentIntent).not.toHaveBeenCalled();
       expect(stripeCreatePaymentIntent).not.toHaveBeenCalled();
+    });
+
+    it('does not cross the provider boundary after losing the gateway creation fence', async () => {
+      const pending = bookingFixture({ paymentStatus: 'pending', stripePaymentIntentId: undefined });
+      (Booking.findById as jest.Mock).mockReturnValue({ populate: jest.fn().mockResolvedValue(pending) });
+      (claimBookingStripePaymentSession as jest.Mock).mockRejectedValueOnce(new BookingPaymentBindingConflict('Payment configuration changed; retry'));
+      const res = await invoke(createPaymentIntent as never, { body: { bookingId: BOOKING_ID, guestEmail: bookingFixture().guestDetails.email, guestAccessToken: 'guest-access-token' } });
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(stripeCreatePaymentIntent).not.toHaveBeenCalled();
+    });
+
+    it('rejects intent recovery through a mismatched account snapshot', async () => {
+      (Booking.findById as jest.Mock).mockReturnValue({ populate: jest.fn().mockResolvedValue(bookingFixture()) });
+      (bookingStripeContextMatches as jest.Mock).mockReturnValueOnce(false);
+      const res = await invoke(createPaymentIntent as never, { body: { bookingId: BOOKING_ID, guestEmail: bookingFixture().guestDetails.email, guestAccessToken: 'guest-access-token' } });
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(retrievePaymentIntent).not.toHaveBeenCalled();
     });
 
     it('creates and binds a new intent with a deterministic idempotency key', async () => {

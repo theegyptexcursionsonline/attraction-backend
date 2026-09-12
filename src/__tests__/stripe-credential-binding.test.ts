@@ -130,3 +130,10 @@ describe('Stripe credential account binding', () => {
     )).resolves.toBe(true);
   });
 });
+
+it('reports missing Accounts Read permission safely for a restricted live key', async () => {
+  const secretClient = { accounts: { retrieve: jest.fn().mockRejectedValue({ type: 'StripePermissionError', statusCode: 403, message: 'Provider detail' }) }, setupIntents: { create: jest.fn() } };
+  (Stripe as unknown as jest.Mock).mockReturnValue(secretClient);
+  await expect(verifyStripeCredentialBinding('rk_live_permission_case', 'pk_live_permission_case')).rejects.toMatchObject({ name: 'StripeAccountVerificationPermissionError', message: 'Stripe account verification requires Accounts Read permission' });
+  expect(secretClient.setupIntents.create).not.toHaveBeenCalled();
+});

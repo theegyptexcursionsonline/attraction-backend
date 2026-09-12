@@ -685,3 +685,11 @@ export type CreateBookingInput = z.infer<typeof createBookingSchema>;
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
 export type CreateDestinationInput = z.infer<typeof createDestinationSchema>;
 export type CreateTenantInput = z.infer<typeof createTenantSchema>;
+
+// Gateway secrets are write-only. Blank replacement fields preserve saved values.
+export const updatePaymentGatewaySchema = z.object({
+  enabled: z.boolean().optional(),
+  publishableKey: z.string().trim().max(512).regex(/^(?:pk_(?:test|live)_[A-Za-z0-9_]+)?$/, 'Invalid Stripe publishable key').optional(),
+  secretKey: z.string().trim().max(512).regex(/^(?:(?:sk|rk)_(?:test|live)_[A-Za-z0-9_]+)?$/, 'Invalid Stripe secret key').optional(),
+  webhookSecret: z.string().trim().max(512).regex(/^(?:whsec_[A-Za-z0-9_]+)?$/, 'Invalid Stripe webhook signing secret').optional(),
+}).strict().refine(value => Object.keys(value).length > 0, 'Provide a gateway setting to update');

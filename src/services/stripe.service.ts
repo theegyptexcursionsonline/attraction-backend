@@ -89,7 +89,18 @@ export const verifyStripeCredentialBinding = async (
     throw missingKeyError();
   }
 
-  const account = await secretStripe.accounts.retrieve();
+  let account: Stripe.Account;
+  try {
+    account = await secretStripe.accounts.retrieve();
+  } catch (error) {
+    const failure = error as { type?: string; statusCode?: number };
+    if (failure?.type === 'StripePermissionError' || failure?.statusCode === 403) {
+      const permissionError = new Error('Stripe account verification requires Accounts Read permission');
+      permissionError.name = 'StripeAccountVerificationPermissionError';
+      throw permissionError;
+    }
+    throw error;
+  }
   const credentialFingerprint = crypto
     .createHash('sha256')
     .update(`${publishableKey}\u0000${secretKey}`)

@@ -121,6 +121,12 @@ const bookingSchema = new Schema<IBooking>(
       default: 'pending',
       index: true,
     },
+    stripePaymentSessionClaimedAt: { type: Date },
+    stripePaymentSessionClosedAt: { type: Date },
+    stripePaymentBinding: {
+      type: new Schema({ accountId: { type: String, required: true }, mode: { type: String, enum: ['test', 'live'], required: true } }, { _id: false }),
+      default: undefined,
+    },
     stripePaymentIntentId: {
       type: String,
     },

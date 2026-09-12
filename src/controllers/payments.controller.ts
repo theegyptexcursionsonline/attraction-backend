@@ -25,7 +25,9 @@ import {
   saveTenantStripeConfig,
   TenantStripeConfigConflictError,
 } from '../services/tenantPayment.service';
+import { bookingStripeContextMatches, claimBookingStripePaymentSession, BookingPaymentBindingConflict } from '../services/bookingPaymentBinding.service';
 import { secretHint } from '../utils/secretCrypto';
+import { updatePaymentGatewaySchema } from '../utils/validators';
 import { generateTicketPdf } from '../services/pdf.service';
 import { sendBookingConfirmation, sendAdminBookingNotification, sendBookingStatusEmail } from '../services/email.service';
 import { safeEmitEvent, recordInboundEvent } from '../services/webhook.service';
@@ -235,6 +237,11 @@ export const createPaymentIntent = async (
       return;
     }
 
+    if (!bookingStripeContextMatches(booking, stripeCfg)) {
+      sendError(res, 'This payment belongs to a different Stripe account or mode', 409);
+      return;
+    }
+
     // A reload or retry must resume the already-bound PaymentIntent rather than
     // create another possible charge for the same booking.
     if (booking.stripePaymentIntentId) {
@@ -261,6 +268,14 @@ export const createPaymentIntent = async (
         paymentIntentResponse(booking, existingIntent, stripeCfg.publishableKey),
         'Payment session resumed'
       );
+      return;
+    }
+
+    try {
+      await claimBookingStripePaymentSession(booking, stripeCfg);
+    } catch (error) {
+      if (!(error instanceof BookingPaymentBindingConflict)) throw error;
+      sendError(res, error.message, 409);
       return;
     }
 
@@ -591,6 +606,10 @@ export const confirmPayment = async (
     }
     if (!confirmationPolicy.verifyIntent || !booking.stripePaymentIntentId || !stripeCfg?.secretKey) {
       sendError(res, 'A verified Stripe payment session is required', 400);
+      return;
+    }
+    if (!bookingStripeContextMatches(booking, stripeCfg)) {
+      sendError(res, 'This payment belongs to a different Stripe account or mode', 409);
       return;
     }
     const intent = await retrievePaymentIntent(stripeCfg.secretKey, booking.stripePaymentIntentId);
@@ -955,6 +974,10 @@ export const refundPayment = async (
       sendError(res, 'Stripe refunds are not configured for this tenant', 503);
       return;
     }
+    if (!bookingStripeContextMatches(booking, stripeCfg)) {
+      sendError(res, 'This payment belongs to a different Stripe account or mode', 409);
+      return;
+    }
     const refund = await stripeCreateRefund(
       stripeCfg.secretKey,
       booking.stripePaymentIntentId,
@@ -1114,7 +1137,12 @@ export const updatePaymentGateway = async (
 ): Promise<void> => {
   try {
     const { tenantId } = req.params;
-    const { enabled, publishableKey, secretKey, webhookSecret } = req.body || {};
+    const parsed = updatePaymentGatewaySchema.safeParse(req.body);
+    if (!parsed.success) {
+      sendError(res, 'Invalid payment gateway settings', 400);
+      return;
+    }
+    const { enabled, publishableKey, secretKey, webhookSecret } = parsed.data;
 
     // Sanity-check key prefixes so an admin doesn't paste the wrong field.
     if (publishableKey && !/^pk_(test|live)_/.test(publishableKey.trim())) {
@@ -1190,7 +1218,16 @@ export const updatePaymentGateway = async (
         }
         verifiedAccountId = verified.accountId;
         verifiedCredentialFingerprint = verified.credentialFingerprint;
-      } catch {
+      } catch (error) {
+        if (error instanceof Error && error.name === 'StripeAccountVerificationPermissionError') {
+          sendError(res, 'This restricted Stripe key needs Accounts: Read permission to verify its account. Update the key permissions in Stripe and save again.', 400);
+          return;
+        }
+        const failure = error as { type?: string; statusCode?: number };
+        if (failure?.type === 'StripePermissionError' || failure?.statusCode === 403) {
+          sendError(res, 'This Stripe key lacks permission to verify payment setup. Enable Setup Intents: Write permission and save again.', 400);
+          return;
+        }
         sendError(res, 'Stripe publishable and secret keys could not be verified as one provider account', 400);
         return;
       }
@@ -1265,6 +1302,37 @@ export const updatePaymentGateway = async (
       }
     }
 
+    // Ordinary tour payments belong to the Stripe account/mode that created
+    // them too. Same-account key rotation keeps those provider objects usable;
+    // a different account, mode or disabled gateway does not.
+    const ordinaryGatewayContextChanges = effectiveMode !== existingMode ||
+      !effectiveEnabled || verifiedAccountChanged ||
+      credentialContextChangedWithoutFreshBinding ||
+      ((publishableChanged || secretKeyChanged) && !existing?.verifiedAccountId);
+    if (ordinaryGatewayContextChanges) {
+      const providerBoundBookings = await Booking.countDocuments({
+        tenantId,
+        ...standaloneBookingClause,
+        paymentMethod: 'card',
+        stripePaymentSessionClosedAt: { $exists: false },
+        $and: [
+          { $or: [
+            { stripePaymentIntentId: { $exists: true, $nin: ['', null] } },
+            { stripePaymentSessionClaimedAt: { $exists: true } },
+          ] },
+          { $or: [
+            { paymentStatus: { $in: ['pending', 'processing', 'failed'] } },
+            { paymentStatus: 'succeeded', $expr: { $lt: [{ $ifNull: ['$refundedAmount', 0] }, '$total'] } },
+            { 'refunds.status': 'pending' },
+          ] },
+        ],
+      });
+      if (providerBoundBookings > 0) {
+        sendError(res, 'Existing card bookings still require the current Stripe account. Reconcile payments and refunds before changing account, mode, or disabling payments.', 409);
+        return;
+      }
+    }
+
     let summary: Awaited<ReturnType<typeof saveTenantStripeConfig>>;
     try {
       summary = await saveTenantStripeConfig(tenantId, {
@@ -1291,6 +1359,13 @@ export const updatePaymentGateway = async (
       throw error;
     }
     const savedCfg = await getTenantStripeConfig(tenantId);
+    console.info('payment_gateway_updated', {
+      tenantId, actorRole: req.user?.role || 'unknown',
+      enabled: !!savedCfg?.enabled, mode: resolveStripeMode(savedCfg?.publishableKey, savedCfg?.secretKey),
+      publishableChanged, secretKeyChanged, webhookSecretChanged,
+      accountChanged: verifiedAccountChanged,
+      configRevision: Number(savedCfg?.configRevision || 0),
+    });
     sendSuccess(
       res,
       {

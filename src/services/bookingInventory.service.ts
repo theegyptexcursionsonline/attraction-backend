@@ -4,7 +4,8 @@ import { Booking } from '../models/Booking';
 import { IBooking } from '../types';
 import { getTenantStripeConfig } from './tenantPayment.service';
 import { standaloneBookingClause } from './bookingRecordScope.service';
-import { cancelPaymentIntent, retrievePaymentIntent } from './stripe.service';
+import { bookingStripeContextMatches } from './bookingPaymentBinding.service';
+import { createPaymentIntent, cancelPaymentIntent, retrievePaymentIntent } from './stripe.service';
 
 const DEFAULT_CAPACITY = 25;
 const LEGACY_DEFAULT_TIME_SLOTS = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'];
@@ -258,7 +259,8 @@ export const releaseBookingInventory = async (
 export const failCardBookingAndReleaseInventory = async (
   bookingId: unknown,
   tenantId: unknown,
-  paymentIntentId?: string
+  paymentIntentId?: string,
+  providerCancelled = false
 ): Promise<BookingWithInventoryMarker | null> =>
   runBookingTransaction(async (session) => {
     const query: Record<string, unknown> = {
@@ -270,6 +272,9 @@ export const failCardBookingAndReleaseInventory = async (
       inventoryReleasedAt: { $exists: false },
     };
     if (paymentIntentId) query.stripePaymentIntentId = paymentIntentId;
+    // Expiry may have read the booking immediately before creation claimed it.
+    // Without provider cancellation, only a still-unclaimed booking can release.
+    if (!providerCancelled && !paymentIntentId) query.stripePaymentSessionClaimedAt = { $exists: false };
     const booking = await Booking.findOne(
       query,
       null,
@@ -280,6 +285,7 @@ export const failCardBookingAndReleaseInventory = async (
     await releaseBookingInventory(booking, session);
     booking.paymentStatus = 'failed';
     booking.status = 'cancelled';
+    if (providerCancelled) booking.stripePaymentSessionClosedAt = new Date();
     await booking.save(sessionOption(session));
     return booking;
   });
@@ -310,21 +316,29 @@ export const expireStaleCardHolds = async (olderThanMinutes = 30): Promise<numbe
     ...standaloneBookingClause,
     paymentMethod: 'card',
     paymentStatus: { $in: ['pending', 'processing', 'failed'] },
-    status: 'pending',
-    inventoryReleasedAt: { $exists: false },
+    stripePaymentSessionClosedAt: { $exists: false },
+    $or: [
+      { status: 'pending', inventoryReleasedAt: { $exists: false } },
+      { status: 'cancelled', $or: [{ stripePaymentSessionClaimedAt: { $exists: true } }, { stripePaymentIntentId: { $exists: true, $nin: ['', null] } }] },
+    ],
     createdAt: { $lt: staleBefore },
-  }).select('_id tenantId stripePaymentIntentId');
+  }).select('_id tenantId reference total currency status inventoryReleasedAt stripePaymentIntentId stripePaymentSessionClaimedAt stripePaymentBinding');
 
   let released = 0;
   for (const candidate of candidates) {
-    if (candidate.stripePaymentIntentId) {
+    let providerCancelled = false;
+    if (candidate.stripePaymentIntentId || candidate.stripePaymentSessionClaimedAt) {
       const stripeConfig = await getTenantStripeConfig(candidate.tenantId);
       if (!stripeConfig?.enabled || !stripeConfig.secretKey) continue;
 
-      let intent = await retrievePaymentIntent(
-        stripeConfig.secretKey,
-        candidate.stripePaymentIntentId
-      );
+      if (!bookingStripeContextMatches(candidate, stripeConfig)) continue;
+      // A crashed creation request may have reached Stripe before its ID was
+      // saved. The original deterministic request recovers that same session.
+      let intent = candidate.stripePaymentIntentId
+        ? await retrievePaymentIntent(stripeConfig.secretKey, candidate.stripePaymentIntentId)
+        : await createPaymentIntent(stripeConfig.secretKey, Math.round(candidate.total * 100), candidate.currency.toLowerCase(), {
+            bookingId: String(candidate._id), bookingReference: candidate.reference, tenantId: String(candidate.tenantId),
+          }, { idempotencyKey: `booking:${candidate._id}:payment:${Math.round(candidate.total * 100)}:${candidate.currency.toLowerCase()}` });
       // Never release a hold when provider state is unknown, processing, or
       // already paid. The integrity audit will surface paid-but-unfinalized rows.
       if (!intent || ['succeeded', 'processing', 'requires_capture'].includes(intent.status)) {
@@ -337,17 +351,26 @@ export const expireStaleCardHolds = async (olderThanMinutes = 30): Promise<numbe
       if (intent.status !== 'canceled') {
         intent = await cancelPaymentIntent(
           stripeConfig.secretKey,
-          candidate.stripePaymentIntentId,
+          candidate.stripePaymentIntentId || intent.id,
           { idempotencyKey: `booking:${candidate._id}:expire-payment` }
         );
       }
       if (!intent || intent.status !== 'canceled') continue;
+      providerCancelled = true;
+      if (candidate.status === 'cancelled') {
+        await Booking.updateOne({
+          _id: candidate._id, tenantId: candidate.tenantId, ...standaloneBookingClause,
+          status: 'cancelled', paymentStatus: { $in: ['pending', 'processing', 'failed'] },
+        }, { $set: { stripePaymentSessionClosedAt: new Date() } });
+        continue;
+      }
     }
 
     const result = await failCardBookingAndReleaseInventory(
       candidate._id,
       candidate.tenantId,
-      candidate.stripePaymentIntentId
+      candidate.stripePaymentIntentId,
+      providerCancelled
     );
     if (result) released += 1;
   }

@@ -9,7 +9,7 @@ import {
   reserveInventory,
 } from '../services/bookingInventory.service';
 import { getTenantStripeConfig } from '../services/tenantPayment.service';
-import { cancelPaymentIntent, retrievePaymentIntent } from '../services/stripe.service';
+import { createPaymentIntent, cancelPaymentIntent, retrievePaymentIntent } from '../services/stripe.service';
 
 jest.mock('../models/Availability', () => ({
   Availability: {
@@ -23,14 +23,17 @@ jest.mock('../models/Booking', () => ({
     findOne: jest.fn(),
     findOneAndUpdate: jest.fn(),
     find: jest.fn(),
+    updateOne: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
   },
 }));
 
 jest.mock('../services/tenantPayment.service', () => ({
+  ...jest.requireActual('../services/tenantPayment.service'),
   getTenantStripeConfig: jest.fn(),
 }));
 
 jest.mock('../services/stripe.service', () => ({
+  createPaymentIntent: jest.fn(),
   cancelPaymentIntent: jest.fn(),
   retrievePaymentIntent: jest.fn(),
 }));
@@ -393,4 +396,45 @@ describe('booking inventory lifecycle', () => {
     expect(booking.inventoryReleasedAt).toBeInstanceOf(Date);
     expect(booking.status).toBe('cancelled');
   });
+});
+
+describe('claimed payment session cleanup', () => {
+  beforeEach(() => jest.clearAllMocks());
+  const candidate = { _id: 'booking-claimed', tenantId: 'tenant-1', reference: 'ATT-CLAIMED', total: 25, currency: 'EUR', status: 'cancelled', stripePaymentSessionClaimedAt: new Date(), stripePaymentBinding: { accountId: 'acct_current', mode: 'test' } };
+  const config = { enabled: true, secretKey: 'rk_test_secret', publishableKey: 'pk_test_public', verifiedAccountId: 'acct_current' };
+  const prepare = () => {
+    (Booking.find as jest.Mock).mockReturnValue({ select: jest.fn().mockResolvedValue([candidate]) });
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue(config);
+  };
+  it('recovers the deterministic intent after a crash and closes the marker only after Stripe cancellation', async () => {
+    prepare();
+    (createPaymentIntent as jest.Mock).mockResolvedValue({ id: 'pi_recovered', status: 'requires_payment_method' });
+    (cancelPaymentIntent as jest.Mock).mockResolvedValue({ id: 'pi_recovered', status: 'canceled' });
+    await expect(expireStaleCardHolds()).resolves.toBe(0);
+    expect(createPaymentIntent).toHaveBeenCalledWith('rk_test_secret', 2500, 'eur', { bookingId: 'booking-claimed', bookingReference: 'ATT-CLAIMED', tenantId: 'tenant-1' }, { idempotencyKey: 'booking:booking-claimed:payment:2500:eur' });
+    expect(Booking.updateOne).toHaveBeenCalledWith(expect.objectContaining({ tenantId: 'tenant-1', status: 'cancelled' }), { $set: { stripePaymentSessionClosedAt: expect.any(Date) } });
+    expect(Availability.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+  it('keeps the marker protected when the recovered intent is processing or paid', async () => {
+    prepare();
+    (createPaymentIntent as jest.Mock).mockResolvedValue({ id: 'pi_recovered', status: 'succeeded' });
+    await expect(expireStaleCardHolds()).resolves.toBe(0);
+    expect(cancelPaymentIntent).not.toHaveBeenCalled();
+    expect(Booking.updateOne).not.toHaveBeenCalled();
+  });
+  it('does not recover an old session through another account', async () => {
+    prepare();
+    (getTenantStripeConfig as jest.Mock).mockResolvedValue({ ...config, verifiedAccountId: 'acct_other' });
+    await expect(expireStaleCardHolds()).resolves.toBe(0);
+    expect(createPaymentIntent).not.toHaveBeenCalled();
+    expect(Booking.updateOne).not.toHaveBeenCalled();
+  });
+});
+
+it('does not release a hold if a payment claim wins after the expiry scan', async () => {
+  jest.clearAllMocks();
+  (Booking.findOne as jest.Mock).mockResolvedValue(null);
+  await expect(failCardBookingAndReleaseInventory('booking-race', 'tenant-1')).resolves.toBeNull();
+  expect(Booking.findOne).toHaveBeenCalledWith(expect.objectContaining({ stripePaymentSessionClaimedAt: { $exists: false } }), null, {});
+  expect(Availability.findOneAndUpdate).not.toHaveBeenCalled();
 });
