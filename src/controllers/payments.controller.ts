@@ -25,7 +25,7 @@ import {
   saveTenantStripeConfig,
   TenantStripeConfigConflictError,
 } from '../services/tenantPayment.service';
-import { bookingStripeContextMatches, claimBookingStripePaymentSession, BookingPaymentBindingConflict } from '../services/bookingPaymentBinding.service';
+import { bookingStripePaymentRequest, bookingStripeContextMatches, claimBookingStripePaymentSession, BookingPaymentBindingConflict } from '../services/bookingPaymentBinding.service';
 import { secretHint } from '../utils/secretCrypto';
 import { updatePaymentGatewaySchema } from '../utils/validators';
 import { generateTicketPdf } from '../services/pdf.service';
@@ -279,10 +279,11 @@ export const createPaymentIntent = async (
       return;
     }
 
+    const paymentRequest = bookingStripePaymentRequest(booking);
     const paymentIntent = await stripeCreatePaymentIntent(
       stripeCfg.secretKey,
-      bookingAmountMinor(booking),
-      booking.currency.toLowerCase(),
+      paymentRequest.amount,
+      paymentRequest.currency,
       {
         bookingId: booking._id.toString(),
         bookingReference: booking.reference,
@@ -291,7 +292,7 @@ export const createPaymentIntent = async (
       {
         // Stripe returns the same intent when concurrent/retried requests use
         // this key, including a retry after Stripe succeeded but MongoDB did not.
-        idempotencyKey: `booking:${booking._id}:payment:${bookingAmountMinor(booking)}:${booking.currency.toLowerCase()}`,
+        idempotencyKey: paymentRequest.idempotencyKey,
       }
     );
 

@@ -1,6 +1,6 @@
 import { Booking } from '../models/Booking';
 import { claimTenantStripePaymentBinding } from '../services/tenantPayment.service';
-import { claimBookingStripePaymentSession, bookingStripeContextMatches, BookingPaymentBindingConflict } from '../services/bookingPaymentBinding.service';
+import { bookingStripePaymentRequest, claimBookingStripePaymentSession, bookingStripeContextMatches, BookingPaymentBindingConflict } from '../services/bookingPaymentBinding.service';
 
 const session = { transaction: 'payment-binding' };
 jest.mock('../models/Booking', () => ({ Booking: { findOneAndUpdate: jest.fn() } }));
@@ -48,4 +48,9 @@ it.each([
 it('fails closed before claiming for unverified credentials', async () => {
   await expect(claimBookingStripePaymentSession(booking, { ...config, verifiedAccountId: undefined })).rejects.toBeInstanceOf(BookingPaymentBindingConflict);
   expect(claimTenantStripePaymentBinding).not.toHaveBeenCalled();
+});
+
+it('uses an identical normalized request tuple for creation and recovery', () => {
+  const input = { _id: booking._id, total: 25.05, currency: 'EUR' };
+  expect(bookingStripePaymentRequest(input)).toEqual({ amount: 2505, currency: 'eur', idempotencyKey: 'booking:booking-1:payment:2505:eur' });
 });

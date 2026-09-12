@@ -4,7 +4,7 @@ import { Booking } from '../models/Booking';
 import { IBooking } from '../types';
 import { getTenantStripeConfig } from './tenantPayment.service';
 import { standaloneBookingClause } from './bookingRecordScope.service';
-import { bookingStripeContextMatches } from './bookingPaymentBinding.service';
+import { bookingStripePaymentRequest, bookingStripeContextMatches } from './bookingPaymentBinding.service';
 import { createPaymentIntent, cancelPaymentIntent, retrievePaymentIntent } from './stripe.service';
 
 const DEFAULT_CAPACITY = 25;
@@ -332,13 +332,26 @@ export const expireStaleCardHolds = async (olderThanMinutes = 30): Promise<numbe
       if (!stripeConfig?.enabled || !stripeConfig.secretKey) continue;
 
       if (!bookingStripeContextMatches(candidate, stripeConfig)) continue;
+      if (!candidate.stripePaymentIntentId) {
+        const age = Date.now() - new Date(candidate.stripePaymentSessionClaimedAt!).getTime();
+        // Stripe may prune idempotency records after 24 hours. Never recreate
+        // an old unknown session and mistake that new object for the original.
+        if (!Number.isFinite(age) || age < 0 || age >= 23 * 60 * 60 * 1000) {
+          console.warn('booking_payment_recovery_required', {
+            bookingId: String(candidate._id), tenantId: String(candidate.tenantId),
+            reason: 'idempotency_recovery_window_elapsed',
+          });
+          continue;
+        }
+      }
+      const paymentRequest = candidate.stripePaymentIntentId ? undefined : bookingStripePaymentRequest(candidate);
       // A crashed creation request may have reached Stripe before its ID was
       // saved. The original deterministic request recovers that same session.
       let intent = candidate.stripePaymentIntentId
         ? await retrievePaymentIntent(stripeConfig.secretKey, candidate.stripePaymentIntentId)
-        : await createPaymentIntent(stripeConfig.secretKey, Math.round(candidate.total * 100), candidate.currency.toLowerCase(), {
+        : await createPaymentIntent(stripeConfig.secretKey, paymentRequest!.amount, paymentRequest!.currency, {
             bookingId: String(candidate._id), bookingReference: candidate.reference, tenantId: String(candidate.tenantId),
-          }, { idempotencyKey: `booking:${candidate._id}:payment:${Math.round(candidate.total * 100)}:${candidate.currency.toLowerCase()}` });
+          }, { idempotencyKey: paymentRequest!.idempotencyKey });
       // Never release a hold when provider state is unknown, processing, or
       // already paid. The integrity audit will surface paid-but-unfinalized rows.
       if (!intent || ['succeeded', 'processing', 'requires_capture'].includes(intent.status)) {

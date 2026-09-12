@@ -438,3 +438,19 @@ it('does not release a hold if a payment claim wins after the expiry scan', asyn
   expect(Booking.findOne).toHaveBeenCalledWith(expect.objectContaining({ stripePaymentSessionClaimedAt: { $exists: false } }), null, {});
   expect(Availability.findOneAndUpdate).not.toHaveBeenCalled();
 });
+
+it.each([23, 24, 48])('does not recreate an unknown payment session after %i hours', async hours => {
+  jest.clearAllMocks();
+  const warning = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+  (Booking.find as jest.Mock).mockReturnValue({ select: jest.fn().mockResolvedValue([{
+    _id: 'booking-old-claim', tenantId: 'tenant-1', total: 25, currency: 'EUR', stripePaymentSessionClaimedAt: new Date(Date.now() - hours * 60 * 60 * 1000),
+  }]) });
+  (getTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true, secretKey: 'rk_test_secret' });
+  await expect(expireStaleCardHolds()).resolves.toBe(0);
+  expect(createPaymentIntent).not.toHaveBeenCalled();
+  expect(cancelPaymentIntent).not.toHaveBeenCalled();
+  expect(Booking.updateOne).not.toHaveBeenCalled();
+  expect(Availability.findOneAndUpdate).not.toHaveBeenCalled();
+  expect(warning).toHaveBeenCalledWith('booking_payment_recovery_required', expect.objectContaining({ reason: 'idempotency_recovery_window_elapsed' }));
+  warning.mockRestore();
+});

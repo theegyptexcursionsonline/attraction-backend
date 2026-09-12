@@ -28,6 +28,7 @@ import { sendBookingConfirmation } from '../services/email.service';
 import { recordInboundEvent } from '../services/webhook.service';
 
 jest.mock('../services/bookingPaymentBinding.service', () => ({
+  bookingStripePaymentRequest: jest.requireActual('../services/bookingPaymentBinding.service').bookingStripePaymentRequest,
   bookingStripeContextMatches: jest.fn().mockReturnValue(true),
   claimBookingStripePaymentSession: jest.fn().mockResolvedValue(undefined),
   BookingPaymentBindingConflict: class extends Error {},

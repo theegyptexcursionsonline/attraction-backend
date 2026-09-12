@@ -41,3 +41,10 @@ export const claimBookingStripePaymentSession = async (
     return true;
   });
 };
+
+/** One request tuple for initial creation and crash recovery. */
+export const bookingStripePaymentRequest = (booking: Pick<IBooking, '_id' | 'total' | 'currency'>) => {
+  const amount = Math.round(booking.total * 100);
+  const currency = booking.currency.toLowerCase();
+  return { amount, currency, idempotencyKey: `booking:${booking._id}:payment:${amount}:${currency}` };
+};
