@@ -16,11 +16,23 @@ export const bookingStripeContextMatches = (
 
 /** Fence the account before the network call, including crashes before intent persistence. */
 export const claimBookingStripePaymentSession = async (
-  booking: Pick<IBooking, '_id' | 'tenantId' | 'stripePaymentBinding' | 'stripePaymentSessionClaimedAt'>,
+  booking: Pick<IBooking, '_id' | 'tenantId' | 'stripePaymentBinding' | 'stripePaymentSessionClaimedAt' | 'stripePaymentIntentId'>,
   config: TenantStripeConfig,
 ): Promise<void> => {
   if (!bookingStripeContextMatches(booking, config)) throw new BookingPaymentBindingConflict('Payment account changed');
-  if (booking.stripePaymentSessionClaimedAt) return;
+  if (booking.stripePaymentSessionClaimedAt) {
+    if (!booking.stripePaymentIntentId) {
+      const age = Date.now() - new Date(booking.stripePaymentSessionClaimedAt).getTime();
+      if (!Number.isFinite(age) || age < 0 || age >= 23 * 60 * 60 * 1000) {
+        console.warn('booking_payment_recovery_required', {
+          bookingId: String(booking._id), tenantId: String(booking.tenantId),
+          reason: 'idempotency_recovery_window_elapsed',
+        });
+        throw new BookingPaymentBindingConflict('This payment session needs reconciliation before it can be retried');
+      }
+    }
+    return;
+  }
   const mode = stripeCredentialMode(config);
   if (!config.verifiedAccountId || !['test', 'live'].includes(mode)) throw new BookingPaymentBindingConflict('Payment account is not verified');
   await runBundleTransaction(async session => {
