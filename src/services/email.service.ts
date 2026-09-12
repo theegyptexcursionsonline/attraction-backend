@@ -2,6 +2,7 @@ import type { HotelPickupSelection } from '../utils/hotel-pickup';
 import Mailgun from 'mailgun.js';
 import formData from 'form-data';
 import sanitizeMarkup from 'sanitize-html';
+import QRCode from 'qrcode';
 import { env } from '../config/env';
 
 const mailgun = new Mailgun(formData);
@@ -16,6 +17,10 @@ interface EmailOptions {
   tenant: EmailTenant | null;
   replyTo?: string;
   attachments?: Array<{
+    filename: string;
+    data: Buffer;
+  }>;
+  inlineAttachments?: Array<{
     filename: string;
     data: Buffer;
   }>;
@@ -111,6 +116,12 @@ export const sendEmail = async (options: EmailOptions): Promise<void> => {
       data: a.data,
     }));
   }
+  if (options.inlineAttachments && options.inlineAttachments.length > 0) {
+    messageData.inline = options.inlineAttachments.map((a) => ({
+      filename: a.filename,
+      data: a.data,
+    }));
+  }
 
   await mg.messages.create(env.mailgunDomain, messageData as any);
 };
@@ -199,8 +210,20 @@ export const getEmailBrand = (tenant?: EmailTenant | null): EmailBrand => {
  *  so a blocked image still shows the brand. */
 const brandHeaderMark = (brand: EmailBrand): string =>
   brand.logo
-    ? `<span style="display:inline-block;background:#ffffff;border-radius:8px;padding:7px 12px;line-height:0;"><img src="${escapeEmailHtml(brand.logo)}" alt="${escapeEmailHtml(brand.name)}" height="30" style="height:30px;max-height:30px;width:auto;display:block;border:0;"></span>`
+    ? `<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="vertical-align:middle;"><span style="display:inline-block;background:#ffffff;border-radius:8px;padding:7px 12px;line-height:0;"><img src="${escapeEmailHtml(brand.logo)}" alt="${escapeEmailHtml(brand.name)}" height="30" style="height:30px;max-height:30px;width:auto;display:block;border:0;"></span></td><td style="vertical-align:middle;padding-left:12px;color:#ffffff;font-size:14px;font-weight:800;letter-spacing:0.2px;">${escapeEmailHtml(brand.name)}</td></tr></table>`
     : `<span style="color:#ffffff;font-size:17px;font-weight:700;letter-spacing:0.3px;">${escapeEmailHtml(brand.name)}</span>`;
+
+const brandButtonTextColor = (hex: string): '#18130e' | '#ffffff' => {
+  const value = hex.replace('#', '');
+  const full = value.length === 3 ? value.split('').map(char => char + char).join('') : value;
+  if (!/^[0-9a-f]{6}$/i.test(full)) return '#ffffff';
+  const red = parseInt(full.slice(0, 2), 16);
+  const green = parseInt(full.slice(2, 4), 16);
+  const blue = parseInt(full.slice(4, 6), 16);
+  return ((red * 299) + (green * 587) + (blue * 114)) / 1000 >= 145
+    ? '#18130e'
+    : '#ffffff';
+};
 
 // Custom domains confirmed to serve the Attractions Network build (not an old
 // site). Links in transactional emails may safely target these directly.
@@ -253,6 +276,7 @@ const renderMeetingPointBlock = (
 ): string => {
   if (!mp || typeof mp.lat !== 'number' || typeof mp.lng !== 'number') return '';
   const { lat, lng } = mp;
+  const buttonTextColor = brandButtonTextColor(brand.color);
   const mapsLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
   // Prefer Google Static Maps (clean, no third-party watermark) when a key is
   // configured — the same key the tourticket/EEO sites use. Fall back to a keyless
@@ -278,16 +302,18 @@ const renderMeetingPointBlock = (
   }
   return `
         <tr><td class="px" style="padding:14px 34px 4px;">
-          <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#9aa1ad;margin:0 0 8px;">Meeting point</div>
-          ${mp.label ? `<p style="margin:0 0 10px;font-size:14px;color:#16181d;font-weight:600;line-height:1.45;">${escapeEmailHtml(mp.label)}</p>` : ''}
-          <a href="${mapsLink}" target="_blank" style="text-decoration:none;">
-            <img src="${mapImg}" width="532" alt="Map to the meeting point" style="display:block;width:100%;max-width:532px;height:auto;border-radius:12px;border:1px solid #ececf0;">
-          </a>
-          <table role="presentation" cellpadding="0" cellspacing="0" style="margin:12px 0 0;"><tr>
-            <td bgcolor="#eef0f3" style="border-radius:8px;">
-              <a href="${mapsLink}" target="_blank" style="display:inline-block;padding:10px 20px;font-size:13px;font-weight:700;color:${brand.color};text-decoration:none;border-radius:8px;">&#128205; Get directions</a>
-            </td>
-          </tr></table>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fffdf8;border:1px solid ${brand.color};border-radius:16px;"><tr><td style="padding:20px;">
+            <div style="font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:#9b7830;font-weight:800;margin:0 0 8px;">Meeting point</div>
+            ${mp.label ? `<p style="margin:0 0 12px;font-size:14px;color:#18130e;font-weight:700;line-height:1.45;">${escapeEmailHtml(mp.label)}</p>` : ''}
+            <a href="${mapsLink}" target="_blank" style="text-decoration:none;">
+              <img src="${mapImg}" width="490" alt="Map to the meeting point" style="display:block;width:100%;max-width:490px;height:auto;border-radius:12px;border:1px solid #ded8ce;">
+            </a>
+            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:14px 0 0;"><tr>
+              <td bgcolor="${brand.color}" style="border-radius:8px;">
+                <a href="${mapsLink}" target="_blank" style="display:inline-block;padding:11px 20px;font-size:13px;font-weight:800;color:${buttonTextColor};text-decoration:none;border-radius:8px;">&#128205; Get directions</a>
+              </td>
+            </tr></table>
+          </td></tr></table>
         </td></tr>`;
 };
 
@@ -330,7 +356,8 @@ ${safe.note ? `<tr><td class="px" style="padding:10px 34px 6px;"><p style="margi
 export const renderBookingConfirmationHtml = (
   brand: EmailBrand,
   bookingDetails: BookingEmailDetails,
-  hasTicket = false
+  hasTicket = false,
+  qrImageSrc?: string,
 ): string => {
   const pickupLabels = (bookingDetails.hotelPickups || (bookingDetails.hotelPickup ? [bookingDetails.hotelPickup] : []))
     .map(pickup => pickup.status === 'provide_later' ? 'Hotel details to be provided later'
@@ -374,6 +401,7 @@ export const renderBookingConfirmationHtml = (
   const totalNote = isPaid ? 'Paid online' : 'Pay at location — collected on arrival';
   const dateStr = `${bookingDetails.date}${bookingDetails.time ? ` at ${bookingDetails.time}` : ''}`;
   const year = new Date().getFullYear();
+  const buttonTextColor = brandButtonTextColor(brand.color);
 
   const row = (label: string, value: string, opts: { note?: string; first?: boolean } = {}): string => `
                 <tr>
@@ -392,36 +420,37 @@ export const renderBookingConfirmationHtml = (
     body,table,td,a{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;}
     table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
     img{border:0;line-height:100%;outline:none;text-decoration:none;}
-    body{margin:0;padding:0;width:100%!important;background:#f2f2f4;}
+    body{margin:0;padding:0;width:100%!important;background:#0b0907;}
     @media screen and (max-width:600px){
       .container{width:100%!important;border-radius:0!important;}
-      .px{padding-left:22px!important;padding-right:22px!important;}
+      .px{padding-left:20px!important;padding-right:20px!important;}
       .btn a{display:block!important;}
       h1{font-size:22px!important;}
     }
   </style>
 </head>
-<body dir="ltr" style="margin:0;padding:0;background:#f2f2f4;direction:ltr;text-align:left;">
+<body dir="ltr" style="margin:0;padding:0;background:#0b0907;direction:ltr;text-align:left;">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Booking confirmed — ${bookingDetails.reference} · ${bookingDetails.attractionTitle} on ${dateStr}.</div>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f2f4;">
-    <tr><td align="center" style="padding:24px 12px;">
-      <table role="presentation" dir="ltr" class="container" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-        <tr><td class="px" style="background:${brand.color};padding:24px 34px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0b0907;">
+    <tr><td align="center" style="padding:28px 12px;">
+      <table role="presentation" dir="ltr" class="container" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#15110d;border:1px solid #33291d;border-radius:20px;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+        <tr><td class="px" style="background:#100d0a;border-bottom:3px solid ${brand.color};padding:24px 34px;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
             <td style="vertical-align:middle;">${brandHeaderMark(brand)}</td>
-            <td align="right" style="vertical-align:middle;"><span style="display:inline-block;background:rgba(255,255,255,0.2);color:#ffffff;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;padding:5px 12px;border-radius:999px;">Confirmed</span></td>
+            <td align="right" style="vertical-align:middle;"><span style="display:inline-block;border:1px solid ${brand.color};color:#f8e7b0;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:7px 12px;border-radius:999px;">Booking confirmed</span></td>
           </tr></table>
         </td></tr>
-        <tr><td class="px" style="padding:34px 34px 6px;">
-          <div style="width:46px;height:46px;border-radius:50%;background:#eef0f3;color:${brand.color};font-size:24px;line-height:46px;text-align:center;font-weight:700;">&#10003;</div>
-          <h1 style="margin:18px 0 6px;font-size:25px;line-height:1.25;color:#16181d;font-weight:700;">You're all set, ${firstName}!</h1>
-          <p style="margin:0;font-size:15px;line-height:1.6;color:#5b6472;">Your booking is confirmed. The details are below${hasTicket ? " and your e-ticket is attached" : ""}.</p>
+        <tr><td class="px" style="padding:38px 34px 8px;text-align:center;">
+          <div style="width:54px;height:54px;margin:0 auto;border-radius:50%;background:${brand.color};color:${buttonTextColor};font-size:26px;line-height:54px;text-align:center;font-weight:800;">&#10003;</div>
+          <div style="margin:20px 0 8px;color:#caa85a;font-size:10px;font-weight:800;letter-spacing:2.4px;text-transform:uppercase;">Your desert adventure is reserved</div>
+          <h1 style="margin:0 0 8px;font-size:28px;line-height:1.2;color:#ffffff;font-weight:800;">You're all set, ${firstName}!</h1>
+          <p style="margin:0;font-size:15px;line-height:1.65;color:#c8c0b6;">Your booking is confirmed${hasTicket ? " and your e-ticket is attached" : ""}. Keep this email handy for tour day.</p>
         </td></tr>
-        <tr><td class="px" style="padding:22px 34px 6px;">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #ececf0;border-radius:12px;">
+        <tr><td class="px" style="padding:24px 34px 6px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fffdf8;border:1px solid ${brand.color};border-radius:16px;">
             <tr><td style="padding:18px 20px 4px;">
-              <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#9aa1ad;">Experience</div>
-              <div style="font-size:18px;font-weight:700;color:#16181d;margin-top:4px;line-height:1.3;">${bookingDetails.attractionTitle}</div>
+              <div style="font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:#9b7830;font-weight:800;">Your booking</div>
+              <div style="font-size:20px;font-weight:800;color:#18130e;margin-top:6px;line-height:1.3;">${bookingDetails.attractionTitle}</div>
             </td></tr>
             <tr><td style="padding:6px 20px 16px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -435,19 +464,29 @@ ${row(totalLabel, `<span style="font-size:18px;font-weight:800;color:${brand.col
           </table>
         </td></tr>
 ${renderMeetingPointBlock(brand, bookingDetails.meetingPoint)}
+${qrImageSrc ? `        <tr><td class="px" style="padding:20px 34px 2px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#100d0a;border:1px solid #3a2f21;border-radius:16px;"><tr>
+            <td align="center" style="padding:22px;">
+              <div style="color:#caa85a;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Your mobile ticket</div>
+              <div style="color:#ffffff;font-size:17px;font-weight:750;margin-bottom:14px;">Scan for booking details</div>
+              <img src="${escapeEmailHtml(qrImageSrc)}" width="156" height="156" alt="QR code for booking ${bookingDetails.reference}" style="display:block;width:156px;height:156px;margin:0 auto;background:#ffffff;border:10px solid #ffffff;border-radius:12px;">
+              <div style="color:#a9a096;font-size:12px;line-height:1.5;margin-top:14px;">Reference <strong style="color:#ffffff;letter-spacing:0.8px;">${bookingDetails.reference}</strong></div>
+            </td>
+          </tr></table>
+        </td></tr>` : ''}
         <tr><td class="px btn" style="padding:24px 34px 4px;">
           <table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr>
             <td align="center" bgcolor="${brand.color}" style="border-radius:10px;">
-              <a href="${viewUrl}" style="display:inline-block;padding:14px 30px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;">View booking</a>
+              <a href="${viewUrl}" style="display:inline-block;padding:16px 30px;font-size:14px;font-weight:800;letter-spacing:0.8px;color:${buttonTextColor};text-decoration:none;border-radius:10px;text-transform:uppercase;">Open your booking</a>
             </td>
           </tr></table>
         </td></tr>
         <tr><td class="px" style="padding:14px 34px 30px;">
-          <p style="margin:0;font-size:13px;line-height:1.6;color:#8a909c;text-align:center;">${hasTicket ? 'Show the attached e-ticket on your phone at the venue.' : 'Bring this confirmation with you to the venue.'}</p>
+          <p style="margin:0;font-size:13px;line-height:1.6;color:#a9a096;text-align:center;">${hasTicket ? 'Your PDF ticket is attached. Show it on your phone when requested.' : 'Bring this confirmation with you on tour day.'}</p>
         </td></tr>
-        <tr><td class="px" style="padding:22px 34px;background:#fafafb;border-top:1px solid #ececf0;">
-          <p style="margin:0 0 4px;font-size:12px;line-height:1.6;color:#8a909c;">Questions? Just reply to this email — our team is happy to help.</p>
-          <p style="margin:0;font-size:12px;color:#adb2bd;">&copy; ${year} ${escapeEmailHtml(brand.name)}. All rights reserved.</p>
+        <tr><td class="px" style="padding:22px 34px;background:#100d0a;border-top:1px solid #33291d;text-align:center;">
+          <p style="margin:0 0 5px;font-size:12px;line-height:1.6;color:#c8c0b6;">Questions? Reply to this email and our team will help.</p>
+          <p style="margin:0;font-size:11px;color:#7f756b;">&copy; ${year} ${escapeEmailHtml(brand.name)}. All rights reserved.</p>
         </td></tr>
       </table>
     </td></tr>
@@ -464,7 +503,30 @@ export const sendBookingConfirmation = async (
   tenant: EmailTenant | null
 ): Promise<void> => {
   const brand = getEmailBrand(tenant);
-  const html = renderBookingConfirmationHtml(brand, bookingDetails, !!ticketPdf);
+  const viewUrl = brandedLink(brand, '/checkout/confirmation', {
+    ref: bookingDetails.reference,
+    ...(bookingDetails.guestAccessToken ? { accessToken: bookingDetails.guestAccessToken } : {}),
+  });
+  let qrBuffer: Buffer | undefined;
+  if (bookingDetails.guestAccessToken) {
+    try {
+      qrBuffer = await QRCode.toBuffer(viewUrl, {
+        width: 320,
+        margin: 1,
+        errorCorrectionLevel: 'M',
+        color: { dark: '#17120d', light: '#ffffff' },
+      });
+    } catch (error) {
+      console.error('Booking email QR generation failed:', error);
+    }
+  }
+  const qrFilename = `booking-${bookingDetails.reference.replace(/[^A-Za-z0-9_-]/g, '').slice(0, 80)}-qr.png`;
+  const html = renderBookingConfirmationHtml(
+    brand,
+    bookingDetails,
+    !!ticketPdf,
+    qrBuffer ? `cid:${qrFilename}` : undefined,
+  );
   await sendEmail({
     to: email,
     subject: `Booking confirmed · ${bookingDetails.reference}`,
@@ -476,6 +538,7 @@ export const sendBookingConfirmation = async (
           data: ticketPdf,
         }]
       : undefined,
+    inlineAttachments: qrBuffer ? [{ filename: qrFilename, data: qrBuffer }] : undefined,
   });
 };
 

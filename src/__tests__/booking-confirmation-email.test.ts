@@ -38,6 +38,28 @@ describe('renderBookingConfirmationHtml', () => {
     expect(html).not.toContain('/dashboard/bookings');
   });
 
+  it('renders the premium mobile-ticket design with an embedded QR and attached-ticket copy', () => {
+    const html = renderBookingConfirmationHtml(
+      brand,
+      { ...base, paymentMethod: 'pay-later', guestAccessToken: 'guest-token' },
+      true,
+      'cid:booking-ATT-TEST-1-qr.png',
+    );
+    expect(html).toContain('Your desert adventure is reserved');
+    expect(html).toContain('Your mobile ticket');
+    expect(html).toContain('Scan for booking details');
+    expect(html).toContain('src="cid:booking-ATT-TEST-1-qr.png"');
+    expect(html).toContain('Your PDF ticket is attached');
+    expect(html).toContain('Open your booking');
+    expect(html).toContain('background:#0b0907');
+  });
+
+  it('does not render an empty QR frame when no inline image is available', () => {
+    const html = renderBookingConfirmationHtml(brand, { ...base, paymentMethod: 'pay-later' });
+    expect(html).not.toContain('Your mobile ticket');
+    expect(html).not.toContain('cid:');
+  });
+
   it('forces left-to-right direction so RTL mailboxes (Arabic Outlook) do not flip the layout', () => {
     const html = renderBookingConfirmationHtml(brand, { ...base, paymentMethod: 'pay-later' });
     expect(html).toContain('<html lang="en" dir="ltr">');

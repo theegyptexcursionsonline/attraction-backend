@@ -6,6 +6,8 @@ import { Booking } from '../models/Booking';
 import { Availability } from '../models/Availability';
 import { IdempotencyKey } from '../models/IdempotencyKey';
 import { generateBookingAccessToken } from '../utils/bookingAccess';
+import { generateTicketPdf } from '../services/pdf.service';
+import { sendBookingConfirmation } from '../services/email.service';
 
 /**
  * Add-on quantity is server-authoritative: the catalogue decides name, unit
@@ -62,6 +64,7 @@ jest.mock('../services/pdf.service', () => ({ generateTicketPdf: jest.fn().mockR
 
 const catalogAttraction = () => ({
   _id: ATTR_ID,
+  title: 'Reef Trip',
   status: 'active',
   currency: 'USD',
   tenantIds: [TENANT_ID],
@@ -132,6 +135,28 @@ describe('POST /api/bookings — add-on quantities', () => {
     const response = await post({...body,items:body.items.map(item=>({...item,hotelPickup:{status:'provide_later',hotelName:''}}))});
     expect(response.status).toBe(201);
     expect(Booking.create).toHaveBeenCalledWith(expect.objectContaining({items:expect.arrayContaining([expect.objectContaining({hotelPickup:{status:'provide_later',hotelName:''}})])}));
+  });
+
+  it('attaches a QR-enabled PDF ticket to a pay-at-location confirmation', async () => {
+    const response = await post(payload([]));
+    expect(response.status).toBe(201);
+    await new Promise(resolve => setImmediate(resolve));
+    await new Promise(resolve => setImmediate(resolve));
+
+    expect(generateTicketPdf).toHaveBeenCalledWith(expect.objectContaining({
+      reference: response.body.data.reference,
+      paymentMethod: 'pay-later',
+      confirmationUrl: expect.stringMatching(/\/checkout\/confirmation\?ref=.*accessToken=/),
+    }));
+    expect(sendBookingConfirmation).toHaveBeenCalledWith(
+      'theegyptexcursionsonline@gmail.com',
+      expect.objectContaining({
+        reference: response.body.data.reference,
+        guestAccessToken: expect.any(String),
+      }),
+      Buffer.from('%PDF-QA'),
+      null,
+    );
   });
 
   it.each([true, false])('replays the original receipt after pickup availability changes from %s', async (wasEnabled) => {

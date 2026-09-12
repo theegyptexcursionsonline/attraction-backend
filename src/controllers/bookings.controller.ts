@@ -18,6 +18,8 @@ import {
   sendAdminBookingNotification,
   sendBookingPaymentLinkEmail,
   sendBookingStatusEmail,
+  brandedLink,
+  getEmailBrand,
 } from '../services/email.service';
 import { Tenant } from '../models/Tenant';
 import { IdempotencyKey } from '../models/IdempotencyKey';
@@ -722,6 +724,58 @@ export const createBooking = async (
         .lean();
 
       try {
+        const emailBrand = getEmailBrand(tenantDoc);
+        const storedFirstItem = booking.items[0];
+        let ticketPdf: Buffer | undefined;
+        try {
+          ticketPdf = await generateTicketPdf({
+            reference: booking.reference,
+            attractionTitle: attraction.title,
+            optionName: storedFirstItem?.optionName,
+            date: storedFirstItem?.date || new Date().toISOString().split('T')[0],
+            time: storedFirstItem?.time,
+            duration: attraction.duration,
+            guestName,
+            guestEmail: guestDetails.email,
+            guestPhone: guestDetails.phone,
+            guestCountry: guestDetails.country,
+            hotelPickups: booking.items.map(item => item.hotelPickup).filter((pickup): pickup is NonNullable<typeof pickup> => Boolean(pickup)),
+            items: booking.items.map(item => ({
+              name: item.optionName || 'Experience',
+              adults: item.quantities?.adults || 0,
+              children: item.quantities?.children || 0,
+              infants: item.quantities?.infants || 0,
+            })),
+            addons: storedFirstItem?.addons?.length
+              ? storedFirstItem.addons.map(addon => ({
+                  name: addon.name,
+                  price: addon.price,
+                  quantity: addonQuantity(addon),
+                  totalPrice: addon.totalPrice ?? addonLineTotal(addon),
+                  lineTotal: addonLineTotal(addon),
+                }))
+              : undefined,
+            subtotal: booking.subtotal,
+            fees: booking.fees,
+            discount: booking.discount,
+            total: booking.total,
+            currency: booking.currency,
+            paymentStatus: booking.paymentStatus,
+            paymentMethod: booking.paymentMethod,
+            cancellationPolicy: attraction.cancellationPolicy,
+            instantConfirmation: attraction.instantConfirmation,
+            tenantName: tenantDoc?.name,
+            brandColor: tenantDoc?.theme?.primaryColor,
+            logoUrl: emailBrand.logo,
+            confirmationUrl: brandedLink(emailBrand, '/checkout/confirmation', {
+              ref: booking.reference,
+              accessToken: guestAccessToken,
+            }),
+          });
+        } catch (err) {
+          console.error('Pay-later ticket generation failed:', err);
+        }
+
         await sendBookingConfirmation(
           guestDetails.email,
           {
@@ -739,7 +793,7 @@ export const createBooking = async (
             hotelPickups: booking.items.map(item => item.hotelPickup).filter((pickup): pickup is NonNullable<typeof pickup> => Boolean(pickup)),
             meetingPoint,
           },
-          undefined,
+          ticketPdf,
           tenantDoc,
         );
       } catch (err) {

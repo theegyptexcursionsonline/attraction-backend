@@ -92,6 +92,16 @@ jest.mock('../services/pdf.service', () => ({
 }));
 
 jest.mock('../services/email.service', () => ({
+  getEmailBrand: jest.fn().mockReturnValue({
+    name: 'Test Operator',
+    origin: 'https://example.test',
+    slug: 'test-operator',
+    color: '#111827',
+  }),
+  brandedLink: jest.fn((_brand, path, params = {}) => {
+    const query = new URLSearchParams({ ...params, tenant: 'test-operator' }).toString();
+    return `https://example.test${path}?${query}`;
+  }),
   sendBookingConfirmation: jest.fn().mockResolvedValue(undefined),
   sendAdminBookingNotification: jest.fn().mockResolvedValue(undefined),
   sendBookingStatusEmail: jest.fn().mockResolvedValue(undefined),

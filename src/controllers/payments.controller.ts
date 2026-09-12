@@ -29,7 +29,7 @@ import { bookingStripePaymentRequest, bookingStripeContextMatches, claimBookingS
 import { secretHint } from '../utils/secretCrypto';
 import { updatePaymentGatewaySchema } from '../utils/validators';
 import { generateTicketPdf } from '../services/pdf.service';
-import { sendBookingConfirmation, sendAdminBookingNotification, sendBookingStatusEmail } from '../services/email.service';
+import { brandedLink, getEmailBrand, sendBookingConfirmation, sendAdminBookingNotification, sendBookingStatusEmail } from '../services/email.service';
 import { safeEmitEvent, recordInboundEvent } from '../services/webhook.service';
 import { env } from '../config/env';
 import { generateBookingAccessToken, verifyBookingAccessToken } from '../utils/bookingAccess';
@@ -434,10 +434,9 @@ const finalizePaidBooking = async (
       .lean();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tb = tenantBrand as any;
-    const base = env.frontendUrl.split(',')[0].trim().replace(/\/+$/, '');
-    const logoUrl = tb?.logo
-      ? (/^https?:\/\//i.test(tb.logo) ? tb.logo : `${base}${tb.logo.startsWith('/') ? '' : '/'}${tb.logo}`)
-      : undefined;
+    const emailBrand = getEmailBrand(tenantBrand);
+    const bookingGuestAccessToken = generateBookingAccessToken(String(booking._id), booking.reference);
+    const logoUrl = emailBrand.logo;
 
     const pdfBuffer = await generateTicketPdf({
       reference: booking.reference,
@@ -479,6 +478,10 @@ const finalizePaidBooking = async (
       tenantName: tb?.name,
       brandColor: tb?.theme?.primaryColor,
       logoUrl,
+      confirmationUrl: brandedLink(emailBrand, '/checkout/confirmation', {
+        ref: booking.reference,
+        accessToken: bookingGuestAccessToken,
+      }),
     });
 
     await sendBookingConfirmation(
@@ -496,7 +499,7 @@ const finalizePaidBooking = async (
         hotelPickup,
         hotelPickups: booking.items.map(item => item.hotelPickup).filter((pickup): pickup is NonNullable<typeof pickup> => Boolean(pickup)),
         meetingPoint,
-        guestAccessToken: generateBookingAccessToken(String(booking._id), booking.reference),
+        guestAccessToken: bookingGuestAccessToken,
       },
       pdfBuffer,
       tenantBrand

@@ -1,4 +1,5 @@
 import PDFDocument from 'pdfkit';
+import QRCode from 'qrcode';
 import { generateTicketPdf } from '../services/pdf.service';
 
 const PDF_TEST_TIMEOUT_MS = 15_000;
@@ -31,6 +32,17 @@ describe('ticket PDF add-on lines', () => {
   it('still renders a booking with no add-ons', async () => {
     const pdf = await generateTicketPdf(ticket(undefined));
     expect(pdf.subarray(0, 4).toString()).toBe('%PDF');
+  }, PDF_TEST_TIMEOUT_MS);
+
+  it('encodes the tenant-branded guest confirmation URL in the ticket QR', async () => {
+    const qr = jest.spyOn(QRCode, 'toDataURL');
+    try {
+      const confirmationUrl = 'https://foxesdemoplatform.com/checkout/confirmation?ref=ATT-QA-ADDONS&accessToken=guest-token&tenant=safari-sahara-hurghada';
+      await generateTicketPdf({ ...ticket(undefined), confirmationUrl });
+      expect(qr).toHaveBeenCalledWith(confirmationUrl, expect.objectContaining({ width: 300 }));
+    } finally {
+      qr.mockRestore();
+    }
   }, PDF_TEST_TIMEOUT_MS);
 });
 

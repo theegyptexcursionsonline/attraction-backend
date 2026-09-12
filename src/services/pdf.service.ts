@@ -37,6 +37,8 @@ interface TicketData {
   tenantName?: string;
   brandColor?: string;
   logoUrl?: string;
+  /** Tenant-branded, guest-authorized confirmation URL encoded in the ticket QR. */
+  confirmationUrl?: string;
 }
 
 /* ------------------------------------------------------------------ */
@@ -146,7 +148,7 @@ export const generateTicketPdf = async (data: TicketData): Promise<Buffer> => {
       const brandName = data.tenantName || 'Attractions Network';
 
       // Generate QR code
-      const qrUrl = `https://foxes-network.netlify.app/checkout/confirmation?ref=${data.reference}`;
+      const qrUrl = data.confirmationUrl || `https://foxes-network.netlify.app/checkout/confirmation?ref=${encodeURIComponent(data.reference)}`;
       const qrDataUrl = await QRCode.toDataURL(qrUrl, {
         width: 300,
         margin: 1,
