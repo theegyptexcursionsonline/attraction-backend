@@ -13,7 +13,7 @@
 import { Types } from 'mongoose';
 import { Attraction } from '../models/Attraction';
 import { Availability } from '../models/Availability';
-import { getBlockedDates } from '../controllers/attractions.controller';
+import { getBlockedDates, getPublicBlockedDates } from '../controllers/attractions.controller';
 
 jest.mock('../models/Attraction', () => ({
   Attraction: { exists: jest.fn(), findOne: jest.fn() },
@@ -131,5 +131,56 @@ describe('public blocked-dates read', () => {
     expect(query.isBlocked).toBe(true);
     expect(query.date.$gte).toEqual(new Date('2026-08-01'));
     expect(query.date.$lte).toEqual(new Date('2026-08-31'));
+  });
+});
+
+
+describe('dedicated public calendar identity boundary', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it.each(['guest', 'customer', 'brand-admin', 'manager', 'editor', 'viewer', 'super-admin'])
+  ('returns only dates for a public active tour when caller is %s', async (role) => {
+    const tenantId = new Types.ObjectId();
+    (Attraction.exists as jest.Mock).mockResolvedValue({ _id: attractionId });
+    const date = new Date('2026-09-13T00:00:00Z');
+    mockBlocked([{ date, blockReason: 'internal detail', allDayCapacity: 25, isBlocked: true }]);
+    const res = response();
+    await getPublicBlockedDates({
+      user: role === 'guest' ? undefined : { role, assignedTenants: [new Types.ObjectId()] },
+      tenant: { _id: tenantId }, params: { id: attractionId }, query: {},
+    } as never, res, jest.fn());
+    expect(Attraction.exists).toHaveBeenCalledWith({ _id: attractionId, status: 'active', tenantIds: { $in: [tenantId] } });
+    expect(res.json.mock.calls[0][0].data).toEqual([{ date }]);
+  });
+
+  it('rejects a cross-tenant or inactive tour even for super-admin', async () => {
+    (Attraction.exists as jest.Mock).mockResolvedValue(null);
+    const res = response();
+    await getPublicBlockedDates({ user: { role: 'super-admin' }, tenant: { _id: new Types.ObjectId() }, params: { id: attractionId }, query: {} } as never, res, jest.fn());
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(Availability.find).not.toHaveBeenCalled();
+  });
+
+  it('preserves the legacy denial for unrelated staff while public read succeeds', async () => {
+    const tenantId = new Types.ObjectId();
+    (Attraction.exists as jest.Mock).mockResolvedValue(null);
+    const req = { user: { role: 'brand-admin', assignedTenants: [new Types.ObjectId()] }, tenant: { _id: tenantId }, params: { id: attractionId }, query: {} };
+    const denied = response();
+    await getBlockedDates(req as never, denied, jest.fn());
+    expect(denied.status).toHaveBeenCalledWith(404);
+    expect(Availability.find).not.toHaveBeenCalled();
+    (Attraction.exists as jest.Mock).mockResolvedValue({ _id: attractionId });
+    mockBlocked([]);
+    const publicRes = response();
+    await getPublicBlockedDates(req as never, publicRes, jest.fn());
+    expect(publicRes.json.mock.calls[0][0].data).toEqual([]);
+  });
+
+  it('passes a failed stop-sale read to error handling without returning empty inventory', async () => {
+    (Attraction.exists as jest.Mock).mockRejectedValue(new Error('database unavailable'));
+    const res = response(); const next = jest.fn();
+    await getPublicBlockedDates({ params: { id: attractionId }, query: {} } as never, res, next);
+    expect(next).toHaveBeenCalledWith(expect.any(Error));
+    expect(res.json).not.toHaveBeenCalled();
   });
 });

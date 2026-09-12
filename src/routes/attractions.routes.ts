@@ -14,6 +14,7 @@ import {
   archiveAttraction,
   unarchiveAttraction,
   getBlockedDates,
+  getPublicBlockedDates,
   blockDates,
   updateStopSaleBatch,
   unblockDate,
@@ -294,6 +295,19 @@ router.get(
 // calendars must be able to disable stop-sale days. Admin callers get the full
 // records. Previously admin-only, so guest widgets 401'd and silently treated
 // every date as bookable.
+// Public calendars always return dates only, even when a staff cookie is present.
+router.get(
+  '/:id/public-blocked-dates',
+  optionalTenant,
+  validateQuery(z.object({
+    from: z.string().date(),
+    to: z.string().date(),
+  }).refine(({ from, to }) => {
+    const days = (Date.parse(to) - Date.parse(from)) / 86_400_000;
+    return days >= 0 && days <= 366;
+  }, { message: 'Date range must be ordered and no longer than one year' })),
+  getPublicBlockedDates
+);
 router.get('/:id/blocked-dates', optionalAuth, optionalTenant, getBlockedDates);
 router.post('/:id/block-dates', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), blockDates);
 router.delete('/:id/block-dates/:date', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), unblockDate);

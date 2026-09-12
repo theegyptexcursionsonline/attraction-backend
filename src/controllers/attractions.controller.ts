@@ -1769,10 +1769,11 @@ export const getFeaturedAttractions = async (
 
 // ---- Stop Sale ----
 
-export const getBlockedDates = async (
+const readBlockedDates = async (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
+  publicOnly = false
 ): Promise<void> => {
   try {
     const { id } = req.params;
@@ -1784,7 +1785,7 @@ export const getBlockedDates = async (
     }
 
     const adminRoles = ['super-admin', 'brand-admin', 'manager', 'editor', 'viewer'];
-    const isAdminCaller = Boolean(req.user && adminRoles.includes(req.user.role as string));
+    const isAdminCaller = Boolean(!publicOnly && req.user && adminRoles.includes(req.user.role as string));
 
     if (isAdminCaller) {
       if (await rejectIfNotOwnedAttraction(req, res, id as string)) return;
@@ -1825,6 +1826,14 @@ export const getBlockedDates = async (
     next(error);
   }
 };
+
+/** Public calendar contract is independent of any signed-in staff identity. */
+export const getPublicBlockedDates = (req: AuthRequest, res: Response, next: NextFunction): Promise<void> =>
+  readBlockedDates(req, res, next, true);
+
+/** Existing administrative record read retains ownership enforcement. */
+export const getBlockedDates = (req: AuthRequest, res: Response, next: NextFunction): Promise<void> =>
+  readBlockedDates(req, res, next);
 
 export const blockDates = async (
   req: AuthRequest,
