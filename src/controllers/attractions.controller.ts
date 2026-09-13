@@ -20,6 +20,7 @@ import { minimumTourPrice } from '../utils/attractionPricing';
 import { BundleOrder } from '../models/BundleOrder';
 import { runBundleTransaction } from '../services/bundleInventory.service';
 import { createAttractionSchema } from '../utils/validators';
+import { tenantPickupDestinationSlugs } from '../utils/pickupDestinations';
 import { resolveBookingTimeZone } from '../utils/bookingCutoff';
 import {
   applyBookingCutoffs,
@@ -189,6 +190,7 @@ interface AttractionQuery {
   trashedAt?: { $exists: boolean };
   $or?: Array<Record<string, unknown>>;
   $and?: Array<Record<string, unknown>>;
+  hasHotelPickup?: boolean;
 }
 
 export const getAttractions = async (
@@ -211,6 +213,7 @@ export const getAttractions = async (
       status = 'active',
       lifecycle,
       ownership = 'all',
+      pickupFrom,
     } = req.query;
 
     const pageNum = parseInt(page as string, 10);
@@ -290,6 +293,16 @@ export const getAttractions = async (
     const safeDestination = searchRegexValue(destination);
     if (safeDestination) {
       query['destination.city'] = { $regex: new RegExp(safeDestination, 'i') };
+    }
+
+    // A pickup area lists this site's hotel-pickup tours. Only the site's own configured
+    // areas count, so a crafted slug can never widen a listing or reach another site.
+    if (typeof pickupFrom === 'string' && pickupFrom) {
+      if (!req.tenant || !tenantPickupDestinationSlugs(req.tenant).includes(pickupFrom.trim().toLowerCase())) {
+        sendPaginated(res, [], pageNum, limitNum, 0);
+        return;
+      }
+      query.hasHotelPickup = true;
     }
 
     if (minPrice || maxPrice) {

@@ -152,6 +152,12 @@ const tenantSchema = new Schema<ITenant>(
         maxSuggestions: { type: Number, default: 6 },
       },
     },
+    // Areas served by hotel pickup rather than departures; see utils/pickupDestinations.
+    pickupDestinationSlugs: {
+      type: [{ type: String, lowercase: true, trim: true, match: /^[a-z0-9]+(?:-[a-z0-9]+)*$/ }],
+      default: undefined,
+      validate: { validator: (value?: string[]) => !value || value.length <= 12, message: 'A site can list at most 12 pickup destinations' },
+    },
     navigationRevision: { type: Number, default: 0 },
     navigation: [{
       label: { type: String, required: true },

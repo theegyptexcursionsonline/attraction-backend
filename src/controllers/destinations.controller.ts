@@ -4,6 +4,37 @@ import { Attraction } from '../models/Attraction';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { searchRegexValue } from '../utils/helpers';
+import { tenantPickupDestinationSlugs } from '../utils/pickupDestinations';
+
+type DestinationRow = { name: string; slug: string } & Record<string, unknown>;
+
+/**
+ * Attach tour counts for a site. Destinations with departures count their tours; a
+ * destination the site only serves by hotel pickup counts its hotel-pickup tours and
+ * is flagged so the storefront can say "Hotel pickup available" instead.
+ */
+async function withSiteCounts(
+  destinations: DestinationRow[],
+  attractionFilter: Record<string, unknown>,
+  pickupSlugs: string[],
+): Promise<DestinationRow[]> {
+  const counts = await Attraction.aggregate([
+    { $match: attractionFilter },
+    { $group: { _id: '$destination.city', count: { $sum: 1 } } },
+  ]);
+  const countMap = new Map(counts.map((c) => [c._id, c.count]));
+  const needsPickupCount = destinations.some((dest) => !countMap.get(dest.name) && pickupSlugs.includes(dest.slug));
+  const pickupCount = needsPickupCount
+    ? await Attraction.countDocuments({ ...attractionFilter, hasHotelPickup: true })
+    : 0;
+  return destinations.map((dest) => {
+    const ownCount = countMap.get(dest.name) || 0;
+    if (!ownCount && pickupSlugs.includes(dest.slug)) {
+      return { ...dest, attractionCount: pickupCount, servedByPickup: true };
+    }
+    return { ...dest, attractionCount: ownCount };
+  });
+}
 
 export const getDestinations = async (
   req: AuthRequest,
@@ -55,9 +86,16 @@ export const getDestinations = async (
     }
 
     // If scoped to tenant, only return destinations that have matching attractions
+    // or that the site serves by hotel pickup.
+    const pickupSlugs = req.tenant ? tenantPickupDestinationSlugs(req.tenant) : [];
     if (scopedToTenant && !forEditor) {
       const destinationCities = await Attraction.distinct('destination.city', attractionFilter);
-      query.name = { $in: destinationCities };
+      if (pickupSlugs.length > 0) {
+        // $and keeps this apart from the search $or above.
+        query.$and = [{ $or: [{ name: { $in: destinationCities } }, { slug: { $in: pickupSlugs } }] }];
+      } else {
+        query.name = { $in: destinationCities };
+      }
     }
 
     const [destinations, total] = await Promise.all([
@@ -70,19 +108,7 @@ export const getDestinations = async (
     ]);
 
     if (includeCount === 'true' && !forEditor) {
-      // Get attraction counts scoped to tenant
-      const counts = await Attraction.aggregate([
-        { $match: attractionFilter },
-        { $group: { _id: '$destination.city', count: { $sum: 1 } } },
-      ]);
-
-      const countMap = new Map(counts.map((c) => [c._id, c.count]));
-
-      const destinationsWithCount = destinations.map((dest) => ({
-        ...dest,
-        attractionCount: countMap.get(dest.name) || 0,
-      }));
-
+      const destinationsWithCount = await withSiteCounts(destinations as unknown as DestinationRow[], attractionFilter, pickupSlugs);
       sendPaginated(res, destinationsWithCount, pageNum, limitNum, total);
     } else {
       sendPaginated(res, destinations, pageNum, limitNum, total);
@@ -107,11 +133,21 @@ export const getDestinationBySlug = async (
       return;
     }
 
-    const attractionScope: Record<string, unknown> = {
+    let attractionScope: Record<string, unknown> = {
       'destination.city': destination.name,
       status: 'active',
     };
     if (req.tenant) attractionScope.tenantIds = { $in: [req.tenant._id] };
+
+    // With no departures here but hotel pickup from here, the site's pickup tours stand in.
+    let servedByPickup = false;
+    if (req.tenant && tenantPickupDestinationSlugs(req.tenant).includes(destination.slug)) {
+      const ownDepartures = await Attraction.countDocuments(attractionScope);
+      if (ownDepartures === 0) {
+        attractionScope = { status: 'active', tenantIds: { $in: [req.tenant._id] }, hasHotelPickup: true };
+        servedByPickup = true;
+      }
+    }
 
     // Get attraction count and stats
     const [attractionCount, ratingStats, priceStats] = await Promise.all([
@@ -151,6 +187,7 @@ export const getDestinationBySlug = async (
 
     sendSuccess(res, {
       ...destination,
+      ...(servedByPickup ? { servedByPickup: true } : {}),
       attractionCount,
       averageRating: ratingStats[0]?.averageRating || 0,
       reviewCount: ratingStats[0]?.totalReviews || 0,
@@ -172,29 +209,23 @@ export const getFeaturedDestinations = async (
 
     const attractionScope: Record<string, unknown> = { status: 'active' };
     if (req.tenant) attractionScope.tenantIds = { $in: [req.tenant._id] };
+    const pickupSlugs = req.tenant ? tenantPickupDestinationSlugs(req.tenant) : [];
     const destinationNames = req.tenant
       ? await Attraction.distinct('destination.city', attractionScope)
       : undefined;
     const destinationQuery: Record<string, unknown> = { isActive: true };
-    if (destinationNames) destinationQuery.name = { $in: destinationNames };
+    if (destinationNames) {
+      Object.assign(destinationQuery, pickupSlugs.length > 0
+        ? { $or: [{ name: { $in: destinationNames } }, { slug: { $in: pickupSlugs } }] }
+        : { name: { $in: destinationNames } });
+    }
 
     const destinations = await Destination.find(destinationQuery)
       .sort({ sortOrder: 1 })
       .limit(parseInt(limit as string, 10))
       .lean();
 
-    // Get attraction counts
-    const counts = await Attraction.aggregate([
-      { $match: attractionScope },
-      { $group: { _id: '$destination.city', count: { $sum: 1 } } },
-    ]);
-
-    const countMap = new Map(counts.map((c) => [c._id, c.count]));
-
-    const destinationsWithCount = destinations.map((dest) => ({
-      ...dest,
-      attractionCount: countMap.get(dest.name) || 0,
-    }));
+    const destinationsWithCount = await withSiteCounts(destinations as unknown as DestinationRow[], attractionScope, pickupSlugs);
 
     sendSuccess(res, destinationsWithCount);
   } catch (error) {

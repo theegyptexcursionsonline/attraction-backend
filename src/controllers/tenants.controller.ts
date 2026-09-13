@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 import { Tenant } from '../models/Tenant';
 import { Attraction } from '../models/Attraction';
 import { Booking } from '../models/Booking';
+import { isValidPickupDestinationList } from '../utils/pickupDestinations';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { searchRegexValue } from '../utils/helpers';
@@ -637,6 +638,7 @@ export const updateTenant = async (
   try {
     const { id } = req.params;
     if (req.body.navigation !== undefined || req.body.navigationRevision !== undefined) { sendError(res, 'Use the Menus editor to update navigation', 400); return; }
+    if (req.body.pickupDestinationSlugs !== undefined && !isValidPickupDestinationList(req.body.pickupDestinationSlugs)) { sendError(res, 'Pickup destinations must be up to 12 destination slugs', 400); return; }
 
     const updates = {
       ...req.body,
@@ -700,6 +702,7 @@ export const updateTenantSettings = async (
     const { id } = req.params;
 
     if (req.body.navigation !== undefined || req.body.navigationRevision !== undefined) { sendError(res, 'Use the Menus editor to update navigation', 400); return; }
+    if (req.body.pickupDestinationSlugs !== undefined && !isValidPickupDestinationList(req.body.pickupDestinationSlugs)) { sendError(res, 'Pickup destinations must be up to 12 destination slugs', 400); return; }
 
     // Allow-list of fields brand-admins may change on their own sites
     const allowedFields = [
@@ -724,6 +727,7 @@ export const updateTenantSettings = async (
       'supportedLanguages',
       'timezone',
       'pricingSettings',
+      'pickupDestinationSlugs',
       // Navigation has a dedicated versioned endpoint to prevent lost updates.
     ];
 

@@ -119,6 +119,8 @@ export interface ITenant extends Document {
       maxSuggestions: number;
     };
   };
+  /** Destination slugs this site serves by hotel pickup (no departures there). */
+  pickupDestinationSlugs?: string[];
   navigationRevision?: number;
   navigation?: {
     label: string;
