@@ -33,7 +33,6 @@ import {
 } from '../utils/bookingAccess';
 import {
   BookingWithInventoryMarker,
-  bookingDate,
   inventoryEntriesForItems,
   releaseBookingInventory,
   reserveInventory,
@@ -54,6 +53,7 @@ import {
 } from '../utils/bookingAddons';
 import { assertTenantIdsBookingCreationAllowed, assertTenantPaymentMethodAllowed } from '../services/tenantBookingPolicy.service';
 import { configuredAvailabilityTimes } from '../utils/publicAvailability';
+import { bookingEligibility, resolveBookingTimeZone } from '../utils/bookingCutoff';
 
 // Compact, tenant-safe booking summary for webhook payloads. Contains only the
 // booking's own fields — never other tenants' data.
@@ -282,6 +282,7 @@ export const createBooking = async (
     const residentPricingEnabled = bookingTenant?.pricingSettings?.enableResidentPricing === true;
 
     // Recalculate line items on the server to prevent client-side price tampering.
+    const temporalChecks: Array<{ date: string; time?: string; cutoffMinutes: number }> = [];
     let normalizedItems = items.map((item: {
       optionId: string;
       date: string;
@@ -319,16 +320,7 @@ export const createBooking = async (
         throw new Error(`PARTICIPANT_LIMIT:${minimumParticipants}:${maximumParticipants}`);
       }
 
-      // Reject a date in the past. The booking widget greys out past days in the UI,
-      // but nothing enforced it server-side, so a stale cart or a direct API call could
-      // still book "yesterday". Compare on UTC day so a same-day booking always passes.
       if (!item.date) throw new Error('INVALID_DATE');
-      const bookingDay = bookingDate(item.date);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      if (bookingDay < today) {
-        throw new Error('PAST_DATE');
-      }
 
       // Pick the right tier. Falls back to foreigner price if resident is requested
       // but the flag is off or the option doesn't carry a residentPrice — never throws.
@@ -349,6 +341,11 @@ export const createBooking = async (
           throw new Error('INVALID_TIME_SLOT');
         }
       }
+      temporalChecks.push({
+        date: item.date,
+        time: item.time,
+        cutoffMinutes: option.bookingCutoffMinutes ?? 0,
+      });
       const linePricing = calculateTourLinePrice({
         option,
         quantities,
@@ -509,6 +506,17 @@ export const createBooking = async (
     // A completed request must replay its original receipt even if an admin has
     // since changed pickup availability. Validate new requests before inventory,
     // promotion usage or booking writes; the catch releases this processing claim.
+    const bookingTimeZone = resolveBookingTimeZone(bookingTenant?.timezone);
+    for (const check of temporalChecks) {
+      const eligibility = bookingEligibility({ ...check, timeZone: bookingTimeZone });
+      if (!eligibility.eligible) {
+        if (eligibility.reason === 'cutoff_reached') throw new Error('BOOKING_CUTOFF_REACHED');
+        if (eligibility.reason === 'past_departure') throw new Error('PAST_DEPARTURE');
+        if (eligibility.reason === 'past_date') throw new Error('PAST_DATE');
+        throw new Error('INVALID_DATE');
+      }
+    }
+
     const legacyPickupCount = attraction.hasHotelPickup === true && pickupSelectionVersion === undefined
       ? normalizedItems.filter((item: IBooking['items'][number]) => !item.hotelPickup).length
       : 0;
@@ -875,6 +883,14 @@ export const createBooking = async (
     }
     if (error instanceof Error && error.message === 'PAST_DATE') {
       sendError(res, 'Cannot book a date in the past', 400);
+      return;
+    }
+    if (error instanceof Error && error.message === 'PAST_DEPARTURE') {
+      sendError(res, 'Cannot book a departure time that has already passed', 400);
+      return;
+    }
+    if (error instanceof Error && error.message === 'BOOKING_CUTOFF_REACHED') {
+      sendError(res, 'Online booking has closed for this departure', 409);
       return;
     }
     if (error instanceof Error && error.message === 'INVALID_DATE') {

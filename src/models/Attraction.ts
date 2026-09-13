@@ -193,6 +193,12 @@ const attractionSchema = new Schema<IAttraction>(
       childPrice: { type: Number, min: 0 },
       infantPrice: { type: Number, min: 0 },
       discountPercentage: { type: Number, min: 0, max: 99.99 },
+      bookingCutoffMinutes: {
+        type: Number,
+        min: 0,
+        max: 10080,
+        validate: { validator: Number.isSafeInteger, message: 'Booking cutoff must be a whole number of minutes' },
+      },
       timeSlots: [{
         id: { type: String, required: requiredWhenPublished },
         label: { type: String, required: requiredWhenPublished },

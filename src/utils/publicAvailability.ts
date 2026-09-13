@@ -1,6 +1,10 @@
+import { bookingEligibility } from './bookingCutoff';
+
 interface AvailabilitySource {
   entryWindows?: Array<{ startTime?: string }>;
   pricingOptions?: Array<{
+    id?: string;
+    bookingCutoffMinutes?: number;
     timeSlots?: Array<{ startTime?: string }>;
   }>;
 }
@@ -71,4 +75,39 @@ export function publicDefaultTimeSlots(
   const configuredTimes = configuredAvailabilityTimes(attraction);
   const times = configuredTimes.length > 0 ? configuredTimes : LEGACY_DEFAULT_TIMES;
   return times.map((time) => ({ time, available: true, spotsLeft: capacity }));
+}
+
+type PublicSlot = { time: string; available: boolean; spotsLeft: number };
+
+/** Apply option ownership and departure cutoffs after capacity has been projected. */
+export function applyBookingCutoffs(
+  attraction: AvailabilitySource,
+  slots: PublicSlot[],
+  input: { date: string; timeZone: string; optionId?: string; now?: Date },
+): PublicSlot[] {
+  const options = input.optionId
+    ? (attraction.pricingOptions || []).filter((option) => option.id === input.optionId)
+    : (attraction.pricingOptions || []);
+  const entryTimes = new Set(uniqueValidTimes((attraction.entryWindows || []).map((window) => window.startTime)));
+  const hasAnyConfiguredTime = configuredAvailabilityTimes(attraction).length > 0;
+
+  return slots.flatMap((slot) => {
+    const supportingOptions = options.filter((option) => {
+      if (entryTimes.has(slot.time)) return true;
+      if (!hasAnyConfiguredTime) return true;
+      return uniqueValidTimes((option.timeSlots || []).map((timeSlot) => timeSlot.startTime)).includes(slot.time);
+    });
+    if (input.optionId && supportingOptions.length === 0) return [];
+
+    // Published attractions normally have options. Keep legacy records without
+    // them bookable with the historical zero-minute cutoff.
+    const cutoffEligible = supportingOptions.length === 0
+      ? bookingEligibility({ ...input, time: slot.time, cutoffMinutes: 0 }).eligible
+      : supportingOptions.some((option) => bookingEligibility({
+          ...input,
+          time: slot.time,
+          cutoffMinutes: option.bookingCutoffMinutes ?? 0,
+        }).eligible);
+    return [{ ...slot, available: slot.available && cutoffEligible }];
+  });
 }

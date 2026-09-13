@@ -142,6 +142,7 @@ const publishPricingOptionSchema = z.object({
   infantPrice: z.number().finite().min(0, 'Infant price cannot be negative').optional(),
   residentPrice: z.number().finite().min(0, 'Resident price cannot be negative').optional(),
   discountPercentage: z.number().finite().min(0).max(99.99, 'Discount must be below 100%').optional(),
+  bookingCutoffMinutes: z.number().int().min(0).max(10080).optional(),
   timeSlots: z.array(publishTimeSlotSchema)
     .max(48, 'A pricing option cannot contain more than 48 time slots')
     .superRefine(refineTimeSlots)
@@ -337,6 +338,18 @@ export const createAttractionSchema = attractionAuthoringSchema.superRefine((val
   if (value.pricingOptions.length === 0) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['pricingOptions'], message: 'At least one pricing option is required' });
   }
+  value.pricingOptions.forEach((option, index) => {
+    if (
+      (option.bookingCutoffMinutes ?? 0) > 0 &&
+      (value.availability.type !== 'time-slots' || (option.timeSlots.length === 0 && value.entryWindows.length === 0))
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['pricingOptions', index, 'bookingCutoffMinutes'],
+        message: 'A positive booking cutoff requires a scheduled departure time',
+      });
+    }
+  });
 });
 
 // A draft is work in progress: the author may save at any stage with nothing
@@ -372,6 +385,7 @@ const draftPricingOptionSchema = z.object({
   childPrice: z.number().finite().min(0, 'Child price cannot be negative').optional(),
   infantPrice: z.number().finite().min(0, 'Infant price cannot be negative').optional(),
   discountPercentage: z.number().finite().min(0).max(99.99, 'Discount must be below 100%').optional(),
+  bookingCutoffMinutes: z.number().int().min(0).max(10080).optional(),
   timeSlots: z.array(draftTimeSlotSchema)
     .max(48, 'A pricing option cannot contain more than 48 time slots')
     .superRefine(refineTimeSlots)

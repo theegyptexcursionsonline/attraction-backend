@@ -217,6 +217,8 @@ export interface IAttraction extends Document {
     childPrice?: number;
     infantPrice?: number;
     discountPercentage?: number;
+    /** Minutes before a scheduled departure when new bookings close. Absent means zero. */
+    bookingCutoffMinutes?: number;
     timeSlots?: Array<{
       id: string;
       label: string;

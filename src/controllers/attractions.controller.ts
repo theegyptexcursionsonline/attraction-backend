@@ -20,7 +20,9 @@ import { minimumTourPrice } from '../utils/attractionPricing';
 import { BundleOrder } from '../models/BundleOrder';
 import { runBundleTransaction } from '../services/bundleInventory.service';
 import { createAttractionSchema } from '../utils/validators';
+import { resolveBookingTimeZone } from '../utils/bookingCutoff';
 import {
+  applyBookingCutoffs,
   publicAvailabilityTimeSlots,
   publicDefaultTimeSlots,
 } from '../utils/publicAvailability';
@@ -476,7 +478,7 @@ export const getAttractionAvailability = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const { date, month } = req.query;
+    const { date, month, optionId } = req.query;
 
     const attractionQuery: Record<string, unknown> = { _id: id, status: 'active' };
     if (req.tenant) attractionQuery.tenantIds = { $in: [req.tenant._id] };
@@ -492,6 +494,14 @@ export const getAttractionAvailability = async (
       sendError(res, 'This programme is available by enquiry only', 409);
       return;
     }
+
+    const requestedOptionId = typeof optionId === 'string' ? optionId.trim() : undefined;
+    if (requestedOptionId && !attraction.pricingOptions.some((option) => option.id === requestedOptionId)) {
+      sendError(res, 'Pricing option not found', 400);
+      return;
+    }
+    const availabilityTimeZone = resolveBookingTimeZone(req.tenant?.timezone);
+    const eligibilityNow = new Date();
 
     // Calculate date range
     const startDate = date ? new Date(date as string) : new Date();
@@ -546,11 +556,11 @@ export const getAttractionAvailability = async (
         // as bookable. A date-specific row remains an operator capacity override:
         // configured times absent from that row are not manufactured here.
         if (attraction.availability?.type === 'time-slots') {
-          const timeSlots = publicAvailabilityTimeSlots(
+          const timeSlots = applyBookingCutoffs(attraction, publicAvailabilityTimeSlots(
             attraction,
             record.timeSlots || [],
             defaultCapacity,
-          );
+          ), { date: dateStr, timeZone: availabilityTimeZone, optionId: requestedOptionId, now: eligibilityNow });
           availability.push({
             date: dateStr,
             available: timeSlots.some((slot) => slot.available),
@@ -566,10 +576,15 @@ export const getAttractionAvailability = async (
       } else {
         // No record — generate default availability
         if (attraction.availability?.type === 'time-slots') {
+          const timeSlots = applyBookingCutoffs(
+            attraction,
+            publicDefaultTimeSlots(attraction, defaultCapacity),
+            { date: dateStr, timeZone: availabilityTimeZone, optionId: requestedOptionId, now: eligibilityNow },
+          );
           availability.push({
             date: dateStr,
-            available: true,
-            timeSlots: publicDefaultTimeSlots(attraction, defaultCapacity),
+            available: timeSlots.some((slot) => slot.available),
+            timeSlots,
           });
         } else {
           availability.push({
