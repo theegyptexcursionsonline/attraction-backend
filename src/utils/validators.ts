@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { MAX_REGEX_SEARCH_LENGTH } from './helpers';
+import { MAX_PICKUP_DESTINATIONS, PICKUP_DESTINATION_SLUG_PATTERN } from './pickupDestinations';
 
 // Auth Validators
 export const registerSchema = z.object({
@@ -617,6 +618,10 @@ export const createDestinationSchema = z.object({
 
 export const updateDestinationSchema = createDestinationSchema.partial();
 
+// Pickup areas: destination slugs a site serves by hotel pickup (see utils/pickupDestinations).
+const pickupDestinationSlugSchema = z.string().trim().toLowerCase().max(80).regex(PICKUP_DESTINATION_SLUG_PATTERN, 'Invalid destination slug');
+const pickupDestinationSlugsSchema = z.array(pickupDestinationSlugSchema).max(MAX_PICKUP_DESTINATIONS, `At most ${MAX_PICKUP_DESTINATIONS} pickup destinations`);
+
 // Tenant Validators
 export const createTenantSchema = z.object({
   slug: z.string().min(1, 'Slug is required'),
@@ -632,6 +637,7 @@ export const createTenantSchema = z.object({
   defaultCurrency: z.string().min(1),
   defaultLanguage: z.string().min(1),
   supportedLanguages: z.array(z.string()),
+  pickupDestinationSlugs: pickupDestinationSlugsSchema.optional(),
 });
 
 export const updateTenantSchema = createTenantSchema.partial();
@@ -665,6 +671,8 @@ export const attractionFiltersSchema = z.object({
   ownership: z.enum(['all', 'owned', 'assigned']).optional(),
   /** Admin surfaces send scope=admin so a silently expired session 401s instead of degrading to the public catalog. */
   scope: z.enum(['admin']).optional(),
+  /** A pickup-area destination slug; the controller only honours the site's own configured areas. */
+  pickupFrom: pickupDestinationSlugSchema.optional(),
 });
 
 // Payment Validators
