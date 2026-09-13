@@ -76,6 +76,8 @@ router.get(
         search: regexSearchSchema,
         includeCount: z.enum(['true', 'false']).optional(),
         forEditor: z.enum(['true', 'false']).optional(),
+        /** Admin screens send scope=admin so an expired session 401s instead of receiving the public list. */
+        scope: z.enum(['admin']).optional(),
       })
     )
   ),

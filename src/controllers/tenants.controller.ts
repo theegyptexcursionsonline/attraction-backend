@@ -3,7 +3,8 @@ import { Types } from 'mongoose';
 import { Tenant } from '../models/Tenant';
 import { Attraction } from '../models/Attraction';
 import { Booking } from '../models/Booking';
-import { isValidPickupDestinationList } from '../utils/pickupDestinations';
+import { Destination } from '../models/Destination';
+import { isValidPickupDestinationList, normalizePickupDestinationSlugs } from '../utils/pickupDestinations';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { searchRegexValue } from '../utils/helpers';
@@ -630,6 +631,32 @@ export const createTenant = async (
   }
 };
 
+type PickupDestinationUpdate = { slugs: string[] } | { status: number; error: string };
+
+/**
+ * Validates a pickup-area list for a site. Newly added areas must be active destinations;
+ * areas the site already had are kept even if that destination was deactivated since, so
+ * saving unrelated settings never fails because of an older entry.
+ */
+async function resolvePickupDestinationUpdate(tenantId: string, value: unknown): Promise<PickupDestinationUpdate> {
+  if (!isValidPickupDestinationList(value)) {
+    return { status: 400, error: 'Pickup destinations must be up to 12 destination slugs' };
+  }
+  const slugs = normalizePickupDestinationSlugs(value);
+  const current = await Tenant.findById(tenantId).select('pickupDestinationSlugs').lean();
+  if (!current) return { status: 404, error: 'Tenant not found' };
+  const existing = new Set(normalizePickupDestinationSlugs((current as { pickupDestinationSlugs?: unknown }).pickupDestinationSlugs));
+  const added = slugs.filter((slug) => !existing.has(slug));
+  if (added.length > 0) {
+    const active = new Set((await Destination.distinct('slug', { slug: { $in: added }, isActive: true })).map(String));
+    const unknown = added.filter((slug) => !active.has(slug));
+    if (unknown.length > 0) {
+      return { status: 400, error: `Pickup destinations must be active destinations: ${unknown.join(', ')}` };
+    }
+  }
+  return { slugs };
+}
+
 export const updateTenant = async (
   req: AuthRequest,
   res: Response,
@@ -638,7 +665,6 @@ export const updateTenant = async (
   try {
     const { id } = req.params;
     if (req.body.navigation !== undefined || req.body.navigationRevision !== undefined) { sendError(res, 'Use the Menus editor to update navigation', 400); return; }
-    if (req.body.pickupDestinationSlugs !== undefined && !isValidPickupDestinationList(req.body.pickupDestinationSlugs)) { sendError(res, 'Pickup destinations must be up to 12 destination slugs', 400); return; }
 
     const updates = {
       ...req.body,
@@ -646,6 +672,11 @@ export const updateTenant = async (
         ? { customPages: sanitizeCustomPages(req.body.customPages) }
         : {}),
     };
+    if (req.body.pickupDestinationSlugs !== undefined) {
+      const pickup = await resolvePickupDestinationUpdate(id, req.body.pickupDestinationSlugs);
+      if ('error' in pickup) { sendError(res, pickup.error, pickup.status); return; }
+      updates.pickupDestinationSlugs = pickup.slugs;
+    }
 
     const tenant = await Tenant.findByIdAndUpdate(
       id,
@@ -703,6 +734,11 @@ export const updateTenantSettings = async (
 
     if (req.body.navigation !== undefined || req.body.navigationRevision !== undefined) { sendError(res, 'Use the Menus editor to update navigation', 400); return; }
     if (req.body.pickupDestinationSlugs !== undefined && !isValidPickupDestinationList(req.body.pickupDestinationSlugs)) { sendError(res, 'Pickup destinations must be up to 12 destination slugs', 400); return; }
+    const isSuperAdmin = req.user?.role === 'super-admin';
+    if (isSuperAdmin && req.body.name !== undefined && (typeof req.body.name !== 'string' || !req.body.name.trim() || req.body.name.trim().length > 120)) {
+      sendError(res, 'Site name must be 1-120 characters', 400);
+      return;
+    }
 
     // Allow-list of fields brand-admins may change on their own sites
     const allowedFields = [
@@ -729,6 +765,8 @@ export const updateTenantSettings = async (
       'pricingSettings',
       'pickupDestinationSlugs',
       // Navigation has a dedicated versioned endpoint to prevent lost updates.
+      // The site name is a super-admin decision; the site settings screen saves it here too.
+      ...(isSuperAdmin ? ['name'] : []),
     ];
 
     const updates: Record<string, unknown> = {};
@@ -742,6 +780,12 @@ export const updateTenantSettings = async (
       sendError(res, 'No valid fields to update', 400);
       return;
     }
+    if (updates.pickupDestinationSlugs !== undefined) {
+      const pickup = await resolvePickupDestinationUpdate(id, updates.pickupDestinationSlugs);
+      if ('error' in pickup) { sendError(res, pickup.error, pickup.status); return; }
+      updates.pickupDestinationSlugs = pickup.slugs;
+    }
+    if (typeof updates.name === 'string') updates.name = updates.name.trim();
 
     const tenant = await Tenant.findByIdAndUpdate(
       id,

@@ -12,6 +12,8 @@ import { updateTenant, updateTenantSettings } from '../controllers/tenants.contr
 import {
   MAX_PICKUP_DESTINATIONS,
   isValidPickupDestinationList,
+  normalizePickupDestinationSlugs,
+  supportsPickupAreas,
   tenantPickupDestinationSlugs,
 } from '../utils/pickupDestinations';
 
@@ -25,7 +27,7 @@ jest.mock('../models/Attraction', () => ({
   },
 }));
 jest.mock('../models/Destination', () => ({
-  Destination: { find: jest.fn(), findOne: jest.fn(), countDocuments: jest.fn() },
+  Destination: { find: jest.fn(), findOne: jest.fn(), countDocuments: jest.fn(), distinct: jest.fn() },
 }));
 jest.mock('../models/Tenant', () => ({
   Tenant: { findById: jest.fn(), findByIdAndUpdate: jest.fn(), findOne: jest.fn() },
@@ -48,9 +50,10 @@ const chain = (result: unknown) => {
   return query;
 };
 
-const royalCruise = (pickupDestinationSlugs?: string[]) => ({
+const royalCruise = (pickupDestinationSlugs?: string[], designMode = 'nautical') => ({
   _id: new Types.ObjectId(),
   slug: 'royal-cruise-hurghada',
+  designMode,
   pickupDestinationSlugs,
 });
 
@@ -60,19 +63,29 @@ const makadi = { _id: 'd2', name: 'Makadi Bay', slug: 'makadi-bay' };
 describe('pickup destination slugs', () => {
   it('normalises, de-duplicates and drops malformed slugs', () => {
     expect(tenantPickupDestinationSlugs({
+      designMode: 'nautical',
       pickupDestinationSlugs: [' Makadi-Bay ', 'makadi-bay', 'soma-bay', 'bad slug', '', 42, '../x'],
     })).toEqual(['makadi-bay', 'soma-bay']);
+    expect(normalizePickupDestinationSlugs([' El-Gouna', 'el-gouna', 'soma-bay'])).toEqual(['el-gouna', 'soma-bay']);
   });
 
   it('treats a missing or non-list value as no pickup areas', () => {
     expect(tenantPickupDestinationSlugs(undefined)).toEqual([]);
-    expect(tenantPickupDestinationSlugs({})).toEqual([]);
-    expect(tenantPickupDestinationSlugs({ pickupDestinationSlugs: 'makadi-bay' })).toEqual([]);
+    expect(tenantPickupDestinationSlugs({ designMode: 'nautical' })).toEqual([]);
+    expect(tenantPickupDestinationSlugs({ designMode: 'nautical', pickupDestinationSlugs: 'makadi-bay' })).toEqual([]);
   });
 
   it('never returns more than the maximum', () => {
     const many = Array.from({ length: 20 }, (_, i) => `area-${i}`);
-    expect(tenantPickupDestinationSlugs({ pickupDestinationSlugs: many })).toHaveLength(MAX_PICKUP_DESTINATIONS);
+    expect(tenantPickupDestinationSlugs({ designMode: 'nautical', pickupDestinationSlugs: many })).toHaveLength(MAX_PICKUP_DESTINATIONS);
+  });
+
+  it('keeps a stored list dormant on designs that do not show pickup areas', () => {
+    expect(supportsPickupAreas({ designMode: 'nautical' })).toBe(true);
+    for (const designMode of ['safarisahara', 'speedboat', 'default', undefined]) {
+      expect(supportsPickupAreas({ designMode })).toBe(false);
+      expect(tenantPickupDestinationSlugs({ designMode, pickupDestinationSlugs: ['makadi-bay'] })).toEqual([]);
+    }
   });
 
   it('validates an update list', () => {
@@ -220,6 +233,27 @@ describe('destinations served by hotel pickup', () => {
     expect(body(res).data.servedByPickup).toBeUndefined();
   });
 
+  it('ignores pickup areas stored on a design that does not show them', async () => {
+    const tenant = royalCruise(['makadi-bay'], 'safarisahara');
+    (Destination.findOne as jest.Mock).mockReturnValue({ lean: jest.fn().mockResolvedValue(makadi) });
+    (Attraction.countDocuments as jest.Mock).mockResolvedValue(0);
+    (Attraction.aggregate as jest.Mock).mockResolvedValue([]);
+    const res = response();
+
+    await getDestinationBySlug({ tenant, params: { slug: 'makadi-bay' } } as never, res, jest.fn());
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(Attraction.countDocuments).not.toHaveBeenCalledWith(expect.objectContaining({ hasHotelPickup: true }));
+
+    jest.clearAllMocks();
+    (Attraction.distinct as jest.Mock).mockResolvedValue(['Hurghada']);
+    (Destination.find as jest.Mock).mockReturnValue(chain([hurghada]));
+    (Destination.countDocuments as jest.Mock).mockResolvedValue(1);
+    (Attraction.aggregate as jest.Mock).mockResolvedValue([{ _id: 'Hurghada', count: 9 }]);
+    await getDestinations({ tenant, query: {} } as never, response(), jest.fn());
+    expect(Destination.find).toHaveBeenCalledWith({ isActive: true, name: { $in: ['Hurghada'] } });
+  });
+
   it('does not open another site pickup area', async () => {
     const tenant = royalCruise(['soma-bay']);
     (Destination.findOne as jest.Mock).mockReturnValue({ lean: jest.fn().mockResolvedValue(makadi) });
@@ -275,6 +309,16 @@ describe('tour listing by pickup area', () => {
     expect(body(res)).toMatchObject({ success: true, data: [] });
   });
 
+  it('returns an empty page when the site design does not show pickup areas', async () => {
+    const tenant = royalCruise(['makadi-bay'], 'speedboat');
+    const res = response();
+
+    await getAttractions({ tenant, query: { pickupFrom: 'makadi-bay' } } as never, res, jest.fn());
+
+    expect(Attraction.find).not.toHaveBeenCalled();
+    expect(body(res)).toMatchObject({ success: true, data: [] });
+  });
+
   it('ignores a non-string pickup value', async () => {
     const tenant = royalCruise(['makadi-bay']);
     (Attraction.find as jest.Mock).mockReturnValue(chain([]));
@@ -287,8 +331,13 @@ describe('tour listing by pickup area', () => {
 });
 
 describe('saving pickup areas on a site', () => {
-  beforeEach(() => jest.clearAllMocks());
   const id = new Types.ObjectId().toHexString();
+  const stored = (pickupDestinationSlugs?: string[]) =>
+    (Tenant.findById as jest.Mock).mockReturnValue({ select: () => ({ lean: jest.fn().mockResolvedValue({ _id: id, pickupDestinationSlugs }) }) });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    stored(undefined);
+  });
 
   it.each([
     ['a single string', 'makadi-bay'],
@@ -305,21 +354,67 @@ describe('saving pickup areas on a site', () => {
     expect(Tenant.findByIdAndUpdate).not.toHaveBeenCalled();
   });
 
-  it('lets a site admin save a valid list', async () => {
+  it('lets a site admin save a valid list, normalised', async () => {
+    (Destination.distinct as jest.Mock).mockResolvedValue(['makadi-bay', 'sahl-hasheesh']);
     (Tenant.findByIdAndUpdate as jest.Mock).mockResolvedValue({ _id: id });
     const res = response();
 
     await updateTenantSettings(
-      { params: { id }, body: { pickupDestinationSlugs: ['makadi-bay', 'sahl-hashesh'] } } as never,
+      { params: { id }, body: { pickupDestinationSlugs: [' Makadi-Bay', 'sahl-hasheesh', 'makadi-bay'] } } as never,
       res,
       jest.fn()
     );
 
+    expect(Destination.distinct).toHaveBeenCalledWith('slug', { slug: { $in: ['makadi-bay', 'sahl-hasheesh'] }, isActive: true });
     expect(Tenant.findByIdAndUpdate).toHaveBeenCalledWith(
       id,
-      { $set: { pickupDestinationSlugs: ['makadi-bay', 'sahl-hashesh'] } },
+      { $set: { pickupDestinationSlugs: ['makadi-bay', 'sahl-hasheesh'] } },
       { new: true, runValidators: true }
     );
     expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it('refuses a newly added area that is not an active destination', async () => {
+    (Destination.distinct as jest.Mock).mockResolvedValue(['makadi-bay']);
+
+    for (const handler of [updateTenant, updateTenantSettings]) {
+      const res = response();
+      await handler({ params: { id }, user: { role: 'super-admin' }, body: { pickupDestinationSlugs: ['makadi-bay', 'atlantis'] } } as never, res, jest.fn());
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(body(res).error).toBe('Pickup destinations must be active destinations: atlantis');
+    }
+    expect(Tenant.findByIdAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it('keeps an area the site already had even if that destination was deactivated since', async () => {
+    stored(['old-bay', 'makadi-bay']);
+    (Tenant.findByIdAndUpdate as jest.Mock).mockResolvedValue({ _id: id });
+    const res = response();
+
+    await updateTenantSettings({ params: { id }, body: { pickupDestinationSlugs: ['old-bay', 'makadi-bay'], tagline: 'Sail' } } as never, res, jest.fn());
+
+    expect(Destination.distinct).not.toHaveBeenCalled();
+    expect(Tenant.findByIdAndUpdate).toHaveBeenCalledWith(id, { $set: { tagline: 'Sail', pickupDestinationSlugs: ['old-bay', 'makadi-bay'] } }, { new: true, runValidators: true });
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it('lets an admin clear the list', async () => {
+    stored(['makadi-bay']);
+    (Tenant.findByIdAndUpdate as jest.Mock).mockResolvedValue({ _id: id });
+    const res = response();
+
+    await updateTenantSettings({ params: { id }, body: { pickupDestinationSlugs: [] } } as never, res, jest.fn());
+
+    expect(Tenant.findByIdAndUpdate).toHaveBeenCalledWith(id, { $set: { pickupDestinationSlugs: [] } }, { new: true, runValidators: true });
+  });
+
+  it('answers 404 for a missing site before any write', async () => {
+    (Tenant.findById as jest.Mock).mockReturnValue({ select: () => ({ lean: jest.fn().mockResolvedValue(null) }) });
+    const res = response();
+
+    await updateTenantSettings({ params: { id }, body: { pickupDestinationSlugs: ['makadi-bay'] } } as never, res, jest.fn());
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(Tenant.findByIdAndUpdate).not.toHaveBeenCalled();
   });
 });

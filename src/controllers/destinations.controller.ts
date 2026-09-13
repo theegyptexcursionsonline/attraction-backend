@@ -8,6 +8,8 @@ import { tenantPickupDestinationSlugs } from '../utils/pickupDestinations';
 
 type DestinationRow = { name: string; slug: string } & Record<string, unknown>;
 
+const isStaffRequest = (req: AuthRequest): boolean => !!req.user && req.user.role !== 'customer';
+
 /**
  * Attach tour counts for a site. Destinations with departures count their tours; a
  * destination the site only serves by hotel pickup counts its hotel-pickup tours and
@@ -48,6 +50,13 @@ export const getDestinations = async (
       return;
     }
     const { page = 1, limit = 20, continent, search, includeCount = 'true' } = req.query;
+    const staffRequest = isStaffRequest(req);
+    // Admin screens send scope=admin so an expired session is refused (and refreshed)
+    // instead of quietly receiving the shorter public list.
+    if (req.query.scope === 'admin' && !staffRequest) {
+      sendError(res, 'Authentication required', 401);
+      return;
+    }
 
     const pageNum = parseInt(page as string, 10);
     const limitNum = parseInt(limit as string, 10);
@@ -86,9 +95,12 @@ export const getDestinations = async (
     }
 
     // If scoped to tenant, only return destinations that have matching attractions
-    // or that the site serves by hotel pickup.
+    // or that the site serves by hotel pickup. The public network-wide list likewise
+    // shows only destinations with at least one active tour; staff lists stay complete.
     const pickupSlugs = req.tenant ? tenantPickupDestinationSlugs(req.tenant) : [];
-    if (scopedToTenant && !forEditor) {
+    if (!scopedToTenant && !forEditor && !staffRequest) {
+      query.name = { $in: await Attraction.distinct('destination.city', attractionFilter) };
+    } else if (scopedToTenant && !forEditor) {
       const destinationCities = await Attraction.distinct('destination.city', attractionFilter);
       if (pickupSlugs.length > 0) {
         // $and keeps this apart from the search $or above.
@@ -210,7 +222,9 @@ export const getFeaturedDestinations = async (
     const attractionScope: Record<string, unknown> = { status: 'active' };
     if (req.tenant) attractionScope.tenantIds = { $in: [req.tenant._id] };
     const pickupSlugs = req.tenant ? tenantPickupDestinationSlugs(req.tenant) : [];
-    const destinationNames = req.tenant
+    // A site's featured list, and the public network-wide list, only carry destinations
+    // with active tours (plus the site's pickup areas); staff see every active destination.
+    const destinationNames = req.tenant || !isStaffRequest(req)
       ? await Attraction.distinct('destination.city', attractionScope)
       : undefined;
     const destinationQuery: Record<string, unknown> = { isActive: true };
