@@ -5,6 +5,12 @@ import { Attraction } from '../models/Attraction';
 import { Booking } from '../models/Booking';
 import { Availability } from '../models/Availability';
 import { IdempotencyKey } from '../models/IdempotencyKey';
+import { Tenant } from '../models/Tenant';
+import { User } from '../models/User';
+import { PromoCode } from '../models/PromoCode';
+import { SpecialOffer } from '../models/SpecialOffer';
+import { verifyToken } from '../utils/jwt';
+import { safeEmitEvent } from '../services/webhook.service';
 import { generateBookingAccessToken } from '../utils/bookingAccess';
 import { generateTicketPdf } from '../services/pdf.service';
 import { sendBookingConfirmation } from '../services/email.service';
@@ -94,11 +100,107 @@ const post = (body: Record<string, unknown>, key = `qa-addons-${Math.random().to
 describe('POST /api/bookings — add-on quantities', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (Tenant.findOne as jest.Mock).mockResolvedValue(null);
     (Attraction.findById as jest.Mock).mockResolvedValue(catalogAttraction());
     (IdempotencyKey.create as jest.Mock).mockResolvedValue({ _id: new Types.ObjectId() });
     (IdempotencyKey.findByIdAndUpdate as jest.Mock).mockResolvedValue({});
     (IdempotencyKey.deleteOne as jest.Mock).mockResolvedValue({ deletedCount: 1 });
     (Booking.create as jest.Mock).mockImplementation(async (doc) => ({ ...doc, _id: new Types.ObjectId() }));
+  });
+
+  const rejectOfflineSideEffects = () => {
+    expect(Booking.create).not.toHaveBeenCalled();
+    expect(Availability.updateOne).not.toHaveBeenCalled();
+    expect(Availability.findOneAndUpdate).not.toHaveBeenCalled();
+    expect(PromoCode.findOneAndUpdate).not.toHaveBeenCalled();
+    expect(SpecialOffer.findOneAndUpdate).not.toHaveBeenCalled();
+    expect(User.findByIdAndUpdate).not.toHaveBeenCalled();
+    expect(sendBookingConfirmation).not.toHaveBeenCalled();
+    expect(safeEmitEvent).not.toHaveBeenCalled();
+    expect(IdempotencyKey.deleteOne).toHaveBeenCalledWith(expect.objectContaining({ status: 'processing' }));
+  };
+
+  const cardOnlyTenant = () => ({
+    _id: TENANT_ID, slug: 'card-only-site', status: 'active',
+    paymentSettings: { allowPayAtLocation: false },
+  });
+
+  it.each([undefined, 'pay-later', 'cash'])('rejects new hostless offline booking %s without side effects', async (paymentMethod) => {
+    (Tenant.findOne as jest.Mock).mockImplementation(async (query) =>
+      query['paymentSettings.allowPayAtLocation'] === false && String(query._id) === TENANT_ID
+        ? cardOnlyTenant() : null);
+    const response = await post({ ...payload([]), paymentMethod, allowPayAtLocation: true,
+      paymentSettings: { allowPayAtLocation: true } });
+    expect(response.status).toBe(409);
+    expect(response.body.error).toContain('Please pay by card');
+    expect(Tenant.findOne).toHaveBeenCalledWith({ _id: TENANT_ID, 'paymentSettings.allowPayAtLocation': false });
+    rejectOfflineSideEffects();
+  });
+
+  it.each(['customer', 'brand-admin', 'manager', 'super-admin'])('enforces the same policy for authenticated %s bookings', async (role) => {
+    (verifyToken as jest.Mock).mockReturnValue({ userId: 'qa-user' });
+    (User.findById as jest.Mock).mockResolvedValue({ _id: 'qa-user', role, status: 'active', assignedTenants: [TENANT_ID] });
+    (Attraction.findOne as jest.Mock).mockResolvedValue(catalogAttraction());
+    (Tenant.findOne as jest.Mock).mockResolvedValue(cardOnlyTenant());
+    const body = { ...payload([]), paymentMethod: 'cash', ...(role === 'customer' ? {} : { tenantId: TENANT_ID }) };
+    const response = await request(app).post('/api/bookings')
+      .set('Idempotency-Key', `qa-offline-policy-${role}-0001`)
+      .set('Authorization', 'Bearer qa-session')
+      .set('X-Tenant-ID', TENANT_ID).send(body);
+    expect(response.status).toBe(409);
+    rejectOfflineSideEffects();
+  });
+
+  it('fails closed when the policy read fails', async () => {
+    (Tenant.findOne as jest.Mock).mockImplementation(async (query) => {
+      if (query['paymentSettings.allowPayAtLocation'] === false) throw new Error('policy lookup failed');
+      return null;
+    });
+    const response = await post(payload([]));
+    expect(response.status).toBe(500);
+    rejectOfflineSideEffects();
+  });
+
+  it('creates a pending card booking without confirming it or falling back to offline payment', async () => {
+    (Tenant.findOne as jest.Mock).mockResolvedValue(cardOnlyTenant());
+    const response = await post({ ...payload([]), paymentMethod: 'card' });
+    expect(response.status).toBe(201);
+    expect(response.body.data).toMatchObject({ paymentMethod: 'card', status: 'pending', paymentStatus: 'pending' });
+    expect(sendBookingConfirmation).not.toHaveBeenCalled();
+  });
+
+  it('does not apply one site\'s card-only policy to another site', async () => {
+    const otherId = new Types.ObjectId().toHexString();
+    (Attraction.findById as jest.Mock).mockResolvedValue({ ...catalogAttraction(), tenantIds: [otherId] });
+    (Tenant.findOne as jest.Mock).mockImplementation(async (query) =>
+      query['paymentSettings.allowPayAtLocation'] === false && String(query._id) === TENANT_ID
+        ? cardOnlyTenant() : null);
+    const response = await post({ ...payload([]), paymentMethod: 'cash' });
+    expect(response.status).toBe(201);
+    expect(response.body.data).toMatchObject({ paymentMethod: 'cash', status: 'confirmed' });
+  });
+
+  it('preserves a completed offline receipt replay after the site becomes card-only', async () => {
+    const body = payload([]);
+    const key = 'qa-offline-replay-original-0001';
+    const created = await post(body, key);
+    expect(created.status).toBe(201);
+    const claim = (IdempotencyKey.create as jest.Mock).mock.calls[0][0];
+    const originalBooking = await (Booking.create as jest.Mock).mock.results[0].value;
+    (Tenant.findOne as jest.Mock).mockResolvedValue(cardOnlyTenant());
+    (IdempotencyKey.create as jest.Mock).mockRejectedValueOnce({ code: 11000 });
+    (IdempotencyKey.findOne as jest.Mock).mockReturnValue({ lean: jest.fn().mockResolvedValue({
+      ...claim, status: 'completed', resourceId: originalBooking._id,
+    }) });
+    (Booking.findById as jest.Mock).mockResolvedValue(originalBooking);
+    const inventoryWrites = (Availability.findOneAndUpdate as jest.Mock).mock.calls.length;
+    const replay = await post(body, key);
+    expect(replay.status).toBe(200);
+    expect(replay.headers['idempotency-replayed']).toBe('true');
+    expect(replay.body.data.reference).toBe(created.body.data.reference);
+    expect(Booking.create).toHaveBeenCalledTimes(1);
+    expect(Availability.findOneAndUpdate).toHaveBeenCalledTimes(inventoryWrites);
+    expect(Tenant.findOne).toHaveBeenCalledTimes(2); // original closure and payment policy only
   });
 
   it('rejects missing pickup before inventory or booking writes when enabled', async () => {

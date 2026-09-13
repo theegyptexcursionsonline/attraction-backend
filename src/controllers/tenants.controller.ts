@@ -53,6 +53,7 @@ const PUBLIC_TENANT_FIELDS = [
 
 export const PUBLIC_TENANT_PROJECTION = [
   ...PUBLIC_TENANT_FIELDS,
+  'paymentSettings.allowPayAtLocation',
   'paymentSettings.stripe.enabled',
   'paymentSettings.stripe.publishableKey',
   'bundleSettings.mode',
@@ -75,6 +76,11 @@ export const toPublicTenantDto = (source: unknown): Record<string, unknown> => {
 
   const paymentSettings = record.paymentSettings;
   if (paymentSettings && typeof paymentSettings === 'object') {
+    const publicPaymentSettings: Record<string, unknown> = {};
+    const allowPayAtLocation = (paymentSettings as Record<string, unknown>).allowPayAtLocation;
+    if (typeof allowPayAtLocation === 'boolean') {
+      publicPaymentSettings.allowPayAtLocation = allowPayAtLocation;
+    }
     const stripe = (paymentSettings as Record<string, unknown>).stripe;
     if (stripe && typeof stripe === 'object') {
       const stripeRecord = stripe as Record<string, unknown>;
@@ -84,9 +90,10 @@ export const toPublicTenantDto = (source: unknown): Record<string, unknown> => {
         publicStripe.publishableKey = stripeRecord.publishableKey;
       }
       if (Object.keys(publicStripe).length > 0) {
-        dto.paymentSettings = { stripe: publicStripe };
+        publicPaymentSettings.stripe = publicStripe;
       }
     }
+    if (Object.keys(publicPaymentSettings).length > 0) dto.paymentSettings = publicPaymentSettings;
   }
 
   const bundleSettings = record.bundleSettings;

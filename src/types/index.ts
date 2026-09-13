@@ -134,6 +134,7 @@ export interface ITenant extends Document {
   paymentSettings?: {
     stripeAccountId?: string;
     enabledGateways: string[];
+    allowPayAtLocation?: boolean;
     ownPaymentGateway?: boolean;
   };
   bundleSettings?: {

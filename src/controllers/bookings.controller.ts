@@ -52,7 +52,7 @@ import {
   addonsTotal,
   normalizeBookingAddons,
 } from '../utils/bookingAddons';
-import { assertTenantIdsBookingCreationAllowed } from '../services/tenantBookingPolicy.service';
+import { assertTenantIdsBookingCreationAllowed, assertTenantPaymentMethodAllowed } from '../services/tenantBookingPolicy.service';
 import { configuredAvailabilityTimes } from '../utils/publicAvailability';
 
 // Compact, tenant-safe booking summary for webhook payloads. Contains only the
@@ -524,6 +524,7 @@ export const createBooking = async (
     // new booking for a closed tenant before inventory, discounts, or Booking
     // records can be mutated. This also covers direct API calls with no host.
     await assertTenantIdsBookingCreationAllowed([tenantId]);
+    await assertTenantPaymentMethodAllowed(tenantId, paymentMethod);
 
     // Reseller revenue split. When this booking is made on a reseller's site
     // (sellerTenant) for an attraction owned by a different supplier tenant, we

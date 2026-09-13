@@ -167,6 +167,8 @@ const tenantSchema = new Schema<ITenant>(
     paymentSettings: {
       stripeAccountId: String,
       enabledGateways: [{ type: String }],
+      // Existing tenants retain offline checkout unless explicitly disabled.
+      allowPayAtLocation: { type: Boolean, default: true },
       // True when this supplier collects online payments through their OWN gateway
       // (not the platform's). Drives settlement authority: own-gateway suppliers
       // hold their own funds and may self-settle card bookings too.

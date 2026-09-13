@@ -122,6 +122,7 @@ describe('public API DTO contracts', () => {
       name: 'Makadi Horse Club',
       status: 'active',
       paymentSettings: {
+        allowPayAtLocation: false,
         stripeAccountId: 'acct_private',
         enabledGateways: ['stripe'],
         ownPaymentGateway: true,
@@ -143,14 +144,27 @@ describe('public API DTO contracts', () => {
       name: 'Makadi Horse Club',
       status: 'active',
       paymentSettings: {
+        allowPayAtLocation: false,
         stripe: { enabled: true, publishableKey: 'pk_test_public' },
       },
     });
     expect(PUBLIC_TENANT_PROJECTION).toContain('paymentSettings.stripe.enabled');
+    expect(PUBLIC_TENANT_PROJECTION).toContain('paymentSettings.allowPayAtLocation');
     expect(PUBLIC_TENANT_PROJECTION).toContain('paymentSettings.stripe.publishableKey');
     expect(PUBLIC_TENANT_PROJECTION).not.toMatch(
       /stripeAccountId|enabledGateways|ownPaymentGateway|secretKeyEnc|webhookSecretEnc|previewAccessCode|__v/
     );
+  });
+
+  it.each([true, false])('exposes offline policy %s even when Stripe is absent', (allowPayAtLocation) => {
+    expect(toPublicTenantDto({ paymentSettings: { allowPayAtLocation, secretKeyEnc: 'private' } }))
+      .toEqual({ paymentSettings: { allowPayAtLocation } });
+  });
+
+  it('does not expose malformed policy values or widen the payment settings allowlist', () => {
+    expect(toPublicTenantDto({ paymentSettings: { allowPayAtLocation: 'false', webhookSecretEnc: 'private' } }))
+      .toEqual({});
+    expect(toPublicTenantDto({ slug: 'legacy' })).toEqual({ slug: 'legacy' });
   });
 });
 

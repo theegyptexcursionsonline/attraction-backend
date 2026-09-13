@@ -52,3 +52,26 @@ export const assertTenantIdsBookingCreationAllowed = async (
   // portfolio-wide shutdown.
   assertTenantBookingCreationAllowed(closedTenant);
 };
+
+/**
+ * Read the resolved booking site's current policy, never a body flag or an
+ * earlier tenant snapshot. Missing legacy flags retain offline checkout; a
+ * query failure propagates. A disabled card gateway cannot permit an offline
+ * fallback on a site which requires card payment.
+ *
+ * Call only for a new booking, after completed idempotent receipt replays and
+ * before inventory, promotion or booking writes.
+ */
+export const assertTenantPaymentMethodAllowed = async (
+  tenantId: unknown,
+  paymentMethod: unknown
+): Promise<void> => {
+  if (paymentMethod === 'card') return;
+  const cardOnlyTenant = await Tenant.findOne({
+    _id: tenantId,
+    'paymentSettings.allowPayAtLocation': false,
+  });
+  if (cardOnlyTenant?.paymentSettings?.allowPayAtLocation === false) {
+    throw new AppError('Pay at location is not available for this site. Please pay by card.', 409);
+  }
+};
