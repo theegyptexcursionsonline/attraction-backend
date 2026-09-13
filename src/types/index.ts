@@ -114,6 +114,7 @@ export interface ITenant extends Document {
     };
     searchWidget: {
       enabled: boolean;
+      widgetId?: string;
       placeholder?: string;
       showPopularSearches: boolean;
       maxSuggestions: number;

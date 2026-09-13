@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
 import { Tenant } from '../models/Tenant';
+import { aiSettingsUpdateSchema, aiSettingsSetPaths, publicAiSettings } from '../utils/aiSettings';
 import { Attraction } from '../models/Attraction';
 import { Booking } from '../models/Booking';
 import { Destination } from '../models/Destination';
@@ -75,6 +76,7 @@ export const toPublicTenantDto = (source: unknown): Record<string, unknown> => {
   }
 
   if (dto.navigation !== undefined) { const parsed = navigationSchema.safeParse(dto.navigation); dto.navigation = parsed.success ? parsed.data : []; }
+  if (dto.aiSettings !== undefined) dto.aiSettings = publicAiSettings(dto.aiSettings);
 
   const paymentSettings = record.paymentSettings;
   if (paymentSettings && typeof paymentSettings === 'object') {
@@ -638,12 +640,13 @@ type PickupDestinationUpdate = { slugs: string[] } | { status: number; error: st
  * areas the site already had are kept even if that destination was deactivated since, so
  * saving unrelated settings never fails because of an older entry.
  */
-async function resolvePickupDestinationUpdate(tenantId: string, value: unknown): Promise<PickupDestinationUpdate> {
+async function resolvePickupDestinationUpdate(siteFilter: Record<string, unknown>, value: unknown): Promise<PickupDestinationUpdate> {
   if (!isValidPickupDestinationList(value)) {
     return { status: 400, error: 'Pickup destinations must be up to 12 destination slugs' };
   }
   const slugs = normalizePickupDestinationSlugs(value);
-  const current = await Tenant.findById(tenantId).select('pickupDestinationSlugs').lean();
+  // Same membership filter as the write, so a foreign site reads exactly like a missing one.
+  const current = await Tenant.findOne(siteFilter).select('pickupDestinationSlugs').lean();
   if (!current) return { status: 404, error: 'Tenant not found' };
   const existing = new Set(normalizePickupDestinationSlugs((current as { pickupDestinationSlugs?: unknown }).pickupDestinationSlugs));
   const added = slugs.filter((slug) => !existing.has(slug));
@@ -657,23 +660,40 @@ async function resolvePickupDestinationUpdate(tenantId: string, value: unknown):
   return { slugs };
 }
 
+/**
+ * The AI Search widget id is written into a storefront script attribute, so it is
+ * checked before any write rather than relying on nested update validators.
+ * An empty value clears the setting and turns the launcher off.
+ */
+export function aiSearchWidgetIdError(aiSettings: unknown): string | null {
+  if (aiSettings === undefined) return null;
+  const parsed = aiSettingsUpdateSchema.safeParse(aiSettings);
+  return parsed.success ? null : 'Invalid AI settings: ' + parsed.error.issues[0].message;
+}
+
 export const updateTenant = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
+    if (!req.user || req.user.role !== 'super-admin') { sendError(res, 'Super admin access required', req.user ? 403 : 401); return; }
     const { id } = req.params;
+    if (!Types.ObjectId.isValid(id)) { sendError(res, 'Tenant not found', 404); return; }
     if (req.body.navigation !== undefined || req.body.navigationRevision !== undefined) { sendError(res, 'Use the Menus editor to update navigation', 400); return; }
+    const aiSearchError = aiSearchWidgetIdError(req.body.aiSettings);
+    if (aiSearchError) { sendError(res, aiSearchError, 400); return; }
 
+    const { aiSettings, ...otherUpdates } = req.body;
     const updates = {
-      ...req.body,
+      ...otherUpdates,
+      ...(aiSettings === undefined ? {} : aiSettingsSetPaths(aiSettingsUpdateSchema.parse(aiSettings))),
       ...(req.body.customPages !== undefined
         ? { customPages: sanitizeCustomPages(req.body.customPages) }
         : {}),
     };
     if (req.body.pickupDestinationSlugs !== undefined) {
-      const pickup = await resolvePickupDestinationUpdate(id, req.body.pickupDestinationSlugs);
+      const pickup = await resolvePickupDestinationUpdate({ _id: id }, req.body.pickupDestinationSlugs);
       if ('error' in pickup) { sendError(res, pickup.error, pickup.status); return; }
       updates.pickupDestinationSlugs = pickup.slugs;
     }
@@ -730,11 +750,17 @@ export const updateTenantSettings = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    if (!req.user || !['super-admin', 'brand-admin'].includes(req.user.role)) {
+      sendError(res, 'Site administrator access required', req.user ? 403 : 401); return;
+    }
     const { id } = req.params;
+    if (!Types.ObjectId.isValid(id)) { sendError(res, 'Tenant not found', 404); return; }
 
     if (req.body.navigation !== undefined || req.body.navigationRevision !== undefined) { sendError(res, 'Use the Menus editor to update navigation', 400); return; }
+    const aiSearchError = aiSearchWidgetIdError(req.body.aiSettings);
+    if (aiSearchError) { sendError(res, aiSearchError, 400); return; }
     if (req.body.pickupDestinationSlugs !== undefined && !isValidPickupDestinationList(req.body.pickupDestinationSlugs)) { sendError(res, 'Pickup destinations must be up to 12 destination slugs', 400); return; }
-    const isSuperAdmin = req.user?.role === 'super-admin';
+    const isSuperAdmin = req.user.role === 'super-admin';
     if (isSuperAdmin && req.body.name !== undefined && (typeof req.body.name !== 'string' || !req.body.name.trim() || req.body.name.trim().length > 120)) {
       sendError(res, 'Site name must be 1-120 characters', 400);
       return;
@@ -748,7 +774,6 @@ export const updateTenantSettings = async (
       // encrypted subdoc and are managed only via PUT /payments/gateway/:tenantId, so
       // a wholesale settings write can't overwrite/wipe or expose them.
       'seoSettings',
-      'aiSettings',
       'theme',
       'fonts',
       'designMode',
@@ -769,7 +794,8 @@ export const updateTenantSettings = async (
       ...(isSuperAdmin ? ['name'] : []),
     ];
 
-    const updates: Record<string, unknown> = {};
+    const updates: Record<string, unknown> = req.body.aiSettings === undefined ? {}
+      : aiSettingsSetPaths(aiSettingsUpdateSchema.parse(req.body.aiSettings));
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) {
         updates[field] = req.body[field];
@@ -780,15 +806,20 @@ export const updateTenantSettings = async (
       sendError(res, 'No valid fields to update', 400);
       return;
     }
+    // Membership is part of every read and write: another tenant is indistinguishable
+    // from a missing record, including when the handler is mounted elsewhere.
+    const siteFilter: Record<string, unknown> = isSuperAdmin ? { _id: id } : {
+      _id: { $eq: id, $in: req.user.assignedTenants || [] },
+    };
     if (updates.pickupDestinationSlugs !== undefined) {
-      const pickup = await resolvePickupDestinationUpdate(id, updates.pickupDestinationSlugs);
+      const pickup = await resolvePickupDestinationUpdate(siteFilter, updates.pickupDestinationSlugs);
       if ('error' in pickup) { sendError(res, pickup.error, pickup.status); return; }
       updates.pickupDestinationSlugs = pickup.slugs;
     }
     if (typeof updates.name === 'string') updates.name = updates.name.trim();
 
-    const tenant = await Tenant.findByIdAndUpdate(
-      id,
+    const tenant = await Tenant.findOneAndUpdate(
+      siteFilter,
       { $set: updates },
       { new: true, runValidators: true }
     );

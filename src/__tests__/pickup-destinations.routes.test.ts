@@ -12,7 +12,7 @@ let mockUser: Record<string, unknown> | null = null;
 
 jest.mock('../utils/jwt', () => ({ verifyToken: jest.fn(() => ({ userId: 'user-1' })) }));
 jest.mock('../models/User', () => ({ User: { findById: jest.fn(() => Promise.resolve(mockUser)) } }));
-jest.mock('../models/Tenant', () => ({ Tenant: { findOne: jest.fn(), findById: jest.fn(), findByIdAndUpdate: jest.fn() } }));
+jest.mock('../models/Tenant', () => ({ Tenant: { findOne: jest.fn(), findById: jest.fn(), findByIdAndUpdate: jest.fn(), findOneAndUpdate: jest.fn() } }));
 jest.mock('../models/Attraction', () => ({ Attraction: { find: jest.fn(), countDocuments: jest.fn(), distinct: jest.fn(), aggregate: jest.fn() } }));
 jest.mock('../models/Destination', () => ({ Destination: { find: jest.fn(), countDocuments: jest.fn(), distinct: jest.fn() } }));
 jest.mock('../models/Category', () => ({ Category: { findOne: jest.fn().mockResolvedValue(null) } }));
@@ -41,10 +41,13 @@ const listChain = () => {
 beforeEach(() => {
   jest.clearAllMocks();
   mockUser = null;
-  (Tenant.findOne as jest.Mock).mockResolvedValue(royalCruise);
+  // Tenant middleware awaits findOne directly; the settings handler reads pickup areas with .select().lean().
+  (Tenant.findOne as jest.Mock).mockImplementation(() => ({
+    then: (resolve: (value: unknown) => unknown, reject: (error: unknown) => unknown) => Promise.resolve(royalCruise).then(resolve, reject),
+    select: () => ({ lean: jest.fn().mockResolvedValue({ _id: royalCruiseId }) }),
+  }));
   (Attraction.find as jest.Mock).mockReturnValue(listChain());
   (Attraction.countDocuments as jest.Mock).mockResolvedValue(0);
-  (Tenant.findById as jest.Mock).mockReturnValue({ select: () => ({ lean: jest.fn().mockResolvedValue({ _id: royalCruiseId }) }) });
   (Destination.distinct as jest.Mock).mockImplementation((_field, filter) => Promise.resolve(filter.slug.$in));
 });
 
@@ -79,6 +82,7 @@ describe('GET /attractions?pickupFrom', () => {
 describe('saving pickup areas through the tenant routes', () => {
   beforeEach(() => {
     (Tenant.findByIdAndUpdate as jest.Mock).mockImplementation((id, update) => Promise.resolve({ _id: id, ...update.$set }));
+    (Tenant.findOneAndUpdate as jest.Mock).mockImplementation((filter, update) => Promise.resolve({ _id: royalCruiseId, ...update.$set }));
   });
 
   it('lets an assigned site admin save them from site settings', async () => {
@@ -90,23 +94,24 @@ describe('saving pickup areas through the tenant routes', () => {
       .send({ pickupDestinationSlugs: ['makadi-bay', 'sahl-hasheesh'] });
 
     expect(response.status).toBe(200);
-    expect(Tenant.findByIdAndUpdate).toHaveBeenCalledWith(
-      String(royalCruiseId),
+    expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith(
+      { _id: { $eq: String(royalCruiseId), $in: [royalCruiseId] } },
       { $set: { pickupDestinationSlugs: ['makadi-bay', 'sahl-hasheesh'] } },
       { new: true, runValidators: true }
     );
   });
 
-  it('refuses a site admin of another site', async () => {
+  it('answers a site admin of another site like a missing site', async () => {
     mockUser = { _id: 'user-1', role: 'brand-admin', status: 'active', tokenVersion: 0, assignedTenants: [otherSiteId] };
+    (Tenant.findOne as jest.Mock).mockImplementation(() => ({ select: () => ({ lean: jest.fn().mockResolvedValue(null) }) }));
 
     const response = await request(app)
       .patch(`/tenants/${royalCruiseId}/settings`)
       .set('Authorization', 'Bearer token')
       .send({ pickupDestinationSlugs: ['makadi-bay'] });
 
-    expect(response.status).toBe(403);
-    expect(Tenant.findByIdAndUpdate).not.toHaveBeenCalled();
+    expect(response.status).toBe(404);
+    expect(Tenant.findOneAndUpdate).not.toHaveBeenCalled();
   });
 
   it('keeps them on the super-admin site update', async () => {
@@ -141,8 +146,8 @@ describe('saving pickup areas through the tenant routes', () => {
       });
 
     expect(response.status).toBe(200);
-    expect(Tenant.findByIdAndUpdate).toHaveBeenCalledWith(
-      String(royalCruiseId),
+    expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith(
+      { _id: String(royalCruiseId) },
       { $set: { contactInfo: { email: 'bookings@example.org', phone: '+20 100 000 0000' }, logo: '/logos/royal-cruise.png', timezone: 'Africa/Cairo', name: 'Royal Cruise Hurghada' } },
       { new: true, runValidators: true }
     );
@@ -157,7 +162,7 @@ describe('saving pickup areas through the tenant routes', () => {
       .send({ name: 'Renamed', tagline: 'Sail the Red Sea' });
 
     expect(response.status).toBe(200);
-    expect(Tenant.findByIdAndUpdate).toHaveBeenCalledWith(String(royalCruiseId), { $set: { tagline: 'Sail the Red Sea' } }, { new: true, runValidators: true });
+    expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith({ _id: { $eq: String(royalCruiseId), $in: [royalCruiseId] } }, { $set: { tagline: 'Sail the Red Sea' } }, { new: true, runValidators: true });
   });
 
   it('refuses a blank site name', async () => {
@@ -167,6 +172,7 @@ describe('saving pickup areas through the tenant routes', () => {
 
     expect(response.status).toBe(400);
     expect(Tenant.findByIdAndUpdate).not.toHaveBeenCalled();
+    expect(Tenant.findOneAndUpdate).not.toHaveBeenCalled();
   });
 
   it('refuses a newly added area that is not an active destination', async () => {
@@ -178,6 +184,7 @@ describe('saving pickup areas through the tenant routes', () => {
     expect(response.status).toBe(400);
     expect(response.body.error).toContain('atlantis');
     expect(Tenant.findByIdAndUpdate).not.toHaveBeenCalled();
+    expect(Tenant.findOneAndUpdate).not.toHaveBeenCalled();
   });
 
   it('rejects an invalid list on either route', async () => {
@@ -191,6 +198,7 @@ describe('saving pickup areas through the tenant routes', () => {
       expect(response.status).toBe(400);
     }
     expect(Tenant.findByIdAndUpdate).not.toHaveBeenCalled();
+    expect(Tenant.findOneAndUpdate).not.toHaveBeenCalled();
   });
 });
 

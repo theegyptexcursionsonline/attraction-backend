@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { aiSettingsUpdateSchema } from './aiSettings';
 import { MAX_REGEX_SEARCH_LENGTH } from './helpers';
 import { MAX_PICKUP_DESTINATIONS, PICKUP_DESTINATION_SLUG_PATTERN } from './pickupDestinations';
 
@@ -624,6 +625,7 @@ const pickupDestinationSlugsSchema = z.array(pickupDestinationSlugSchema).max(MA
 
 // Tenant Validators
 export const createTenantSchema = z.object({
+  aiSettings: aiSettingsUpdateSchema.optional(),
   slug: z.string().min(1, 'Slug is required'),
   name: z.string().min(1, 'Name is required'),
   domain: z.string().min(1, 'Domain is required'),

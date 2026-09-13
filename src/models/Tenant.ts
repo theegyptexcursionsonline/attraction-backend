@@ -2,6 +2,8 @@ import { pagePresentationSchema } from '../utils/siteContent';
 import { urlNamespacePlugin } from '../plugins/urlNamespace';
 import mongoose, { Schema } from 'mongoose';
 import { ITenant } from '../types';
+import { AI_SEARCH_WIDGET_ID_PATTERN } from '../utils/aiSettings';
+export { AI_SEARCH_WIDGET_ID_PATTERN } from '../utils/aiSettings';
 
 const tenantSchema = new Schema<ITenant>(
   {
@@ -147,6 +149,13 @@ const tenantSchema = new Schema<ITenant>(
       },
       searchWidget: {
         enabled: { type: Boolean, default: true },
+        // Foxes AI Search launcher for this site. The storefront loads search only when
+        // this is set, so the long-standing `enabled` default alone never activates it.
+        widgetId: {
+          type: String,
+          trim: true,
+          match: [AI_SEARCH_WIDGET_ID_PATTERN, 'AI Search widget ID must look like wgt_…'],
+        },
         placeholder: String,
         showPopularSearches: { type: Boolean, default: true },
         maxSuggestions: { type: Number, default: 6 },

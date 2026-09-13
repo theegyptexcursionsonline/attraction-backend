@@ -337,7 +337,7 @@ router.patch(
   '/:id/settings',
   authenticate,
   requireRole('super-admin', 'brand-admin'),
-  canAccessTenant,
+  // The handler scopes the atomic write and returns 404 for unassigned tenants.
   updateTenantSettings
 );
 

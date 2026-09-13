@@ -30,7 +30,7 @@ jest.mock('../models/Destination', () => ({
   Destination: { find: jest.fn(), findOne: jest.fn(), countDocuments: jest.fn(), distinct: jest.fn() },
 }));
 jest.mock('../models/Tenant', () => ({
-  Tenant: { findById: jest.fn(), findByIdAndUpdate: jest.fn(), findOne: jest.fn() },
+  Tenant: { findById: jest.fn(), findByIdAndUpdate: jest.fn(), findOne: jest.fn(), findOneAndUpdate: jest.fn() },
 }));
 
 const response = () => {
@@ -332,8 +332,10 @@ describe('tour listing by pickup area', () => {
 
 describe('saving pickup areas on a site', () => {
   const id = new Types.ObjectId().toHexString();
+  const superAdmin = { role: 'super-admin' };
+  const siteAdmin = { role: 'brand-admin', assignedTenants: [id] };
   const stored = (pickupDestinationSlugs?: string[]) =>
-    (Tenant.findById as jest.Mock).mockReturnValue({ select: () => ({ lean: jest.fn().mockResolvedValue({ _id: id, pickupDestinationSlugs }) }) });
+    (Tenant.findOne as jest.Mock).mockReturnValue({ select: () => ({ lean: jest.fn().mockResolvedValue({ _id: id, pickupDestinationSlugs }) }) });
   beforeEach(() => {
     jest.clearAllMocks();
     stored(undefined);
@@ -347,27 +349,30 @@ describe('saving pickup areas on a site', () => {
   ])('rejects %s before touching the site', async (_label, pickupDestinationSlugs) => {
     for (const handler of [updateTenant, updateTenantSettings]) {
       const res = response();
-      await handler({ params: { id }, body: { pickupDestinationSlugs } } as never, res, jest.fn());
+      await handler({ params: { id }, user: superAdmin, body: { pickupDestinationSlugs } } as never, res, jest.fn());
       expect(res.status).toHaveBeenCalledWith(400);
       expect(body(res).error).toContain('Pickup destinations');
     }
     expect(Tenant.findByIdAndUpdate).not.toHaveBeenCalled();
+    expect(Tenant.findOneAndUpdate).not.toHaveBeenCalled();
   });
 
   it('lets a site admin save a valid list, normalised', async () => {
     (Destination.distinct as jest.Mock).mockResolvedValue(['makadi-bay', 'sahl-hasheesh']);
-    (Tenant.findByIdAndUpdate as jest.Mock).mockResolvedValue({ _id: id });
+    (Tenant.findOneAndUpdate as jest.Mock).mockResolvedValue({ _id: id });
     const res = response();
 
     await updateTenantSettings(
-      { params: { id }, body: { pickupDestinationSlugs: [' Makadi-Bay', 'sahl-hasheesh', 'makadi-bay'] } } as never,
+      { params: { id }, user: siteAdmin, body: { pickupDestinationSlugs: [' Makadi-Bay', 'sahl-hasheesh', 'makadi-bay'] } } as never,
       res,
       jest.fn()
     );
 
+    const siteFilter = { _id: { $eq: id, $in: [id] } };
+    expect(Tenant.findOne).toHaveBeenCalledWith(siteFilter);
     expect(Destination.distinct).toHaveBeenCalledWith('slug', { slug: { $in: ['makadi-bay', 'sahl-hasheesh'] }, isActive: true });
-    expect(Tenant.findByIdAndUpdate).toHaveBeenCalledWith(
-      id,
+    expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith(
+      siteFilter,
       { $set: { pickupDestinationSlugs: ['makadi-bay', 'sahl-hasheesh'] } },
       { new: true, runValidators: true }
     );
@@ -379,42 +384,57 @@ describe('saving pickup areas on a site', () => {
 
     for (const handler of [updateTenant, updateTenantSettings]) {
       const res = response();
-      await handler({ params: { id }, user: { role: 'super-admin' }, body: { pickupDestinationSlugs: ['makadi-bay', 'atlantis'] } } as never, res, jest.fn());
+      await handler({ params: { id }, user: superAdmin, body: { pickupDestinationSlugs: ['makadi-bay', 'atlantis'] } } as never, res, jest.fn());
       expect(res.status).toHaveBeenCalledWith(400);
       expect(body(res).error).toBe('Pickup destinations must be active destinations: atlantis');
     }
     expect(Tenant.findByIdAndUpdate).not.toHaveBeenCalled();
+    expect(Tenant.findOneAndUpdate).not.toHaveBeenCalled();
   });
 
   it('keeps an area the site already had even if that destination was deactivated since', async () => {
     stored(['old-bay', 'makadi-bay']);
-    (Tenant.findByIdAndUpdate as jest.Mock).mockResolvedValue({ _id: id });
+    (Tenant.findOneAndUpdate as jest.Mock).mockResolvedValue({ _id: id });
     const res = response();
 
-    await updateTenantSettings({ params: { id }, body: { pickupDestinationSlugs: ['old-bay', 'makadi-bay'], tagline: 'Sail' } } as never, res, jest.fn());
+    await updateTenantSettings({ params: { id }, user: superAdmin, body: { pickupDestinationSlugs: ['old-bay', 'makadi-bay'], tagline: 'Sail' } } as never, res, jest.fn());
 
     expect(Destination.distinct).not.toHaveBeenCalled();
-    expect(Tenant.findByIdAndUpdate).toHaveBeenCalledWith(id, { $set: { tagline: 'Sail', pickupDestinationSlugs: ['old-bay', 'makadi-bay'] } }, { new: true, runValidators: true });
+    expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith({ _id: id }, { $set: { tagline: 'Sail', pickupDestinationSlugs: ['old-bay', 'makadi-bay'] } }, { new: true, runValidators: true });
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
   it('lets an admin clear the list', async () => {
     stored(['makadi-bay']);
-    (Tenant.findByIdAndUpdate as jest.Mock).mockResolvedValue({ _id: id });
+    (Tenant.findOneAndUpdate as jest.Mock).mockResolvedValue({ _id: id });
     const res = response();
 
-    await updateTenantSettings({ params: { id }, body: { pickupDestinationSlugs: [] } } as never, res, jest.fn());
+    await updateTenantSettings({ params: { id }, user: superAdmin, body: { pickupDestinationSlugs: [] } } as never, res, jest.fn());
 
-    expect(Tenant.findByIdAndUpdate).toHaveBeenCalledWith(id, { $set: { pickupDestinationSlugs: [] } }, { new: true, runValidators: true });
+    expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith({ _id: id }, { $set: { pickupDestinationSlugs: [] } }, { new: true, runValidators: true });
   });
 
   it('answers 404 for a missing site before any write', async () => {
-    (Tenant.findById as jest.Mock).mockReturnValue({ select: () => ({ lean: jest.fn().mockResolvedValue(null) }) });
+    (Tenant.findOne as jest.Mock).mockReturnValue({ select: () => ({ lean: jest.fn().mockResolvedValue(null) }) });
     const res = response();
 
-    await updateTenantSettings({ params: { id }, body: { pickupDestinationSlugs: ['makadi-bay'] } } as never, res, jest.fn());
+    await updateTenantSettings({ params: { id }, user: superAdmin, body: { pickupDestinationSlugs: ['makadi-bay'] } } as never, res, jest.fn());
 
     expect(res.status).toHaveBeenCalledWith(404);
-    expect(Tenant.findByIdAndUpdate).not.toHaveBeenCalled();
+    expect(Tenant.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it('answers a site admin of another site exactly like a missing site, even with an unknown area', async () => {
+    (Tenant.findOne as jest.Mock).mockReturnValue({ select: () => ({ lean: jest.fn().mockResolvedValue(null) }) });
+    (Destination.distinct as jest.Mock).mockResolvedValue([]);
+    const otherSite = new Types.ObjectId().toHexString();
+    const res = response();
+
+    await updateTenantSettings({ params: { id }, user: { role: 'brand-admin', assignedTenants: [otherSite] }, body: { pickupDestinationSlugs: ['atlantis'] } } as never, res, jest.fn());
+
+    expect(Tenant.findOne).toHaveBeenCalledWith({ _id: { $eq: id, $in: [otherSite] } });
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(Destination.distinct).not.toHaveBeenCalled();
+    expect(Tenant.findOneAndUpdate).not.toHaveBeenCalled();
   });
 });
