@@ -8,6 +8,9 @@ const widgetId = z.string().trim().max(68).refine(
   value => value === '' || AI_SEARCH_WIDGET_ID_PATTERN.test(value),
   'AI Search widget ID must look like wgt_…',
 ).nullable().transform(value => value ?? '');
+// Where the storefront shows the launcher: 'browse' = home, catalogue listings and destination
+// pages; 'all' = also tour pages and information pages. Checkout and account pages never show it.
+export const AI_SEARCH_DISPLAY_PAGES = ['browse', 'all'] as const;
 const languages = z.array(z.string().min(1).max(35)).max(50);
 
 export const aiSettingsUpdateSchema = z.object({
@@ -30,6 +33,7 @@ export const aiSettingsUpdateSchema = z.object({
     placeholder: z.string().max(500).optional(),
     showPopularSearches: z.boolean().optional(),
     maxSuggestions: z.number().int().min(1).max(20).optional(),
+    displayPages: z.enum(AI_SEARCH_DISPLAY_PAGES).optional(),
   }).strict().optional(),
 }).strict();
 

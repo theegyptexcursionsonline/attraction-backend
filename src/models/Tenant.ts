@@ -159,6 +159,8 @@ const tenantSchema = new Schema<ITenant>(
         placeholder: String,
         showPopularSearches: { type: Boolean, default: true },
         maxSuggestions: { type: Number, default: 6 },
+        // Browsing pages only unless the site admin chooses every catalogue page.
+        displayPages: { type: String, enum: ['browse', 'all'], default: 'browse' },
       },
     },
     // Areas served by hotel pickup rather than departures; see utils/pickupDestinations.

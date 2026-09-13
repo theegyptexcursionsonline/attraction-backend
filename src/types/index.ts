@@ -118,6 +118,7 @@ export interface ITenant extends Document {
       placeholder?: string;
       showPopularSearches: boolean;
       maxSuggestions: number;
+      displayPages?: 'browse' | 'all';
     };
   };
   /** Destination slugs this site serves by hotel pickup (no departures there). */

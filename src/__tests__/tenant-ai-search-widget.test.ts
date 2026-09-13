@@ -30,6 +30,12 @@ describe('Tenant AI Search widget setting', () => {
     expect(tenant.aiSettings.searchWidget.widgetId).toBeUndefined();
   });
 
+  it('shows search on browsing pages unless the admin chooses every page', () => {
+    expect(tenantWith({}).aiSettings.searchWidget.displayPages).toBe('browse');
+    expect(tenantWith({ displayPages: 'all' }).validateSync()?.errors['aiSettings.searchWidget.displayPages']).toBeUndefined();
+    expect(tenantWith({ displayPages: 'tour-pages' }).validateSync()?.errors['aiSettings.searchWidget.displayPages']).toBeDefined();
+  });
+
   it('trims pasted ids before validating', () => {
     const tenant = tenantWith({ enabled: true, widgetId: '  wgt_6JW5umlfasNQfJywtFPs6g  ' });
     expect(tenant.validateSync()?.errors['aiSettings.searchWidget.widgetId']).toBeUndefined();

@@ -67,6 +67,20 @@ it('saves, reads publicly, replaces, disables and clears the widget without remo
   }
 });
 
+it('lets a site admin choose where search appears, defaulting to browsing pages only', async () => {
+  await patch().send(search({ widgetId })).expect(200);
+  let read = await request(app).get(`/tenants/public/${owner}`).expect(200);
+  // Existing sites carry no choice; the storefront treats that as browsing pages only.
+  expect(read.body.data.aiSettings.searchWidget.displayPages).toBeUndefined();
+  await patch().send(search({ displayPages: 'all' })).expect(200);
+  expect((await stored())?.aiSettings.searchWidget).toMatchObject({ widgetId, displayPages: 'all', placeholder: 'Search experiences' });
+  read = await request(app).get(`/tenants/public/${owner}`).expect(200);
+  expect(read.body.data.aiSettings.searchWidget.displayPages).toBe('all');
+  await patch().send(search({ displayPages: 'browse' })).expect(200);
+  expect((await stored())?.aiSettings.searchWidget.displayPages).toBe('browse');
+  await patch(other).send(search({ displayPages: 'all' })).expect(404);
+});
+
 it('preserves independently updated search/voice/booking fields under concurrent requests and retries', async () => {
   await Promise.all([
     patch().send(search({ widgetId })).expect(200),
@@ -105,6 +119,7 @@ it.each([
   { searchWidget: { widgetId: { $ne: null } } }, { searchWidget: { enabled: 'false' } },
   { searchWidget: { clientId: String(other) } }, { searchWidget: { allowedDomains: ['other.invalid'] } },
   { searchWidget: { apiKey: 'private' } }, { searchWidget: { maxSuggestions: 21 } },
+  { searchWidget: { displayPages: 'tour' } }, { searchWidget: { displayPages: ['all'] } }, { searchWidget: { displayPages: { $ne: 'browse' } } },
 ])('rejects malformed or authorization-bearing AI settings: %j', async aiSettings => {
   await patch().send({ aiSettings }).expect(400);
   expect((await stored())?.aiSettings.searchWidget.widgetId).toBeUndefined();
