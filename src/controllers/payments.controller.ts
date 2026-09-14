@@ -4,6 +4,7 @@ import type Stripe from 'stripe';
 import { Booking } from '../models/Booking';
 import { Attraction } from '../models/Attraction';
 import { Tenant } from '../models/Tenant';
+import { bookingNotificationEmail } from '../utils/notificationRecipients';
 import { User } from '../models/User';
 import { sendSuccess, sendError } from '../utils/response';
 import { AuthRequest } from '../types';
@@ -430,7 +431,7 @@ const finalizePaidBooking = async (
     const hotelPickup = firstItem?.hotelPickup;
 
     const tenantBrand = await Tenant.findById(booking.tenantId)
-      .select('name slug customDomain domainMigrated theme logo contactInfo')
+      .select('name slug customDomain domainMigrated theme logo contactInfo notificationSettings')
       .lean();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tb = tenantBrand as any;
@@ -505,7 +506,7 @@ const finalizePaidBooking = async (
       tenantBrand
     );
 
-    const recipient = tb?.contactInfo?.email;
+    const recipient = bookingNotificationEmail(tb);
     if (recipient) {
       try {
         await sendAdminBookingNotification(

@@ -13,7 +13,7 @@ import { verifyToken } from '../utils/jwt';
 import { safeEmitEvent } from '../services/webhook.service';
 import { generateBookingAccessToken } from '../utils/bookingAccess';
 import { generateTicketPdf } from '../services/pdf.service';
-import { sendBookingConfirmation } from '../services/email.service';
+import { sendAdminBookingNotification, sendBookingConfirmation } from '../services/email.service';
 
 /**
  * Add-on quantity is server-authoritative: the catalogue decides name, unit
@@ -259,6 +259,25 @@ describe('POST /api/bookings — add-on quantities', () => {
       Buffer.from('%PDF-QA'),
       null,
     );
+  });
+
+  it.each([
+    [{ bookingEmail: 'reservations@qa-site.invalid' }, 'reservations@qa-site.invalid'],
+    [{ bookingEmail: '' }, 'support@qa-site.invalid'],
+    [undefined, 'support@qa-site.invalid'],
+  ])('sends the new-booking alert to the reservations inbox when set (%j)', async (notificationSettings, expected) => {
+    const lean = jest.fn().mockResolvedValue({
+      _id: TENANT_ID, name: 'QA Site', contactInfo: { email: 'support@qa-site.invalid' }, notificationSettings,
+    });
+    const select = jest.fn().mockReturnValue({ lean });
+    (Tenant.findById as jest.Mock).mockReturnValueOnce({ select });
+    const response = await post(payload([]));
+    expect(response.status).toBe(201);
+    await new Promise(resolve => setImmediate(resolve));
+    await new Promise(resolve => setImmediate(resolve));
+    expect(select).toHaveBeenCalledWith(expect.stringContaining('notificationSettings'));
+    expect(sendAdminBookingNotification).toHaveBeenCalledTimes(1);
+    expect(sendAdminBookingNotification).toHaveBeenCalledWith(expected, expect.objectContaining({ reference: response.body.data.reference }), expect.anything());
   });
 
   it.each([true, false])('replays the original receipt after pickup availability changes from %s', async (wasEnabled) => {

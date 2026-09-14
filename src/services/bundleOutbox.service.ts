@@ -6,6 +6,7 @@ import { BundleOrder } from '../models/BundleOrder';
 import { BundleOutboxEvent, IBundleOutboxEvent } from '../models/BundleOutboxEvent';
 import { BundleOutboxRecovery } from '../models/BundleOutboxRecovery';
 import { Tenant } from '../models/Tenant';
+import { bookingNotificationEmail } from '../utils/notificationRecipients';
 import { appendBundleEvent } from './bundleAudit.service';
 import { runBundleTransaction } from './bundleInventory.service';
 import {
@@ -432,7 +433,7 @@ const processEvent = async (
       action: { label: 'View bundle order', url },
     });
   } else if (event.audience === 'supplier') {
-    recipient = tenant.contactInfo?.email || '';
+    recipient = bookingNotificationEmail(tenant) || '';
     const components = order.components.filter(
       (component) => component.supplierTenantId.toString() === event.tenantId.toString()
     );
@@ -450,7 +451,7 @@ const processEvent = async (
       })),
     });
   } else {
-    recipient = tenant.contactInfo?.email || '';
+    recipient = bookingNotificationEmail(tenant) || '';
     const cancellationRequested = event.eventType === 'bundle.cancellation_requested';
     subject = event.eventType === 'bundle.order_reserved'
       ? `Bundle reserved — ${order.reference}`

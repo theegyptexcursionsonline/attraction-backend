@@ -87,6 +87,9 @@ export interface ITenant extends Document {
     address?: string;
     supportHours?: string;
   };
+  notificationSettings?: {
+    bookingEmail?: string;
+  };
   socialLinks?: {
     facebook?: string;
     instagram?: string;

@@ -120,6 +120,11 @@ const tenantSchema = new Schema<ITenant>(
       address: String,
       supportHours: String,
     },
+    // Private to admins (never in the public tenant contract): where booking alerts go
+    // when the reservations inbox differs from the public support email.
+    notificationSettings: {
+      bookingEmail: { type: String, trim: true, lowercase: true, maxlength: 254 },
+    },
     socialLinks: {
       facebook: String,
       instagram: String,

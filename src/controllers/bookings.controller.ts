@@ -54,6 +54,7 @@ import {
 import { assertTenantIdsBookingCreationAllowed, assertTenantPaymentMethodAllowed } from '../services/tenantBookingPolicy.service';
 import { configuredAvailabilityTimes } from '../utils/publicAvailability';
 import { bookingEligibility, resolveBookingTimeZone } from '../utils/bookingCutoff';
+import { bookingNotificationEmail } from '../utils/notificationRecipients';
 
 // Compact, tenant-safe booking summary for webhook payloads. Contains only the
 // booking's own fields — never other tenants' data.
@@ -729,7 +730,7 @@ export const createBooking = async (
       // One tenant lookup, reused for both the customer confirmation (branding)
       // and the operator notification below.
       const tenantDoc = await Tenant.findById(tenantId)
-        .select('name slug customDomain domainMigrated contactInfo theme logo')
+        .select('name slug customDomain domainMigrated contactInfo notificationSettings theme logo')
         .lean();
 
       try {
@@ -810,7 +811,7 @@ export const createBooking = async (
       }
 
       try {
-        const recipient = tenantDoc?.contactInfo?.email;
+        const recipient = bookingNotificationEmail(tenantDoc);
         if (recipient) {
           try {
             await sendAdminBookingNotification(recipient, {

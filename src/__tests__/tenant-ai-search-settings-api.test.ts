@@ -178,3 +178,28 @@ it('does not acknowledge a failed database write, and a fresh retry can succeed'
   await patch().send(search({ widgetId })).expect(200);
   expect((await stored())?.aiSettings.searchWidget.widgetId).toBe(widgetId);
 });
+
+it('stores a private booking notifications email that never reaches the public site', async () => {
+  await Tenant.collection.updateOne({ _id: owner }, { $set: { contactInfo: { email: 'support@qa-site.invalid', phone: '+20100000000' } } });
+  await patch().send({ notificationSettings: { bookingEmail: ' Reservations@QA-Site.invalid ' } }).expect(200);
+  expect((await stored())?.notificationSettings).toEqual({ bookingEmail: 'reservations@qa-site.invalid' });
+  expect((await stored())?.contactInfo?.email).toBe('support@qa-site.invalid');
+  const read = await request(app).get(`/tenants/public/${owner}`).expect(200);
+  expect(read.body.data.notificationSettings).toBeUndefined();
+  expect(JSON.stringify(read.body)).not.toContain('reservations@qa-site.invalid');
+  const bySlug = await request(app).get('/tenants/by-slug/widget-site-0').expect(200);
+  expect(JSON.stringify(bySlug.body)).not.toContain('reservations@qa-site.invalid');
+
+  for (const body of [{ bookingEmail: 'nope' }, { bookingEmail: 'a@b.io', cc: 'c@d.io' }, 'a@b.io']) {
+    const rejected = await patch().send({ notificationSettings: body }).expect(400);
+    expect(rejected.body.success).toBe(false);
+  }
+  expect((await stored())?.notificationSettings?.bookingEmail).toBe('reservations@qa-site.invalid');
+
+  // Another site's admin cannot set it; the record is indistinguishable from a missing one.
+  await patch(other).send({ notificationSettings: { bookingEmail: 'hijack@qa-site.invalid' } }).expect(404);
+  expect((await Tenant.findById(other).lean())?.notificationSettings?.bookingEmail).toBeUndefined();
+
+  await patch().send({ notificationSettings: { bookingEmail: '' } }).expect(200);
+  expect((await stored())?.notificationSettings?.bookingEmail).toBe('');
+});

@@ -6,6 +6,7 @@ import { Attraction } from '../models/Attraction';
 import { Booking } from '../models/Booking';
 import { Destination } from '../models/Destination';
 import { isValidPickupDestinationList, normalizePickupDestinationSlugs } from '../utils/pickupDestinations';
+import { notificationSettingsUpdate } from '../utils/notificationRecipients';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { searchRegexValue } from '../utils/helpers';
@@ -796,6 +797,11 @@ export const updateTenantSettings = async (
 
     const updates: Record<string, unknown> = req.body.aiSettings === undefined ? {}
       : aiSettingsSetPaths(aiSettingsUpdateSchema.parse(req.body.aiSettings));
+    if (req.body.notificationSettings !== undefined) {
+      const notifications = notificationSettingsUpdate(req.body.notificationSettings);
+      if ('error' in notifications) { sendError(res, notifications.error, 400); return; }
+      Object.assign(updates, notifications.set);
+    }
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) {
         updates[field] = req.body[field];
