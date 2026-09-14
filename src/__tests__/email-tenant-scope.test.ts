@@ -28,16 +28,32 @@ describe('tenant-scoped email delivery', () => {
     expect(envelope.replyTo).toBe('visitor@example.net');
   });
 
-  it('rejects contact delivery when the selected tenant has no operator email', async () => {
+  it('reports a recorded no-recipient failure (not a throw) when the tenant has no operator email', async () => {
+    const enquiry = {
+      reference: 'MSG-7K2M9Q',
+      name: 'Guest User',
+      email: 'guest@example.com',
+      subject: 'Question',
+      message: 'Please contact me.',
+    };
+    for (const contactInfo of [undefined, { email: '' }, { email: 'not-an-address' }]) {
+      await expect(
+        sendContactFormEmail({ name: 'Unconfigured Tenant', slug: 'unconfigured', contactInfo }, enquiry)
+      ).resolves.toEqual({ status: 'failed', reason: 'no_recipient' });
+    }
+  });
+
+  it('reports a skipped delivery when the mail provider is not configured', async () => {
+    // The suite forces MAILGUN_API_KEY/MAILGUN_DOMAIN empty, so this proves the
+    // unconfigured path without any possibility of a real send.
     await expect(
-      sendContactFormEmail(
-        { name: 'Unconfigured Tenant', slug: 'unconfigured' },
-        'Guest User',
-        'guest@example.com',
-        'Question',
-        'Please contact me.'
-      )
-    ).rejects.toThrow('Tenant contact email is not configured');
+      sendContactFormEmail(tenant, {
+        reference: 'MSG-7K2M9Q',
+        name: 'Guest User',
+        email: 'guest@example.com',
+        message: 'Please contact me.',
+      })
+    ).resolves.toEqual({ status: 'skipped', reason: 'provider_not_configured' });
   });
 
   it('does not trust a custom-domain value containing a path or user-info', () => {

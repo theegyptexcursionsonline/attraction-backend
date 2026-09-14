@@ -92,13 +92,23 @@ export const resolveEmailEnvelope = (
   };
 };
 
-export const sendEmail = async (options: EmailOptions): Promise<void> => {
+/**
+ * What `sendEmail` did. Existing callers ignore it (behaviour is unchanged: an
+ * unconfigured provider is still a logged no-op), but callers that must record
+ * the outcome — such as stored contact enquiries — can tell a skip from a send.
+ * Provider failures still throw.
+ */
+export type EmailSendResult =
+  | { status: 'sent' }
+  | { status: 'skipped'; reason: 'provider_not_configured' };
+
+export const sendEmail = async (options: EmailOptions): Promise<EmailSendResult> => {
   if (!mg || !env.mailgunDomain) {
     console.info('[email] delivery skipped: provider is not configured', {
       subject: options.subject.replace(/[\r\n]/g, ' ').slice(0, 160),
       tenant: options.tenant?.slug || 'platform',
     });
-    return;
+    return { status: 'skipped', reason: 'provider_not_configured' };
   }
 
   const envelope = resolveEmailEnvelope(options.tenant, options.to, options.replyTo);
@@ -124,6 +134,7 @@ export const sendEmail = async (options: EmailOptions): Promise<void> => {
   }
 
   await mg.messages.create(env.mailgunDomain, messageData as any);
+  return { status: 'sent' };
 };
 
 // ---------------------------------------------------------------------------
@@ -1330,18 +1341,80 @@ export const sendEventRsvpConfirmation = async (
   });
 };
 
-export const renderContactFormHtml = (
-  tenant: EmailTenant,
-  fromName: string,
-  fromEmail: string,
-  subject: string,
-  message: string
-): string => {
+/** Every field a visitor can provide on a site contact or tour enquiry form. */
+export interface ContactEnquiryDetails {
+  reference: string;
+  name: string;
+  email: string;
+  phone?: string;
+  subject?: string;
+  tourSlug?: string;
+  tourTitle?: string;
+  travelDate?: string;
+  guests?: number;
+  message: string;
+  pagePath?: string;
+  locale?: string;
+}
+
+/** What happened to the operator notification for a stored enquiry. Provider
+ *  failures are thrown, never folded into an outcome, so callers log them. */
+export type ContactEmailOutcome =
+  | { status: 'sent' }
+  | { status: 'skipped'; reason: 'provider_not_configured' }
+  | { status: 'failed'; reason: 'no_recipient' };
+
+const singleLine = (value: string): string => value.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+export const contactEnquirySubject = (details: ContactEnquiryDetails): string =>
+  singleLine(
+    `New enquiry ${details.reference}: ${details.tourTitle?.trim() || details.subject?.trim() || 'Website message'}`
+  ).slice(0, 200);
+
+export const renderContactFormHtml = (tenant: EmailTenant, details: ContactEnquiryDetails): string => {
   const brand = getEmailBrand(tenant);
-  const safeName = escapeEmailHtml(fromName);
-  const safeEmail = escapeEmailHtml(fromEmail);
-  const safeSubject = escapeEmailHtml(subject);
-  const safeMessage = escapeEmailHtml(message).replace(/\r?\n/g, '<br>');
+  const mailto = safeMailtoAddress(details.email);
+  const telephone = details.phone?.replace(/[^0-9+]/g, '');
+  const tour = [details.tourTitle, details.tourSlug ? `(${details.tourSlug})` : '']
+    .filter(Boolean)
+    .join(' ');
+  const rows: Array<[string, string]> = [
+    ['Reference', escapeEmailHtml(details.reference)],
+    [
+      'From',
+      `${escapeEmailHtml(details.name)} &lt;${
+        mailto
+          ? `<a href="mailto:${escapeEmailHtml(mailto)}" style="color:${brand.color};">${escapeEmailHtml(mailto)}</a>`
+          : escapeEmailHtml(details.email)
+      }&gt;`,
+    ],
+  ];
+  if (details.phone) {
+    rows.push([
+      'Phone',
+      telephone
+        ? `<a href="tel:${escapeEmailHtml(telephone)}" style="color:${brand.color};">${escapeEmailHtml(details.phone)}</a>`
+        : escapeEmailHtml(details.phone),
+    ]);
+  }
+  if (tour) rows.push(['Tour', escapeEmailHtml(tour)]);
+  if (details.travelDate) rows.push(['Travel date', escapeEmailHtml(details.travelDate)]);
+  if (details.guests !== undefined && details.guests !== null) rows.push(['Guests', escapeEmailHtml(details.guests)]);
+  if (details.subject) rows.push(['Subject', escapeEmailHtml(details.subject)]);
+  rows.push(['Message', escapeEmailHtml(details.message).replace(/\r?\n/g, '<br>')]);
+  if (details.pagePath) rows.push(['Page', escapeEmailHtml(details.pagePath)]);
+  if (details.locale) rows.push(['Language', escapeEmailHtml(details.locale)]);
+
+  const fields = rows
+    .map(
+      ([label, value]) => `
+          <div class="field">
+            <div class="field-label">${label}</div>
+            <div class="field-value">${value}</div>
+          </div>`
+    )
+    .join('');
+
   return `
     <!DOCTYPE html>
     <html>
@@ -1353,7 +1426,7 @@ export const renderContactFormHtml = (
         .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
         .field { margin-bottom: 15px; }
         .field-label { font-weight: 600; color: #6b7280; font-size: 12px; text-transform: uppercase; }
-        .field-value { margin-top: 4px; }
+        .field-value { margin-top: 4px; word-break: break-word; }
       </style>
     </head>
     <body>
@@ -1361,19 +1434,8 @@ export const renderContactFormHtml = (
         <div class="header">
           <h2>New ${escapeEmailHtml(brand.name)} Contact Form Submission</h2>
         </div>
-        <div class="content">
-          <div class="field">
-            <div class="field-label">From</div>
-            <div class="field-value">${safeName} &lt;${safeEmail}&gt;</div>
-          </div>
-          <div class="field">
-            <div class="field-label">Subject</div>
-            <div class="field-value">${safeSubject}</div>
-          </div>
-          <div class="field">
-            <div class="field-label">Message</div>
-            <div class="field-value">${safeMessage}</div>
-          </div>
+        <div class="content">${fields}
+          <p style="margin-top:24px;font-size:12px;color:#6b7280;">Reply to this email to answer the visitor directly.</p>
         </div>
       </div>
     </body>
@@ -1381,24 +1443,25 @@ export const renderContactFormHtml = (
   `;
 };
 
+/**
+ * Notifies the site's contact inbox about a stored enquiry. A site without a
+ * valid contact address resolves to a recorded failure instead of throwing, so
+ * the caller can keep the enquiry and show the operator why no email arrived.
+ */
 export const sendContactFormEmail = async (
   tenant: EmailTenant,
-  fromName: string,
-  fromEmail: string,
-  subject: string,
-  message: string
-): Promise<void> => {
+  details: ContactEnquiryDetails
+): Promise<ContactEmailOutcome> => {
   const recipient = tenant.contactInfo?.email?.trim();
   if (!isEmailAddress(recipient)) {
-    throw new Error('Tenant contact email is not configured');
+    return { status: 'failed', reason: 'no_recipient' };
   }
-  const adminHtml = renderContactFormHtml(tenant, fromName, fromEmail, subject, message);
 
-  await sendEmail({
+  return sendEmail({
     to: recipient,
-    subject: `Contact Form: ${subject}`,
-    html: adminHtml,
+    subject: contactEnquirySubject(details),
+    html: renderContactFormHtml(tenant, details),
     tenant,
-    replyTo: fromEmail,
+    replyTo: details.email,
   });
 };

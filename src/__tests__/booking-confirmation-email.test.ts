@@ -3,6 +3,7 @@ import {
   getEmailBrand,
   renderActionEmail,
   renderContactFormHtml,
+  contactEnquirySubject,
   renderBookingStatusEmailHtml,
   bookingPaymentLink,
   renderBookingPaymentLinkHtml,
@@ -288,20 +289,29 @@ describe('renderAdminBookingNotificationHtml', () => {
 });
 
 describe('renderContactFormHtml', () => {
+  const contactTenant = {
+    name: 'Makadi Horse Club',
+    slug: 'makadi-horse-club',
+    theme: { primaryColor: '#B8860B' },
+    contactInfo: { email: 'info@makadihorseclub.com' },
+  };
+
   it('tenant-brands and escapes every visitor-controlled field', () => {
     const attack = '<img src=x onerror="alert(1)">';
-    const html = renderContactFormHtml(
-      {
-        name: 'Makadi Horse Club',
-        slug: 'makadi-horse-club',
-        theme: { primaryColor: '#B8860B' },
-        contactInfo: { email: 'info@makadihorseclub.com' },
-      },
-      attack,
-      'visitor@example.com',
-      attack,
-      `Line one\n${attack}`
-    );
+    const html = renderContactFormHtml(contactTenant, {
+      reference: `MSG-${attack}`,
+      name: attack,
+      email: 'visitor@example.com',
+      phone: attack,
+      subject: attack,
+      tourSlug: attack,
+      tourTitle: attack,
+      travelDate: attack,
+      guests: 4,
+      message: `Line one\n${attack}`,
+      pagePath: attack,
+      locale: attack,
+    });
 
     expect(html).toContain('Makadi Horse Club Contact Form');
     expect(html).toContain('#B8860B');
@@ -309,6 +319,46 @@ describe('renderContactFormHtml', () => {
     expect(html).not.toContain('onerror="alert');
     expect(html).toContain('&lt;img');
     expect(html).toContain('Line one<br>');
+    expect(html).toContain('mailto:visitor@example.com');
+  });
+
+  it('includes every provided enquiry field and omits the ones a visitor left out', () => {
+    const full = renderContactFormHtml(contactTenant, {
+      reference: 'MSG-7K2M9Q',
+      name: 'Nadia Visitor',
+      email: 'nadia@example.com',
+      phone: '+20 (100) 555-0101',
+      subject: 'Family trip',
+      tourSlug: 'sunset-horse-ride',
+      tourTitle: 'Sunset Horse Ride',
+      travelDate: '2026-10-05',
+      guests: 3,
+      message: 'Is hotel pickup included?',
+      pagePath: '/tours/sunset-horse-ride',
+      locale: 'en',
+    });
+    for (const expected of [
+      'MSG-7K2M9Q', 'Nadia Visitor', 'nadia@example.com', '+20 (100) 555-0101', 'tel:+201005550101',
+      'Family trip', 'Sunset Horse Ride (sunset-horse-ride)', '2026-10-05', '>3<',
+      'Is hotel pickup included?', '/tours/sunset-horse-ride', 'Language',
+    ]) {
+      expect(full).toContain(expected);
+    }
+
+    const minimal = renderContactFormHtml(contactTenant, {
+      reference: 'MSG-7K2M9Q', name: 'Nadia Visitor', email: 'nadia@example.com', message: 'Hello',
+    });
+    for (const absent of ['Phone', 'Tour', 'Travel date', 'Guests', 'Subject', 'Page', 'Language']) {
+      expect(minimal).not.toContain(`>${absent}<`);
+    }
+  });
+
+  it('builds a single-line subject from the reference and the most specific topic', () => {
+    const base = { reference: 'MSG-7K2M9Q', name: 'N', email: 'n@example.com', message: 'Hi' };
+    expect(contactEnquirySubject({ ...base, tourTitle: 'Sunset\r\nBcc: x@example.com', subject: 'Other' }))
+      .toBe('New enquiry MSG-7K2M9Q: Sunset Bcc: x@example.com');
+    expect(contactEnquirySubject({ ...base, subject: 'Group booking' })).toBe('New enquiry MSG-7K2M9Q: Group booking');
+    expect(contactEnquirySubject(base)).toBe('New enquiry MSG-7K2M9Q: Website message');
   });
 });
 

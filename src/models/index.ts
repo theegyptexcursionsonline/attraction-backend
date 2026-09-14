@@ -10,3 +10,4 @@ export { ApiKey } from './ApiKey';
 export { WebhookEndpoint } from './WebhookEndpoint';
 export { WebhookDelivery } from './WebhookDelivery';
 export { WebhookEvent } from './WebhookEvent';
+export { ContactMessage } from './ContactMessage';
