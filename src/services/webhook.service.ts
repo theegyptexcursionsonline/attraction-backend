@@ -407,3 +407,7 @@ export const recordInboundEvent = async (
     throw err;
   }
 };
+
+/** True when an inbound provider event was already processed to completion. */
+export const hasInboundEvent = async (provider: string, eventId: string): Promise<boolean> =>
+  !!(await WebhookEvent.exists({ provider, eventId }));

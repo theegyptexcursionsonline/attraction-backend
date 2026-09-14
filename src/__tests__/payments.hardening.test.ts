@@ -24,7 +24,7 @@ import {
   saveTenantStripeConfig,
 } from '../services/tenantPayment.service';
 import { BundleOrder } from '../models/BundleOrder';
-import { sendBookingConfirmation } from '../services/email.service';
+import { sendBookingConfirmation, sendBookingStatusEmail } from '../services/email.service';
 import { recordInboundEvent } from '../services/webhook.service';
 
 jest.mock('../services/bookingPaymentBinding.service', () => ({
@@ -1238,12 +1238,51 @@ describe('Stripe payment hardening', () => {
           bundleOrderId: { $exists: false },
           stripePaymentIntentId: INTENT_ID,
         },
-        {
-          $max: { refundedAmount: 105 },
-          $set: { paymentStatus: 'refunded', status: 'refunded' },
-        },
+        { $max: { refundedAmount: 105 } },
         { new: false }
       );
+      expect(Booking.updateOne).toHaveBeenCalledWith(
+        {
+          _id: BOOKING_ID,
+          bundleOrderId: { $exists: false },
+          stripePaymentIntentId: INTENT_ID,
+          paymentStatus: 'succeeded',
+        },
+        [{
+          $set: {
+            paymentStatus: 'refunded',
+            status: {
+              $cond: [{ $in: ['$status', ['pending', 'confirmed', 'completed']] }, 'refunded', '$status'],
+            },
+          },
+        }]
+      );
+      await new Promise((resolve) => setImmediate(resolve));
+      expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not re-send the refund email when a racing webhook already applied the refund', async () => {
+      (Booking.findById as jest.Mock).mockResolvedValue(
+        bookingFixture({ paymentStatus: 'succeeded', status: 'confirmed' })
+      );
+      (stripeCreateRefund as jest.Mock).mockResolvedValue({
+        id: 're_full',
+        status: 'succeeded',
+        amount: 10500,
+      });
+      (retrieveSucceededRefundAmount as jest.Mock).mockResolvedValue(10500);
+      (Booking.findOneAndUpdate as jest.Mock).mockResolvedValue(
+        bookingFixture({ paymentStatus: 'refunded', status: 'refunded', refundedAmount: 105 })
+      );
+
+      const res = await invoke(refundPayment as never, adminRequest());
+      await new Promise((resolve) => setImmediate(resolve));
+
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({ refundType: 'full' }),
+      }));
+      expect(sendBookingStatusEmail).not.toHaveBeenCalled();
+      expect(User.findByIdAndUpdate).not.toHaveBeenCalled();
     });
   });
 });

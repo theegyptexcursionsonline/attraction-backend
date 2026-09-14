@@ -11,6 +11,7 @@ import { AuthRequest } from '../types';
 import { generateBookingReference } from '../utils/hash';
 import { generateTicketPdf } from '../services/pdf.service';
 import { createRefund } from '../services/stripe.service';
+import { ATN_CANCELLATION_REFUND_FLOW, ATN_REFUND_FLOW_KEY } from '../services/bookingRefund.service';
 import { getTenantStripeConfig } from '../services/tenantPayment.service';
 import { createAdminNotifications } from '../services/notification.service';
 import {
@@ -1204,7 +1205,16 @@ export const cancelBooking = async (
         stripeCfg.secretKey,
         booking.stripePaymentIntentId,
         Math.round(booking.total * 100),
-        { idempotencyKey: `booking-cancel-${booking._id}` }
+        {
+          idempotencyKey: `booking-cancel-${booking._id}`,
+          // Lets the Stripe refund webhook recognise this refund and leave the
+          // cancelled-state transition + inventory release to this flow.
+          metadata: {
+            [ATN_REFUND_FLOW_KEY]: ATN_CANCELLATION_REFUND_FLOW,
+            bookingId: String(booking._id),
+            tenantId: String(booking.tenantId),
+          },
+        }
       );
       if (!refund.id || refund.status !== 'succeeded') {
         sendError(res, 'Stripe has not completed the cancellation refund', 409);

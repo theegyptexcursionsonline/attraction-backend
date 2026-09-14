@@ -30,8 +30,14 @@ import { bookingStripePaymentRequest, bookingStripeContextMatches, claimBookingS
 import { secretHint } from '../utils/secretCrypto';
 import { updatePaymentGatewaySchema } from '../utils/validators';
 import { generateTicketPdf } from '../services/pdf.service';
-import { brandedLink, getEmailBrand, sendBookingConfirmation, sendAdminBookingNotification, sendBookingStatusEmail } from '../services/email.service';
-import { safeEmitEvent, recordInboundEvent } from '../services/webhook.service';
+import { brandedLink, getEmailBrand, sendBookingConfirmation, sendAdminBookingNotification } from '../services/email.service';
+import { safeEmitEvent, recordInboundEvent, hasInboundEvent } from '../services/webhook.service';
+import {
+  applyBookingRefundTotal,
+  notifyBookingRefunded,
+  reconcileBookingStripeRefunds,
+  recordBookingRefundLedger,
+} from '../services/bookingRefund.service';
 import { env } from '../config/env';
 import { generateBookingAccessToken, verifyBookingAccessToken } from '../utils/bookingAccess';
 import { markCardPaymentFailed } from '../services/bookingInventory.service';
@@ -72,6 +78,31 @@ const paymentEventPayload = (booking: {
 });
 
 const adminRoles = ['super-admin', 'brand-admin', 'manager'];
+
+/**
+ * Refund lifecycle events that can originate outside ATN (Stripe dashboard, API,
+ * disputes tooling). `charge.refund.updated` is the legacy name some endpoint API
+ * versions still deliver; `refund.*` are the current names.
+ */
+export const STRIPE_REFUND_EVENT_TYPES = new Set([
+  'charge.refunded',
+  'charge.refund.updated',
+  'refund.created',
+  'refund.updated',
+  'refund.failed',
+]);
+
+const refundEventPaymentIntentId = (eventType: string, obj: unknown): string => {
+  const record = (obj || {}) as { object?: string; payment_intent?: unknown };
+  const expectedObject = eventType === 'charge.refunded' ? 'charge' : 'refund';
+  if (record.object && record.object !== expectedObject) return '';
+  const intent = record.payment_intent;
+  if (typeof intent === 'string') return intent;
+  if (intent && typeof intent === 'object' && typeof (intent as { id?: unknown }).id === 'string') {
+    return (intent as { id: string }).id;
+  }
+  return '';
+};
 
 const rejectBundleComponentBooking = (res: Response, booking?: { bundleOrderId?: unknown } | null): boolean => {
   if (!isBundleComponentBooking(booking)) return false;
@@ -707,8 +738,10 @@ export const handleWebhook = async (
       sendError(res, 'Stripe webhook event ID is required', 400);
       return;
     }
+    const isRefundEvent = STRIPE_REFUND_EVENT_TYPES.has(eventType);
     const movesMoney = eventType === 'payment_intent.succeeded' ||
-      eventType === 'payment_intent.payment_failed';
+      eventType === 'payment_intent.payment_failed' ||
+      isRefundEvent;
     const accountBound = !!stripeCfg.verifiedAccountId &&
       !!stripeCfg.verifiedCredentialFingerprint &&
       await verifyStripeEventAccountBinding(
@@ -728,6 +761,54 @@ export const handleWebhook = async (
         sendError(res, 'Stripe configuration changed while verifying this event; retry delivery', 409);
         return;
       }
+    }
+
+    if (isRefundEvent) {
+      const refundIntentId = refundEventPaymentIntentId(eventType, event.data.object);
+      const logFields = { tenantId, eventId, eventType, paymentIntentId: refundIntentId || undefined };
+      if (await hasInboundEvent('stripe', eventId)) {
+        res.json({ received: true, duplicate: true });
+        return;
+      }
+      if (!refundIntentId) {
+        console.warn('[stripe-refund]', { source: 'stripe-refund-webhook', event: 'refund_without_payment_intent', ...logFields });
+        const { duplicate } = await recordInboundEvent('stripe', eventId, { eventType, tenantId });
+        res.json({ received: true, duplicate, ignored: 'refund is not linked to a payment intent' });
+        return;
+      }
+      const bound = await Booking.findOne({
+        stripePaymentIntentId: refundIntentId,
+        tenantId,
+        ...standaloneBookingClause,
+      }).select('_id stripePaymentBinding');
+      if (!bound || !bookingStripeContextMatches(bound, stripeCfg)) {
+        console.warn('[stripe-refund]', {
+          source: 'stripe-refund-webhook',
+          event: bound ? 'refund_account_context_mismatch' : 'refund_unmatched_payment_intent',
+          ...logFields,
+        });
+        const { duplicate } = await recordInboundEvent('stripe', eventId, { eventType, tenantId });
+        res.json({ received: true, duplicate, ignored: 'payment intent is not bound to this tenant' });
+        return;
+      }
+      const reconciled = await reconcileBookingStripeRefunds({
+        tenantId,
+        paymentIntentId: refundIntentId,
+        secretKey: stripeCfg.secretKey,
+        eventId,
+        eventType,
+      });
+      if (reconciled?.outcome === 'retry-payment-not-finalized') {
+        sendError(res, 'Payment for this booking is not finalized yet; retry delivery', 409);
+        return;
+      }
+      const { duplicate } = await recordInboundEvent('stripe', eventId, { eventType, tenantId });
+      res.json({
+        received: true,
+        duplicate,
+        refund: reconciled?.outcome ?? 'no-change',
+      });
+      return;
     }
 
     const obj = event.data.object as Stripe.PaymentIntent;
@@ -992,28 +1073,7 @@ export const refundPayment = async (
         idempotencyKey: `booking:${booking._id}:refund:${refundAmount}`,
       }
     );
-    const ledgerStatus = refund.status === 'succeeded'
-      ? 'succeeded'
-      : refund.status === 'failed'
-        ? 'failed'
-        : 'pending';
-    await Booking.updateOne(
-      { _id: booking._id, ...standaloneBookingClause, 'refunds.providerRefundId': { $ne: refund.id } },
-      {
-        $push: {
-          refunds: {
-            providerRefundId: refund.id,
-            amount: refund.amount / 100,
-            status: ledgerStatus,
-            createdAt: new Date(),
-          },
-        },
-      }
-    );
-    await Booking.updateOne(
-      { _id: booking._id, ...standaloneBookingClause, 'refunds.providerRefundId': refund.id },
-      { $set: { 'refunds.$.status': ledgerStatus, 'refunds.$.amount': refund.amount / 100 } }
-    );
+    await recordBookingRefundLedger(booking._id, refund);
 
     if (refund.status !== 'succeeded') {
       sendSuccess(
@@ -1037,47 +1097,13 @@ export const refundPayment = async (
       booking.stripePaymentIntentId
     );
     const bookingAmount = Math.round(booking.total * 100);
-    const fullRefund = refundedAmount >= bookingAmount;
-    const refundedMajor = Math.min(refundedAmount, bookingAmount) / 100;
-    const beforeRefundUpdate = await Booking.findOneAndUpdate(
-      {
-        _id: booking._id,
-        ...standaloneBookingClause,
-        stripePaymentIntentId: booking.stripePaymentIntentId,
-      },
-      {
-        $max: { refundedAmount: refundedMajor },
-        ...(fullRefund ? { $set: { paymentStatus: 'refunded', status: 'refunded' } } : {}),
-      },
-      { new: false }
-    );
-    const newlyRefunded = Math.max(
-      refundedMajor - (beforeRefundUpdate?.refundedAmount || 0),
-      0
-    );
-    if (booking.userId && newlyRefunded > 0) {
-      await User.findByIdAndUpdate(booking.userId, { $inc: { totalSpent: -newlyRefunded } });
+    // Shared with the Stripe refund webhook: whichever caller atomically raises
+    // refundedAmount first owns the totalSpent decrement and the customer email,
+    // so a webhook racing this request never double-applies either.
+    const { fullRefund, newlyRefunded } = await applyBookingRefundTotal(booking, refundedAmount);
+    if (newlyRefunded > 0) {
+      notifyBookingRefunded(booking, refund.amount / 100, fullRefund);
     }
-
-    void Tenant.findById(booking.tenantId)
-      .select('name slug customDomain domainMigrated contactInfo theme logo defaultLanguage defaultCurrency timezone')
-      .lean()
-      .then((tenant) => tenant ? sendBookingStatusEmail(
-          booking.guestDetails.email,
-          {
-            reference: booking.reference,
-            guestName: `${booking.guestDetails.firstName} ${booking.guestDetails.lastName}`.trim(),
-            kind: 'refunded',
-            guestAccessToken: generateBookingAccessToken(String(booking._id), booking.reference),
-            refundAmount: refund.amount / 100,
-            currency: booking.currency,
-            fullRefund,
-          },
-          tenant
-        ) : undefined)
-      .catch(() => console.error('[email] refund notification failed', {
-        tenantId: String(booking.tenantId),
-      }));
 
     sendSuccess(
       res,

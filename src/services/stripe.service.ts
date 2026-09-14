@@ -332,11 +332,45 @@ export const retrieveSucceededRefundAmount = async (
   return total;
 };
 
+export interface ProviderRefund extends RefundResult {
+  metadata: Record<string, string>;
+}
+
+/**
+ * List every refund Stripe holds for one PaymentIntent (auto-paginated). Webhook
+ * reconciliation treats this provider read as the source of truth, so event
+ * order and stale payloads can never move booking refund state backwards.
+ * Throws on provider failure so the caller can fail closed and let Stripe retry.
+ */
+export const listPaymentIntentRefunds = async (
+  secretKey: string | undefined,
+  paymentIntentId: string
+): Promise<ProviderRefund[]> => {
+  const stripe = getStripe(secretKey);
+  if (!stripe) throw missingKeyError();
+  const refunds: ProviderRefund[] = [];
+  for await (const refund of stripe.refunds.list({ payment_intent: paymentIntentId, limit: 100 })) {
+    refunds.push({
+      id: refund.id,
+      status: refund.status || 'pending',
+      amount: refund.amount,
+      paymentIntentId: refundPaymentIntentId(refund),
+      metadata: (refund.metadata || {}) as Record<string, string>,
+    });
+  }
+  return refunds;
+};
+
+export interface CreateRefundOptions extends StripeCallOptions {
+  /** Provider-side tag so webhook reconciliation can recognise the ATN flow. */
+  metadata?: Record<string, string>;
+}
+
 export const createRefund = async (
   secretKey: string | undefined,
   paymentIntentId: string,
   amountMinor?: number,
-  options: StripeCallOptions = {}
+  options: CreateRefundOptions = {}
 ): Promise<RefundResult> => {
   const stripe = getStripe(secretKey);
   if (stripe) {
@@ -346,6 +380,7 @@ export const createRefund = async (
       {
         payment_intent: paymentIntentId,
         ...(amountMinor ? { amount: amountMinor } : {}),
+        ...(options.metadata ? { metadata: options.metadata } : {}),
       },
       { idempotencyKey }
     );
