@@ -239,3 +239,55 @@ describe('AI product control helpers', () => {
       .toEqual({ settings: { searchWidget: {}, bookingWidget: { enabled: true } }, changed: [] });
   });
 });
+
+describe('no side doors around the AI products card', () => {
+  const as = (role: string) => (req: request.Test) => req.set('x-test-role', role).set('x-test-user', String(actorId)).set('x-test-assigned', String(site));
+
+  it('the full site update cannot reach AI switches through dotted paths or the revision', async () => {
+    // The route schema strips unknown keys; the controller refuses them too if a caller bypasses it.
+    for (const body of [{ 'aiSettings.searchWidget.enabled': true, 'aiSettings.searchWidget.widgetId': searchId }, { 'aiSettings.voiceAgent.widgetId': voiceId }, { aiProductsRevision: 0 }]) {
+      const res = await request(app).patch(`/tenants/${site}`).use(as('super-admin')).send({ ...body, tagline: 'Sail' });
+      expect([200, 400]).toContain(res.status);
+    }
+    const doc = await stored();
+    expect((doc as any).aiSettings.searchWidget.enabled).toBeUndefined();
+    expect((doc as any).aiSettings.searchWidget.widgetId).toBeUndefined();
+    expect((doc as any).aiSettings.voiceAgent.widgetId).toBeUndefined();
+    expect((doc as any).aiProductsRevision).toBeUndefined();
+  });
+
+  it('a new site starts with both products off whatever the create body says', async () => {
+    const res = await request(app).post('/tenants').use(as('super-admin')).send({
+      slug: 'ai-products-new', domain: 'ai-products-new.invalid', name: 'New site', logo: 'https://example.org/logo.png', theme: { primaryColor: '#111111', secondaryColor: '#222222', accentColor: '#333333' }, defaultCurrency: 'USD', defaultLanguage: 'en', supportedLanguages: ['en'], aiProductsRevision: 7,
+      aiSettings: { searchWidget: { enabled: true, widgetId: searchId, placeholder: 'Find a trip' }, voiceAgent: { enabled: true, widgetId: voiceId } },
+    });
+    expect(res.status).toBe(201);
+    const doc = await Tenant.collection.findOne({ slug: 'ai-products-new' });
+    expect(doc?.aiSettings?.searchWidget?.widgetId).toBeUndefined();
+    expect(doc?.aiSettings?.searchWidget?.enabled).not.toBe(true);
+    expect(doc?.aiSettings?.searchWidget?.placeholder).toBe('Find a trip');
+    expect(doc?.aiSettings?.voiceAgent?.widgetId).toBeUndefined();
+    expect(doc?.aiSettings?.voiceAgent?.enabled).not.toBe(true);
+    expect(doc?.aiProductsRevision).not.toBe(7);
+  });
+
+  it('the site list hides who changed a product from site admins', async () => {
+    expect((await aiProducts({ expectedRevision: 0, search: { enabled: true, widgetId: searchId } })).status).toBe(200);
+    const admin = await request(app).get('/tenants').use(as('brand-admin'));
+    expect(admin.status).toBe(200);
+    const mine = admin.body.data.find((t: any) => String(t._id) === String(site));
+    expect(mine.aiSettings.searchWidget.updatedBy).toBeUndefined();
+    expect(mine.aiProductsRevision).toBeUndefined();
+    const superList = await request(app).get('/tenants').use(as('super-admin'));
+    const full = superList.body.data.find((t: any) => String(t._id) === String(site));
+    expect(full.aiProductsRevision).toBe(1);
+  });
+
+  it('the controller itself refuses dotted AI paths when validation is bypassed', async () => {
+    const { updateTenant } = await import('../controllers/tenants.controller');
+    const res: any = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() };
+    await updateTenant({ params: { id: String(site) }, user: { _id: actorId, role: 'super-admin' }, body: { 'aiSettings.searchWidget.enabled': true } } as never, res, jest.fn());
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(((await stored()) as any).aiSettings.searchWidget.enabled).toBeUndefined();
+  });
+});

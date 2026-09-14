@@ -162,7 +162,9 @@ export const getTenants = async (
       Tenant.countDocuments(query),
     ]);
 
-    sendPaginated(res, tenants, pageNum, limitNum, total);
+    // Product change history (who switched AI Search/Voice, revision) is for super admins only.
+    const isSuper = req.user?.role === 'super-admin';
+    sendPaginated(res, tenants.map((tenant) => adminTenantAiView(tenant, isSuper)), pageNum, limitNum, total);
   } catch (error) {
     next(error);
   }
@@ -637,8 +639,11 @@ export const createTenant = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    // A new site starts with AI products off; a super admin switches them on in the AI products card
+    // so the change carries a revision and an audit stamp.
+    const { aiProductsRevision: _revision, ...createBody } = req.body as Record<string, unknown>;
     const tenant = await Tenant.create({
-      ...req.body,
+      ...withoutAiProductControls(createBody),
       ...(req.body.customPages !== undefined
         ? { customPages: sanitizeCustomPages(req.body.customPages) }
         : {}),
@@ -690,6 +695,21 @@ export function aiSearchWidgetIdError(aiSettings: unknown): string | null {
 const AI_PRODUCTS_ELSEWHERE = 'Switch AI Search and Voice in the AI products card, then reload this page';
 
 /** Admin tenant read: effective AI switches, with change history for super admins only. */
+/** Drops AI Search / Voice `enabled` and `widgetId` from a create body, keeping presentation settings. */
+function withoutAiProductControls(body: Record<string, unknown>): Record<string, unknown> {
+  const ai = body.aiSettings;
+  if (!ai || typeof ai !== 'object') return body;
+  const aiSettings = { ...(ai as Record<string, unknown>) };
+  for (const product of ['searchWidget', 'voiceAgent']) {
+    const value = aiSettings[product];
+    if (value && typeof value === 'object') {
+      const { enabled: _enabled, widgetId: _widgetId, updatedBy: _by, updatedAt: _at, ...presentation } = value as Record<string, unknown>;
+      aiSettings[product] = presentation;
+    }
+  }
+  return { ...body, aiSettings };
+}
+
 function adminTenantAiView<T extends object>(tenant: T, isSuperAdmin: boolean): T {
   const view = { ...tenant } as Record<string, unknown>;
   if (view.aiSettings !== undefined) view.aiSettings = adminAiSettings(view.aiSettings, { includeAudit: isSuperAdmin });
@@ -775,6 +795,8 @@ export const updateTenant = async (
     if (aiSearchError) { sendError(res, aiSearchError, 400); return; }
     // The full update has no revision; product switches and ids go through /ai-products only.
     if (hasAiProductControls(req.body.aiSettings)) { sendError(res, AI_PRODUCTS_ELSEWHERE, 400); return; }
+    // Dotted paths would reach the same fields without the revision check.
+    if (Object.keys(req.body).some((key) => key.startsWith('aiSettings.') || key.startsWith('aiProductsRevision'))) { sendError(res, AI_PRODUCTS_ELSEWHERE, 400); return; }
 
     const { aiSettings, ...otherUpdates } = req.body;
     const updates = {
