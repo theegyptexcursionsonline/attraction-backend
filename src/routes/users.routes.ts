@@ -9,6 +9,7 @@ import {
   getUserById,
   inviteUser,
   createInvitationLink,
+  setUserPassword,
   updateUser,
   deleteUser,
 } from '../controllers/users.controller';
@@ -301,6 +302,54 @@ router.post(
   authenticate,
   requireRole('super-admin', 'brand-admin'),
   createInvitationLink
+);
+
+/**
+ * @swagger
+ * /users/{id}/password:
+ *   post:
+ *     summary: Set a site team member's password; a pending member becomes active (Super Admin)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [password]
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 minLength: 12
+ *     responses:
+ *       200:
+ *         description: Password set; the member's sessions are signed out
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
+router.post(
+  '/:id/password',
+  authenticate,
+  requireSuperAdmin,
+  validate(
+    z.object({
+      password: z
+        .string()
+        .min(12, 'Password must be at least 12 characters')
+        .max(128, 'Password must be at most 128 characters')
+        .regex(/[A-Za-z]/, 'Password must include a letter')
+        .regex(/[0-9]/, 'Password must include a number'),
+    })
+  ),
+  setUserPassword
 );
 
 /**

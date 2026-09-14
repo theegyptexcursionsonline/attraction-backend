@@ -606,6 +606,62 @@ export const createInvitationLink = async (
   }
 };
 
+/** Team roles a super admin may set a password for. Super admins and travellers are excluded. */
+const PASSWORD_SETTABLE_ROLES = new Set(['brand-admin', 'manager', 'editor', 'viewer']);
+
+/**
+ * Super admin sets a site team member's password directly (for example when their mailbox cannot
+ * receive the invitation or reset email). A pending member becomes active. Every existing session
+ * of that member is signed out and any outstanding invitation or reset link stops working.
+ */
+export const setUserPassword = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    if (!isSuperAdmin(req.user)) {
+      sendError(res, 'Only a super admin can set passwords', 403);
+      return;
+    }
+    if (String(req.user?._id) === req.params.id) {
+      sendError(res, 'Use Change password for your own account', 400);
+      return;
+    }
+
+    const target = await User.findById(req.params.id).select('+passwordResetToken +passwordResetExpires');
+    if (!target) {
+      sendError(res, 'User not found', 404);
+      return;
+    }
+    if (!PASSWORD_SETTABLE_ROLES.has(target.role)) {
+      sendError(res, 'Passwords can only be set for site team members', 403);
+      return;
+    }
+    if (target.status === 'suspended' || target.status === 'inactive') {
+      sendError(res, 'Activate this user before setting a password', 409);
+      return;
+    }
+
+    const activated = target.status === 'pending';
+    target.password = req.body.password;
+    target.passwordResetToken = undefined;
+    target.passwordResetExpires = undefined;
+    if (activated) target.status = 'active';
+    revokeUserSessions(target);
+    await target.save();
+
+    console.info('[users] password set by super admin', {
+      userId: String(target._id),
+      byUserId: String(req.user?._id),
+      activated,
+    });
+    sendSuccess(res, { id: String(target._id), status: target.status, activated }, activated ? 'Password set and account activated' : 'Password set');
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const updateUser = async (
   req: AuthRequest,
   res: Response,
