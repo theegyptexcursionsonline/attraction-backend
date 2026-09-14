@@ -239,7 +239,7 @@ describe('POST /contact', () => {
     expect(mail['h:Reply-To']).toBe('nadia.visitor@example.com');
     expect(mail.from).toBe('Owner Site <noreply@mg.example.test>');
     for (const field of [
-      reference, 'Nadia Visitor', 'nadia.visitor@example.com', '+20 (100) 555-0101', 'Sunset Horse Ride (sunset-horse-ride)',
+      reference, 'Nadia Visitor', 'nadia.visitor@example.com', '+20 (100) 555-0101', 'Sunset Horse Ride',
       '2026-10-05', '>3<', 'Is hotel pickup included?<br>We have a child aged 6.', '/tours/sunset-horse-ride?ref=home', '#123456',
     ]) {
       expect(mail.html).toContain(field);

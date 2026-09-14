@@ -14,6 +14,7 @@ import {
   getEmailBrand,
   sendEmail,
 } from './email.service';
+import { EmailTone, emailButtons, emailCode, emailDetails, emailList, renderEmailDocument } from './emailLayout';
 
 const MAX_ATTEMPTS = 8;
 const OUTBOX_LEASE_MS = 60_000;
@@ -302,22 +303,36 @@ export const bundleOrderGuestLink = (
   return `${brandedLink(brand, `/bundle-orders/${orderId}`)}#accessToken=${encodeURIComponent(accessToken)}`;
 };
 
-const renderShell = (
+/** Bundle emails (customer, supplier, operator) in the shared email design. */
+export const renderBundleEmail = (
   tenant: Parameters<typeof getEmailBrand>[0],
-  title: string,
-  body: string,
-  action?: { label: string; url: string }
+  input: {
+    badge: { label: string; tone: EmailTone };
+    heading: string;
+    reference: string;
+    items?: Array<{ title: string; meta?: string }>;
+    details?: Array<{ label: string; value: string }>;
+    action?: { label: string; url: string };
+    audience?: 'customer' | 'business';
+  }
 ): string => {
   const brand = getEmailBrand(tenant);
-  return `<!doctype html><html><body style="margin:0;background:#f4f4f5;font-family:Arial,sans-serif;color:#18181b">
-    <div style="max-width:620px;margin:0 auto;padding:32px 16px">
-      <div style="background:${escapeEmailHtml(brand.color)};border-radius:18px 18px 0 0;padding:22px 28px;color:#fff;font-size:18px;font-weight:700">${escapeEmailHtml(brand.name)}</div>
-      <div style="background:#fff;border:1px solid #e4e4e7;border-top:0;border-radius:0 0 18px 18px;padding:30px 28px">
-        <h1 style="font-size:24px;line-height:1.25;margin:0 0 14px">${escapeEmailHtml(title)}</h1>
-        ${body}
-        ${action ? `<p style="margin:26px 0 0"><a href="${escapeEmailHtml(action.url)}" style="display:inline-block;background:#18181b;color:#fff;text-decoration:none;border-radius:10px;padding:12px 18px;font-weight:700">${escapeEmailHtml(action.label)}</a></p>` : ''}
-      </div>
-    </div></body></html>`;
+  return renderEmailDocument({
+    brand,
+    title: `${input.heading} · ${input.reference}`,
+    preheader: `${input.heading} — reference ${input.reference}`,
+    badge: input.badge,
+    heading: input.heading,
+    introHtml: `Reference ${emailCode(input.reference)}`,
+    blocks: [
+      input.items?.length ? emailList(brand, 'Itinerary', input.items) : '',
+      input.details?.length ? emailDetails(brand, input.details.map((row) => ({ label: row.label, valueHtml: escapeEmailHtml(row.value) }))) : '',
+      input.action ? emailButtons(brand, input.action) : '',
+    ],
+    footer: input.audience === 'customer'
+      ? { note: 'Questions? Reply to this email and our team will help.', contact: brand.contact }
+      : { note: `Automated notification from ${brand.name}.` },
+  });
 };
 
 const renewOutboxLease = async (
@@ -393,21 +408,29 @@ const processEvent = async (
         : cancelled
           ? `Bundle cancelled — ${order.reference}`
           : `Your bundle is confirmed — ${order.reference}`;
-    const itinerary = order.components.map((component) =>
-      `<li style="margin:8px 0"><strong>${escapeEmailHtml(component.attractionTitle)}</strong><br>${escapeEmailHtml(component.date)}${component.time ? ` · ${escapeEmailHtml(component.time)}` : ''}</li>`
-    ).join('');
-    html = renderShell(
-      tenant,
-      completed
+    html = renderBundleEmail(tenant, {
+      audience: 'customer',
+      badge: completed
+        ? { label: 'Bundle complete', tone: 'success' }
+        : refunded
+          ? { label: 'Refund update', tone: 'info' }
+          : cancelled
+            ? { label: 'Bundle cancelled', tone: 'danger' }
+            : { label: 'Bundle confirmed', tone: 'success' },
+      heading: completed
         ? 'Your itinerary is complete'
         : refunded
           ? 'Your refund was recorded'
           : cancelled
             ? 'Your bundle was cancelled'
             : 'Your bundle is confirmed',
-      `<p style="color:#52525b;line-height:1.6">Reference <strong>${escapeEmailHtml(order.reference)}</strong></p><ul style="padding-left:20px;line-height:1.5">${itinerary}</ul>`,
-      { label: 'View bundle order', url }
-    );
+      reference: order.reference,
+      items: order.components.map((component) => ({
+        title: component.attractionTitle,
+        meta: `${component.date}${component.time ? ` · ${component.time}` : ''}`,
+      })),
+      action: { label: 'View bundle order', url },
+    });
   } else if (event.audience === 'supplier') {
     recipient = tenant.contactInfo?.email || '';
     const components = order.components.filter(
@@ -417,13 +440,15 @@ const processEvent = async (
     subject = cancellationRequested
       ? `Bundle cancellation review — ${order.reference}`
       : `Bundle component confirmed — ${order.reference}`;
-    html = renderShell(
-      tenant,
-      cancellationRequested
-        ? 'A bundle cancellation needs review'
-        : 'A bundle component is ready to fulfil',
-      `<p style="color:#52525b;line-height:1.6">Reference <strong>${escapeEmailHtml(order.reference)}</strong></p><ul style="padding-left:20px">${components.map((component) => `<li style="margin:8px 0">${escapeEmailHtml(component.attractionTitle)} · ${escapeEmailHtml(component.date)}${component.time ? ` · ${escapeEmailHtml(component.time)}` : ''} · ${escapeEmailHtml(String(component.quantities.adults + component.quantities.children + component.quantities.infants))} guest(s)</li>`).join('')}</ul>`
-    );
+    html = renderBundleEmail(tenant, {
+      badge: cancellationRequested ? { label: 'Needs review', tone: 'warning' } : { label: 'Ready to fulfil', tone: 'brand' },
+      heading: cancellationRequested ? 'A bundle cancellation needs review' : 'A bundle component is ready to fulfil',
+      reference: order.reference,
+      items: components.map((component) => ({
+        title: component.attractionTitle,
+        meta: `${component.date}${component.time ? ` · ${component.time}` : ''} · ${component.quantities.adults + component.quantities.children + component.quantities.infants} guest(s)`,
+      })),
+    });
   } else {
     recipient = tenant.contactInfo?.email || '';
     const cancellationRequested = event.eventType === 'bundle.cancellation_requested';
@@ -432,15 +457,23 @@ const processEvent = async (
       : cancellationRequested
         ? `Bundle cancellation review — ${order.reference}`
         : `Bundle confirmed — ${order.reference}`;
-    html = renderShell(
-      tenant,
-      event.eventType === 'bundle.order_reserved'
+    html = renderBundleEmail(tenant, {
+      badge: event.eventType === 'bundle.order_reserved'
+        ? { label: 'Awaiting payment', tone: 'warning' }
+        : cancellationRequested
+          ? { label: 'Needs review', tone: 'warning' }
+          : { label: 'Payment confirmed', tone: 'success' },
+      heading: event.eventType === 'bundle.order_reserved'
         ? 'A bundle is awaiting payment'
         : cancellationRequested
           ? 'A paid bundle cancellation needs review'
           : 'A bundle payment was confirmed',
-      `<p style="color:#52525b;line-height:1.6">Reference <strong>${escapeEmailHtml(order.reference)}</strong><br>Status: ${escapeEmailHtml(order.status)}<br>Components: ${order.components.length}</p>`
-    );
+      reference: order.reference,
+      details: [
+        { label: 'Status', value: order.status },
+        { label: 'Components', value: String(order.components.length) },
+      ],
+    });
   }
   if (!recipient) throw new Error('Outbox recipient is not configured');
   await withOutboxLeaseHeartbeat(event._id, leaseToken, () =>

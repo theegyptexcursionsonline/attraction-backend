@@ -4,6 +4,20 @@ import formData from 'form-data';
 import sanitizeMarkup from 'sanitize-html';
 import QRCode from 'qrcode';
 import { env } from '../config/env';
+import {
+  EmailDetailRow,
+  EmailTone,
+  emailButtons,
+  emailCode,
+  emailDetails,
+  emailLink,
+  emailList,
+  emailNotice,
+  emailPanel,
+  emailQuote,
+  emailStats,
+  renderEmailDocument,
+} from './emailLayout';
 
 const mailgun = new Mailgun(formData);
 const mg = env.mailgunApiKey
@@ -163,6 +177,7 @@ export interface EmailBrand {
   slug?: string; // set only when NOT on a custom domain (needs ?tenant=)
   color: string; // brand primary, used for the email header/accents/button
   logo?: string; // absolute URL to the tenant logo, shown in the email header
+  contact?: { email?: string; phone?: string }; // the site's own inbox and phone, for email footers
 }
 
 const normalizedCustomDomain = (value?: string): string | null => {
@@ -207,33 +222,17 @@ export const getEmailBrand = (tenant?: EmailTenant | null): EmailBrand => {
       return undefined;
     }
   };
+  const contactEmail = tenant?.contactInfo?.email?.trim();
+  const contactPhone = tenant?.contactInfo?.phone?.trim();
+  const contact = isEmailAddress(contactEmail) || contactPhone
+    ? { ...(isEmailAddress(contactEmail) ? { email: contactEmail.toLowerCase() } : {}), ...(contactPhone ? { phone: contactPhone.slice(0, 40) } : {}) }
+    : undefined;
   const cd = normalizedCustomDomain(tenant?.customDomain);
   if (cd && (tenant?.domainMigrated || MIGRATED_DOMAINS.has(cd))) {
     const origin = `https://${cd}`;
-    return { name, origin, color, logo: absLogo(origin) };
+    return { name, origin, color, logo: absLogo(origin), ...(contact ? { contact } : {}) };
   }
-  return { name, origin: base, slug: tenant?.slug, color, logo: absLogo(base) };
-};
-
-/** The brand mark for an email header. Renders the tenant logo inside a white chip
- *  (so a dark/coloured logo stays legible on the brand-coloured header bar), falling
- *  back to the brand name as text when there's no logo — which is also the `alt`,
- *  so a blocked image still shows the brand. */
-const brandHeaderMark = (brand: EmailBrand): string =>
-  brand.logo
-    ? `<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="vertical-align:middle;"><span style="display:inline-block;background:#ffffff;border-radius:8px;padding:7px 12px;line-height:0;"><img src="${escapeEmailHtml(brand.logo)}" alt="${escapeEmailHtml(brand.name)}" height="30" style="height:30px;max-height:30px;width:auto;display:block;border:0;"></span></td><td style="vertical-align:middle;padding-left:12px;color:#ffffff;font-size:14px;font-weight:800;letter-spacing:0.2px;">${escapeEmailHtml(brand.name)}</td></tr></table>`
-    : `<span style="color:#ffffff;font-size:17px;font-weight:700;letter-spacing:0.3px;">${escapeEmailHtml(brand.name)}</span>`;
-
-const brandButtonTextColor = (hex: string): '#18130e' | '#ffffff' => {
-  const value = hex.replace('#', '');
-  const full = value.length === 3 ? value.split('').map(char => char + char).join('') : value;
-  if (!/^[0-9a-f]{6}$/i.test(full)) return '#ffffff';
-  const red = parseInt(full.slice(0, 2), 16);
-  const green = parseInt(full.slice(2, 4), 16);
-  const blue = parseInt(full.slice(4, 6), 16);
-  return ((red * 299) + (green * 587) + (blue * 114)) / 1000 >= 145
-    ? '#18130e'
-    : '#ffffff';
+  return { name, origin: base, slug: tenant?.slug, color, logo: absLogo(base), ...(contact ? { contact } : {}) };
 };
 
 // Custom domains confirmed to serve the Attractions Network build (not an old
@@ -276,8 +275,7 @@ export interface BookingEmailDetails {
 
 /**
  * Static meeting-point map card for the booking emails. Emails can't run the live
- * iframe map used on the confirmation page, so this renders a static map image —
- * proxied through the wsrv.nl image CDN so it loads reliably across email clients —
+ * iframe map used on the confirmation page, so this renders a static map image
  * wrapped in a Google Maps link, with a "Get directions" button as the always-works
  * fallback if images are blocked. Renders nothing unless real coordinates exist.
  */
@@ -287,12 +285,10 @@ const renderMeetingPointBlock = (
 ): string => {
   if (!mp || typeof mp.lat !== 'number' || typeof mp.lng !== 'number') return '';
   const { lat, lng } = mp;
-  const buttonTextColor = brandButtonTextColor(brand.color);
   const mapsLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
   // Prefer Google Static Maps (clean, no third-party watermark) when a key is
-  // configured — the same key the tourticket/EEO sites use. Fall back to a keyless
-  // static-map source (proxied via wsrv.nl for reliable email rendering) so the map
-  // still shows even without a key.
+  // configured. Fall back to a keyless static-map source (proxied via wsrv.nl for
+  // reliable email rendering) so the map still shows even without a key.
   let mapImg: string;
   if (env.googleMapsStaticKey) {
     const p = new URLSearchParams({
@@ -311,200 +307,122 @@ const renderMeetingPointBlock = (
     const upstream = `static-maps.yandex.ru/1.x/?ll=${lng},${lat}&z=14&size=650,300&l=map&lang=en_US&pt=${lng},${lat},pm2rdm`;
     mapImg = `https://wsrv.nl/?url=${encodeURIComponent(upstream)}&output=jpg&q=82`;
   }
-  return `
-        <tr><td class="px" style="padding:14px 34px 4px;">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fffdf8;border:1px solid ${brand.color};border-radius:16px;"><tr><td style="padding:20px;">
-            <div style="font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:#9b7830;font-weight:800;margin:0 0 8px;">Meeting point</div>
-            ${mp.label ? `<p style="margin:0 0 12px;font-size:14px;color:#18130e;font-weight:700;line-height:1.45;">${escapeEmailHtml(mp.label)}</p>` : ''}
-            <a href="${mapsLink}" target="_blank" style="text-decoration:none;">
-              <img src="${mapImg}" width="490" alt="Map to the meeting point" style="display:block;width:100%;max-width:490px;height:auto;border-radius:12px;border:1px solid #ded8ce;">
-            </a>
-            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:14px 0 0;"><tr>
-              <td bgcolor="${brand.color}" style="border-radius:8px;">
-                <a href="${mapsLink}" target="_blank" style="display:inline-block;padding:11px 20px;font-size:13px;font-weight:800;color:${buttonTextColor};text-decoration:none;border-radius:8px;">&#128205; Get directions</a>
-              </td>
-            </tr></table>
-          </td></tr></table>
-        </td></tr>`;
+  return emailPanel(
+    brand,
+    'Meeting point',
+    `<a href="${mapsLink}" target="_blank" style="text-decoration:none;"><img src="${escapeEmailHtml(mapImg)}" width="484" alt="Map to the meeting point" style="display:block;width:100%;max-width:484px;height:auto;border-radius:10px;border:1px solid #ece7df;"></a>
+        <div style="margin-top:14px;">${emailButtons(brand, { label: 'Get directions', url: mapsLink }, undefined, { outline: true })}</div>`,
+    { titleHtml: mp.label ? escapeEmailHtml(mp.label) : undefined }
+  );
+};
+
+const firstNameOf = (name: string | undefined, fallback = 'there'): string =>
+  (name || '').trim().split(/\s+/)[0] || fallback;
+
+const pickupRows = (pickups: Array<{ status?: string; hotelName?: string; address?: string; roomNumber?: string; pickupTime?: string }>): EmailDetailRow[] => {
+  const labels = pickups
+    .map((pickup) => pickup.status === 'provide_later'
+      ? 'Hotel details to be provided later'
+      : [pickup.hotelName, pickup.address, pickup.roomNumber ? `Room ${pickup.roomNumber}` : '', pickup.pickupTime].filter(Boolean).join(', '))
+    .filter(Boolean);
+  return labels.map((label, index) => ({
+    label: labels.length > 1 ? `Hotel pickup ${index + 1}` : 'Hotel pickup',
+    valueHtml: escapeEmailHtml(label),
+  }));
 };
 
 /**
- * Shared builder for a simple branded "action" email (password reset, invitation).
- * Uses the tenant logo + brand colour via getEmailBrand — so these transactional
- * emails carry the operator's brand instead of a generic purple "Foxes Network"
- * template. Responsive + table-based like the booking emails.
+ * Shared builder for a simple branded "action" email (payment link, cancellation,
+ * password reset, invitation): heading, short intro, optional details, one button.
+ * `intro` may contain <strong>/<em>/<br> only; everything else is escaped.
  */
 export const renderActionEmail = (
   brand: EmailBrand,
-  opts: { title: string; heading: string; intro: string; note?: string; ctaLabel: string; ctaUrl: string }
-): string => {
-  const year = new Date().getFullYear();
-  const safe = {
-    title: escapeEmailHtml(opts.title),
-    heading: escapeEmailHtml(opts.heading),
-    intro: sanitizeInlineEmailHtml(opts.intro),
-    note: opts.note ? escapeEmailHtml(opts.note) : undefined,
-    ctaLabel: escapeEmailHtml(opts.ctaLabel),
-    ctaUrl: escapeEmailHtml(safeHttpUrl(opts.ctaUrl)),
-  };
-  const brandName = escapeEmailHtml(brand.name);
-  return `<!DOCTYPE html>
-<html lang="en" dir="ltr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="x-apple-disable-message-reformatting"><title>${safe.title}</title>
-<style>body,table,td,a{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;}body{margin:0;padding:0;width:100%!important;background:#f2f2f4;}@media screen and (max-width:600px){.container{width:100%!important;border-radius:0!important;}.px{padding-left:22px!important;padding-right:22px!important;}.btn a{display:block!important;}h1{font-size:21px!important;}}</style></head>
-<body dir="ltr" style="margin:0;padding:0;background:#f2f2f4;direction:ltr;text-align:left;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f2f4;"><tr><td align="center" style="padding:24px 12px;">
-<table role="presentation" dir="ltr" class="container" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-<tr><td class="px" style="background:${brand.color};padding:24px 34px;">${brandHeaderMark(brand)}</td></tr>
-<tr><td class="px" style="padding:34px 34px 4px;"><h1 style="margin:0 0 10px;font-size:23px;line-height:1.3;color:#16181d;font-weight:700;">${safe.heading}</h1><p style="margin:0;font-size:15px;line-height:1.6;color:#5b6472;">${safe.intro}</p></td></tr>
-<tr><td class="px btn" style="padding:24px 34px 6px;"><table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr><td align="center" bgcolor="${brand.color}" style="border-radius:10px;"><a href="${safe.ctaUrl}" style="display:inline-block;padding:14px 30px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;">${safe.ctaLabel}</a></td></tr></table></td></tr>
-${safe.note ? `<tr><td class="px" style="padding:10px 34px 6px;"><p style="margin:0;font-size:13px;line-height:1.6;color:#8a909c;">${safe.note}</p></td></tr>` : ''}
-<tr><td class="px" style="padding:22px 34px;background:#fafafb;border-top:1px solid #ececf0;"><p style="margin:0;font-size:12px;color:#adb2bd;">&copy; ${year} ${brandName}. All rights reserved.</p></td></tr>
-</table></td></tr></table></body></html>`;
-};
+  opts: {
+    title: string;
+    heading: string;
+    intro: string;
+    note?: string;
+    ctaLabel: string;
+    ctaUrl: string;
+    badge?: { label: string; tone: EmailTone };
+    details?: EmailDetailRow[];
+    noteTone?: EmailTone;
+    footerNote?: string;
+    preheader?: string;
+  }
+): string =>
+  renderEmailDocument({
+    brand,
+    title: opts.title,
+    preheader: opts.preheader || opts.heading,
+    badge: opts.badge,
+    heading: opts.heading,
+    introHtml: sanitizeInlineEmailHtml(opts.intro),
+    blocks: [
+      opts.details?.length ? emailDetails(brand, opts.details) : '',
+      emailButtons(brand, { label: opts.ctaLabel, url: safeHttpUrl(opts.ctaUrl) }),
+      opts.note ? emailNotice(brand, opts.noteTone || 'neutral', escapeEmailHtml(opts.note)) : '',
+    ],
+    footer: { note: opts.footerNote, contact: brand.contact },
+  });
 
 /** Pure builder for the customer booking-confirmation email (exported so it can be
- *  previewed/unit-tested without sending). Responsive, table-based, brand-coloured. */
+ *  previewed/unit-tested without sending). */
 export const renderBookingConfirmationHtml = (
   brand: EmailBrand,
   bookingDetails: BookingEmailDetails,
   hasTicket = false,
   qrImageSrc?: string,
 ): string => {
-  const pickupLabels = (bookingDetails.hotelPickups || (bookingDetails.hotelPickup ? [bookingDetails.hotelPickup] : []))
-    .map(pickup => pickup.status === 'provide_later' ? 'Hotel details to be provided later'
-      : [pickup.hotelName, pickup.address, pickup.roomNumber ? `Room ${pickup.roomNumber}` : '', pickup.pickupTime].filter(Boolean).join(', '))
-    .filter(Boolean).map(escapeEmailHtml);
-
   const viewUrl = brandedLink(brand, '/checkout/confirmation', {
     ref: bookingDetails.reference,
     ...(bookingDetails.guestAccessToken ? { accessToken: bookingDetails.guestAccessToken } : {}),
   });
-  bookingDetails = {
-    ...bookingDetails,
-    reference: escapeEmailHtml(bookingDetails.reference),
-    attractionTitle: escapeEmailHtml(bookingDetails.attractionTitle),
-    date: escapeEmailHtml(bookingDetails.date),
-    time: bookingDetails.time ? escapeEmailHtml(bookingDetails.time) : undefined,
-    guestName: escapeEmailHtml(bookingDetails.guestName),
-    currency: escapeEmailHtml(bookingDetails.currency),
-    paymentMethod: bookingDetails.paymentMethod
-      ? escapeEmailHtml(bookingDetails.paymentMethod)
-      : undefined,
-    hotelPickup: bookingDetails.hotelPickup
-      ? {
-          hotelName: bookingDetails.hotelPickup.status === 'provide_later'
-            ? 'Hotel details to be provided later'
-            : escapeEmailHtml([bookingDetails.hotelPickup.hotelName, bookingDetails.hotelPickup.address].filter(Boolean).join(', ')),
-          roomNumber: escapeEmailHtml(bookingDetails.hotelPickup.roomNumber),
-          pickupTime: escapeEmailHtml(bookingDetails.hotelPickup.pickupTime),
-        }
-      : undefined,
-    meetingPoint: bookingDetails.meetingPoint
-      ? {
-          ...bookingDetails.meetingPoint,
-          label: bookingDetails.meetingPoint.label,
-        }
-      : undefined,
-  };
-  const firstName = (bookingDetails.guestName || 'there').trim().split(/\s+/)[0];
+  const pickups = bookingDetails.hotelPickups || (bookingDetails.hotelPickup ? [bookingDetails.hotelPickup] : []);
   const isPaid = !!bookingDetails.paymentMethod && bookingDetails.paymentMethod !== 'pay-later';
-  const totalLabel = isPaid ? 'Total paid' : 'Total';
-  const totalNote = isPaid ? 'Paid online' : 'Pay at location — collected on arrival';
   const dateStr = `${bookingDetails.date}${bookingDetails.time ? ` at ${bookingDetails.time}` : ''}`;
-  const year = new Date().getFullYear();
-  const buttonTextColor = brandButtonTextColor(brand.color);
+  const reference = bookingDetails.reference;
 
-  const row = (label: string, value: string, opts: { note?: string; first?: boolean } = {}): string => `
-                <tr>
-                  <td dir="ltr" width="38%" style="padding:12px 0;${opts.first ? '' : 'border-top:1px solid #f0f0f3;'}color:#6b7280;font-size:13px;vertical-align:top;text-align:left;direction:ltr;">${label}${opts.note ? `<div style="color:#a0a6b0;font-size:12px;margin-top:2px;">${opts.note}</div>` : ''}</td>
-                  <td dir="ltr" align="left" style="padding:12px 0 12px 18px;${opts.first ? '' : 'border-top:1px solid #f0f0f3;'}color:#16181d;font-weight:600;font-size:14px;vertical-align:top;text-align:left;direction:ltr;unicode-bidi:isolate;word-break:break-word;">${value}</td>
-                </tr>`;
+  const rows: EmailDetailRow[] = [
+    { label: 'Booking reference', valueHtml: emailCode(reference) },
+    { label: 'Date & time', valueHtml: escapeEmailHtml(dateStr) },
+    ...(bookingDetails.guests ? [{ label: 'Guests', valueHtml: escapeEmailHtml(bookingDetails.guests) }] : []),
+    ...pickupRows(pickups),
+    {
+      label: isPaid ? 'Total paid' : 'Total',
+      hint: isPaid ? 'Paid online' : 'Pay at location — collected on arrival',
+      valueHtml: `${escapeEmailHtml(bookingDetails.currency)} ${bookingDetails.total.toFixed(2)}`,
+      emphasis: true,
+    },
+  ];
 
-  const html = `<!DOCTYPE html>
-<html lang="en" dir="ltr">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="x-apple-disable-message-reformatting">
-  <title>Booking confirmed</title>
-  <style>
-    body,table,td,a{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;}
-    table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
-    img{border:0;line-height:100%;outline:none;text-decoration:none;}
-    body{margin:0;padding:0;width:100%!important;background:#0b0907;}
-    @media screen and (max-width:600px){
-      .container{width:100%!important;border-radius:0!important;}
-      .px{padding-left:20px!important;padding-right:20px!important;}
-      .btn a{display:block!important;}
-      h1{font-size:22px!important;}
-    }
-  </style>
-</head>
-<body dir="ltr" style="margin:0;padding:0;background:#0b0907;direction:ltr;text-align:left;">
-  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Booking confirmed — ${bookingDetails.reference} · ${bookingDetails.attractionTitle} on ${dateStr}.</div>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0b0907;">
-    <tr><td align="center" style="padding:28px 12px;">
-      <table role="presentation" dir="ltr" class="container" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#15110d;border:1px solid #33291d;border-radius:20px;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-        <tr><td class="px" style="background:#100d0a;border-bottom:3px solid ${brand.color};padding:24px 34px;">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-            <td style="vertical-align:middle;">${brandHeaderMark(brand)}</td>
-            <td align="right" style="vertical-align:middle;"><span style="display:inline-block;border:1px solid ${brand.color};color:#f8e7b0;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:7px 12px;border-radius:999px;">Booking confirmed</span></td>
-          </tr></table>
-        </td></tr>
-        <tr><td class="px" style="padding:38px 34px 8px;text-align:center;">
-          <div style="width:54px;height:54px;margin:0 auto;border-radius:50%;background:${brand.color};color:${buttonTextColor};font-size:26px;line-height:54px;text-align:center;font-weight:800;">&#10003;</div>
-          <div style="margin:20px 0 8px;color:#caa85a;font-size:10px;font-weight:800;letter-spacing:2.4px;text-transform:uppercase;">Your desert adventure is reserved</div>
-          <h1 style="margin:0 0 8px;font-size:28px;line-height:1.2;color:#ffffff;font-weight:800;">You're all set, ${firstName}!</h1>
-          <p style="margin:0;font-size:15px;line-height:1.65;color:#c8c0b6;">Your booking is confirmed${hasTicket ? " and your e-ticket is attached" : ""}. Keep this email handy for tour day.</p>
-        </td></tr>
-        <tr><td class="px" style="padding:24px 34px 6px;">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fffdf8;border:1px solid ${brand.color};border-radius:16px;">
-            <tr><td style="padding:18px 20px 4px;">
-              <div style="font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:#9b7830;font-weight:800;">Your booking</div>
-              <div style="font-size:20px;font-weight:800;color:#18130e;margin-top:6px;line-height:1.3;">${bookingDetails.attractionTitle}</div>
-            </td></tr>
-            <tr><td style="padding:6px 20px 16px;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-${row('Booking reference', `<span style="font-family:'SF Mono',Menlo,Consolas,monospace;font-weight:700;letter-spacing:0.5px;">${bookingDetails.reference}</span>`, { first: true })}
-${row('Date &amp; time', dateStr)}
-${bookingDetails.guests ? row('Guests', String(bookingDetails.guests)) : ''}
-${pickupLabels.map((label, index) => row(pickupLabels.length > 1 ? `Hotel pickup ${index + 1}` : 'Hotel pickup', label)).join('')}
-${row(totalLabel, `<span style="font-size:18px;font-weight:800;color:${brand.color};">${bookingDetails.currency} ${bookingDetails.total.toFixed(2)}</span>`, { note: totalNote })}
-              </table>
-            </td></tr>
-          </table>
-        </td></tr>
-${renderMeetingPointBlock(brand, bookingDetails.meetingPoint)}
-${qrImageSrc ? `        <tr><td class="px" style="padding:20px 34px 2px;">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#100d0a;border:1px solid #3a2f21;border-radius:16px;"><tr>
-            <td align="center" style="padding:22px;">
-              <div style="color:#caa85a;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Your mobile ticket</div>
-              <div style="color:#ffffff;font-size:17px;font-weight:750;margin-bottom:14px;">Scan for booking details</div>
-              <img src="${escapeEmailHtml(qrImageSrc)}" width="156" height="156" alt="QR code for booking ${bookingDetails.reference}" style="display:block;width:156px;height:156px;margin:0 auto;background:#ffffff;border:10px solid #ffffff;border-radius:12px;">
-              <div style="color:#a9a096;font-size:12px;line-height:1.5;margin-top:14px;">Reference <strong style="color:#ffffff;letter-spacing:0.8px;">${bookingDetails.reference}</strong></div>
-            </td>
-          </tr></table>
-        </td></tr>` : ''}
-        <tr><td class="px btn" style="padding:24px 34px 4px;">
-          <table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr>
-            <td align="center" bgcolor="${brand.color}" style="border-radius:10px;">
-              <a href="${viewUrl}" style="display:inline-block;padding:16px 30px;font-size:14px;font-weight:800;letter-spacing:0.8px;color:${buttonTextColor};text-decoration:none;border-radius:10px;text-transform:uppercase;">Open your booking</a>
-            </td>
-          </tr></table>
-        </td></tr>
-        <tr><td class="px" style="padding:14px 34px 30px;">
-          <p style="margin:0;font-size:13px;line-height:1.6;color:#a9a096;text-align:center;">${hasTicket ? 'Your PDF ticket is attached. Show it on your phone when requested.' : 'Bring this confirmation with you on tour day.'}</p>
-        </td></tr>
-        <tr><td class="px" style="padding:22px 34px;background:#100d0a;border-top:1px solid #33291d;text-align:center;">
-          <p style="margin:0 0 5px;font-size:12px;line-height:1.6;color:#c8c0b6;">Questions? Reply to this email and our team will help.</p>
-          <p style="margin:0;font-size:11px;color:#7f756b;">&copy; ${year} ${escapeEmailHtml(brand.name)}. All rights reserved.</p>
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
-  return html;
+  const ticket = qrImageSrc
+    ? emailPanel(
+        brand,
+        'Your mobile ticket',
+        `<img src="${escapeEmailHtml(qrImageSrc)}" width="156" height="156" alt="QR code for booking ${escapeEmailHtml(reference)}" style="display:block;width:156px;height:156px;margin:0 auto;background:#ffffff;border:10px solid #ffffff;border-radius:12px;">
+        <div style="margin-top:12px;font-size:13px;line-height:20px;color:#57534e;">Reference ${emailCode(reference)}</div>`,
+        { align: 'center', titleHtml: 'Scan for booking details' }
+      )
+    : '';
+
+  return renderEmailDocument({
+    brand,
+    title: 'Booking confirmed',
+    preheader: `Booking confirmed — ${reference} · ${bookingDetails.attractionTitle} on ${dateStr}.`,
+    badge: { label: 'Booking confirmed', tone: 'success' },
+    heading: `You're all set, ${firstNameOf(bookingDetails.guestName)}!`,
+    introHtml: `Your booking is confirmed${hasTicket ? ' and your e-ticket is attached' : ''}. Keep this email handy for the day of your tour.`,
+    blocks: [
+      emailDetails(brand, rows, { eyebrow: 'Your booking', titleHtml: escapeEmailHtml(bookingDetails.attractionTitle) }),
+      emailButtons(brand, { label: 'Open your booking', url: viewUrl }),
+      ticket,
+      renderMeetingPointBlock(brand, bookingDetails.meetingPoint),
+      emailNotice(brand, 'neutral', hasTicket ? 'Your PDF ticket is attached. Show it on your phone when requested.' : 'Bring this confirmation with you on the day of your tour.'),
+    ],
+    footer: { note: 'Questions? Reply to this email and our team will help.', contact: brand.contact },
+  });
 };
 
 export const sendBookingConfirmation = async (
@@ -579,16 +497,22 @@ export const renderBookingPaymentLinkHtml = (
   brand: EmailBrand,
   details: BookingPaymentLinkDetails
 ): string => {
-  const safeReference = escapeEmailHtml(details.reference);
-  const firstName = escapeEmailHtml(details.guestName.trim().split(/\s+/)[0] || 'there');
-  const amount = `${escapeEmailHtml(details.currency.toUpperCase())} ${details.total.toFixed(2)}`;
+  const amount = `${details.currency.toUpperCase()} ${details.total.toFixed(2)}`;
   return renderActionEmail(brand, {
-    title: `Complete payment · ${safeReference}`,
+    title: `Complete payment · ${details.reference}`,
+    preheader: `Your booking ${details.reference} is reserved — pay ${amount} to confirm it.`,
+    badge: { label: 'Payment due', tone: 'warning' },
     heading: 'Complete your secure payment',
-    intro: `Hi ${firstName}, your booking <strong>${safeReference}</strong> is reserved pending payment. The amount due is <strong>${amount}</strong>.`,
-    note: 'Use the secure link below to pay by card. The booking is confirmed only after the payment succeeds.',
+    intro: `Hi ${escapeEmailHtml(firstNameOf(details.guestName))}, your booking is reserved and waiting for payment.`,
+    details: [
+      { label: 'Booking reference', valueHtml: emailCode(details.reference) },
+      { label: 'Amount due', valueHtml: escapeEmailHtml(amount), emphasis: true },
+    ],
     ctaLabel: `Pay ${amount}`,
     ctaUrl: bookingPaymentLink(brand, details.reference, details.guestAccessToken),
+    note: 'Pay by card through the secure link above. Your booking is confirmed only after the payment succeeds.',
+    noteTone: 'info',
+    footerNote: 'Questions? Reply to this email and our team will help.',
   });
 };
 
@@ -625,125 +549,51 @@ export interface AdminBookingDetails {
   meetingPoint?: { lat?: number; lng?: number; label?: string };
 }
 
-/** Pure builder for the operator "new booking" notification (exported for preview/tests).
- *  Responsive, table-based, brand-coloured — matches the customer confirmation. */
+/** Pure builder for the operator "new booking" notification (exported for preview/tests). */
 export const renderAdminBookingNotificationHtml = (
   brand: EmailBrand,
   details: AdminBookingDetails,
   adminUrl: string
 ): string => {
-  const pickupLabels = (details.hotelPickups || (details.hotelPickup ? [details.hotelPickup] : []))
-    .map(pickup => pickup.status === 'provide_later' ? 'Hotel details to be provided later'
-      : [pickup.hotelName, pickup.address, pickup.roomNumber ? `Room ${pickup.roomNumber}` : '', pickup.pickupTime].filter(Boolean).join(', '))
-    .filter(Boolean).map(escapeEmailHtml);
-
   const emailHref = safeMailtoAddress(details.guestEmail);
   const phoneHref = details.guestPhone.replace(/[^+0-9]/g, '');
-  details = {
-    ...details,
-    reference: escapeEmailHtml(details.reference),
-    tenantName: escapeEmailHtml(details.tenantName),
-    attractionTitle: escapeEmailHtml(details.attractionTitle),
-    date: escapeEmailHtml(details.date),
-    time: details.time ? escapeEmailHtml(details.time) : undefined,
-    guestName: escapeEmailHtml(details.guestName),
-    guestEmail: escapeEmailHtml(details.guestEmail),
-    guestPhone: escapeEmailHtml(details.guestPhone),
-    currency: escapeEmailHtml(details.currency),
-    paymentMethod: escapeEmailHtml(details.paymentMethod),
-    hotelPickup: details.hotelPickup
-      ? {
-          hotelName: escapeEmailHtml(details.hotelPickup.hotelName),
-          roomNumber: escapeEmailHtml(details.hotelPickup.roomNumber),
-          pickupTime: escapeEmailHtml(details.hotelPickup.pickupTime),
-        }
-      : undefined,
-    meetingPoint: details.meetingPoint
-      ? { ...details.meetingPoint, label: details.meetingPoint.label }
-      : undefined,
-  };
   const title = details.attractionTitle || 'Experience';
   const totalGuests = details.adults + details.children;
   const guestsText = `${totalGuests} · ${details.adults} adult${details.adults === 1 ? '' : 's'}${details.children ? `, ${details.children} child${details.children === 1 ? '' : 'ren'}` : ''}`;
   const isPaid = !!details.paymentMethod && details.paymentMethod !== 'pay-later';
-  const paymentText = isPaid ? 'Paid online' : 'Pay at location';
   const dateStr = `${details.date}${details.time ? ` at ${details.time}` : ''}`;
+  const pickups = details.hotelPickups || (details.hotelPickup ? [details.hotelPickup] : []);
 
-  const row = (label: string, value: string, first = false): string => `
-                <tr>
-                  <td dir="ltr" width="38%" style="padding:12px 0;${first ? '' : 'border-top:1px solid #f0f0f3;'}color:#6b7280;font-size:13px;vertical-align:top;text-align:left;direction:ltr;">${label}</td>
-                  <td dir="ltr" align="left" style="padding:12px 0 12px 18px;${first ? '' : 'border-top:1px solid #f0f0f3;'}color:#16181d;font-weight:600;font-size:14px;vertical-align:top;text-align:left;direction:ltr;unicode-bidi:isolate;word-break:break-word;">${value}</td>
-                </tr>`;
+  const rows: EmailDetailRow[] = [
+    { label: 'Experience', valueHtml: escapeEmailHtml(title) },
+    { label: 'Date & time', valueHtml: escapeEmailHtml(dateStr) },
+    { label: 'Guests', valueHtml: escapeEmailHtml(guestsText) },
+    ...pickupRows(pickups),
+    { label: 'Lead traveller', valueHtml: escapeEmailHtml(details.guestName) },
+    { label: 'Email', valueHtml: emailHref ? emailLink(brand, `mailto:${emailHref}`, escapeEmailHtml(details.guestEmail)) : escapeEmailHtml(details.guestEmail) },
+    { label: 'Phone', valueHtml: phoneHref ? emailLink(brand, `tel:${phoneHref}`, escapeEmailHtml(details.guestPhone)) : escapeEmailHtml(details.guestPhone) },
+    { label: 'Payment', valueHtml: isPaid ? 'Paid online' : 'Pay at location' },
+    { label: 'Total', valueHtml: `${escapeEmailHtml(details.currency)} ${details.total.toFixed(2)}`, emphasis: true },
+  ];
 
-  return `<!DOCTYPE html>
-<html lang="en" dir="ltr">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="x-apple-disable-message-reformatting">
-  <title>New booking</title>
-  <style>
-    body,table,td,a{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;}
-    table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
-    body{margin:0;padding:0;width:100%!important;background:#f2f2f4;}
-    @media screen and (max-width:600px){
-      .container{width:100%!important;border-radius:0!important;}
-      .px{padding-left:22px!important;padding-right:22px!important;}
-      .btn a{display:block!important;}
-      h1{font-size:21px!important;}
-    }
-  </style>
-</head>
-<body dir="ltr" style="margin:0;padding:0;background:#f2f2f4;direction:ltr;text-align:left;">
-  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${details.guestName} booked ${title} — ${dateStr} · ${details.reference}.</div>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f2f4;">
-    <tr><td align="center" style="padding:24px 12px;">
-      <table role="presentation" dir="ltr" class="container" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-        <tr><td class="px" style="background:${brand.color};padding:24px 34px;">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-            <td style="vertical-align:middle;">${brandHeaderMark(brand)}</td>
-            <td align="right" style="vertical-align:middle;"><span style="display:inline-block;background:rgba(255,255,255,0.2);color:#ffffff;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;padding:5px 12px;border-radius:999px;">New booking</span></td>
-          </tr></table>
-        </td></tr>
-        <tr><td class="px" style="padding:32px 34px 6px;">
-          <h1 style="margin:0 0 6px;font-size:23px;line-height:1.3;color:#16181d;font-weight:700;"><strong>${details.guestName}</strong> just booked ${title}</h1>
-          <p style="margin:0;font-size:14px;color:#8a909c;">Reference <span style="font-family:'SF Mono',Menlo,Consolas,monospace;font-weight:700;color:#5b6472;">${details.reference}</span></p>
-        </td></tr>
-        <tr><td class="px" style="padding:20px 34px 6px;">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #ececf0;border-radius:12px;">
-            <tr><td style="padding:8px 20px 16px;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-${row('Experience', title, true)}
-${row('Date &amp; time', dateStr)}
-${row('Guests', guestsText)}
-${pickupLabels.map((label, index) => row(pickupLabels.length > 1 ? `Hotel pickup ${index + 1}` : 'Hotel pickup', label)).join('')}
-${row('Lead traveller', details.guestName)}
-${row('Email', emailHref
-  ? `<a href="mailto:${escapeEmailHtml(emailHref)}" style="color:${brand.color};text-decoration:none;font-weight:600;">${details.guestEmail}</a>`
-  : details.guestEmail)}
-${row('Phone', `<a href="tel:${phoneHref}" style="color:#16181d;text-decoration:none;">${details.guestPhone}</a>`)}
-${row('Payment', paymentText)}
-${row('Total', `<span style="font-size:17px;font-weight:800;color:${brand.color};">${details.currency} ${details.total.toFixed(2)}</span>`)}
-              </table>
-            </td></tr>
-          </table>
-        </td></tr>
-${renderMeetingPointBlock(brand, details.meetingPoint)}
-        <tr><td class="px btn" style="padding:22px 34px 4px;">
-          <table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr>
-            <td align="center" bgcolor="${brand.color}" style="border-radius:10px;">
-              <a href="${escapeEmailHtml(safeHttpUrl(adminUrl))}" style="display:inline-block;padding:14px 30px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;">Open in admin</a>
-            </td>
-          </tr></table>
-        </td></tr>
-        <tr><td class="px" style="padding:20px 34px;background:#fafafb;border-top:1px solid #ececf0;">
-          <p style="margin:0;font-size:12px;line-height:1.6;color:#8a909c;">Sent automatically when a guest completes checkout on ${details.tenantName}.</p>
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
+  return renderEmailDocument({
+    brand,
+    title: 'New booking',
+    preheader: `${details.guestName} booked ${title} — ${dateStr} · ${details.reference}.`,
+    badge: { label: 'New booking', tone: 'brand' },
+    heading: `${details.guestName} booked ${title}`,
+    introHtml: `Reference ${emailCode(details.reference)} · ${escapeEmailHtml(dateStr)}`,
+    blocks: [
+      emailDetails(brand, rows),
+      emailButtons(
+        brand,
+        { label: 'Open in admin', url: safeHttpUrl(adminUrl) },
+        emailHref ? { label: `Email ${firstNameOf(details.guestName, 'guest')}`, url: `mailto:${emailHref}?subject=${encodeURIComponent(`Your booking ${details.reference}`)}` } : undefined
+      ),
+      renderMeetingPointBlock(brand, details.meetingPoint),
+    ],
+    footer: { note: `Sent automatically when a guest completes checkout on ${details.tenantName}.` },
+  });
 };
 
 export const sendAdminBookingNotification = async (
@@ -776,37 +626,49 @@ export const renderBookingStatusEmailHtml = (
   brand: EmailBrand,
   details: BookingStatusEmailDetails
 ): string => {
+  const firstName = escapeEmailHtml(firstNameOf(details.guestName));
   const reference = escapeEmailHtml(details.reference);
-  const firstName = escapeEmailHtml(details.guestName.trim().split(/\s+/)[0] || 'there');
   const viewUrl = brandedLink(brand, '/checkout/confirmation', {
     ref: details.reference,
     ...(details.guestAccessToken ? { accessToken: details.guestAccessToken } : {}),
   });
+  const refund = Number.isFinite(details.refundAmount) && details.refundAmount
+    ? `${(details.currency || '').toUpperCase()} ${details.refundAmount.toFixed(2)}`.trim()
+    : '';
 
   if (details.kind === 'cancelled') {
-    const refundNote = details.refundAmount && details.currency
-      ? `A refund of ${details.currency.toUpperCase()} ${details.refundAmount.toFixed(2)} has been processed to the original payment method.`
-      : 'No online payment was collected for this booking.';
     return renderActionEmail(brand, {
-      title: `Booking cancelled · ${reference}`,
+      title: `Booking cancelled · ${details.reference}`,
+      badge: { label: 'Booking cancelled', tone: 'danger' },
       heading: 'Your booking is cancelled',
       intro: `Hi ${firstName}, booking <strong>${reference}</strong> has been cancelled.`,
-      note: refundNote,
+      details: [
+        { label: 'Booking reference', valueHtml: emailCode(details.reference) },
+        ...(refund && details.currency ? [{ label: 'Refund', valueHtml: escapeEmailHtml(refund), emphasis: true }] : []),
+      ],
+      note: refund && details.currency
+        ? `A refund of ${refund} has been processed to the original payment method.`
+        : 'No online payment was collected for this booking.',
       ctaLabel: 'View booking',
       ctaUrl: viewUrl,
+      footerNote: 'Questions? Reply to this email and our team will help.',
     });
   }
 
-  const amount = Number.isFinite(details.refundAmount)
-    ? `${escapeEmailHtml(details.currency?.toUpperCase() || '')} ${details.refundAmount!.toFixed(2)}`.trim()
-    : 'your payment';
+  const amount = refund || 'your payment';
   return renderActionEmail(brand, {
-    title: `Refund processed · ${reference}`,
+    title: `Refund processed · ${details.reference}`,
+    badge: { label: 'Refund processed', tone: 'success' },
     heading: details.fullRefund ? 'Your refund is complete' : 'Your partial refund is complete',
-    intro: `Hi ${firstName}, a refund of <strong>${amount}</strong> has been processed for booking <strong>${reference}</strong>.`,
+    intro: `Hi ${firstName}, a refund of <strong>${escapeEmailHtml(amount)}</strong> has been processed for booking <strong>${reference}</strong>.`,
+    details: [
+      { label: 'Booking reference', valueHtml: emailCode(details.reference) },
+      ...(refund ? [{ label: 'Refund', valueHtml: escapeEmailHtml(refund), emphasis: true }] : []),
+    ],
     note: 'Your bank may take several business days to show the credit on your statement.',
     ctaLabel: 'View booking',
     ctaUrl: viewUrl,
+    footerNote: 'Questions? Reply to this email and our team will help.',
   });
 };
 
@@ -824,6 +686,17 @@ export const sendBookingStatusEmail = async (
   });
 };
 
+export const renderPasswordResetHtml = (brand: EmailBrand, input: { userName: string; resetUrl: string }): string =>
+  renderActionEmail(brand, {
+    title: 'Password reset',
+    badge: { label: 'Account security', tone: 'neutral' },
+    heading: 'Reset your password',
+    intro: `Hi ${escapeEmailHtml(firstNameOf(input.userName))}, we received a request to reset your password. Choose a new one with the button below — this link expires in 1 hour.`,
+    ctaLabel: 'Reset password',
+    ctaUrl: input.resetUrl,
+    note: "If you didn't request this, you can safely ignore this email — your password won't change.",
+  });
+
 export const sendPasswordResetEmail = async (
   email: string,
   resetToken: string,
@@ -832,24 +705,29 @@ export const sendPasswordResetEmail = async (
 ): Promise<void> => {
   const brand = getEmailBrand(tenant);
   const resetUrl = brandedLink(brand, '/reset-password', { token: resetToken });
-  const firstName = (userName || 'there').trim().split(/\s+/)[0];
-
-  const html = renderActionEmail(brand, {
-    title: 'Password reset',
-    heading: 'Reset your password',
-    intro: `Hi ${escapeEmailHtml(firstName)}, we received a request to reset your password. Click below to choose a new one — this link expires in 1 hour.`,
-    note: "If you didn't request this, you can safely ignore this email — your password won't change.",
-    ctaLabel: 'Reset password',
-    ctaUrl: resetUrl,
-  });
-
   await sendEmail({
     to: email,
     subject: `Reset your password · ${brand.name}`,
-    html,
+    html: renderPasswordResetHtml(brand, { userName, resetUrl }),
     tenant: tenant || null,
   });
 };
+
+export const renderInvitationHtml = (brand: EmailBrand, input: { inviterName: string; role: string; inviteUrl: string }): string =>
+  renderActionEmail(brand, {
+    title: 'Invitation',
+    badge: { label: 'Team invitation', tone: 'brand' },
+    heading: `Join ${brand.name}`,
+    intro: `${escapeEmailHtml(input.inviterName)} has invited you to join <strong>${escapeEmailHtml(brand.name)}</strong> as a <strong>${escapeEmailHtml(input.role)}</strong>. Accept to set up your account.`,
+    details: [
+      { label: 'Invited by', valueHtml: escapeEmailHtml(input.inviterName) },
+      { label: 'Role', valueHtml: escapeEmailHtml(input.role) },
+      { label: 'Invitation expires', valueHtml: 'In 7 days' },
+    ],
+    ctaLabel: 'Accept invitation',
+    ctaUrl: input.inviteUrl,
+    note: "If you weren't expecting this invitation, you can ignore this email.",
+  });
 
 export const sendUserInvitation = async (
   email: string,
@@ -862,19 +740,10 @@ export const sendUserInvitation = async (
   // else the shared origin with ?tenant= so the set-password page themes right).
   const brand = getEmailBrand(tenant);
   const inviteUrl = brandedLink(brand, '/accept-invitation', { token: invitationToken });
-
-  const html = renderActionEmail(brand, {
-    title: 'Invitation',
-    heading: "You're invited",
-    intro: `${escapeEmailHtml(inviterName)} has invited you to join <strong>${escapeEmailHtml(brand.name)}</strong> as a <strong>${escapeEmailHtml(role)}</strong>. Click below to accept and set up your account — this invitation expires in 7 days.`,
-    ctaLabel: 'Accept invitation',
-    ctaUrl: inviteUrl,
-  });
-
   await sendEmail({
     to: email,
     subject: `You're invited to join ${brand.name}`,
-    html,
+    html: renderInvitationHtml(brand, { inviterName, role, inviteUrl }),
     tenant: tenant || null,
   });
 };
@@ -935,196 +804,36 @@ export const sendEventRsvpNotification = async (
   const phoneHref = rawRsvp.phone.replace(/[^+0-9]/g, '');
   const preheader = `${rsvp.firstName} ${rsvp.lastName} — ${totalGuests} guest${totalGuests === 1 ? '' : 's'} (${rsvp.adultsCount} adult${rsvp.adultsCount === 1 ? '' : 's'}, ${rsvp.childrenCount} child${rsvp.childrenCount === 1 ? '' : 'ren'})`;
 
-  const adminHtml = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="x-apple-disable-message-reformatting" />
-  <meta name="color-scheme" content="dark light" />
-  <meta name="supported-color-schemes" content="dark light" />
-  <title>New RSVP · ${rsvp.eventName}</title>
-  <!--[if mso]>
-  <style>table{border-collapse:collapse;border-spacing:0;margin:0;}div,td{padding:0;}div{margin:0!important;}</style>
-  <![endif]-->
-</head>
-<body style="margin:0;padding:0;background:#0a0604;font-family:Georgia,'Playfair Display',serif;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;">
-  <div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#0a0604;opacity:0;">${preheader}</div>
-
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0a0604" style="background:#0a0604;">
-    <tr>
-      <td align="center" style="padding:32px 16px;">
-        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
-
-          <!-- Invitation-style hero -->
-          <tr>
-            <td bgcolor="#1a0f07" style="background:#1a0f07;border:1px solid #B8860B;border-bottom:none;border-radius:14px 14px 0 0;padding:40px 36px 36px;text-align:center;">
-              <div style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:4px;color:#D4A843;text-transform:uppercase;font-weight:600;">New RSVP Received</div>
-              <table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:16px auto;">
-                <tr>
-                  <td width="40" height="1" bgcolor="#B8860B" style="background:#B8860B;line-height:1px;font-size:1px;">&nbsp;</td>
-                  <td style="padding:0 10px;color:#D4A843;font-size:10px;">♦</td>
-                  <td width="40" height="1" bgcolor="#B8860B" style="background:#B8860B;line-height:1px;font-size:1px;">&nbsp;</td>
-                </tr>
-              </table>
-              <h1 style="margin:0;font-family:Georgia,'Playfair Display',serif;font-size:28px;font-style:italic;color:#E5C875;font-weight:400;line-height:1.25;">${rsvp.eventName}</h1>
-              <div style="margin-top:14px;font-family:Arial,sans-serif;font-size:12px;color:#D4A843;letter-spacing:2px;text-transform:uppercase;">${rsvp.eventDate}</div>
-              <div style="margin-top:4px;font-family:Arial,sans-serif;font-size:11px;color:#D4A843;opacity:0.75;letter-spacing:1.5px;">${rsvp.eventLocation}</div>
-            </td>
-          </tr>
-
-          <!-- Hero guest count -->
-          <tr>
-            <td bgcolor="#1a0f07" style="background:#1a0f07;border-left:1px solid #B8860B;border-right:1px solid #B8860B;padding:0 36px 32px;text-align:center;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <td align="center" style="padding:24px 0 12px;">
-                    <div style="font-family:Arial,sans-serif;font-size:10px;color:#D4A843;letter-spacing:3px;text-transform:uppercase;font-weight:600;">Total Attending</div>
-                    <div style="font-family:Georgia,'Playfair Display',serif;font-size:72px;color:#E5C875;font-weight:400;line-height:1;margin-top:8px;">${totalGuests}</div>
-                    <div style="font-family:Georgia,serif;font-style:italic;color:#D4A843;font-size:13px;margin-top:6px;">guest${totalGuests === 1 ? '' : 's'} to welcome</div>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Adult + Children pills -->
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:8px;">
-                <tr>
-                  <td width="50%" style="padding-right:6px;">
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0a0604" style="background:#0a0604;border:1px solid #B8860B;border-radius:8px;">
-                      <tr>
-                        <td style="padding:18px 12px;text-align:center;">
-                          <div style="font-family:Georgia,serif;font-size:34px;color:#E5C875;font-weight:400;line-height:1;">${rsvp.adultsCount}</div>
-                          <div style="font-family:Arial,sans-serif;font-size:10px;color:#D4A843;letter-spacing:2.5px;text-transform:uppercase;margin-top:6px;">Adult${rsvp.adultsCount === 1 ? '' : 's'}</div>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                  <td width="50%" style="padding-left:6px;">
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0a0604" style="background:#0a0604;border:1px solid #B8860B;border-radius:8px;">
-                      <tr>
-                        <td style="padding:18px 12px;text-align:center;">
-                          <div style="font-family:Georgia,serif;font-size:34px;color:#E5C875;font-weight:400;line-height:1;">${rsvp.childrenCount}</div>
-                          <div style="font-family:Arial,sans-serif;font-size:10px;color:#D4A843;letter-spacing:2.5px;text-transform:uppercase;margin-top:6px;">Child${rsvp.childrenCount === 1 ? '' : 'ren'}</div>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Guest details section (cream) -->
-          <tr>
-            <td bgcolor="#fffaf0" style="background:#fffaf0;border-left:1px solid #B8860B;border-right:1px solid #B8860B;padding:36px 36px 28px;">
-              <div style="font-family:Arial,sans-serif;font-size:10px;color:#B8860B;letter-spacing:3px;text-transform:uppercase;font-weight:700;margin-bottom:18px;">Guest Details</div>
-
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <td style="padding:12px 0;border-bottom:1px solid rgba(184,134,11,0.15);">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td style="font-family:Arial,sans-serif;font-size:11px;color:#7A5A33;letter-spacing:1.5px;text-transform:uppercase;">Name</td>
-                        <td align="right" style="font-family:Georgia,serif;font-size:15px;color:#2A1A0E;font-weight:600;">${rsvp.firstName} ${rsvp.lastName}</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:12px 0;border-bottom:1px solid rgba(184,134,11,0.15);">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td style="font-family:Arial,sans-serif;font-size:11px;color:#7A5A33;letter-spacing:1.5px;text-transform:uppercase;">Email</td>
-                        <td align="right" style="font-family:Georgia,serif;font-size:14px;">${emailHref
-                          ? `<a href="mailto:${escapeEmailHtml(emailHref)}" style="color:#B8860B;text-decoration:none;font-weight:600;">${rsvp.email}</a>`
-                          : rsvp.email}</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:12px 0;border-bottom:1px solid rgba(184,134,11,0.15);">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td style="font-family:Arial,sans-serif;font-size:11px;color:#7A5A33;letter-spacing:1.5px;text-transform:uppercase;">Phone</td>
-                        <td align="right" style="font-family:Georgia,serif;font-size:14px;"><a href="tel:${phoneHref}" style="color:#B8860B;text-decoration:none;font-weight:600;">${rsvp.phone}</a></td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:12px 0;border-bottom:1px solid rgba(184,134,11,0.15);">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td style="font-family:Arial,sans-serif;font-size:11px;color:#7A5A33;letter-spacing:1.5px;text-transform:uppercase;">Site</td>
-                        <td align="right" style="font-family:Georgia,serif;font-size:14px;color:#2A1A0E;font-weight:600;">${rsvp.tenantName}</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:12px 0;">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td style="font-family:Arial,sans-serif;font-size:11px;color:#7A5A33;letter-spacing:1.5px;text-transform:uppercase;">Received</td>
-                        <td align="right" style="font-family:Georgia,serif;font-size:13px;color:#7A5A33;font-style:italic;">${receivedAt}</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-
-              ${rsvp.message ? `
-              <!-- Guest message -->
-              <div style="margin-top:26px;">
-                <div style="font-family:Arial,sans-serif;font-size:10px;color:#B8860B;letter-spacing:3px;text-transform:uppercase;font-weight:700;margin-bottom:10px;">Message From Guest</div>
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#FDF6EC" style="background:#FDF6EC;border-left:3px solid #B8860B;border-radius:0 6px 6px 0;">
-                  <tr>
-                    <td style="padding:16px 18px;">
-                      <div style="font-family:Georgia,serif;font-style:italic;color:#4B3824;font-size:15px;line-height:1.6;">“${rsvp.message}”</div>
-                    </td>
-                  </tr>
-                </table>
-              </div>
-              ` : ''}
-
-              <!-- CTA button -->
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:30px;">
-                <tr>
-                  <td align="center">
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td bgcolor="#1a0f07" style="background:#1a0f07;border-radius:8px;">
-                          <a href="${adminPanelUrl}" style="display:inline-block;font-family:Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#E5C875;text-decoration:none;padding:14px 28px;border:1px solid #B8860B;border-radius:8px;">Manage All RSVPs →</a>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td bgcolor="#1a0f07" style="background:#1a0f07;border:1px solid #B8860B;border-top:none;border-radius:0 0 14px 14px;padding:22px 36px;text-align:center;">
-              <table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 8px;">
-                <tr>
-                  <td width="30" height="1" bgcolor="#B8860B" style="background:#B8860B;line-height:1px;font-size:1px;opacity:0.5;">&nbsp;</td>
-                  <td style="padding:0 8px;color:#D4A843;font-size:9px;">♦</td>
-                  <td width="30" height="1" bgcolor="#B8860B" style="background:#B8860B;line-height:1px;font-size:1px;opacity:0.5;">&nbsp;</td>
-                </tr>
-              </table>
-              <div style="font-family:Georgia,serif;font-style:italic;color:#D4A843;font-size:12px;opacity:0.8;">Automated notification · ${rsvp.tenantName} · ${new Date().getFullYear()}</div>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
+  const brand = getEmailBrand(tenant);
+  const adminHtml = renderEmailDocument({
+    brand,
+    title: `New RSVP · ${rawRsvp.eventName}`,
+    preheader,
+    badge: { label: 'New RSVP', tone: 'brand' },
+    heading: `${rawRsvp.firstName} ${rawRsvp.lastName} is coming to ${rawRsvp.eventName}`,
+    introHtml: `${rsvp.eventDate} · ${rsvp.eventLocation}`,
+    blocks: [
+      emailStats(brand, [
+        { value: totalGuests, label: `Guest${totalGuests === 1 ? '' : 's'}` },
+        { value: rsvp.adultsCount, label: `Adult${rsvp.adultsCount === 1 ? '' : 's'}` },
+        { value: rsvp.childrenCount, label: `Child${rsvp.childrenCount === 1 ? '' : 'ren'}` },
+      ]),
+      emailDetails(brand, [
+        { label: 'Name', valueHtml: `${rsvp.firstName} ${rsvp.lastName}` },
+        { label: 'Email', valueHtml: emailHref ? emailLink(brand, `mailto:${emailHref}`, rsvp.email) : rsvp.email },
+        { label: 'Phone', valueHtml: phoneHref ? emailLink(brand, `tel:${phoneHref}`, rsvp.phone) : rsvp.phone },
+        { label: 'Site', valueHtml: rsvp.tenantName },
+        { label: 'Received', valueHtml: escapeEmailHtml(receivedAt) },
+      ], { eyebrow: 'Guest details' }),
+      rawRsvp.message ? emailQuote(brand, 'Message from guest', rawRsvp.message) : '',
+      emailButtons(
+        brand,
+        { label: 'Manage RSVPs', url: adminPanelUrl },
+        emailHref ? { label: `Email ${firstNameOf(rawRsvp.firstName, 'guest')}`, url: `mailto:${emailHref}` } : undefined
+      ),
+    ],
+    footer: { note: `Automated notification from ${rawRsvp.tenantName}.` },
+  });
 
   await sendEmail({
     to: recipientEmail,
@@ -1160,178 +869,30 @@ export const sendEventRsvpConfirmation = async (
     eventTime: rawRsvp.eventTime ? escapeEmailHtml(rawRsvp.eventTime) : undefined,
   };
   const totalGuests = rsvp.adultsCount + rsvp.childrenCount;
-  const programme = rsvp.programme && rsvp.programme.length > 0 ? rsvp.programme : DEFAULT_OPENING_PROGRAMME;
   const eventTime = rsvp.eventTime || '5 PM – 10 PM';
   const preheader = `You’re on the list for ${rsvp.eventName} — ${rsvp.eventDate} · ${eventTime}. We are happy to welcome you soon.`;
 
-  const programmeRows = programme
-    .map(
-      (item) => `
-      <tr>
-        <td style="padding:6px 0;font-family:Georgia,'Playfair Display',serif;font-size:16px;color:#E5C875;">
-          <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-            <tr>
-              <td width="20" style="color:#D4A843;font-size:10px;vertical-align:middle;padding-right:10px;">♦</td>
-              <td style="font-family:Georgia,'Playfair Display',serif;font-style:italic;color:#E5C875;font-size:16px;">${item}</td>
-            </tr>
-          </table>
-        </td>
-      </tr>`
-    )
-    .join('');
-
-  const guestHtml = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="x-apple-disable-message-reformatting" />
-  <meta name="color-scheme" content="dark light" />
-  <meta name="supported-color-schemes" content="dark light" />
-  <title>${rsvp.eventName} — Your RSVP is Confirmed</title>
-  <!--[if mso]>
-  <style>table{border-collapse:collapse;border-spacing:0;margin:0;}div,td{padding:0;}div{margin:0!important;}</style>
-  <![endif]-->
-</head>
-<body style="margin:0;padding:0;background:#0a0604;font-family:Georgia,'Playfair Display',serif;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;">
-  <div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#0a0604;opacity:0;">${preheader}</div>
-
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0a0604" style="background:#0a0604;">
-    <tr>
-      <td align="center" style="padding:36px 16px;">
-        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
-
-          <!-- Invitation card (black + gold) -->
-          <tr>
-            <td bgcolor="#1a0f07" style="background:#1a0f07;border:2px solid #B8860B;border-radius:14px;padding:48px 40px 40px;text-align:center;">
-              <!-- Tenant name -->
-              <div style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:5px;color:#D4A843;text-transform:uppercase;font-weight:600;">${rsvp.tenantName.toUpperCase()}</div>
-
-              <!-- Diamond divider -->
-              <table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:20px auto;">
-                <tr>
-                  <td width="60" height="1" bgcolor="#B8860B" style="background:#B8860B;line-height:1px;font-size:1px;">&nbsp;</td>
-                  <td style="padding:0 12px;color:#D4A843;font-size:11px;">♦</td>
-                  <td width="60" height="1" bgcolor="#B8860B" style="background:#B8860B;line-height:1px;font-size:1px;">&nbsp;</td>
-                </tr>
-              </table>
-
-              <!-- RSVP CONFIRMED label -->
-              <div style="font-family:Arial,sans-serif;font-size:10px;letter-spacing:4px;color:#D4A843;text-transform:uppercase;font-weight:700;">Your RSVP is Confirmed</div>
-
-              <!-- Main headline -->
-              <h1 style="margin:22px 0 8px;font-family:Georgia,'Playfair Display',serif;font-size:42px;font-style:italic;color:#E5C875;font-weight:400;line-height:1.15;">Thank you</h1>
-
-              <!-- Guest greeting -->
-              <div style="font-family:Georgia,'Playfair Display',serif;font-style:italic;color:#D4A843;font-size:16px;margin-top:10px;">${rsvp.firstName}, we’re thrilled you’re joining us.</div>
-
-              <!-- Diamond divider -->
-              <table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:26px auto 22px;">
-                <tr>
-                  <td width="40" height="1" bgcolor="#B8860B" style="background:#B8860B;line-height:1px;font-size:1px;">&nbsp;</td>
-                  <td style="padding:0 10px;color:#D4A843;font-size:10px;">♦</td>
-                  <td width="40" height="1" bgcolor="#B8860B" style="background:#B8860B;line-height:1px;font-size:1px;">&nbsp;</td>
-                </tr>
-              </table>
-
-              <!-- Date + time + location -->
-              <div style="font-family:Georgia,'Playfair Display',serif;font-size:24px;color:#E5C875;letter-spacing:0.5px;line-height:1.3;font-weight:500;">${rsvp.eventDate}</div>
-              <div style="font-family:Arial,sans-serif;font-size:13px;letter-spacing:3px;color:#D4A843;text-transform:uppercase;margin-top:8px;">${eventTime}</div>
-              <div style="font-family:Georgia,serif;font-style:italic;font-size:14px;color:#D4A843;opacity:0.75;margin-top:10px;">${rsvp.eventLocation}</div>
-
-              <!-- Guest count detail row -->
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:32px;border-top:1px solid rgba(212,168,67,0.25);padding-top:26px;">
-                <tr>
-                  <td width="33%" align="center">
-                    <div style="font-family:Georgia,'Playfair Display',serif;font-size:34px;color:#E5C875;font-weight:400;line-height:1;">${rsvp.adultsCount}</div>
-                    <div style="font-family:Arial,sans-serif;font-size:10px;letter-spacing:2.5px;color:#D4A843;text-transform:uppercase;margin-top:8px;">Adult${rsvp.adultsCount === 1 ? '' : 's'}</div>
-                  </td>
-                  <td width="33%" align="center" style="border-left:1px solid rgba(212,168,67,0.15);border-right:1px solid rgba(212,168,67,0.15);">
-                    <div style="font-family:Georgia,'Playfair Display',serif;font-size:34px;color:#E5C875;font-weight:400;line-height:1;">${rsvp.childrenCount}</div>
-                    <div style="font-family:Arial,sans-serif;font-size:10px;letter-spacing:2.5px;color:#D4A843;text-transform:uppercase;margin-top:8px;">Child${rsvp.childrenCount === 1 ? '' : 'ren'}</div>
-                  </td>
-                  <td width="34%" align="center">
-                    <div style="font-family:Georgia,'Playfair Display',serif;font-size:34px;color:#E5C875;font-weight:400;line-height:1;">${totalGuests}</div>
-                    <div style="font-family:Arial,sans-serif;font-size:10px;letter-spacing:2.5px;color:#D4A843;text-transform:uppercase;margin-top:8px;">Total</div>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Message body -->
-          <tr>
-            <td style="padding:32px 0 0;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#1a0f07" style="background:#1a0f07;border:1px solid rgba(184,134,11,0.4);border-radius:12px;">
-                <tr>
-                  <td style="padding:36px 36px 28px;">
-                    <div style="font-family:Georgia,'Playfair Display',serif;font-size:16px;color:#E5C875;line-height:1.75;">
-                      <p style="margin:0 0 16px;">Dear ${rsvp.firstName},</p>
-                      <p style="margin:0 0 16px;">Thank you for your RSVP to the <span style="font-style:italic;color:#E5C875;">${rsvp.eventName}</span>. We are delighted to welcome you${totalGuests > 1 ? ' and your guests' : ''} to the grand opening of our new horse club in the heart of Makadi.</p>
-                      <p style="margin:0;">Come experience an evening crafted for every age — a celebration of horses, heritage, and hospitality under the stars.</p>
-                    </div>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Programme card -->
-          <tr>
-            <td style="padding:24px 0 0;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0a0604" style="background:#0a0604;border:1px solid rgba(184,134,11,0.3);border-radius:12px;">
-                <tr>
-                  <td style="padding:32px 36px;">
-                    <div style="text-align:center;">
-                      <div style="font-family:Arial,sans-serif;font-size:10px;letter-spacing:4px;color:#D4A843;text-transform:uppercase;font-weight:700;">Evening Programme</div>
-                      <table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:12px auto 22px;">
-                        <tr>
-                          <td width="40" height="1" bgcolor="#B8860B" style="background:#B8860B;line-height:1px;font-size:1px;opacity:0.6;">&nbsp;</td>
-                          <td style="padding:0 10px;color:#D4A843;font-size:10px;">♦</td>
-                          <td width="40" height="1" bgcolor="#B8860B" style="background:#B8860B;line-height:1px;font-size:1px;opacity:0.6;">&nbsp;</td>
-                        </tr>
-                      </table>
-                    </div>
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                      ${programmeRows}
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Signoff -->
-          <tr>
-            <td align="center" style="padding:36px 24px 0;text-align:center;">
-              <div style="font-family:Georgia,'Playfair Display',serif;font-style:italic;color:#E5C875;font-size:22px;line-height:1.4;">We are happy to welcome you soon.</div>
-              <table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:22px auto 0;">
-                <tr>
-                  <td width="40" height="1" bgcolor="#B8860B" style="background:#B8860B;line-height:1px;font-size:1px;">&nbsp;</td>
-                  <td style="padding:0 10px;color:#D4A843;font-size:10px;">♦</td>
-                  <td width="40" height="1" bgcolor="#B8860B" style="background:#B8860B;line-height:1px;font-size:1px;">&nbsp;</td>
-                </tr>
-              </table>
-              <div style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:4px;color:#D4A843;text-transform:uppercase;margin-top:18px;font-weight:600;">— The ${rsvp.tenantName} Team</div>
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td align="center" style="padding:30px 24px 10px;text-align:center;">
-              <div style="font-family:Georgia,serif;font-style:italic;font-size:12px;color:#7A5A33;line-height:1.7;opacity:0.85;">
-                Questions about your booking? Simply reply to this email<br />and our team will be in touch personally.
-              </div>
-              <div style="font-family:Arial,sans-serif;font-size:10px;letter-spacing:2px;color:#7A5A33;text-transform:uppercase;margin-top:16px;opacity:0.6;">${rsvp.tenantName} · ${rsvp.eventLocation}</div>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
+  const brand = getEmailBrand(tenant);
+  const programmeItems = rawRsvp.programme && rawRsvp.programme.length > 0 ? rawRsvp.programme : DEFAULT_OPENING_PROGRAMME;
+  const guestHtml = renderEmailDocument({
+    brand,
+    title: `${rawRsvp.eventName} — Your RSVP is confirmed`,
+    preheader,
+    badge: { label: 'RSVP confirmed', tone: 'success' },
+    heading: `Thank you, ${rawRsvp.firstName}`,
+    introHtml: `You're on the list for <strong>${rsvp.eventName}</strong>. We are delighted to welcome you${totalGuests > 1 ? ' and your guests' : ''}.`,
+    blocks: [
+      emailDetails(brand, [
+        { label: 'Date', valueHtml: rsvp.eventDate },
+        { label: 'Time', valueHtml: eventTime },
+        { label: 'Location', valueHtml: rsvp.eventLocation },
+        { label: 'Guests', valueHtml: `${totalGuests} · ${rsvp.adultsCount} adult${rsvp.adultsCount === 1 ? '' : 's'}, ${rsvp.childrenCount} child${rsvp.childrenCount === 1 ? '' : 'ren'}` },
+      ], { eyebrow: 'Your invitation', titleHtml: rsvp.eventName }),
+      emailList(brand, 'Programme', programmeItems.map((item) => ({ title: item }))),
+      emailNotice(brand, 'brand', `We are happy to welcome you soon. — The ${rsvp.tenantName} team`),
+    ],
+    footer: { note: 'Questions? Simply reply to this email and our team will be in touch.', contact: brand.contact },
+  });
 
   await sendEmail({
     to: guestEmail,
@@ -1375,72 +936,48 @@ export const renderContactFormHtml = (tenant: EmailTenant, details: ContactEnqui
   const brand = getEmailBrand(tenant);
   const mailto = safeMailtoAddress(details.email);
   const telephone = details.phone?.replace(/[^0-9+]/g, '');
-  const tour = [details.tourTitle, details.tourSlug ? `(${details.tourSlug})` : '']
-    .filter(Boolean)
-    .join(' ');
-  const rows: Array<[string, string]> = [
-    ['Reference', escapeEmailHtml(details.reference)],
-    [
-      'From',
-      `${escapeEmailHtml(details.name)} &lt;${
-        mailto
-          ? `<a href="mailto:${escapeEmailHtml(mailto)}" style="color:${brand.color};">${escapeEmailHtml(mailto)}</a>`
-          : escapeEmailHtml(details.email)
-      }&gt;`,
-    ],
+  const topic = singleLine(details.tourTitle?.trim() || details.subject?.trim() || 'Website message');
+  // The operator knows tours by name; the internal slug is shown only when the title is missing.
+  const tour = details.tourTitle?.trim() || details.tourSlug?.trim() || '';
+  const replyUrl = mailto
+    ? `mailto:${mailto}?subject=${encodeURIComponent(`Re: ${topic} (${singleLine(details.reference)})`)}`
+    : undefined;
+  const inboxUrl = brandedLink(brand, '/admin/messages');
+
+  const rows: EmailDetailRow[] = [
+    { label: 'Reference', valueHtml: emailCode(details.reference) },
+    { label: 'Name', valueHtml: escapeEmailHtml(details.name) },
+    { label: 'Email', valueHtml: mailto ? emailLink(brand, `mailto:${mailto}`, escapeEmailHtml(mailto)) : escapeEmailHtml(details.email) },
   ];
   if (details.phone) {
-    rows.push([
-      'Phone',
-      telephone
-        ? `<a href="tel:${escapeEmailHtml(telephone)}" style="color:${brand.color};">${escapeEmailHtml(details.phone)}</a>`
-        : escapeEmailHtml(details.phone),
-    ]);
+    rows.push({ label: 'Phone', valueHtml: telephone ? emailLink(brand, `tel:${telephone}`, escapeEmailHtml(details.phone)) : escapeEmailHtml(details.phone) });
   }
-  if (tour) rows.push(['Tour', escapeEmailHtml(tour)]);
-  if (details.travelDate) rows.push(['Travel date', escapeEmailHtml(details.travelDate)]);
-  if (details.guests !== undefined && details.guests !== null) rows.push(['Guests', escapeEmailHtml(details.guests)]);
-  if (details.subject) rows.push(['Subject', escapeEmailHtml(details.subject)]);
-  rows.push(['Message', escapeEmailHtml(details.message).replace(/\r?\n/g, '<br>')]);
-  if (details.pagePath) rows.push(['Page', escapeEmailHtml(details.pagePath)]);
-  if (details.locale) rows.push(['Language', escapeEmailHtml(details.locale)]);
+  if (tour) rows.push({ label: 'Tour', valueHtml: escapeEmailHtml(tour) });
+  if (details.travelDate) rows.push({ label: 'Travel date', valueHtml: escapeEmailHtml(details.travelDate) });
+  if (details.guests !== undefined && details.guests !== null) rows.push({ label: 'Guests', valueHtml: escapeEmailHtml(details.guests) });
+  if (details.subject) rows.push({ label: 'Subject', valueHtml: escapeEmailHtml(details.subject) });
+  if (details.pagePath) rows.push({ label: 'Page', valueHtml: escapeEmailHtml(details.pagePath) });
+  if (details.locale) rows.push({ label: 'Language', valueHtml: escapeEmailHtml(details.locale) });
 
-  const fields = rows
-    .map(
-      ([label, value]) => `
-          <div class="field">
-            <div class="field-label">${label}</div>
-            <div class="field-value">${value}</div>
-          </div>`
-    )
-    .join('');
-
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: ${brand.color}; color: white; padding: 20px; border-radius: 10px 10px 0 0; }
-        .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
-        .field { margin-bottom: 15px; }
-        .field-label { font-weight: 600; color: #6b7280; font-size: 12px; text-transform: uppercase; }
-        .field-value { margin-top: 4px; word-break: break-word; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h2>New ${escapeEmailHtml(brand.name)} Contact Form Submission</h2>
-        </div>
-        <div class="content">${fields}
-          <p style="margin-top:24px;font-size:12px;color:#6b7280;">Reply to this email to answer the visitor directly.</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
+  return renderEmailDocument({
+    brand,
+    title: `New enquiry ${details.reference}`,
+    preheader: `${details.name}: ${singleLine(details.message).slice(0, 110)}`,
+    badge: { label: 'New enquiry', tone: 'brand' },
+    heading: `${details.name} sent a message`,
+    introHtml: `About <strong>${escapeEmailHtml(topic)}</strong> · via the ${escapeEmailHtml(brand.name)} contact form`,
+    blocks: [
+      emailQuote(brand, 'Message', details.message),
+      emailDetails(brand, rows, { eyebrow: 'Enquiry details' }),
+      emailButtons(
+        brand,
+        replyUrl ? { label: `Reply to ${firstNameOf(details.name, 'visitor')}`, url: replyUrl } : { label: 'Open Messages', url: inboxUrl },
+        replyUrl ? { label: 'Open Messages', url: inboxUrl } : undefined
+      ),
+      emailNotice(brand, 'neutral', 'Replying to this email answers the visitor directly. The message is also saved in Admin → Messages.'),
+    ],
+    footer: { note: `Sent from the contact form on ${brand.name}.` },
+  });
 };
 
 /**

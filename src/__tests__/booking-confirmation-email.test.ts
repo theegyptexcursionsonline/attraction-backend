@@ -46,13 +46,15 @@ describe('renderBookingConfirmationHtml', () => {
       true,
       'cid:booking-ATT-TEST-1-qr.png',
     );
-    expect(html).toContain('Your desert adventure is reserved');
+    expect(html).toContain('Booking confirmed');
+    // Brand-neutral copy: the same email serves boat, horse and desert sites.
+    expect(html).not.toMatch(/desert adventure/i);
     expect(html).toContain('Your mobile ticket');
     expect(html).toContain('Scan for booking details');
     expect(html).toContain('src="cid:booking-ATT-TEST-1-qr.png"');
     expect(html).toContain('Your PDF ticket is attached');
     expect(html).toContain('Open your booking');
-    expect(html).toContain('background:#0b0907');
+    expect(html).toContain('background:#8B4513'); // brand accent stripe
   });
 
   it('does not render an empty QR frame when no inline image is available', () => {
@@ -313,7 +315,8 @@ describe('renderContactFormHtml', () => {
       locale: attack,
     });
 
-    expect(html).toContain('Makadi Horse Club Contact Form');
+    expect(html).toContain('New enquiry');
+    expect(html).toContain('contact form on Makadi Horse Club');
     expect(html).toContain('#B8860B');
     expect(html).not.toContain('<img src=x');
     expect(html).not.toContain('onerror="alert');
@@ -339,7 +342,7 @@ describe('renderContactFormHtml', () => {
     });
     for (const expected of [
       'MSG-7K2M9Q', 'Nadia Visitor', 'nadia@example.com', '+20 (100) 555-0101', 'tel:+201005550101',
-      'Family trip', 'Sunset Horse Ride (sunset-horse-ride)', '2026-10-05', '>3<',
+      'Family trip', 'Sunset Horse Ride', '2026-10-05', '>3<',
       'Is hotel pickup included?', '/tours/sunset-horse-ride', 'Language',
     ]) {
       expect(full).toContain(expected);
