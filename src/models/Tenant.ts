@@ -2,8 +2,8 @@ import { pagePresentationSchema } from '../utils/siteContent';
 import { urlNamespacePlugin } from '../plugins/urlNamespace';
 import mongoose, { Schema } from 'mongoose';
 import { ITenant } from '../types';
-import { AI_SEARCH_WIDGET_ID_PATTERN } from '../utils/aiSettings';
-export { AI_SEARCH_WIDGET_ID_PATTERN } from '../utils/aiSettings';
+import { AI_SEARCH_WIDGET_ID_PATTERN, VOICE_WIDGET_ID_PATTERN } from '../utils/aiSettings';
+export { AI_SEARCH_WIDGET_ID_PATTERN, VOICE_WIDGET_ID_PATTERN } from '../utils/aiSettings';
 
 const tenantSchema = new Schema<ITenant>(
   {
@@ -147,15 +147,22 @@ const tenantSchema = new Schema<ITenant>(
         languages: [{ type: String }],
         autoOpen: { type: Boolean, default: false },
       },
+      // AI Search and Voice: `enabled` and `widgetId` are set only by a super admin through
+      // PATCH /tenants/:id/ai-products (see utils/aiSettings), which also stamps updatedBy/At
+      // and bumps aiProductsRevision. The storefront loads a product only with both set.
       voiceAgent: {
         enabled: { type: Boolean, default: false },
+        // Foxes Voice WidgetConfig id (an ObjectId), never a voice tenant credential.
+        widgetId: { type: String, trim: true, lowercase: true, match: [VOICE_WIDGET_ID_PATTERN, 'Voice widget ID must be a 24-character widget id'] },
         languages: [{ type: String }],
         buttonPosition: { type: String, default: 'bottom-right' },
+        updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+        updatedAt: Date,
       },
       searchWidget: {
-        enabled: { type: Boolean, default: true },
-        // Foxes AI Search launcher for this site. The storefront loads search only when
-        // this is set, so the long-standing `enabled` default alone never activates it.
+        // Off unless switched on. Records from before this default stored nothing here and
+        // are read as on-when-an-id-exists until migrate-enabled-default makes it explicit.
+        enabled: { type: Boolean, default: false },
         widgetId: {
           type: String,
           trim: true,
@@ -166,8 +173,12 @@ const tenantSchema = new Schema<ITenant>(
         maxSuggestions: { type: Number, default: 6 },
         // Browsing pages only unless the site admin chooses every catalogue page.
         displayPages: { type: String, enum: ['browse', 'all'], default: 'browse' },
+        updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+        updatedAt: Date,
       },
     },
+    // Optimistic lock for AI product switches and ids; see PATCH /tenants/:id/ai-products.
+    aiProductsRevision: { type: Number, default: 0, min: 0 },
     // Areas served by hotel pickup rather than departures; see utils/pickupDestinations.
     pickupDestinationSlugs: {
       type: [{ type: String, lowercase: true, trim: true, match: /^[a-z0-9]+(?:-[a-z0-9]+)*$/ }],

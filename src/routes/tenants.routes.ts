@@ -13,6 +13,7 @@ import {
   createTenant,
   updateTenant,
   updateTenantSettings,
+  updateTenantAiProducts,
   deleteTenant,
   getTenantStats,
   getPortfolioStats,
@@ -295,6 +296,24 @@ router.post(
   requireSuperAdmin,
   validate(createTenantSchema),
   createTenant
+);
+
+/**
+ * @swagger
+ * /tenants/{id}/ai-products:
+ *   patch:
+ *     summary: Switch AI Search and Voice for a site (Super Admin)
+ *     description: Body `{ expectedRevision, search?: { enabled?, widgetId? }, voice?: { enabled?, widgetId? } }`. 409 when the revision is stale.
+ *     tags: [Tenants]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.patch(
+  '/:id/ai-products',
+  authenticate,
+  requireSuperAdmin,
+  // The handler validates the strict body and guards the write on expectedRevision.
+  updateTenantAiProducts
 );
 
 /**

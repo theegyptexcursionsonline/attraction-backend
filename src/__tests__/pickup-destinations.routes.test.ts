@@ -97,7 +97,7 @@ describe('saving pickup areas through the tenant routes', () => {
     expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith(
       { _id: { $eq: String(royalCruiseId), $in: [royalCruiseId] } },
       { $set: { pickupDestinationSlugs: ['makadi-bay', 'sahl-hasheesh'] } },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true, lean: true }
     );
   });
 
@@ -149,7 +149,7 @@ describe('saving pickup areas through the tenant routes', () => {
     expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith(
       { _id: String(royalCruiseId) },
       { $set: { contactInfo: { email: 'bookings@example.org', phone: '+20 100 000 0000' }, logo: '/logos/royal-cruise.png', timezone: 'Africa/Cairo', name: 'Royal Cruise Hurghada' } },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true, lean: true }
     );
   });
 
@@ -162,7 +162,7 @@ describe('saving pickup areas through the tenant routes', () => {
       .send({ name: 'Renamed', tagline: 'Sail the Red Sea' });
 
     expect(response.status).toBe(200);
-    expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith({ _id: { $eq: String(royalCruiseId), $in: [royalCruiseId] } }, { $set: { tagline: 'Sail the Red Sea' } }, { new: true, runValidators: true });
+    expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith({ _id: { $eq: String(royalCruiseId), $in: [royalCruiseId] } }, { $set: { tagline: 'Sail the Red Sea' } }, { new: true, runValidators: true, lean: true });
   });
 
   it('refuses a blank site name', async () => {

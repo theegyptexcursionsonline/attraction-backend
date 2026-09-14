@@ -24,9 +24,9 @@ describe('Tenant AI Search widget setting', () => {
     expect(errors['aiSettings.searchWidget.widgetId']).toBeDefined();
   });
 
-  it('keeps search off by default: enabled without a widget id carries no launcher identity', () => {
+  it('keeps search off by default for new sites, with no launcher identity', () => {
     const tenant = tenantWith({});
-    expect(tenant.aiSettings.searchWidget.enabled).toBe(true);
+    expect(tenant.aiSettings.searchWidget.enabled).toBe(false);
     expect(tenant.aiSettings.searchWidget.widgetId).toBeUndefined();
   });
 

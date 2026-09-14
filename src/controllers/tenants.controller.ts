@@ -1,7 +1,20 @@
 import { Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
 import { Tenant } from '../models/Tenant';
-import { aiSettingsUpdateSchema, aiSettingsSetPaths, publicAiSettings } from '../utils/aiSettings';
+import {
+  adminAiProducts,
+  adminAiSettings,
+  aiProductsRevisionOf,
+  aiProductsUpdateOperators,
+  aiProductsUpdateSchema,
+  aiSettingsSetPaths,
+  aiSettingsUpdateSchema,
+  hasAiProductControls,
+  planAiProductsUpdate,
+  publicAiSettings,
+  splitAiProductControls,
+} from '../utils/aiSettings';
+import { User } from '../models/User';
 import { Attraction } from '../models/Attraction';
 import { Booking } from '../models/Booking';
 import { Destination } from '../models/Destination';
@@ -186,6 +199,7 @@ export const getTenantById = async (
       sendError(res, 'Tenant not found', 404);
       return;
     }
+    const isSuperAdmin = req.user?.role === 'super-admin';
 
     // Get stats
     const [attractionCount, bookingStats, revenueAgg] = await Promise.all([
@@ -207,7 +221,8 @@ export const getTenantById = async (
 
     const rev = revenueAgg[0] || { bookedRevenue: 0, collectedRevenue: 0 };
     sendSuccess(res, {
-      ...tenant,
+      ...adminTenantAiView(tenant, isSuperAdmin),
+      ...(isSuperAdmin ? { aiProducts: await adminAiProductsView(tenant) } : {}),
       stats: {
         totalAttractions: attractionCount,
         totalBookings: bookingStats,
@@ -672,6 +687,80 @@ export function aiSearchWidgetIdError(aiSettings: unknown): string | null {
   return parsed.success ? null : 'Invalid AI settings: ' + parsed.error.issues[0].message;
 }
 
+const AI_PRODUCTS_ELSEWHERE = 'Switch AI Search and Voice in the AI products card, then reload this page';
+
+/** Admin tenant read: effective AI switches, with change history for super admins only. */
+function adminTenantAiView<T extends object>(tenant: T, isSuperAdmin: boolean): T {
+  const view = { ...tenant } as Record<string, unknown>;
+  if (view.aiSettings !== undefined) view.aiSettings = adminAiSettings(view.aiSettings, { includeAudit: isSuperAdmin });
+  if (!isSuperAdmin) delete view.aiProductsRevision;
+  return view as T;
+}
+
+async function adminAiProductsView(tenant: unknown) {
+  const view = adminAiProducts(tenant);
+  const ids = [view.search.updatedBy, view.voice.updatedBy].filter((value): value is string => !!value && Types.ObjectId.isValid(value));
+  const users = ids.length === 0 ? [] : await User.find({ _id: { $in: ids } }).select('firstName lastName email').lean();
+  const nameOf = (userId: string | null): string | null => {
+    const user = userId ? users.find(candidate => String(candidate._id) === userId) : undefined;
+    if (!user) return null;
+    return [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || user.email || null;
+  };
+  return {
+    revision: view.revision,
+    search: { ...view.search, updatedByName: nameOf(view.search.updatedBy) },
+    voice: { ...view.voice, updatedByName: nameOf(view.voice.updatedBy) },
+  };
+}
+
+/**
+ * Super admin switch for the Foxes AI products on one site. The write is guarded on the
+ * revision the admin loaded, so two admins cannot silently overwrite each other.
+ */
+export const updateTenantAiProducts = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    if (!req.user || req.user.role !== 'super-admin') { sendError(res, 'Super admin access required', req.user ? 403 : 401); return; }
+    const { id } = req.params;
+    if (!Types.ObjectId.isValid(id)) { sendError(res, 'Tenant not found', 404); return; }
+    const parsed = aiProductsUpdateSchema.safeParse(req.body);
+    if (!parsed.success) { sendError(res, 'Invalid AI products update: ' + parsed.error.issues[0].message, 400); return; }
+    const body = parsed.data;
+
+    const current = await Tenant.findById(id).select('slug aiSettings aiProductsRevision').lean();
+    if (!current) { sendError(res, 'Tenant not found', 404); return; }
+    const revision = aiProductsRevisionOf(current);
+    const stale = () => sendError(res, 'AI products were changed by someone else. Reload and try again.', 409);
+    if (revision !== body.expectedRevision) { stale(); return; }
+
+    const plan = planAiProductsUpdate(current.aiSettings, body);
+    if ('error' in plan) { sendError(res, plan.error, 400); return; }
+    if (plan.changes.length === 0) { sendSuccess(res, await adminAiProductsView(current), 'AI products unchanged'); return; }
+
+    const result = await Tenant.updateOne(
+      // Records from before the revision field match revision 0.
+      { _id: id, aiProductsRevision: revision === 0 ? { $in: [0, null] } : revision },
+      aiProductsUpdateOperators(plan.changes, req.user._id, new Date()),
+      { runValidators: true },
+    );
+    if (result.modifiedCount !== 1) { stale(); return; }
+
+    for (const change of plan.changes) {
+      console.info('[tenants] ai product updated', {
+        actorId: String(req.user._id), tenantId: String(current._id), tenantSlug: current.slug,
+        product: change.product, before: change.before, after: change.after, revision: revision + 1,
+      });
+    }
+    const updated = await Tenant.findById(id).select('aiSettings aiProductsRevision').lean();
+    sendSuccess(res, await adminAiProductsView(updated), 'AI products updated');
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const updateTenant = async (
   req: AuthRequest,
   res: Response,
@@ -684,6 +773,8 @@ export const updateTenant = async (
     if (req.body.navigation !== undefined || req.body.navigationRevision !== undefined) { sendError(res, 'Use the Menus editor to update navigation', 400); return; }
     const aiSearchError = aiSearchWidgetIdError(req.body.aiSettings);
     if (aiSearchError) { sendError(res, aiSearchError, 400); return; }
+    // The full update has no revision; product switches and ids go through /ai-products only.
+    if (hasAiProductControls(req.body.aiSettings)) { sendError(res, AI_PRODUCTS_ELSEWHERE, 400); return; }
 
     const { aiSettings, ...otherUpdates } = req.body;
     const updates = {
@@ -795,8 +886,25 @@ export const updateTenantSettings = async (
       ...(isSuperAdmin ? ['name'] : []),
     ];
 
-    const updates: Record<string, unknown> = req.body.aiSettings === undefined ? {}
-      : aiSettingsSetPaths(aiSettingsUpdateSchema.parse(req.body.aiSettings));
+    // Membership is part of every read and write: another tenant is indistinguishable
+    // from a missing record, including when the handler is mounted elsewhere.
+    const siteFilter: Record<string, unknown> = isSuperAdmin ? { _id: id } : {
+      _id: { $eq: id, $in: req.user.assignedTenants || [] },
+    };
+    let aiSettings = req.body.aiSettings === undefined ? undefined : aiSettingsUpdateSchema.parse(req.body.aiSettings);
+    if (aiSettings && hasAiProductControls(aiSettings)) {
+      // Older admin builds send the AI switches with every save. Unchanged values are
+      // dropped; a real change is refused, since only /ai-products may make it.
+      const current = await Tenant.findOne(siteFilter).select('aiSettings').lean();
+      if (!current) { sendError(res, 'Tenant not found', 404); return; }
+      const split = splitAiProductControls(current.aiSettings, aiSettings);
+      if (split.changed.length > 0) {
+        sendError(res, isSuperAdmin ? AI_PRODUCTS_ELSEWHERE : 'AI Search and Voice are switched on and off by Foxes', isSuperAdmin ? 400 : 403);
+        return;
+      }
+      aiSettings = split.settings;
+    }
+    const updates: Record<string, unknown> = aiSettings === undefined ? {} : aiSettingsSetPaths(aiSettings);
     if (req.body.notificationSettings !== undefined) {
       const notifications = notificationSettingsUpdate(req.body.notificationSettings);
       if ('error' in notifications) { sendError(res, notifications.error, 400); return; }
@@ -812,11 +920,6 @@ export const updateTenantSettings = async (
       sendError(res, 'No valid fields to update', 400);
       return;
     }
-    // Membership is part of every read and write: another tenant is indistinguishable
-    // from a missing record, including when the handler is mounted elsewhere.
-    const siteFilter: Record<string, unknown> = isSuperAdmin ? { _id: id } : {
-      _id: { $eq: id, $in: req.user.assignedTenants || [] },
-    };
     if (updates.pickupDestinationSlugs !== undefined) {
       const pickup = await resolvePickupDestinationUpdate(siteFilter, updates.pickupDestinationSlugs);
       if ('error' in pickup) { sendError(res, pickup.error, pickup.status); return; }
@@ -827,7 +930,7 @@ export const updateTenantSettings = async (
     const tenant = await Tenant.findOneAndUpdate(
       siteFilter,
       { $set: updates },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true, lean: true }
     );
 
     if (!tenant) {
@@ -835,7 +938,8 @@ export const updateTenantSettings = async (
       return;
     }
 
-    sendSuccess(res, tenant, 'Site settings updated successfully');
+    // Read raw (lean) so an unset switch keeps its effective value instead of a schema default.
+    sendSuccess(res, adminTenantAiView(tenant, isSuperAdmin), 'Site settings updated successfully');
   } catch (error) {
     next(error);
   }
