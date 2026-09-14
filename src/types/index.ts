@@ -112,8 +112,11 @@ export interface ITenant extends Document {
     };
     voiceAgent: {
       enabled: boolean;
+      widgetId?: string;
       languages: string[];
       buttonPosition: string;
+      updatedBy?: Types.ObjectId;
+      updatedAt?: Date;
     };
     searchWidget: {
       enabled: boolean;
@@ -122,8 +125,11 @@ export interface ITenant extends Document {
       showPopularSearches: boolean;
       maxSuggestions: number;
       displayPages?: 'browse' | 'all';
+      updatedBy?: Types.ObjectId;
+      updatedAt?: Date;
     };
   };
+  aiProductsRevision?: number;
   /** Destination slugs this site serves by hotel pickup (no departures there). */
   pickupDestinationSlugs?: string[];
   navigationRevision?: number;

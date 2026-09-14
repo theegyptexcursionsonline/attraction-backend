@@ -50,25 +50,42 @@ const patch = (id = owner, role = 'brand-admin', path = 'settings') => request(a
 const search = (fields: unknown) => ({ aiSettings: { searchWidget: fields } });
 const stored = () => Tenant.findById(owner).lean();
 
-it('saves, reads publicly, replaces, disables and clears the widget without removing sibling integrations', async () => {
-  await patch().send(search({ widgetId: `  ${widgetId}  ` })).expect(200);
+it('keeps AI Search presentation editable by the site admin while the switch and id stay with Foxes', async () => {
+  await Tenant.collection.updateOne({ _id: owner }, { $set: { 'aiSettings.searchWidget.widgetId': widgetId } });
+  // An older admin build sends the stored switch and id back with every save: accepted, not rewritten.
+  await Tenant.collection.updateOne({ _id: owner }, { $set: { previewAccessCode: 'private-preview-code', 'paymentSettings.stripe.secretKeyEnc': 'private-secret' } });
+  const saved = await patch().send(search({ enabled: true, widgetId, placeholder: 'Find a tour' })).expect(200);
+  expect(saved.body.data.aiSettings.searchWidget).toMatchObject({ enabled: true, widgetId, placeholder: 'Find a tour' });
+  expect(JSON.stringify(saved.body)).not.toMatch(/private-preview-code|private-secret|aiProductsRevision/);
   expect((await stored())?.aiSettings).toMatchObject({ bookingWidget: { welcomeMessage: 'Book your visit' },
-    voiceAgent: { enabled: false }, searchWidget: { widgetId, enabled: true, placeholder: 'Search experiences' } });
-  const read = await request(app).get(`/tenants/public/${owner}`).expect(200);
-  expect(read.body.data.aiSettings.searchWidget.widgetId).toBe(widgetId);
-  const replacement = 'wgt_zyxwvutsrqponmlkjihgfe';
-  await patch().send(search({ widgetId: replacement })).expect(200);
-  await patch().send(search({ enabled: false })).expect(200);
-  expect((await stored())?.aiSettings.searchWidget).toMatchObject({ widgetId: replacement, enabled: false });
-  for (const clear of ['', '   ', null]) {
-    await patch().send(search({ widgetId: replacement })).expect(200);
-    await patch().send(search({ widgetId: clear })).expect(200);
-    expect((await stored())?.aiSettings.searchWidget.widgetId).toBe('');
+    voiceAgent: { enabled: false }, searchWidget: { widgetId, enabled: true, placeholder: 'Find a tour' } });
+  expect((await stored())?.aiSettings.searchWidget).not.toHaveProperty('updatedBy');
+  for (const change of [{ enabled: false }, { widgetId: 'wgt_zyxwvutsrqponmlkjihgfe' }, { widgetId: '' }, { widgetId: null }]) {
+    const refused = await patch().send(search({ ...change, placeholder: 'Changed' })).expect(403);
+    expect(refused.body.error).toBe('AI Search and Voice are switched on and off by Foxes');
   }
+  for (const change of [{ enabled: true }, { widgetId: '6f1c2b3a4d5e6f708192a3b4' }]) {
+    await patch().send({ aiSettings: { voiceAgent: change } }).expect(403);
+  }
+  expect((await stored())?.aiSettings.searchWidget).toMatchObject({ widgetId, enabled: true, placeholder: 'Find a tour' });
+  expect((await stored())?.aiSettings.voiceAgent).toEqual({ enabled: false });
+  const read = await request(app).get(`/tenants/public/${owner}`).expect(200);
+  expect(read.body.data.aiSettings.searchWidget).toMatchObject({ enabled: true, widgetId, placeholder: 'Find a tour' });
+});
+
+it('refuses switch changes from a super admin on the settings and full update routes, pointing to the AI products card', async () => {
+  for (const path of ['settings', '']) {
+    const refused = await patch(owner, 'super-admin', path).send(search({ widgetId })).expect(400);
+    expect(refused.body.error).toMatch(/AI products card/);
+  }
+  await patch(owner, 'super-admin', '').send(search({ enabled: true })).expect(400);
+  await patch(owner, 'super-admin').send(search({ enabled: true, placeholder: 'Unchanged switch' })).expect(200);
+  expect((await stored())?.aiSettings.searchWidget).toMatchObject({ enabled: true, placeholder: 'Unchanged switch' });
+  expect((await stored())?.aiSettings.searchWidget.widgetId).toBeUndefined();
 });
 
 it('lets a site admin choose where search appears, defaulting to browsing pages only', async () => {
-  await patch().send(search({ widgetId })).expect(200);
+  await Tenant.collection.updateOne({ _id: owner }, { $set: { 'aiSettings.searchWidget.widgetId': widgetId } });
   let read = await request(app).get(`/tenants/public/${owner}`).expect(200);
   // Existing sites carry no choice; the storefront treats that as browsing pages only.
   expect(read.body.data.aiSettings.searchWidget.displayPages).toBeUndefined();
@@ -83,13 +100,13 @@ it('lets a site admin choose where search appears, defaulting to browsing pages 
 
 it('preserves independently updated search/voice/booking fields under concurrent requests and retries', async () => {
   await Promise.all([
-    patch().send(search({ widgetId })).expect(200),
-    patch().send({ aiSettings: { voiceAgent: { enabled: true } } }).expect(200),
+    patch().send(search({ maxSuggestions: 8 })).expect(200),
+    patch().send({ aiSettings: { voiceAgent: { buttonPosition: 'header' } } }).expect(200),
     patch().send(search({ placeholder: 'Find a tour' })).expect(200),
   ]);
-  await patch().send(search({ widgetId })).expect(200);
+  await patch().send(search({ maxSuggestions: 8 })).expect(200);
   expect((await stored())?.aiSettings).toMatchObject({ bookingWidget: { welcomeMessage: 'Book your visit' },
-    voiceAgent: { enabled: true }, searchWidget: { widgetId, placeholder: 'Find a tour', maxSuggestions: 6 } });
+    voiceAgent: { enabled: false, buttonPosition: 'header' }, searchWidget: { placeholder: 'Find a tour', maxSuggestions: 8 } });
 });
 
 it.each(['manager', 'editor', 'viewer', 'customer', 'operator', 'agent'])('rejects the %s role without a write', async role => {
@@ -108,7 +125,8 @@ it('keeps foreign and missing tenants indistinguishable and ignores body/query t
 });
 it('denies unassigned brand administrators and permits the super administrator', async () => {
   await patch().set('x-test-assigned', '').send(search({ widgetId })).expect(404);
-  await patch(other, 'super-admin').send(search({ widgetId })).expect(200);
+  await patch().set('x-test-assigned', '').send(search({ placeholder: 'Hijack' })).expect(404);
+  await patch(other, 'super-admin').send(search({ placeholder: 'Other site' })).expect(200);
 });
 
 it.each([
@@ -126,8 +144,8 @@ it.each([
 });
 
 it('persists validated AI settings through the super-admin update and create route validators', async () => {
-  await patch(owner, 'super-admin', '').send(search({ widgetId })).expect(200);
-  expect((await stored())?.aiSettings.searchWidget.widgetId).toBe(widgetId);
+  await patch(owner, 'super-admin', '').send(search({ placeholder: 'Full update' })).expect(200);
+  expect((await stored())?.aiSettings.searchWidget.placeholder).toBe('Full update');
   await patch(owner, 'super-admin', '').send(search({ widgetId: 'broken' })).expect(400);
   const created = await request(app).post('/tenants').set('x-test-role', 'super-admin').send({
     slug: 'new-widget-site', name: 'New widget site', domain: 'new-widget-site.invalid',
@@ -172,11 +190,11 @@ it('returns 404 for malformed tenant identifiers without mutating configuration'
 
 it('does not acknowledge a failed database write, and a fresh retry can succeed', async () => {
   const failedWrite = jest.spyOn(Tenant, 'findOneAndUpdate').mockRejectedValueOnce(new Error('database unavailable'));
-  await patch().send(search({ widgetId })).expect(500);
+  await patch().send(search({ placeholder: 'After retry' })).expect(500);
   failedWrite.mockRestore();
-  expect((await stored())?.aiSettings.searchWidget.widgetId).toBeUndefined();
-  await patch().send(search({ widgetId })).expect(200);
-  expect((await stored())?.aiSettings.searchWidget.widgetId).toBe(widgetId);
+  expect((await stored())?.aiSettings.searchWidget.placeholder).toBe('Search experiences');
+  await patch().send(search({ placeholder: 'After retry' })).expect(200);
+  expect((await stored())?.aiSettings.searchWidget.placeholder).toBe('After retry');
 });
 
 it('stores a private booking notifications email that never reaches the public site', async () => {
