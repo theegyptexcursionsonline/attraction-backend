@@ -374,7 +374,7 @@ describe('saving pickup areas on a site', () => {
     expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith(
       siteFilter,
       { $set: { pickupDestinationSlugs: ['makadi-bay', 'sahl-hasheesh'] } },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true, lean: true }
     );
     expect(res.status).toHaveBeenCalledWith(200);
   });
@@ -400,7 +400,7 @@ describe('saving pickup areas on a site', () => {
     await updateTenantSettings({ params: { id }, user: superAdmin, body: { pickupDestinationSlugs: ['old-bay', 'makadi-bay'], tagline: 'Sail' } } as never, res, jest.fn());
 
     expect(Destination.distinct).not.toHaveBeenCalled();
-    expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith({ _id: id }, { $set: { tagline: 'Sail', pickupDestinationSlugs: ['old-bay', 'makadi-bay'] } }, { new: true, runValidators: true });
+    expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith({ _id: id }, { $set: { tagline: 'Sail', pickupDestinationSlugs: ['old-bay', 'makadi-bay'] } }, { new: true, runValidators: true, lean: true });
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
@@ -411,7 +411,7 @@ describe('saving pickup areas on a site', () => {
 
     await updateTenantSettings({ params: { id }, user: superAdmin, body: { pickupDestinationSlugs: [] } } as never, res, jest.fn());
 
-    expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith({ _id: id }, { $set: { pickupDestinationSlugs: [] } }, { new: true, runValidators: true });
+    expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith({ _id: id }, { $set: { pickupDestinationSlugs: [] } }, { new: true, runValidators: true, lean: true });
   });
 
   it('answers 404 for a missing site before any write', async () => {
