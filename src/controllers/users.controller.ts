@@ -7,7 +7,7 @@ import { Tenant } from '../models/Tenant';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { generateRandomToken, hashToken } from '../utils/hash';
-import { sendUserInvitation } from '../services/email.service';
+import { invitationLink, sendUserInvitation } from '../services/email.service';
 import { searchRegexValue } from '../utils/helpers';
 import {
   isSuperAdmin,
@@ -535,6 +535,72 @@ export const inviteUser = async (
     );
 
     sendSuccess(res, user, 'User invited successfully', 201);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const INVITATION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+/**
+ * A fresh accept-invitation link for a user who has not joined yet, for sharing directly
+ * (for example when the invitee's mailbox is not receiving mail). No email is sent. The new
+ * token replaces the previous one, so earlier invitation links stop working.
+ */
+export const createInvitationLink = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const target = await User.findById(req.params.id).select('+passwordResetToken +passwordResetExpires');
+    if (!target) {
+      sendError(res, 'User not found', 404);
+      return;
+    }
+
+    if (!isSuperAdmin(req.user)) {
+      const mine = callerTenantIds(req.user);
+      const theirs = (target.assignedTenants || []).map((t) => String(t));
+      if (!sharesAnyTenant(mine, theirs)) {
+        sendError(res, 'User not found', 404);
+        return;
+      }
+      if (!canManageRole(req.user?.role, target.role)) {
+        sendError(res, 'You are not allowed to manage this user', 403);
+        return;
+      }
+    }
+
+    if (target.status !== 'pending') {
+      sendError(res, 'This user has already joined, so there is no invitation to share', 409);
+      return;
+    }
+
+    // Brand the link for the site the caller shares with the invitee (else their first site).
+    const mine = isSuperAdmin(req.user) ? [] : callerTenantIds(req.user);
+    const tenantIds = (target.assignedTenants || []).map((t) => String(t));
+    const siteId = tenantIds.find((t) => mine.includes(t)) ?? tenantIds[0];
+    const site = siteId
+      ? await Tenant.findById(siteId)
+        .select('name slug customDomain domainMigrated theme logo contactInfo defaultLanguage defaultCurrency timezone')
+        .lean()
+      : null;
+
+    const token = generateRandomToken();
+    const expiresAt = new Date(Date.now() + INVITATION_TTL_MS);
+    target.passwordResetToken = hashToken(token);
+    target.passwordResetExpires = expiresAt;
+    await target.save();
+
+    console.info('[users] invitation link issued', {
+      userId: String(target._id),
+      byUserId: req.user ? String(req.user._id) : null,
+      tenantId: siteId ?? null,
+    });
+    // The link is a sign-up credential: never cache it.
+    res.setHeader('Cache-Control', 'no-store');
+    sendSuccess(res, { inviteUrl: invitationLink(token, site), expiresAt: expiresAt.toISOString() }, 'Invitation link created');
   } catch (error) {
     next(error);
   }

@@ -8,6 +8,7 @@ import {
   getTravelers,
   getUserById,
   inviteUser,
+  createInvitationLink,
   updateUser,
   deleteUser,
 } from '../controllers/users.controller';
@@ -271,6 +272,35 @@ router.post(
     })
   ),
   inviteUser
+);
+
+/**
+ * @swagger
+ * /users/{id}/invitation-link:
+ *   post:
+ *     summary: Create a fresh invitation link for a pending user, without sending email (Admin)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Link created; earlier invitation links stop working
+ *       404:
+ *         description: User not found or outside the caller's sites
+ *       409:
+ *         description: User has already joined
+ */
+router.post(
+  '/:id/invitation-link',
+  authenticate,
+  requireRole('super-admin', 'brand-admin'),
+  createInvitationLink
 );
 
 /**

@@ -729,6 +729,10 @@ export const renderInvitationHtml = (brand: EmailBrand, input: { inviterName: st
     note: "If you weren't expecting this invitation, you can ignore this email.",
   });
 
+/** The accept-invitation link for a site: its live custom domain, else the shared origin with ?tenant=. */
+export const invitationLink = (invitationToken: string, tenant: EmailTenant | null): string =>
+  brandedLink(getEmailBrand(tenant), '/accept-invitation', { token: invitationToken });
+
 export const sendUserInvitation = async (
   email: string,
   invitationToken: string,
@@ -739,7 +743,7 @@ export const sendUserInvitation = async (
   // Brand the link + copy for the invited user's site (custom domain when set,
   // else the shared origin with ?tenant= so the set-password page themes right).
   const brand = getEmailBrand(tenant);
-  const inviteUrl = brandedLink(brand, '/accept-invitation', { token: invitationToken });
+  const inviteUrl = invitationLink(invitationToken, tenant);
   await sendEmail({
     to: email,
     subject: `You're invited to join ${brand.name}`,
