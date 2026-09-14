@@ -143,7 +143,7 @@ it.each([
   expect((await stored())?.aiSettings.searchWidget.widgetId).toBeUndefined();
 });
 
-it('persists validated AI settings through the super-admin update and create route validators', async () => {
+it('persists validated AI presentation settings through the super-admin update, and create leaves the product off', async () => {
   await patch(owner, 'super-admin', '').send(search({ placeholder: 'Full update' })).expect(200);
   expect((await stored())?.aiSettings.searchWidget.placeholder).toBe('Full update');
   await patch(owner, 'super-admin', '').send(search({ widgetId: 'broken' })).expect(400);
@@ -152,7 +152,8 @@ it('persists validated AI settings through the super-admin update and create rou
     logo: 'https://images.invalid/logo.png', theme: { primaryColor: '#000000', secondaryColor: '#222222', accentColor: '#444444' },
     defaultCurrency: 'USD', defaultLanguage: 'en', supportedLanguages: ['en'], ...search({ widgetId }),
   }).expect(201);
-  expect((await Tenant.findById(created.body.data._id).lean())?.aiSettings.searchWidget.widgetId).toBe(widgetId);
+  // A new site never goes live from the create form: the id and switch are set in the audited AI products card.
+  expect((await Tenant.findById(created.body.data._id).lean())?.aiSettings.searchWidget.widgetId).toBeUndefined();
 });
 
 it('keeps the full update super-admin only and enforces role checks even on direct handler calls', async () => {
