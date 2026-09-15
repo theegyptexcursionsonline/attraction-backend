@@ -1,36 +1,76 @@
 import mongoose, { Types } from 'mongoose';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import { Attraction } from '../models/Attraction';
-import { safariLegacyPage, SAFARI_TENANT_ID, SAFARI_QUAD_PAGE_ID } from '../utils/safariLegacyPages';
+import { SAFARI_TENANT_ID, SAFARI_QUAD_PAGE_ID } from '../utils/safariLegacyPages';
+import { LEGACY_URL_FAMILIES, legacyUrlFamily, resolveLegacyPage } from '../utils/legacyUrls';
 import { buildParentRepairPlan, applyParentRepair } from '../scripts/repair-safari-parent-pages';
 import manifest from '../data/safari-sahara-quad-catalog.json';
 const page = { _id: SAFARI_QUAD_PAGE_ID, slug: 'quad-biking', title: 'Quad tours', status: 'active', isPublished: true, revision: 2, body: '<p>Safe<script>alert(1)</script></p>', sections: [{ id: 'content', type: 'content', body: '<p>Content<script>alert(2)</script></p>' }] };
-const owner = { _id: '69fc40483ac583b3163b9989', status: 'archived' };
-describe('Safari legacy page compatibility', () => {
-  test('keeps old client shape, follows target ID rename, sanitizes', () => {
-    const result = safariLegacyPage(SAFARI_TENANT_ID, 'hurghada-quad-biking', [{ ...page, slug: 'renamed-quads' }], [owner]);
-    expect(result).toMatchObject({ type: 'page', redirectTo: '/renamed-quads' });
-    expect(JSON.stringify(result)).not.toContain('<script');
+// Production today (16 Sep): the editor rebuilt the page on its WordPress address with a new id.
+const rebuilt = { ...page, _id: '6aa2c2c4aed8540632bb2f1e', slug: 'hurghada-quad-biking' };
+const OTHER_TENANT = '000000000000000000000000';
+
+describe('legacy URL families', () => {
+  test('interim and WordPress addresses reach the page rebuilt on the old address', () => {
+    for (const slug of ['quad-biking', 'hurghada-quad-biking-tours']) {
+      const result = resolveLegacyPage(SAFARI_TENANT_ID, slug, [rebuilt], false);
+      expect(result).toMatchObject({ type: 'page', redirectTo: '/hurghada-quad-biking', page: { slug: 'hurghada-quad-biking' } });
+      expect(JSON.stringify(result)).not.toContain('<script');
+    }
+    const jeep = { ...page, _id: '6aa2c34aaed8540632bb331b', slug: 'hurghada-jeep-safari' };
+    expect(resolveLegacyPage(SAFARI_TENANT_ID, 'jeep-buggy-safari', [jeep], false)?.redirectTo).toBe('/hurghada-jeep-safari');
+    const polaris = { ...page, _id: '6aa2c04daed8540632bb21bd', slug: 'polaris-rzr-safari-hurghada' };
+    expect(resolveLegacyPage(SAFARI_TENANT_ID, 'polaris-rzr-safari', [polaris], false)?.redirectTo).toBe('/polaris-rzr-safari-hurghada');
   });
+
+  test('the old WordPress address still reaches the interim page when that is what is live', () => {
+    expect(resolveLegacyPage(SAFARI_TENANT_ID, 'hurghada-quad-biking', [page], false)?.redirectTo).toBe('/quad-biking');
+  });
+
+  test('prefers the earliest live family address when several are live', () => {
+    expect(resolveLegacyPage(SAFARI_TENANT_ID, 'hurghada-quad-biking-tours', [page, rebuilt], false)?.redirectTo).toBe('/hurghada-quad-biking');
+  });
+
+  test('follows a family page through a later rename by id', () => {
+    const renamed = { ...rebuilt, slug: 'quad-bikes-hurghada' };
+    expect(resolveLegacyPage(SAFARI_TENANT_ID, 'hurghada-quad-biking', [renamed], false)?.redirectTo).toBe('/quad-bikes-hurghada');
+  });
+
   test.each([
-    ['other site', '000000000000000000000000', [page], [owner]],
-    ['active owner', SAFARI_TENANT_ID, [page], [{ ...owner, status: 'active' }]],
-    ['wrong retired owner', SAFARI_TENANT_ID, [page], [{ ...owner, _id: 'wrong' }]],
-    ['missing retired owner', SAFARI_TENANT_ID, [page], []],
-    ['duplicate owners', SAFARI_TENANT_ID, [page], [owner, owner]],
-    ['unpublished target', SAFARI_TENANT_ID, [{ ...page, isPublished: false }], [owner]],
-    ['archived target', SAFARI_TENANT_ID, [{ ...page, status: 'archived' }], [owner]],
-    ['explicit unpublished source page', SAFARI_TENANT_ID, [page, { slug: 'hurghada-quad-biking', isPublished: false }], [owner]],
-    ['redirect chain', SAFARI_TENANT_ID, [{ ...page, slug: 'hurghada-jeep-safari' }], [owner]],
-  ])('%s fails closed', (_name, tenant, pages, owners) => {
-    expect(safariLegacyPage(tenant as string, 'hurghada-quad-biking', pages as any[], owners as any[])).toBeNull();
+    ['another site', OTHER_TENANT, 'quad-biking', [rebuilt], false],
+    ['a tour still on the old address', SAFARI_TENANT_ID, 'quad-biking', [rebuilt], true],
+    ['a draft being rebuilt on the old address', SAFARI_TENANT_ID, 'quad-biking', [rebuilt, { ...page, _id: 'draft', isPublished: false }], false],
+    ['an unpublished target', SAFARI_TENANT_ID, 'quad-biking', [{ ...rebuilt, isPublished: false }], false],
+    ['an archived target', SAFARI_TENANT_ID, 'quad-biking', [{ ...rebuilt, status: 'archived' }], false],
+    ['a target with an unsafe address', SAFARI_TENANT_ID, 'quad-biking', [{ ...rebuilt, slug: 'x/../admin' }], false],
+    ['no family member live', SAFARI_TENANT_ID, 'quad-biking', [], false],
+    ['an address outside every family', SAFARI_TENANT_ID, 'about-us', [rebuilt], false],
+  ])('%s fails closed', (_name, tenant, slug, pages, held) => {
+    expect(resolveLegacyPage(tenant as string, slug as string, pages as any[], held as boolean)).toBeNull();
   });
-  test.each(['__proto__', 'constructor', 'toString'])('rejects inherited mapping key %s', slug => {
-    expect(safariLegacyPage(SAFARI_TENANT_ID, slug, [page], [])).toBeNull();
+
+  test('an archived page on the old address does not hold it', () => {
+    expect(resolveLegacyPage(SAFARI_TENANT_ID, 'quad-biking', [rebuilt, { ...page, status: 'archived' }], false)?.redirectTo).toBe('/hurghada-quad-biking');
   });
-  test('ownerless removed page only aliases while unclaimed', () => {
-    expect(safariLegacyPage(SAFARI_TENANT_ID, 'hurghada-quad-biking-tours', [page], [])?.redirectTo).toBe('/quad-biking');
-    expect(safariLegacyPage(SAFARI_TENANT_ID, 'hurghada-quad-biking-tours', [page], [owner])).toBeNull();
+
+  test.each(['__proto__', 'constructor', 'toString', 'Quad-Biking', ''])('rejects non-address key %s', slug => {
+    expect(legacyUrlFamily(SAFARI_TENANT_ID, slug)).toBeNull();
+    expect(legacyUrlFamily(slug, 'quad-biking')).toBeNull();
+  });
+
+  test('families are well formed: unique safe addresses, ids, never shared between families', () => {
+    for (const families of Object.values(LEGACY_URL_FAMILIES)) {
+      const seen = new Set<string>();
+      for (const family of families) {
+        expect(family.slugs.length).toBeGreaterThan(1);
+        for (const slug of family.slugs) {
+          expect(slug).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+          expect(seen.has(slug)).toBe(false);
+          seen.add(slug);
+        }
+        family.pageIds.forEach(id => expect(id).toMatch(/^[a-f0-9]{24}$/));
+      }
+    }
   });
 });
 

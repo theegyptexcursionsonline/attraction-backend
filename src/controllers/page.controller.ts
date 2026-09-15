@@ -8,7 +8,7 @@ import { sanitizeRichText, sanitizePageSections } from '../utils/sanitizeHtml';
 import { navigationSchema, PageSection } from '../utils/siteContent';
 import { Category } from '../models/Category';
 import { escapeRegex } from '../utils/helpers';
-import { SAFARI_TENANT_ID, hasSafariLegacyPage, safariLegacyPage } from '../utils/safariLegacyPages';
+import { legacyUrlFamily, resolveLegacyPage } from '../utils/legacyUrls';
 
 const requirePageTenant = (req: AuthRequest, res: Response): Types.ObjectId | null => {
   if (!req.tenant?._id) {
@@ -259,7 +259,8 @@ export const permanentlyDeleteAdminPage = async (req: AuthRequest, res: Response
  * route hits this to resolve a slug. Returns the first match in this order:
  *   1. An active attraction owned by the active tenant whose slug == <slug>
  *   2. A custom page configured on the tenant (about-us, contact-us, terms, etc.)
- *   3. null (frontend then renders 404)
+ *   3. A page that carries an old address's content today ({ type: 'page', redirectTo })
+ *   4. { type: 'none' } (frontend then renders 404)
  *
  * Tenant context resolves through the standard X-Tenant-ID middleware. If no
  * tenant is in scope we return null — the catch-all only applies for tenants
@@ -309,9 +310,13 @@ export const resolvePage = async (
       return;
     }
 
-    if (String(req.tenant._id) === SAFARI_TENANT_ID && hasSafariLegacyPage(slug)) {
-      const owners = await Attraction.find({ tenantIds: req.tenant._id, $or: [{ pathSlug: slug }, { slug }] }).select('_id status').limit(2).lean();
-      const compatibility = safariLegacyPage(String(req.tenant._id), slug, tenant?.customPages || [], owners);
+    // 3. An old address of content that now lives elsewhere on this site. Only a record that is
+    // on the website holds an address (archive/trash release it), so a draft or unlisted tour
+    // still sitting on the old address blocks the redirect.
+    const tenantId = String(req.tenant._id);
+    if (legacyUrlFamily(tenantId, slug)) {
+      const heldByTour = await Attraction.exists({ tenantIds: req.tenant._id, status: { $ne: 'archived' }, $or: [{ pathSlug: slug }, { slug }] });
+      const compatibility = resolveLegacyPage(tenantId, slug, (tenant?.customPages || []) as unknown as Parameters<typeof resolveLegacyPage>[2], Boolean(heldByTour));
       if (compatibility) { sendSuccess(res, compatibility); return; }
     }
     sendSuccess(res, { type: 'none' });
@@ -400,6 +405,48 @@ export const tenantSitemap = async (
   }
 };
 
+
+export const SITEMAP_TOURS_MAX_PAGE = 500;
+
+/**
+ * GET /api/page/sitemap/tours?cursor=<tour id>&limit=<1..500>
+ *
+ * Public keyset feed of the site's live tours for sitemap generation: only the fields a public
+ * URL is built from. Ordered by `_id` so a catalog of any size is read to its tail with no
+ * skipped or repeated tour (offset paging over a non-unique sort can do both). Requires a
+ * site; never answers with the network catalog.
+ */
+export const sitemapTours = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if (!req.tenant?._id) { sendError(res, 'Tenant context required', 400); return; }
+    const limit = Math.min(Number(req.query.limit) || SITEMAP_TOURS_MAX_PAGE, SITEMAP_TOURS_MAX_PAGE);
+    const cursor = typeof req.query.cursor === 'string' && Types.ObjectId.isValid(req.query.cursor) ? new Types.ObjectId(req.query.cursor) : null;
+    const rows = await Attraction.find({
+      tenantIds: req.tenant._id,
+      status: 'active',
+      archivedAt: { $exists: false },
+      trashedAt: { $exists: false },
+      ...(cursor ? { _id: { $gt: cursor } } : {}),
+    })
+      .select('_id slug pathSlug parentPage.path updatedAt')
+      .sort({ _id: 1 })
+      .limit(limit + 1)
+      .lean();
+    const items = rows.slice(0, limit);
+    // Tenant-scoped payload: never cacheable by a shared edge.
+    res.setHeader('Cache-Control', 'private, max-age=60');
+    sendSuccess(res, {
+      items: items.map(row => ({
+        id: String(row._id),
+        slug: row.slug,
+        ...(row.pathSlug ? { pathSlug: row.pathSlug } : {}),
+        ...(row.parentPage?.path ? { parentPath: row.parentPage.path } : {}),
+        ...(row.updatedAt ? { updatedAt: row.updatedAt } : {}),
+      })),
+      nextCursor: rows.length > limit ? String(items[items.length - 1]._id) : null,
+    });
+  } catch (error) { next(error); }
+};
 
 export const getAdminMenu = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {

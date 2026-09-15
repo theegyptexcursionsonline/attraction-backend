@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getAdminMenu, updateAdminMenu, getPageSection, archiveAdminPage, createAdminPage, listAdminPages, permanentlyDeleteAdminPage, resolvePage, restoreAdminPage, tenantSitemap, trashAdminPage, unarchiveAdminPage, updateAdminPage } from '../controllers/page.controller';
+import { getAdminMenu, updateAdminMenu, getPageSection, archiveAdminPage, createAdminPage, listAdminPages, permanentlyDeleteAdminPage, resolvePage, restoreAdminPage, sitemapTours, tenantSitemap, trashAdminPage, unarchiveAdminPage, updateAdminPage } from '../controllers/page.controller';
 import { optionalTenant, optionalAdminTenant, requireTenant } from '../middleware/tenant.middleware';
 import { authenticate, requireRole } from '../middleware/auth.middleware';
 import { validate } from '../middleware/validate.middleware';
@@ -33,5 +33,6 @@ router.delete('/admin/:id/permanent', authenticate, optionalAdminTenant, require
 
 router.get('/resolve', optionalTenant, resolvePage);
 router.get('/sitemap.xml', optionalTenant, requireTenant, tenantSitemap);
+router.get('/sitemap/tours', optionalTenant, requireTenant, validateQuery(z.object({ cursor: z.string().regex(/^[a-f0-9]{24}$/i).optional(), limit: z.coerce.number().int().min(1).max(500).optional() })), sitemapTours);
 
 export default router;
