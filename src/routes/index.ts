@@ -42,6 +42,23 @@ router.get('/health', (req, res) => {
   });
 });
 
+// Release identity: names the commit and Railway deployment this process is running, so a
+// live check can prove a deploy landed before anything is re-diagnosed. No auth, no secrets,
+// never cached. RAILWAY_GIT_COMMIT_SHA / RAILWAY_DEPLOYMENT_ID are injected by Railway at
+// deploy time; a local run reports null for each. `builtAt` is when this process started —
+// the closest durable timestamp of the build that is serving traffic.
+const PROCESS_STARTED_AT = new Date().toISOString();
+const releaseValue = (raw: string | undefined): string | null => (raw && raw.trim() ? raw.trim() : null);
+
+router.get('/version', (_req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.json({
+    commit: releaseValue(process.env.RAILWAY_GIT_COMMIT_SHA),
+    deployId: releaseValue(process.env.RAILWAY_DEPLOYMENT_ID),
+    builtAt: PROCESS_STARTED_AT,
+  });
+});
+
 router.get('/ready', (req, res) => {
   const databaseReady = mongoose.connection.readyState === 1;
   res.status(databaseReady ? 200 : 503).json({

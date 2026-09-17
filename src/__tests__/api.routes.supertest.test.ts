@@ -83,6 +83,7 @@ const collectApiEndpoints = (): Endpoint[] => {
     { method: 'get', path: '/api' },
     { method: 'get', path: '/api/health' },
     { method: 'get', path: '/api/ready' },
+    { method: 'get', path: '/api/version' },
   ];
 
   for (const [file, prefix] of Object.entries(routePrefixByFile)) {
