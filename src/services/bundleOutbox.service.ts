@@ -15,7 +15,7 @@ import {
   getEmailBrand,
   sendEmail,
 } from './email.service';
-import { EmailTone, emailButtons, emailCode, emailDetails, emailList, renderEmailDocument } from './emailLayout';
+import { EmailTone, emailCode, renderEmail } from './emailLayout';
 
 const MAX_ATTEMPTS = 8;
 const OUTBOX_LEASE_MS = 60_000;
@@ -304,37 +304,66 @@ export const bundleOrderGuestLink = (
   return `${brandedLink(brand, `/bundle-orders/${orderId}`)}#accessToken=${encodeURIComponent(accessToken)}`;
 };
 
-/** Bundle emails (customer, supplier, operator) in the shared email design. */
-export const renderBundleEmail = (
+interface BundleEmailInput {
+  badge: { label: string; tone: EmailTone };
+  heading: string;
+  reference: string;
+  items?: Array<{ title: string; meta?: string }>;
+  details?: Array<{ label: string; value: string }>;
+  action?: { label: string; url: string };
+  audience?: 'customer' | 'business';
+}
+
+/**
+ * Bundle emails (customer, supplier, operator) in the shared email design.
+ *
+ * Built through `renderEmail`, so the HTML and the plain-text alternative come from one
+ * description and cannot drift — the same contract every other template follows.
+ */
+export const renderBundleEmailParts = (
   tenant: Parameters<typeof getEmailBrand>[0],
-  input: {
-    badge: { label: string; tone: EmailTone };
-    heading: string;
-    reference: string;
-    items?: Array<{ title: string; meta?: string }>;
-    details?: Array<{ label: string; value: string }>;
-    action?: { label: string; url: string };
-    audience?: 'customer' | 'business';
-  }
-): string => {
+  input: BundleEmailInput
+): { html: string; text: string } => {
   const brand = getEmailBrand(tenant);
-  return renderEmailDocument({
+  return renderEmail({
     brand,
-    title: `${input.heading} · ${input.reference}`,
-    preheader: `${input.heading} — reference ${input.reference}`,
+    title: `${input.heading} \u00b7 ${input.reference}`,
+    // Never a repeat of the subject: the subject already says what happened.
+    preheader: `Reference ${input.reference}${input.items?.length ? ` \u00b7 ${input.items.length} item${input.items.length === 1 ? '' : 's'}` : ''}`,
     badge: input.badge,
     heading: input.heading,
     introHtml: `Reference ${emailCode(input.reference)}`,
+    introText: `Reference ${input.reference}`,
     blocks: [
-      input.items?.length ? emailList(brand, 'Itinerary', input.items) : '',
-      input.details?.length ? emailDetails(brand, input.details.map((row) => ({ label: row.label, valueHtml: escapeEmailHtml(row.value) }))) : '',
-      input.action ? emailButtons(brand, input.action) : '',
+      input.items?.length ? { kind: 'list', title: 'Itinerary', items: input.items } : '',
+      input.details?.length
+        ? {
+            kind: 'details',
+            rows: input.details.map((row) => ({ label: row.label, valueHtml: escapeEmailHtml(row.value), valueText: row.value })),
+          }
+        : '',
+      input.action ? { kind: 'buttons', primary: input.action } : '',
     ],
     footer: input.audience === 'customer'
-      ? { note: 'Questions? Reply to this email and our team will help.', contact: brand.contact }
-      : { note: `Automated notification from ${brand.name}.` },
+      ? {
+          note: 'Questions? Reply to this email and our team will help.',
+          contact: brand.contact,
+          whyReceived: 'You received this email because it relates to a booking you made with us.',
+          postalAddress: brand.postalAddress,
+        }
+      : {
+          note: `Automated notification from ${brand.name}.`,
+          whyReceived: 'You received this email because you are listed as a contact for this site.',
+          postalAddress: brand.postalAddress,
+        },
   });
 };
+
+/** Back-compat: the HTML part alone. */
+export const renderBundleEmail = (
+  tenant: Parameters<typeof getEmailBrand>[0],
+  input: BundleEmailInput
+): string => renderBundleEmailParts(tenant, input).html;
 
 const renewOutboxLease = async (
   eventId: Types.ObjectId,
@@ -396,6 +425,7 @@ const processEvent = async (
   let recipient = '';
   let subject = '';
   let html = '';
+  let text = '';
   if (event.audience === 'customer') {
     recipient = order.guestDetails.email;
     const url = bundleOrderGuestLink(tenant, order._id.toString(), order.reference);
@@ -409,7 +439,7 @@ const processEvent = async (
         : cancelled
           ? `Bundle cancelled — ${order.reference}`
           : `Your bundle is confirmed — ${order.reference}`;
-    html = renderBundleEmail(tenant, {
+    ({ html, text } = renderBundleEmailParts(tenant, {
       audience: 'customer',
       badge: completed
         ? { label: 'Bundle complete', tone: 'success' }
@@ -431,7 +461,7 @@ const processEvent = async (
         meta: `${component.date}${component.time ? ` · ${component.time}` : ''}`,
       })),
       action: { label: 'View bundle order', url },
-    });
+    }));
   } else if (event.audience === 'supplier') {
     recipient = bookingNotificationEmail(tenant) || '';
     const components = order.components.filter(
@@ -441,7 +471,7 @@ const processEvent = async (
     subject = cancellationRequested
       ? `Bundle cancellation review — ${order.reference}`
       : `Bundle component confirmed — ${order.reference}`;
-    html = renderBundleEmail(tenant, {
+    ({ html, text } = renderBundleEmailParts(tenant, {
       badge: cancellationRequested ? { label: 'Needs review', tone: 'warning' } : { label: 'Ready to fulfil', tone: 'brand' },
       heading: cancellationRequested ? 'A bundle cancellation needs review' : 'A bundle component is ready to fulfil',
       reference: order.reference,
@@ -449,7 +479,7 @@ const processEvent = async (
         title: component.attractionTitle,
         meta: `${component.date}${component.time ? ` · ${component.time}` : ''} · ${component.quantities.adults + component.quantities.children + component.quantities.infants} guest(s)`,
       })),
-    });
+    }));
   } else {
     recipient = bookingNotificationEmail(tenant) || '';
     const cancellationRequested = event.eventType === 'bundle.cancellation_requested';
@@ -458,7 +488,7 @@ const processEvent = async (
       : cancellationRequested
         ? `Bundle cancellation review — ${order.reference}`
         : `Bundle confirmed — ${order.reference}`;
-    html = renderBundleEmail(tenant, {
+    ({ html, text } = renderBundleEmailParts(tenant, {
       badge: event.eventType === 'bundle.order_reserved'
         ? { label: 'Awaiting payment', tone: 'warning' }
         : cancellationRequested
@@ -474,11 +504,11 @@ const processEvent = async (
         { label: 'Status', value: order.status },
         { label: 'Components', value: String(order.components.length) },
       ],
-    });
+    }));
   }
   if (!recipient) throw new Error('Outbox recipient is not configured');
   await withOutboxLeaseHeartbeat(event._id, leaseToken, () =>
-    sendEmail({ to: recipient, subject, html, tenant })
+    sendEmail({ to: recipient, subject, html, text, tenant })
   );
   return 'delivered';
 };

@@ -1103,17 +1103,30 @@ export const sendBookingPaymentLink = async (
       .select('name slug customDomain domainMigrated contactInfo theme logo')
       .lean();
     const guestName = `${booking.guestDetails.firstName} ${booking.guestDetails.lastName}`.trim();
-    await sendBookingPaymentLinkEmail(
-      booking.guestDetails.email,
-      {
+    // Deliberately NOT deduped: an admin pressing "send payment link" again is a fresh intent
+    // (the guest lost the mail, the address was corrected), not a retried event. The failure
+    // is reported honestly instead of surfacing as a 500 that leaves the admin guessing.
+    try {
+      await sendBookingPaymentLinkEmail(
+        booking.guestDetails.email,
+        {
+          reference: booking.reference,
+          guestName,
+          guestAccessToken: generateBookingAccessToken(String(booking._id), booking.reference),
+          total: booking.total,
+          currency: booking.currency,
+        },
+        tenant
+      );
+    } catch (error) {
+      console.error('[email] payment link send failed', {
+        tenantId: String(booking.tenantId),
         reference: booking.reference,
-        guestName,
-        guestAccessToken: generateBookingAccessToken(String(booking._id), booking.reference),
-        total: booking.total,
-        currency: booking.currency,
-      },
-      tenant
-    );
+        error: error instanceof Error ? error.message.slice(0, 300) : 'unknown',
+      });
+      sendError(res, 'The payment link could not be emailed. Try again in a moment.', 502);
+      return;
+    }
 
     sendSuccess(res, { sent: true, reference: booking.reference }, 'Payment link sent');
   } catch (error) {

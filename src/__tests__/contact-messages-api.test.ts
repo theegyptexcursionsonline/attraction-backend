@@ -231,11 +231,17 @@ describe('POST /contact', () => {
     expect(stored?.delivery.reason).toBeUndefined();
     expect(stored).not.toHaveProperty('website');
 
-    expect(mockMessagesCreate).toHaveBeenCalledTimes(1);
+    // Two audiences per enquiry: the operator alert, then the visitor's acknowledgement.
+    expect(mockMessagesCreate).toHaveBeenCalledTimes(2);
     const [domain, mail] = mockMessagesCreate.mock.calls[0];
     expect(domain).toBe('mg.example.test');
     expect(mail.to).toEqual(['help@owner-site.example']);
-    expect(mail.subject).toBe(`New enquiry ${reference}: Sunset Horse Ride`);
+    const ack = mockMessagesCreate.mock.calls[1][1];
+    expect(ack.to).toEqual(['nadia.visitor@example.com']);
+    expect(ack.subject).toBe(`We received your message \u00b7 ${reference}`);
+    expect(ack.text).toContain(reference);
+    expect(ack.html).toContain(reference);
+    expect(mail.subject).toBe(`New enquiry ${reference} \u00b7 Sunset Horse Ride`);
     expect(mail['h:Reply-To']).toBe('nadia.visitor@example.com');
     expect(mail.from).toBe('Owner Site <noreply@mg.example.test>');
     for (const field of [
@@ -277,7 +283,7 @@ describe('POST /contact', () => {
       message: 'Please share availability.', delivery: { status: 'sent' },
     });
     expect(stored?.requestId).toBeUndefined();
-    expect(mockMessagesCreate.mock.calls[0][1].subject).toBe(`New enquiry ${reference}: Private tour`);
+    expect(mockMessagesCreate.mock.calls[0][1].subject).toBe(`New enquiry ${reference} \u00b7 Private tour`);
 
     // Legacy forms keep their required fields.
     await submit({ firstName: 'Guest', lastName: 'User', email: 'guest@example.com', message: 'No subject' }).expect(400);
@@ -312,7 +318,7 @@ describe('POST /contact', () => {
     for (const absent of ['requestId', 'phone', 'tourSlug', 'tourTitle', 'travelDate', 'pagePath', 'locale']) {
       expect(stored).not.toHaveProperty(absent);
     }
-    expect(mockMessagesCreate.mock.calls[0][1].subject).toBe(`New enquiry ${response.body.data.reference}: Website message`);
+    expect(mockMessagesCreate.mock.calls[0][1].subject).toBe(`New enquiry ${response.body.data.reference} \u00b7 Website message`);
   });
 
   it('returns the same reference for a sequential retry with the same requestId, storing and emailing once', async () => {
@@ -324,7 +330,8 @@ describe('POST /contact', () => {
     expect(retry.body).toEqual({ success: true, data: { reference: first.body.data.reference, received: true }, message: 'Message received' });
     expect(retryWithEditedText.body.data.reference).toBe(first.body.data.reference);
     expect(await ContactMessage.countDocuments({ tenantId: owner, requestId: body.requestId })).toBe(1);
-    expect(mockMessagesCreate).toHaveBeenCalledTimes(1);
+    // Operator alert + visitor acknowledgement, once each: the retries email nobody again.
+    expect(mockMessagesCreate).toHaveBeenCalledTimes(2);
   });
 
   it('collapses concurrent double-submits with the same requestId into one message and one email', async () => {
@@ -335,7 +342,7 @@ describe('POST /contact', () => {
     expect(references.size).toBe(1);
     expect(responses.map((response) => response.status).sort()).toEqual([200, 200, 200, 200, 200, 201]);
     expect(await ContactMessage.countDocuments({ requestId: body.requestId })).toBe(1);
-    expect(mockMessagesCreate).toHaveBeenCalledTimes(1);
+    expect(mockMessagesCreate).toHaveBeenCalledTimes(2);
   });
 
   it('scopes the idempotency key to the site, so the same key on another site is a separate message', async () => {
@@ -344,10 +351,17 @@ describe('POST /contact', () => {
     const onOther = await submit(body, 'other-site').expect(201);
     expect(onOther.body.data.reference).not.toBe(onOwner.body.data.reference);
     expect(await ContactMessage.countDocuments({ requestId: body.requestId })).toBe(2);
+    // Each site notifies its OWN inbox, and each visitor acknowledgement follows its own site.
     expect(mockMessagesCreate.mock.calls.map((call) => call[1].to[0])).toEqual([
       'help@owner-site.example',
+      'nadia.visitor@example.com',
       'hello@other-site.example',
+      'nadia.visitor@example.com',
     ]);
+    expect(mockMessagesCreate.mock.calls[0][1].from).toContain('Owner Site');
+    expect(mockMessagesCreate.mock.calls[1][1].from).toContain('Owner Site');
+    expect(mockMessagesCreate.mock.calls[2][1].from).toContain('Other Site');
+    expect(mockMessagesCreate.mock.calls[3][1].from).toContain('Other Site');
   });
 
   it('answers a filled honeypot exactly like success while storing and sending nothing', async () => {
@@ -404,8 +418,12 @@ describe('POST /contact', () => {
 
     const response = await submit(fullEnquiry({ tenantId: String(other) }), 'owner-site').expect(201);
     expect((await ContactMessage.findOne({ reference: response.body.data.reference }).lean())?.tenantId).toEqual(owner);
-    expect(mockMessagesCreate).toHaveBeenCalledTimes(1);
+    // The body-supplied tenant is ignored for BOTH sends: the operator alert goes to the site in
+    // the header, and the acknowledgement is branded by that same site.
+    expect(mockMessagesCreate).toHaveBeenCalledTimes(2);
     expect(mockMessagesCreate.mock.calls[0][1].to).toEqual(['help@owner-site.example']);
+    expect(mockMessagesCreate.mock.calls[1][1].from).toContain('Owner Site');
+    expect(JSON.stringify(mockMessagesCreate.mock.calls)).not.toContain('other-site');
   });
 
   it('keeps the message and records provider_error when the mail provider throws', async () => {
@@ -429,7 +447,11 @@ describe('POST /contact', () => {
     const response = await submit(fullEnquiry(), 'quiet-site').expect(201);
     const stored = await ContactMessage.findOne({ reference: response.body.data.reference }).lean();
     expect(stored).toMatchObject({ tenantId: quiet, delivery: { status: 'failed', reason: 'no_recipient' } });
-    expect(mockMessagesCreate).not.toHaveBeenCalled();
+    // The site has nowhere to receive the alert, but the VISITOR is still acknowledged — they
+    // sent a message in good faith and are owed their reference either way.
+    expect(mockMessagesCreate).toHaveBeenCalledTimes(1);
+    expect(mockMessagesCreate.mock.calls[0][1].to).toEqual(['nadia.visitor@example.com']);
+    expect(mockMessagesCreate.mock.calls[0][1].subject).toContain('We received your message');
   });
 
   it('keeps the message and records skipped when the mail provider is not configured', async () => {
@@ -463,7 +485,7 @@ describe('POST /contact', () => {
     failedBookkeeping.mockRestore();
     const stored = await ContactMessage.findOne({ reference: response.body.data.reference }).lean();
     expect(stored?.delivery.status).toBe('pending');
-    expect(mockMessagesCreate).toHaveBeenCalledTimes(1);
+    expect(mockMessagesCreate).toHaveBeenCalledTimes(2);
   });
 
   it('retries with a fresh reference when a random reference collides', async () => {

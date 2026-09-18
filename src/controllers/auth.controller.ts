@@ -14,7 +14,12 @@ import { verifyPassportAssertion } from '../utils/passport';
 import { sendSuccess, sendError } from '../utils/response';
 import { AuthRequest, IUser } from '../types';
 import { env } from '../config/env';
-import { sendPasswordResetEmail } from '../services/email.service';
+import {
+  EmailTenant,
+  sendPasswordChangedEmail,
+  sendPasswordResetEmail,
+  sendWelcomeEmail,
+} from '../services/email.service';
 import { createAdminNotifications } from '../services/notification.service';
 import { createTwoFactorSetup, generateTwoFactorRecoveryCodes, verifyTwoFactorCode } from '../utils/twoFactor';
 
@@ -42,6 +47,55 @@ const issueSession = async (user: IUser, res: Response, rememberMe = false) => {
   res.cookie('accessToken', accessToken, ACCESS_COOKIE_OPTIONS);
   res.cookie('refreshToken', refreshToken, refreshCookieOptions(rememberMe));
   return user.toJSON();
+};
+
+const TENANT_EMAIL_FIELDS =
+  'name slug customDomain domainMigrated theme logo contactInfo defaultLanguage defaultCurrency timezone';
+
+/**
+ * Which site an account email should speak in.
+ *
+ * Prefer the site the request actually came from, but ONLY when the user really belongs to it —
+ * otherwise a storefront header could dress an account email in a brand the user has nothing to
+ * do with. Fall back to the user's own first assigned site. A customer with no assigned sites on
+ * a known storefront is branded by that storefront, which is the site they just used.
+ *
+ * This replaces branding purely by `assignedTenants[0]`, which sent a staff user who reset from
+ * site B an email — and a reset LINK on site A's domain.
+ */
+const accountEmailTenant = async (
+  req: AuthRequest,
+  user: { assignedTenants?: Array<{ toString(): string }> | null }
+): Promise<EmailTenant | null> => {
+  const assigned = (user.assignedTenants || []).map((id) => String(id));
+  const activeTenantId = req.tenant?._id ? String(req.tenant._id) : null;
+  const chosen = activeTenantId && (assigned.length === 0 || assigned.includes(activeTenantId))
+    ? activeTenantId
+    : assigned[0];
+  if (!chosen) return null;
+  const tenant = await Tenant.findById(chosen).select(TENANT_EMAIL_FIELDS).lean();
+  return (tenant as unknown as EmailTenant) || null;
+};
+
+/**
+ * Fire-and-forget "your password was changed" notice. Detached from the response and guarded at
+ * every step: the password change already succeeded and must never be reported as a failure
+ * because the mail provider was down.
+ */
+const notifyPasswordChanged = (
+  req: AuthRequest,
+  user: { email: string; firstName?: string; lastName?: string; assignedTenants?: Array<{ toString(): string }> | null },
+  byAdmin = false
+): void => {
+  void accountEmailTenant(req, user)
+    .then((tenant) =>
+      sendPasswordChangedEmail(
+        user.email,
+        { userName: `${user.firstName || ''} ${user.lastName || ''}`.trim(), byAdmin },
+        tenant
+      )
+    )
+    .catch((error) => console.error('[email] password-changed notice failed', { error: error?.message }));
 };
 
 export const register = async (
@@ -92,6 +146,12 @@ export const register = async (
       link: '/admin/users',
       data: { userId: user._id },
     }).catch(() => {});
+
+    // Welcome the new account holder. Deduped per address per site, and isolated: a mail
+    // failure must never turn a successful registration into a 500.
+    void accountEmailTenant(req, user)
+      .then((tenant) => sendWelcomeEmail(user.email, `${firstName} ${lastName}`.trim(), tenant))
+      .catch((error) => console.error('[email] welcome send failed', { error: error?.message }));
 
     sendSuccess(res, { user }, 'Registration successful', 201);
   } catch (error) {
@@ -364,6 +424,12 @@ export const passportLogin = async (
         link: '/admin/users',
         data: { userId: user._id },
       }).catch(() => {});
+
+      // Same welcome as self-serve registration: an SSO arrival is still a new account.
+      const provisioned = user;
+      void accountEmailTenant(req, provisioned)
+        .then((tenant) => sendWelcomeEmail(provisioned.email, `${provisioned.firstName} ${provisioned.lastName}`.trim(), tenant))
+        .catch((error) => console.error('[email] welcome send failed', { error: error?.message }));
     }
 
     // Mint THIS platform's own tokens (signed with env.jwtSecret via utils/jwt).
@@ -514,23 +580,25 @@ export const forgotPassword = async (
     user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
     await user.save();
 
-    // Resolve the user's primary tenant so the reset link + email speak in that
-    // brand (custom domain / ?tenant=) instead of the generic platform.
-    let tenantBrand = null;
-    const primaryTenantId = user.assignedTenants?.[0];
-    if (primaryTenantId) {
-      tenantBrand = await Tenant.findById(primaryTenantId)
-        .select('name slug customDomain domainMigrated theme logo contactInfo defaultLanguage defaultCurrency timezone')
-        .lean();
-    }
+    // Resolve the site whose brand + reset-link domain this email should use.
+    const tenantBrand = await accountEmailTenant(req, user);
 
-    // Send password reset email
-    await sendPasswordResetEmail(
-      user.email,
-      resetToken,
-      `${user.firstName} ${user.lastName}`.trim(),
-      tenantBrand
-    );
+    // Isolated on purpose. The token is already saved, so a provider outage must not turn this
+    // into a 500 — and a 500 here would also be an account-enumeration oracle against the
+    // deliberate "always report success" behaviour above.
+    try {
+      await sendPasswordResetEmail(
+        user.email,
+        resetToken,
+        `${user.firstName} ${user.lastName}`.trim(),
+        tenantBrand
+      );
+    } catch (error) {
+      console.error('[email] password reset send failed', {
+        tenant: tenantBrand?.slug || 'platform',
+        error: error instanceof Error ? error.message.slice(0, 300) : 'unknown',
+      });
+    }
 
     sendSuccess(res, null, 'If the email exists, a password reset link will be sent');
   } catch (error) {
@@ -563,6 +631,10 @@ export const resetPassword = async (
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save();
+
+    // Tell the account holder their password moved. This is the message that lets someone
+    // notice a compromised account, so it is sent on every change.
+    void notifyPasswordChanged(req, user);
 
     sendSuccess(res, null, 'Password reset successful');
   } catch (error) {
@@ -602,6 +674,8 @@ export const acceptInvitation = async (
     user.passwordResetExpires = undefined;
     await user.save();
 
+    void notifyPasswordChanged(req, user);
+
     sendSuccess(res, null, 'Invitation accepted successfully. You can now log in.');
   } catch (error) {
     next(error);
@@ -638,6 +712,8 @@ export const changePassword = async (
     // Update password
     user.password = newPassword;
     await user.save();
+
+    void notifyPasswordChanged(req, user);
 
     sendSuccess(res, null, 'Password changed successfully');
   } catch (error) {

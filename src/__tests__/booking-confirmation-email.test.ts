@@ -358,10 +358,15 @@ describe('renderContactFormHtml', () => {
 
   it('builds a single-line subject from the reference and the most specific topic', () => {
     const base = { reference: 'MSG-7K2M9Q', name: 'N', email: 'n@example.com', message: 'Hi' };
+    // A CRLF in the topic must not survive into the header (Bcc injection).
     expect(contactEnquirySubject({ ...base, tourTitle: 'Sunset\r\nBcc: x@example.com', subject: 'Other' }))
-      .toBe('New enquiry MSG-7K2M9Q: Sunset Bcc: x@example.com');
-    expect(contactEnquirySubject({ ...base, subject: 'Group booking' })).toBe('New enquiry MSG-7K2M9Q: Group booking');
-    expect(contactEnquirySubject(base)).toBe('New enquiry MSG-7K2M9Q: Website message');
+      .toBe('New enquiry MSG-7K2M9Q \u00b7 Sunset Bcc: x@example.com');
+    expect(contactEnquirySubject({ ...base, subject: 'Group booking' })).toBe('New enquiry MSG-7K2M9Q \u00b7 Group booking');
+    expect(contactEnquirySubject(base)).toBe('New enquiry MSG-7K2M9Q \u00b7 Website message');
+    // A long topic is dropped rather than truncating the reference (standard: subject <= 60).
+    const long = contactEnquirySubject({ ...base, subject: 'A very long enquiry topic that would push this subject past sixty characters' });
+    expect(long.length).toBeLessThanOrEqual(60);
+    expect(long).toContain('MSG-7K2M9Q');
   });
 });
 

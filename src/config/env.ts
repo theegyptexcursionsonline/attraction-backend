@@ -140,6 +140,20 @@ export const env = {
   // Frontend URL
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
 
+  // Outside production, transactional email must never reach a real customer
+  // (EMAIL-DESIGN-STANDARD s4). Every non-account message is redirected to this
+  // QA inbox; when it is unset the send is skipped instead, so a staging deploy
+  // fails closed rather than mailing whoever happens to be in the database.
+  qaEmailRecipient: (process.env.QA_EMAIL_RECIPIENT || '').trim().toLowerCase(),
+
+  // Postal address for the legal footer of every email. Unset renders no line
+  // rather than an invented address.
+  emailPostalAddress: (process.env.EMAIL_POSTAL_ADDRESS || '').trim(),
+
+  // Departure reminders and after-trip messages are real customer mail sent by a
+  // scheduler, so they stay off until a deployment explicitly turns them on.
+  bookingRemindersEnabled: envFlag(process.env.BOOKING_REMINDERS_ENABLED, false),
+
   // Netlify custom-domain automation. The access token must remain backend-only.
   netlifyAccessToken: process.env.NETLIFY_ACCESS_TOKEN || '',
   netlifySiteId: process.env.NETLIFY_SITE_ID || '',

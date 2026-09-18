@@ -20,6 +20,9 @@ jest.mock('../models/ContactMessage', () => ({
 
 jest.mock('../services/email.service', () => ({
   sendContactFormEmail: jest.fn(),
+  // The visitor acknowledgement is a second, independent send; a partial mock would make the
+  // route throw on an undefined export rather than exercise the routing this suite is about.
+  sendEnquiryReceivedEmail: jest.fn().mockResolvedValue({ status: 'sent' }),
 }));
 
 const app = express().use(express.json()).use('/contact', contactRoutes);

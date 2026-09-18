@@ -32,6 +32,7 @@ import {
   processPendingBundleRefunds,
 } from './services/bundlePayment.service';
 import { processBundleOutboxBatch } from './services/bundleOutbox.service';
+import { sweepBookingReminders } from './services/bookingReminder.service';
 import { redactUrlForLogs } from './utils/safe-logging';
 import { startImageGenerationWorker } from './services/image-generation-job.service';
 
@@ -203,6 +204,26 @@ export const startServer = async (): Promise<void> => {
     void deliverBundleOutbox();
     const bundleOutboxSweep = setInterval(deliverBundleOutbox, 30 * 1000);
     bundleOutboxSweep.unref();
+
+    // Departure reminders and after-trip thank-you messages. Registered here rather than as a
+    // cron ROUTE, because a route nothing calls never sends. Each send is claimed against a
+    // unique per-booking receipt first, so the 15-minute cadence, a restart, or a second replica
+    // cannot mail the same customer twice. Off unless BOOKING_REMINDERS_ENABLED=true.
+    const sweepReminders = async (): Promise<void> => {
+      try {
+        const result = await sweepBookingReminders();
+        if (result.remindersSent || result.thankYousSent) {
+          console.log('[booking-reminders] sweep', result);
+        }
+      } catch (error) {
+        console.error('[booking-reminders] sweep failed:', error);
+      }
+    };
+    if (env.bookingRemindersEnabled) {
+      void sweepReminders();
+      const reminderSweep = setInterval(sweepReminders, 15 * 60 * 1000);
+      reminderSweep.unref();
+    }
 
     // Start listening
     app.listen(env.port, () => {

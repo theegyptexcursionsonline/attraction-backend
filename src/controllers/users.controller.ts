@@ -7,7 +7,13 @@ import { Tenant } from '../models/Tenant';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { generateRandomToken, hashToken } from '../utils/hash';
-import { invitationLink, sendUserInvitation } from '../services/email.service';
+import {
+  EmailTenant,
+  invitationLink,
+  sendAccessChangedEmail,
+  sendPasswordChangedEmail,
+  sendUserInvitation,
+} from '../services/email.service';
 import { searchRegexValue } from '../utils/helpers';
 import {
   isSuperAdmin,
@@ -466,6 +472,26 @@ export const getUserById = async (
   }
 };
 
+const USER_EMAIL_TENANT_FIELDS =
+  'name slug customDomain domainMigrated theme logo contactInfo defaultLanguage defaultCurrency timezone';
+
+/**
+ * The site whose brand an account email to this user should wear: the acting admin's current
+ * site when the user belongs to it, else the user's own first site. Reading `assignedTenants[0]`
+ * alone dressed the mail in whichever site happened to sort first.
+ */
+const userEmailTenant = async (
+  req: AuthRequest,
+  assigned: Array<{ toString(): string }> | null | undefined
+): Promise<EmailTenant | null> => {
+  const ids = (assigned || []).map(String);
+  const activeTenantId = req.tenant?._id ? String(req.tenant._id) : null;
+  const chosen = activeTenantId && ids.includes(activeTenantId) ? activeTenantId : ids[0];
+  if (!chosen) return null;
+  const tenant = await Tenant.findById(chosen).select(USER_EMAIL_TENANT_FIELDS).lean();
+  return (tenant as unknown as EmailTenant) || null;
+};
+
 export const inviteUser = async (
   req: AuthRequest,
   res: Response,
@@ -516,25 +542,39 @@ export const inviteUser = async (
       passwordResetExpires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     });
 
-    // Resolve the invited user's primary site so the invite link + email are
-    // branded for THAT site (custom domain / ?tenant=) not the generic platform.
-    let inviteTenant = null;
-    if (Array.isArray(assignedTenants) && assignedTenants.length > 0) {
-      inviteTenant = await Tenant.findById(assignedTenants[0])
-        .select('name slug customDomain domainMigrated theme logo contactInfo defaultLanguage defaultCurrency timezone')
-        .lean();
+    // Resolve the invited user's site so the invite link + email are branded for THAT site
+    // (custom domain / ?tenant=) not the generic platform.
+    const inviteTenant = await userEmailTenant(req, Array.isArray(assignedTenants) ? assignedTenants : []);
+
+    // Isolated: the pending user and its 7-day token are already saved, so a provider outage
+    // must not 500 the admin and leave an account nobody was told about. The invite link stays
+    // recoverable from Users -> Invitation link.
+    let invitationEmailed = true;
+    try {
+      await sendUserInvitation(
+        user.email,
+        invitationToken,
+        req.user ? `${req.user.firstName} ${req.user.lastName}`.trim() : 'Attractions Network',
+        role,
+        inviteTenant
+      );
+    } catch (error) {
+      invitationEmailed = false;
+      console.error('[email] invitation send failed', {
+        tenant: inviteTenant?.slug || 'platform',
+        userId: String(user._id),
+        error: error instanceof Error ? error.message.slice(0, 300) : 'unknown',
+      });
     }
 
-    // Send invitation email
-    await sendUserInvitation(
-      user.email,
-      invitationToken,
-      req.user ? `${req.user.firstName} ${req.user.lastName}`.trim() : 'Attractions Network',
-      role,
-      inviteTenant
+    sendSuccess(
+      res,
+      user,
+      invitationEmailed
+        ? 'User invited successfully'
+        : 'User created, but the invitation email could not be sent. Copy the invitation link to share it.',
+      201
     );
-
-    sendSuccess(res, user, 'User invited successfully', 201);
   } catch (error) {
     next(error);
   }
@@ -656,6 +696,18 @@ export const setUserPassword = async (
       byUserId: String(req.user?._id),
       activated,
     });
+
+    // The account holder is told an administrator changed their password. Detached and guarded:
+    // the password is already set, so a mail failure must not report the change as failed.
+    void userEmailTenant(req, target.assignedTenants)
+      .then((tenant) =>
+        sendPasswordChangedEmail(
+          target.email,
+          { userName: `${target.firstName} ${target.lastName}`.trim(), byAdmin: true },
+          tenant
+        )
+      )
+      .catch((error) => console.error('[email] password-changed notice failed', { error: error?.message }));
     sendSuccess(res, { id: String(target._id), status: target.status, activated }, activated ? 'Password set and account activated' : 'Password set');
   } catch (error) {
     next(error);
@@ -734,6 +786,30 @@ export const updateUser = async (
     if (securityContextChanged) revokeUserSessions(target);
     await target.save();
     await target.populate('assignedTenants', 'name slug');
+
+    // A role, status or site-access change is a security fact the person is entitled to know —
+    // and they have just been signed out, so they need to know why. A pure name edit does not
+    // qualify, which is what `securityContextChanged` already distinguishes.
+    if (securityContextChanged) {
+      const siteNames = (target.assignedTenants as unknown as Array<{ name?: string }> | undefined || [])
+        .map((site) => site?.name)
+        .filter((name): name is string => !!name);
+      void userEmailTenant(req, target.assignedTenants)
+        .then((tenant) =>
+          sendAccessChangedEmail(
+            target.email,
+            {
+              userName: `${target.firstName} ${target.lastName}`.trim(),
+              role: target.role,
+              status: target.status,
+              siteNames,
+              changedBy: req.user ? `${req.user.firstName} ${req.user.lastName}`.trim() : 'An administrator',
+            },
+            tenant
+          )
+        )
+        .catch((error) => console.error('[email] access-changed notice failed', { error: error?.message }));
+    }
 
     sendSuccess(res, target, 'User updated successfully');
   } catch (error) {

@@ -11,7 +11,7 @@ import {
   IContactMessage,
   ensureContactMessageIndexes,
 } from '../models/ContactMessage';
-import { sendContactFormEmail, EmailTenant } from '../services/email.service';
+import { sendContactFormEmail, sendEnquiryReceivedEmail, EmailTenant } from '../services/email.service';
 import { AuthRequest } from '../types';
 import { flattenZodIssues } from '../middleware/validate.middleware';
 import { sendError, sendSuccess } from '../utils/response';
@@ -430,6 +430,33 @@ export const submitContactMessage = async (
     }
 
     const delivery = await deliverContactMessage(tenant, stored.message);
+
+    // Acknowledge to the visitor, so they have their reference and proof the message landed.
+    // Awaited like the operator notification above (same request budget, same rate limit) so the
+    // outcome is deterministic, and fully guarded so it can never fail a stored enquiry.
+    // Deduped on the stored reference, so a retried submission cannot mail the visitor twice.
+    try {
+      await sendEnquiryReceivedEmail(tenant, {
+        reference: stored.message.reference,
+        name: stored.message.name,
+        email: stored.message.email,
+        phone: stored.message.phone,
+        subject: stored.message.subject,
+        tourSlug: stored.message.tourSlug,
+        tourTitle: stored.message.tourTitle,
+        travelDate: stored.message.travelDate,
+        guests: stored.message.guests,
+        message: stored.message.message,
+        locale: stored.message.locale,
+      });
+    } catch (error) {
+      console.error('[contact] visitor acknowledgement failed', {
+        tenant: tenant.slug,
+        reference: stored.message.reference,
+        error: redactProviderError(error),
+      });
+    }
+
     console.info('[contact] enquiry stored', {
       tenant: tenant.slug,
       reference: stored.message.reference,

@@ -30,7 +30,7 @@ import { bookingStripePaymentRequest, bookingStripeContextMatches, claimBookingS
 import { secretHint } from '../utils/secretCrypto';
 import { updatePaymentGatewaySchema } from '../utils/validators';
 import { generateTicketPdf } from '../services/pdf.service';
-import { brandedLink, getEmailBrand, sendBookingConfirmation, sendAdminBookingNotification } from '../services/email.service';
+import { brandedLink, getEmailBrand, sendBookingConfirmation, sendAdminBookingNotification, sendPaymentFailedEmail } from '../services/email.service';
 import { safeEmitEvent, recordInboundEvent, hasInboundEvent } from '../services/webhook.service';
 import {
   applyBookingRefundTotal,
@@ -527,6 +527,12 @@ const finalizePaidBooking = async (
         total: booking.total,
         currency: booking.currency,
         paymentMethod: 'card',
+        // The money was actually taken, so the confirmation doubles as the payment receipt
+        // (EMAIL-DESIGN-STANDARD s5) with an itemised breakdown rather than a bare total.
+        subtotal: booking.subtotal,
+        fees: booking.fees,
+        discount: booking.discount,
+        promoCode: booking.promoCode,
         guests: totalAdults + totalChildren,
         hotelPickup,
         hotelPickups: booking.items.map(item => item.hotelPickup).filter((pickup): pickup is NonNullable<typeof pickup> => Boolean(pickup)),
@@ -960,6 +966,34 @@ export const handleWebhook = async (
             'payment.failed',
             paymentEventPayload(failedBooking)
           );
+
+          // Tell the customer their card was not charged and their place is still held.
+          // Stripe retries a webhook, so the send is claimed against a per-booking receipt
+          // first; detached and guarded so it can never fail the webhook acknowledgement
+          // (a 5xx here would make Stripe retry the whole event).
+          void Tenant.findById(failedBooking.tenantId)
+            .select('name slug customDomain domainMigrated theme logo contactInfo defaultLanguage defaultCurrency timezone')
+            .lean()
+            .then((brandTenant) =>
+              brandTenant
+                ? sendPaymentFailedEmail(
+                    failedBooking.guestDetails.email,
+                    {
+                      reference: failedBooking.reference,
+                      guestName: `${failedBooking.guestDetails.firstName} ${failedBooking.guestDetails.lastName}`.trim(),
+                      guestAccessToken: generateBookingAccessToken(String(failedBooking._id), failedBooking.reference),
+                      total: failedBooking.total,
+                      currency: failedBooking.currency,
+                    },
+                    brandTenant as never
+                  )
+                : undefined
+            )
+            .catch(() =>
+              console.error('[email] payment-failed notification failed', {
+                tenantId: String(failedBooking.tenantId),
+              })
+            );
         }
       }
       const { duplicate } = await recordInboundEvent('stripe', eventId, { eventType, tenantId });

@@ -14,7 +14,9 @@ export const CONTACT_DELIVERY_STATUSES = ['pending', 'sent', 'skipped', 'failed'
 export type ContactDeliveryStatus = (typeof CONTACT_DELIVERY_STATUSES)[number];
 
 // Short machine codes only — raw provider text never reaches the database.
-export const CONTACT_DELIVERY_REASONS = ['no_recipient', 'provider_not_configured', 'provider_error'] as const;
+// `non_production_no_qa_inbox`: a staging/dev run refused to mail a real visitor because no QA
+// inbox is configured. Recorded rather than silently dropped, so an operator can see why.
+export const CONTACT_DELIVERY_REASONS = ['no_recipient', 'provider_not_configured', 'non_production_no_qa_inbox', 'provider_error'] as const;
 export type ContactDeliveryReason = (typeof CONTACT_DELIVERY_REASONS)[number];
 
 export const CONTACT_FIELD_LIMITS = {
