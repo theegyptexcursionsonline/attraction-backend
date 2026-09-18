@@ -602,12 +602,16 @@ const meetingPointBlock = (
   const label = mp.label ? `${mp.label} — ` : '';
   return {
     kind: 'panel',
+    plain: true,
     eyebrow: 'Meeting point',
     titleHtml: mp.label ? escapeEmailHtml(mp.label) : undefined,
     // The image is decoration: the directions button and the text link below carry the meaning,
     // so the block is complete with images blocked.
-    contentHtml: `<a href="${mapsLink}" target="_blank" style="text-decoration:none;"><img src="${escapeEmailHtml(mapImg)}" width="484" alt="Map showing the meeting point${mp.label ? ` at ${escapeEmailHtml(mp.label)}` : ''}" style="display:block;width:100%;max-width:484px;height:auto;border-radius:10px;border:1px solid #ece7df;"></a>
-        <div style="margin-top:14px;">${emailButtons(brand, { label: 'Get directions', url: mapsLink }, undefined, { outline: true })}</div>`,
+    // A fixed box, not height:auto: an image that collapses when blocked shifts everything below
+    // it and makes the rendered height depend on the network. The map is decoration — the label
+    // and the directions button carry the meaning — so it reserves a modest, constant strip.
+    contentHtml: `<a href="${mapsLink}" target="_blank" style="text-decoration:none;display:block;"><img src="${escapeEmailHtml(mapImg)}" height="150" alt="Map showing the meeting point${mp.label ? ` at ${escapeEmailHtml(mp.label)}` : ''}" style="display:block;width:100%;max-width:484px;height:150px;object-fit:cover;border-radius:10px;border:1px solid #ece7df;background:#f4f1ec;"></a>
+        <div style="margin-top:10px;">${emailButtons(brand, { label: 'Get directions', url: mapsLink }, undefined, { outline: true })}</div>`,
     text: `${label}Directions: ${mapsLink}`,
   };
 };
@@ -735,21 +739,22 @@ export const renderBookingConfirmation = (
     },
   ];
 
+  // The reference is already a row in the fact block above, so the ticket panel does not repeat
+  // it (EMAIL-DESIGN-STANDARD s3: never state the same fact twice).
   const ticket: EmailBlockSpec = qrImageSrc
     ? {
         kind: 'panel',
+        plain: true,
         eyebrow: 'Your mobile ticket',
-        titleHtml: 'Scan for booking details',
         align: 'center',
-        contentHtml: `<img src="${escapeEmailHtml(qrImageSrc)}" width="156" height="156" alt="QR code for booking ${escapeEmailHtml(reference)}" style="display:block;width:156px;height:156px;margin:0 auto;background:#ffffff;border:10px solid #ffffff;border-radius:12px;">
-        <div class="fx-muted" style="margin-top:12px;font-size:13px;line-height:20px;color:#57534e;">Reference ${emailCode(reference)}</div>`,
-        text: `Reference ${reference}. If the QR code does not display, open your booking: ${viewUrl}`,
+        contentHtml: `<img src="${escapeEmailHtml(qrImageSrc)}" width="132" height="132" alt="QR code for booking ${escapeEmailHtml(reference)}" style="display:block;width:132px;height:132px;margin:0 auto;background:#ffffff;border:8px solid #ffffff;border-radius:10px;">`,
+        text: `Show this booking at the meeting point. If the QR code does not display, open your booking: ${viewUrl}`,
       }
     : '';
 
-  const closing = hasTicket
-    ? 'Your PDF ticket is attached. Show it on your phone when requested.'
-    : 'Bring this confirmation with you on the day of your tour.';
+  // With a ticket attached the intro already says so; repeating it in a closing notice is the
+  // same fact twice. Without one, the reader still needs telling what to bring.
+  const closing = hasTicket ? '' : 'Bring this confirmation with you on the day of your tour.';
 
   return renderEmail({
     brand,
@@ -757,13 +762,13 @@ export const renderBookingConfirmation = (
     preheader: `${reference} · ${bookingDetails.attractionTitle} on ${dateStr}.`,
     badge: { label: 'Booking confirmed', tone: 'success' },
     heading: `You're all set, ${firstNameOf(bookingDetails.guestName)}!`,
-    introHtml: `Your booking is confirmed${hasTicket ? ' and your e-ticket is attached' : ''}. Keep this email handy for the day of your tour.`,
+    introHtml: `Your booking is confirmed${hasTicket ? ' and your e-ticket is attached — show it on your phone on the day' : '. Keep this email for the day of your tour'}.`,
     blocks: [
       { kind: 'details', rows, eyebrow: 'Your booking', titleHtml: escapeEmailHtml(bookingDetails.attractionTitle), titleText: bookingDetails.attractionTitle },
       { kind: 'buttons', primary: { label: 'Open your booking', url: viewUrl } },
       ticket,
       meetingPointBlock(brand, bookingDetails.meetingPoint),
-      { kind: 'notice', tone: 'neutral', messageHtml: escapeEmailHtml(closing), text: closing },
+      closing ? { kind: 'notice', tone: 'neutral', messageHtml: escapeEmailHtml(closing), text: closing } : '',
     ],
     footer: {
       note: 'Questions? Reply to this email and our team will help.',
@@ -1749,8 +1754,10 @@ export const renderContactForm = (
     introHtml: `About <strong>${escapeEmailHtml(topic)}</strong> · via the ${escapeEmailHtml(brand.name)} contact form`,
     introText: `About ${topic} · via the ${brand.name} contact form`,
     blocks: [
-      { kind: 'quote', label: 'Message', text: details.message },
+      // Details before the message body: the reference and the sender are the facts that must
+      // land in the first screen, and a long enquiry pushed them past it.
       { kind: 'details', eyebrow: 'Enquiry details', rows },
+      { kind: 'quote', label: 'Message', text: details.message },
       {
         kind: 'buttons',
         primary: replyUrl ? { label: `Reply to ${firstNameOf(details.name, 'visitor')}`, url: replyUrl } : { label: 'Open Messages', url: inboxUrl },

@@ -284,9 +284,21 @@ describe('every template satisfies the email standard', () => {
 
   it.each(A.map((t) => [t.name, t] as const))('%s: body text reaches 16px on mobile and the headline stays >= 24px', (_name, template) => {
     const { html } = template.parts;
-    expect(html).toContain('.fx-intro,.fx-body,.fx-value{font-size:16px!important');
+    expect(html).toContain('.fx-intro,.fx-body{font-size:16px!important');
+    expect(html).toContain('.fx-value{font-size:16px!important');
     expect(html).toContain('.fx-h1{font-size:24px!important');
-    expect(html).toContain('.fx-pad{padding-left:24px!important;padding-right:24px!important;}');
+  });
+
+  it.each(A.map((t) => [t.name, t] as const))('%s: uses the phone rhythm — 20px gutters, 24px between blocks', (_name, template) => {
+    const { html } = template.parts;
+    expect(html).toContain('.fx-pad{padding-left:20px!important;padding-right:20px!important;}');
+    expect(html).toContain('.fx-block{padding-bottom:24px!important;}');
+  });
+
+  it.each(A.map((t) => [t.name, t] as const))('%s: never stacks a label onto its own line', (_name, template) => {
+    // One datum per row (EMAIL-DESIGN-STANDARD s3). The old mobile rule turned every fact into
+    // two lines, which was most of a 2,042px booking confirmation.
+    expect(template.parts.html).not.toContain('.fx-row td{display:block');
   });
 
   it.each(A.map((t) => [t.name, t] as const))('%s: says why the reader received it', (_name, template) => {

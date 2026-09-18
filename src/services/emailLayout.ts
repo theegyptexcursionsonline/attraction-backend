@@ -97,6 +97,7 @@ export const htmlFragmentToText = (fragment: string): string =>
 
 const dirOf = (brand: LayoutBrand): EmailDir => (brand.dir === 'rtl' ? 'rtl' : 'ltr');
 const startAlign = (dir: EmailDir): 'left' | 'right' => (dir === 'rtl' ? 'right' : 'left');
+const endAlign = (dir: EmailDir): 'left' | 'right' => (dir === 'rtl' ? 'left' : 'right');
 
 // ---------------------------------------------------------------------------
 // Colour
@@ -231,33 +232,42 @@ export interface EmailDetailRow {
   emphasis?: boolean;
 }
 
-/** A label/value list in a soft panel. Rows stack on phones. Latin values are always left-to-right. */
+/**
+ * A label/value list: **one datum per row** — label at the line start, value at the line end,
+ * on the same line (EMAIL-DESIGN-STANDARD §3). Stacking every fact onto two lines was most of a
+ * 2,042px booking confirmation. Long values wrap within their own column rather than pushing the
+ * label onto its own line. Latin values stay left-to-right inside an RTL email.
+ */
 export const emailDetails = (
   brand: LayoutBrand,
   rows: EmailDetailRow[],
-  opts: { titleHtml?: string; eyebrow?: string } = {}
+  opts: { titleHtml?: string; eyebrow?: string; plain?: boolean } = {}
 ): string => {
   const visible = rows.filter((row) => row.valueHtml !== '');
   if (visible.length === 0) return '';
   const ink = inkOn(brand.color, PANEL);
   const dir = dirOf(brand);
-  const align = startAlign(dir);
+  const labelAlign = startAlign(dir);
+  const valueAlign = endAlign(dir);
   const header = opts.titleHtml || opts.eyebrow
-    ? `<tr><td class="fx-panel-pad" style="padding:18px 22px 4px;">
-        ${opts.eyebrow ? `<div class="fx-brand-ink" style="font-size:13px;line-height:18px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;color:${ink};">${escapeHtml(opts.eyebrow)}</div>` : ''}
-        ${opts.titleHtml ? `<div class="fx-ink" style="margin-top:4px;font-size:18px;line-height:25px;font-weight:700;color:${INK};">${opts.titleHtml}</div>` : ''}
+    ? `<tr><td class="fx-panel-pad" style="padding:14px 16px 2px;">
+        ${opts.eyebrow ? `<div class="fx-eyebrow fx-brand-ink" style="font-size:13px;line-height:18px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;color:${ink};">${escapeHtml(opts.eyebrow)}</div>` : ''}
+        ${opts.titleHtml ? `<div class="fx-ink fx-body" style="margin-top:2px;font-size:17px;line-height:24px;font-weight:700;color:${INK};">${opts.titleHtml}</div>` : ''}
       </td></tr>`
     : '';
   const body = visible.map((row, index) => {
     const border = index === 0 ? '' : `border-top:1px solid ${LINE};`;
     return `<tr class="fx-row">
-          <td width="36%" class="fx-label fx-bd" style="padding:12px 0;${border}vertical-align:top;text-align:${align};font-size:13px;line-height:19px;color:${FAINT};">${escapeHtml(row.label)}${row.hint ? `<div style="margin-top:2px;font-size:12px;line-height:17px;color:${FAINT};">${escapeHtml(row.hint)}</div>` : ''}</td>
-          <td dir="ltr" align="${align}" class="fx-value fx-bd ${row.emphasis ? 'fx-brand-ink' : 'fx-ink'}" style="padding:12px 0 12px 16px;${border}vertical-align:top;text-align:${align};direction:ltr;unicode-bidi:isolate;word-break:break-word;font-size:${row.emphasis ? '18px' : '14px'};line-height:${row.emphasis ? '24px' : '20px'};font-weight:${row.emphasis ? '800' : '600'};color:${row.emphasis ? ink : INK};">${row.valueHtml}</td>
+          <td class="fx-label fx-bd" style="padding:6px 10px 6px 0;${border}vertical-align:top;text-align:${labelAlign};font-size:14px;line-height:20px;color:${FAINT};white-space:normal;">${escapeHtml(row.label)}${row.hint ? `<div class="fx-hint" style="margin-top:1px;font-size:13px;line-height:18px;color:${FAINT};">${escapeHtml(row.hint)}</div>` : ''}</td>
+          <td dir="ltr" align="${valueAlign}" class="fx-value fx-bd ${row.emphasis ? 'fx-brand-ink' : 'fx-ink'}" style="padding:6px 0;${border}vertical-align:top;text-align:${valueAlign};direction:ltr;unicode-bidi:isolate;word-break:break-word;font-size:${row.emphasis ? '18px' : '15px'};line-height:${row.emphasis ? '24px' : '21px'};font-weight:${row.emphasis ? '800' : '600'};color:${row.emphasis ? ink : INK};">${row.valueHtml}</td>
         </tr>`;
   }).join('');
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="fx-panel fx-bd" style="background:${PANEL};border:1px solid ${LINE};border-radius:14px;">
+  const shell = opts.plain
+    ? 'background:transparent;'
+    : `background:${PANEL};border:1px solid ${LINE};border-radius:12px;`;
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="fx-factblock ${opts.plain ? '' : 'fx-panel fx-bd'}" style="${shell}">
       ${header}
-      <tr><td class="fx-panel-pad" style="padding:${header ? '4px' : '8px'} 22px 10px;">
+      <tr><td class="fx-panel-pad" style="padding:${header ? '2px' : '6px'} 16px 8px;">
         <table role="presentation" dir="${dir}" width="100%" cellpadding="0" cellspacing="0">${body}</table>
       </td></tr>
     </table>`;
@@ -322,7 +332,7 @@ export const emailFallbackLink = (brand: LayoutBrand, action: EmailAction): stri
   // Only for web links. A mailto: with an encoded subject reads as noise, and the address is
   // already visible in the button, so repeating it helps nobody.
   if (!/^https?:\/\//i.test(action.url)) return '';
-  return `<p class="fx-muted fx-small" style="margin:10px 0 0;font-size:13px;line-height:20px;color:${MUTED};word-break:break-all;">${escapeHtml(action.label)}: <a href="${escapeHtml(action.url)}" target="_blank" class="fx-brand-ink" style="color:${inkOn(brand.color, '#ffffff')};text-decoration:underline;">${escapeHtml(action.url)}</a></p>`;
+  return `<p class="fx-muted fx-small" style="margin:8px 0 0;font-size:13px;line-height:19px;color:${MUTED};word-break:break-all;">${escapeHtml(action.label)}: <a href="${escapeHtml(action.url)}" target="_blank" class="fx-brand-ink" style="color:${inkOn(brand.color, '#ffffff')};text-decoration:underline;">${escapeHtml(action.url)}</a></p>`;
 };
 
 const buttonsText = (primary: EmailAction, secondary?: EmailAction): string =>
@@ -334,7 +344,7 @@ const buttonsText = (primary: EmailAction, secondary?: EmailAction): string =>
 /** A quoted message (visitor or guest words), line breaks preserved. */
 export const emailQuote = (brand: LayoutBrand, label: string, text: string): string =>
   `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="fx-quote fx-bd" style="background:#ffffff;border:1px solid ${LINE};border-${startAlign(dirOf(brand))}:4px solid ${validColor(brand.color)};border-radius:10px;">
-      <tr><td style="padding:16px 18px;">
+      <tr><td style="padding:13px 15px;">
         <div class="fx-faint" style="font-size:13px;line-height:18px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;color:${FAINT};">${escapeHtml(label)}</div>
         <div class="fx-ink fx-body" style="margin-top:6px;font-size:15px;line-height:24px;color:${INK};white-space:pre-line;word-break:break-word;">${escapeHtml(text).replace(/\r?\n/g, '<br>')}</div>
       </td></tr>
@@ -345,7 +355,7 @@ export const emailNotice = (brand: LayoutBrand, tone: EmailTone, messageHtml: st
   const colors = toneColors(brand, tone);
   const dark = darkToneColors(brand, tone);
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="fx-notice fx-tone-${tone}" bgcolor="${colors.bg}" style="background:${colors.bg};border-radius:10px;" data-dark-bg="${dark.bg}">
-      <tr><td class="fx-notice-text" style="padding:13px 16px;font-size:13px;line-height:20px;color:${colors.ink};">${messageHtml}</td></tr>
+      <tr><td class="fx-notice-text" style="padding:11px 14px;font-size:13px;line-height:20px;color:${colors.ink};">${messageHtml}</td></tr>
     </table>`;
 };
 
@@ -354,7 +364,7 @@ export const emailStats = (brand: LayoutBrand, items: Array<{ value: string | nu
   const ink = inkOn(brand.color, PANEL);
   const width = Math.floor(100 / Math.max(items.length, 1));
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="fx-panel fx-bd" style="background:${PANEL};border:1px solid ${LINE};border-radius:14px;"><tr>
-      ${items.map((item, index) => `<td width="${width}%" align="center" class="fx-bd" style="padding:18px 8px;${index ? `border-left:1px solid ${LINE};` : ''}">
+      ${items.map((item, index) => `<td width="${width}%" align="center" class="fx-bd" style="padding:14px 6px;${index ? `border-left:1px solid ${LINE};` : ''}">
           <div class="fx-brand-ink" style="font-size:28px;line-height:32px;font-weight:800;color:${ink};">${escapeHtml(item.value)}</div>
           <div class="fx-faint" style="margin-top:4px;font-size:12px;line-height:16px;color:${FAINT};">${escapeHtml(item.label)}</div>
         </td>`).join('')}
@@ -369,8 +379,8 @@ export const emailList = (
 ): string => {
   const ink = inkOn(brand.color, PANEL);
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="fx-panel fx-bd" style="background:${PANEL};border:1px solid ${LINE};border-radius:14px;">
-      <tr><td class="fx-panel-pad fx-brand-ink" style="padding:18px 22px 6px;font-size:13px;line-height:18px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;color:${ink};">${escapeHtml(title)}</td></tr>
-      <tr><td class="fx-panel-pad" style="padding:0 22px 12px;">
+      <tr><td class="fx-panel-pad fx-brand-ink" style="padding:14px 16px 4px;font-size:13px;line-height:18px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;color:${ink};">${escapeHtml(title)}</td></tr>
+      <tr><td class="fx-panel-pad" style="padding:0 16px 10px;">
         <table role="presentation" dir="${dirOf(brand)}" width="100%" cellpadding="0" cellspacing="0">
           ${items.map((item, index) => `<tr>
             <td width="22" valign="top" class="fx-bd" style="padding:11px 0;${index ? `border-top:1px solid ${LINE};` : ''}"><div style="width:8px;height:8px;margin-top:6px;border-radius:4px;background:${validColor(brand.color)};font-size:0;line-height:0;">&nbsp;</div></td>
@@ -381,14 +391,28 @@ export const emailList = (
     </table>`;
 };
 
-/** A titled panel wrapping custom content (map, QR ticket). */
-export const emailPanel = (brand: LayoutBrand, eyebrow: string, contentHtml: string, opts: { align?: 'left' | 'center'; titleHtml?: string } = {}): string => {
+/**
+ * A titled panel wrapping custom content (map, QR ticket).
+ *
+ * `plain` drops the card background, border and most of the padding: a QR code or a map already
+ * reads as its own object, and wrapping each one in another bordered box costs ~60px of chrome
+ * per block on a phone for no added meaning.
+ */
+export const emailPanel = (
+  brand: LayoutBrand,
+  eyebrow: string,
+  contentHtml: string,
+  opts: { align?: 'left' | 'center'; titleHtml?: string; plain?: boolean } = {}
+): string => {
   const align = opts.align || startAlign(dirOf(brand));
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="fx-panel fx-bd" style="background:${PANEL};border:1px solid ${LINE};border-radius:14px;">
-      <tr><td class="fx-panel-pad" align="${align}" style="padding:18px 22px 20px;text-align:${align};">
-        <div class="fx-brand-ink" style="font-size:13px;line-height:18px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;color:${inkOn(brand.color, PANEL)};">${escapeHtml(eyebrow)}</div>
-        ${opts.titleHtml ? `<div class="fx-ink" style="margin-top:4px;font-size:16px;line-height:23px;font-weight:700;color:${INK};">${opts.titleHtml}</div>` : ''}
-        <div style="margin-top:12px;">${contentHtml}</div>
+  const shell = opts.plain
+    ? 'background:transparent;'
+    : `background:${PANEL};border:1px solid ${LINE};border-radius:12px;`;
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="${opts.plain ? '' : 'fx-panel fx-bd'}" style="${shell}">
+      <tr><td class="fx-panel-pad" align="${align}" style="padding:${opts.plain ? '0' : '14px 16px 16px'};text-align:${align};">
+        <div class="fx-eyebrow fx-brand-ink" style="font-size:13px;line-height:18px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;color:${inkOn(brand.color, PANEL)};">${escapeHtml(eyebrow)}</div>
+        ${opts.titleHtml ? `<div class="fx-ink" style="margin-top:2px;font-size:16px;line-height:22px;font-weight:700;color:${INK};">${opts.titleHtml}</div>` : ''}
+        <div style="margin-top:8px;">${contentHtml}</div>
       </td></tr>
     </table>`;
 };
@@ -406,7 +430,7 @@ export const emailLink = (brand: LayoutBrand, href: string, labelHtml: string): 
 // ---------------------------------------------------------------------------
 
 export type EmailBlockSpec =
-  | { kind: 'details'; rows: EmailDetailRow[]; titleHtml?: string; titleText?: string; eyebrow?: string }
+  | { kind: 'details'; rows: EmailDetailRow[]; titleHtml?: string; titleText?: string; eyebrow?: string; plain?: boolean }
   | {
       kind: 'buttons';
       primary: EmailAction;
@@ -419,7 +443,7 @@ export type EmailBlockSpec =
   | { kind: 'quote'; label: string; text: string }
   | { kind: 'list'; title: string; items: Array<{ title: string; meta?: string }> }
   | { kind: 'stats'; items: Array<{ value: string | number; label: string }> }
-  | { kind: 'panel'; eyebrow: string; contentHtml: string; text: string; align?: 'left' | 'center'; titleHtml?: string }
+  | { kind: 'panel'; eyebrow: string; contentHtml: string; text: string; align?: 'left' | 'center'; titleHtml?: string; plain?: boolean }
   /** Pre-rendered markup. `text` is mandatory so the plain-text alternative never loses a fact. */
   | { kind: 'raw'; html: string; text: string }
   | null
@@ -431,7 +455,7 @@ const renderBlockHtml = (brand: LayoutBrand, block: EmailBlockSpec): string => {
   if (!block) return '';
   switch (block.kind) {
     case 'details':
-      return emailDetails(brand, block.rows, { titleHtml: block.titleHtml, eyebrow: block.eyebrow });
+      return emailDetails(brand, block.rows, { titleHtml: block.titleHtml, eyebrow: block.eyebrow, plain: block.plain });
     case 'buttons':
       return (
         emailButtons(brand, block.primary, block.secondary, { outline: block.outline }) +
@@ -446,7 +470,7 @@ const renderBlockHtml = (brand: LayoutBrand, block: EmailBlockSpec): string => {
     case 'stats':
       return emailStats(brand, block.items);
     case 'panel':
-      return emailPanel(brand, block.eyebrow, block.contentHtml, { align: block.align, titleHtml: block.titleHtml });
+      return emailPanel(brand, block.eyebrow, block.contentHtml, { align: block.align, titleHtml: block.titleHtml, plain: block.plain });
     case 'raw':
       return block.html;
     default:
@@ -539,9 +563,9 @@ const logoMark = (brand: LayoutBrand): string => {
   }
   // A white plate behind the logo: a dark logo on a dark-mode background would otherwise vanish,
   // and email clients never invert an image for you (standard §3, dark mode).
-  return `<table role="presentation" cellpadding="0" cellspacing="0" align="center" class="fx-logo-plate" bgcolor="#ffffff" style="background:#ffffff;border-radius:12px;"><tr>
-      <td style="vertical-align:middle;padding:10px 4px 10px 14px;"><img src="${escapeHtml(brand.logo)}" alt="${name}" height="40" style="display:block;height:40px;max-height:40px;width:auto;border:0;outline:none;text-decoration:none;"></td>
-      <td style="vertical-align:middle;padding:10px 16px 10px 12px;font-size:15px;line-height:20px;font-weight:700;color:${INK};">${name}</td>
+  return `<table role="presentation" cellpadding="0" cellspacing="0" align="center" class="fx-logo-plate" bgcolor="#ffffff" style="background:#ffffff;border-radius:10px;"><tr>
+      <td style="vertical-align:middle;padding:7px 3px 7px 11px;"><img src="${escapeHtml(brand.logo)}" alt="${name}" height="28" style="display:block;height:28px;max-height:28px;width:auto;max-width:140px;border:0;outline:none;text-decoration:none;"></td>
+      <td style="vertical-align:middle;padding:7px 13px 7px 9px;font-size:15px;line-height:20px;font-weight:700;color:${INK};">${name}</td>
     </tr></table>`;
 };
 
@@ -568,21 +592,24 @@ const shellStyles = (brand: LayoutBrand): string => {
   return `
     body,table,td,a{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;}
     table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;}
-    img{border:0;line-height:100%;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;}
+    img{border:0;line-height:100%;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;max-width:100%;}
     a[x-apple-data-detectors]{color:inherit!important;text-decoration:none!important;}
     @media screen and (max-width:620px){
-      .fx-shell{padding:16px 0!important;}
-      .fx-card{border-radius:14px!important;}
-      .fx-pad{padding-left:24px!important;padding-right:24px!important;}
-      .fx-panel-pad{padding-left:18px!important;padding-right:18px!important;}
-      .fx-h1{font-size:24px!important;line-height:31px!important;}
-      .fx-intro,.fx-body,.fx-value{font-size:16px!important;line-height:25px!important;}
-      .fx-label{font-size:14px!important;line-height:20px!important;}
-      .fx-notice-text{font-size:15px!important;line-height:23px!important;}
-      .fx-small{font-size:14px!important;line-height:21px!important;}
-      .fx-row td{display:block!important;width:100%!important;}
-      .fx-label{padding:12px 0 2px!important;}
-      .fx-value{padding:0 0 12px!important;border-top:0!important;}
+      /* The phone IS the design (EMAIL-DESIGN-STANDARD s3): 20px gutters, 12px between rows in a
+         block, 24px between blocks. Rows are NEVER stacked here — one datum per row. */
+      .fx-shell{padding:12px 0 20px!important;}
+      .fx-card{border-radius:12px!important;}
+      .fx-pad{padding-left:20px!important;padding-right:20px!important;}
+      .fx-block{padding-bottom:24px!important;}
+      .fx-panel-pad{padding-left:14px!important;padding-right:14px!important;}
+      .fx-h1{font-size:24px!important;line-height:30px!important;}
+      .fx-intro,.fx-body{font-size:16px!important;line-height:24px!important;}
+      .fx-value{font-size:16px!important;line-height:22px!important;}
+      .fx-label{font-size:15px!important;line-height:22px!important;}
+      .fx-hint{font-size:13px!important;line-height:18px!important;}
+      .fx-notice-text{font-size:15px!important;line-height:22px!important;}
+      .fx-small{font-size:14px!important;line-height:20px!important;}
+      .fx-eyebrow{font-size:13px!important;line-height:18px!important;}
       .fx-btns,.fx-btns tbody,.fx-btns tr,.fx-btn-cell{display:block!important;width:100%!important;}
       .fx-btn-gap{display:block!important;height:12px!important;width:100%!important;}
       .fx-btn{display:block!important;}
@@ -641,23 +668,23 @@ const renderShell = (doc: EmailDocument, blocksHtml: string): string => {
 <body dir="${dir}" class="fx-page" style="margin:0;padding:0;width:100%;background:${PAGE};direction:${dir};text-align:${align};">
   <div style="display:none;max-height:0;max-width:0;overflow:hidden;opacity:0;font-size:1px;line-height:1px;color:${PAGE};">${escapeHtml(clampPreheader(doc.preheader))}&#8199;&#65279;&#847;&#8199;&#65279;&#847;&#8199;&#65279;&#847;</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="fx-page" style="background:${PAGE};">
-    <tr><td align="center" class="fx-shell" style="padding:28px 12px 32px;">
+    <tr><td align="center" class="fx-shell" style="padding:20px 12px 28px;">
       <!--[if mso]><table role="presentation" width="600" cellpadding="0" cellspacing="0" align="center"><tr><td><![endif]-->
       <table role="presentation" dir="${dir}" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;font-family:${FONT};">
-        <tr><td align="center" style="padding:4px 0 18px;">${logoMark(brand)}</td></tr>
+        <tr><td align="center" style="padding:0 0 14px;">${logoMark(brand)}</td></tr>
         <tr><td>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="fx-card" style="background:#ffffff;border:1px solid ${LINE};border-radius:18px;overflow:hidden;">
-            <tr><td height="5" style="height:5px;background:${color};font-size:0;line-height:0;">&nbsp;</td></tr>
-            <tr><td class="fx-pad" style="padding:32px 36px 22px;">
+            <tr><td height="4" style="height:4px;background:${color};font-size:0;line-height:0;">&nbsp;</td></tr>
+            <tr><td class="fx-pad" style="padding:22px 36px 18px;">
               ${badge && doc.badge ? `<span style="display:inline-block;padding:5px 11px;border-radius:999px;background:${badge.bg};color:${badge.ink};font-size:12px;line-height:16px;font-weight:700;letter-spacing:0.9px;text-transform:uppercase;">${escapeHtml(doc.badge.label)}</span>` : ''}
-              <h1 class="fx-h1 fx-ink" style="margin:${doc.badge ? '14px' : '0'} 0 0;font-size:26px;line-height:33px;font-weight:800;letter-spacing:-0.4px;color:${INK};">${escapeHtml(doc.heading)}</h1>
-              ${doc.introHtml ? `<p class="fx-intro fx-muted" style="margin:10px 0 0;font-size:15px;line-height:24px;color:${MUTED};">${doc.introHtml}</p>` : ''}
+              <h1 class="fx-h1 fx-ink" style="margin:${doc.badge ? '10px' : '0'} 0 0;font-size:26px;line-height:32px;font-weight:800;letter-spacing:-0.4px;color:${INK};">${escapeHtml(doc.heading)}</h1>
+              ${doc.introHtml ? `<p class="fx-intro fx-muted" style="margin:8px 0 0;font-size:15px;line-height:23px;color:${MUTED};">${doc.introHtml}</p>` : ''}
             </td></tr>
             ${blocksHtml}
-            <tr><td style="font-size:0;line-height:0;height:12px;">&nbsp;</td></tr>
+            <tr><td style="font-size:0;line-height:0;height:4px;">&nbsp;</td></tr>
           </table>
         </td></tr>
-        <tr><td align="center" class="fx-pad" style="padding:22px 28px 0;text-align:center;">
+        <tr><td align="center" class="fx-pad" style="padding:18px 24px 0;text-align:center;">
           ${doc.footer?.note ? `<p class="fx-muted fx-small" style="margin:0 0 8px;font-size:13px;line-height:20px;color:${MUTED};">${escapeHtml(doc.footer.note)}</p>` : ''}
           ${contactParts.length ? `<p class="fx-muted fx-small" style="margin:0 0 8px;font-size:13px;line-height:20px;color:${MUTED};">${contactParts.join(' &nbsp;&#183;&nbsp; ')}</p>` : ''}
           <p class="fx-faint fx-small" style="margin:0 0 6px;font-size:13px;line-height:20px;color:${FAINT};">${escapeHtml(whyReceived)}</p>
@@ -677,7 +704,7 @@ export const renderEmailDocument = (doc: EmailDocument): string =>
     doc,
     doc.blocks
       .filter((block) => block && block.trim())
-      .map((block) => `<tr><td class="fx-pad" style="padding:0 36px 20px;">${block}</td></tr>`)
+      .map((block) => `<tr><td class="fx-pad fx-block" style="padding:0 36px 24px;">${block}</td></tr>`)
       .join('\n')
   );
 

@@ -50,9 +50,12 @@ describe('renderBookingConfirmationHtml', () => {
     // Brand-neutral copy: the same email serves boat, horse and desert sites.
     expect(html).not.toMatch(/desert adventure/i);
     expect(html).toContain('Your mobile ticket');
-    expect(html).toContain('Scan for booking details');
+    expect(html).toContain('Your mobile ticket');
     expect(html).toContain('src="cid:booking-ATT-TEST-1-qr.png"');
-    expect(html).toContain('Your PDF ticket is attached');
+    // The intro already says the ticket is attached; repeating it in a closing notice was
+    // the same fact twice (EMAIL-DESIGN-STANDARD s3).
+    expect(html).toContain('your e-ticket is attached');
+    expect(html).not.toContain('Your PDF ticket is attached');
     expect(html).toContain('Open your booking');
     expect(html).toContain('background:#8B4513'); // brand accent stripe
   });
@@ -69,10 +72,10 @@ describe('renderBookingConfirmationHtml', () => {
     expect(html).toContain('dir="ltr"'); // also on body + container
   });
 
-  it('keeps booking detail values left-aligned instead of right-to-left looking', () => {
+  it('keeps booking detail values in a left-to-right column, aligned to the line end', () => {
     const html = renderBookingConfirmationHtml(brand, { ...base, paymentMethod: 'pay-later' });
-    expect(html).toContain('align="left"');
-    expect(html).toContain('text-align:left;direction:ltr;unicode-bidi:isolate');
+    expect(html).toContain('align="right"');
+    expect(html).toContain('text-align:right;direction:ltr;unicode-bidi:isolate');
     expect(html).not.toContain('<td align="right" style="padding:12px 0;');
   });
 
@@ -251,10 +254,10 @@ describe('renderAdminBookingNotificationHtml', () => {
     expect(html).toContain('Experience'); // fallback label used
   });
 
-  it('keeps operator booking detail values left-aligned instead of right-to-left looking', () => {
+  it('keeps operator booking detail values in a left-to-right column, aligned to the line end', () => {
     const html = renderAdminBookingNotificationHtml(brand, adminBase, 'https://makadihorseclub.com/admin/bookings');
-    expect(html).toContain('align="left"');
-    expect(html).toContain('text-align:left;direction:ltr;unicode-bidi:isolate');
+    expect(html).toContain('align="right"');
+    expect(html).toContain('text-align:right;direction:ltr;unicode-bidi:isolate');
     expect(html).not.toContain('<td align="right" style="padding:12px 0;');
   });
 

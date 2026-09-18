@@ -9,6 +9,12 @@
 import fs from 'fs';
 import path from 'path';
 import {
+  FIRST_SCREEN,
+  closeMeasurementBrowser,
+  measureEmail,
+  measurementBrowser,
+} from '../services/emailMeasure';
+import {
   EmailBrand,
   EmailTenant,
   contactEnquirySubject,
@@ -113,7 +119,17 @@ interface Preview {
   subject: string;
   html: string;
   text: string;
+  /** Filled in by the measuring pass (EMAIL-DESIGN-STANDARD §6). */
+  height?: number;
+  chromeHeight?: number;
+  keyFactBottom?: number;
+  overflow?: boolean;
 }
+
+const CHROME_MAX = 140;
+const ROUTINE_MAX = 1700;
+const CONFIRMATION_MAX = 1600;
+const capFor = (slug: string): number => (slug.startsWith('booking-confirmation') ? CONFIRMATION_MAX : ROUTINE_MAX);
 
 const buildPreviews = (tenant: EmailTenant): Preview[] => {
   const brand: EmailBrand = getEmailBrand(tenant);
@@ -172,16 +188,38 @@ const write = (file: string, body: string): void => {
   fs.writeFileSync(file, body, 'utf8');
 };
 
-const main = (): void => {
+const main = async (): Promise<void> => {
   fs.mkdirSync(OUT, { recursive: true });
   const sets = [...TENANTS, RTL_TENANT].map((tenant) => ({ tenant, previews: buildPreviews(tenant) }));
 
+  // Measure every template at 390px on the rendered output, as §3/§6 require. Estimating from
+  // markup is how a 2,042px booking confirmation once passed review.
+  const browser = await measurementBrowser();
   for (const { tenant, previews } of sets) {
+    console.log(`\n${tenant.name}${tenant.defaultLanguage === 'ar' ? ' (Arabic, RTL)' : ''} — measured at 390px`);
+    console.log('   height   chrome   key fact   template');
     for (const preview of previews) {
       write(path.join(OUT, tenant.key, `${preview.slug}.html`), preview.html);
       write(path.join(OUT, tenant.key, `${preview.slug}.txt`), preview.text);
+      const metrics = await measureEmail(preview.html, browser);
+      Object.assign(preview, {
+        height: metrics.height,
+        chromeHeight: metrics.chromeHeight,
+        keyFactBottom: metrics.keyFactBottom,
+        overflow: metrics.horizontalOverflow,
+      });
+      const flag = (value: number, cap: number) => (value > cap ? '!' : ' ');
+      console.log(
+        `  ${String(metrics.height).padStart(5)}px${flag(metrics.height, capFor(preview.slug))}` +
+          `  ${String(metrics.chromeHeight).padStart(4)}px${flag(metrics.chromeHeight, CHROME_MAX)}` +
+          `   ${String(metrics.keyFactBottom).padStart(5)}px${flag(metrics.keyFactBottom, FIRST_SCREEN)}` +
+          `   ${preview.slug}${metrics.horizontalOverflow ? '  [SCROLLS SIDEWAYS]' : ''}`
+      );
     }
+    const avg = Math.round(previews.reduce((total, p) => total + (p.height || 0), 0) / previews.length);
+    console.log(`  average ${avg}px over ${previews.length} templates`);
   }
+  await closeMeasurementBrowser();
 
   const index = `<!DOCTYPE html>
 <html lang="en">
@@ -204,6 +242,9 @@ const main = (): void => {
   tr:last-child td { border-bottom:0; }
   a { color:inherit; }
   code { font-family:'SF Mono',Menlo,Consolas,monospace; font-size:12px; color:var(--muted); }
+  td.ok { color:#166534; font-variant-numeric:tabular-nums; }
+  td.over { color:#991b1b; font-weight:700; font-variant-numeric:tabular-nums; }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) td.ok { color:#86efac; } :root:not([data-theme="light"]) td.over { color:#fca5a5; } }
   .n { color:var(--muted); font-size:13px; }
   @media (max-width:640px){ th:nth-child(3), td:nth-child(3) { display:none; } }
 </style>
@@ -214,13 +255,17 @@ const main = (): void => {
   <p class="lead">Every template this backend sends, rendered with realistic sample data for two different
   site brands plus an Arabic (right-to-left) variant. Each row links the HTML part and the plain-text
   alternative. Open a file and toggle your OS light/dark setting to check dark mode; narrow the window
-  to 390px to check the mobile layout.</p>
+  to 390px to check the mobile layout. Heights are measured on the rendered output at 390px, not
+  estimated; the budgets are <strong>chrome ≤ 140px</strong>, key fact within the first
+  <strong>844px</strong>, routine email ≤ 1,700px and booking confirmation ≤ 1,600px.</p>
 ${sets.map(({ tenant, previews }) => `  <h2>${escape(tenant.name || '')}${tenant.defaultLanguage === 'ar' ? ' — Arabic (RTL)' : ''} <span class="n">· ${escape(tenant.theme?.primaryColor || '')} · ${escape(tenant.customDomain || '')}</span></h2>
   <table>
-    <tr><th>Template</th><th>Subject</th><th>Parts</th></tr>
+    <tr><th>Template</th><th>Subject</th><th>390px height</th><th>Chrome</th><th>Parts</th></tr>
 ${previews.map((preview) => `    <tr>
       <td><a href="${tenant.key}/${preview.slug}.html">${escape(preview.title)}</a></td>
       <td>${escape(preview.subject)} <span class="n">(${preview.subject.length}/60)</span></td>
+      <td class="${(preview.height || 0) > capFor(preview.slug) ? 'over' : 'ok'}">${preview.height}px <span class="n">/ ${capFor(preview.slug)}</span></td>
+      <td class="${(preview.chromeHeight || 0) > CHROME_MAX ? 'over' : 'ok'}">${preview.chromeHeight}px <span class="n">/ ${CHROME_MAX}</span></td>
       <td><a href="${tenant.key}/${preview.slug}.html">HTML</a> · <a href="${tenant.key}/${preview.slug}.txt">text</a></td>
     </tr>`).join('\n')}
   </table>`).join('\n')}
@@ -231,7 +276,10 @@ ${previews.map((preview) => `    <tr>
 
   write(path.join(OUT, 'index.html'), index);
   const count = sets.reduce((total, set) => total + set.previews.length, 0);
-  console.log(`Rendered ${count} previews across ${sets.length} brand variants -> ${OUT}`);
+  console.log(`\nRendered ${count} previews across ${sets.length} brand variants -> ${OUT}`);
 };
 
-main();
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
