@@ -1,5 +1,6 @@
 import {
   contrastRatio,
+  inkOn,
   emailButtons,
   emailDetails,
   emailQuote,
@@ -86,7 +87,10 @@ describe('every template uses the shared design', () => {
     shared(html);
     expect(html).toContain('mailto:info@safari-sahara.com');
     expect(html).toContain('tel:+201113418533');
-    expect(html).toContain(`color:${inkColor('#D4A843')};">EUR 90.00`);
+    // The emphasised total sits on the detail PANEL, so its ink is measured against the panel,
+    // not against white — a gold ink that clears 4.5:1 on white does not clear it on #faf8f4.
+    expect(html).toContain(`color:${inkOn('#D4A843', '#faf8f4')};">EUR 90.00`);
+    expect(contrastRatio(inkOn('#D4A843', '#faf8f4'), '#faf8f4')).toBeGreaterThanOrEqual(4.5);
     expect(html).not.toContain('#0b0907');
   });
 

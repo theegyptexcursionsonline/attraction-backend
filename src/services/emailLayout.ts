@@ -37,7 +37,10 @@ const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial
 const MONO = "'SF Mono',Menlo,Consolas,'Liberation Mono',monospace";
 const INK = '#1c1917';
 const MUTED = '#57534e';
-const FAINT = '#8a847c';
+// Labels, hints and the legal footer. Measured against the DARKEST surface it is drawn on
+// (the page, #f4f1ec) rather than white, because that is the pairing with the least contrast:
+// 4.87:1 there, 5.18:1 on a panel, 5.49:1 on the card. The old #8a847c was 3.29:1 on the page.
+const FAINT = '#6f6860';
 const LINE = '#ece7df';
 const PANEL = '#faf8f4';
 const PAGE = '#f4f1ec';
@@ -129,28 +132,40 @@ export const contrastRatio = (a: string, b: string): number => {
 export const onColor = (hex: string): '#ffffff' | '#1c1917' =>
   contrastRatio(hex, '#ffffff') >= contrastRatio(hex, INK) ? '#ffffff' : INK;
 
-/** The brand colour darkened until it is readable as text on white (WCAG AA, 4.5:1). */
-export const inkColor = (hex: string): string => {
+/**
+ * The brand colour darkened until it is readable as text on `background` (WCAG AA, 4.5:1).
+ *
+ * The background matters: a brand ink that clears 4.5:1 on white can still fail on a panel, and
+ * fails badly on the brand's own tint — a gold badge was 4.10:1 against its own #f9f3e5 fill.
+ * Always pass the surface the text actually sits on.
+ */
+export const inkOn = (hex: string, background: string): string => {
   let rgb = parseHex(hex);
   if (!rgb) return INK;
-  for (let step = 0; step < 20 && contrastRatio(toHex(rgb), '#ffffff') < 4.5; step += 1) {
+  for (let step = 0; step < 24 && contrastRatio(toHex(rgb), background) < 4.5; step += 1) {
     rgb = rgb.map((channel) => channel * 0.88) as [number, number, number];
   }
   return toHex(rgb);
 };
 
+/** The brand colour darkened until it is readable as text on white. */
+export const inkColor = (hex: string): string => inkOn(hex, '#ffffff');
+
 /**
  * The brand colour lightened until it is readable as text on the dark-mode card (WCAG AA).
  * A deep navy brand is invisible on #1c1917 otherwise.
  */
-export const darkInkColor = (hex: string): string => {
+export const darkInkOn = (hex: string, background: string): string => {
   let rgb = parseHex(hex);
   if (!rgb) return DARK.ink;
-  for (let step = 0; step < 24 && contrastRatio(toHex(rgb), DARK.card) < 4.5; step += 1) {
+  for (let step = 0; step < 24 && contrastRatio(toHex(rgb), background) < 4.5; step += 1) {
     rgb = rgb.map((channel) => 255 - (255 - channel) * 0.86) as [number, number, number];
   }
   return toHex(rgb);
 };
+
+/** Readable on the dark PANEL, which is the lightest dark surface brand ink is drawn on. */
+export const darkInkColor = (hex: string): string => darkInkOn(hex, DARK.panel);
 
 /** A pale tint of a colour for backgrounds (mixed with white). */
 export const tintColor = (hex: string, amount = 0.1): string => {
@@ -184,11 +199,17 @@ const DARK_TONES: Record<Exclude<EmailTone, 'brand'>, { ink: string; bg: string 
   neutral: { ink: '#d7d3ce', bg: '#2a2622' },
 };
 
-const toneColors = (brand: LayoutBrand, tone: EmailTone): { ink: string; bg: string } =>
-  tone === 'brand' ? { ink: inkColor(brand.color), bg: tintColor(brand.color, 0.14) } : TONES[tone];
+const toneColors = (brand: LayoutBrand, tone: EmailTone): { ink: string; bg: string } => {
+  if (tone !== 'brand') return TONES[tone];
+  const bg = tintColor(brand.color, 0.14);
+  return { ink: inkOn(brand.color, bg), bg };
+};
 
-const darkToneColors = (brand: LayoutBrand, tone: EmailTone): { ink: string; bg: string } =>
-  tone === 'brand' ? { ink: darkInkColor(brand.color), bg: shadeColor(brand.color, 0.24) } : DARK_TONES[tone];
+const darkToneColors = (brand: LayoutBrand, tone: EmailTone): { ink: string; bg: string } => {
+  if (tone !== 'brand') return DARK_TONES[tone];
+  const bg = shadeColor(brand.color, 0.24);
+  return { ink: darkInkOn(brand.color, bg), bg };
+};
 
 const validColor = (hex: string): string => (parseHex(hex) ? hex : '#111827');
 
@@ -218,12 +239,12 @@ export const emailDetails = (
 ): string => {
   const visible = rows.filter((row) => row.valueHtml !== '');
   if (visible.length === 0) return '';
-  const ink = inkColor(brand.color);
+  const ink = inkOn(brand.color, PANEL);
   const dir = dirOf(brand);
   const align = startAlign(dir);
   const header = opts.titleHtml || opts.eyebrow
     ? `<tr><td class="fx-panel-pad" style="padding:18px 22px 4px;">
-        ${opts.eyebrow ? `<div class="fx-brand-ink" style="font-size:11px;line-height:16px;letter-spacing:1.4px;text-transform:uppercase;font-weight:700;color:${ink};">${escapeHtml(opts.eyebrow)}</div>` : ''}
+        ${opts.eyebrow ? `<div class="fx-brand-ink" style="font-size:13px;line-height:18px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;color:${ink};">${escapeHtml(opts.eyebrow)}</div>` : ''}
         ${opts.titleHtml ? `<div class="fx-ink" style="margin-top:4px;font-size:18px;line-height:25px;font-weight:700;color:${INK};">${opts.titleHtml}</div>` : ''}
       </td></tr>`
     : '';
@@ -301,7 +322,7 @@ export const emailFallbackLink = (brand: LayoutBrand, action: EmailAction): stri
   // Only for web links. A mailto: with an encoded subject reads as noise, and the address is
   // already visible in the button, so repeating it helps nobody.
   if (!/^https?:\/\//i.test(action.url)) return '';
-  return `<p class="fx-muted fx-small" style="margin:10px 0 0;font-size:13px;line-height:20px;color:${MUTED};word-break:break-all;">${escapeHtml(action.label)}: <a href="${escapeHtml(action.url)}" target="_blank" class="fx-brand-ink" style="color:${inkColor(brand.color)};text-decoration:underline;">${escapeHtml(action.url)}</a></p>`;
+  return `<p class="fx-muted fx-small" style="margin:10px 0 0;font-size:13px;line-height:20px;color:${MUTED};word-break:break-all;">${escapeHtml(action.label)}: <a href="${escapeHtml(action.url)}" target="_blank" class="fx-brand-ink" style="color:${inkOn(brand.color, '#ffffff')};text-decoration:underline;">${escapeHtml(action.url)}</a></p>`;
 };
 
 const buttonsText = (primary: EmailAction, secondary?: EmailAction): string =>
@@ -314,7 +335,7 @@ const buttonsText = (primary: EmailAction, secondary?: EmailAction): string =>
 export const emailQuote = (brand: LayoutBrand, label: string, text: string): string =>
   `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="fx-quote fx-bd" style="background:#ffffff;border:1px solid ${LINE};border-${startAlign(dirOf(brand))}:4px solid ${validColor(brand.color)};border-radius:10px;">
       <tr><td style="padding:16px 18px;">
-        <div class="fx-faint" style="font-size:11px;line-height:16px;letter-spacing:1.4px;text-transform:uppercase;font-weight:700;color:${FAINT};">${escapeHtml(label)}</div>
+        <div class="fx-faint" style="font-size:13px;line-height:18px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;color:${FAINT};">${escapeHtml(label)}</div>
         <div class="fx-ink fx-body" style="margin-top:6px;font-size:15px;line-height:24px;color:${INK};white-space:pre-line;word-break:break-word;">${escapeHtml(text).replace(/\r?\n/g, '<br>')}</div>
       </td></tr>
     </table>`;
@@ -330,7 +351,7 @@ export const emailNotice = (brand: LayoutBrand, tone: EmailTone, messageHtml: st
 
 /** Big numbers side by side (guest counts). */
 export const emailStats = (brand: LayoutBrand, items: Array<{ value: string | number; label: string }>): string => {
-  const ink = inkColor(brand.color);
+  const ink = inkOn(brand.color, PANEL);
   const width = Math.floor(100 / Math.max(items.length, 1));
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="fx-panel fx-bd" style="background:${PANEL};border:1px solid ${LINE};border-radius:14px;"><tr>
       ${items.map((item, index) => `<td width="${width}%" align="center" class="fx-bd" style="padding:18px 8px;${index ? `border-left:1px solid ${LINE};` : ''}">
@@ -346,9 +367,9 @@ export const emailList = (
   title: string,
   items: Array<{ title: string; meta?: string }>
 ): string => {
-  const ink = inkColor(brand.color);
+  const ink = inkOn(brand.color, PANEL);
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="fx-panel fx-bd" style="background:${PANEL};border:1px solid ${LINE};border-radius:14px;">
-      <tr><td class="fx-panel-pad fx-brand-ink" style="padding:18px 22px 6px;font-size:11px;line-height:16px;letter-spacing:1.4px;text-transform:uppercase;font-weight:700;color:${ink};">${escapeHtml(title)}</td></tr>
+      <tr><td class="fx-panel-pad fx-brand-ink" style="padding:18px 22px 6px;font-size:13px;line-height:18px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;color:${ink};">${escapeHtml(title)}</td></tr>
       <tr><td class="fx-panel-pad" style="padding:0 22px 12px;">
         <table role="presentation" dir="${dirOf(brand)}" width="100%" cellpadding="0" cellspacing="0">
           ${items.map((item, index) => `<tr>
@@ -365,7 +386,7 @@ export const emailPanel = (brand: LayoutBrand, eyebrow: string, contentHtml: str
   const align = opts.align || startAlign(dirOf(brand));
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="fx-panel fx-bd" style="background:${PANEL};border:1px solid ${LINE};border-radius:14px;">
       <tr><td class="fx-panel-pad" align="${align}" style="padding:18px 22px 20px;text-align:${align};">
-        <div class="fx-brand-ink" style="font-size:11px;line-height:16px;letter-spacing:1.4px;text-transform:uppercase;font-weight:700;color:${inkColor(brand.color)};">${escapeHtml(eyebrow)}</div>
+        <div class="fx-brand-ink" style="font-size:13px;line-height:18px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;color:${inkOn(brand.color, PANEL)};">${escapeHtml(eyebrow)}</div>
         ${opts.titleHtml ? `<div class="fx-ink" style="margin-top:4px;font-size:16px;line-height:23px;font-weight:700;color:${INK};">${opts.titleHtml}</div>` : ''}
         <div style="margin-top:12px;">${contentHtml}</div>
       </td></tr>
@@ -378,7 +399,7 @@ export const emailCode = (value: string): string =>
 
 /** A link styled in the readable brand ink. `href` must be a safe, already-validated URL. */
 export const emailLink = (brand: LayoutBrand, href: string, labelHtml: string): string =>
-  `<a href="${escapeHtml(href)}" class="fx-brand-ink" style="color:${inkColor(brand.color)};text-decoration:none;font-weight:600;">${labelHtml}</a>`;
+  `<a href="${escapeHtml(href)}" class="fx-brand-ink" style="color:${inkOn(brand.color, PANEL)};text-decoration:none;font-weight:600;">${labelHtml}</a>`;
 
 // ---------------------------------------------------------------------------
 // Block specification — one description, two renderings (HTML + plain text)
@@ -525,7 +546,7 @@ const logoMark = (brand: LayoutBrand): string => {
 };
 
 const shellStyles = (brand: LayoutBrand): string => {
-  const darkBrandInk = darkInkColor(brand.color);
+  const darkBrandInk = darkInkOn(brand.color, DARK.panel);
   const toneRules = (['success', 'info', 'warning', 'danger', 'neutral'] as const)
     .map((tone) => `.fx-tone-${tone},.fx-tone-${tone} td{background:${DARK_TONES[tone].bg}!important;color:${DARK_TONES[tone].ink}!important;}`)
     .join('\n      ');
@@ -628,7 +649,7 @@ const renderShell = (doc: EmailDocument, blocksHtml: string): string => {
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="fx-card" style="background:#ffffff;border:1px solid ${LINE};border-radius:18px;overflow:hidden;">
             <tr><td height="5" style="height:5px;background:${color};font-size:0;line-height:0;">&nbsp;</td></tr>
             <tr><td class="fx-pad" style="padding:32px 36px 22px;">
-              ${badge && doc.badge ? `<span style="display:inline-block;padding:5px 11px;border-radius:999px;background:${badge.bg};color:${badge.ink};font-size:11px;line-height:14px;font-weight:700;letter-spacing:0.9px;text-transform:uppercase;">${escapeHtml(doc.badge.label)}</span>` : ''}
+              ${badge && doc.badge ? `<span style="display:inline-block;padding:5px 11px;border-radius:999px;background:${badge.bg};color:${badge.ink};font-size:12px;line-height:16px;font-weight:700;letter-spacing:0.9px;text-transform:uppercase;">${escapeHtml(doc.badge.label)}</span>` : ''}
               <h1 class="fx-h1 fx-ink" style="margin:${doc.badge ? '14px' : '0'} 0 0;font-size:26px;line-height:33px;font-weight:800;letter-spacing:-0.4px;color:${INK};">${escapeHtml(doc.heading)}</h1>
               ${doc.introHtml ? `<p class="fx-intro fx-muted" style="margin:10px 0 0;font-size:15px;line-height:24px;color:${MUTED};">${doc.introHtml}</p>` : ''}
             </td></tr>
@@ -639,9 +660,9 @@ const renderShell = (doc: EmailDocument, blocksHtml: string): string => {
         <tr><td align="center" class="fx-pad" style="padding:22px 28px 0;text-align:center;">
           ${doc.footer?.note ? `<p class="fx-muted fx-small" style="margin:0 0 8px;font-size:13px;line-height:20px;color:${MUTED};">${escapeHtml(doc.footer.note)}</p>` : ''}
           ${contactParts.length ? `<p class="fx-muted fx-small" style="margin:0 0 8px;font-size:13px;line-height:20px;color:${MUTED};">${contactParts.join(' &nbsp;&#183;&nbsp; ')}</p>` : ''}
-          <p class="fx-faint fx-small" style="margin:0 0 6px;font-size:12px;line-height:18px;color:${FAINT};">${escapeHtml(whyReceived)}</p>
-          ${doc.footer?.postalAddress ? `<p class="fx-faint fx-small" style="margin:0 0 6px;font-size:12px;line-height:18px;color:${FAINT};">${escapeHtml(doc.footer.postalAddress)}</p>` : ''}
-          <p class="fx-faint fx-small" style="margin:0;font-size:12px;line-height:18px;color:${FAINT};">&copy; ${year} ${escapeHtml(brand.name)}${unsubscribe ? ` &#183; ${unsubscribe}` : ''}</p>
+          <p class="fx-faint fx-small" style="margin:0 0 6px;font-size:13px;line-height:20px;color:${FAINT};">${escapeHtml(whyReceived)}</p>
+          ${doc.footer?.postalAddress ? `<p class="fx-faint fx-small" style="margin:0 0 6px;font-size:13px;line-height:20px;color:${FAINT};">${escapeHtml(doc.footer.postalAddress)}</p>` : ''}
+          <p class="fx-faint fx-small" style="margin:0;font-size:13px;line-height:20px;color:${FAINT};">&copy; ${year} ${escapeHtml(brand.name)}${unsubscribe ? ` &#183; ${unsubscribe}` : ''}</p>
         </td></tr>
       </table>
       <!--[if mso]></td></tr></table><![endif]-->
