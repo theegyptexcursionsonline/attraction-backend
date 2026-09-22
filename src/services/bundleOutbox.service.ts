@@ -508,7 +508,10 @@ const processEvent = async (
   }
   if (!recipient) throw new Error('Outbox recipient is not configured');
   await withOutboxLeaseHeartbeat(event._id, leaseToken, () =>
-    sendEmail({ to: recipient, subject, html, text, tenant })
+    sendEmail({
+      to: recipient, subject, html, text, tenant,
+      ...(event.audience !== 'customer' ? { cc: tenant.notificationSettings?.bookingCcEmails } : {}),
+    })
   );
   return 'delivered';
 };

@@ -6,6 +6,7 @@ import formData from 'form-data';
 import sanitizeMarkup from 'sanitize-html';
 import QRCode from 'qrcode';
 import { env } from '../config/env';
+import { notificationCopyEmails } from '../utils/notificationRecipients';
 import { EmailReceipt, ensureEmailReceiptIndexes } from '../models/EmailReceipt';
 import {
   EmailBlockSpec,
@@ -44,6 +45,7 @@ export type EmailCategory = 'transactional' | 'account' | 'reminder';
 
 interface EmailOptions {
   to: string;
+  cc?: string[];
   subject: string;
   html: string;
   /** The plain-text alternative. Required for every new template; see `renderEmail`. */
@@ -176,13 +178,15 @@ export const emailSubject = (...parts: Array<string | undefined | null>): string
 export interface EmailEnvelope {
   from: string;
   to: string[];
+  cc?: string[];
   replyTo?: string;
 }
 
 export const resolveEmailEnvelope = (
   tenant: EmailTenant | null,
   recipient: string,
-  explicitReplyTo?: string
+  explicitReplyTo?: string,
+  copies?: string[]
 ): EmailEnvelope => {
   const senderAddress = emailAddressFrom(env.mailgunFromEmail);
   if (!isEmailAddress(senderAddress) || !isEmailAddress(recipient)) {
@@ -191,9 +195,11 @@ export const resolveEmailEnvelope = (
 
   const brand = getEmailBrand(tenant);
   const replyCandidate = explicitReplyTo?.trim() || tenant?.contactInfo?.email?.trim();
+  const cc = notificationCopyEmails(copies, recipient);
   return {
     from: `${safeDisplayName(brand.name) || 'Attractions Network'} <${senderAddress}>`,
     to: [recipient.trim().toLowerCase()],
+    ...(cc.length ? { cc } : {}),
     ...(isEmailAddress(replyCandidate) ? { replyTo: replyCandidate.toLowerCase() } : {}),
   };
 };
@@ -264,12 +270,17 @@ export const sendEmail = async (options: EmailOptions): Promise<EmailSendResult>
     return { status: 'skipped', reason: 'non_production_no_qa_inbox' };
   }
 
-  const envelope = resolveEmailEnvelope(options.tenant, routed.recipient, options.replyTo);
+  // Copies belong to operator notifications only. Preview/staging mail must never
+  // leak to a real operator while the primary recipient is redirected to QA.
+  const copies = category !== 'account' && ['production', 'test'].includes(env.nodeEnv)
+    ? options.cc : undefined;
+  const envelope = resolveEmailEnvelope(options.tenant, routed.recipient, options.replyTo, copies);
   const messageData: Record<string, unknown> = {
     from: envelope.from,
     to: envelope.to,
     subject,
     html: options.html,
+    ...(envelope.cc?.length ? { cc: envelope.cc } : {}),
   };
   // A message without a plain-text part renders as a blob in text-only clients and scores
   // worse with spam filters. Every template built through `renderEmail` supplies one.
@@ -419,6 +430,7 @@ export interface EmailTenant {
   defaultCurrency?: string;
   timezone?: string;
   contactInfo?: { email?: string; phone?: string; address?: string };
+  notificationSettings?: { bookingEmail?: string; bookingCcEmails?: string[]; contactCcEmails?: string[] };
 }
 
 export interface EmailBrand {
@@ -1055,6 +1067,7 @@ export const sendAdminBookingNotification = async (
   await sendEmail({
     to: recipientEmail,
     subject: emailSubject('New booking', details.reference, details.attractionTitle || 'Experience'),
+    cc: tenant?.notificationSettings?.bookingCcEmails,
     html,
     text,
     tenant: tenant || null,
@@ -1794,6 +1807,7 @@ export const sendContactFormEmail = async (
   return sendEmail({
     to: recipient,
     subject: contactEnquirySubject(details),
+    cc: tenant.notificationSettings?.contactCcEmails,
     html,
     text,
     tenant,

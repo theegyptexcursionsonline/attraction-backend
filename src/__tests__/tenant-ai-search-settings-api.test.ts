@@ -222,3 +222,81 @@ it('stores a private booking notifications email that never reaches the public s
   await patch().send({ notificationSettings: { bookingEmail: '' } }).expect(200);
   expect((await stored())?.notificationSettings?.bookingEmail).toBe('');
 });
+
+describe('private notification copy settings', () => {
+  const copies = {
+    bookingCcEmails: ['booking-copy@qa-site.invalid'],
+    contactCcEmails: ['contact-copy@qa-site.invalid'],
+  };
+
+  it('normalizes both lists, keeps public support details unchanged, and hides all notification recipients publicly', async () => {
+    await Tenant.collection.updateOne({ _id: owner }, { $set: { contactInfo: { email: 'support@qa-site.invalid' } } });
+    const saved = await patch().send({ notificationSettings: {
+      bookingEmail: 'reservations@qa-site.invalid',
+      bookingCcEmails: [' Booking-Copy@QA-Site.invalid ', 'booking-copy@qa-site.invalid'],
+      contactCcEmails: [' Contact-Copy@QA-Site.invalid ', 'contact-copy@qa-site.invalid'],
+    } }).expect(200);
+    expect(saved.body.data.notificationSettings).toEqual({ bookingEmail: 'reservations@qa-site.invalid', ...copies });
+    expect((await stored())?.notificationSettings).toEqual({ bookingEmail: 'reservations@qa-site.invalid', ...copies });
+    expect((await stored())?.contactInfo?.email).toBe('support@qa-site.invalid');
+    for (const url of [`/tenants/public/${owner}`, '/tenants/by-slug/widget-site-0']) {
+      const read = await request(app).get(url).expect(200);
+      expect(read.body.data.notificationSettings).toBeUndefined();
+      expect(JSON.stringify(read.body)).not.toMatch(/booking-copy@|contact-copy@|reservations@/);
+      expect(read.body.data.contactInfo.email).toBe('support@qa-site.invalid');
+    }
+  });
+
+  it('preserves copies through old-client single-inbox saves and independent concurrent changes', async () => {
+    await patch().send({ notificationSettings: { bookingEmail: 'primary@qa-site.invalid', ...copies } }).expect(200);
+    await patch().send({ notificationSettings: { bookingEmail: 'replacement@qa-site.invalid' } }).expect(200);
+    expect((await stored())?.notificationSettings).toEqual({ bookingEmail: 'replacement@qa-site.invalid', ...copies });
+    await patch().send({ notificationSettings: { bookingEmail: '' } }).expect(200);
+    expect((await stored())?.notificationSettings).toEqual({ bookingEmail: '', ...copies });
+    await Promise.all([
+      patch().send({ notificationSettings: { bookingCcEmails: ['new-booking@qa-site.invalid'] } }).expect(200),
+      patch().send({ notificationSettings: { contactCcEmails: ['new-contact@qa-site.invalid'] } }).expect(200),
+    ]);
+    await patch().send({ notificationSettings: { bookingCcEmails: ['new-booking@qa-site.invalid'] } }).expect(200);
+    expect((await stored())?.notificationSettings).toEqual({ bookingEmail: '',
+      bookingCcEmails: ['new-booking@qa-site.invalid'], contactCcEmails: ['new-contact@qa-site.invalid'],
+    });
+    await patch().send({ notificationSettings: { bookingCcEmails: [] } }).expect(200);
+    expect((await stored())?.notificationSettings).toEqual({ bookingEmail: '',
+      bookingCcEmails: [], contactCcEmails: ['new-contact@qa-site.invalid'],
+    });
+    await patch().send({ notificationSettings: { contactCcEmails: [] } }).expect(200);
+    expect((await stored())?.notificationSettings).toEqual({ bookingEmail: '', bookingCcEmails: [], contactCcEmails: [] });
+  });
+
+  it.each(['bookingCcEmails', 'contactCcEmails'])('validates %s atomically before any recipient or contact setting changes', async field => {
+    await patch().send({ notificationSettings: { bookingEmail: 'primary@qa-site.invalid', ...copies } }).expect(200);
+    const before = (await stored())?.notificationSettings;
+    const invalid: unknown[] = [null, 'copy@qa-site.invalid', {}, [''], [12], ['nope'],
+      ['one@qa-site.invalid,two@qa-site.invalid'], ['one@qa-site.invalid\r\nBcc: two@qa-site.invalid'],
+      [`${'a'.repeat(250)}@qa-site.invalid`], Array.from({ length: 6 }, (_, i) => `copy${i}@qa-site.invalid`),
+    ];
+    for (const value of invalid) {
+      await patch().send({ notificationSettings: { bookingEmail: 'changed@qa-site.invalid', [field]: value } }).expect(400);
+      expect((await stored())?.notificationSettings).toEqual(before);
+    }
+    const five = Array.from({ length: 5 }, (_, i) => `copy${i}@qa-site.invalid`);
+    await patch().send({ notificationSettings: { [field]: five } }).expect(200);
+    expect((await stored())?.notificationSettings).toMatchObject({ [field]: five });
+  });
+
+  it('enforces authentication, role and tenant boundaries for copy recipients', async () => {
+    await request(app).patch(`/tenants/${owner}/settings`).send({ notificationSettings: copies }).expect(401);
+    for (const role of ['manager', 'editor', 'viewer', 'customer', 'operator', 'agent']) {
+      await patch(owner, role).send({ notificationSettings: copies }).expect(403);
+    }
+    await patch().set('x-test-assigned', '').send({ notificationSettings: copies }).expect(404);
+    for (const target of [other, new Types.ObjectId()]) {
+      await patch(target).query({ tenantId: String(owner) }).send({ tenantId: String(owner), notificationSettings: copies }).expect(404);
+    }
+    expect((await stored())?.notificationSettings?.bookingCcEmails).toBeUndefined();
+    expect((await Tenant.findById(other).lean())?.notificationSettings?.contactCcEmails).toBeUndefined();
+    await patch(other, 'super-admin').send({ notificationSettings: copies }).expect(200);
+    expect((await Tenant.findById(other).lean())?.notificationSettings).toMatchObject(copies);
+  });
+});

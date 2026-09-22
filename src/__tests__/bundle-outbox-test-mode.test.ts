@@ -34,6 +34,33 @@ describe('bundle TEST-mode outbox safety', () => {
     jest.clearAllMocks();
   });
 
+  it.each(['customer', 'supplier', 'storefront'])('routes %s bundle copies only to that operator tenant', async (audience) => {
+    const tenantId = new Types.ObjectId();
+    const event = { _id: new Types.ObjectId(), tenantId, orderId: new Types.ObjectId(), audience, eventType: 'bundle.order_confirmed' };
+    (BundleOutboxEvent.findOneAndUpdate as jest.Mock).mockResolvedValueOnce(event).mockResolvedValueOnce(null);
+    (BundleOutboxEvent.findById as jest.Mock).mockResolvedValue(event);
+    (Tenant.findById as jest.Mock).mockReturnValue({ lean: jest.fn().mockResolvedValue({
+      _id: tenantId, contactInfo: { email: 'support@operator.example' },
+      notificationSettings: { bookingEmail: 'booking@operator.example', bookingCcEmails: ['copy@operator.example'] },
+    }) });
+    (BundleOrder.findById as jest.Mock).mockResolvedValue({
+      _id: event.orderId, checkoutMode: 'live', reference: 'BND-QA-COPIES', status: 'confirmed',
+      guestDetails: { email: 'visitor@example.test' }, components: [],
+    });
+    (BundleOutboxEvent.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
+    (sendEmail as jest.Mock).mockResolvedValue({ status: 'sent' });
+    expect(await processBundleOutboxBatch()).toMatchObject({ delivered: 1, retried: 0 });
+    const message = (sendEmail as jest.Mock).mock.calls[0][0];
+    expect(Tenant.findById).toHaveBeenCalledWith(tenantId);
+    if (audience === 'customer') {
+      expect(message.to).toBe('visitor@example.test');
+      expect(message).not.toHaveProperty('cc');
+    } else {
+      expect(message.to).toBe('booking@operator.example');
+      expect(message.cc).toEqual(['copy@operator.example']);
+    }
+  });
+
   it('records a suppressed terminal outcome and never invokes live email delivery', async () => {
     const eventId = new Types.ObjectId();
     const tenantId = new Types.ObjectId();

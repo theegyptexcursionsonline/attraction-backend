@@ -2,6 +2,7 @@ import { pagePresentationSchema } from '../utils/siteContent';
 import { urlNamespacePlugin } from '../plugins/urlNamespace';
 import mongoose, { Schema } from 'mongoose';
 import { ITenant } from '../types';
+import { notificationCopyEmails } from '../utils/notificationRecipients';
 import { AI_SEARCH_WIDGET_ID_PATTERN, VOICE_WIDGET_ID_PATTERN } from '../utils/aiSettings';
 export { AI_SEARCH_WIDGET_ID_PATTERN, VOICE_WIDGET_ID_PATTERN } from '../utils/aiSettings';
 
@@ -124,6 +125,8 @@ const tenantSchema = new Schema<ITenant>(
     // when the reservations inbox differs from the public support email.
     notificationSettings: {
       bookingEmail: { type: String, trim: true, lowercase: true, maxlength: 254 },
+      bookingCcEmails: { type: [String], default: undefined, validate: { validator: (emails: string[]) => { try { notificationCopyEmails(emails); return true; } catch { return false; } }, message: 'Invalid booking copy recipients' } },
+      contactCcEmails: { type: [String], default: undefined, validate: { validator: (emails: string[]) => { try { notificationCopyEmails(emails); return true; } catch { return false; } }, message: 'Invalid contact copy recipients' } },
     },
     socialLinks: {
       facebook: String,
