@@ -3,6 +3,7 @@ import { spawnSync } from 'child_process';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import type { Collection, Document } from 'mongodb';
 import { toPublicTenantDto } from '../controllers/tenants.controller';
+import { Tenant } from '../models/Tenant';
 import {
   applySearchEnabledMigration,
   planSearchEnabledMigration,
@@ -22,6 +23,7 @@ beforeAll(async () => {
   const version = systemBinary ? spawnSync(systemBinary, ['--version'], { encoding: 'utf8' }).stdout.match(/db version v([\d.]+)/)?.[1] : undefined;
   mongo = await MongoMemoryReplSet.create({ replSet: { count: 1 }, binary: { version: version || '7.0.14', ...(systemBinary ? { systemBinary } : {}) } });
   await mongoose.connect(mongo.getUri('search_enabled_migration'));
+  await Tenant.init();
   tenants = mongoose.connection.db!.collection('tenants');
 });
 afterAll(async () => { await mongoose.disconnect(); await mongo?.stop(); });
@@ -35,7 +37,7 @@ beforeEach(async () => {
     { _id: ids.explicitOff, slug: 'explicit-off', aiSettings: { searchWidget: { enabled: false, widgetId } } },
     { _id: ids.boolean, slug: 'legacy-boolean', aiSettings: { searchWidget: true } },
     { _id: ids.badId, slug: 'bad-id', aiSettings: { searchWidget: { widgetId: 'wgt_short' } } },
-  ]);
+  ].map(tenant => ({ ...tenant, domain: `${tenant.slug}.invalid` })));
 });
 
 // What the storefront gates on: the published switch and id (a site without AI settings gains an

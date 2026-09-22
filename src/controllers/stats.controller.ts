@@ -1,4 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
+import { PipelineStage } from 'mongoose';
 import { Attraction } from '../models/Attraction';
 import { Review } from '../models/Review';
 import { Booking } from '../models/Booking';
@@ -7,25 +8,44 @@ import { sendSuccess } from '../utils/response';
 import { AuthRequest } from '../types';
 
 export const getHomepageStats = async (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
+    const attractionFilter = {
+      status: 'active',
+      ...(req.tenant ? { tenantIds: { $in: [req.tenant._id] } } : {}),
+    };
+    // Reviews belong to attractions, not tenants. Keep the ownership join in
+    // Mongo so unrelated, retired and orphaned tours cannot contribute ratings.
+    const reviewScope: PipelineStage[] = req.tenant ? [
+      { $lookup: {
+        from: Attraction.collection.name,
+        let: { attractionId: '$attractionId' },
+        pipeline: [
+          { $match: { ...attractionFilter, $expr: { $eq: ['$_id', '$$attractionId'] } } },
+          { $project: { _id: 1 } },
+        ],
+        as: 'scopedAttraction',
+      } },
+      { $match: { 'scopedAttraction.0': { $exists: true } } },
+    ] : [];
     const [
       totalAttractions,
       destinationsAgg,
       reviewsAgg,
       totalBookings,
     ] = await Promise.all([
-      Attraction.countDocuments({ status: 'active' }),
+      Attraction.countDocuments(attractionFilter),
       Attraction.aggregate([
-        { $match: { status: 'active' } },
+        { $match: attractionFilter },
         { $group: { _id: '$destination.city' } },
         { $count: 'count' },
       ]),
       Review.aggregate([
         { $match: { status: 'approved' } },
+        ...reviewScope,
         {
           $group: {
             _id: null,
@@ -34,10 +54,14 @@ export const getHomepageStats = async (
           },
         },
       ]),
-      Booking.countDocuments({ status: { $in: ['confirmed', 'completed'] } }),
+      Booking.countDocuments({
+        status: { $in: ['confirmed', 'completed'] },
+        ...(req.tenant ? { tenantId: req.tenant._id } : {}),
+      }),
     ]);
 
-    // Cache for 5 minutes
+    // Header-selected storefronts share the URL but must not share cached stats.
+    res.vary('X-Tenant-ID');
     res.setHeader('Cache-Control', 'private, max-age=120');
 
     sendSuccess(res, {
@@ -46,7 +70,7 @@ export const getHomepageStats = async (
       totalReviews: reviewsAgg[0]?.count || 0,
       averageRating: reviewsAgg[0]?.avgRating
         ? Math.round(reviewsAgg[0].avgRating * 10) / 10
-        : 4.9,
+        : 0,
       totalBookings,
     });
   } catch (error) {
