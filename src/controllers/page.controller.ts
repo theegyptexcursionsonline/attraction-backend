@@ -5,7 +5,7 @@ import { Tenant } from '../models/Tenant';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { sanitizeRichText, sanitizePageSections } from '../utils/sanitizeHtml';
-import { navigationSchema, PageSection } from '../utils/siteContent';
+import { navigationSchema, pageSlugSchema, PageSection } from '../utils/siteContent';
 import { Category } from '../models/Category';
 import { escapeRegex } from '../utils/helpers';
 import { legacyUrlFamily, resolveLegacyPage } from '../utils/legacyUrls';
@@ -124,7 +124,9 @@ export const listAdminPages = async (req: AuthRequest, res: Response, next: Next
 export const createAdminPage = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const tenantId = requirePageTenant(req, res); if (!tenantId) return;
-    const slug = String(req.body.slug).toLowerCase();
+    const parsedSlug = pageSlugSchema.safeParse(req.body.slug);
+    if (!parsedSlug.success) { sendError(res, 'Invalid page URL', 400); return; }
+    const slug = parsedSlug.data;
     const owner = await urlOwnerMessage(tenantId, slug);
     if (owner) { sendError(res, owner, 409); return; }
     const page = {
@@ -153,7 +155,9 @@ export const updateAdminPage = async (req: AuthRequest, res: Response, next: Nex
     if (!Number.isInteger(expectedRevision) || expectedRevision < 0) { sendError(res, 'Reload the page before saving changes', 400); return; }
     const updates = { ...body, ...(body.body !== undefined ? { body: sanitizeRichText(body.body) } : {}), ...(body.sections !== undefined ? { sections: sanitizePageSections(body.sections) } : {}) };
     if (req.body.slug !== undefined) {
-      const slug = String(req.body.slug).toLowerCase();
+      const parsedSlug = pageSlugSchema.safeParse(req.body.slug);
+      if (!parsedSlug.success) { sendError(res, 'Invalid page URL', 400); return; }
+      const slug = parsedSlug.data;
       const owner = await urlOwnerMessage(tenantId, slug, pageId);
       if (owner) {
         sendError(res, owner, 409);
@@ -272,7 +276,7 @@ export const resolvePage = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const slug = String(req.query.slug || '').toLowerCase().trim();
+    const slug = typeof req.query.slug === 'string' ? req.query.slug.toLowerCase().trim() : '';
     if (!slug) {
       sendError(res, 'slug query param required', 400);
       return;
@@ -280,6 +284,22 @@ export const resolvePage = async (
 
     if (!req.tenant) {
       sendSuccess(res, { type: 'none' });
+      return;
+    }
+
+    if (slug.includes('/')) {
+      // Only the explicitly supported fleet namespace may resolve nested CMS
+      // content. Query and project the published page inside this exact tenant;
+      // a similarly named tour or an unpublished page is never a fallback.
+      if (!pageSlugSchema.safeParse(slug).success) { sendError(res, 'Invalid page URL', 400); return; }
+      const published = { slug, status: { $ne: 'archived' }, isPublished: { $ne: false } };
+      const tenant = await Tenant.findOne({ _id: req.tenant._id, customPages: { $elemMatch: published } })
+        .select({ customPages: { $elemMatch: published } }).lean();
+      const page = tenant?.customPages?.[0];
+      sendSuccess(res, page ? {
+        type: 'page',
+        page: { ...page, layoutMode: page.layoutMode ?? 'website', body: sanitizeRichText(page.body), ...(page.sections !== undefined ? { sections: sanitizePageSections(page.sections) } : {}) },
+      } : { type: 'none' });
       return;
     }
 
