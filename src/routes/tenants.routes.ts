@@ -14,6 +14,8 @@ import {
   updateTenant,
   updateTenantSettings,
   updateTenantAiProducts,
+  updateTenantTrackingSettings,
+  rejectUnversionedTrackingUpdate,
   deleteTenant,
   getTenantStats,
   getPortfolioStats,
@@ -294,6 +296,7 @@ router.post(
   '/',
   authenticate,
   requireSuperAdmin,
+  rejectUnversionedTrackingUpdate,
   validate(createTenantSchema),
   createTenant
 );
@@ -308,6 +311,18 @@ router.post(
  *     security:
  *       - bearerAuth: []
  */
+/**
+ * PATCH /tenants/:id/tracking-settings replaces the full tracking snapshot.
+ * Body: { expectedRevision, googleTagManagerId, googleAnalyticsId, verificationCodes }.
+ * Empty strings and [] clear settings; stale revisions return 409.
+ */
+router.patch(
+  '/:id/tracking-settings',
+  authenticate,
+  requireRole('super-admin', 'brand-admin'),
+  updateTenantTrackingSettings
+);
+
 router.patch(
   '/:id/ai-products',
   authenticate,
@@ -397,6 +412,7 @@ router.patch(
   '/:id',
   authenticate,
   requireSuperAdmin,
+  rejectUnversionedTrackingUpdate,
   validate(updateTenantSchema),
   updateTenant
 );

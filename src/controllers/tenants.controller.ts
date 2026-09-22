@@ -20,6 +20,7 @@ import { Booking } from '../models/Booking';
 import { Destination } from '../models/Destination';
 import { isValidPickupDestinationList, normalizePickupDestinationSlugs } from '../utils/pickupDestinations';
 import { notificationSettingsUpdate } from '../utils/notificationRecipients';
+import { hasTrackingSettingsFields, publicTrackingSettings, trackingRevisionOf, trackingSettingsUpdateSchema } from '../utils/trackingSettings';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { searchRegexValue } from '../utils/helpers';
@@ -58,6 +59,7 @@ const PUBLIC_TENANT_FIELDS = [
   'timezone',
   'status',
   'seoSettings',
+  'trackingSettings',
   'contactInfo',
   'socialLinks',
   'aiSettings',
@@ -91,6 +93,7 @@ export const toPublicTenantDto = (source: unknown): Record<string, unknown> => {
 
   if (dto.navigation !== undefined) { const parsed = navigationSchema.safeParse(dto.navigation); dto.navigation = parsed.success ? parsed.data : []; }
   if (dto.aiSettings !== undefined) dto.aiSettings = publicAiSettings(dto.aiSettings);
+  if (dto.trackingSettings !== undefined) dto.trackingSettings = publicTrackingSettings(dto.trackingSettings);
 
   const paymentSettings = record.paymentSettings;
   if (paymentSettings && typeof paymentSettings === 'object') {
@@ -633,12 +636,21 @@ export const removeCustomDomain = async (
   }
 };
 
+const TRACKING_SETTINGS_ELSEWHERE = 'Use Tracking settings to update tracking IDs and verification codes';
+
+/** Run before generic Zod parsing can strip protected fields from an old write route. */
+export const rejectUnversionedTrackingUpdate = (req: AuthRequest, res: Response, next: NextFunction): void => {
+  if (hasTrackingSettingsFields(req.body)) { sendError(res, TRACKING_SETTINGS_ELSEWHERE, 400); return; }
+  next();
+};
+
 export const createTenant = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
+    if (hasTrackingSettingsFields(req.body)) { sendError(res, TRACKING_SETTINGS_ELSEWHERE, 400); return; }
     // A new site starts with AI products off; a super admin switches them on in the AI products card
     // so the change carries a revision and an audit stamp.
     const { aiProductsRevision: _revision, ...createBody } = req.body as Record<string, unknown>;
@@ -712,6 +724,8 @@ function withoutAiProductControls(body: Record<string, unknown>): Record<string,
 
 function adminTenantAiView<T extends object>(tenant: T, isSuperAdmin: boolean): T {
   const view = { ...tenant } as Record<string, unknown>;
+  view.trackingSettings = publicTrackingSettings(view.trackingSettings);
+  view.trackingSettingsRevision = trackingRevisionOf(view.trackingSettingsRevision);
   if (view.aiSettings !== undefined) view.aiSettings = adminAiSettings(view.aiSettings, { includeAudit: isSuperAdmin });
   if (!isSuperAdmin) delete view.aiProductsRevision;
   return view as T;
@@ -781,6 +795,46 @@ export const updateTenantAiProducts = async (
   }
 };
 
+/** Full settings snapshot, guarded by the revision loaded by this site administrator. */
+export const updateTenantTrackingSettings = async (
+  req: AuthRequest, res: Response, next: NextFunction
+): Promise<void> => {
+  try {
+    if (!req.user || !['super-admin', 'brand-admin'].includes(req.user.role)) {
+      sendError(res, 'Site administrator access required', req.user ? 403 : 401); return;
+    }
+    const { id } = req.params;
+    if (!Types.ObjectId.isValid(id)) { sendError(res, 'Tenant not found', 404); return; }
+    const parsed = trackingSettingsUpdateSchema.safeParse(req.body);
+    if (!parsed.success) { sendError(res, 'Invalid tracking settings: ' + parsed.error.issues[0].message, 400); return; }
+    const { expectedRevision, ...trackingSettings } = parsed.data;
+    const siteFilter = req.user.role === 'super-admin' ? { _id: id } : {
+      _id: { $eq: id, $in: req.user.assignedTenants || [] },
+    };
+    const tenant = await Tenant.findOneAndUpdate({
+      ...siteFilter,
+      // Missing/null revisions on older tenants represent the initial snapshot.
+      trackingSettingsRevision: expectedRevision === 0 ? { $in: [0, null] } : expectedRevision,
+    }, { $set: { trackingSettings, trackingSettingsRevision: expectedRevision + 1 } }, {
+      new: true, runValidators: true, lean: true,
+    });
+    if (!tenant) {
+      if (!await Tenant.exists(siteFilter)) { sendError(res, 'Tenant not found', 404); return; }
+      sendError(res, 'Tracking settings changed. Reload and try again.', 409); return;
+    }
+    console.info('[tenants] tracking settings updated', {
+      tenantId: String(tenant._id), actorId: String(req.user._id), revision: expectedRevision + 1,
+      tagManagerConfigured: Boolean(trackingSettings.googleTagManagerId),
+      analyticsConfigured: Boolean(trackingSettings.googleAnalyticsId),
+      verificationCount: trackingSettings.verificationCodes.length,
+    });
+    sendSuccess(res, {
+      trackingSettings: publicTrackingSettings(tenant.trackingSettings),
+      trackingSettingsRevision: trackingRevisionOf(tenant.trackingSettingsRevision),
+    }, 'Tracking settings updated');
+  } catch (error) { next(error); }
+};
+
 export const updateTenant = async (
   req: AuthRequest,
   res: Response,
@@ -788,6 +842,7 @@ export const updateTenant = async (
 ): Promise<void> => {
   try {
     if (!req.user || req.user.role !== 'super-admin') { sendError(res, 'Super admin access required', req.user ? 403 : 401); return; }
+    if (hasTrackingSettingsFields(req.body)) { sendError(res, TRACKING_SETTINGS_ELSEWHERE, 400); return; }
     const { id } = req.params;
     if (!Types.ObjectId.isValid(id)) { sendError(res, 'Tenant not found', 404); return; }
     if (req.body.navigation !== undefined || req.body.navigationRevision !== undefined) { sendError(res, 'Use the Menus editor to update navigation', 400); return; }
@@ -867,6 +922,7 @@ export const updateTenantSettings = async (
     if (!req.user || !['super-admin', 'brand-admin'].includes(req.user.role)) {
       sendError(res, 'Site administrator access required', req.user ? 403 : 401); return;
     }
+    if (hasTrackingSettingsFields(req.body)) { sendError(res, TRACKING_SETTINGS_ELSEWHERE, 400); return; }
     const { id } = req.params;
     if (!Types.ObjectId.isValid(id)) { sendError(res, 'Tenant not found', 404); return; }
 

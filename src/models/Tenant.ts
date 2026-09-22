@@ -3,8 +3,28 @@ import { urlNamespacePlugin } from '../plugins/urlNamespace';
 import mongoose, { Schema } from 'mongoose';
 import { ITenant } from '../types';
 import { notificationCopyEmails } from '../utils/notificationRecipients';
+import { GOOGLE_ANALYTICS_ID, GOOGLE_TAG_MANAGER_ID, trackingSettingsSchema, trackingVerificationSchema, TrackingSettings } from '../utils/trackingSettings';
 import { AI_SEARCH_WIDGET_ID_PATTERN, VOICE_WIDGET_ID_PATTERN } from '../utils/aiSettings';
 export { AI_SEARCH_WIDGET_ID_PATTERN, VOICE_WIDGET_ID_PATTERN } from '../utils/aiSettings';
+
+const plainTrackingValue = (value: unknown): unknown =>
+  Array.isArray(value) ? value.map(plainTrackingValue)
+    : value && typeof value === 'object' && 'toObject' in value && typeof value.toObject === 'function'
+    ? value.toObject() : value;
+
+const trackingSchema = new Schema<TrackingSettings>({
+  googleTagManagerId: { type: String, required: false, default: '', validate: (value: string) => value === '' || GOOGLE_TAG_MANAGER_ID.test(value) },
+  googleAnalyticsId: { type: String, required: false, default: '', validate: (value: string) => value === '' || GOOGLE_ANALYTICS_ID.test(value) },
+  verificationCodes: {
+    type: [new Schema({
+      provider: { type: String, required: true, enum: ['google', 'bing', 'facebook', 'pinterest'] },
+      code: { type: String, required: true, maxlength: 256, validate: (value: string) => trackingVerificationSchema.shape.code.safeParse(value).success },
+    }, { _id: false, strict: 'throw' })],
+    default: [],
+    castNonArrays: false,
+    validate: (value: unknown) => trackingSettingsSchema.shape.verificationCodes.safeParse(plainTrackingValue(value)).success,
+  },
+}, { _id: false, strict: 'throw' });
 
 const tenantSchema = new Schema<ITenant>(
   {
@@ -200,6 +220,14 @@ const tenantSchema = new Schema<ITenant>(
       keywords: [{ type: String }],
       ogImage: String,
     },
+    // Explicit identifiers/tokens only. Changes are made by the revision-checked route.
+    trackingSettings: {
+      type: trackingSchema,
+      default: undefined,
+      set: (value: unknown) => value === undefined ? undefined : trackingSettingsSchema.parse(value),
+      validate: (value: unknown) => value === undefined || trackingSettingsSchema.safeParse(plainTrackingValue(value)).success,
+    },
+    trackingSettingsRevision: { type: Number, default: 0, min: 0, validate: Number.isSafeInteger },
     paymentSettings: {
       stripeAccountId: String,
       enabledGateways: [{ type: String }],
@@ -325,6 +353,26 @@ const tenantSchema = new Schema<ITenant>(
     },
   }
 );
+
+// Mongoose query updates can cast strings/numbers before nested setters run,
+// and $push validates only the new item rather than bounded/unique array rules.
+// Require a complete validated snapshot for every model-level tracking write.
+tenantSchema.pre(['updateOne', 'updateMany', 'findOneAndUpdate'], function () {
+  const update = this.getUpdate();
+  if (!update || Array.isArray(update)) return;
+  for (const [operator, raw] of Object.entries(update)) {
+    const fields = operator.startsWith('$') && raw && typeof raw === 'object'
+      ? raw as Record<string, unknown> : { [operator]: raw };
+    for (const [field, value] of Object.entries(fields)) {
+      if (field === 'trackingSettings') {
+        if (operator.startsWith('$') && !['$set', '$setOnInsert'].includes(operator)) throw new Error('Replace the full tracking settings snapshot');
+        fields[field] = trackingSettingsSchema.parse(value);
+      } else if (field.startsWith('trackingSettings.')) {
+        throw new Error('Replace the full tracking settings snapshot');
+      }
+    }
+  }
+});
 
 // Index for domain lookups
 tenantSchema.index({ domain: 1, status: 1 });

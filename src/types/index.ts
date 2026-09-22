@@ -146,6 +146,12 @@ export interface ITenant extends Document {
     keywords: string[];
     ogImage?: string;
   };
+  trackingSettings?: {
+    googleTagManagerId: string;
+    googleAnalyticsId: string;
+    verificationCodes: { provider: 'google' | 'bing' | 'facebook' | 'pinterest'; code: string }[];
+  };
+  trackingSettingsRevision?: number;
   paymentSettings?: {
     stripeAccountId?: string;
     enabledGateways: string[];
