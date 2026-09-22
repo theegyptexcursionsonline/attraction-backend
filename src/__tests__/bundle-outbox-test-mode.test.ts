@@ -23,7 +23,7 @@ jest.mock('../config/env', () => ({
   },
 }));
 jest.mock('../services/email.service', () => ({
-  brandedLink: jest.fn(() => 'https://example.test/bundle-orders/order-1'),
+  brandedLink: jest.fn((_brand, path) => `https://example.test${path}`),
   escapeEmailHtml: jest.fn((value) => String(value)),
   getEmailBrand: jest.fn(() => ({ name: 'Test brand', color: '#111111', origin: 'https://example.test' })),
   sendEmail: jest.fn(),
@@ -34,9 +34,11 @@ describe('bundle TEST-mode outbox safety', () => {
     jest.clearAllMocks();
   });
 
-  it.each(['customer', 'supplier', 'storefront'])('routes %s bundle copies only to that operator tenant', async (audience) => {
+  it.each(['customer', 'supplier', 'storefront'].flatMap((audience) =>
+    ['bundle.order_confirmed', 'bundle.order_cancelled', 'bundle.order_refunded'].map((eventType) => ({ audience, eventType }))
+  ))('routes $audience $eventType copies only to that operator tenant', async ({ audience, eventType }) => {
     const tenantId = new Types.ObjectId();
-    const event = { _id: new Types.ObjectId(), tenantId, orderId: new Types.ObjectId(), audience, eventType: 'bundle.order_confirmed' };
+    const event = { _id: new Types.ObjectId(), tenantId, orderId: new Types.ObjectId(), audience, eventType, payload: {} };
     (BundleOutboxEvent.findOneAndUpdate as jest.Mock).mockResolvedValueOnce(event).mockResolvedValueOnce(null);
     (BundleOutboxEvent.findById as jest.Mock).mockResolvedValue(event);
     (Tenant.findById as jest.Mock).mockReturnValue({ lean: jest.fn().mockResolvedValue({
@@ -44,8 +46,11 @@ describe('bundle TEST-mode outbox safety', () => {
       notificationSettings: { bookingEmail: 'booking@operator.example', bookingCcEmails: ['copy@operator.example'] },
     }) });
     (BundleOrder.findById as jest.Mock).mockResolvedValue({
-      _id: event.orderId, checkoutMode: 'live', reference: 'BND-QA-COPIES', status: 'confirmed',
-      guestDetails: { email: 'visitor@example.test' }, components: [],
+      _id: event.orderId, storefrontTenantId: tenantId, checkoutMode: 'live', reference: 'BND-QA-COPIES', status: 'confirmed',
+      guestDetails: { email: 'visitor@example.test' }, components: [
+        { supplierTenantId: tenantId, componentId: 'owned', attractionTitle: 'Owned tour', date: '2030-01-01', quantities: { adults: 1, children: 0, infants: 0 } },
+        { supplierTenantId: new Types.ObjectId(), componentId: 'foreign', attractionTitle: 'Other supplier private tour', date: '2030-01-02', quantities: { adults: 1, children: 0, infants: 0 } },
+      ],
     });
     (BundleOutboxEvent.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
     (sendEmail as jest.Mock).mockResolvedValue({ status: 'sent' });
@@ -58,7 +63,58 @@ describe('bundle TEST-mode outbox safety', () => {
     } else {
       expect(message.to).toBe('booking@operator.example');
       expect(message.cc).toEqual(['copy@operator.example']);
+      expect(message.html).toContain(`/admin/bundle-orders/${event.orderId}`);
+      expect(message.html).not.toContain('accessToken=');
+      if (eventType !== 'bundle.order_confirmed') {
+        expect(message.subject).toContain(eventType === 'bundle.order_cancelled' ? 'Bundle cancelled' : 'Bundle refund update');
+        expect(message.text).not.toMatch(/ready to fulfil|payment was confirmed/i);
+      }
+      if (audience === 'supplier') {
+        expect(message.text).toContain('Owned tour');
+        expect(message.text).not.toContain('Other supplier private tour');
+      }
     }
+  });
+
+  it('limits a supplier refund message to its affected components', async () => {
+    const tenantId = new Types.ObjectId();
+    const event = { _id: new Types.ObjectId(), tenantId, orderId: new Types.ObjectId(),
+      audience: 'supplier', eventType: 'bundle.order_refunded', payload: { componentIds: ['affected', 'foreign'] } };
+    (BundleOutboxEvent.findOneAndUpdate as jest.Mock).mockResolvedValueOnce(event).mockResolvedValueOnce(null);
+    (BundleOutboxEvent.findById as jest.Mock).mockResolvedValue(event);
+    (Tenant.findById as jest.Mock).mockReturnValue({ lean: jest.fn().mockResolvedValue({
+      _id: tenantId, contactInfo: { email: 'supplier@example.test' },
+    }) });
+    const component = (componentId: string, supplierTenantId = tenantId) => ({
+      componentId, supplierTenantId, attractionTitle: `Tour ${componentId}`, date: '2030-01-01',
+      quantities: { adults: 1, children: 0, infants: 0 },
+    });
+    (BundleOrder.findById as jest.Mock).mockResolvedValue({
+      _id: event.orderId, storefrontTenantId: new Types.ObjectId(), checkoutMode: 'live', reference: 'BND-REFUND-SCOPE',
+      components: [component('affected'), component('unaffected'), component('foreign', new Types.ObjectId())],
+    });
+    (BundleOutboxEvent.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
+    (sendEmail as jest.Mock).mockResolvedValue({ status: 'sent' });
+    expect(await processBundleOutboxBatch()).toMatchObject({ delivered: 1, retried: 0 });
+    const message = (sendEmail as jest.Mock).mock.calls[0][0];
+    expect(message.text).toContain('Tour affected');
+    expect(message.text).not.toContain('Tour unaffected');
+    expect(message.text).not.toContain('Tour foreign');
+    expect(message.text).not.toContain('accessToken');
+  });
+
+  it.each(['supplier', 'storefront', 'customer'])('fails closed for a mismatched %s tenant', async (audience) => {
+    const tenantId = new Types.ObjectId();
+    const event = { _id: new Types.ObjectId(), tenantId, orderId: new Types.ObjectId(), audience, eventType: 'bundle.order_refunded', attempts: 1 };
+    (BundleOutboxEvent.findOneAndUpdate as jest.Mock).mockResolvedValueOnce(event).mockResolvedValueOnce(null);
+    (BundleOutboxEvent.findById as jest.Mock).mockResolvedValue(event);
+    (Tenant.findById as jest.Mock).mockReturnValue({ lean: jest.fn().mockResolvedValue({ _id: tenantId }) });
+    (BundleOrder.findById as jest.Mock).mockResolvedValue({
+      _id: event.orderId, storefrontTenantId: new Types.ObjectId(), checkoutMode: 'live', components: [],
+    });
+    (BundleOutboxEvent.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
+    expect(await processBundleOutboxBatch()).toMatchObject({ delivered: 0, retried: 1 });
+    expect(sendEmail).not.toHaveBeenCalled();
   });
 
   it('records a suppressed terminal outcome and never invokes live email delivery', async () => {
@@ -117,6 +173,7 @@ describe('bundle TEST-mode outbox safety', () => {
     });
     (BundleOrder.findById as jest.Mock).mockResolvedValue({
       _id: orderId,
+      storefrontTenantId: tenantId,
       checkoutMode: 'live',
       reference: 'BND-TEST-001',
       status: 'confirmed',
@@ -190,6 +247,7 @@ describe('bundle TEST-mode outbox safety', () => {
       });
       (BundleOrder.findById as jest.Mock).mockResolvedValue({
         _id: orderId,
+        storefrontTenantId: tenantId,
         checkoutMode: 'live',
         reference: 'BND-SLOW-001',
         status: 'confirmed',
@@ -293,6 +351,7 @@ describe('bundle TEST-mode outbox safety', () => {
     });
     (BundleOrder.findById as jest.Mock).mockResolvedValue({
       _id: orderId,
+      storefrontTenantId: tenantId,
       checkoutMode: 'live',
       reference: 'BND-TEST-002',
       status: 'confirmed',

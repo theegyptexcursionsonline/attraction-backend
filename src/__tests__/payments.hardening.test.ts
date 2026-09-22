@@ -1,3 +1,9 @@
+import { enqueueBookingOperatorNotification } from '../services/bookingOperatorNotification.service';
+jest.mock('../services/bookingOperatorNotification.service', () => ({
+  enqueueBookingOperatorNotification: jest.fn().mockResolvedValue(undefined),
+  ensureBookingOperatorNotificationIndexes: jest.fn().mockResolvedValue(undefined),
+  processBookingOperatorNotifications: jest.fn().mockResolvedValue({ sent: 0 }),
+}));
 import type { NextFunction, Request, Response } from 'express';
 import {
   confirmPayment,
@@ -1188,6 +1194,7 @@ describe('Stripe payment hardening', () => {
       expect(Booking.findOneAndUpdate).toHaveBeenCalledWith(
         {
           _id: BOOKING_ID,
+          tenantId: TENANT_ID,
           bundleOrderId: { $exists: false },
           stripePaymentIntentId: INTENT_ID,
         },
@@ -1235,6 +1242,7 @@ describe('Stripe payment hardening', () => {
       expect(Booking.findOneAndUpdate).toHaveBeenCalledWith(
         {
           _id: BOOKING_ID,
+          tenantId: TENANT_ID,
           bundleOrderId: { $exists: false },
           stripePaymentIntentId: INTENT_ID,
         },
@@ -1244,6 +1252,7 @@ describe('Stripe payment hardening', () => {
       expect(Booking.updateOne).toHaveBeenCalledWith(
         {
           _id: BOOKING_ID,
+          tenantId: TENANT_ID,
           bundleOrderId: { $exists: false },
           stripePaymentIntentId: INTENT_ID,
           paymentStatus: 'succeeded',
@@ -1255,10 +1264,12 @@ describe('Stripe payment hardening', () => {
               $cond: [{ $in: ['$status', ['pending', 'confirmed', 'completed']] }, 'refunded', '$status'],
             },
           },
-        }]
+        }],
+        {}
       );
       await new Promise((resolve) => setImmediate(resolve));
       expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
+      expect(enqueueBookingOperatorNotification).toHaveBeenCalledWith(expect.objectContaining({ _id: BOOKING_ID }), expect.objectContaining({ kind: 'refunded', eventKey: 'refunded:10500', refundAmount: 105 }), undefined);
     });
 
     it('does not re-send the refund email when a racing webhook already applied the refund', async () => {
@@ -1282,6 +1293,7 @@ describe('Stripe payment hardening', () => {
         data: expect.objectContaining({ refundType: 'full' }),
       }));
       expect(sendBookingStatusEmail).not.toHaveBeenCalled();
+      expect(enqueueBookingOperatorNotification).not.toHaveBeenCalled();
       expect(User.findByIdAndUpdate).not.toHaveBeenCalled();
     });
   });

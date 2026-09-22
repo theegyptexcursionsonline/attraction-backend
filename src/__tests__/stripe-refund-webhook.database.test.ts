@@ -1,3 +1,5 @@
+import { BookingOperatorNotification } from '../models/BookingOperatorNotification';
+import { cancelBooking } from '../controllers/bookings.controller';
 import { spawnSync } from 'child_process';
 import type { NextFunction, Request, Response } from 'express';
 import mongoose, { Types } from 'mongoose';
@@ -15,7 +17,7 @@ import {
 } from '../services/stripe.service';
 import { sendBookingStatusEmail } from '../services/email.service';
 import { getTenantStripeConfig } from '../services/tenantPayment.service';
-import { ATN_CANCELLATION_REFUND_FLOW, ATN_REFUND_FLOW_KEY } from '../services/bookingRefund.service';
+import { applyBookingRefundTotal, ATN_CANCELLATION_REFUND_FLOW, ATN_REFUND_FLOW_KEY } from '../services/bookingRefund.service';
 
 // Stripe is never called: signature verification parses the body only for the
 // literal test signature, and every provider read is an explicit mock.
@@ -130,7 +132,7 @@ beforeAll(async () => {
   const version = systemBinary ? spawnSync(systemBinary, ['--version'], { encoding: 'utf8' }).stdout.match(/db version v([\d.]+)/)?.[1] : undefined;
   mongo = await MongoMemoryReplSet.create({ replSet: { count: 1 }, binary: { version: version || '7.0.14', ...(systemBinary ? { systemBinary } : {}) } });
   await mongoose.connect(mongo.getUri('stripe_refund_webhook'));
-  await Promise.all([Tenant.init(), Booking.init(), User.init(), WebhookEvent.init()]);
+  await Promise.all([Tenant.init(), Booking.init(), User.init(), WebhookEvent.init(), BookingOperatorNotification.init()]);
 });
 afterAll(async () => { await mongoose.disconnect(); await mongo?.stop(); });
 
@@ -143,6 +145,7 @@ beforeEach(async () => {
     Booking.collection.deleteMany({}),
     User.collection.deleteMany({}),
     WebhookEvent.collection.deleteMany({}),
+    BookingOperatorNotification.collection.deleteMany({}),
   ]);
   await Tenant.collection.insertOne({ _id: tenantId, slug: 'refund-tenant', domain: 'refund-tenant.invalid', name: 'Refund tenant' });
   await User.collection.insertOne({ _id: userId, email: 'qa-refund@example.invalid', totalSpent: 105 });
@@ -190,6 +193,7 @@ describe('Stripe refund webhook reconciliation', () => {
     expect(booking.refunds).toEqual([expect.objectContaining({ providerRefundId: 're_dashboard_full', amount: 105, status: 'succeeded' })]);
     expect(await loadSpent()).toBe(0);
     expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
     expect(sendBookingStatusEmail).toHaveBeenCalledWith(
       'theegyptexcursionsonline@gmail.com',
       expect.objectContaining({ kind: 'refunded', refundAmount: 105, fullRefund: true }),
@@ -227,6 +231,7 @@ describe('Stripe refund webhook reconciliation', () => {
     expect(bodyOf(replay)).toEqual({ received: true, duplicate: true });
     expect(listPaymentIntentRefunds).toHaveBeenCalledTimes(1);
     expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
     expect(await loadSpent()).toBe(0);
     expect((await loadBooking()).refunds).toHaveLength(1);
   });
@@ -243,6 +248,7 @@ describe('Stripe refund webhook reconciliation', () => {
     expect(bodyOf(admin)).toEqual(expect.objectContaining({ success: true }));
     await flush();
     expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
 
     (listPaymentIntentRefunds as jest.Mock).mockResolvedValue([providerRefund({ id: 're_admin' })]);
     const res = await invoke(handleWebhook, webhookRequest(chargeRefundedEvent('evt_after_admin')));
@@ -255,6 +261,7 @@ describe('Stripe refund webhook reconciliation', () => {
     expect(booking.status).toBe('refunded');
     expect(await loadSpent()).toBe(0);
     expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
   });
 
   it('keeps a single email and decrement when the webhook lands before the admin request finishes', async () => {
@@ -277,6 +284,7 @@ describe('Stripe refund webhook reconciliation', () => {
     await flush();
 
     expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
     expect(await loadSpent()).toBe(0);
     expect((await loadBooking()).refunds).toHaveLength(1);
   });
@@ -325,6 +333,7 @@ describe('Stripe refund webhook reconciliation', () => {
     expect(booking.refundedAmount).toBe(105);
     expect(warnEvents()).toContain('refund_reversed_manual_review');
     expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
   });
 
   it('is safe against out-of-order delivery because provider state is authoritative', async () => {
@@ -345,6 +354,7 @@ describe('Stripe refund webhook reconciliation', () => {
     expect(booking.refunds).toEqual([expect.objectContaining({ status: 'succeeded' })]);
     expect(booking.paymentStatus).toBe('refunded');
     expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
   });
 
   it('applies money and email exactly once when two deliveries race', async () => {
@@ -363,6 +373,7 @@ describe('Stripe refund webhook reconciliation', () => {
     expect(booking.paymentStatus).toBe('refunded');
     expect(await loadSpent()).toBe(0);
     expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
   });
 
   it('fails closed and records nothing when Stripe cannot list the refunds', async () => {
@@ -428,4 +439,66 @@ describe('Stripe refund webhook reconciliation', () => {
     expect(await loadSpent()).toBe(0);
     expect(sendBookingStatusEmail).not.toHaveBeenCalled();
   });
+});
+
+
+describe('operator status event persistence', () => {
+  it('persists the cancellation and one operator alert even when customer email fails', async () => {
+    await insertBooking({
+      attractionId: new Types.ObjectId(), subtotal: 105,
+      guestDetails: { firstName: 'QA', lastName: 'Guest', email: 'theegyptexcursionsonline@gmail.com', phone: '+200000000000', country: 'EG' },
+    });
+    (createRefund as jest.Mock).mockResolvedValue({ id: 're_cancel', status: 'succeeded', amount: 10500 });
+    (sendBookingStatusEmail as jest.Mock).mockRejectedValueOnce(new Error('customer provider rejection'));
+    const request = { params: { id: String(bookingId) }, user: { _id: userId, role: 'customer' } };
+    const res = await invoke(cancelBooking, request);
+    await flush();
+    expect(statusOf(res)).toBe(200);
+    expect((await loadBooking()).status).toBe('cancelled');
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
+    expect(statusOf(await invoke(cancelBooking, request))).toBe(409);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
+  });
+
+  it('does not create an operator alert for a failed or pending cancellation refund', async () => {
+    await insertBooking();
+    (createRefund as jest.Mock).mockResolvedValue({ id: 're_pending', status: 'pending', amount: 10500 });
+    const res = await invoke(cancelBooking, { params: { id: String(bookingId) }, user: { _id: userId, role: 'customer' } });
+    expect(statusOf(res)).toBe(409);
+    expect((await loadBooking()).status).toBe('confirmed');
+    expect(await BookingOperatorNotification.countDocuments()).toBe(0);
+  });
+
+  it('retains one operator event for each newly processed partial refund', async () => {
+    await insertBooking();
+    (listPaymentIntentRefunds as jest.Mock).mockResolvedValue([providerRefund({ id: 're_one', amount: 2500 })]);
+    await invoke(handleWebhook, webhookRequest(chargeRefundedEvent('evt_one')));
+    (listPaymentIntentRefunds as jest.Mock).mockResolvedValue([providerRefund({ id: 're_one', amount: 2500 }), providerRefund({ id: 're_two', amount: 2500 })]);
+    await invoke(handleWebhook, webhookRequest(chargeRefundedEvent('evt_two')));
+    expect((await loadBooking()).refundedAmount).toBe(50);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(2);
+  });
+});
+
+
+it('atomically keeps one operator refund alert and one money update under concurrent callers', async () => {
+  await insertBooking();
+  const booking = await loadBooking();
+  const results = await Promise.all(Array.from({ length: 4 }, () => applyBookingRefundTotal(booking, 10500)));
+  expect(results.reduce((sum, result) => sum + result.newlyRefunded, 0)).toBe(105);
+  expect(await loadSpent()).toBe(0);
+  expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
+});
+
+it('rolls back the local refund state and accounting if its operator intent cannot be persisted', async () => {
+  await insertBooking();
+  const fail = jest.spyOn(BookingOperatorNotification, 'updateOne').mockRejectedValueOnce(new Error('outbox unavailable'));
+  await expect(applyBookingRefundTotal(await loadBooking(), 10500)).rejects.toThrow('outbox unavailable');
+  fail.mockRestore();
+  expect((await loadBooking()).refundedAmount).toBe(0);
+  expect((await loadBooking()).paymentStatus).toBe('succeeded');
+  expect(await loadSpent()).toBe(105);
+  expect(await BookingOperatorNotification.countDocuments()).toBe(0);
+  await applyBookingRefundTotal(await loadBooking(), 10500);
+  expect(await BookingOperatorNotification.countDocuments()).toBe(1);
 });

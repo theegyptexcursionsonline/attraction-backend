@@ -119,6 +119,24 @@ const releaseUnpaidBundleOrder = async (
     eventType: 'bundle.order_cancelled',
     payload: { orderId: order._id.toString(), reference: order.reference },
   }, session);
+  await enqueueBundleOutbox({
+    orderId: order._id,
+    tenantId: order.storefrontTenantId,
+    audience: 'storefront',
+    eventType: 'bundle.order_cancelled',
+    payload: { orderId: order._id.toString(), reference: order.reference },
+  }, session);
+  for (const supplierTenantId of new Set(
+    order.components.map((component) => component.supplierTenantId.toString())
+  )) {
+    await enqueueBundleOutbox({
+      orderId: order._id,
+      tenantId: new Types.ObjectId(supplierTenantId),
+      audience: 'supplier',
+      eventType: 'bundle.order_cancelled',
+      payload: { orderId: order._id.toString(), reference: order.reference },
+    }, session);
+  }
   return order;
 });
 

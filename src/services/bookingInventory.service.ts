@@ -36,7 +36,12 @@ export const sessionOption = (session?: ClientSession): { session?: ClientSessio
 export const runBookingTransaction = async <T>(
   work: (session?: ClientSession) => Promise<T>
 ): Promise<T> => {
-  if (mongoose.connection.readyState !== 1) return work(undefined);
+  if (mongoose.connection.readyState !== 1) {
+    // Only disconnected unit mocks may omit the session. Buffered production
+    // writes would otherwise lose atomicity across money, inventory and alerts.
+    if (process.env.NODE_ENV === 'test') return work(undefined);
+    throw new Error('BOOKING_DATABASE_NOT_READY');
+  }
 
   const session = await mongoose.startSession();
   let result: T | undefined;

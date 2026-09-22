@@ -1,3 +1,9 @@
+import { enqueueBookingOperatorNotification } from '../services/bookingOperatorNotification.service';
+jest.mock('../services/bookingOperatorNotification.service', () => ({
+  enqueueBookingOperatorNotification: jest.fn().mockResolvedValue(undefined),
+  ensureBookingOperatorNotificationIndexes: jest.fn().mockResolvedValue(undefined),
+  processBookingOperatorNotifications: jest.fn().mockResolvedValue({ sent: 0 }),
+}));
 import request from 'supertest';
 import { Types } from 'mongoose';
 import app from '../app';
@@ -1159,6 +1165,7 @@ describe('API security and pricing guards', () => {
     expect(current.status).toBe('cancelled');
     expect(current.inventoryReleasedAt).toBeInstanceOf(Date);
     expect(current.save).toHaveBeenCalledTimes(1);
+    expect(enqueueBookingOperatorNotification).toHaveBeenCalledWith(current, expect.objectContaining({ kind: 'cancelled', eventKey: 'cancelled' }), undefined);
   });
 
   it('returns a conflict without touching inventory when cancellation is repeated', async () => {

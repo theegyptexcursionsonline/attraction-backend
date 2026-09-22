@@ -1178,13 +1178,42 @@ export const refundBundleOrder = async (input: {
       correlationId: providerRefund.id,
       metadata: { amountMinor: input.amountMinor, refundedMinor: order.refundedMinor },
     }, session);
-    await enqueueBundleOutbox({
-      orderId: order._id,
-      tenantId: order.storefrontTenantId,
-      audience: 'customer',
-      eventType: 'bundle.order_refunded',
-      payload: { orderId: order._id.toString(), reference: order.reference, amountMinor: input.amountMinor },
-    }, session);
+    const refundNotification = {
+      orderId: order._id.toString(),
+      reference: order.reference,
+      operationId: input.operationId,
+      amountMinor: input.amountMinor,
+    };
+    for (const audience of ['customer', 'storefront'] as const) {
+      await enqueueBundleOutbox({
+        orderId: order._id,
+        tenantId: order.storefrontTenantId,
+        audience,
+        eventType: 'bundle.order_refunded',
+        payload: refundNotification,
+      }, session);
+    }
+    // A supplier sees only components affected by this refund. The order-level
+    // amount and other suppliers' allocations never enter their notification.
+    const affectedComponents = order.components.filter((_, index) => componentAllocations[index] > 0);
+    for (const supplierTenantId of new Set(
+      affectedComponents.map((component) => component.supplierTenantId.toString())
+    )) {
+      await enqueueBundleOutbox({
+        orderId: order._id,
+        tenantId: new Types.ObjectId(supplierTenantId),
+        audience: 'supplier',
+        eventType: 'bundle.order_refunded',
+        payload: {
+          orderId: order._id.toString(),
+          reference: order.reference,
+          operationId: input.operationId,
+          componentIds: affectedComponents
+            .filter((component) => component.supplierTenantId.toString() === supplierTenantId)
+            .map((component) => component.componentId),
+        },
+      }, session);
+    }
     return { order, duplicate: false };
   });
 };

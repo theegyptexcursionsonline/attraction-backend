@@ -6,6 +6,8 @@ import { generateBookingAccessToken } from '../utils/bookingAccess';
 import { sendBookingStatusEmail } from './email.service';
 import { standaloneBookingClause } from './bookingRecordScope.service';
 import { listPaymentIntentRefunds } from './stripe.service';
+import { runBookingTransaction, sessionOption } from './bookingInventory.service';
+import { enqueueBookingOperatorNotification } from './bookingOperatorNotification.service';
 
 /**
  * Stripe refund metadata key/value that marks a refund created by the customer
@@ -86,22 +88,23 @@ export interface RefundStateResult {
  *   booking status -> refunded (a cancelled booking keeps its status).
  */
 export const applyBookingRefundTotal = async (
-  booking: { _id: unknown; total: number; userId?: unknown; stripePaymentIntentId?: string },
+  booking: { _id: unknown; tenantId: unknown; total: number; userId?: unknown; stripePaymentIntentId?: string },
   succeededRefundMinor: number
-): Promise<RefundStateResult> => {
+): Promise<RefundStateResult> => runBookingTransaction(async (session) => {
   const bookingAmount = Math.round(booking.total * 100);
   const fullRefund = succeededRefundMinor >= bookingAmount;
   const refundedMinor = Math.min(succeededRefundMinor, bookingAmount);
   const refundedMajor = refundedMinor / 100;
   const scope = {
     _id: booking._id,
+    tenantId: booking.tenantId,
     ...standaloneBookingClause,
     stripePaymentIntentId: booking.stripePaymentIntentId,
   };
   const before = await Booking.findOneAndUpdate(
     scope,
     { $max: { refundedAmount: refundedMajor } },
-    { new: false }
+    { new: false, ...sessionOption(session) }
   );
   const newlyRefunded = before
     ? Math.max(Math.round((refundedMajor - (before.refundedAmount || 0)) * 100), 0) / 100
@@ -117,15 +120,22 @@ export const applyBookingRefundTotal = async (
             $cond: [{ $in: ['$status', ['pending', 'confirmed', 'completed']] }, 'refunded', '$status'],
           },
         },
-      }]
+      }],
+      sessionOption(session)
     );
     transitioned = updated.modifiedCount === 1;
   }
   if (booking.userId && newlyRefunded > 0) {
-    await User.findByIdAndUpdate(booking.userId, { $inc: { totalSpent: -newlyRefunded } });
+    await User.findByIdAndUpdate(booking.userId, { $inc: { totalSpent: -newlyRefunded } }, sessionOption(session));
+  }
+  if (before && newlyRefunded > 0) {
+    await enqueueBookingOperatorNotification(before, {
+      kind: 'refunded', eventKey: `refunded:${refundedMinor}`,
+      refundAmount: newlyRefunded, fullRefund,
+    }, session);
   }
   return { refundedMinor, fullRefund, newlyRefunded, transitioned };
-};
+});
 
 /** Customer "refund processed" email — the same message the admin refund sends. */
 export const notifyBookingRefunded = (

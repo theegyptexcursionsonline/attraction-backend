@@ -56,6 +56,7 @@ import { assertTenantIdsBookingCreationAllowed, assertTenantPaymentMethodAllowed
 import { configuredAvailabilityTimes } from '../utils/publicAvailability';
 import { bookingEligibility, resolveBookingTimeZone } from '../utils/bookingCutoff';
 import { bookingNotificationEmail } from '../utils/notificationRecipients';
+import { enqueueBookingOperatorNotification } from '../services/bookingOperatorNotification.service';
 
 // Compact, tenant-safe booking summary for webhook payloads. Contains only the
 // booking's own fields — never other tenants' data.
@@ -1241,6 +1242,7 @@ export const cancelBooking = async (
         const current = await Booking.findOne(
           {
             _id: booking._id,
+            tenantId: booking.tenantId,
             status: { $in: ['pending', 'confirmed'] },
             inventoryReleasedAt: { $exists: false },
           },
@@ -1274,6 +1276,12 @@ export const cancelBooking = async (
         }
         current.status = 'cancelled';
         await current.save(sessionOption(session));
+        await enqueueBookingOperatorNotification(current, {
+          kind: 'cancelled',
+          eventKey: 'cancelled',
+          refundAmount: completedRefund ? completedRefund.amount / 100 : undefined,
+          fullRefund: Boolean(completedRefund),
+        }, session);
         return current;
       }
     );

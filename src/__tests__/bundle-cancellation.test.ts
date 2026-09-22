@@ -11,7 +11,7 @@ import {
   releaseBundleSettlement,
   resolveBundleSettlementDispute,
 } from '../services/bundleOperations.service';
-import { appendBalancedLedger } from '../services/bundleAudit.service';
+import { appendBalancedLedger, enqueueBundleOutbox } from '../services/bundleAudit.service';
 import { cancelPaymentIntent, createPaymentIntent } from '../services/stripe.service';
 import { getTenantStripeConfig } from '../services/tenantPayment.service';
 
@@ -77,7 +77,7 @@ const component = (status = 'reserved', settlementStatus = 'on_hold') => ({
 describe('bundle cancellation lifecycle', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('releases every capacity layer only after an unpaid order is safely cancellable', async () => {
+  it.each([false, true])('releases unpaid capacity and notifies each supplier once (shared supplier: %s)', async (sharedSupplier) => {
     const order = {
       _id: new Types.ObjectId(),
       reference: 'BTW-CANCEL01',
@@ -88,6 +88,8 @@ describe('bundle cancellation lifecycle', () => {
       recovery: { required: false, attempts: 0 },
       save: jest.fn().mockResolvedValue(undefined),
     };
+    if (sharedSupplier) order.components[1].supplierTenantId = order.components[0].supplierTenantId;
+    const notificationCount = sharedSupplier ? 3 : 4;
     (BundleOrder.findById as jest.Mock).mockResolvedValue(order);
     (BundleOrder.findOne as jest.Mock).mockReturnValue(queryResult(order));
     (Booking.updateMany as jest.Mock).mockResolvedValue({ modifiedCount: 2 });
@@ -102,6 +104,20 @@ describe('bundle cancellation lifecycle', () => {
     expect(result.paymentStatus).toBe('cancelled');
     expect(releaseBundleInventory).toHaveBeenCalledTimes(2);
     expect(order.components.every((item) => item.settlementStatus === 'not_eligible')).toBe(true);
+    expect(enqueueBundleOutbox).toHaveBeenCalledTimes(notificationCount);
+    for (const audience of ['customer', 'storefront']) {
+      expect(enqueueBundleOutbox).toHaveBeenCalledWith(expect.objectContaining({
+        orderId: order._id, tenantId: order.storefrontTenantId, audience, eventType: 'bundle.order_cancelled',
+      }), expect.any(Object));
+    }
+    for (const item of order.components) {
+      expect(enqueueBundleOutbox).toHaveBeenCalledWith(expect.objectContaining({
+        orderId: order._id, tenantId: item.supplierTenantId, audience: 'supplier', eventType: 'bundle.order_cancelled',
+      }), expect.any(Object));
+    }
+    // A repeated cancellation is already terminal and must not enqueue again.
+    await cancelBundleOrder({ orderId: order._id.toString(), reason: 'Repeated request', actor: { actorType: 'guest' } });
+    expect(enqueueBundleOutbox).toHaveBeenCalledTimes(notificationCount);
   });
 
   it('puts a paid cancellation into review and disputes any settlement already marked paid', async () => {

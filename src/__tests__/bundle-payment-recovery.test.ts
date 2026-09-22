@@ -14,7 +14,7 @@ import {
 import { retrieveRefund } from '../services/stripe.service';
 import { createRefund } from '../services/stripe.service';
 import { getTenantStripeConfig } from '../services/tenantPayment.service';
-import { appendBalancedLedger } from '../services/bundleAudit.service';
+import { appendBalancedLedger, enqueueBundleOutbox } from '../services/bundleAudit.service';
 import { resolveBundleSettlementDispute } from '../services/bundleOperations.service';
 
 jest.mock('../models/Booking', () => ({
@@ -1214,6 +1214,23 @@ describe('bundle payment recovery contracts', () => {
       refundStatus: 'full',
     }));
     expect(order.recovery.required).toBe(true);
+    expect(enqueueBundleOutbox).toHaveBeenCalledTimes(6);
+    for (const operationId of [firstOperation, secondOperation]) {
+      const events = (enqueueBundleOutbox as jest.Mock).mock.calls.map(([event]) => event)
+        .filter((event) => event.payload.operationId === operationId);
+      expect(events.map((event) => event.audience)).toEqual(['customer', 'storefront', 'supplier']);
+      expect(events[1]).toMatchObject({ tenantId: order.storefrontTenantId, eventType: 'bundle.order_refunded' });
+      expect(events[2]).toMatchObject({
+        tenantId: order.components[0].supplierTenantId,
+        payload: { componentIds: ['paid-component'] },
+      });
+      expect(events[2].payload).not.toHaveProperty('amountMinor');
+    }
+    // Provider/accounting replay does not re-enqueue any notification.
+    (BundleOrder.findById as jest.Mock).mockResolvedValueOnce(order);
+    await refundBundleOrder({ orderId: order._id.toString(), operationId: secondOperation,
+      amountMinor: 5_000, reason: 'Final adjustment', actorId: new Types.ObjectId() });
+    expect(enqueueBundleOutbox).toHaveBeenCalledTimes(6);
     const finalRefundLedger = (appendBalancedLedger as jest.Mock).mock.calls.find(
       ([entry]) => entry.operationId === `refund:${secondOperation}`
     )?.[0];

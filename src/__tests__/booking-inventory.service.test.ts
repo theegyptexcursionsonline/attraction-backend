@@ -7,6 +7,7 @@ import {
   bookingDate,
   inventoryEntriesForItems,
   reserveInventory,
+  runBookingTransaction,
 } from '../services/bookingInventory.service';
 import { getTenantStripeConfig } from '../services/tenantPayment.service';
 import { createPaymentIntent, cancelPaymentIntent, retrievePaymentIntent } from '../services/stripe.service';
@@ -42,6 +43,16 @@ describe('booking inventory lifecycle', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (Availability.updateOne as jest.Mock).mockResolvedValue({ acknowledged: true });
+  });
+
+  it('fails closed before any writes when the production database is disconnected', async () => {
+    const previous = process.env.NODE_ENV;
+    const work = jest.fn().mockResolvedValue('unsafe');
+    try {
+      process.env.NODE_ENV = 'production';
+      await expect(runBookingTransaction(work)).rejects.toThrow('BOOKING_DATABASE_NOT_READY');
+      expect(work).not.toHaveBeenCalled();
+    } finally { process.env.NODE_ENV = previous; }
   });
 
   it('stores date-only inventory at UTC midnight regardless of server timezone', () => {

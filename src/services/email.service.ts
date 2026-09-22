@@ -6,7 +6,7 @@ import formData from 'form-data';
 import sanitizeMarkup from 'sanitize-html';
 import QRCode from 'qrcode';
 import { env } from '../config/env';
-import { notificationCopyEmails } from '../utils/notificationRecipients';
+import { bookingNotificationEmail, notificationCopyEmails } from '../utils/notificationRecipients';
 import { EmailReceipt, ensureEmailReceiptIndexes } from '../models/EmailReceipt';
 import {
   EmailBlockSpec,
@@ -1083,6 +1083,53 @@ export interface BookingStatusEmailDetails {
   currency?: string;
   fullRefund?: boolean;
 }
+
+export type OperatorBookingStatusDetails = Omit<BookingStatusEmailDetails, 'guestAccessToken'>;
+
+/** Operator messages use authenticated admin links, never customer bearer links. */
+export const renderOperatorBookingStatusEmail = (
+  brand: EmailBrand,
+  details: OperatorBookingStatusDetails
+): { html: string; text: string } => {
+  const cancelled = details.kind === 'cancelled';
+  const title = cancelled ? 'Booking cancelled' : details.fullRefund ? 'Full refund processed' : 'Partial refund processed';
+  const refund = Number.isFinite(details.refundAmount) && (details.refundAmount || 0) > 0
+    ? money(details.currency || '', details.refundAmount!) : '';
+  return renderActionEmailParts(brand, {
+    title: `${title} · ${details.reference}`,
+    preheader: `${title} for booking ${details.reference}.`,
+    badge: { label: title, tone: cancelled ? 'danger' : 'success' },
+    heading: title,
+    intro: `Booking <strong>${escapeEmailHtml(details.reference)}</strong> for ${escapeEmailHtml(details.guestName)} ${cancelled ? 'has been cancelled' : 'has been refunded'}.`,
+    details: [
+      { label: 'Booking reference', valueHtml: emailCode(details.reference), valueText: details.reference },
+      { label: 'Lead traveller', valueHtml: escapeEmailHtml(details.guestName), valueText: details.guestName },
+      ...(refund ? [{ label: 'Refund processed', valueHtml: escapeEmailHtml(refund), valueText: refund, emphasis: true }] : []),
+    ],
+    note: cancelled
+      ? refund ? 'The cancellation and refund are recorded. Update your operating schedule for this booking.' : 'The cancellation is recorded. Update your operating schedule for this booking.'
+      : 'The refund is recorded. Open the booking to review its current payment and booking status.',
+    ctaLabel: 'Open in admin',
+    ctaUrl: brandedLink(brand, '/admin/bookings'),
+    footerNote: 'This is an operator notification for your site.',
+    whyReceived: WHY_OPERATOR,
+  });
+};
+
+export const sendOperatorBookingStatusEmail = async (
+  details: OperatorBookingStatusDetails,
+  tenant: EmailTenant
+): Promise<EmailSendResult> => {
+  const recipient = bookingNotificationEmail(tenant);
+  if (!recipient) throw new Error('Operator notification recipient is not configured');
+  const { html, text } = renderOperatorBookingStatusEmail(getEmailBrand(tenant), details);
+  return sendEmail({
+    to: recipient,
+    cc: tenant.notificationSettings?.bookingCcEmails,
+    subject: emailSubject(details.kind === 'cancelled' ? 'Booking cancelled' : 'Refund processed', details.reference),
+    html, text, tenant,
+  });
+};
 
 export const renderBookingStatusEmail = (
   brand: EmailBrand,

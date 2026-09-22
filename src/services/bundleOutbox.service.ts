@@ -422,6 +422,20 @@ const processEvent = async (
     throw new Error('Transactional email provider is not configured');
   }
 
+  const supplierComponents = order.components.filter(
+    (component) => component.supplierTenantId.toString() === event.tenantId.toString()
+  );
+  if (event.audience === 'supplier') {
+    if (!supplierComponents.length) throw new Error('Outbox supplier does not own any order components');
+  } else if (order.storefrontTenantId.toString() !== event.tenantId.toString()) {
+    throw new Error('Outbox recipient does not own this storefront order');
+  }
+  const adminAction = {
+    label: 'View bundle order',
+    url: brandedLink(getEmailBrand(tenant), `/admin/bundle-orders/${order._id}`),
+  };
+  const cancelled = event.eventType === 'bundle.order_cancelled';
+  const refunded = event.eventType === 'bundle.order_refunded';
   let recipient = '';
   let subject = '';
   let html = '';
@@ -464,16 +478,27 @@ const processEvent = async (
     }));
   } else if (event.audience === 'supplier') {
     recipient = bookingNotificationEmail(tenant) || '';
-    const components = order.components.filter(
-      (component) => component.supplierTenantId.toString() === event.tenantId.toString()
-    );
+    const componentIds = event.payload?.componentIds;
+    const components = refunded && Array.isArray(componentIds)
+      ? supplierComponents.filter((component) => componentIds.includes(component.componentId))
+      : supplierComponents;
+    if (!components.length) throw new Error('Outbox supplier has no affected components');
     const cancellationRequested = event.eventType === 'bundle.cancellation_requested';
-    subject = cancellationRequested
-      ? `Bundle cancellation review — ${order.reference}`
-      : `Bundle component confirmed — ${order.reference}`;
+    subject = cancelled
+      ? `Bundle cancelled — ${order.reference}`
+      : refunded
+        ? `Bundle refund update — ${order.reference}`
+        : cancellationRequested
+          ? `Bundle cancellation review — ${order.reference}`
+          : `Bundle component confirmed — ${order.reference}`;
     ({ html, text } = renderBundleEmailParts(tenant, {
-      badge: cancellationRequested ? { label: 'Needs review', tone: 'warning' } : { label: 'Ready to fulfil', tone: 'brand' },
-      heading: cancellationRequested ? 'A bundle cancellation needs review' : 'A bundle component is ready to fulfil',
+      badge: cancelled ? { label: 'Bundle cancelled', tone: 'danger' }
+        : refunded ? { label: 'Refund recorded', tone: 'info' }
+          : cancellationRequested ? { label: 'Needs review', tone: 'warning' } : { label: 'Ready to fulfil', tone: 'brand' },
+      heading: cancelled ? 'A bundle component was cancelled'
+        : refunded ? 'A refund was recorded for your bundle component'
+          : cancellationRequested ? 'A bundle cancellation needs review' : 'A bundle component is ready to fulfil',
+      action: adminAction,
       reference: order.reference,
       items: components.map((component) => ({
         title: component.attractionTitle,
@@ -483,22 +508,23 @@ const processEvent = async (
   } else {
     recipient = bookingNotificationEmail(tenant) || '';
     const cancellationRequested = event.eventType === 'bundle.cancellation_requested';
-    subject = event.eventType === 'bundle.order_reserved'
-      ? `Bundle reserved — ${order.reference}`
-      : cancellationRequested
-        ? `Bundle cancellation review — ${order.reference}`
-        : `Bundle confirmed — ${order.reference}`;
+    subject = cancelled ? `Bundle cancelled — ${order.reference}`
+      : refunded ? `Bundle refund update — ${order.reference}`
+        : event.eventType === 'bundle.order_reserved' ? `Bundle reserved — ${order.reference}`
+          : cancellationRequested ? `Bundle cancellation review — ${order.reference}`
+            : `Bundle confirmed — ${order.reference}`;
     ({ html, text } = renderBundleEmailParts(tenant, {
-      badge: event.eventType === 'bundle.order_reserved'
-        ? { label: 'Awaiting payment', tone: 'warning' }
-        : cancellationRequested
-          ? { label: 'Needs review', tone: 'warning' }
-          : { label: 'Payment confirmed', tone: 'success' },
-      heading: event.eventType === 'bundle.order_reserved'
-        ? 'A bundle is awaiting payment'
-        : cancellationRequested
-          ? 'A paid bundle cancellation needs review'
-          : 'A bundle payment was confirmed',
+      badge: cancelled ? { label: 'Bundle cancelled', tone: 'danger' }
+        : refunded ? { label: 'Refund recorded', tone: 'info' }
+          : event.eventType === 'bundle.order_reserved' ? { label: 'Awaiting payment', tone: 'warning' }
+            : cancellationRequested ? { label: 'Needs review', tone: 'warning' }
+              : { label: 'Payment confirmed', tone: 'success' },
+      heading: cancelled ? 'A bundle was cancelled'
+        : refunded ? 'A bundle refund was recorded'
+          : event.eventType === 'bundle.order_reserved' ? 'A bundle is awaiting payment'
+            : cancellationRequested ? 'A paid bundle cancellation needs review'
+              : 'A bundle payment was confirmed',
+      action: adminAction,
       reference: order.reference,
       details: [
         { label: 'Status', value: order.status },

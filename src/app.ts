@@ -35,6 +35,7 @@ import { processBundleOutboxBatch } from './services/bundleOutbox.service';
 import { sweepBookingReminders } from './services/bookingReminder.service';
 import { redactUrlForLogs } from './utils/safe-logging';
 import { startImageGenerationWorker } from './services/image-generation-job.service';
+import { ensureBookingOperatorNotificationIndexes, processBookingOperatorNotifications } from './services/bookingOperatorNotification.service';
 
 export const createApp = (): express.Application => {
   const app = express();
@@ -145,6 +146,23 @@ export const startServer = async (): Promise<void> => {
   try {
     // Connect to database
     await connectDatabase();
+    await ensureBookingOperatorNotificationIndexes();
+    let operatorSweepRunning = false;
+    const deliverOperatorStatus = async (): Promise<void> => {
+      if (operatorSweepRunning) return;
+      operatorSweepRunning = true;
+      try {
+        const result = await processBookingOperatorNotifications();
+        if (Object.values(result).some((count) => typeof count === 'number' && count > 0)) {
+          console.info('[booking-operator-notifications] sweep', result);
+        }
+      } catch {
+        console.error('[booking-operator-notifications] sweep failed; pending work retained');
+      } finally { operatorSweepRunning = false; }
+    };
+    void deliverOperatorStatus();
+    const operatorSweep = setInterval(deliverOperatorStatus, 30_000);
+    operatorSweep.unref();
 
     const sweepExpiredHolds = async (): Promise<void> => {
       try {
