@@ -20,7 +20,7 @@ import { Booking } from '../models/Booking';
 import { Destination } from '../models/Destination';
 import { isValidPickupDestinationList, normalizePickupDestinationSlugs } from '../utils/pickupDestinations';
 import { notificationSettingsUpdate } from '../utils/notificationRecipients';
-import { hasTrackingSettingsFields, publicTrackingSettings, trackingRevisionOf, trackingSettingsUpdateSchema } from '../utils/trackingSettings';
+import { withoutTrackingSettingsFields, publicTrackingSettings, trackingRevisionOf, trackingSettingsUpdateSchema } from '../utils/trackingSettings';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { searchRegexValue } from '../utils/helpers';
@@ -636,11 +636,9 @@ export const removeCustomDomain = async (
   }
 };
 
-const TRACKING_SETTINGS_ELSEWHERE = 'Use Tracking settings to update tracking IDs and verification codes';
-
-/** Run before generic Zod parsing can strip protected fields from an old write route. */
-export const rejectUnversionedTrackingUpdate = (req: AuthRequest, res: Response, next: NextFunction): void => {
-  if (hasTrackingSettingsFields(req.body)) { sendError(res, TRACKING_SETTINGS_ELSEWHERE, 400); return; }
+/** Preserve old clients that echo newly added read fields during ordinary saves. */
+export const stripUnversionedTrackingUpdate = (req: AuthRequest, _res: Response, next: NextFunction): void => {
+  req.body = withoutTrackingSettingsFields(req.body);
   next();
 };
 
@@ -650,7 +648,7 @@ export const createTenant = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    if (hasTrackingSettingsFields(req.body)) { sendError(res, TRACKING_SETTINGS_ELSEWHERE, 400); return; }
+    req.body = withoutTrackingSettingsFields(req.body);
     // A new site starts with AI products off; a super admin switches them on in the AI products card
     // so the change carries a revision and an audit stamp.
     const { aiProductsRevision: _revision, ...createBody } = req.body as Record<string, unknown>;
@@ -842,7 +840,7 @@ export const updateTenant = async (
 ): Promise<void> => {
   try {
     if (!req.user || req.user.role !== 'super-admin') { sendError(res, 'Super admin access required', req.user ? 403 : 401); return; }
-    if (hasTrackingSettingsFields(req.body)) { sendError(res, TRACKING_SETTINGS_ELSEWHERE, 400); return; }
+    req.body = withoutTrackingSettingsFields(req.body);
     const { id } = req.params;
     if (!Types.ObjectId.isValid(id)) { sendError(res, 'Tenant not found', 404); return; }
     if (req.body.navigation !== undefined || req.body.navigationRevision !== undefined) { sendError(res, 'Use the Menus editor to update navigation', 400); return; }
@@ -922,7 +920,7 @@ export const updateTenantSettings = async (
     if (!req.user || !['super-admin', 'brand-admin'].includes(req.user.role)) {
       sendError(res, 'Site administrator access required', req.user ? 403 : 401); return;
     }
-    if (hasTrackingSettingsFields(req.body)) { sendError(res, TRACKING_SETTINGS_ELSEWHERE, 400); return; }
+    req.body = withoutTrackingSettingsFields(req.body);
     const { id } = req.params;
     if (!Types.ObjectId.isValid(id)) { sendError(res, 'Tenant not found', 404); return; }
 

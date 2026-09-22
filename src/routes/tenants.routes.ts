@@ -15,7 +15,7 @@ import {
   updateTenantSettings,
   updateTenantAiProducts,
   updateTenantTrackingSettings,
-  rejectUnversionedTrackingUpdate,
+  stripUnversionedTrackingUpdate,
   deleteTenant,
   getTenantStats,
   getPortfolioStats,
@@ -296,7 +296,7 @@ router.post(
   '/',
   authenticate,
   requireSuperAdmin,
-  rejectUnversionedTrackingUpdate,
+  stripUnversionedTrackingUpdate,
   validate(createTenantSchema),
   createTenant
 );
@@ -412,7 +412,7 @@ router.patch(
   '/:id',
   authenticate,
   requireSuperAdmin,
-  rejectUnversionedTrackingUpdate,
+  stripUnversionedTrackingUpdate,
   validate(updateTenantSchema),
   updateTenant
 );

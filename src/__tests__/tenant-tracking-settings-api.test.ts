@@ -6,7 +6,7 @@ import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import tenantRoutes from '../routes/tenants.routes';
 import { Tenant } from '../models/Tenant';
 import { toPublicTenantDto, updateTenantTrackingSettings } from '../controllers/tenants.controller';
-import { publicTrackingSettings, trackingSettingsUpdateSchema } from '../utils/trackingSettings';
+import { publicTrackingSettings, trackingSettingsUpdateSchema, withoutTrackingSettingsFields } from '../utils/trackingSettings';
 
 // Keep actual authorization middleware/controllers and real Mongo writes. No external sends.
 jest.mock('../middleware/auth.middleware', () => ({
@@ -158,13 +158,66 @@ it('requires a complete snapshot and permits all four named verification provide
   expect((await stored())?.trackingSettings?.verificationCodes).toEqual(codes);
 });
 
-it.each(['trackingSettings', 'trackingSettingsRevision', 'trackingSettings.googleTagManagerId', 'trackingSettingsRevision.value'])('closes generic write bypass %s', async key => {
-  const value = key === 'trackingSettings' ? settings : key === 'trackingSettingsRevision' ? 999 : 'GTM-BYPASS123';
-  await auth(request(app).post('/tenants'), 'super-admin').send({ [key]: value }).expect(400);
-  await auth(request(app).patch(`/tenants/${owner}`), 'super-admin').send({ name: 'Changed', [key]: value }).expect(400);
-  await auth(request(app).patch(`/tenants/${owner}/settings`)).send({ seoSettings: { metaTitle: 'Changed' }, [key]: value }).expect(400);
-  expect((await stored())?.name).toBe('Cruise site 0');
-  expect((await stored())?.trackingSettings).toBeUndefined();
+it.each([
+  { trackingSettings: { ...settings, googleTagManagerId: '<script>malicious</script>' } },
+  { trackingSettingsRevision: 999 },
+  { 'trackingSettings.googleTagManagerId': 'GTM-BYPASS123' },
+  { 'trackingSettingsRevision.value': 999 },
+  { $set: { trackingSettings: blank, trackingSettingsRevision: 999 } },
+  { $unset: { trackingSettings: 1 } },
+  { $inc: { trackingSettingsRevision: 999 } },
+  { $rename: { seoSettings: 'trackingSettings' } },
+])('ignores generic tracking write attempts while saving unrelated fields %#', async attemptedWrite => {
+  await patch().send(body()).expect(200);
+  const created = await auth(request(app).post('/tenants'), 'super-admin').send({
+    slug: 'created-site', name: 'Created site', domain: 'created-site.invalid',
+    logo: 'https://example.invalid/logo.png',
+    theme: { primaryColor: '#000000', secondaryColor: '#ffffff', accentColor: '#444444' },
+    defaultCurrency: 'USD', defaultLanguage: 'en', supportedLanguages: ['en'], ...attemptedWrite,
+  }).expect(201);
+  const newTenant = await Tenant.findById(created.body.data._id).lean();
+  expect(newTenant?.trackingSettings).toBeUndefined();
+  expect(newTenant?.trackingSettingsRevision).toBe(0);
+  await auth(request(app).patch(`/tenants/${owner}`), 'super-admin').send({ name: 'Changed', ...attemptedWrite }).expect(200);
+  await auth(request(app).patch(`/tenants/${owner}/settings`)).send({ seoSettings: { metaTitle: 'Changed' }, ...attemptedWrite }).expect(200);
+  const tenant = await stored();
+  expect(tenant?.name).toBe('Changed');
+  expect(tenant?.seoSettings?.metaTitle).toBe('Changed');
+  expect(tenant?.trackingSettings).toEqual(settings);
+  expect(tenant?.trackingSettingsRevision).toBe(1);
+});
+
+it.each(['brand-admin', 'super-admin'])('preserves newer tracking settings when an old %s client echoes its GET snapshot', async role => {
+  const initial = await auth(request(app).get(`/tenants/${owner}`), role).expect(200);
+  // The deployed client spreads the admin read, dropping only menu/AI controls.
+  const legacyPayload = { ...initial.body.data, seoSettings: { metaTitle: 'Legacy save' } };
+  for (const key of ['navigation', 'navigationRevision', 'aiProducts', 'aiProductsRevision']) delete legacyPayload[key];
+  expect(legacyPayload.trackingSettings).toEqual(blank);
+  expect(legacyPayload.trackingSettingsRevision).toBe(0);
+  await patch().send(body()).expect(200);
+  const saved = await auth(request(app).patch(`/tenants/${owner}/settings`), role).send(legacyPayload).expect(200);
+  expect(saved.body.data).toMatchObject({
+    seoSettings: { metaTitle: 'Legacy save' }, trackingSettings: settings, trackingSettingsRevision: 1,
+  });
+  const tenant = await stored();
+  expect(tenant?.trackingSettings).toEqual(settings);
+  expect(tenant?.trackingSettingsRevision).toBe(1);
+  // A second ordinary save remains compatible with the newly returned snapshot.
+  await auth(request(app).patch(`/tenants/${owner}/settings`), role).send({
+    ...legacyPayload, trackingSettings: saved.body.data.trackingSettings,
+    trackingSettingsRevision: saved.body.data.trackingSettingsRevision,
+    seoSettings: { metaTitle: 'Second legacy save' },
+  }).expect(200);
+  expect((await stored())?.trackingSettingsRevision).toBe(1);
+});
+
+it('strips protected fields without mutating the input or unrelated settings', () => {
+  const input = { seoSettings: { metaTitle: 'Kept' }, trackingSettings: settings, trackingSettingsRevision: 8, $set: { trackingSettings: blank } };
+  expect(withoutTrackingSettingsFields(input)).toEqual({ seoSettings: input.seoSettings });
+  expect(input.trackingSettingsRevision).toBe(8);
+  expect(input.trackingSettings).toEqual(settings);
+  expect(withoutTrackingSettingsFields(null)).toBeNull();
+  expect(withoutTrackingSettingsFields([])).toEqual([]);
 });
 
 it('exposes sanitized public settings without revision, provider secrets or unknown attributes', async () => {

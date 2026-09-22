@@ -33,11 +33,16 @@ export const publicTrackingSettings = (value: unknown): TrackingSettings => {
 export const trackingRevisionOf = (value: unknown): number =>
   typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : 0;
 
-/** Generic writers must never bypass the dedicated revision-checked route. */
-export const hasTrackingSettingsFields = (value: unknown): boolean => {
-  if (!value || typeof value !== 'object') return false;
-  return Object.entries(value).some(([key, child]) =>
-    ['trackingSettings', 'trackingSettingsRevision'].some(field => key === field || key.startsWith(`${field}.`))
-    || (key.startsWith('$') && hasTrackingSettingsFields(child))
-  );
+/**
+ * Older settings clients echo the whole admin read. Ignore their tracking snapshot
+ * so unrelated saves keep working without bypassing the dedicated revision check.
+ * Generic HTTP bodies contain field values, never Mongo update operators.
+ */
+export const withoutTrackingSettingsFields = (value: unknown): unknown => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+  return Object.fromEntries(Object.entries(value).filter(([key]) =>
+    !key.startsWith('$') && !['trackingSettings', 'trackingSettingsRevision'].some(
+      field => key === field || key.startsWith(`${field}.`)
+    )
+  ));
 };
