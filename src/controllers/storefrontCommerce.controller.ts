@@ -54,7 +54,7 @@ async function authorizedPurchase(req: AuthRequest): Promise<IBooking | null> {
   const owner = req.user?.role === 'customer' && String(booking.userId) === String(req.user._id);
   if (!owner && !(typeof token === 'string' && verifyBookingAccessToken(token, String(booking._id), booking.reference))) return null;
   if (booking.paymentMethod !== 'card' || booking.paymentStatus !== 'succeeded' || !['confirmed', 'completed'].includes(booking.status)
-    || !booking.stripePaymentIntentId || (booking.refundedAmount || 0) > 0 || booking.inventoryReleasedAt) return null;
+    || booking.stripePaymentBinding?.mode !== 'live' || !booking.stripePaymentIntentId || (booking.refundedAmount || 0) > 0 || booking.inventoryReleasedAt) return null;
   return booking;
 }
 export async function claimCommercePurchase(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
@@ -65,16 +65,17 @@ export async function claimCommercePurchase(req: AuthRequest, res: Response, nex
     const event = commerceSelection(booking, 'purchase', String(booking._id));
     const token = crypto.randomBytes(24).toString('hex');
     const now = new Date();
+    const leaseUntil = new Date(now.getTime() + 120_000);
     let claimed;
     try {
       claimed = await StorefrontPurchase.findOneAndUpdate({ _id: event.transaction_id, tenantId: booking.tenantId, bookingId: booking._id,
         status: { $ne: 'dispatched' }, leaseUntil: { $lte: now } },
-      { $set: { status: 'claimed', claimTokenHash: hash(token), leaseUntil: new Date(now.getTime() + 120_000), transactionId: event.transaction_id } }, { new: true, upsert: true });
+      { $set: { status: 'claimed', claimTokenHash: hash(token), leaseUntil, transactionId: event.transaction_id } }, { new: true, upsert: true });
     } catch (error) {
       if ((error as { code?: number }).code !== 11000) throw error;
     }
     // A concurrent tab or completed dispatch owns this transaction. Do not emit again.
-    sendSuccess(res, claimed ? { event, claimToken: token } : { event: null });
+    sendSuccess(res, claimed ? { event, claimToken: token, leaseExpiresAt: leaseUntil.toISOString() } : { event: null });
   } catch (error) { next(error); }
 }
 export async function acknowledgeCommercePurchase(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
@@ -84,7 +85,10 @@ export async function acknowledgeCommercePurchase(req: AuthRequest, res: Respons
     const result = await StorefrontPurchase.updateOne({ tenantId: booking.tenantId, bookingId: booking._id,
       claimTokenHash: hash(req.body.claimToken), status: 'claimed', leaseUntil: { $gt: new Date() } },
     { $set: { status: 'dispatched', dispatchedAt: new Date() } });
-    if (!result.modifiedCount) { sendError(res, 'Receipt claim expired or already completed', 409); return; }
+    if (!result.modifiedCount) {
+      const completed = await StorefrontPurchase.exists({ tenantId: booking.tenantId, bookingId: booking._id, claimTokenHash: hash(req.body.claimToken), status: 'dispatched' });
+      if (!completed) { sendError(res, 'Receipt claim expired or already completed', 409); return; }
+    }
     sendSuccess(res, { dispatched: true });
   } catch (error) { next(error); }
 }

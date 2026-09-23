@@ -22,7 +22,7 @@ const guestToken = generateBookingAccessToken(String(bookingId), reference);
 const app = express(); app.use(express.json()); app.use('/commerce', commerceRoutes);
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => res.status(500).json({ error: err.message }));
 const selection = [{ optionId: 'adult', date: '2099-01-01', time: '09:00', quantities: { adults: 2, children: 1, infants: 0 }, addons: [] }];
-const paid = () => ({ _id: bookingId, tenantId, attractionId, reference, status: 'confirmed', paymentStatus: 'succeeded', paymentMethod: 'card', stripePaymentIntentId: 'pi_fixture',
+const paid = () => ({ _id: bookingId, tenantId, attractionId, reference, status: 'confirmed', paymentStatus: 'succeeded', paymentMethod: 'card', stripePaymentIntentId: 'pi_fixture', stripePaymentBinding: { accountId: 'acct_fixture', mode: 'live' },
   items: [{ optionId: 'adult', optionName: 'Public tour', date: '2099-01-01', time: '09:00', quantities: { adults: 2, children: 1, infants: 0 }, unitPrice: 80, totalPrice: 240 }],
   subtotal: 240, fees: 12, discount: 20, total: 232, currency: 'USD', guestDetails: { email: 'private-sentinel@invalid.test', firstName: 'PRIVATE_SENTINEL' } });
 const claim = (tenant = tenantId, token = guestToken) => request(app).post(`/commerce/purchase/${reference}/claim`).set('X-Tenant-ID', String(tenant)).set('X-Booking-Access-Token', token).send({ consent: true });
@@ -75,7 +75,7 @@ it('denies absent/incorrect capabilities and cross-tenant receipt scope', async 
   expect((await claim(otherTenant)).status).toBe(404);
   expect(await StorefrontPurchase.countDocuments()).toBe(0);
 });
-it.each([{ paymentStatus: 'pending' }, { paymentMethod: 'pay-later' }, { status: 'cancelled' }, { status: 'refunded' }, { refundedAmount: 1 }, { stripePaymentIntentId: '' }, { bundleOrderId: new Types.ObjectId() }])('does not emit unqualified purchase %j', async (patch) => {
+it.each([{ stripePaymentBinding: null }, { stripePaymentBinding: { accountId: 'acct_fixture', mode: 'test' } }, { paymentStatus: 'pending' }, { paymentMethod: 'pay-later' }, { status: 'cancelled' }, { status: 'refunded' }, { refundedAmount: 1 }, { stripePaymentIntentId: '' }, { bundleOrderId: new Types.ObjectId() }])('does not emit unqualified purchase %j', async (patch) => {
   await Booking.collection.updateOne({ _id: bookingId }, { $set: patch });
   expect((await claim()).status).toBe(404);
 });
@@ -86,6 +86,7 @@ it('recovers an expired browser claim with same transaction id and fences its ol
   expect(second.event.transaction_id).toBe(first.event.transaction_id); expect(second.claimToken).not.toBe(first.claimToken);
   const ack = (token: string) => request(app).post(`/commerce/purchase/${reference}/ack`).set('X-Tenant-ID', String(tenantId)).set('X-Booking-Access-Token', guestToken).send({ claimToken: token });
   expect((await ack(first.claimToken)).status).toBe(409);
+  expect((await ack(second.claimToken)).status).toBe(200);
   expect((await ack(second.claimToken)).status).toBe(200);
   expect((await claim()).body.data.event).toBeNull();
 });
