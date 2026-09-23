@@ -78,7 +78,7 @@ describe('site content authorization and atomic persistence', () => {
   it('uses a same-element revision match and distinguishes stale from missing', async () => {
     (Tenant.findOneAndUpdate as jest.Mock).mockResolvedValue(null); (Tenant.exists as jest.Mock).mockResolvedValue({ _id: tenantId });
     const response = res(); await updateAdminPage(req({ body: { expectedRevision: 4, title: 'Changed' } }), response, jest.fn());
-    expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith({ _id: tenantId, customPages: { $elemMatch: { _id: pageId, revision: 4 } } }, { $set: { 'customPages.$.title': 'Changed' }, $inc: { 'customPages.$.revision': 1 } }, expect.anything());
+    expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith({ _id: tenantId, customPages: { $elemMatch: { _id: pageId, revision: 4 } } }, { $set: { 'customPages.$.title': 'Changed', 'customPages.$.updatedAt': expect.any(Date) }, $inc: { 'customPages.$.revision': 1 } }, expect.anything());
     expect(response.status).toHaveBeenCalledWith(409);
   });
 });
@@ -158,18 +158,19 @@ describe('page presentation authoring', () => {
     await updateAdminPage(req({ body: { title: 'Changed', expectedRevision: 3 } }), res(), jest.fn());
     const [filter, write] = (Tenant.findOneAndUpdate as jest.Mock).mock.calls[0];
     expect(filter.customPages.$elemMatch).toEqual({ _id: pageId, revision: 3 });
-    expect(write.$set).toEqual({ 'customPages.$.title': 'Changed' });
+    expect(write.$set).toEqual({ 'customPages.$.title': 'Changed', 'customPages.$.updatedAt': expect.any(Date) });
     await updateAdminPage(req({ body: { heroImage: '', heroDescription: '', layoutMode: 'website', expectedRevision: 4 } }), res(), jest.fn());
-    expect((Tenant.findOneAndUpdate as jest.Mock).mock.calls[1][1].$set).toEqual({ 'customPages.$.heroImage': '', 'customPages.$.heroDescription': '', 'customPages.$.layoutMode': 'website' });
+    expect((Tenant.findOneAndUpdate as jest.Mock).mock.calls[1][1].$set).toEqual({ 'customPages.$.heroImage': '', 'customPages.$.heroDescription': '', 'customPages.$.layoutMode': 'website', 'customPages.$.updatedAt': expect.any(Date) });
   });
   it('never substitutes SEO metadata for visible page-card content', async () => {
     const linked = new Types.ObjectId().toString();
-    (Tenant.findOne as jest.Mock).mockReturnValue(lean({ customPages: [{ _id: pageId, sections: [{ id: 'tours', type: 'pages', pageIds: [linked, pageId] }] }, { _id: linked, slug: 'linked', title: 'Linked', metaDescription: 'SEO only', heroDescription: 'Authored', heroImage: 'https://images.example/a.jpg' }] }));
+    (Tenant.findOne as jest.Mock).mockReturnValue(lean({ customPages: [{ _id: pageId, sections: [{ id: 'tours', type: 'pages', pageIds: [linked, pageId] }] }, { _id: linked, slug: 'linked', title: 'Linked', metaDescription: 'SEO only', heroDescription: 'Authored', heroImage: 'https://images.example/a.jpg', heroImageAlt: 'Authored image description' }] }));
     const response = res(); await getPageSection(req(), response, jest.fn());
     const items = response.json.mock.calls[0][0].data.items;
-    expect(items[0]).toEqual({ _id: linked, slug: 'linked', title: 'Linked', shortDescription: 'Authored', images: ['https://images.example/a.jpg'] });
+    expect(items[0]).toEqual({ _id: linked, slug: 'linked', title: 'Linked', shortDescription: 'Authored', images: ['https://images.example/a.jpg'], imageAltTexts: [{ url: 'https://images.example/a.jpg', alt: 'Authored image description' }] });
     expect(items[1].shortDescription).toBe('');
     expect(items[1].images).toEqual([]);
+    expect(items[1].imageAltTexts).toEqual([]);
     expect(JSON.stringify(items)).not.toContain('SEO only');
   });
 });

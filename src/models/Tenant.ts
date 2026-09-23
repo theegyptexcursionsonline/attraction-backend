@@ -315,6 +315,9 @@ const tenantSchema = new Schema<ITenant>(
         layoutMode: { type: String, enum: ['website', 'standalone'], default: 'website' },
         heroImage: { type: String, maxlength: 2048, validate: (value: string) => pagePresentationSchema.shape.heroImage.safeParse(value).success },
         heroDescription: { type: String, maxlength: 1000 },
+        heroImageAlt: { type: String, validate: (value: string) => pagePresentationSchema.shape.heroImageAlt.safeParse(value).success },
+        ogImage: { type: String, validate: (value: string) => pagePresentationSchema.shape.ogImage.safeParse(value).success },
+        updatedAt: { type: Date },
         body: { type: String, default: '' },
         revision: { type: Number, default: 0 },
         sections: { type: [{

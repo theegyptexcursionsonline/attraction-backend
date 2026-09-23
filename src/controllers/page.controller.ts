@@ -137,6 +137,7 @@ export const createAdminPage = async (req: AuthRequest, res: Response, next: Nex
       isPublished: req.body.isPublished ?? true,
       status: 'active',
       revision: 0,
+      updatedAt: new Date(),
       ...(req.body.sections !== undefined ? { sections: sanitizePageSections(req.body.sections) } : {}),
     };
     const contentError = await preparePageContent(tenantId, page);
@@ -174,6 +175,7 @@ export const updateAdminPage = async (req: AuthRequest, res: Response, next: Nex
       if (contentError) { sendError(res, contentError, 400); return; }
       if (updates.sections !== undefined) updates.sections = candidate.sections;
     }
+    updates.updatedAt = new Date();
     const $set = Object.fromEntries(Object.entries(updates).map(([key, value]) => [`customPages.$.${key}`, value]));
     const pageMatch: Record<string, unknown> = { _id: pageId };
     if (expectedRevision !== undefined) {
@@ -196,7 +198,7 @@ export const archiveAdminPage = async (req: AuthRequest, res: Response, next: Ne
     const tenantId = requirePageTenant(req, res); if (!tenantId) return;
     const tenant = await Tenant.findOneAndUpdate(
       { _id: tenantId, 'customPages._id': req.params.id },
-      { $inc: { 'customPages.$.revision': 1 }, $set: { 'customPages.$.status': 'archived', 'customPages.$.archivedAt': new Date() }, $unset: { 'customPages.$.trashedAt': 1 } },
+      { $inc: { 'customPages.$.revision': 1 }, $set: { 'customPages.$.updatedAt': new Date(), 'customPages.$.status': 'archived', 'customPages.$.archivedAt': new Date() }, $unset: { 'customPages.$.trashedAt': 1 } },
       { new: true }
     );
     if (!tenant) { sendError(res, 'Page not found', 404); return; }
@@ -209,7 +211,7 @@ export const trashAdminPage = async (req: AuthRequest, res: Response, next: Next
     const tenantId = requirePageTenant(req, res); if (!tenantId) return;
     const tenant = await Tenant.findOneAndUpdate(
       { _id: tenantId, 'customPages._id': req.params.id },
-      { $inc: { 'customPages.$.revision': 1 }, $set: { 'customPages.$.status': 'archived', 'customPages.$.trashedAt': new Date() }, $unset: { 'customPages.$.archivedAt': 1 } },
+      { $inc: { 'customPages.$.revision': 1 }, $set: { 'customPages.$.updatedAt': new Date(), 'customPages.$.status': 'archived', 'customPages.$.trashedAt': new Date() }, $unset: { 'customPages.$.archivedAt': 1 } },
       { new: true }
     );
     if (!tenant) { sendError(res, 'Page not found', 404); return; }
@@ -224,7 +226,7 @@ export const restoreAdminPage = async (req: AuthRequest, res: Response, next: Ne
     if (blocked) { sendError(res, blocked, 409); return; }
     const tenant = await Tenant.findOneAndUpdate(
       { _id: tenantId, customPages: { $elemMatch: { _id: req.params.id, status: 'archived', archivedAt: { $exists: false } } } },
-      { $inc: { 'customPages.$.revision': 1 }, $set: { 'customPages.$.status': 'active' }, $unset: { 'customPages.$.trashedAt': 1 } },
+      { $inc: { 'customPages.$.revision': 1 }, $set: { 'customPages.$.updatedAt': new Date(), 'customPages.$.status': 'active' }, $unset: { 'customPages.$.trashedAt': 1 } },
       { new: true }
     );
     if (!tenant) { sendError(res, 'Trashed page not found', 404); return; }
@@ -239,7 +241,7 @@ export const unarchiveAdminPage = async (req: AuthRequest, res: Response, next: 
     if (blocked) { sendError(res, blocked, 409); return; }
     const tenant = await Tenant.findOneAndUpdate(
       { _id: tenantId, customPages: { $elemMatch: { _id: req.params.id, status: 'archived', archivedAt: { $exists: true } } } },
-      { $inc: { 'customPages.$.revision': 1 }, $set: { 'customPages.$.status': 'active' }, $unset: { 'customPages.$.archivedAt': 1 } },
+      { $inc: { 'customPages.$.revision': 1 }, $set: { 'customPages.$.updatedAt': new Date(), 'customPages.$.status': 'active' }, $unset: { 'customPages.$.archivedAt': 1 } },
       { new: true }
     );
     if (!tenant) { sendError(res, 'Archived page not found', 404); return; }
@@ -365,7 +367,7 @@ export const tenantSitemap = async (
     }
 
     const tenant = await Tenant.findById(req.tenant._id)
-      .select('customPages flatUrls customDomain domain slug')
+      .select('customPages flatUrls customDomain domain slug updatedAt')
       .lean();
     if (!tenant) {
       res.status(404).type('text/plain').send('Tenant not found');
@@ -388,20 +390,20 @@ export const tenantSitemap = async (
       (req.headers.host ? `https://${req.headers.host}` : 'https://example.com');
 
     const flat = !!tenant.flatUrls;
-    const today = new Date().toISOString().slice(0, 10);
+    const modified = (value: Date | undefined) => value instanceof Date && !Number.isNaN(value.getTime()) ? value.toISOString().slice(0, 10) : undefined;
 
-    const urls: Array<{ loc: string; lastmod: string; priority: number }> = [
-      { loc: `${origin}/`, lastmod: today, priority: 1.0 },
+    const urls: Array<{ loc: string; lastmod?: string; priority: number }> = [
+      { loc: `${origin}/`, lastmod: modified(tenant.updatedAt), priority: 1.0 },
       ...attractions.map((a) => ({
         loc: `${origin}/${flat ? (a.pathSlug || a.slug) : `attractions/${a.slug}`}`,
-        lastmod: (a.updatedAt as Date | undefined)?.toISOString().slice(0, 10) || today,
+        lastmod: modified(a.updatedAt),
         priority: 0.8,
       })),
       ...(tenant.customPages || [])
         .filter((p) => p.status !== 'archived' && p.isPublished !== false)
         .map((p) => ({
         loc: `${origin}/${p.slug}`,
-        lastmod: today,
+        lastmod: modified(p.updatedAt),
         priority: 0.5,
         })),
     ];
@@ -412,7 +414,7 @@ export const tenantSitemap = async (
       urls
         .map(
           (u) =>
-            `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${u.lastmod}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>${u.priority.toFixed(1)}</priority>\n  </url>`
+            `  <url>\n    <loc>${u.loc}</loc>\n${u.lastmod ? `    <lastmod>${u.lastmod}</lastmod>\n` : ''}    <changefreq>weekly</changefreq>\n    <priority>${u.priority.toFixed(1)}</priority>\n  </url>`
         )
         .join('\n') +
       '\n</urlset>\n';
@@ -498,14 +500,14 @@ export const getPageSection = async (req: AuthRequest, res: Response, next: Next
     if (!section || section.type === 'content') { sendError(res, 'Section not found', 404); return; }
     if (section.type === 'pages') {
       const pages = new Map((tenant?.customPages || []).filter(p => p.status !== 'archived' && p.isPublished !== false).map(p => [String((p as unknown as { _id: unknown })._id), p]));
-      const items = section.pageIds.flatMap(id => { const p = pages.get(id); return p ? [{ _id: id, slug: p.slug, title: p.title, shortDescription: p.heroDescription || '', images: p.heroImage ? [p.heroImage] : [] }] : []; });
+      const items = section.pageIds.flatMap(id => { const p = pages.get(id); return p ? [{ _id: id, slug: p.slug, title: p.title, shortDescription: p.heroDescription || '', images: p.heroImage ? [p.heroImage] : [], imageAltTexts: p.heroImage && p.heroImageAlt ? [{ url: p.heroImage, alt: p.heroImageAlt }] : [] }] : []; });
       sendSuccess(res, { type: 'pages', items, nextCursor: null }); return;
     }
     const limit = Number(req.query.limit || 12);
     const query: Record<string, unknown> = { tenantIds: req.tenant._id, status: 'active' };
     if (section.categoryIds?.length) query.category = { $in: section.categoryIds };
     const publicFields = {
-      _id: 1, slug: 1, pathSlug: 1, title: 1, shortDescription: 1, images: 1,
+      _id: 1, slug: 1, pathSlug: 1, title: 1, shortDescription: 1, images: 1, imageAltTexts: 1,
       category: 1, destination: 1, duration: 1, rating: 1, reviewCount: 1,
       priceFrom: 1, currency: 1, badges: 1,
     } as const;

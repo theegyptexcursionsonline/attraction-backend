@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { imageAltTextsSchema, secureImageUrlSchema } from './imagePresentation';
 import { aiSettingsUpdateSchema } from './aiSettings';
 import { MAX_REGEX_SEARCH_LENGTH } from './helpers';
 import { MAX_PICKUP_DESTINATIONS, PICKUP_DESTINATION_SLUG_PATTERN } from './pickupDestinations';
@@ -237,6 +238,7 @@ const attractionAuthoringSchema = z.object({
   shortDescription: z.string().min(1, 'Short description is required'),
   description: z.string().min(1, 'Description is required'),
   images: z.array(z.string()).optional().default([]),
+  imageAltTexts: imageAltTextsSchema.optional(),
   category: z.string().min(1, 'Category is required'),
   subcategory: z.string().optional(),
   destination: z.object({
@@ -272,8 +274,9 @@ const attractionAuthoringSchema = z.object({
     advanceBooking: z.number().int().positive(),
   }).optional().default({ type: 'time-slots', advanceBooking: 30 }),
   seo: z.object({
-    metaTitle: z.string().optional().default(''),
-    metaDescription: z.string().optional().default(''),
+    metaTitle: z.string().optional(),
+    metaDescription: z.string().optional(),
+    ogImage: secureImageUrlSchema.optional(),
     keywords: z.array(z.string()).optional(),
   }).optional(),
   itinerary: z.array(publishItineraryStepSchema).optional().default([]),
@@ -452,6 +455,7 @@ export const createAttractionDraftSchema = attractionAuthoringSchema.partial().e
 // `.partial()` — so the SECOND save of a draft failed exactly like the first
 // one did. The draft branch has to be relaxed on both verbs.
 export const updateAttractionDraftSchema = attractionAuthoringSchema.partial().extend({
+  expectedPresentationRevision: z.number().int().nonnegative().optional(),
   title: z.string().trim().min(1, 'Title is required').optional(),
   status: z.literal('draft'),
   ...draftRelaxedFields,
@@ -462,7 +466,7 @@ export const createAttractionRequestSchema = z.union([
   createAttractionSchema,
 ]);
 
-export const updateAttractionSchema = attractionAuthoringSchema.partial();
+export const updateAttractionSchema = attractionAuthoringSchema.partial().extend({ expectedPresentationRevision: z.number().int().nonnegative().optional() });
 
 export const updateAttractionRequestSchema = z.union([
   updateAttractionDraftSchema,

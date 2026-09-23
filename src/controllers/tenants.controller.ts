@@ -68,6 +68,7 @@ const PUBLIC_TENANT_FIELDS = [
   'pricingSettings',
   'flatUrls',
   'customPages',
+  'updatedAt',
 ] as const;
 
 export const PUBLIC_TENANT_PROJECTION = [
@@ -841,6 +842,12 @@ export const updateTenant = async (
   try {
     if (!req.user || req.user.role !== 'super-admin') { sendError(res, 'Super admin access required', req.user ? 403 : 401); return; }
     req.body = withoutTrackingSettingsFields(req.body);
+    if (Object.keys(req.body).some(key => key.startsWith('customPages.'))) {
+      sendError(res, 'Use the Pages editor to update website pages', 400); return;
+    }
+    // Older clients echo the complete site snapshot. Page content and its
+    // revisions are owned by the dedicated editor and must survive that save.
+    delete req.body.customPages;
     const { id } = req.params;
     if (!Types.ObjectId.isValid(id)) { sendError(res, 'Tenant not found', 404); return; }
     if (req.body.navigation !== undefined || req.body.navigationRevision !== undefined) { sendError(res, 'Use the Menus editor to update navigation', 400); return; }

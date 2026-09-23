@@ -150,7 +150,7 @@ describe('tenant page management', () => {
     expect(res.status).not.toHaveBeenCalledWith(409);
     expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith(
       expect.objectContaining({ _id: tenantId }),
-      expect.objectContaining({ $set: { 'customPages.$.status': 'active' } }),
+      expect.objectContaining({ $set: { 'customPages.$.status': 'active', 'customPages.$.updatedAt': expect.any(Date) } }),
       expect.anything(),
     );
   });

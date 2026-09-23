@@ -175,6 +175,9 @@ export interface ITenant extends Document {
     metaDescription?: string;
     layoutMode?: 'website' | 'standalone';
     heroImage?: string;
+    heroImageAlt?: string;
+    ogImage?: string;
+    updatedAt?: Date;
     heroDescription?: string;
     body: string;
     revision?: number;
@@ -207,6 +210,8 @@ export interface IAttraction extends Document {
   shortDescription: string;
   description: string;
   images: string[];
+  imageAltTexts?: Array<{ url: string; alt: string }>;
+  presentationRevision?: number;
   category: string;
   subcategory?: string;
   destination: {
@@ -303,6 +308,7 @@ export interface IAttraction extends Document {
   seo: {
     metaTitle: string;
     metaDescription: string;
+    ogImage?: string;
     keywords?: string[];
   };
   tenantIds: Types.ObjectId[];

@@ -1,5 +1,6 @@
 import { urlNamespacePlugin } from '../plugins/urlNamespace';
 import mongoose, { Schema } from 'mongoose';
+import { imageAltSchema, imageAltTextsSchema, secureImageUrlSchema } from '../utils/imagePresentation';
 import { IAttraction } from '../types';
 
 type ValidatorContext = {
@@ -101,6 +102,16 @@ const attractionSchema = new Schema<IAttraction>(
       type: String,
       required: true,
     }],
+    imageAltTexts: {
+      type: [new Schema({
+        url: { type: String, required: true, validate: (value: string) => value !== '' && secureImageUrlSchema.safeParse(value).success },
+        alt: { type: String, validate: (value: string) => imageAltSchema.safeParse(value).success },
+      }, { _id: false })],
+      default: undefined,
+      // Mongoose subdocuments carry internal keys; validate their plain values.
+      validate: (value: unknown) => imageAltTextsSchema.safeParse(JSON.parse(JSON.stringify(value))).success,
+    },
+    presentationRevision: { type: Number, default: 0, min: 0 },
     category: {
       type: String,
       required: requiredWhenPublished,
@@ -308,6 +319,7 @@ const attractionSchema = new Schema<IAttraction>(
     seo: {
       metaTitle: { type: String },
       metaDescription: { type: String },
+      ogImage: { type: String, validate: (value: string) => secureImageUrlSchema.safeParse(value).success },
       keywords: [{ type: String }],
     },
     tenantIds: [{

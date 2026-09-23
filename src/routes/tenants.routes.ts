@@ -413,6 +413,13 @@ router.patch(
   authenticate,
   requireSuperAdmin,
   stripUnversionedTrackingUpdate,
+  (req, res, next) => {
+    if (Object.keys(req.body || {}).some(key => key.startsWith('customPages.'))) {
+      res.status(400).json({ success: false, error: 'Use the Pages editor to update website pages' }); return;
+    }
+    delete req.body.customPages;
+    next();
+  },
   validate(updateTenantSchema),
   updateTenant
 );

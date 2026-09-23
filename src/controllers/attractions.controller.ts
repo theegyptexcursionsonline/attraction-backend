@@ -1,3 +1,4 @@
+import { resolveImageAltTexts } from '../utils/imagePresentation';
 import { publicBookingTenantSlug } from '../utils/public-booking-tenant';
 import { Response, NextFunction } from 'express';
 import { Attraction } from '../models/Attraction';
@@ -41,6 +42,7 @@ const PUBLIC_ATTRACTION_FIELDS = [
   'shortDescription',
   'description',
   'images',
+  'imageAltTexts',
   'category',
   'subcategory',
   'destination',
@@ -337,7 +339,7 @@ export const getAttractions = async (
 
     const isAdminRequest = !!req.user && req.user.role !== 'customer';
     const attractionsQuery = Attraction.find(query).select(
-      isAdminRequest ? `${PUBLIC_ATTRACTION_PROJECTION} tenantIds ownerTenantId` : PUBLIC_ATTRACTION_PROJECTION
+      isAdminRequest ? `${PUBLIC_ATTRACTION_PROJECTION} tenantIds ownerTenantId presentationRevision` : PUBLIC_ATTRACTION_PROJECTION
     );
 
     // Execute query
@@ -703,8 +705,13 @@ export const createAttraction = async (
       return;
     }
 
+    if (req.body.imageAltTexts !== undefined) {
+      try { req.body.imageAltTexts = resolveImageAltTexts(req.body.images || [], req.body.imageAltTexts); }
+      catch { sendError(res, 'Use valid descriptions for images in this gallery', 400); return; }
+    }
     const attractionData: Record<string, unknown> = {
       ...req.body,
+      presentationRevision: 0,
       ...(normalizedCategory ? { category: normalizedCategory } : {}),
       priceFrom: Array.isArray(req.body.pricingOptions) && req.body.pricingOptions.length > 0
         ? minimumTourPrice(req.body.pricingOptions)
@@ -746,10 +753,30 @@ export const updateAttraction = async (
     const { id } = req.params;
 
     let existingAttraction: IAttraction | null | undefined;
+    const touchesPresentation = ['title', 'shortDescription', 'description', 'images', 'imageAltTexts', 'seo'].some(field => req.body[field] !== undefined);
+    const hasNewPresentation = req.body.imageAltTexts !== undefined || req.body.seo?.ogImage !== undefined;
+    const expectedPresentationRevision = req.body.expectedPresentationRevision;
+    if ((hasNewPresentation && expectedPresentationRevision === undefined)
+      || (expectedPresentationRevision !== undefined && (!Number.isInteger(expectedPresentationRevision) || expectedPresentationRevision < 0))) {
+      sendError(res, 'Reload the attraction before saving image settings', 400); return;
+    }
+    delete req.body.expectedPresentationRevision;
+    const presentationScope = { _id: id, ...(req.user?.role === 'super-admin' ? {} : { tenantIds: { $in: callerTenantIds(req.user) } }) };
+    if (touchesPresentation) {
+      existingAttraction = await Attraction.findOne(presentationScope);
+      if (!existingAttraction) { sendError(res, 'Attraction not found', 404); return; }
+      if (expectedPresentationRevision !== undefined && expectedPresentationRevision !== (existingAttraction.presentationRevision ?? 0)) {
+        sendError(res, 'This attraction changed. Reload before saving', 409); return;
+      }
+      if (req.body.images !== undefined || req.body.imageAltTexts !== undefined) {
+        try { req.body.imageAltTexts = resolveImageAltTexts(req.body.images ?? existingAttraction.images ?? [], req.body.imageAltTexts, existingAttraction.imageAltTexts); }
+        catch { sendError(res, 'Use valid descriptions for images in this gallery', 400); return; }
+      }
+    }
 
     // Non-super-admins can only update attractions in their assigned tenants
     if (req.user?.role !== 'super-admin') {
-      existingAttraction = await Attraction.findById(id);
+      if (!existingAttraction) existingAttraction = await Attraction.findById(id);
       if (!existingAttraction) {
         sendError(res, 'Attraction not found', 404);
         return;
@@ -869,24 +896,32 @@ export const updateAttraction = async (
           badges: 1,
         }
       : undefined;
-    const attraction = await Attraction.findByIdAndUpdate(
-      id,
-      {
-        $set: {
-          ...req.body,
-          ...(Array.isArray(req.body.pricingOptions) && req.body.pricingOptions.length > 0
-            ? { priceFrom: minimumTourPrice(req.body.pricingOptions) }
-            : {}),
-        },
-        ...(enquiryOnlyUnset ? { $unset: enquiryOnlyUnset } : {}),
-      },
-      // `context: 'query'` lets the draft-aware required validators read the
-      // status from the update payload instead of an absent document.
-      { new: true, runValidators: true, context: 'query' }
-    );
+    const set: Record<string, unknown> = {
+      ...req.body,
+      ...(Array.isArray(req.body.pricingOptions) && req.body.pricingOptions.length > 0
+        ? { priceFrom: minimumTourPrice(req.body.pricingOptions) } : {}),
+    };
+    // Old editors send only their known SEO leaves. Never replace the whole
+    // object and erase newer optional settings omitted from that snapshot.
+    if (req.body.seo !== undefined) {
+      delete set.seo;
+      for (const [key, value] of Object.entries(req.body.seo)) set[`seo.${key}`] = value;
+    }
+    const mutation = {
+      $set: set,
+      ...(enquiryOnlyUnset ? { $unset: enquiryOnlyUnset } : {}),
+      ...(touchesPresentation ? { $inc: { presentationRevision: 1 } } : {}),
+    };
+    const options = { new: true, runValidators: true, context: 'query' };
+    const revision = expectedPresentationRevision ?? existingAttraction?.presentationRevision ?? 0;
+    const attraction = touchesPresentation
+      ? await Attraction.findOneAndUpdate({ ...presentationScope, ...(revision === 0
+          ? { $or: [{ presentationRevision: 0 }, { presentationRevision: { $exists: false } }] }
+          : { presentationRevision: revision }) }, mutation, options)
+      : await Attraction.findByIdAndUpdate(id, mutation, options);
 
     if (!attraction) {
-      sendError(res, 'Attraction not found', 404);
+      sendError(res, touchesPresentation ? 'This attraction changed. Reload before saving' : 'Attraction not found', touchesPresentation ? 409 : 404);
       return;
     }
 
@@ -907,6 +942,7 @@ const DUPLICATE_AUTHORING_FIELDS = [
   'shortDescription',
   'description',
   'images',
+  'imageAltTexts',
   'category',
   'subcategory',
   'destination',

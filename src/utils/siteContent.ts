@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { imageAltSchema, secureImageUrlSchema } from './imagePresentation';
 
 const objectId = z.string().regex(/^[a-f0-9]{24}$/i, 'Invalid record ID');
 const heading = z.string().trim().max(160).optional();
@@ -40,4 +41,6 @@ export const pagePresentationSchema = z.object({
   layoutMode: z.enum(['website', 'standalone']).optional(),
   heroImage: z.string().trim().max(2048).refine(value => value === '' || (value.startsWith('https://') && isSafeNavigationHref(value)), 'Use a secure HTTPS image URL').optional(),
   heroDescription: z.string().trim().max(1000).optional(),
+  heroImageAlt: imageAltSchema.optional(),
+  ogImage: secureImageUrlSchema.optional(),
 });
