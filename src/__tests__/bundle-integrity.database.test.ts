@@ -312,6 +312,32 @@ describeWithMongo('Bundle integrity database integration', () => {
     }));
   });
 
+  it('rejects an unknown legacy delivery outcome without changing the event or audit', async () => {
+    const storefrontTenantId = new Types.ObjectId();
+    const orderId = new Types.ObjectId();
+    const eventId = new Types.ObjectId();
+    await BundleOrder.collection.insertOne({ _id: orderId, storefrontTenantId });
+    await BundleOutboxEvent.collection.insertOne({
+      _id: eventId, eventId: 'database-uncertain-legacy-event', orderId,
+      tenantId: new Types.ObjectId(), audience: 'supplier',
+      eventType: 'bundle.component_confirmed', payload: {}, status: 'dead_letter',
+      attempts: 8, nextAttemptAt: new Date(), lastError: 'Provider unavailable',
+      manualRecoveryRequired: true, createdAt: new Date(), updatedAt: new Date(),
+    });
+    const before = await BundleOutboxEvent.findById(eventId).lean();
+    await expect(redriveBundleOutboxDeadLetter({
+      eventId: eventId.toString(), storefrontTenantId: storefrontTenantId.toString(),
+      operationId: 'outbox-redrive:uncertain-legacy-0001',
+      reason: 'Unknown provider outcome needs reconciliation', actorId: new Types.ObjectId(),
+    })).rejects.toEqual(expect.objectContaining<Partial<BundleOutboxRecoveryError>>({
+      statusCode: 409,
+      message: 'Only a confirmed non-delivery can be retried; uncertain or legacy failures require reconciliation',
+    }));
+    await expect(BundleOutboxEvent.findById(eventId).lean()).resolves.toEqual(before);
+    await expect(BundleOutboxRecovery.countDocuments({ outboxEventId: eventId })).resolves.toBe(0);
+    await expect(BundleEvent.countDocuments({ aggregateId: orderId, command: 'redrive_bundle_outbox_dead_letter' })).resolves.toBe(0);
+  });
+
   it('redrives once transactionally and replays the same operation id without duplicate audit', async () => {
     const storefrontTenantId = new Types.ObjectId();
     const recipientTenantId = new Types.ObjectId();
@@ -331,7 +357,7 @@ describeWithMongo('Bundle integrity database integration', () => {
       status: 'dead_letter',
       attempts: 8,
       nextAttemptAt: new Date(),
-      lastError: 'Provider unavailable',
+      lastError: 'DELIVERY_NOT_STARTED',
       manualRecoveryRequired: true,
       createdAt: new Date(),
       updatedAt: new Date(),
