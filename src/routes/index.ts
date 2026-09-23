@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import authRoutes from './auth.routes';
 import attractionsRoutes from './attractions.routes';
 import bookingsRoutes from './bookings.routes';
+import storefrontCommerceRoutes from './storefrontCommerce.routes';
 import categoriesRoutes from './categories.routes';
 import destinationsRoutes from './destinations.routes';
 import reviewsRoutes from './reviews.routes';
@@ -276,6 +277,7 @@ router.get('/', (req, res) => {
 router.use('/auth', authRoutes);
 router.use('/attractions', attractionsRoutes);
 router.use('/bookings', bookingsRoutes);
+router.use('/storefront-commerce', storefrontCommerceRoutes);
 router.use('/categories', categoriesRoutes);
 router.use('/destinations', destinationsRoutes);
 router.use('/reviews', reviewsRoutes);

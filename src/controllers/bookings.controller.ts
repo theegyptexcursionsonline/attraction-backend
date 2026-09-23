@@ -1,11 +1,11 @@
-import { normalizeHotelPickup, HotelPickupError, HotelPickupSelection } from '../utils/hotel-pickup';
+import { normalizeHotelPickup, HotelPickupError } from '../utils/hotel-pickup';
 import { Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import mongoose from 'mongoose';
 import { Booking } from '../models/Booking';
 import { Attraction } from '../models/Attraction';
 import { User } from '../models/User';
-import { PromoCode, IPromoCode } from '../models/PromoCode';
+import { PromoCode } from '../models/PromoCode';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { generateBookingReference } from '../utils/hash';
@@ -44,13 +44,12 @@ import {
   isBundleComponentBooking,
   standaloneBookingClause,
 } from '../services/bookingRecordScope.service';
-import { calculateTourLinePrice } from '../utils/attractionPricing';
+import { priceBookingSelection } from '../services/bookingPricing.service';
 import {
   AddonSelectionError,
   addonLineTotal,
   addonQuantity,
   addonsTotal,
-  normalizeBookingAddons,
 } from '../utils/bookingAddons';
 import { assertTenantIdsBookingCreationAllowed, assertTenantPaymentMethodAllowed } from '../services/tenantBookingPolicy.service';
 import { configuredAvailabilityTimes } from '../utils/publicAvailability';
@@ -280,177 +279,10 @@ export const createBooking = async (
       return;
     }
 
-    // Whether THIS booking's tenant has opted into dual (Foreigner/Resident) pricing.
-    // The Resident rate is honoured only when the tenant flag is on AND the option has a residentPrice set.
-    const residentPricingEnabled = bookingTenant?.pricingSettings?.enableResidentPricing === true;
-
-    // Recalculate line items on the server to prevent client-side price tampering.
-    const temporalChecks: Array<{ date: string; time?: string; cutoffMinutes: number }> = [];
-    let normalizedItems = items.map((item: {
-      optionId: string;
-      date: string;
-      time?: string;
-      category?: 'foreigner' | 'resident';
-      quantities: { adults: number; children: number; infants: number };
-      addons?: Array<{ id: string; name?: string; price?: number; quantity?: number }>;
-      hotelPickup?: HotelPickupSelection;
-    }) => {
-      const option = attraction.pricingOptions.find((o) => o.id === item.optionId);
-      if (!option) {
-        throw new Error(`INVALID_OPTION:${item.optionId}`);
-      }
-
-      const quantities = {
-        adults: item.quantities?.adults || 0,
-        children: item.quantities?.children || 0,
-        infants: item.quantities?.infants || 0,
-      };
-      const values = Object.values(quantities);
-      if (values.some((value) => !Number.isInteger(value) || value < 0 || value > 100)) {
-        throw new Error('INVALID_QUANTITY');
-      }
-
-      const payableGuests = quantities.adults + quantities.children;
-      const capacityGuests = payableGuests + quantities.infants;
-      if (payableGuests <= 0) {
-        throw new Error('INVALID_QUANTITY');
-      }
-      if (capacityGuests > 50) throw new Error('INVALID_QUANTITY');
-
-      const minimumParticipants = option.minParticipants ?? 1;
-      const maximumParticipants = option.maxParticipants ?? 50;
-      if (capacityGuests < minimumParticipants || capacityGuests > maximumParticipants) {
-        throw new Error(`PARTICIPANT_LIMIT:${minimumParticipants}:${maximumParticipants}`);
-      }
-
-      if (!item.date) throw new Error('INVALID_DATE');
-
-      // Pick the right tier. Falls back to foreigner price if resident is requested
-      // but the flag is off or the option doesn't carry a residentPrice — never throws.
-      const useResident =
-        residentPricingEnabled &&
-        item.category === 'resident' &&
-        typeof option.residentPrice === 'number' &&
-        option.residentPrice > 0;
-      const selectedOptionSlot = item.time
-        ? option.timeSlots?.find((window) => window.startTime === item.time)
-        : undefined;
-      const selectedWindow = item.time
-        ? attraction.entryWindows?.find((window) => window.startTime === item.time)
-        : undefined;
-      if (attraction.availability?.type === 'time-slots') {
-        const hasConfiguredSlots = (option.timeSlots?.length || 0) > 0 || (attraction.entryWindows?.length || 0) > 0;
-        if (!item.time || (hasConfiguredSlots && !selectedOptionSlot && !selectedWindow)) {
-          throw new Error('INVALID_TIME_SLOT');
-        }
-      }
-      temporalChecks.push({
-        date: item.date,
-        time: item.time,
-        cutoffMinutes: option.bookingCutoffMinutes ?? 0,
-      });
-      const linePricing = calculateTourLinePrice({
-        option,
-        quantities,
-        time: item.time,
-        legacyEntryWindows: attraction.entryWindows || [],
-        useResidentPrice: useResident,
-      });
-      const appliedCategory: 'foreigner' | 'resident' | undefined = residentPricingEnabled
-        ? useResident
-          ? 'resident'
-          : 'foreigner'
-        : undefined;
-
-      // Add-ons: catalogue is the price authority; quantity is validated against
-      // the add-on's pricing type (per_unit → once, per_person → ≤ participants).
-      const validAddons = normalizeBookingAddons({
-        catalog: attraction.addons,
-        requested: item.addons,
-        participants: capacityGuests,
-      });
-
-      // Catalog pickup validation runs after completed idempotent replays below.
-      const hotelPickup = item.hotelPickup;
-
-      return {
-        optionId: option.id,
-        optionName: option.name,
-        date: item.date,
-        time: item.time,
-        quantities,
-        unitPrice: linePricing.unitPrice,
-        totalPrice: linePricing.totalPrice,
-        pricingBreakdown: linePricing.pricingBreakdown,
-        ...(appliedCategory ? { category: appliedCategory } : {}),
-        ...(validAddons.length > 0 ? { addons: validAddons } : {}),
-        ...(hotelPickup ? { hotelPickup } : {}),
-      };
-    });
-
-    const subtotal = round2(normalizedItems.reduce(
-      (acc: number, item: { totalPrice: number; addons?: Array<{ price: number; quantity?: number }> }) =>
-        acc + item.totalPrice + addonsTotal(item.addons),
-      0
-    ));
-
-    const fees = round2(subtotal * 0.05); // 5% service fee
-    const tenantId = bookingTenant?._id || attraction.tenantIds[0];
-    if (!tenantId) {
-      sendError(res, 'Attraction is not assigned to any tenant', 400);
-      return;
-    }
-
-    const now = new Date();
-    let promoCandidate: IPromoCode | null = null;
-    let promoDiscount = 0;
-    if (promoCode) {
-      const promoBase = {
-        code: String(promoCode).trim().toUpperCase(),
-        currency: attraction.currency.toUpperCase(),
-        isActive: true,
-        validFrom: { $lte: now },
-        validUntil: { $gte: now },
-        minOrderAmount: { $lte: subtotal },
-        $expr: { $lt: ['$usageCount', '$usageLimit'] },
-      };
-      promoCandidate = await PromoCode.findOne({ ...promoBase, tenantId });
-      if (!promoCandidate) {
-        promoCandidate = await PromoCode.findOne({
-          ...promoBase,
-          $or: [{ tenantId: null }, { tenantId: { $exists: false } }],
-        });
-      }
-      if (!promoCandidate) throw new Error('INVALID_PROMO');
-
-      promoDiscount = promoCandidate.discountType === 'percentage'
-        ? round2(subtotal * (promoCandidate.discountValue / 100))
-        : promoCandidate.discountValue;
-      if (promoCandidate.maxDiscount !== undefined) {
-        promoDiscount = Math.min(promoDiscount, promoCandidate.maxDiscount);
-      }
-    }
-
-    // Auto-apply best special offer (if better than promo code)
+    const pricing = await priceBookingSelection(attraction, bookingTenant, items, promoCode);
+    let { normalizedItems } = pricing;
+    const { temporalChecks, subtotal, fees, tenantId, now, promoCandidate, activeOffer, useSpecialOffer, discount, total } = pricing;
     const { SpecialOffer } = await import('../models/SpecialOffer');
-    const activeOffer = await SpecialOffer.findOne({
-      attractionId,
-      isActive: true,
-      validFrom: { $lte: now },
-      validUntil: { $gte: now },
-      $expr: { $lt: ['$usageCount', '$usageLimit'] },
-    }).sort({ discountValue: -1 });
-
-    let offerDiscount = 0;
-    if (activeOffer) {
-      offerDiscount = activeOffer.discountType === 'percentage'
-        ? round2(subtotal * (activeOffer.discountValue / 100))
-        : activeOffer.discountValue;
-    }
-
-    const useSpecialOffer = !!activeOffer && offerDiscount > promoDiscount;
-    const discount = round2(Math.min(Math.max(useSpecialOffer ? offerDiscount : promoDiscount, 0), subtotal));
-    const total = round2(Math.max(subtotal + fees - discount, 0));
 
     const keyHash = hashValue(idempotencyKey);
     // Compatibility metadata must not change the identity of an existing retry.
