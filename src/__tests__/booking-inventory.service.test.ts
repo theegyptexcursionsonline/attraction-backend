@@ -1,3 +1,4 @@
+import { enqueueBookingPaymentNotifications } from '../services/bookingPaymentNotification.service';
 import { Availability } from '../models/Availability';
 import { Booking } from '../models/Booking';
 import {
@@ -11,6 +12,8 @@ import {
 } from '../services/bookingInventory.service';
 import { getTenantStripeConfig } from '../services/tenantPayment.service';
 import { createPaymentIntent, cancelPaymentIntent, retrievePaymentIntent } from '../services/stripe.service';
+
+jest.mock('../services/bookingPaymentNotification.service', () => ({ enqueueBookingPaymentNotifications: jest.fn().mockResolvedValue(undefined) }));
 
 jest.mock('../models/Availability', () => ({
   Availability: {
@@ -255,6 +258,8 @@ describe('booking inventory lifecycle', () => {
     );
     expect(booking.paymentStatus).toBe('failed');
     expect(booking.status).toBe('cancelled');
+    expect(booking).toMatchObject({ paymentFailureReason: 'expired', paymentFailureAt: expect.any(Date) });
+    expect(enqueueBookingPaymentNotifications).toHaveBeenCalledWith(booking, { kind: 'checkout_expired' }, undefined);
     expect(booking.inventoryReleasedAt).toBeInstanceOf(Date);
     expect(booking.save).toHaveBeenCalled();
   });
@@ -281,10 +286,11 @@ describe('booking inventory lifecycle', () => {
         status: 'pending',
         inventoryReleasedAt: { $exists: false },
       }),
-      { $set: { paymentStatus: 'failed' } },
+      { $set: { paymentStatus: 'failed', paymentFailureReason: 'payment_failed', paymentFailureAt: expect.any(Date) } },
       { new: true }
     );
     expect(Availability.findOneAndUpdate).not.toHaveBeenCalled();
+    expect(enqueueBookingPaymentNotifications).toHaveBeenCalledWith(booking, { kind: 'payment_failed' }, undefined);
   });
 
   it('expires an abandoned card booking even when no PaymentIntent was created', async () => {

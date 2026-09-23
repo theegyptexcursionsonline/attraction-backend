@@ -3,6 +3,7 @@ import { PipelineStage, Types } from 'mongoose';
 import { z } from 'zod';
 import { AuthRequest } from '../types';
 import { BookingCustomerNotification } from '../models/BookingCustomerNotification';
+import { BookingPaymentNotification } from '../models/BookingPaymentNotification';
 import { BookingOperatorNotification } from '../models/BookingOperatorNotification';
 import { BundleOutboxEvent } from '../models/BundleOutboxEvent';
 import { sendError, sendSuccess } from '../utils/response';
@@ -54,6 +55,7 @@ export const listNotificationFailures = async (req: AuthRequest, res: Response, 
         ] };
     const pipeline: PipelineStage[] = [ { $match: match },
       ...(source === 'booking' ? [{ $unionWith: { coll: BookingCustomerNotification.collection.name, pipeline: [{ $match: match }] } } as PipelineStage] : []),
+      ...(source === 'booking' ? [{ $unionWith: { coll: BookingPaymentNotification.collection.name, pipeline: [{ $match: match }] } } as PipelineStage] : []),
       { $sort: { _id: -1 } }, { $limit: limit + 1 },
       { $lookup: { from: source === 'booking' ? 'bookings' : 'bundleorders',
         let: { entity: source === 'booking' ? '$bookingId' : '$orderId', recipientTenant: '$tenantId', audience: '$audience' },
@@ -88,7 +90,8 @@ export const reconcileNotificationFailure = async (req: AuthRequest, res: Respon
       ...(source.data === 'bundle' ? { manualRecoveryRequired: false } : {}) }, $unset: { leaseUntil: 1, leaseToken: 1 } };
     const updated = source.data === 'booking'
       ? (await BookingOperatorNotification.findOneAndUpdate(filter, update, { new: true, runValidators: true })
-        || await BookingCustomerNotification.findOneAndUpdate(filter, update, { new: true, runValidators: true }))
+        || await BookingCustomerNotification.findOneAndUpdate(filter, update, { new: true, runValidators: true })
+        || await BookingPaymentNotification.findOneAndUpdate(filter, update, { new: true, runValidators: true }))
       : await BundleOutboxEvent.findOneAndUpdate(filter, update, { new: true, runValidators: true });
     if (!updated) { sendError(res, 'Delivery item changed or is unavailable; refresh before reconciling', 409); return; }
     sendSuccess(res, { id: String(updated._id), source: source.data, status: updated.status, updatedAt: updated.updatedAt, reconciliation: { decision, note, at: reconciliation.at } });

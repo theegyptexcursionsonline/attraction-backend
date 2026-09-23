@@ -6,6 +6,7 @@ import { getTenantStripeConfig } from './tenantPayment.service';
 import { standaloneBookingClause } from './bookingRecordScope.service';
 import { bookingStripePaymentRequest, bookingStripeContextMatches } from './bookingPaymentBinding.service';
 import { createPaymentIntent, cancelPaymentIntent, retrievePaymentIntent } from './stripe.service';
+import { enqueueBookingPaymentNotifications } from './bookingPaymentNotification.service';
 
 const DEFAULT_CAPACITY = 25;
 const LEGACY_DEFAULT_TIME_SLOTS = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'];
@@ -265,7 +266,8 @@ export const failCardBookingAndReleaseInventory = async (
   bookingId: unknown,
   tenantId: unknown,
   paymentIntentId?: string,
-  providerCancelled = false
+  providerCancelled = false,
+  recoveredPaymentIntentId?: string
 ): Promise<BookingWithInventoryMarker | null> =>
   runBookingTransaction(async (session) => {
     const query: Record<string, unknown> = {
@@ -277,6 +279,12 @@ export const failCardBookingAndReleaseInventory = async (
       inventoryReleasedAt: { $exists: false },
     };
     if (paymentIntentId) query.stripePaymentIntentId = paymentIntentId;
+    if (providerCancelled && recoveredPaymentIntentId && !paymentIntentId) {
+      query.$or = [
+        { stripePaymentIntentId: { $exists: false } },
+        { stripePaymentIntentId: recoveredPaymentIntentId },
+      ];
+    }
     // Expiry may have read the booking immediately before creation claimed it.
     // Without provider cancellation, only a still-unclaimed booking can release.
     if (!providerCancelled && !paymentIntentId) query.stripePaymentSessionClaimedAt = { $exists: false };
@@ -290,8 +298,14 @@ export const failCardBookingAndReleaseInventory = async (
     await releaseBookingInventory(booking, session);
     booking.paymentStatus = 'failed';
     booking.status = 'cancelled';
+    booking.paymentFailureReason = 'expired';
+    booking.paymentFailureAt = new Date();
+    if (providerCancelled && recoveredPaymentIntentId && !booking.stripePaymentIntentId) {
+      booking.stripePaymentIntentId = recoveredPaymentIntentId;
+    }
     if (providerCancelled) booking.stripePaymentSessionClosedAt = new Date();
     await booking.save(sessionOption(session));
+    await enqueueBookingPaymentNotifications(booking, { kind: 'checkout_expired' }, session);
     return booking;
   });
 
@@ -301,19 +315,23 @@ export const markCardPaymentFailed = async (
   tenantId: unknown,
   paymentIntentId: string
 ): Promise<BookingWithInventoryMarker | null> =>
-  Booking.findOneAndUpdate(
-    {
-      ...standaloneBookingClause,
-      _id: bookingId,
-      tenantId,
-      stripePaymentIntentId: paymentIntentId,
-      paymentStatus: { $in: ['pending', 'processing', 'failed'] },
-      status: 'pending',
-      inventoryReleasedAt: { $exists: false },
-    },
-    { $set: { paymentStatus: 'failed' } },
-    { new: true }
-  ) as unknown as Promise<BookingWithInventoryMarker | null>;
+  runBookingTransaction(async (session) => {
+    const booking = await Booking.findOneAndUpdate(
+      {
+        ...standaloneBookingClause,
+        _id: bookingId,
+        tenantId,
+        stripePaymentIntentId: paymentIntentId,
+        paymentStatus: { $in: ['pending', 'processing', 'failed'] },
+        status: 'pending',
+        inventoryReleasedAt: { $exists: false },
+      },
+      { $set: { paymentStatus: 'failed', paymentFailureReason: 'payment_failed', paymentFailureAt: new Date() } },
+      { new: true, ...sessionOption(session) }
+    ) as BookingWithInventoryMarker | null;
+    if (booking) await enqueueBookingPaymentNotifications(booking, { kind: 'payment_failed' }, session);
+    return booking;
+  });
 
 export const expireStaleCardHolds = async (olderThanMinutes = 30): Promise<number> => {
   const staleBefore = new Date(Date.now() - olderThanMinutes * 60 * 1000);
@@ -332,6 +350,7 @@ export const expireStaleCardHolds = async (olderThanMinutes = 30): Promise<numbe
   let released = 0;
   for (const candidate of candidates) {
     let providerCancelled = false;
+    let recoveredPaymentIntentId: string | undefined;
     if (candidate.stripePaymentIntentId || candidate.stripePaymentSessionClaimedAt) {
       const stripeConfig = await getTenantStripeConfig(candidate.tenantId);
       if (!stripeConfig?.enabled || !stripeConfig.secretKey) continue;
@@ -375,6 +394,8 @@ export const expireStaleCardHolds = async (olderThanMinutes = 30): Promise<numbe
       }
       if (!intent || intent.status !== 'canceled') continue;
       providerCancelled = true;
+      if (!candidate.stripePaymentIntentId) recoveredPaymentIntentId = intent.id;
+      if (!candidate.stripePaymentIntentId && !recoveredPaymentIntentId) continue;
       if (candidate.status === 'cancelled') {
         await Booking.updateOne({
           _id: candidate._id, tenantId: candidate.tenantId, ...standaloneBookingClause,
@@ -388,7 +409,8 @@ export const expireStaleCardHolds = async (olderThanMinutes = 30): Promise<numbe
       candidate._id,
       candidate.tenantId,
       candidate.stripePaymentIntentId,
-      providerCancelled
+      providerCancelled,
+      recoveredPaymentIntentId
     );
     if (result) released += 1;
   }

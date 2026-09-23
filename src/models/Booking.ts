@@ -115,6 +115,9 @@ const bookingSchema = new Schema<IBooking>(
       default: 'pending',
       index: true,
     },
+    // Additive explanation; never infer a bank decline from an expired hold.
+    paymentFailureReason: { type: String, enum: ['payment_failed', 'expired'] },
+    paymentFailureAt: Date,
     status: {
       type: String,
       enum: ['pending', 'confirmed', 'cancelled', 'completed', 'refunded'],

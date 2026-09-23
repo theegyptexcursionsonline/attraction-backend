@@ -26,6 +26,7 @@ import { env, connectDatabase, corsOptions, swaggerSpec } from './config';
 import routes from './routes';
 import { notFoundHandler, errorHandler, apiLimiter } from './middleware';
 import { expireStaleCardHolds } from './services/bookingInventory.service';
+import { ensureBookingPaymentNotificationIndexes, processBookingPaymentNotifications } from './services/bookingPaymentNotification.service';
 import { expireStaleBundleOrders } from './services/bundleOperations.service';
 import {
   processPendingBundleAllocations,
@@ -149,6 +150,7 @@ export const startServer = async (): Promise<void> => {
     // Connect to database
     await connectDatabase();
     await ensureBookingOperatorNotificationIndexes();
+    await ensureBookingPaymentNotificationIndexes();
     await BookingCancellation.createIndexes();
     let cancellationSweepRunning = false;
     const reconcileCancellations = async (): Promise<void> => {
@@ -177,6 +179,23 @@ export const startServer = async (): Promise<void> => {
     void deliverOperatorStatus();
     const operatorSweep = setInterval(deliverOperatorStatus, 30_000);
     operatorSweep.unref();
+
+    let paymentFollowupSweepRunning = false;
+    const deliverPaymentFollowups = async (): Promise<void> => {
+      if (paymentFollowupSweepRunning) return;
+      paymentFollowupSweepRunning = true;
+      try {
+        const result = await processBookingPaymentNotifications();
+        if (Object.values(result).some((count) => typeof count === 'number' && count > 0)) {
+          console.info('[booking-payment-followups] sweep', result);
+        }
+      } catch {
+        console.error('[booking-payment-followups] sweep failed; durable intents retained');
+      } finally { paymentFollowupSweepRunning = false; }
+    };
+    void deliverPaymentFollowups();
+    const paymentFollowupSweep = setInterval(deliverPaymentFollowups, 30_000);
+    paymentFollowupSweep.unref();
 
     const sweepExpiredHolds = async (): Promise<void> => {
       try {

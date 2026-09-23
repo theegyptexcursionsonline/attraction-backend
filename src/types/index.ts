@@ -408,6 +408,8 @@ export interface IBooking extends Document {
   promoCode?: string;
   paymentMethod?: string;
   paymentStatus: PaymentStatus;
+  paymentFailureReason?: 'payment_failed' | 'expired';
+  paymentFailureAt?: Date;
   status: BookingStatus;
   stripePaymentIntentId?: string;
   stripePaymentSessionClaimedAt?: Date;

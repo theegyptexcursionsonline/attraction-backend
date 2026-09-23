@@ -30,7 +30,7 @@ import { bookingStripePaymentRequest, bookingStripeContextMatches, claimBookingS
 import { secretHint } from '../utils/secretCrypto';
 import { updatePaymentGatewaySchema } from '../utils/validators';
 import { generateTicketPdf } from '../services/pdf.service';
-import { brandedLink, getEmailBrand, sendBookingConfirmation, sendAdminBookingNotification, sendPaymentFailedEmail } from '../services/email.service';
+import { brandedLink, getEmailBrand, sendBookingConfirmation, sendAdminBookingNotification } from '../services/email.service';
 import { safeEmitEvent, recordInboundEvent, hasInboundEvent } from '../services/webhook.service';
 import {
   applyBookingRefundTotal,
@@ -967,33 +967,9 @@ export const handleWebhook = async (
             paymentEventPayload(failedBooking)
           );
 
-          // Tell the customer their card was not charged and their place is still held.
-          // Stripe retries a webhook, so the send is claimed against a per-booking receipt
-          // first; detached and guarded so it can never fail the webhook acknowledgement
-          // (a 5xx here would make Stripe retry the whole event).
-          void Tenant.findById(failedBooking.tenantId)
-            .select('name slug customDomain domainMigrated theme logo contactInfo defaultLanguage defaultCurrency timezone')
-            .lean()
-            .then((brandTenant) =>
-              brandTenant
-                ? sendPaymentFailedEmail(
-                    failedBooking.guestDetails.email,
-                    {
-                      reference: failedBooking.reference,
-                      guestName: `${failedBooking.guestDetails.firstName} ${failedBooking.guestDetails.lastName}`.trim(),
-                      guestAccessToken: generateBookingAccessToken(String(failedBooking._id), failedBooking.reference),
-                      total: failedBooking.total,
-                      currency: failedBooking.currency,
-                    },
-                    brandTenant as never
-                  )
-                : undefined
-            )
-            .catch(() =>
-              console.error('[email] payment-failed notification failed', {
-                tenantId: String(failedBooking.tenantId),
-              })
-            );
+          // The same transaction that marks this attempt unsuccessful persists
+          // customer/operator follow-up intents. The worker rechecks payment
+          // truth before delivery; webhook acknowledgement never owns email.
         }
       }
       const { duplicate } = await recordInboundEvent('stripe', eventId, { eventType, tenantId });
