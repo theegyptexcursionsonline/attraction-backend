@@ -1,4 +1,5 @@
 import { pageSeoUpdateSchema, publicPageSeo, withoutPageSeoFields } from '../utils/pageSeo';
+import { publicExternalRatings } from '../utils/externalRatings';
 import { Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
 import { Tenant } from '../models/Tenant';
@@ -62,6 +63,7 @@ const PUBLIC_TENANT_FIELDS = [
   'seoSettings',
   'trackingSettings',
   'pageSeo',
+  'externalRatings',
   'contactInfo',
   'socialLinks',
   'aiSettings',
@@ -98,6 +100,8 @@ export const toPublicTenantDto = (source: unknown): Record<string, unknown> => {
   if (dto.aiSettings !== undefined) dto.aiSettings = publicAiSettings(dto.aiSettings);
   if (dto.pageSeo !== undefined) dto.pageSeo = publicPageSeo(dto.pageSeo);
   if (dto.trackingSettings !== undefined) dto.trackingSettings = publicTrackingSettings(dto.trackingSettings);
+
+  if (dto.externalRatings !== undefined) dto.externalRatings = publicExternalRatings(dto.externalRatings);
 
   const paymentSettings = record.paymentSettings;
   if (paymentSettings && typeof paymentSettings === 'object') {

@@ -1,4 +1,5 @@
 import { pageSeoSchema } from '../utils/pageSeo';
+import { externalRatingsSchema } from '../utils/externalRatings';
 import { pagePresentationSchema } from '../utils/siteContent';
 import { urlNamespacePlugin } from '../plugins/urlNamespace';
 import mongoose, { Schema } from 'mongoose';
@@ -235,6 +236,13 @@ const tenantSchema = new Schema<ITenant>(
     },
     pageSeoRevision: { type: Number, default: 0, min: 0, validate: Number.isSafeInteger },
     trackingSettingsRevision: { type: Number, default: 0, min: 0, validate: Number.isSafeInteger },
+    // Configuration-only snapshots. Public reads revalidate legacy/raw records.
+    externalRatings: {
+      type: Schema.Types.Mixed,
+      default: undefined,
+      set: (value: unknown) => value === undefined ? undefined : externalRatingsSchema.parse(value),
+      validate: (value: unknown) => value === undefined || externalRatingsSchema.safeParse(value).success,
+    },
     paymentSettings: {
       stripeAccountId: String,
       enabledGateways: [{ type: String }],
@@ -385,6 +393,23 @@ tenantSchema.pre(['updateOne', 'updateMany', 'findOneAndUpdate'], function () {
         fields[field] = trackingSettingsSchema.parse(value);
       } else if (field.startsWith('trackingSettings.')) {
         throw new Error('Replace the full tracking settings snapshot');
+      }
+    }
+  }
+});
+
+// Bound and validate every complete snapshot before model query casting.
+tenantSchema.pre(['updateOne', 'updateMany', 'findOneAndUpdate'], function () {
+  const update = this.getUpdate();
+  if (!update || Array.isArray(update)) return;
+  for (const [operator, raw] of Object.entries(update)) {
+    const fields = operator.startsWith('$') && raw && typeof raw === 'object' ? raw as Record<string, unknown> : { [operator]: raw };
+    for (const [field, value] of Object.entries(fields)) {
+      if (field === 'externalRatings') {
+        if (operator.startsWith('$') && !['$set', '$setOnInsert'].includes(operator)) throw new Error('Replace the full external ratings snapshot');
+        fields[field] = externalRatingsSchema.parse(value);
+      } else if (field.startsWith('externalRatings.') || (operator === '$rename' && typeof value === 'string' && (value === 'externalRatings' || value.startsWith('externalRatings.')))) {
+        throw new Error('Replace the full external ratings snapshot');
       }
     }
   }

@@ -1,3 +1,4 @@
+import type { ExternalRatingSnapshot } from '../utils/externalRatings';
 import type { PageSection } from '../utils/siteContent';
 import { Request } from 'express';
 import { Document, Types } from 'mongoose';
@@ -154,6 +155,7 @@ export interface ITenant extends Document {
   trackingSettingsRevision?: number;
   pageSeo?: import('../utils/pageSeo').PageSeo;
   pageSeoRevision?: number;
+  externalRatings?: ExternalRatingSnapshot[];
   paymentSettings?: {
     stripeAccountId?: string;
     enabledGateways: string[];
