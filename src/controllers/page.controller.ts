@@ -1,3 +1,4 @@
+import { requestedLocale, localizationStages, localizationIdentity } from '../services/attractionLocalization.service';
 import { Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
 import { Attraction } from '../models/Attraction';
@@ -443,23 +444,23 @@ export const sitemapTours = async (req: AuthRequest, res: Response, next: NextFu
     if (!req.tenant?._id) { sendError(res, 'Tenant context required', 400); return; }
     const limit = Math.min(Number(req.query.limit) || SITEMAP_TOURS_MAX_PAGE, SITEMAP_TOURS_MAX_PAGE);
     const cursor = typeof req.query.cursor === 'string' && Types.ObjectId.isValid(req.query.cursor) ? new Types.ObjectId(req.query.cursor) : null;
-    const rows = await Attraction.find({
-      tenantIds: req.tenant._id,
-      status: 'active',
-      archivedAt: { $exists: false },
-      trashedAt: { $exists: false },
+    const locale = requestedLocale(req.query.locale);
+    const filter = {
+      tenantIds: req.tenant._id, status: 'active', archivedAt: { $exists: false }, trashedAt: { $exists: false },
       ...(cursor ? { _id: { $gt: cursor } } : {}),
-    })
-      .select('_id slug pathSlug parentPage.path updatedAt')
-      .sort({ _id: 1 })
-      .limit(limit + 1)
-      .lean();
+    };
+    const rows = locale ? await Attraction.aggregate([
+      { $match: filter }, { $sort: { _id: 1 } }, { $limit: limit + 1 },
+      ...localizationStages(req.tenant._id, locale, undefined, false),
+      { $project: { slug: 1, pathSlug: 1, 'parentPage.path': 1, updatedAt: 1, __translations: 1 } },
+    ]) : await Attraction.find(filter).select('_id slug pathSlug parentPage.path updatedAt').sort({ _id: 1 }).limit(limit + 1).lean();
     const items = rows.slice(0, limit);
     // Tenant-scoped payload: never cacheable by a shared edge.
     res.setHeader('Cache-Control', 'private, max-age=60');
     sendSuccess(res, {
       items: items.map(row => ({
         id: String(row._id),
+        ...(locale ? localizationIdentity(row, locale) : {}),
         slug: row.slug,
         ...(row.pathSlug ? { pathSlug: row.pathSlug } : {}),
         ...(row.parentPage?.path ? { parentPath: row.parentPage.path } : {}),

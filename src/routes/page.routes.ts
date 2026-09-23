@@ -33,6 +33,6 @@ router.delete('/admin/:id/permanent', authenticate, optionalAdminTenant, require
 
 router.get('/resolve', optionalTenant, resolvePage);
 router.get('/sitemap.xml', optionalTenant, requireTenant, tenantSitemap);
-router.get('/sitemap/tours', optionalTenant, requireTenant, validateQuery(z.object({ cursor: z.string().regex(/^[a-f0-9]{24}$/i).optional(), limit: z.coerce.number().int().min(1).max(500).optional() })), sitemapTours);
+router.get('/sitemap/tours', optionalTenant, requireTenant, validateQuery(z.object({ locale: z.enum(['en', 'de', 'ru']).optional(), cursor: z.string().regex(/^[a-f0-9]{24}$/i).optional(), limit: z.coerce.number().int().min(1).max(500).optional() })), sitemapTours);
 
 export default router;

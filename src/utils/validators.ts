@@ -669,6 +669,7 @@ export const regexSearchSchema = z
   .optional();
 
 export const attractionFiltersSchema = z.object({
+  locale: z.enum(['en', 'de', 'ru']).optional(),
   pagination: z.literal('cursor').optional(),
   cursor: z.string().regex(/^[A-Za-z0-9_-]{1,2048}$/).optional(),
   category: z.string().optional(),

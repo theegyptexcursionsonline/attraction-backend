@@ -1,3 +1,4 @@
+import { requestedLocale, localizationStages, localizedPresentation, localizationIdentity, translatedSlugFilter, TranslationError } from '../services/attractionLocalization.service';
 import { publicCursorPlan, type CursorField } from '../utils/publicCursor';
 import { resolveImageAltTexts } from '../utils/imagePresentation';
 import { publicBookingTenantSlug } from '../utils/public-booking-tenant';
@@ -219,6 +220,8 @@ export const getAttractions = async (
       pickupFrom,
     } = req.query;
 
+    const locale = requestedLocale(req.query.locale);
+    if (locale && (!req.tenant || req.query.scope === 'admin' || ownership !== 'all' || lifecycle)) { throw new TranslationError('Select one public site for translated content'); }
     const cursorMode = req.query.pagination === 'cursor';
     if (cursorMode && (req.query.scope === 'admin' || ownership !== 'all' || lifecycle)) {
       sendError(res, 'Cursor pagination is for the public catalogue', 400); return;
@@ -241,7 +244,7 @@ export const getAttractions = async (
     const query: AttractionQuery = {};
 
     // Only show active attractions for public API
-    if (cursorMode || !req.user || req.user.role === 'customer') {
+    if (locale || cursorMode || !req.user || req.user.role === 'customer') {
       query.status = 'active';
       query.archivedAt = { $exists: false };
       query.trashedAt = { $exists: false };
@@ -328,7 +331,7 @@ export const getAttractions = async (
       query.badges = { $in: (badges as string).split(',') };
     }
 
-    if (search) {
+    if (search && (!locale || locale === 'en')) {
       query.$text = { $search: search as string };
     }
 
@@ -344,7 +347,22 @@ export const getAttractions = async (
     // Ties fall back to featured then rating so the order stays deterministic.
     else if (sort === 'sortOrder') sortOption = { sortOrder: 1, featured: -1, rating: -1 };
 
-    const isAdminRequest = !cursorMode && !!req.user && req.user.role !== 'customer';
+    const isAdminRequest = !locale && !cursorMode && !!req.user && req.user.role !== 'customer';
+    if (locale && req.tenant) {
+      if (!['-createdAt', 'recommended', 'price-low', 'price-high', 'rating', 'popularity', 'sortOrder'].includes(String(sort))) throw new TranslationError('Select a supported catalogue order');
+      const pipeline = [{ $match: query }, ...localizationStages(req.tenant._id, locale, typeof search === 'string' ? search : undefined)];
+      const projection = Object.fromEntries([...PUBLIC_ATTRACTION_FIELDS, 'updatedAt', '__translations'].map(field => [field, 1]));
+      if (cursorMode) {
+        const fields: CursorField[] = Object.entries({ ...sortOption, _id: -1 as const }).map(([field, direction]) => ({ field, direction, kind: field === '_id' ? 'id' : field === 'createdAt' ? 'date' : field === 'featured' ? 'boolean' : 'number' }));
+        const plan = publicCursorPlan({ query, locale, search }, fields, req.query.cursor as string | undefined);
+        const [rows, counts] = await Promise.all([Attraction.aggregate([...pipeline, { $set: plan.normalized }, ...(plan.seek ? [{ $match: plan.seek }] : []), { $sort: plan.sort }, { $limit: limitNum + 1 }, { $project: { ...projection, ...Object.fromEntries(fields.map((_field, index) => [`_cursor${index}`, 1])) } }]), Attraction.aggregate([...pipeline, { $count: 'total' }])]);
+        const result = plan.page(rows, limitNum, counts[0]?.total || 0);
+        res.setHeader('Cache-Control', 'private, no-store');
+        res.json({ success: true, data: result.rows.map(row => localizedPresentation(toPublicAttractionDto(row), row, locale)), pagination: result.pagination }); return;
+      }
+      const [rows, counts] = await Promise.all([Attraction.aggregate([...pipeline, { $sort: { ...sortOption, _id: -1 as const } }, { $skip: (pageNum - 1) * limitNum }, { $limit: limitNum }, { $project: projection }]), Attraction.aggregate([...pipeline, { $count: 'total' }])]);
+      res.setHeader('Cache-Control', 'private, no-store'); sendPaginated(res, rows.map(row => localizedPresentation(toPublicAttractionDto(row), row, locale)), pageNum, limitNum, counts[0]?.total || 0); return;
+    }
     if (cursorMode) {
       if (!['-createdAt', 'recommended', 'price-low', 'price-high', 'rating', 'popularity', 'sortOrder'].includes(String(sort))) {
         sendError(res, 'Select a supported catalogue order', 400); return;
@@ -407,7 +425,15 @@ export const getAttractionRouteStatus = async (req: AuthRequest, res: Response, 
   try {
     if (!req.tenant) { sendError(res, 'Tenant context required', 400); return; }
     const slug = req.params.slug;
+    const locale = requestedLocale(req.query.locale);
     if (!/^[a-z0-9][a-z0-9-]{0,239}$/i.test(slug)) { sendError(res, 'Attraction not found', 404); return; }
+    if (locale) {
+      const alias = await translatedSlugFilter(slug, req.tenant._id);
+      const rows = await Attraction.aggregate([{ $match: { $or: [{ pathSlug: slug }, { slug }, ...(alias ? [alias] : [])], status: 'active', tenantIds: req.tenant._id, archivedAt: { $exists: false }, trashedAt: { $exists: false } } }, { $limit: 2 }, ...localizationStages(req.tenant._id, locale, undefined, false), { $project: { slug: 1, pathSlug: 1, status: 1, __translations: 1 } }]);
+      res.setHeader('Cache-Control', 'private, no-store');
+      if (rows.length !== 1) { sendError(res, 'Attraction not found', 404); return; }
+      const { __translations, ...row } = rows[0]; sendSuccess(res, { ...row, ...localizationIdentity({ __translations }, locale), bookingTenantSlug: req.tenant.slug }); return;
+    }
     const attraction = await Attraction.findOne({
       $or: [{ pathSlug: slug }, { slug }], status: 'active', tenantIds: { $in: [req.tenant._id] },
     }).select('_id slug pathSlug status').lean();
@@ -424,6 +450,15 @@ export const getAttractionBySlug = async (
 ): Promise<void> => {
   try {
     const { slug } = req.params;
+    const locale = requestedLocale(req.query.locale);
+    if (locale) {
+      if (!req.tenant) throw new TranslationError('Select one public site for translated content');
+      const alias = await translatedSlugFilter(slug, req.tenant._id);
+      const rows = await Attraction.aggregate([{ $match: { $or: [...(Types.ObjectId.isValid(slug) ? [{ _id: new Types.ObjectId(slug) }] : [{ slug }, { pathSlug: slug }]), ...(alias ? [alias] : [])], status: 'active', tenantIds: req.tenant._id, archivedAt: { $exists: false }, trashedAt: { $exists: false } } }, { $limit: 2 }, ...localizationStages(req.tenant._id, locale, undefined, false), { $project: Object.fromEntries([...PUBLIC_ATTRACTION_FIELDS, 'updatedAt', '__translations'].map(field => [field, 1])) }]);
+      res.setHeader('Cache-Control', 'private, no-store');
+      if (rows.length !== 1) { sendError(res, 'Attraction not found', 404); return; }
+      sendSuccess(res, { ...localizedPresentation(toPublicAttractionDto(rows[0]), rows[0], locale), bookingTenantSlug: req.tenant.slug }); return;
+    }
 
     // Public single-attraction lookup. Accept an ObjectId as well as a slug so
     // callers that only hold the id (e.g. the booking-confirmation meeting-point
@@ -1857,6 +1892,8 @@ export const getFeaturedAttractions = async (
 ): Promise<void> => {
   try {
     const { limit = 6 } = req.query;
+    const locale = requestedLocale(req.query.locale);
+    if (locale && !req.tenant) throw new TranslationError('Select one public site for translated content');
 
     const query: Record<string, unknown> = {
       status: 'active',
@@ -1873,6 +1910,11 @@ export const getFeaturedAttractions = async (
       }
     }
 
+    if (locale && req.tenant) {
+      const amount = Number(limit); if (!Number.isInteger(amount) || amount < 1 || amount > 50) throw new TranslationError('Select between 1 and 50 featured tours');
+      const rows = await Attraction.aggregate([{ $match: { ...query, archivedAt: { $exists: false }, trashedAt: { $exists: false } } }, ...localizationStages(req.tenant._id, locale), { $sort: { sortOrder: 1, rating: -1, _id: 1 } }, { $limit: amount }, { $project: Object.fromEntries([...PUBLIC_ATTRACTION_FIELDS, 'updatedAt', '__translations'].map(field => [field, 1])) }]);
+      res.setHeader('Cache-Control', 'private, no-store'); sendSuccess(res, rows.map(row => localizedPresentation(toPublicAttractionDto(row), row, locale))); return;
+    }
     const attractions = await Attraction.find(query)
       .select(PUBLIC_ATTRACTION_PROJECTION)
       .sort({ sortOrder: 1, rating: -1 })

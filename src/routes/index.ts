@@ -23,6 +23,7 @@ import previewRoutes from './preview.routes';
 import pageRoutes from './page.routes';
 import blogRoutes from './blog.routes';
 import journalAdminRoutes from './journalAdmin.routes';
+import attractionTranslationsRoutes from './attractionTranslations.routes';
 import contentRoutes from './content.routes';
 import apiKeysRoutes from './apiKeys.routes';
 import webhooksRoutes from './webhooks.routes';
@@ -300,6 +301,7 @@ router.use('/preview', previewRoutes);
 router.use('/page', pageRoutes);
 router.use('/blog', blogRoutes);
 router.use('/admin/journal', journalAdminRoutes);
+router.use('/admin/attraction-translations', attractionTranslationsRoutes);
 
 // Programmatic API keys + outbound webhooks (tenant-scoped, admin-managed)
 router.use('/api-keys', apiKeysRoutes);
