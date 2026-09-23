@@ -49,7 +49,7 @@ export const getDestinations = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const locale = requestedLocale(req.query.locale);
+    const locale = requestedLocale(req.query?.locale);
     const forEditor = req.query.forEditor === 'true';
     if (locale && (!req.tenant || forEditor || req.query.scope === 'admin')) throw new TranslationError('Select one public site for translated destinations');
     if (forEditor && (!req.user || !['super-admin', 'brand-admin', 'manager', 'editor', 'viewer'].includes(req.user.role))) {
@@ -151,7 +151,7 @@ export const getDestinationBySlug = async (
 ): Promise<void> => {
   try {
     const { slug } = req.params;
-    const locale = requestedLocale(req.query.locale);
+    const locale = requestedLocale(req.query?.locale);
     if (locale && !req.tenant) throw new TranslationError('Select one public site for translated destinations');
     const aliases = locale && req.tenant ? await destinationAliasFilters(slug, req.tenant._id) : [];
     const translatedRows = locale && req.tenant ? await Destination.aggregate([{ $match: { $or: [{ slug }, ...aliases], isActive: true } }, { $limit: 2 }, ...destinationLocalizationStages(req.tenant._id, locale, undefined, false)]) : null;
@@ -239,7 +239,7 @@ export const getFeaturedDestinations = async (
 ): Promise<void> => {
   try {
     const { limit = 6 } = req.query;
-    const locale = requestedLocale(req.query.locale);
+    const locale = requestedLocale(req.query?.locale);
     if (locale && !req.tenant) throw new TranslationError('Select one public site for translated destinations');
 
     const attractionScope: Record<string, unknown> = { status: 'active' };

@@ -220,7 +220,7 @@ export const getAttractions = async (
       pickupFrom,
     } = req.query;
 
-    const locale = requestedLocale(req.query.locale);
+    const locale = requestedLocale(req.query?.locale);
     if (locale && (!req.tenant || req.query.scope === 'admin' || ownership !== 'all' || lifecycle)) { throw new TranslationError('Select one public site for translated content'); }
     const cursorMode = req.query.pagination === 'cursor';
     if (cursorMode && (req.query.scope === 'admin' || ownership !== 'all' || lifecycle)) {
@@ -425,7 +425,7 @@ export const getAttractionRouteStatus = async (req: AuthRequest, res: Response, 
   try {
     if (!req.tenant) { sendError(res, 'Tenant context required', 400); return; }
     const slug = req.params.slug;
-    const locale = requestedLocale(req.query.locale);
+    const locale = requestedLocale(req.query?.locale);
     if (!/^[a-z0-9][a-z0-9-]{0,239}$/i.test(slug)) { sendError(res, 'Attraction not found', 404); return; }
     if (locale) {
       const alias = await translatedSlugFilter(slug, req.tenant._id);
@@ -450,7 +450,7 @@ export const getAttractionBySlug = async (
 ): Promise<void> => {
   try {
     const { slug } = req.params;
-    const locale = requestedLocale(req.query.locale);
+    const locale = requestedLocale(req.query?.locale);
     if (locale) {
       if (!req.tenant) throw new TranslationError('Select one public site for translated content');
       const alias = await translatedSlugFilter(slug, req.tenant._id);
@@ -1892,7 +1892,7 @@ export const getFeaturedAttractions = async (
 ): Promise<void> => {
   try {
     const { limit = 6 } = req.query;
-    const locale = requestedLocale(req.query.locale);
+    const locale = requestedLocale(req.query?.locale);
     if (locale && !req.tenant) throw new TranslationError('Select one public site for translated content');
 
     const query: Record<string, unknown> = {
