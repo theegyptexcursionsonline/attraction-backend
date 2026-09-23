@@ -155,6 +155,42 @@ describe.each(Object.entries(TENANTS))('%s at 390px', (_brandName, tenant) => {
   }, 60_000);
 });
 
+describe('bookings with add-ons at 390px', () => {
+  const brand = getEmailBrand(TENANTS['Safari Sahara Hurghada']);
+  const addons = ['Photo package', 'Cold drinks', 'Helmet camera', 'Buggy upgrade']
+    .map((name, index) => ({ name, quantity: index + 1, unitPrice: 5, lineTotal: 5 * (index + 1) }));
+  const lines = [{ optionName: 'Double quad bike', date: '2026-09-22', time: '08:00', adults: 2, children: 0, infants: 0, addons }];
+  const booking = {
+    reference: 'SSH-10421', attractionTitle: 'Super Safari Desert Adventure', date: 'Tuesday, 22 September 2026',
+    time: '08:00 (Africa/Cairo)', guestName: 'Nadia Visitor', total: 189.5, currency: 'EUR', guests: 2,
+    guestAccessToken: 'gs_2f9c41ab7e5d4c88', subtotal: 200, fees: 9.5, discount: 20, promoCode: 'AUTUMN20', paymentMethod: 'card',
+    hotelPickup: { status: 'confirmed' as const, hotelName: 'Sunrise Royal Makadi', roomNumber: '412', pickupTime: '07:15' },
+  };
+  const operator = {
+    reference: booking.reference, tenantName: brand.name, attractionTitle: booking.attractionTitle, date: booking.date, time: booking.time,
+    guestName: booking.guestName, guestEmail: 'nadia.visitor@example.com', guestPhone: '+20 100 555 1212', adults: 2, children: 0,
+    total: booking.total, currency: booking.currency, paymentMethod: 'card', hotelPickup: booking.hotelPickup,
+  };
+  // Extras are real booking content, so they may lengthen the email, but only by a bounded
+  // amount per row, and never at the expense of the first screen.
+  const PER_ADDON = 45;
+  const OPTION_AND_BLOCK = 110;
+
+  it.each([
+    ['guest confirmation', () => renderBookingConfirmation(brand, booking, true, 'cid:qr.png').html,
+      () => renderBookingConfirmation(brand, { ...booking, lines }, true, 'cid:qr.png').html],
+    ['operator alert', () => renderAdminBookingNotification(brand, operator, `${brand.origin}/admin/bookings`).html,
+      () => renderAdminBookingNotification(brand, { ...operator, lines }, `${brand.origin}/admin/bookings`).html],
+  ])('%s keeps the booking facts on the first screen with four add-ons', async (_name, without, withAddons) => {
+    const before = await measureEmail(without(), browser);
+    const after = await measureEmail(withAddons(), browser);
+    expect(after.chromeHeight).toBeLessThanOrEqual(CHROME_MAX);
+    expect(after.keyFactBottom).toBeLessThanOrEqual(FIRST_SCREEN);
+    expect(after.horizontalOverflow).toBe(false);
+    expect(after.height - before.height).toBeLessThanOrEqual(OPTION_AND_BLOCK + PER_ADDON * addons.length);
+  }, 60_000);
+});
+
 describe('the measurement itself is trustworthy', () => {
   const brand = getEmailBrand(TENANTS['Safari Sahara Hurghada']);
 

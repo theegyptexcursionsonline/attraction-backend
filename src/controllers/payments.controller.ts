@@ -1,5 +1,5 @@
+import { bookingGuestTotals, bookingLineSummaries, bookingTicketAddons } from '../utils/bookingLineSummary';
 import { Response, NextFunction, Request } from 'express';
-import { addonLineTotal, addonQuantity } from '../utils/bookingAddons';
 import type Stripe from 'stripe';
 import { Booking } from '../models/Booking';
 import { Attraction } from '../models/Attraction';
@@ -454,6 +454,9 @@ const finalizePaidBooking = async (
     const guestName = `${booking.guestDetails.firstName} ${booking.guestDetails.lastName}`.trim();
     const totalAdults = booking.items.reduce((s: number, i: { quantities?: { adults?: number } }) => s + (i.quantities?.adults || 0), 0);
     const totalChildren = booking.items.reduce((s: number, i: { quantities?: { children?: number } }) => s + (i.quantities?.children || 0), 0);
+    // Every saved line, with its option and priced add-ons, for the ticket and both notices.
+    const bookedLines = bookingLineSummaries(booking.items);
+    const bookedGuests = bookingGuestTotals(bookedLines);
     const coords = attraction?.destination?.coordinates;
     const meetingPoint =
       coords && typeof coords.lat === 'number' && typeof coords.lng === 'number'
@@ -488,15 +491,7 @@ const finalizePaidBooking = async (
         children: item.quantities?.children || 0,
         infants: item.quantities?.infants || 0,
       })),
-      addons: firstItem?.addons?.length
-        ? firstItem.addons.map((a: { name: string; price: number; quantity?: number; totalPrice?: number }) => ({
-            name: a.name,
-            price: a.price,
-            quantity: addonQuantity(a),
-            totalPrice: a.totalPrice ?? addonLineTotal(a),
-            lineTotal: addonLineTotal(a),
-          }))
-        : undefined,
+      addons: bookedLines.some((line) => line.addons.length) ? bookingTicketAddons(bookedLines) : undefined,
       subtotal: booking.subtotal,
       fees: booking.fees,
       discount: booking.discount,
@@ -533,7 +528,8 @@ const finalizePaidBooking = async (
         fees: booking.fees,
         discount: booking.discount,
         promoCode: booking.promoCode,
-        guests: totalAdults + totalChildren,
+        guests: bookedGuests.adults + bookedGuests.children + bookedGuests.infants,
+        lines: bookedLines,
         hotelPickup,
         hotelPickups: booking.items.map(item => item.hotelPickup).filter((pickup): pickup is NonNullable<typeof pickup> => Boolean(pickup)),
         meetingPoint,
@@ -559,6 +555,8 @@ const finalizePaidBooking = async (
             guestPhone: booking.guestDetails.phone,
             adults: totalAdults,
             children: totalChildren,
+            infants: bookedGuests.infants,
+            lines: bookedLines,
             total: booking.total,
             currency: booking.currency,
             paymentMethod: 'card',

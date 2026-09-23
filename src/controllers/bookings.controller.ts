@@ -1,3 +1,4 @@
+import { bookingGuestTotals, bookingLineSummaries, bookingTicketAddons } from '../utils/bookingLineSummary';
 import { normalizeHotelPickup, HotelPickupError } from '../utils/hotel-pickup';
 import { Response, NextFunction } from 'express';
 import crypto from 'crypto';
@@ -542,6 +543,9 @@ export const createBooking = async (
       const totalAdults = items.reduce((s: number, it: { quantities?: { adults?: number } }) => s + (it.quantities?.adults || 0), 0);
       const totalChildren = items.reduce((s: number, it: { quantities?: { children?: number } }) => s + (it.quantities?.children || 0), 0);
       const guestName = `${guestDetails.firstName} ${guestDetails.lastName}`.trim();
+      // The saved, server-priced lines (not the request) describe what was booked.
+      const bookedLines = bookingLineSummaries(booking.items);
+      const bookedGuests = bookingGuestTotals(bookedLines);
 
       // Meeting point for the email map: coordinates come off the attraction's
       // destination (required on the model), the label prefers the specific
@@ -586,15 +590,7 @@ export const createBooking = async (
               children: item.quantities?.children || 0,
               infants: item.quantities?.infants || 0,
             })),
-            addons: storedFirstItem?.addons?.length
-              ? storedFirstItem.addons.map(addon => ({
-                  name: addon.name,
-                  price: addon.price,
-                  quantity: addonQuantity(addon),
-                  totalPrice: addon.totalPrice ?? addonLineTotal(addon),
-                  lineTotal: addonLineTotal(addon),
-                }))
-              : undefined,
+            addons: bookedLines.some((line) => line.addons.length) ? bookingTicketAddons(bookedLines) : undefined,
             subtotal: booking.subtotal,
             fees: booking.fees,
             discount: booking.discount,
@@ -628,7 +624,8 @@ export const createBooking = async (
             total,
             currency: attraction.currency,
             paymentMethod: paymentMethod || 'pay-later',
-            guests: totalAdults + totalChildren,
+            guests: bookedGuests.adults + bookedGuests.children + bookedGuests.infants,
+            lines: bookedLines,
             hotelPickup: firstItem?.hotelPickup,
             hotelPickups: booking.items.map(item => item.hotelPickup).filter((pickup): pickup is NonNullable<typeof pickup> => Boolean(pickup)),
             meetingPoint,
@@ -655,6 +652,8 @@ export const createBooking = async (
               guestPhone: guestDetails.phone,
               adults: totalAdults,
               children: totalChildren,
+              infants: bookedGuests.infants,
+              lines: bookedLines,
               total,
               currency: attraction.currency,
               paymentMethod: paymentMethod || 'pay-later',
@@ -1140,15 +1139,10 @@ export const getBookingTicket = async (
           children: item.quantities?.children || 0,
           infants: item.quantities?.infants || 0,
         })),
-        addons: firstItem?.addons?.length
-          ? firstItem.addons.map((a: any) => ({
-              name: a.name,
-              price: a.price,
-              quantity: addonQuantity(a),
-              totalPrice: a.totalPrice ?? addonLineTotal(a),
-              lineTotal: addonLineTotal(a),
-            }))
-          : undefined,
+        addons: (() => {
+          const bookedLines = bookingLineSummaries(booking.items);
+          return bookedLines.some((line) => line.addons.length) ? bookingTicketAddons(bookedLines) : undefined;
+        })(),
         subtotal: booking.subtotal,
         fees: booking.fees,
         discount: booking.discount,

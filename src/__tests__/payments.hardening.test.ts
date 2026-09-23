@@ -30,7 +30,9 @@ import {
   saveTenantStripeConfig,
 } from '../services/tenantPayment.service';
 import { BundleOrder } from '../models/BundleOrder';
-import { sendBookingConfirmation, sendBookingStatusEmail } from '../services/email.service';
+import { sendAdminBookingNotification, sendBookingConfirmation, sendBookingStatusEmail } from '../services/email.service';
+import { Tenant } from '../models/Tenant';
+import { generateTicketPdf } from '../services/pdf.service';
 import { recordInboundEvent } from '../services/webhook.service';
 
 jest.mock('../services/bookingPaymentBinding.service', () => ({
@@ -514,6 +516,40 @@ describe('Stripe payment hardening', () => {
         expect.any(Buffer),
         expect.anything()
       );
+    });
+
+    it('confirms a paid booking with every line and add-on quantity in both emails and the ticket', async () => {
+      (constructWebhookEvent as jest.Mock).mockReturnValue(webhookEvent('payment_intent.succeeded', {}, 'evt_addons'));
+      const items = [
+        { optionId: 'double', optionName: 'Double quad', date: '2030-08-20', time: '15:00', quantities: { adults: 5, children: 0, infants: 1 }, unitPrice: 20, totalPrice: 100,
+          addons: [{ id: 'photo', name: 'Photo package', price: 10, quantity: 3, totalPrice: 30 }] },
+        { optionId: 'single', optionName: 'Single quad', date: '2030-08-21', time: '09:00', quantities: { adults: 1, children: 0, infants: 0 }, unitPrice: 20, totalPrice: 20,
+          addons: [{ id: 'drink', name: 'Cold drinks', price: 4 }] },
+      ];
+      (Booking.findOne as jest.Mock).mockResolvedValue(bookingFixture({ items }));
+      (Booking.findOneAndUpdate as jest.Mock).mockReturnValueOnce({
+        populate: jest.fn().mockResolvedValue(bookingFixture({ items, paymentStatus: 'succeeded', status: 'confirmed' })),
+      });
+      (Tenant.findById as jest.Mock).mockReturnValueOnce({ select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue({ name: 'Test Operator', slug: 'test-operator', contactInfo: { email: 'support@qa-site.invalid' } }),
+      }) });
+
+      await invoke(handleWebhook as never, webhookRequest());
+
+      const lines = [
+        { optionName: 'Double quad', date: '2030-08-20', time: '15:00', adults: 5, children: 0, infants: 1,
+          addons: [{ name: 'Photo package', quantity: 3, unitPrice: 10, lineTotal: 30 }] },
+        { optionName: 'Single quad', date: '2030-08-21', time: '09:00', adults: 1, children: 0, infants: 0,
+          addons: [{ name: 'Cold drinks', quantity: 1, unitPrice: 4, lineTotal: 4 }] },
+      ];
+      expect(sendBookingConfirmation).toHaveBeenCalledWith('info@rdmiwebservices.com',
+        expect.objectContaining({ guests: 7, lines }), expect.any(Buffer), expect.anything());
+      expect(sendAdminBookingNotification).toHaveBeenCalledWith('support@qa-site.invalid',
+        expect.objectContaining({ adults: 6, children: 0, infants: 1, lines }), expect.anything());
+      expect(generateTicketPdf).toHaveBeenCalledWith(expect.objectContaining({ addons: [
+        { name: 'Photo package', price: 10, quantity: 3, totalPrice: 30, lineTotal: 30 },
+        { name: 'Cold drinks', price: 4, quantity: 1, totalPrice: 4, lineTotal: 4 },
+      ] }));
     });
 
     it('does not acknowledge a paid event when the booking can no longer be finalized', async () => {

@@ -100,6 +100,16 @@ const bookingFor = (tenant: EmailTenant) => ({
   meetingPoint: { lat: 27.0611, lng: 33.8842, label: 'Hotel lobby, Sunrise Royal Makadi' },
 });
 
+/** A booked option with extras, rendered as separate previews so the base budgets stay comparable. */
+const addonLinesFor = (tenant: EmailTenant) => [{
+  optionName: tenant.slug === 'makadi-horse-club' ? 'Private ride' : 'Double quad bike',
+  date: '2026-09-22', time: '08:00', adults: 2, children: 0, infants: 0,
+  addons: [
+    { name: 'Photo package', quantity: 2, unitPrice: 10, lineTotal: 20 },
+    { name: 'Cold drinks', quantity: 1, unitPrice: 4, lineTotal: 4 },
+  ],
+}];
+
 const enquiryFor = (tenant: EmailTenant) => ({
   reference: 'MSG-7Q2X6C',
   name: guestName,
@@ -159,6 +169,15 @@ const buildPreviews = (tenant: EmailTenant): Preview[] => {
         reference: booking.reference, tenantName: brand.name, attractionTitle: booking.attractionTitle,
         date: booking.date, time: booking.time, guestName, guestEmail: guest.email, guestPhone: guest.phone,
         adults: 2, children: 0, total: booking.total, currency: booking.currency, paymentMethod: 'card',
+        hotelPickup: booking.hotelPickup, meetingPoint: booking.meetingPoint,
+      }, `${brand.origin}/admin/bookings`)],
+    ['booking-confirmation-with-addons', 'Booking confirmation with an option and add-ons (paid)', emailSubject('Booking confirmed', booking.reference),
+      renderBookingConfirmation(brand, { ...paid, lines: addonLinesFor(tenant) }, true, 'https://res.cloudinary.com/demo/image/upload/w_156/sample.png')],
+    ['admin-booking-notification-with-addons', 'Operator: new booking alert with an option and add-ons', emailSubject('New booking', booking.reference, booking.attractionTitle),
+      renderAdminBookingNotification(brand, {
+        reference: booking.reference, tenantName: brand.name, attractionTitle: booking.attractionTitle,
+        date: booking.date, time: booking.time, guestName, guestEmail: guest.email, guestPhone: guest.phone,
+        adults: 2, children: 0, infants: 0, lines: addonLinesFor(tenant), total: booking.total, currency: booking.currency, paymentMethod: 'card',
         hotelPickup: booking.hotelPickup, meetingPoint: booking.meetingPoint,
       }, `${brand.origin}/admin/bookings`)],
     ['operator-enquiry', 'Operator: new enquiry', contactEnquirySubject(enquiry),

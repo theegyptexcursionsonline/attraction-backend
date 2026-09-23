@@ -329,6 +329,34 @@ describe('POST /api/bookings — add-on quantities', () => {
     expect(stored.total).toBe(204.75);
   });
 
+  it('sends the stored add-on quantities and amounts to the operator, the guest and the ticket', async () => {
+    const lean = jest.fn().mockResolvedValue({ _id: TENANT_ID, name: 'QA Site', contactInfo: { email: 'support@qa-site.invalid' } });
+    (Tenant.findById as jest.Mock).mockReturnValueOnce({ select: jest.fn().mockReturnValue({ lean }) });
+    const response = await post(payload([
+      { id: 'lunch', name: 'Tampered name', price: 0.01, quantity: 1 },
+      { id: 'gear', name: 'Tampered name', price: 0.01, quantity: 3 },
+    ], { adults: 2, children: 0, infants: 1 }));
+    expect(response.status).toBe(201);
+    await new Promise(resolve => setImmediate(resolve));
+    await new Promise(resolve => setImmediate(resolve));
+
+    const lines = [{
+      optionName: 'Adult Ticket', date: '2030-03-10', adults: 2, children: 0, infants: 1,
+      addons: [
+        { name: 'Lunch', quantity: 1, unitPrice: 15, lineTotal: 15 },
+        { name: 'Snorkel gear', quantity: 3, unitPrice: 10, lineTotal: 30 },
+      ],
+    }];
+    expect(sendAdminBookingNotification).toHaveBeenCalledWith('support@qa-site.invalid',
+      expect.objectContaining({ adults: 2, children: 0, infants: 1, lines }), expect.anything());
+    expect(sendBookingConfirmation).toHaveBeenCalledWith('theegyptexcursionsonline@gmail.com',
+      expect.objectContaining({ guests: 3, lines }), expect.anything(), expect.anything());
+    expect(generateTicketPdf).toHaveBeenCalledWith(expect.objectContaining({ addons: [
+      { name: 'Lunch', price: 15, quantity: 1, totalPrice: 15, lineTotal: 15 },
+      { name: 'Snorkel gear', price: 10, quantity: 3, totalPrice: 30, lineTotal: 30 },
+    ] }));
+  });
+
   it('rejects a per_unit add-on with quantity > 1 (400, fail closed)', async () => {
     const response = await post(payload([{ id: 'lunch', name: 'Lunch', price: 15, quantity: 2 }]));
     expect(response.status).toBe(400);

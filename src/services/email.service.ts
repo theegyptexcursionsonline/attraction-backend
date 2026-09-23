@@ -1,3 +1,4 @@
+import type { BookingLineSummary } from '../utils/bookingLineSummary';
 import crypto from 'crypto';
 import type { Types } from 'mongoose';
 import type { HotelPickupSelection } from '../utils/hotel-pickup';
@@ -567,6 +568,8 @@ export interface BookingEmailDetails {
   currency: string;
   paymentMethod?: string;
   guests?: number;
+  /** Booked option and add-ons per line, from the saved booking. */
+  lines?: BookingLineSummary[];
   /** Receipt breakdown. Rendered only when the booking was actually paid online. */
   subtotal?: number;
   fees?: number;
@@ -646,6 +649,45 @@ const pickupRows = (pickups: Array<{ status?: string; hotelName?: string; addres
 
 const money = (currency: string, amount: number): string =>
   `${String(currency || '').toUpperCase()} ${Number(amount || 0).toFixed(2)}`;
+
+const guestBreakdown = (adults: number, children: number, infants: number): string => [
+  `${adults} adult${adults === 1 ? '' : 's'}`,
+  ...(children ? [`${children} child${children === 1 ? '' : 'ren'}`] : []),
+  ...(infants ? [`${infants} infant${infants === 1 ? '' : 's'}`] : []),
+].join(', ');
+
+/** Booked option per line. Multi-line bookings carry each line's own date and guests. */
+const bookedOptionRows = (lines: BookingLineSummary[] | undefined, experienceTitle: string): EmailDetailRow[] => {
+  const booked = lines || [];
+  const multiple = booked.length > 1;
+  return booked.flatMap((line, index) => {
+    const option = line.optionName;
+    // A single option named like the experience would state the same fact twice.
+    if (!multiple && (!option || option.toLowerCase() === experienceTitle.trim().toLowerCase())) return [];
+    const context = multiple
+      ? [[line.date, line.time].filter(Boolean).join(' at '), guestBreakdown(line.adults, line.children, line.infants)].filter(Boolean).join(' · ')
+      : '';
+    const value = option || experienceTitle;
+    return [{ label: multiple ? `Option ${index + 1}` : 'Option', valueHtml: escapeEmailHtml(value), valueText: value, ...(context ? { hint: context } : {}) }];
+  });
+};
+
+/**
+ * Add-ons as their own fact block, one per row: name left, booked quantity right. Kept out of
+ * the first block so any number of extras never pushes the booking facts off the first screen.
+ * Quantities are the stored, charged values.
+ */
+const bookedAddonsBlock = (lines: BookingLineSummary[] | undefined): EmailBlockSpec => {
+  const booked = lines || [];
+  const multiple = booked.length > 1;
+  const rows: EmailDetailRow[] = booked.flatMap((line, index) => line.addons.map((addon) => ({
+    label: addon.name,
+    valueHtml: escapeEmailHtml(`× ${addon.quantity}`),
+    valueText: `× ${addon.quantity}`,
+    ...(multiple ? { hint: `Option ${index + 1}` } : {}),
+  })));
+  return rows.length ? { kind: 'details', eyebrow: 'Add-ons', rows } : '';
+};
 
 /**
  * Shared builder for a simple branded "action" email (payment link, cancellation,
@@ -740,6 +782,7 @@ export const renderBookingConfirmation = (
     { label: 'Booking reference', valueHtml: emailCode(reference), valueText: reference },
     { label: 'Date & time', valueHtml: escapeEmailHtml(dateStr), valueText: dateStr },
     ...(bookingDetails.guests ? [{ label: 'Guests', valueHtml: escapeEmailHtml(bookingDetails.guests), valueText: String(bookingDetails.guests) }] : []),
+    ...bookedOptionRows(bookingDetails.lines, bookingDetails.attractionTitle),
     ...pickupRows(pickups),
     ...receiptRows,
     {
@@ -777,6 +820,7 @@ export const renderBookingConfirmation = (
     introHtml: `Your booking is confirmed${hasTicket ? ' and your e-ticket is attached — show it on your phone on the day' : '. Keep this email for the day of your tour'}.`,
     blocks: [
       { kind: 'details', rows, eyebrow: 'Your booking', titleHtml: escapeEmailHtml(bookingDetails.attractionTitle), titleText: bookingDetails.attractionTitle },
+      bookedAddonsBlock(bookingDetails.lines),
       { kind: 'buttons', primary: { label: 'Open your booking', url: viewUrl } },
       ticket,
       meetingPointBlock(brand, bookingDetails.meetingPoint),
@@ -985,6 +1029,9 @@ export interface AdminBookingDetails {
   guestPhone: string;
   adults: number;
   children: number;
+  infants?: number;
+  /** Booked option and add-ons per line, from the saved booking. */
+  lines?: BookingLineSummary[];
   total: number;
   currency: string;
   paymentMethod: string;
@@ -1002,8 +1049,9 @@ export const renderAdminBookingNotification = (
   const emailHref = safeMailtoAddress(details.guestEmail);
   const phoneHref = details.guestPhone.replace(/[^+0-9]/g, '');
   const title = details.attractionTitle || 'Experience';
-  const totalGuests = details.adults + details.children;
-  const guestsText = `${totalGuests} · ${details.adults} adult${details.adults === 1 ? '' : 's'}${details.children ? `, ${details.children} child${details.children === 1 ? '' : 'ren'}` : ''}`;
+  const infants = details.infants || 0;
+  const totalGuests = details.adults + details.children + infants;
+  const guestsText = `${totalGuests} · ${guestBreakdown(details.adults, details.children, infants)}`;
   const isPaid = !!details.paymentMethod && details.paymentMethod !== 'pay-later';
   const dateStr = `${details.date}${details.time ? ` at ${details.time}` : ''}`;
   const pickups = details.hotelPickups || (details.hotelPickup ? [details.hotelPickup] : []);
@@ -1013,6 +1061,7 @@ export const renderAdminBookingNotification = (
     { label: 'Experience', valueHtml: escapeEmailHtml(title), valueText: title },
     { label: 'Date & time', valueHtml: escapeEmailHtml(dateStr), valueText: dateStr },
     { label: 'Guests', valueHtml: escapeEmailHtml(guestsText), valueText: guestsText },
+    ...bookedOptionRows(details.lines, title),
     ...pickupRows(pickups),
     { label: 'Lead traveller', valueHtml: escapeEmailHtml(details.guestName), valueText: details.guestName },
     { label: 'Email', valueHtml: emailHref ? emailLink(brand, `mailto:${emailHref}`, escapeEmailHtml(details.guestEmail)) : escapeEmailHtml(details.guestEmail), valueText: details.guestEmail },
@@ -1031,6 +1080,7 @@ export const renderAdminBookingNotification = (
     introText: `Reference ${details.reference} · ${dateStr}`,
     blocks: [
       { kind: 'details', rows },
+      bookedAddonsBlock(details.lines),
       {
         kind: 'buttons',
         primary: { label: 'Open in admin', url: safeHttpUrl(adminUrl) },
