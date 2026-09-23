@@ -7,11 +7,12 @@ import { updateBookingStatus } from '../controllers/bookings.controller';
 import { refundPayment } from '../controllers/payments.controller';
 import { applyBookingRefundTotal } from '../services/bookingRefund.service';
 import { BookingCancellation } from '../models/BookingCancellation';
+import { BookingCustomerNotification } from '../models/BookingCustomerNotification';
 import { BookingOperatorNotification } from '../models/BookingOperatorNotification';
 import { BundleOutboxEvent } from '../models/BundleOutboxEvent';
 import { User } from '../models/User';
 import { Tenant } from '../models/Tenant';
-import { processBookingOperatorNotifications } from '../services/bookingOperatorNotification.service';
+import { enqueueBookingOperatorNotification, processBookingOperatorNotifications } from '../services/bookingOperatorNotification.service';
 import { requestBookingCancellation, processBookingCancellation, finalizeBookingCancellation, processPendingBookingCancellations, ATN_REFUND_FLOW_KEY, ATN_CANCELLATION_REFUND_FLOW } from '../services/bookingCancellation.service';
 import { createRefund, listPaymentIntentRefunds } from '../services/stripe.service';
 import { getTenantStripeConfig } from '../services/tenantPayment.service';
@@ -42,12 +43,12 @@ beforeAll(async () => {
   const version = systemBinary ? spawnSync(systemBinary, ['--version'], { encoding: 'utf8' }).stdout.match(/db version v([\d.]+)/)?.[1] : undefined;
   mongo = await MongoMemoryReplSet.create({ replSet: { count: 1 }, binary: { version: version || '7.0.14', ...(systemBinary ? { systemBinary } : {}) } });
   await mongoose.connect(mongo.getUri('notification_recovery'));
-  await Promise.all([Booking.init(), BookingCancellation.init(), BookingOperatorNotification.init(), BundleOutboxEvent.init(), User.init()]);
+  await Promise.all([Booking.init(), BookingCancellation.init(), BookingOperatorNotification.init(), BookingCustomerNotification.init(), BundleOutboxEvent.init(), User.init()]);
 });
 afterAll(async () => { await mongoose.disconnect(); await mongo?.stop(); });
 beforeEach(async () => {
   jest.restoreAllMocks(); jest.clearAllMocks();
-  await Promise.all([Booking.collection.deleteMany({}), Tenant.collection.deleteMany({}), Availability.collection.deleteMany({}), BookingCancellation.deleteMany({}), BookingOperatorNotification.deleteMany({}), BundleOutboxEvent.deleteMany({}), User.collection.deleteMany({})]);
+  await Promise.all([Booking.collection.deleteMany({}), Tenant.collection.deleteMany({}), Availability.collection.deleteMany({}), BookingCancellation.deleteMany({}), BookingOperatorNotification.deleteMany({}), BookingCustomerNotification.deleteMany({}), BundleOutboxEvent.deleteMany({}), User.collection.deleteMany({})]);
   await insert();
   (getTenantStripeConfig as jest.Mock).mockResolvedValue({ enabled: true, secretKey: 'sk_test_mock' });
   (listPaymentIntentRefunds as jest.Mock).mockResolvedValue([]);
@@ -114,7 +115,8 @@ it('refunds only the remaining amount and subtracts only the unapplied accountin
   (createRefund as jest.Mock).mockResolvedValue({ ...refund, amount: 7500 });
   await requestBookingCancellation(bookingId, tenantId); await processBookingCancellation(bookingId, tenantId);
   expect(createRefund).toHaveBeenCalledWith(expect.any(String), refund.paymentIntentId, 7500, expect.any(Object));
-  expect((await BookingOperatorNotification.find({ bookingId }).lean()).map((row) => row.refundAmount)).toEqual([75, 75]);
+  expect((await BookingOperatorNotification.find({ bookingId }).lean()).map((row) => row.refundAmount)).toEqual([75]);
+  expect((await BookingCustomerNotification.find({ bookingId }).lean()).map((row) => row.refundAmount)).toEqual([75]);
   expect(await counts()).toEqual({ rows: 1, spent: 0 });
 });
 
@@ -244,7 +246,8 @@ it('never resurrects a failed refund ledger entry from stale succeeded provider 
 it('durably queues recovered cancellation for customer and operator separately without duplicate request sends', async () => {
   await finalizeBookingCancellation(bookingId, tenantId, [refund]);
   await finalizeBookingCancellation(bookingId, tenantId, [refund]);
-  expect(await BookingOperatorNotification.countDocuments({ bookingId, kind: 'cancelled' })).toBe(2);
+  expect(await BookingOperatorNotification.countDocuments({ bookingId, kind: 'cancelled' })).toBe(1);
+  expect(await BookingCustomerNotification.countDocuments({ bookingId, kind: 'cancelled' })).toBe(1);
   expect(email.sendBookingStatusEmail).not.toHaveBeenCalled();
   email.sendBookingStatusEmail.mockRejectedValueOnce({ status: 429 });
   const first = await processBookingOperatorNotifications();
@@ -253,9 +256,68 @@ it('durably queues recovered cancellation for customer and operator separately w
   expect(email.sendOperatorBookingStatusEmail.mock.calls[0][0]).not.toHaveProperty('guestAccessToken');
   expect(email.sendBookingStatusEmail.mock.calls[0][0]).toBe('qa@example.invalid');
   expect(email.sendBookingStatusEmail.mock.calls[0][1].guestAccessToken).toEqual(expect.any(String));
-  await BookingOperatorNotification.updateMany({ status: 'retry' }, { $set: { nextAttemptAt: new Date(0) } });
+  await BookingCustomerNotification.updateMany({ status: 'retry' }, { $set: { nextAttemptAt: new Date(0) } });
   expect((await processBookingOperatorNotifications()).sent).toBe(1);
   expect(email.sendOperatorBookingStatusEmail).toHaveBeenCalledTimes(1);
   expect(email.sendBookingStatusEmail).toHaveBeenCalledTimes(2);
-  expect(JSON.stringify(await BookingOperatorNotification.find().lean())).not.toMatch(/guestAccessToken|qa@example.invalid/);
+  expect(JSON.stringify([await BookingOperatorNotification.find().lean(), await BookingCustomerNotification.find().lean()])).not.toMatch(/guestAccessToken|qa@example.invalid/);
+});
+
+
+it('isolates customer intents from legacy worker claim and expired-lease selectors', async () => {
+  const booking = (await Booking.findById(bookingId))!;
+  const event = { kind: 'cancelled' as const, eventKey: 'cancelled', audience: 'customer' as const };
+  await Promise.all(Array.from({ length: 4 }, () => enqueueBookingOperatorNotification(booking, event)));
+  expect(await BookingCustomerNotification.countDocuments()).toBe(1);
+  // Exact selectors from the pre-customer deployed worker, on its unchanged collection.
+  expect(await BookingOperatorNotification.findOneAndUpdate({ status: { $in: ['pending', 'retry'] }, nextAttemptAt: { $lte: new Date() } }, { $set: { status: 'processing' } })).toBeNull();
+  await BookingCustomerNotification.updateMany({}, { $set: { status: 'processing', leaseUntil: new Date(0), leaseToken: 'qa-expired' } });
+  expect(await BookingOperatorNotification.findOneAndUpdate({ status: 'processing', leaseUntil: { $lte: new Date() } }, { $set: { status: 'manual_review' } })).toBeNull();
+  expect(await processBookingOperatorNotifications(1)).toEqual({ sent: 0, retried: 0, manualReview: 1 });
+  expect(await BookingCustomerNotification.findOne()).toMatchObject({ status: 'manual_review', lastError: 'DELIVERY_UNCERTAIN_LEASE_EXPIRED' });
+  expect(email.sendBookingStatusEmail).not.toHaveBeenCalled(); expect(email.sendOperatorBookingStatusEmail).not.toHaveBeenCalled();
+});
+
+it('rolls back both queue intents and cancellation state when customer persistence fails', async () => {
+  await requestBookingCancellation(bookingId, tenantId);
+  const write = jest.spyOn(BookingCustomerNotification, 'updateOne').mockRejectedValueOnce(new Error('customer queue unavailable'));
+  await expect(finalizeBookingCancellation(bookingId, tenantId, [refund])).rejects.toThrow('customer queue unavailable');
+  write.mockRestore();
+  expect(await BookingOperatorNotification.countDocuments()).toBe(0);
+  expect(await BookingCustomerNotification.countDocuments()).toBe(0);
+  expect(await Booking.findById(bookingId)).toMatchObject({ status: 'confirmed', refundedAmount: 0 });
+  expect((await counts()).spent).toBe(100);
+});
+
+it('processes a customer-only queue concurrently without operator sends and respects the batch limit', async () => {
+  const booking = (await Booking.findById(bookingId))!;
+  for (let i = 0; i < 3; i++) await enqueueBookingOperatorNotification(booking, { kind: 'cancelled', eventKey: `qa-${i}`, audience: 'customer' });
+  expect(await processBookingOperatorNotifications(1)).toEqual({ sent: 1, retried: 0, manualReview: 0 });
+  expect(await BookingCustomerNotification.countDocuments({ status: 'pending' })).toBe(2);
+  await Promise.all([processBookingOperatorNotifications(1), processBookingOperatorNotifications(1)]);
+  expect(email.sendBookingStatusEmail).toHaveBeenCalledTimes(3);
+  expect(email.sendOperatorBookingStatusEmail).not.toHaveBeenCalled();
+});
+
+it('paginates customer and operator failures together and reconciles customer rows with tenant/CAS fences', async () => {
+  await seedFailures();
+  const row = await BookingCustomerNotification.create({ _id: 'a'.repeat(64), tenantId, bookingId, kind: 'cancelled', status: 'manual_review' });
+  await BookingCustomerNotification.create({ _id: 'b'.repeat(64), tenantId: otherTenant, bookingId, kind: 'cancelled', status: 'manual_review' });
+  const pages: any[] = []; let cursor: string | null = null;
+  do {
+    const result = await invoke(listNotificationFailures, { query: { source: 'booking', limit: '2', tenantId: String(tenantId), ...(cursor ? { cursor } : {}) } });
+    expect(result.status).toBe(200); pages.push(...result.body.data.data); cursor = result.body.data.pageInfo.nextCursor;
+  } while (cursor);
+  expect(pages).toHaveLength(5); expect(new Set(pages.map((item) => item.id)).size).toBe(5);
+  expect(pages[0]).toMatchObject({ id: row._id, audience: 'customer', source: 'booking', reference: 'QA-CANCEL-RECOVERY' });
+  expect((await invoke(listNotificationFailures, { query: { source: 'booking', tenantId: String(otherTenant) } })).status).toBe(400);
+  const body = { expectedUpdatedAt: row.updatedAt.toISOString(), decision: 'closed_without_resend', note: 'Reviewed customer delivery history; no resend requested.' };
+  expect((await invoke(reconcileNotificationFailure, { params: { tenantId: String(tenantId), source: 'booking', id: 'b'.repeat(64) }, body })).status).toBe(409);
+  const request = { params: { tenantId: String(tenantId), source: 'booking', id: row._id }, body };
+  const results = await Promise.all([invoke(reconcileNotificationFailure, request), invoke(reconcileNotificationFailure, request)]);
+  expect(results.map((result) => result.status).sort()).toEqual([200, 409]);
+  const resolved = await invoke(listNotificationFailures, { query: { source: 'booking', status: 'resolved' } });
+  expect(resolved.body.data.data).toHaveLength(1); expect(resolved.body.data.data[0]).toMatchObject({ id: row._id, audience: 'customer', status: 'resolved' });
+  expect(await BookingCustomerNotification.findById(row._id)).toMatchObject({ reconciliation: { actorId: userId, decision: 'closed_without_resend' } });
+  expect(email.sendBookingStatusEmail).not.toHaveBeenCalled(); expect(email.sendOperatorBookingStatusEmail).not.toHaveBeenCalled();
 });

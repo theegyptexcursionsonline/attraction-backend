@@ -2,13 +2,14 @@ import { NextFunction, Response } from 'express';
 import { PipelineStage, Types } from 'mongoose';
 import { z } from 'zod';
 import { AuthRequest } from '../types';
+import { BookingCustomerNotification } from '../models/BookingCustomerNotification';
 import { BookingOperatorNotification } from '../models/BookingOperatorNotification';
 import { BundleOutboxEvent } from '../models/BundleOutboxEvent';
 import { sendError, sendSuccess } from '../utils/response';
 
 const sourceSchema = z.enum(['booking', 'bundle']);
 const querySchema = z.object({ source: sourceSchema, limit: z.coerce.number().int().min(1).max(100).default(25),
-  cursor: z.string().optional(), status: z.enum(['unresolved', 'resolved']).default('unresolved') }).strict();
+  cursor: z.string().optional(), tenantId: z.string().optional(), status: z.enum(['unresolved', 'resolved']).default('unresolved') }).strict();
 const bodySchema = z.object({ expectedUpdatedAt: z.string().datetime(),
   decision: z.enum(['confirmed_delivered', 'closed_without_resend']),
   note: z.string().trim().min(10).max(500).refine((value) => !/[\x00-\x1f<>]/.test(value), 'Use plain text') }).strict();
@@ -40,6 +41,7 @@ export const listNotificationFailures = async (req: AuthRequest, res: Response, 
     const parsed = querySchema.safeParse(req.query);
     if (!parsed.success) { sendError(res, 'Invalid notification query', 400); return; }
     const { source, limit, cursor, status } = parsed.data;
+    if (parsed.data.tenantId && parsed.data.tenantId !== tenantId) { sendError(res, 'Tenant query does not match this site', 400); return; }
     if (cursor && !validId(source, cursor)) { sendError(res, 'Invalid cursor', 400); return; }
     const match = { tenantId: new Types.ObjectId(tenantId),
       ...(status === 'resolved' ? { reconciliation: { $exists: true } } : { status: { $in: failures } }),
@@ -50,7 +52,9 @@ export const listNotificationFailures = async (req: AuthRequest, res: Response, 
           { $and: [{ $ne: ['$$audience', 'supplier'] }, { $eq: ['$storefrontTenantId', '$$recipientTenant'] }] },
           { $and: [{ $eq: ['$$audience', 'supplier'] }, { $in: ['$$recipientTenant', '$components.supplierTenantId'] }] },
         ] };
-    const pipeline: PipelineStage[] = [ { $match: match }, { $sort: { _id: -1 } }, { $limit: limit + 1 },
+    const pipeline: PipelineStage[] = [ { $match: match },
+      ...(source === 'booking' ? [{ $unionWith: { coll: BookingCustomerNotification.collection.name, pipeline: [{ $match: match }] } } as PipelineStage] : []),
+      { $sort: { _id: -1 } }, { $limit: limit + 1 },
       { $lookup: { from: source === 'booking' ? 'bookings' : 'bundleorders',
         let: { entity: source === 'booking' ? '$bookingId' : '$orderId', recipientTenant: '$tenantId', audience: '$audience' },
         pipeline: [{ $match: { $expr: { $and: [{ $eq: ['$_id', '$$entity'] }, ownership] } } }, { $project: { reference: 1 } }], as: 'entity' } },
@@ -83,7 +87,8 @@ export const reconcileNotificationFailure = async (req: AuthRequest, res: Respon
     const update = { $set: { status: decision === 'confirmed_delivered' ? completedStatus : 'resolved', reconciliation,
       ...(source.data === 'bundle' ? { manualRecoveryRequired: false } : {}) }, $unset: { leaseUntil: 1, leaseToken: 1 } };
     const updated = source.data === 'booking'
-      ? await BookingOperatorNotification.findOneAndUpdate(filter, update, { new: true, runValidators: true })
+      ? (await BookingOperatorNotification.findOneAndUpdate(filter, update, { new: true, runValidators: true })
+        || await BookingCustomerNotification.findOneAndUpdate(filter, update, { new: true, runValidators: true }))
       : await BundleOutboxEvent.findOneAndUpdate(filter, update, { new: true, runValidators: true });
     if (!updated) { sendError(res, 'Delivery item changed or is unavailable; refresh before reconciling', 409); return; }
     sendSuccess(res, { id: String(updated._id), source: source.data, status: updated.status, updatedAt: updated.updatedAt, reconciliation: { decision, note, at: reconciliation.at } });

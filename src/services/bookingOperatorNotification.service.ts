@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import { ClientSession, Types } from 'mongoose';
 import { Booking } from '../models/Booking';
 import { Tenant } from '../models/Tenant';
+import { BookingCustomerNotification } from '../models/BookingCustomerNotification';
 import { BookingOperatorNotification } from '../models/BookingOperatorNotification';
 import { generateBookingAccessToken } from '../utils/bookingAccess';
 import { sendOperatorBookingStatusEmail, sendBookingStatusEmail } from './email.service';
@@ -12,6 +13,7 @@ const MAX_ATTEMPTS = 5;
 
 export const ensureBookingOperatorNotificationIndexes = async (): Promise<void> => {
   await BookingOperatorNotification.createIndexes();
+  await BookingCustomerNotification.createIndexes();
 };
 
 /** Transactional intent only: no provider call, customer token or recipient snapshot. */
@@ -33,8 +35,9 @@ export const enqueueBookingOperatorNotification = async (
   const bookingId = new Types.ObjectId(String(booking._id));
   const id = crypto.createHash('sha256')
     .update(JSON.stringify([String(tenantId), String(bookingId), event.kind, event.eventKey, ...(event.audience === 'customer' ? ['customer'] : [])])).digest('hex');
+  const queue = event.audience === 'customer' ? BookingCustomerNotification : BookingOperatorNotification;
   try {
-    await BookingOperatorNotification.updateOne({ _id: id }, { $setOnInsert: {
+    await queue.updateOne({ _id: id }, { $setOnInsert: {
       bookingId, tenantId, audience: event.audience || 'operator', kind: event.kind, refundAmount: event.refundAmount,
       fullRefund: event.fullRefund, status: 'pending', attempts: 0, nextAttemptAt: new Date(),
     } }, { upsert: true, runValidators: true, ...(session ? { session } : {}) });
@@ -50,29 +53,30 @@ export const enqueueBookingOperatorNotification = async (
  * Provider acceptance is not inbox delivery. Expired/ambiguous in-flight attempts
  * require reconciliation, never automatic resend (Mailgun has no idempotency key).
  */
-export const processBookingOperatorNotifications = async (limit = 20): Promise<{
-  sent: number; retried: number; manualReview: number;
+const processNotificationQueue = async (queue: typeof BookingOperatorNotification, customer: boolean, limit: number): Promise<{
+  sent: number; retried: number; manualReview: number; processed: number;
 }> => {
-  const summary = { sent: 0, retried: 0, manualReview: 0 };
+  const summary = { sent: 0, retried: 0, manualReview: 0, processed: 0 };
   const batchSize = Number.isFinite(limit) ? Math.max(0, Math.min(100, Math.floor(limit))) : 20;
   for (let index = 0; index < batchSize; index += 1) {
     const now = new Date();
     // Quarantine is bounded by the same batch budget and fenced against completion.
-    const expired = await BookingOperatorNotification.findOneAndUpdate({
+    const expired = await queue.findOneAndUpdate({
       status: 'processing', leaseUntil: { $lte: now },
     }, {
       $set: { status: 'manual_review', lastError: 'DELIVERY_UNCERTAIN_LEASE_EXPIRED' },
       $unset: { leaseToken: 1, leaseUntil: 1 },
     }, { sort: { leaseUntil: 1 }, new: true });
-    if (expired) { summary.manualReview += 1; continue; }
+    if (expired) { summary.manualReview += 1; summary.processed += 1; continue; }
     const leaseToken = crypto.randomUUID();
-    const event = await BookingOperatorNotification.findOneAndUpdate({
+    const event = await queue.findOneAndUpdate({
       status: { $in: ['pending', 'retry'] }, nextAttemptAt: { $lte: now },
     }, {
       $set: { status: 'processing', leaseToken, leaseUntil: new Date(now.getTime() + LEASE_MS) },
       $inc: { attempts: 1 },
     }, { sort: { nextAttemptAt: 1, _id: 1 }, new: true });
     if (!event) break;
+    summary.processed += 1;
     const fence = { _id: event._id, status: 'processing', leaseToken };
     let status: 'sent' | 'retry' | 'manual_review' = 'manual_review';
     let lastError = 'DELIVERY_UNCERTAIN';
@@ -87,7 +91,6 @@ export const processBookingOperatorNotifications = async (limit = 20): Promise<{
       if (!booking || !tenant) {
         lastError = 'NOTIFICATION_SCOPE_MISSING';
       } else {
-        const customer = event.audience === 'customer';
         const recipient = customer ? booking.guestDetails.email : bookingNotificationEmail(tenant);
         if (!recipient) {
           lastError = customer ? 'CUSTOMER_RECIPIENT_MISSING' : 'OPERATOR_RECIPIENT_MISSING';
@@ -95,7 +98,7 @@ export const processBookingOperatorNotifications = async (limit = 20): Promise<{
           // Validate the primary and copies before any external effect.
           notificationCopyEmails([recipient]);
           if (!customer) notificationCopyEmails(tenant.notificationSettings?.bookingCcEmails, recipient);
-          const renewed = await BookingOperatorNotification.updateOne({ ...fence, leaseUntil: { $gt: new Date() } }, {
+          const renewed = await queue.updateOne({ ...fence, leaseUntil: { $gt: new Date() } }, {
             $set: { leaseUntil: new Date(Date.now() + LEASE_MS) },
           });
           if (!renewed.modifiedCount) continue;
@@ -126,7 +129,7 @@ export const processBookingOperatorNotifications = async (limit = 20): Promise<{
         lastError = providerStarted ? 'DELIVERY_UNCERTAIN' : 'NOTIFICATION_PREPARATION_FAILED';
       }
     }
-    const updated = await BookingOperatorNotification.updateOne(fence, {
+    const updated = await queue.updateOne(fence, {
       $set: {
         status, lastError,
         ...(status === 'sent' ? { sentAt: new Date() } : {}),
@@ -139,6 +142,27 @@ export const processBookingOperatorNotifications = async (limit = 20): Promise<{
       else if (status === 'retry') summary.retried += 1;
       else summary.manualReview += 1;
     }
+  }
+  return summary;
+};
+
+
+/** Fair, bounded sweep across physically isolated operator and customer queues. */
+export const processBookingOperatorNotifications = async (limit = 20): Promise<{
+  sent: number; retried: number; manualReview: number;
+}> => {
+  const summary = { sent: 0, retried: 0, manualReview: 0 };
+  const batchSize = Number.isFinite(limit) ? Math.max(0, Math.min(100, Math.floor(limit))) : 20;
+  const queues = [BookingOperatorNotification, BookingCustomerNotification];
+  for (let index = 0; index < batchSize; index++) {
+    let processed = false;
+    for (let offset = 0; offset < queues.length; offset++) {
+      const queueIndex = (index + offset) % queues.length;
+      const result = await processNotificationQueue(queues[queueIndex], queueIndex === 1, 1);
+      summary.sent += result.sent; summary.retried += result.retried; summary.manualReview += result.manualReview;
+      if (result.processed) { processed = true; break; }
+    }
+    if (!processed) break;
   }
   return summary;
 };
