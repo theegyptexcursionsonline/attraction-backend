@@ -51,7 +51,19 @@ export function verifyLocalizationPlan(plan: LocalizationPlan,approvedDigest: st
 export async function executeLocalizationPlan(plan: LocalizationPlan,approvedDigest: string,mode: 'apply'|'rollback') {
   verifyLocalizationPlan(plan,approvedDigest);
   // Do not let a CLI accidentally create collections/indexes in an unprepared release.
-  for (const kind of new Set(plan.rows.map(row=>row.kind))) { const indexes=await translationModel(kind).collection.indexes(); const field=kind==='tour'?'attractionId':'destinationId'; if (!indexes.some(index=>index.unique && index.key.tenantId===1 && index.key[field]===1 && index.key.locale===1)) throw new TranslationError('Translation uniqueness index is not ready',409); }
+  for (const kind of new Set(plan.rows.map(row=>row.kind))) {
+    const indexes = await translationModel(kind).collection.indexes();
+    const identityKey = { tenantId: 1, [kind === 'tour' ? 'attractionId' : 'destinationId']: 1, locale: 1 };
+    const slugKey = kind === 'tour' ? { tenantId: 1, slug: 1 } : { tenantId: 1, locale: 1, slug: 1 };
+    // Partial, sparse, extended compound or non-simple collation indexes do not
+    // enforce the schema's complete identity/URL contract across every row.
+    const ready = [identityKey, slugKey].every(key => indexes.some(index =>
+      index.unique === true && !index.sparse && !index.partialFilterExpression &&
+      (!index.collation || index.collation.locale === 'simple') &&
+      JSON.stringify(index.key) === JSON.stringify(key)
+    ));
+    if (!ready) throw new TranslationError('Translation identity and URL uniqueness indexes are not ready',409);
+  }
   const session=await mongoose.startSession(); let changed=false;
   try { await session.withTransaction(async()=>{
     changed=false; const tenant=await verifiedTenant(plan,session); const currents=[];

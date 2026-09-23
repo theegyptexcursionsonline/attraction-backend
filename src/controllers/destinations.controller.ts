@@ -119,7 +119,7 @@ export const getDestinations = async (
     }
 
     if (locale && req.tenant) {
-      const pipeline = [{ $match: query }, ...destinationLocalizationStages(req.tenant._id, locale, safeSearch || undefined)];
+      const pipeline = [{ $match: query }, ...destinationLocalizationStages(req.tenant._id, locale, typeof search === 'string' ? search.trim() : undefined)];
       const [rows, counts] = await Promise.all([Destination.aggregate([...pipeline, { $sort: { sortOrder: 1, name: 1, _id: 1 } }, { $skip: (pageNum - 1) * limitNum }, { $limit: limitNum }]), Destination.aggregate([...pipeline, { $count: 'total' }])]);
       const translated = rows.map(row => localizedDestination(row, locale)) as DestinationRow[];
       const result = includeCount === 'true' ? await withSiteCounts(translated, attractionFilter, pickupSlugs, { tenantId: req.tenant._id, locale }) : translated;

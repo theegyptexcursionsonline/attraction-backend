@@ -98,3 +98,36 @@ it('resolves requested-language aliases before native slugs, English native slug
   }
   expect((await request(app).get('/attractions/morskaya-progulka').query({tenantId:String(tenant),locale:'de'}).expect(200)).body.data._id).toBe(String(tour));
 });
+
+it('matches literal punctuation in translated destination searches without interpreting regex operators',async()=>{
+  const content={...destinationInput.content,name:'Bucht (Ost) + Strand',shortDescription:'Sonne . Wasser'};
+  const draft=(await request(app).put(destinationUrl()).set(auth()).send({...destinationInput,content}).expect(201)).body.data;
+  await request(app).post(`${destinationUrl()}/transition`).set(auth()).send({action:'publish',expectedUpdatedAt:draft.updatedAt}).expect(200);
+  for(const search of ['Bucht (Ost)','+ Strand','Sonne . Wasser']) {
+    const response=await request(app).get('/destinations').query({tenantId:String(tenant),locale:'de',search}).expect(200);
+    expect(response.body.pagination.total).toBe(1); expect(response.body.data[0].localizedName).toBe(content.name);
+  }
+  const response=await request(app).get('/destinations').query({tenantId:String(tenant),locale:'de',search:'.*'}).expect(200);
+  expect(response.body.data).toEqual([]); expect(response.body.pagination.total).toBe(0);
+});
+it('requires complete identity and slug uniqueness indexes before applying or rolling back a migration',async()=>{
+  const plan=await planLocalization(sourceExport,migrationPayload(),'a'.repeat(64));
+  for(const model of [AttractionTranslation,DestinationTranslation]) {
+    const actual=await model.collection.indexes();
+    const slugIndex=actual.find(index=>index.unique&&index.key.slug===1)!;
+    const identityIndex=actual.find(index=>index.unique&&index.key.slug===undefined)!;
+    for(const invalid of [
+      actual.filter(index=>index!==slugIndex),
+      actual.filter(index=>index!==identityIndex),
+      actual.map(index=>index===slugIndex?{...index,partialFilterExpression:{status:'published'}}:index),
+      actual.map(index=>index===slugIndex?{...index,sparse:true}:index),
+      actual.map(index=>index===identityIndex?{...index,key:{...index.key,extra:1}}:index),
+      actual.map(index=>index===slugIndex?{...index,collation:{locale:'en',strength:2}}:index),
+    ]) {
+      const spy=jest.spyOn(model.collection,'indexes').mockResolvedValue(invalid as any);
+      try { for(const mode of ['apply','rollback'] as const) await expect(executeLocalizationPlan(plan,plan.digest,mode)).rejects.toThrow('identity and URL uniqueness indexes'); }
+      finally {spy.mockRestore();}
+      expect(await AttractionTranslation.countDocuments({})).toBe(0); expect(await DestinationTranslation.countDocuments({})).toBe(0);
+    }
+  }
+});
