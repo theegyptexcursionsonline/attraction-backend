@@ -970,6 +970,7 @@ describe('API security and pricing guards', () => {
       reference,
       total: 94.5,
       currency: 'USD',
+      attractionId: ATTR_ID,
       guestName: 'QA Guest',
       guestEmail: 'guest@example.com',
       attractionTitle: 'Sunrise Ride',

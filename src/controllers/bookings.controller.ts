@@ -888,6 +888,7 @@ export const getBookingPaymentDetails = async (
     ]);
     sendSuccess(res, {
       bookingId: String(booking._id),
+      attractionId: String(booking.attractionId),
       reference: booking.reference,
       status: booking.status,
       paymentStatus: booking.paymentStatus,
