@@ -18,6 +18,7 @@ import { sendBookingPaymentNotice } from './bookingPaymentEmail.service';
 
 const LEASE_MS = 5 * 60_000;
 const MAX_ATTEMPTS = 5;
+const EXPIRY_NOTICE_MAX_AGE_MS = 6 * 60 * 60_000;
 type PaymentBooking = IBooking & { createdAt: Date; paymentFailureReason?: string; inventoryReleasedAt?: Date };
 class NoticeDecision extends Error {
   constructor(readonly outcome: 'suppressed' | 'retry' | 'manual_review', code: string) { super(code); }
@@ -59,8 +60,17 @@ function assertEligible(booking: PaymentBooking, kind: BookingPaymentNotificatio
       !Number.isFinite(created) || created + 30 * 60_000 <= Date.now() || booking.cancellationRequestedAt) {
       throw new NoticeDecision('suppressed', 'BOOKING_STATE_CHANGED');
     }
-  } else if (booking.status !== 'cancelled' || booking.paymentFailureReason !== 'expired' || !booking.inventoryReleasedAt) {
-    throw new NoticeDecision('suppressed', 'BOOKING_STATE_CHANGED');
+  } else {
+    if (booking.status !== 'cancelled' || booking.paymentFailureReason !== 'expired' || !booking.inventoryReleasedAt) {
+      throw new NoticeDecision('suppressed', 'BOOKING_STATE_CHANGED');
+    }
+    const failedAt = new Date(booking.paymentFailureAt || '').getTime();
+    if (!Number.isFinite(failedAt) || failedAt > Date.now()) {
+      throw new NoticeDecision('manual_review', 'PAYMENT_FAILURE_TIME_INVALID');
+    }
+    if (Date.now() - failedAt >= EXPIRY_NOTICE_MAX_AGE_MS) {
+      throw new NoticeDecision('suppressed', 'CHECKOUT_NOTICE_TOO_OLD');
+    }
   }
 }
 
@@ -146,7 +156,7 @@ export const processBookingPaymentNotifications = async (limit = 20): Promise<{
       if (latest.stripePaymentIntentId !== booking.stripePaymentIntentId || latest.total !== booking.total || latest.currency !== booking.currency ||
         JSON.stringify(latest.stripePaymentBinding) !== JSON.stringify(booking.stripePaymentBinding)) throw new NoticeDecision('retry', 'PAYMENT_CONTEXT_CHANGED');
       const renewed = await BookingPaymentNotification.updateOne({ ...fence, leaseUntil: { $gt: new Date() } }, { $set: { leaseUntil: new Date(Date.now() + LEASE_MS) } });
-      if (!renewed.modifiedCount) continue;
+      if (!renewed.modifiedCount) throw new NoticeDecision('manual_review', 'DELIVERY_NOT_STARTED');
       if (event.audience === 'customer' && event.kind === 'payment_failed') {
         // Same unique identity as the old webhook sender: rolling versions cannot
         // both send. Unknown legacy claims are never reclaimed or blindly retried.
@@ -163,7 +173,7 @@ export const processBookingPaymentNotifications = async (limit = 20): Promise<{
       // Receipt acquisition may wait on its unique index; fence again before mail.
       const sendLeaseUntil = Date.now() + LEASE_MS;
       const sendLease = await BookingPaymentNotification.updateOne({ ...fence, leaseUntil: { $gt: new Date() } }, { $set: { leaseUntil: new Date(sendLeaseUntil) } });
-      if (!sendLease.modifiedCount) continue;
+      if (!sendLease.modifiedCount) throw new NoticeDecision('manual_review', 'DELIVERY_NOT_STARTED');
       const finalBooking = await Booking.findOne({ _id: event.bookingId, tenantId: event.tenantId, ...standaloneBookingClause }).lean<PaymentBooking>();
       if (!finalBooking) throw new NoticeDecision('manual_review', 'NOTIFICATION_SCOPE_MISSING');
       assertEligible(finalBooking, event.kind);

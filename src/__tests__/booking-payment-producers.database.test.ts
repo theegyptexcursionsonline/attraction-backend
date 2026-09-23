@@ -126,3 +126,12 @@ it('includes payment notices in tenant-scoped cursor review and reconciles witho
   expect(result.status).toBe(200); expect(await BookingPaymentNotification.findById(row!._id)).toMatchObject({ status: 'resolved' });
   expect((await invoke(reconcileNotificationFailure, { params: { tenantId: String(foreignTenant), source: 'booking', id: row!._id }, body })).status).toBe(403);
 });
+
+it.each(['PAYMENT_CONTEXT_MISSING', 'PAYMENT_CONTEXT_MISMATCH', 'PAYMENT_CONTEXT_CHANGED', 'PAYMENT_STATUS_UNAVAILABLE', 'PAYMENT_STATUS_INCOMPATIBLE', 'PAYMENT_FAILURE_TIME_INVALID', 'LEGACY_DELIVERY_UNCERTAIN'])('exposes only the controlled payment review reason %s', async reason => {
+  await markCardPaymentFailed(bookingId, tenantId, 'pi_qa_followup');
+  await BookingPaymentNotification.updateMany({}, { $set: { status: 'manual_review', lastError: reason } });
+  const result = await invoke(listNotificationFailures);
+  expect(result.status).toBe(200);
+  expect(result.body.data.data).toHaveLength(2);
+  expect(result.body.data.data.every((row: { lastError: string }) => row.lastError === reason)).toBe(true);
+});

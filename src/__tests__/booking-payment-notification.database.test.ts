@@ -25,7 +25,7 @@ const tenantId = new Types.ObjectId(), bookingId = new Types.ObjectId(), attract
 const otherTenantId = new Types.ObjectId();
 const fixture = () => ({ _id: bookingId, tenantId, attractionId, reference: 'QA-PAYMENT-NOTICE',
   createdAt: new Date(), paymentMethod: 'card', paymentStatus: 'failed', status: 'pending',
-  paymentFailureReason: 'payment_failed', stripePaymentIntentId: 'pi_qa_notice',
+  paymentFailureReason: 'payment_failed', paymentFailureAt: new Date(), stripePaymentIntentId: 'pi_qa_notice',
   stripePaymentBinding: { accountId: 'acct_qa_notice', mode: 'test' }, total: 120, currency: 'EUR',
   guestDetails: { firstName: 'QA', lastName: 'Guest', email: 'guest@example.invalid' },
   items: [{ date: '2030-01-01', time: '10:00' }],
@@ -274,4 +274,42 @@ it('retains a legacy claim and quarantines when releasing it after explicit reje
   expect((await processBookingPaymentNotifications()).manualReview).toBe(1); write.mockRestore();
   expect(await EmailReceipt.findOne()).toMatchObject({ status: 'claimed' });
   expect(await BookingPaymentNotification.findOne()).toMatchObject({ lastError: 'LEGACY_DELIVERY_UNCERTAIN' });
+});
+
+
+it('suppresses both expiry notices after a pause exceeds the six-hour followup window', async () => {
+  const failedAt = new Date(Date.now() - 60_000);
+  await Booking.collection.updateOne({ _id: bookingId }, { $set: { status: 'cancelled', paymentFailureReason: 'expired', inventoryReleasedAt: failedAt, paymentFailureAt: failedAt } });
+  (retrievePaymentIntent as jest.Mock).mockResolvedValue({ ...evidence(), status: 'canceled' });
+  await enqueue('checkout_expired');
+  (paymentFollowupEnabledFor as jest.Mock).mockReturnValue(false);
+  await processBookingPaymentNotifications();
+  expect(await BookingPaymentNotification.countDocuments({ status: 'pending' })).toBe(2);
+  jest.spyOn(Date, 'now').mockReturnValue(failedAt.getTime() + 6 * 60 * 60_000);
+  (paymentFollowupEnabledFor as jest.Mock).mockReturnValue(true);
+  expect((await processBookingPaymentNotifications()).suppressed).toBe(2);
+  expect(await BookingPaymentNotification.countDocuments({ lastError: 'CHECKOUT_NOTICE_TOO_OLD' })).toBe(2);
+  expect(sendBookingPaymentNotice).not.toHaveBeenCalled();
+});
+
+it.each([undefined, new Date(Date.now() + 60_000)])('quarantines expired notices without a valid past expiry timestamp (%s)', async paymentFailureAt => {
+  await Booking.collection.updateOne({ _id: bookingId }, { $set: { status: 'cancelled', paymentFailureReason: 'expired', inventoryReleasedAt: new Date(), paymentFailureAt } });
+  await enqueue('checkout_expired');
+  expect((await processBookingPaymentNotifications()).manualReview).toBe(2);
+  expect(sendBookingPaymentNotice).not.toHaveBeenCalled();
+});
+
+it('records known non-delivery and settles its receipt when the final lease cannot renew', async () => {
+  await enqueue();
+  await BookingPaymentNotification.deleteMany({ audience: 'operator' });
+  const original = BookingPaymentNotification.updateOne.bind(BookingPaymentNotification);
+  let renewals = 0;
+  jest.spyOn(BookingPaymentNotification, 'updateOne').mockImplementation(((...args: any[]) => {
+    if (args[0].leaseUntil && ++renewals === 2) return Promise.resolve({ modifiedCount: 0 });
+    return (original as any)(...args);
+  }) as any);
+  expect((await processBookingPaymentNotifications()).manualReview).toBe(1);
+  expect(await BookingPaymentNotification.findOne()).toMatchObject({ status: 'manual_review', lastError: 'DELIVERY_NOT_STARTED' });
+  expect(await EmailReceipt.findOne()).toMatchObject({ status: 'skipped', lastError: 'DELIVERY_NOT_STARTED' });
+  expect(sendBookingPaymentNotice).not.toHaveBeenCalled();
 });
