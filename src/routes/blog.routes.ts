@@ -1,3 +1,6 @@
+import { z } from 'zod';
+import { publicCursorPlan } from '../utils/publicCursor';
+import { escapeRegex } from '../utils/helpers';
 import { Router, Request, Response } from 'express';
 import { BlogPost } from '../models/BlogPost';
 import { Tenant } from '../models/Tenant';
@@ -30,20 +33,38 @@ async function tenantBlogFilter(tenantSlug: string): Promise<Record<string, unkn
 /**
  * GET /api/blog?tenant=default&limit=24 — list published posts for a tenant.
  */
-router.get('/', async (req: Request, res: Response) => {
-  const tenant = (req.query.tenant as string) || 'default';
-  const limit = Math.min(parseInt((req.query.limit as string) || '24', 10) || 24, 50);
-  const tenantFilter = await tenantBlogFilter(tenant);
-  if (!tenantFilter) {
-    res.json({ success: true, data: [] });
-    return;
-  }
-  const posts = await BlogPost.find({ ...tenantFilter, status: 'published' })
-    .select('slug title excerpt featuredImage category tags author readTime publishedAt featured')
-    .sort({ publishedAt: -1 })
-    .limit(limit)
-    .lean();
-  res.json({ success: true, data: posts });
+router.get('/', async (req: Request, res: Response, next) => {
+  try {
+    const parsed = z.object({
+      tenant: z.string().trim().min(1).max(160).default('default'),
+      limit: z.coerce.number().int().min(1).max(50).default(24),
+      pagination: z.literal('cursor').optional(),
+      cursor: z.string().regex(/^[A-Za-z0-9_-]{1,2048}$/).optional(),
+      search: z.string().trim().max(128).optional(),
+      sort: z.enum(['newest', 'oldest']).default('newest'),
+    }).safeParse(req.query);
+    if (!parsed.success) { res.status(400).json({ success: false, error: 'Invalid journal filters' }); return; }
+    const { tenant, limit, pagination, cursor, search, sort } = parsed.data;
+    const tenantFilter = await tenantBlogFilter(tenant);
+    if (!tenantFilter) {
+      if (pagination === 'cursor') { res.status(404).json({ success: false, error: 'Tenant not found' }); return; }
+      res.json({ success: true, data: [] }); return;
+    }
+    const query = { $and: [tenantFilter, { status: 'published' }, ...(search ? [{ $or: ['title', 'excerpt', 'category'].map(field => ({ [field]: new RegExp(escapeRegex(search), 'i') })) }] : [])] };
+    const projection = 'slug title excerpt featuredImage category tags author readTime publishedAt featured';
+    if (pagination === 'cursor') {
+      const plan = publicCursorPlan(query, [{ field: 'publishedAt', direction: sort === 'oldest' ? 1 : -1, kind: 'date' }, { field: '_id', direction: sort === 'oldest' ? 1 : -1, kind: 'id' }], cursor);
+      const [rows, total] = await Promise.all([
+        BlogPost.aggregate([{ $match: query }, { $set: plan.normalized }, ...(plan.seek ? [{ $match: plan.seek }] : []), { $sort: plan.sort }, { $limit: limit + 1 }, { $project: Object.fromEntries([...projection.split(' '), '_cursor0', '_cursor1'].map(field => [field, 1])) }]),
+        BlogPost.countDocuments(query),
+      ]);
+      const result = plan.page(rows, limit, total);
+      res.setHeader('Cache-Control', 'private, no-store');
+      res.json({ success: true, data: result.rows, pagination: result.pagination }); return;
+    }
+    const posts = await BlogPost.find(query).select(projection).sort({ publishedAt: sort === 'oldest' ? 1 : -1, _id: -1 }).limit(limit).lean();
+    res.json({ success: true, data: posts });
+  } catch (error) { next(error); }
 });
 
 /**

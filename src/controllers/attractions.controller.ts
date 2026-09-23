@@ -1,3 +1,4 @@
+import { publicCursorPlan, type CursorField } from '../utils/publicCursor';
 import { resolveImageAltTexts } from '../utils/imagePresentation';
 import { publicBookingTenantSlug } from '../utils/public-booking-tenant';
 import { Response, NextFunction } from 'express';
@@ -218,6 +219,10 @@ export const getAttractions = async (
       pickupFrom,
     } = req.query;
 
+    const cursorMode = req.query.pagination === 'cursor';
+    if (cursorMode && (req.query.scope === 'admin' || ownership !== 'all' || lifecycle)) {
+      sendError(res, 'Cursor pagination is for the public catalogue', 400); return;
+    }
     const pageNum = parseInt(page as string, 10);
     const limitNum = parseInt(limit as string, 10);
 
@@ -236,7 +241,7 @@ export const getAttractions = async (
     const query: AttractionQuery = {};
 
     // Only show active attractions for public API
-    if (!req.user || req.user.role === 'customer') {
+    if (cursorMode || !req.user || req.user.role === 'customer') {
       query.status = 'active';
       query.archivedAt = { $exists: false };
       query.trashedAt = { $exists: false };
@@ -259,10 +264,11 @@ export const getAttractions = async (
       // Non-super-admin without explicit tenant context: scope to assigned tenants
       const adminRoles = ['brand-admin', 'manager', 'editor', 'viewer'];
       if (adminRoles.includes(req.user.role) && req.user.assignedTenants?.length > 0) {
-        query.tenantIds = { $in: req.user.assignedTenants };
+        query.tenantIds = { $in: req.user.assignedTenants.map(id => new Types.ObjectId(String(id))) };
       } else if (adminRoles.includes(req.user.role)) {
         // Admin with no assigned tenants sees nothing
-        sendPaginated(res, [], pageNum, limitNum, 0);
+        if (cursorMode) res.json({ success: true, data: [], pagination: { limit: limitNum, total: 0, previousCursor: null, nextCursor: null } });
+        else sendPaginated(res, [], pageNum, limitNum, 0);
         return;
       }
     }
@@ -301,7 +307,8 @@ export const getAttractions = async (
     // areas count, so a crafted slug can never widen a listing or reach another site.
     if (typeof pickupFrom === 'string' && pickupFrom) {
       if (!req.tenant || !tenantPickupDestinationSlugs(req.tenant).includes(pickupFrom.trim().toLowerCase())) {
-        sendPaginated(res, [], pageNum, limitNum, 0);
+        if (cursorMode) res.json({ success: true, data: [], pagination: { limit: limitNum, total: 0, previousCursor: null, nextCursor: null } });
+        else sendPaginated(res, [], pageNum, limitNum, 0);
         return;
       }
       query.hasHotelPickup = true;
@@ -337,7 +344,27 @@ export const getAttractions = async (
     // Ties fall back to featured then rating so the order stays deterministic.
     else if (sort === 'sortOrder') sortOption = { sortOrder: 1, featured: -1, rating: -1 };
 
-    const isAdminRequest = !!req.user && req.user.role !== 'customer';
+    const isAdminRequest = !cursorMode && !!req.user && req.user.role !== 'customer';
+    if (cursorMode) {
+      if (!['-createdAt', 'recommended', 'price-low', 'price-high', 'rating', 'popularity', 'sortOrder'].includes(String(sort))) {
+        sendError(res, 'Select a supported catalogue order', 400); return;
+      }
+      const fields: CursorField[] = Object.entries({ ...sortOption, _id: -1 as const }).map(([field, direction]) => ({
+        field, direction, kind: field === '_id' ? 'id' : field === 'createdAt' ? 'date' : field === 'featured' ? 'boolean' : 'number',
+      }));
+      const plan = publicCursorPlan(query, fields, req.query.cursor as string | undefined);
+      const [rows, total] = await Promise.all([
+        Attraction.aggregate([
+          { $match: query }, { $set: plan.normalized }, ...(plan.seek ? [{ $match: plan.seek }] : []),
+          { $sort: plan.sort }, { $limit: limitNum + 1 },
+          { $project: Object.fromEntries([...PUBLIC_ATTRACTION_FIELDS, ...fields.map((_field, index) => `_cursor${index}`)].map(field => [field, 1])) },
+        ]), Attraction.countDocuments(query),
+      ]);
+      const result = plan.page(rows, limitNum, total);
+      res.setHeader('Cache-Control', 'private, no-store');
+      res.json({ success: true, data: result.rows.map(toPublicAttractionDto), pagination: result.pagination });
+      return;
+    }
     const attractionsQuery = Attraction.find(query).select(
       isAdminRequest ? `${PUBLIC_ATTRACTION_PROJECTION} tenantIds ownerTenantId presentationRevision` : PUBLIC_ATTRACTION_PROJECTION
     );
@@ -372,6 +399,22 @@ export const getAttractions = async (
   } catch (error) {
     next(error);
   }
+};
+
+/** Lightweight public route decision before SSR can stream its HTTP status.
+ * Full descriptions/pricing are fetched only by the document reader. */
+export const getAttractionRouteStatus = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if (!req.tenant) { sendError(res, 'Tenant context required', 400); return; }
+    const slug = req.params.slug;
+    if (!/^[a-z0-9][a-z0-9-]{0,239}$/i.test(slug)) { sendError(res, 'Attraction not found', 404); return; }
+    const attraction = await Attraction.findOne({
+      $or: [{ pathSlug: slug }, { slug }], status: 'active', tenantIds: { $in: [req.tenant._id] },
+    }).select('_id slug pathSlug status').lean();
+    res.setHeader('Cache-Control', 'private, no-store');
+    if (!attraction) { sendError(res, 'Attraction not found', 404); return; }
+    sendSuccess(res, { ...attraction, bookingTenantSlug: req.tenant.slug });
+  } catch (error) { next(error); }
 };
 
 export const getAttractionBySlug = async (

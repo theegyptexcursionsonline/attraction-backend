@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   getAttractions,
   getAttractionBySlug,
+  getAttractionRouteStatus,
   getAttractionById,
   getAttractionReviews,
   getAttractionAvailability,
@@ -221,6 +222,7 @@ router.get(
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
+router.get('/:slug/route-status', optionalTenant, getAttractionRouteStatus);
 router.get('/:slug', optionalAuth, optionalTenant, getAttractionBySlug);
 
 /**

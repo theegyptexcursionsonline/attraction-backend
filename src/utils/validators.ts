@@ -669,6 +669,8 @@ export const regexSearchSchema = z
   .optional();
 
 export const attractionFiltersSchema = z.object({
+  pagination: z.literal('cursor').optional(),
+  cursor: z.string().regex(/^[A-Za-z0-9_-]{1,2048}$/).optional(),
   category: z.string().optional(),
   destination: regexSearchSchema,
   minPrice: z.coerce.number().optional(),
