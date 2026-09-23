@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 import { validate } from '../middleware/validate.middleware';
 import { createBookingSchema } from '../utils/validators';
 import { getCommerceItem, quoteCommerceCheckout, claimCommercePurchase, acknowledgeCommercePurchase } from '../controllers/storefrontCommerce.controller';
+import { getBundleCommerceItem, getBundleCommerceCheckout, claimBundleCommercePurchase, acknowledgeBundleCommercePurchase } from '../controllers/bundleCommerce.controller';
 const router = Router();
 // Measurement must never consume the customer booking/payment rate budget.
 const commerceLimiter = rateLimit({ windowMs: 60_000, max: 120, standardHeaders: true, legacyHeaders: false, skip: () => process.env.NODE_ENV === 'test' });
@@ -15,4 +16,8 @@ router.get('/item/:id', getCommerceItem);
 router.post('/checkout', validate(createBookingSchema.pick({ attractionId: true, items: true, promoCode: true }).strict()), quoteCommerceCheckout);
 router.post('/purchase/:reference/claim', validate(z.object({ consent: z.literal(true) }).strict()), claimCommercePurchase);
 router.post('/purchase/:reference/ack', validate(z.object({ claimToken: z.string().regex(/^[a-f0-9]{48}$/) }).strict()), acknowledgeCommercePurchase);
+router.get('/bundle/item/:id', getBundleCommerceItem);
+router.post('/bundle/checkout', validate(z.object({ quoteId: z.string().regex(/^[a-f0-9]{24}$/i) }).strict()), getBundleCommerceCheckout);
+router.post('/bundle/purchase/:id/claim', validate(z.object({ consent: z.literal(true) }).strict()), claimBundleCommercePurchase);
+router.post('/bundle/purchase/:id/ack', validate(z.object({ claimToken: z.string().regex(/^[a-f0-9]{48}$/) }).strict()), acknowledgeBundleCommercePurchase);
 export default router;
