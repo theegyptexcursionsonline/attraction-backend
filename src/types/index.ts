@@ -152,6 +152,8 @@ export interface ITenant extends Document {
     verificationCodes: { provider: 'google' | 'bing' | 'facebook' | 'pinterest'; code: string }[];
   };
   trackingSettingsRevision?: number;
+  pageSeo?: import('../utils/pageSeo').PageSeo;
+  pageSeoRevision?: number;
   paymentSettings?: {
     stripeAccountId?: string;
     enabledGateways: string[];

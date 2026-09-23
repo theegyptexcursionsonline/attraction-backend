@@ -1,3 +1,4 @@
+import { pageSeoUpdateSchema, publicPageSeo, withoutPageSeoFields } from '../utils/pageSeo';
 import { Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
 import { Tenant } from '../models/Tenant';
@@ -60,6 +61,7 @@ const PUBLIC_TENANT_FIELDS = [
   'status',
   'seoSettings',
   'trackingSettings',
+  'pageSeo',
   'contactInfo',
   'socialLinks',
   'aiSettings',
@@ -94,6 +96,7 @@ export const toPublicTenantDto = (source: unknown): Record<string, unknown> => {
 
   if (dto.navigation !== undefined) { const parsed = navigationSchema.safeParse(dto.navigation); dto.navigation = parsed.success ? parsed.data : []; }
   if (dto.aiSettings !== undefined) dto.aiSettings = publicAiSettings(dto.aiSettings);
+  if (dto.pageSeo !== undefined) dto.pageSeo = publicPageSeo(dto.pageSeo);
   if (dto.trackingSettings !== undefined) dto.trackingSettings = publicTrackingSettings(dto.trackingSettings);
 
   const paymentSettings = record.paymentSettings;
@@ -639,7 +642,7 @@ export const removeCustomDomain = async (
 
 /** Preserve old clients that echo newly added read fields during ordinary saves. */
 export const stripUnversionedTrackingUpdate = (req: AuthRequest, _res: Response, next: NextFunction): void => {
-  req.body = withoutTrackingSettingsFields(req.body);
+  req.body = withoutPageSeoFields(withoutTrackingSettingsFields(req.body));
   next();
 };
 
@@ -649,7 +652,7 @@ export const createTenant = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    req.body = withoutTrackingSettingsFields(req.body);
+    req.body = withoutPageSeoFields(withoutTrackingSettingsFields(req.body));
     // A new site starts with AI products off; a super admin switches them on in the AI products card
     // so the change carries a revision and an audit stamp.
     const { aiProductsRevision: _revision, ...createBody } = req.body as Record<string, unknown>;
@@ -723,6 +726,8 @@ function withoutAiProductControls(body: Record<string, unknown>): Record<string,
 
 function adminTenantAiView<T extends object>(tenant: T, isSuperAdmin: boolean): T {
   const view = { ...tenant } as Record<string, unknown>;
+  view.pageSeo = publicPageSeo(view.pageSeo);
+  view.pageSeoRevision = trackingRevisionOf(view.pageSeoRevision);
   view.trackingSettings = publicTrackingSettings(view.trackingSettings);
   view.trackingSettingsRevision = trackingRevisionOf(view.trackingSettingsRevision);
   if (view.aiSettings !== undefined) view.aiSettings = adminAiSettings(view.aiSettings, { includeAudit: isSuperAdmin });
@@ -834,6 +839,44 @@ export const updateTenantTrackingSettings = async (
   } catch (error) { next(error); }
 };
 
+export const updateTenantPageSeo = async (
+  req: AuthRequest, res: Response, next: NextFunction
+): Promise<void> => {
+  try {
+    if (!req.user || !['super-admin', 'brand-admin'].includes(req.user.role)) {
+      sendError(res, 'Site administrator access required', req.user ? 403 : 401); return;
+    }
+    const { id } = req.params;
+    if (!Types.ObjectId.isValid(id)) { sendError(res, 'Tenant not found', 404); return; }
+    const parsed = pageSeoUpdateSchema.safeParse(req.body);
+    if (!parsed.success) { sendError(res, 'Invalid page SEO: ' + parsed.error.issues[0].message, 400); return; }
+    const { expectedRevision, pages } = parsed.data;
+    const pageSeo = { version: 1 as const, pages };
+    const siteFilter = req.user.role === 'super-admin' ? { _id: id } : {
+      _id: { $eq: id, $in: req.user.assignedTenants || [] },
+    };
+    const tenant = await Tenant.findOneAndUpdate({
+      ...siteFilter,
+      // Missing/null revisions on older tenants represent the initial snapshot.
+      pageSeoRevision: expectedRevision === 0 ? { $in: [0, null] } : expectedRevision,
+    }, { $set: { pageSeo, pageSeoRevision: expectedRevision + 1 } }, {
+      new: true, runValidators: true, lean: true,
+    });
+    if (!tenant) {
+      if (!await Tenant.exists(siteFilter)) { sendError(res, 'Tenant not found', 404); return; }
+      sendError(res, 'Page SEO changed. Reload and try again.', 409); return;
+    }
+    console.info('[tenants] page SEO updated', {
+      tenantId: String(tenant._id), actorId: String(req.user._id), revision: expectedRevision + 1,
+      configuredPageCount: Object.keys(pages).length,
+    });
+    sendSuccess(res, {
+      pageSeo: publicPageSeo(tenant.pageSeo),
+      pageSeoRevision: trackingRevisionOf(tenant.pageSeoRevision),
+    }, 'Page SEO updated');
+  } catch (error) { next(error); }
+};
+
 export const updateTenant = async (
   req: AuthRequest,
   res: Response,
@@ -841,7 +884,7 @@ export const updateTenant = async (
 ): Promise<void> => {
   try {
     if (!req.user || req.user.role !== 'super-admin') { sendError(res, 'Super admin access required', req.user ? 403 : 401); return; }
-    req.body = withoutTrackingSettingsFields(req.body);
+    req.body = withoutPageSeoFields(withoutTrackingSettingsFields(req.body));
     if (Object.keys(req.body).some(key => key.startsWith('customPages.'))) {
       sendError(res, 'Use the Pages editor to update website pages', 400); return;
     }
@@ -927,7 +970,7 @@ export const updateTenantSettings = async (
     if (!req.user || !['super-admin', 'brand-admin'].includes(req.user.role)) {
       sendError(res, 'Site administrator access required', req.user ? 403 : 401); return;
     }
-    req.body = withoutTrackingSettingsFields(req.body);
+    req.body = withoutPageSeoFields(withoutTrackingSettingsFields(req.body));
     const { id } = req.params;
     if (!Types.ObjectId.isValid(id)) { sendError(res, 'Tenant not found', 404); return; }
 

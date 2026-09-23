@@ -1,3 +1,4 @@
+import { pageSeoSchema } from '../utils/pageSeo';
 import { pagePresentationSchema } from '../utils/siteContent';
 import { urlNamespacePlugin } from '../plugins/urlNamespace';
 import mongoose, { Schema } from 'mongoose';
@@ -227,6 +228,12 @@ const tenantSchema = new Schema<ITenant>(
       set: (value: unknown) => value === undefined ? undefined : trackingSettingsSchema.parse(value),
       validate: (value: unknown) => value === undefined || trackingSettingsSchema.safeParse(plainTrackingValue(value)).success,
     },
+    pageSeo: {
+      type: Schema.Types.Mixed, default: undefined,
+      set: (value: unknown) => value === undefined ? undefined : pageSeoSchema.parse(value),
+      validate: (value: unknown) => value === undefined || pageSeoSchema.safeParse(value).success,
+    },
+    pageSeoRevision: { type: Number, default: 0, min: 0, validate: Number.isSafeInteger },
     trackingSettingsRevision: { type: Number, default: 0, min: 0, validate: Number.isSafeInteger },
     paymentSettings: {
       stripeAccountId: String,
@@ -367,6 +374,12 @@ tenantSchema.pre(['updateOne', 'updateMany', 'findOneAndUpdate'], function () {
     const fields = operator.startsWith('$') && raw && typeof raw === 'object'
       ? raw as Record<string, unknown> : { [operator]: raw };
     for (const [field, value] of Object.entries(fields)) {
+      if (field === 'pageSeo') {
+        if (operator.startsWith('$') && !['$set', '$setOnInsert'].includes(operator)) throw new Error('Replace the full page SEO snapshot');
+        fields[field] = pageSeoSchema.parse(value);
+      } else if (field.startsWith('pageSeo.')) {
+        throw new Error('Replace the full page SEO snapshot');
+      }
       if (field === 'trackingSettings') {
         if (operator.startsWith('$') && !['$set', '$setOnInsert'].includes(operator)) throw new Error('Replace the full tracking settings snapshot');
         fields[field] = trackingSettingsSchema.parse(value);

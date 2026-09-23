@@ -15,6 +15,7 @@ import {
   updateTenantSettings,
   updateTenantAiProducts,
   updateTenantTrackingSettings,
+  updateTenantPageSeo,
   stripUnversionedTrackingUpdate,
   deleteTenant,
   getTenantStats,
@@ -316,6 +317,8 @@ router.post(
  * Body: { expectedRevision, googleTagManagerId, googleAnalyticsId, verificationCodes }.
  * Empty strings and [] clear settings; stale revisions return 409.
  */
+router.patch('/:id/page-seo', authenticate, requireRole('super-admin', 'brand-admin'), updateTenantPageSeo);
+
 router.patch(
   '/:id/tracking-settings',
   authenticate,
