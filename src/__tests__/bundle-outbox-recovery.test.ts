@@ -73,7 +73,7 @@ const eventSnapshot = (status = 'dead_letter') => ({
   eventType: 'bundle.component_confirmed',
   status,
   attempts: 8,
-  lastError: 'Recipient mailbox is not configured',
+  lastError: 'DELIVERY_NOT_STARTED',
   createdAt: new Date('2026-08-14T08:00:00.000Z'),
   updatedAt: new Date('2026-08-14T09:00:00.000Z'),
 });
@@ -263,4 +263,14 @@ describe('Bundle outbox dead-letter recovery', () => {
     expect(result.replayed).toBe(true);
     expect(BundleOutboxEvent.findOneAndUpdate).not.toHaveBeenCalled();
   });
+});
+
+it.each(['DELIVERY_UNCERTAIN', 'DELIVERY_UNCERTAIN_LEASE_EXPIRED', 'old unclassified provider response'])('blocks blind redrive for %s', async (lastError) => {
+  (BundleOutboxRecovery.findOne as jest.Mock).mockReturnValue(chain(null));
+  (runBundleTransaction as jest.Mock).mockImplementation(async (work) => work(session));
+  (BundleOutboxEvent.findById as jest.Mock).mockReturnValue(sessionResult({ ...eventDocument(), lastError }));
+  (BundleOrder.findOne as jest.Mock).mockReturnValue(chain({ _id: orderId, storefrontTenantId }));
+  const writes = (BundleOutboxEvent.findOneAndUpdate as jest.Mock).mock.calls.length;
+  await expect(redriveBundleOutboxDeadLetter({ eventId: String(eventMongoId), storefrontTenantId: String(storefrontTenantId), operationId, reason: 'Review', actorId })).rejects.toThrow('uncertain or legacy failures require reconciliation');
+  expect((BundleOutboxEvent.findOneAndUpdate as jest.Mock).mock.calls.length).toBe(writes);
 });

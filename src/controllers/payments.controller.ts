@@ -1070,6 +1070,11 @@ export const refundPayment = async (
       return;
     }
 
+    if (booking.cancellationRequestedAt) {
+      sendError(res, 'Cancellation is being reconciled; do not submit a separate refund', 409);
+      return;
+    }
+
     if (!booking.stripePaymentIntentId) {
       sendError(res, 'No payment found for this booking', 400);
       return;

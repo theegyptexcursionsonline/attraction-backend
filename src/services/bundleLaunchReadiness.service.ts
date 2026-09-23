@@ -512,7 +512,7 @@ export const loadBundleOutboxHealth = async (
     outboxPendingCount: number;
     outboxDeadLetterCount: number;
   }>([
-    { $match: { status: { $in: ['pending', 'processing', 'retry', 'dead_letter'] }, orderId: { $exists: true } } },
+    { $match: { status: { $in: ['pending', 'processing', 'retry', 'dead_letter', 'manual_review'] }, orderId: { $exists: true } } },
     {
       $lookup: {
         from: BundleOrder.collection.name,

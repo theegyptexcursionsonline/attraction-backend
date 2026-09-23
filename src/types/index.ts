@@ -426,6 +426,7 @@ export interface IBooking extends Document {
   }>;
   inventoryReservedAt?: Date;
   inventoryReleasedAt?: Date;
+  cancellationRequestedAt?: Date;
   inventoryReservations?: Array<{
     date: Date;
     time?: string;

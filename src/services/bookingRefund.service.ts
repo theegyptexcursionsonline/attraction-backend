@@ -9,14 +9,8 @@ import { listPaymentIntentRefunds } from './stripe.service';
 import { runBookingTransaction, sessionOption } from './bookingInventory.service';
 import { enqueueBookingOperatorNotification } from './bookingOperatorNotification.service';
 
-/**
- * Stripe refund metadata key/value that marks a refund created by the customer
- * cancellation flow. That flow owns the booking transition (status cancelled +
- * inventory release) inside its own transaction, so webhook reconciliation must
- * never race it into a different terminal state.
- */
-export const ATN_REFUND_FLOW_KEY = 'atnRefundFlow';
-export const ATN_CANCELLATION_REFUND_FLOW = 'booking-cancellation';
+import { ATN_CANCELLATION_REFUND_FLOW, ATN_REFUND_FLOW_KEY, isCancellationRefund, finalizeBookingCancellation } from './bookingCancellation.service';
+export { ATN_CANCELLATION_REFUND_FLOW, ATN_REFUND_FLOW_KEY } from './bookingCancellation.service';
 
 export type RefundLedgerStatus = 'pending' | 'succeeded' | 'failed';
 
@@ -248,16 +242,12 @@ export const reconcileBookingStripeRefunds = async (input: {
     });
   }
 
-  const cancellationOwned = providerRefunds.some(
-    (refund) => refund.metadata?.[ATN_REFUND_FLOW_KEY] === ATN_CANCELLATION_REFUND_FLOW
-  );
-  if (
-    cancellationOwned &&
-    ['pending', 'confirmed'].includes(booking.status) &&
-    !booking.inventoryReleasedAt
-  ) {
-    refundLog('warn', 'deferred_to_cancellation_flow', logFields);
-    return { ...result, outcome: 'deferred-to-cancellation' };
+  const cancellationOwned = providerRefunds.some((refund) => isCancellationRefund(refund, booking));
+  if (cancellationOwned && !booking.inventoryReleasedAt && ['pending', 'confirmed', 'refunded'].includes(booking.status)) {
+    // Complete both modern durable commands and legacy interrupted cancellation
+    // refunds. Provider reads above establish account, payment and metadata scope.
+    await finalizeBookingCancellation(booking._id, booking.tenantId, providerRefunds);
+    return { ...result, outcome: 'applied', fullRefund: true };
   }
 
   if (!['succeeded', 'refunded'].includes(booking.paymentStatus)) {

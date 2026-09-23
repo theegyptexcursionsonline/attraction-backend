@@ -35,6 +35,8 @@ import { processBundleOutboxBatch } from './services/bundleOutbox.service';
 import { sweepBookingReminders } from './services/bookingReminder.service';
 import { redactUrlForLogs } from './utils/safe-logging';
 import { startImageGenerationWorker } from './services/image-generation-job.service';
+import { BookingCancellation } from './models/BookingCancellation';
+import { processPendingBookingCancellations } from './services/bookingCancellation.service';
 import { ensureBookingOperatorNotificationIndexes, processBookingOperatorNotifications } from './services/bookingOperatorNotification.service';
 
 export const createApp = (): express.Application => {
@@ -147,6 +149,18 @@ export const startServer = async (): Promise<void> => {
     // Connect to database
     await connectDatabase();
     await ensureBookingOperatorNotificationIndexes();
+    await BookingCancellation.createIndexes();
+    let cancellationSweepRunning = false;
+    const reconcileCancellations = async (): Promise<void> => {
+      if (cancellationSweepRunning) return;
+      cancellationSweepRunning = true;
+      try { await processPendingBookingCancellations(); }
+      catch { console.error('[booking-cancellations] recovery sweep failed; durable commands retained'); }
+      finally { cancellationSweepRunning = false; }
+    };
+    void reconcileCancellations();
+    const cancellationSweep = setInterval(reconcileCancellations, 30_000);
+    cancellationSweep.unref();
     let operatorSweepRunning = false;
     const deliverOperatorStatus = async (): Promise<void> => {
       if (operatorSweepRunning) return;

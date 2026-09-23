@@ -220,6 +220,7 @@ bookingSchema.add({
   }],
   // Makes inventory release idempotent across cancellation and payment-failure
   // cleanup paths.
+  cancellationRequestedAt: { type: Date },
   inventoryReleasedAt: {
     type: Date,
   },

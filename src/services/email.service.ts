@@ -1195,10 +1195,10 @@ export const sendBookingStatusEmail = async (
   email: string,
   details: BookingStatusEmailDetails,
   tenant: EmailTenant | null
-): Promise<void> => {
+): Promise<EmailSendResult> => {
   const brand = getEmailBrand(tenant);
   const { html, text } = renderBookingStatusEmail(brand, details);
-  await sendEmail({
+  return sendEmail({
     to: email,
     subject: emailSubject(
       details.kind === 'cancelled' ? 'Booking cancelled' : 'Refund processed',

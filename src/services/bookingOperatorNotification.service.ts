@@ -3,7 +3,8 @@ import { ClientSession, Types } from 'mongoose';
 import { Booking } from '../models/Booking';
 import { Tenant } from '../models/Tenant';
 import { BookingOperatorNotification } from '../models/BookingOperatorNotification';
-import { sendOperatorBookingStatusEmail } from './email.service';
+import { generateBookingAccessToken } from '../utils/bookingAccess';
+import { sendOperatorBookingStatusEmail, sendBookingStatusEmail } from './email.service';
 import { bookingNotificationEmail, notificationCopyEmails } from '../utils/notificationRecipients';
 
 const LEASE_MS = 5 * 60_000;
@@ -19,7 +20,7 @@ export const enqueueBookingOperatorNotification = async (
     _id: unknown; tenantId: unknown; reference: string; currency: string;
     guestDetails: { firstName?: string; lastName?: string; email?: string }; total: number;
   },
-  event: { kind: 'cancelled' | 'refunded'; refundAmount?: number; fullRefund?: boolean; eventKey: string },
+  event: { kind: 'cancelled' | 'refunded'; refundAmount?: number; fullRefund?: boolean; eventKey: string; audience?: 'operator' | 'customer' },
   session?: ClientSession
 ): Promise<void> => {
   if (!event.eventKey || event.eventKey.length > 200 || !['cancelled', 'refunded'].includes(event.kind)) {
@@ -31,10 +32,10 @@ export const enqueueBookingOperatorNotification = async (
   const tenantId = new Types.ObjectId(String(booking.tenantId));
   const bookingId = new Types.ObjectId(String(booking._id));
   const id = crypto.createHash('sha256')
-    .update(JSON.stringify([String(tenantId), String(bookingId), event.kind, event.eventKey])).digest('hex');
+    .update(JSON.stringify([String(tenantId), String(bookingId), event.kind, event.eventKey, ...(event.audience === 'customer' ? ['customer'] : [])])).digest('hex');
   try {
     await BookingOperatorNotification.updateOne({ _id: id }, { $setOnInsert: {
-      bookingId, tenantId, kind: event.kind, refundAmount: event.refundAmount,
+      bookingId, tenantId, audience: event.audience || 'operator', kind: event.kind, refundAmount: event.refundAmount,
       fullRefund: event.fullRefund, status: 'pending', attempts: 0, nextAttemptAt: new Date(),
     } }, { upsert: true, runValidators: true, ...(session ? { session } : {}) });
   } catch (error) {
@@ -79,31 +80,35 @@ export const processBookingOperatorNotifications = async (limit = 20): Promise<{
     try {
       const [booking, tenant] = await Promise.all([
         Booking.findOne({ _id: event.bookingId, tenantId: event.tenantId })
-          .select('reference currency guestDetails.firstName guestDetails.lastName').lean(),
+          .select('reference currency guestDetails.firstName guestDetails.lastName guestDetails.email').lean(),
         Tenant.findById(event.tenantId)
           .select('name slug customDomain domainMigrated contactInfo theme logo defaultLanguage defaultCurrency timezone notificationSettings').lean(),
       ]);
       if (!booking || !tenant) {
         lastError = 'NOTIFICATION_SCOPE_MISSING';
       } else {
-        const recipient = bookingNotificationEmail(tenant);
+        const customer = event.audience === 'customer';
+        const recipient = customer ? booking.guestDetails.email : bookingNotificationEmail(tenant);
         if (!recipient) {
-          lastError = 'OPERATOR_RECIPIENT_MISSING';
+          lastError = customer ? 'CUSTOMER_RECIPIENT_MISSING' : 'OPERATOR_RECIPIENT_MISSING';
         } else {
           // Validate the primary and copies before any external effect.
           notificationCopyEmails([recipient]);
-          notificationCopyEmails(tenant.notificationSettings?.bookingCcEmails, recipient);
+          if (!customer) notificationCopyEmails(tenant.notificationSettings?.bookingCcEmails, recipient);
           const renewed = await BookingOperatorNotification.updateOne({ ...fence, leaseUntil: { $gt: new Date() } }, {
             $set: { leaseUntil: new Date(Date.now() + LEASE_MS) },
           });
           if (!renewed.modifiedCount) continue;
           providerStarted = true;
-          const result = await sendOperatorBookingStatusEmail({
+          const details = {
             reference: booking.reference,
             guestName: `${booking.guestDetails.firstName || ''} ${booking.guestDetails.lastName || ''}`.trim(),
             kind: event.kind, refundAmount: event.refundAmount,
             currency: booking.currency, fullRefund: event.fullRefund,
-          }, tenant);
+          };
+          const result = customer
+            ? await sendBookingStatusEmail(recipient, { ...details, guestAccessToken: generateBookingAccessToken(String(event.bookingId), booking.reference) }, tenant)
+            : await sendOperatorBookingStatusEmail(details, tenant);
           status = result.status === 'sent' ? 'sent' : 'manual_review';
           lastError = result.status === 'sent' ? '' : `DELIVERY_SKIPPED_${result.reason.toUpperCase()}`;
         }

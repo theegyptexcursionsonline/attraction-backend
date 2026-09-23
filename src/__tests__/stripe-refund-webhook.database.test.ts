@@ -1,3 +1,4 @@
+import { BookingCancellation } from '../models/BookingCancellation';
 import { BookingOperatorNotification } from '../models/BookingOperatorNotification';
 import { cancelBooking } from '../controllers/bookings.controller';
 import { spawnSync } from 'child_process';
@@ -146,6 +147,7 @@ beforeEach(async () => {
     User.collection.deleteMany({}),
     WebhookEvent.collection.deleteMany({}),
     BookingOperatorNotification.collection.deleteMany({}),
+    BookingCancellation.collection.deleteMany({}),
   ]);
   await Tenant.collection.insertOne({ _id: tenantId, slug: 'refund-tenant', domain: 'refund-tenant.invalid', name: 'Refund tenant' });
   await User.collection.insertOne({ _id: userId, email: 'qa-refund@example.invalid', totalSpent: 105 });
@@ -193,7 +195,7 @@ describe('Stripe refund webhook reconciliation', () => {
     expect(booking.refunds).toEqual([expect.objectContaining({ providerRefundId: 're_dashboard_full', amount: 105, status: 'succeeded' })]);
     expect(await loadSpent()).toBe(0);
     expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
-    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId, audience: 'operator' })).toBe(1);
     expect(sendBookingStatusEmail).toHaveBeenCalledWith(
       'theegyptexcursionsonline@gmail.com',
       expect.objectContaining({ kind: 'refunded', refundAmount: 105, fullRefund: true }),
@@ -231,7 +233,7 @@ describe('Stripe refund webhook reconciliation', () => {
     expect(bodyOf(replay)).toEqual({ received: true, duplicate: true });
     expect(listPaymentIntentRefunds).toHaveBeenCalledTimes(1);
     expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
-    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId, audience: 'operator' })).toBe(1);
     expect(await loadSpent()).toBe(0);
     expect((await loadBooking()).refunds).toHaveLength(1);
   });
@@ -248,7 +250,7 @@ describe('Stripe refund webhook reconciliation', () => {
     expect(bodyOf(admin)).toEqual(expect.objectContaining({ success: true }));
     await flush();
     expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
-    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId, audience: 'operator' })).toBe(1);
 
     (listPaymentIntentRefunds as jest.Mock).mockResolvedValue([providerRefund({ id: 're_admin' })]);
     const res = await invoke(handleWebhook, webhookRequest(chargeRefundedEvent('evt_after_admin')));
@@ -261,7 +263,7 @@ describe('Stripe refund webhook reconciliation', () => {
     expect(booking.status).toBe('refunded');
     expect(await loadSpent()).toBe(0);
     expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
-    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId, audience: 'operator' })).toBe(1);
   });
 
   it('keeps a single email and decrement when the webhook lands before the admin request finishes', async () => {
@@ -284,7 +286,7 @@ describe('Stripe refund webhook reconciliation', () => {
     await flush();
 
     expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
-    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId, audience: 'operator' })).toBe(1);
     expect(await loadSpent()).toBe(0);
     expect((await loadBooking()).refunds).toHaveLength(1);
   });
@@ -333,7 +335,7 @@ describe('Stripe refund webhook reconciliation', () => {
     expect(booking.refundedAmount).toBe(105);
     expect(warnEvents()).toContain('refund_reversed_manual_review');
     expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
-    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId, audience: 'operator' })).toBe(1);
   });
 
   it('is safe against out-of-order delivery because provider state is authoritative', async () => {
@@ -354,7 +356,7 @@ describe('Stripe refund webhook reconciliation', () => {
     expect(booking.refunds).toEqual([expect.objectContaining({ status: 'succeeded' })]);
     expect(booking.paymentStatus).toBe('refunded');
     expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
-    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId, audience: 'operator' })).toBe(1);
   });
 
   it('applies money and email exactly once when two deliveries race', async () => {
@@ -373,7 +375,7 @@ describe('Stripe refund webhook reconciliation', () => {
     expect(booking.paymentStatus).toBe('refunded');
     expect(await loadSpent()).toBe(0);
     expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
-    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId, audience: 'operator' })).toBe(1);
   });
 
   it('fails closed and records nothing when Stripe cannot list the refunds', async () => {
@@ -400,20 +402,20 @@ describe('Stripe refund webhook reconciliation', () => {
     expect(await WebhookEvent.countDocuments({ eventId: 'evt_early' })).toBe(0);
   });
 
-  it('leaves an in-flight customer cancellation refund to the cancellation flow', async () => {
-    await insertBooking();
+  it('recovers an interrupted legacy customer cancellation from authoritative provider evidence', async () => {
+    await insertBooking({ attractionId: new Types.ObjectId(), subtotal: 105, guestDetails: { firstName: 'QA', lastName: 'Guest', email: 'qa@example.invalid', phone: '+200000000000', country: 'EG' } });
     (listPaymentIntentRefunds as jest.Mock).mockResolvedValue([
-      providerRefund({ id: 're_cancel', metadata: { [ATN_REFUND_FLOW_KEY]: ATN_CANCELLATION_REFUND_FLOW } }),
+      providerRefund({ id: 're_cancel', metadata: { [ATN_REFUND_FLOW_KEY]: ATN_CANCELLATION_REFUND_FLOW, bookingId: String(bookingId), tenantId: String(tenantId) } }),
     ]);
     const res = await invoke(handleWebhook, webhookRequest(chargeRefundedEvent('evt_cancel')));
     await flush();
 
-    expect(bodyOf(res)).toEqual(expect.objectContaining({ refund: 'deferred-to-cancellation' }));
+    expect(bodyOf(res)).toEqual(expect.objectContaining({ refund: 'applied' }));
     const booking = await loadBooking();
-    expect(booking.status).toBe('confirmed');
-    expect(booking.paymentStatus).toBe('succeeded');
-    expect(booking.refundedAmount).toBe(0);
-    expect(await loadSpent()).toBe(105);
+    expect(booking.status).toBe('cancelled');
+    expect(booking.paymentStatus).toBe('refunded');
+    expect(booking.refundedAmount).toBe(105);
+    expect(await loadSpent()).toBe(0);
     expect(sendBookingStatusEmail).not.toHaveBeenCalled();
   });
 
@@ -427,7 +429,7 @@ describe('Stripe refund webhook reconciliation', () => {
     });
     await User.collection.updateOne({ _id: userId }, { $set: { totalSpent: 0 } });
     (listPaymentIntentRefunds as jest.Mock).mockResolvedValue([
-      providerRefund({ id: 're_cancel', metadata: { [ATN_REFUND_FLOW_KEY]: ATN_CANCELLATION_REFUND_FLOW } }),
+      providerRefund({ id: 're_cancel', metadata: { [ATN_REFUND_FLOW_KEY]: ATN_CANCELLATION_REFUND_FLOW, bookingId: String(bookingId), tenantId: String(tenantId) } }),
     ]);
     await invoke(handleWebhook, webhookRequest(chargeRefundedEvent('evt_cancel_late')));
     await flush();
@@ -443,26 +445,28 @@ describe('Stripe refund webhook reconciliation', () => {
 
 
 describe('operator status event persistence', () => {
-  it('persists the cancellation and one operator alert even when customer email fails', async () => {
+  it('persists both cancellation audiences without sending email in the request', async () => {
     await insertBooking({
       attractionId: new Types.ObjectId(), subtotal: 105,
       guestDetails: { firstName: 'QA', lastName: 'Guest', email: 'theegyptexcursionsonline@gmail.com', phone: '+200000000000', country: 'EG' },
     });
-    (createRefund as jest.Mock).mockResolvedValue({ id: 're_cancel', status: 'succeeded', amount: 10500 });
-    (sendBookingStatusEmail as jest.Mock).mockRejectedValueOnce(new Error('customer provider rejection'));
+    (listPaymentIntentRefunds as jest.Mock).mockResolvedValue([]);
+    (createRefund as jest.Mock).mockResolvedValue({ id: 're_cancel', status: 'succeeded', amount: 10500, paymentIntentId: INTENT });
+
     const request = { params: { id: String(bookingId) }, user: { _id: userId, role: 'customer' } };
     const res = await invoke(cancelBooking, request);
     await flush();
     expect(statusOf(res)).toBe(200);
     expect((await loadBooking()).status).toBe('cancelled');
-    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId, audience: 'operator' })).toBe(1);
     expect(statusOf(await invoke(cancelBooking, request))).toBe(409);
-    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId, audience: 'operator' })).toBe(1);
   });
 
   it('does not create an operator alert for a failed or pending cancellation refund', async () => {
     await insertBooking();
-    (createRefund as jest.Mock).mockResolvedValue({ id: 're_pending', status: 'pending', amount: 10500 });
+    (listPaymentIntentRefunds as jest.Mock).mockResolvedValue([]);
+    (createRefund as jest.Mock).mockResolvedValue({ id: 're_pending', status: 'pending', amount: 10500, paymentIntentId: INTENT });
     const res = await invoke(cancelBooking, { params: { id: String(bookingId) }, user: { _id: userId, role: 'customer' } });
     expect(statusOf(res)).toBe(409);
     expect((await loadBooking()).status).toBe('confirmed');
@@ -487,7 +491,7 @@ it('atomically keeps one operator refund alert and one money update under concur
   const results = await Promise.all(Array.from({ length: 4 }, () => applyBookingRefundTotal(booking, 10500)));
   expect(results.reduce((sum, result) => sum + result.newlyRefunded, 0)).toBe(105);
   expect(await loadSpent()).toBe(0);
-  expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId })).toBe(1);
+  expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId, audience: 'operator' })).toBe(1);
 });
 
 it('rolls back the local refund state and accounting if its operator intent cannot be persisted', async () => {

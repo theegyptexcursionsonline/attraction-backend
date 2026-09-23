@@ -64,8 +64,16 @@ jest.mock('../models/Booking', () => ({
     findById: jest.fn(),
     countDocuments: jest.fn(),
     aggregate: jest.fn(),
+    updateOne: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
   },
 }));
+
+jest.mock('../models/BookingCancellation', () => ({ BookingCancellation: {
+  createIndexes: jest.fn(),
+  updateOne: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
+  findOne: jest.fn().mockResolvedValue({ status: 'processing' }),
+  findOneAndUpdate: jest.fn().mockImplementation(async (filter) => ({ _id: filter._id, tenantId: filter.tenantId, status: 'processing', attempts: 1 })),
+} }));
 
 jest.mock('../models/IdempotencyKey', () => ({
   IdempotencyKey: {
@@ -1115,6 +1123,11 @@ describe('API security and pricing guards', () => {
     });
     expect(PromoCode.findOneAndUpdate).toHaveBeenCalledTimes(1);
     expect(SpecialOffer.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it('requires authentication for notification failure lists and reconciliation', async () => {
+    expect((await request(app).get(`/api/tenants/${TENANT_ID}/notification-failures?source=booking`)).status).toBe(401);
+    expect((await request(app).post(`/api/tenants/${TENANT_ID}/notification-failures/booking/${'a'.repeat(64)}/reconcile`).send({})).status).toBe(401);
   });
 
   it('restores all capacity-consuming guests exactly once on cancellation', async () => {

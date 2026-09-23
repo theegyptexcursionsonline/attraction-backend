@@ -10,15 +10,13 @@ import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { generateBookingReference } from '../utils/hash';
 import { generateTicketPdf } from '../services/pdf.service';
-import { createRefund } from '../services/stripe.service';
-import { ATN_CANCELLATION_REFUND_FLOW, ATN_REFUND_FLOW_KEY } from '../services/bookingRefund.service';
 import { getTenantStripeConfig } from '../services/tenantPayment.service';
+import { requestBookingCancellation, processBookingCancellation } from '../services/bookingCancellation.service';
 import { createAdminNotifications } from '../services/notification.service';
 import {
   sendBookingConfirmation,
   sendAdminBookingNotification,
   sendBookingPaymentLinkEmail,
-  sendBookingStatusEmail,
   brandedLink,
   getEmailBrand,
 } from '../services/email.service';
@@ -35,7 +33,6 @@ import {
 import {
   BookingWithInventoryMarker,
   inventoryEntriesForItems,
-  releaseBookingInventory,
   reserveInventory,
   runBookingTransaction,
   sessionOption,
@@ -55,7 +52,6 @@ import { assertTenantIdsBookingCreationAllowed, assertTenantPaymentMethodAllowed
 import { configuredAvailabilityTimes } from '../utils/publicAvailability';
 import { bookingEligibility, resolveBookingTimeZone } from '../utils/bookingCutoff';
 import { bookingNotificationEmail } from '../utils/notificationRecipients';
-import { enqueueBookingOperatorNotification } from '../services/bookingOperatorNotification.service';
 
 // Compact, tenant-safe booking summary for webhook payloads. Contains only the
 // booking's own fields — never other tenants' data.
@@ -1034,89 +1030,23 @@ export const cancelBooking = async (
       return;
     }
 
-    let completedRefund: { id: string; status: string; amount: number } | undefined;
-    // A collected payment must be refunded successfully before cancellation can
-    // change state or release inventory. Missing gateway data fails closed.
     if (booking.paymentStatus === 'succeeded') {
       if (booking.paymentMethod !== 'card' || !booking.stripePaymentIntentId) {
-        sendError(res, 'Collected payment requires a verified gateway refund before cancellation', 409);
-        return;
+        sendError(res, 'Collected payment requires a verified gateway refund before cancellation', 409); return;
       }
-      const stripeCfg = await getTenantStripeConfig(booking.tenantId);
-      if (!stripeCfg?.enabled || !stripeCfg.secretKey) {
-        sendError(res, 'Cancellation unavailable because the payment gateway is not configured', 503);
-        return;
+      const gateway = await getTenantStripeConfig(booking.tenantId);
+      if (!gateway?.enabled || !gateway.secretKey) {
+        sendError(res, 'Cancellation unavailable because the payment gateway is not configured', 503); return;
       }
-      const refund = await createRefund(
-        stripeCfg.secretKey,
-        booking.stripePaymentIntentId,
-        Math.round(booking.total * 100),
-        {
-          idempotencyKey: `booking-cancel-${booking._id}`,
-          // Lets the Stripe refund webhook recognise this refund and leave the
-          // cancelled-state transition + inventory release to this flow.
-          metadata: {
-            [ATN_REFUND_FLOW_KEY]: ATN_CANCELLATION_REFUND_FLOW,
-            bookingId: String(booking._id),
-            tenantId: String(booking.tenantId),
-          },
-        }
-      );
-      if (!refund.id || refund.status !== 'succeeded') {
-        sendError(res, 'Stripe has not completed the cancellation refund', 409);
-        return;
-      }
-      completedRefund = refund;
     }
-
-    const cancelledBooking = await runBookingTransaction<BookingWithInventoryMarker>(
-      async (session) => {
-        const current = await Booking.findOne(
-          {
-            _id: booking._id,
-            tenantId: booking.tenantId,
-            status: { $in: ['pending', 'confirmed'] },
-            inventoryReleasedAt: { $exists: false },
-          },
-          null,
-          sessionOption(session)
-        ) as BookingWithInventoryMarker | null;
-        if (!current) throw new Error('CANCELLATION_CONFLICT');
-
-        await releaseBookingInventory(current, session);
-        if (completedRefund) {
-          current.paymentStatus = 'refunded';
-          current.refundedAmount = current.total;
-          current.refunds = [
-            ...(current.refunds || []).filter(
-              (refund) => refund.providerRefundId !== completedRefund?.id
-            ),
-            {
-              providerRefundId: completedRefund.id,
-              amount: completedRefund.amount / 100,
-              status: 'succeeded',
-              createdAt: new Date(),
-            },
-          ];
-          if (current.userId) {
-            await User.findByIdAndUpdate(
-              current.userId,
-              { $inc: { totalSpent: -current.total } },
-              sessionOption(session)
-            );
-          }
-        }
-        current.status = 'cancelled';
-        await current.save(sessionOption(session));
-        await enqueueBookingOperatorNotification(current, {
-          kind: 'cancelled',
-          eventKey: 'cancelled',
-          refundAmount: completedRefund ? completedRefund.amount / 100 : undefined,
-          fullRefund: Boolean(completedRefund),
-        }, session);
-        return current;
-      }
-    );
+    // Record authorized intent before Stripe. A process restart or database
+    // failure after the refund is recovered by the worker/webhook.
+    await requestBookingCancellation(booking._id, booking.tenantId);
+    const cancelledBooking = await processBookingCancellation(booking._id, booking.tenantId);
+    if (!cancelledBooking) {
+      sendError(res, 'Cancellation is awaiting reconciliation; refresh the booking before taking further action', 409);
+      return;
+    }
 
     safeEmitEvent(
       cancelledBooking.tenantId,
@@ -1124,30 +1054,14 @@ export const cancelBooking = async (
       bookingEventPayload(cancelledBooking)
     );
 
-    void Tenant.findById(cancelledBooking.tenantId)
-      .select('name slug customDomain domainMigrated contactInfo theme logo defaultLanguage defaultCurrency timezone')
-      .lean()
-      .then((tenant) => tenant ? sendBookingStatusEmail(
-          cancelledBooking.guestDetails.email,
-          {
-            reference: cancelledBooking.reference,
-            guestName: `${cancelledBooking.guestDetails.firstName} ${cancelledBooking.guestDetails.lastName}`.trim(),
-            kind: 'cancelled',
-            guestAccessToken: generateBookingAccessToken(String(cancelledBooking._id), cancelledBooking.reference),
-            refundAmount: completedRefund ? completedRefund.amount / 100 : undefined,
-            currency: cancelledBooking.currency,
-          },
-          tenant
-        ) : undefined)
-      .catch(() => console.error('[email] cancellation notification failed', {
-        tenantId: String(cancelledBooking.tenantId),
-      }));
-
     sendSuccess(res, cancelledBooking, 'Booking cancelled successfully');
   } catch (error) {
     if (error instanceof Error && error.message === 'INVENTORY_RELEASE_FAILED') {
       sendError(res, 'Cancellation could not safely restore inventory', 409);
       return;
+    }
+    if (error instanceof Error && error.message === 'CANCELLATION_PAYMENT_UNRESOLVED') {
+      sendError(res, 'An active payment must be reconciled before cancellation', 409); return;
     }
     if (error instanceof Error && error.message === 'CANCELLATION_CONFLICT') {
       sendError(res, 'Booking was already cancelled or its inventory was released', 409);
@@ -1400,12 +1314,14 @@ export const updateBookingStatus = async (
       return;
     }
 
-    if (status) {
-      booking.status = status;
+    if (['cancelled', 'refunded'].includes(booking.status)) {
+      sendError(res, 'A cancelled or refunded booking cannot be reopened', 409); return;
     }
-    await booking.save();
-
-    sendSuccess(res, booking, 'Booking updated successfully');
+    const updated = await Booking.findOneAndUpdate({ _id: booking._id, tenantId: booking.tenantId,
+      status: booking.status, paymentStatus: booking.paymentStatus, cancellationRequestedAt: { $exists: false },
+    }, { $set: status ? { status } : {} }, { new: true, runValidators: true });
+    if (!updated) { sendError(res, 'Booking changed or cancellation is being reconciled; refresh before editing', 409); return; }
+    sendSuccess(res, updated, 'Booking updated successfully');
   } catch (error) {
     next(error);
   }

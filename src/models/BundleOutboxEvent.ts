@@ -7,12 +7,14 @@ export interface IBundleOutboxEvent extends Document {
   audience: 'customer' | 'supplier' | 'storefront';
   eventType: string;
   payload: Record<string, unknown>;
-  status: 'pending' | 'processing' | 'delivered' | 'suppressed' | 'retry' | 'dead_letter';
+  status: 'pending' | 'processing' | 'delivered' | 'suppressed' | 'retry' | 'dead_letter' | 'manual_review' | 'resolved';
   attempts: number;
   nextAttemptAt: Date;
   leaseUntil?: Date;
   leaseToken?: string;
   lastError?: string;
+  deliveryAttemptStartedAt?: Date;
+  reconciliation?: { decision: string; note: string; actorId: Types.ObjectId; at: Date };
   deliveredAt?: Date;
   suppressedAt?: Date;
   suppressionReason?: string;
@@ -29,12 +31,14 @@ const bundleOutboxEventSchema = new Schema<IBundleOutboxEvent>(
     audience: { type: String, enum: ['customer', 'supplier', 'storefront'], required: true },
     eventType: { type: String, required: true, maxlength: 120 },
     payload: { type: Schema.Types.Mixed, required: true },
-    status: { type: String, enum: ['pending', 'processing', 'delivered', 'suppressed', 'retry', 'dead_letter'], default: 'pending', index: true },
+    status: { type: String, enum: ['pending', 'processing', 'delivered', 'suppressed', 'retry', 'dead_letter', 'manual_review', 'resolved'], default: 'pending', index: true },
     attempts: { type: Number, default: 0, min: 0, validate: Number.isSafeInteger },
     nextAttemptAt: { type: Date, default: Date.now, index: true },
     leaseUntil: { type: Date },
     leaseToken: { type: String, maxlength: 128 },
     lastError: { type: String, maxlength: 1000 },
+    deliveryAttemptStartedAt: { type: Date },
+    reconciliation: { decision: { type: String, enum: ['confirmed_delivered', 'closed_without_resend'] }, note: { type: String, maxlength: 500 }, actorId: Schema.Types.ObjectId, at: Date },
     deliveredAt: { type: Date },
     suppressedAt: { type: Date },
     suppressionReason: { type: String, maxlength: 160 },
@@ -45,6 +49,7 @@ const bundleOutboxEventSchema = new Schema<IBundleOutboxEvent>(
   { timestamps: true }
 );
 bundleOutboxEventSchema.index({ status: 1, nextAttemptAt: 1, leaseUntil: 1 });
+bundleOutboxEventSchema.index({ tenantId: 1, status: 1, _id: -1 });
 bundleOutboxEventSchema.index({ manualRecoveryRequired: 1, _id: -1 });
 
 export const BundleOutboxEvent = mongoose.model<IBundleOutboxEvent>(

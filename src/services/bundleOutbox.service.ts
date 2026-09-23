@@ -27,6 +27,10 @@ class BundleOutboxLeaseLostError extends Error {
   }
 }
 
+class BundleDeliveryError extends Error {
+  constructor(readonly uncertain: boolean, readonly retryable: boolean, code: string) { super(code); }
+}
+
 export class BundleOutboxRecoveryError extends Error {
   constructor(readonly statusCode: number, message: string) {
     super(message);
@@ -215,10 +219,10 @@ export const redriveBundleOutboxDeadLetter = async (input: {
           replayed: true,
         };
       }
-      if (event.status !== 'dead_letter') {
+      if (event.status !== 'dead_letter' || !/^(PROVIDER_REJECTED_429|DELIVERY_NOT_STARTED)$/.test(event.lastError || '')) {
         throw new BundleOutboxRecoveryError(
           409,
-          'Only a dead-letter delivery item can be redriven'
+          'Only a confirmed non-delivery can be retried; uncertain or legacy failures require reconciliation'
         );
       }
 
@@ -533,12 +537,24 @@ const processEvent = async (
     }));
   }
   if (!recipient) throw new Error('Outbox recipient is not configured');
-  await withOutboxLeaseHeartbeat(event._id, leaseToken, () =>
-    sendEmail({
-      to: recipient, subject, html, text, tenant,
-      ...(event.audience !== 'customer' ? { cc: tenant.notificationSettings?.bookingCcEmails } : {}),
-    })
-  );
+  await withOutboxLeaseHeartbeat(event._id, leaseToken, async () => {
+    const started = await BundleOutboxEvent.updateOne({ _id: event._id, status: 'processing', leaseToken,
+      leaseUntil: { $gt: new Date() } }, { $set: { deliveryAttemptStartedAt: new Date() } });
+    if (started.modifiedCount !== 1) throw new BundleOutboxLeaseLostError();
+    try {
+      const outcome = await sendEmail({
+        to: recipient, subject, html, text, tenant,
+        ...(event.audience !== 'customer' ? { cc: tenant.notificationSettings?.bookingCcEmails } : {}),
+      });
+      if (outcome.status !== 'sent') throw new BundleDeliveryError(false, false, 'DELIVERY_SKIPPED');
+    } catch (error) {
+      if (error instanceof BundleDeliveryError) throw error;
+      const code = Number((error as { status?: unknown })?.status);
+      if (code === 429) throw new BundleDeliveryError(false, true, 'PROVIDER_REJECTED_429');
+      if (Number.isInteger(code) && code >= 400 && code < 500 && code !== 408) throw new BundleDeliveryError(false, false, `PROVIDER_REJECTED_${code}`);
+      throw new BundleDeliveryError(true, false, 'DELIVERY_UNCERTAIN');
+    }
+  });
   return 'delivered';
 };
 
@@ -551,10 +567,17 @@ export const processBundleOutboxBatch = async (limit = 20): Promise<{
   const result = { delivered: 0, suppressed: 0, retried: 0, deadLetter: 0 };
   for (let index = 0; index < limit; index += 1) {
     const now = new Date();
+    // Even legacy claims may have reached Mailgun. Never reclaim and resend an
+    // expired in-flight message when provider acceptance cannot be established.
+    const expired = await BundleOutboxEvent.findOneAndUpdate({ status: 'processing', leaseUntil: { $lte: now } }, {
+      $set: { status: 'manual_review', manualRecoveryRequired: true, lastError: 'DELIVERY_UNCERTAIN_LEASE_EXPIRED' },
+      $unset: { leaseUntil: 1, leaseToken: 1 },
+    }, { new: true, sort: { leaseUntil: 1 } });
+    if (expired) { result.deadLetter += 1; continue; }
     const leaseToken = crypto.randomUUID();
     const event = await BundleOutboxEvent.findOneAndUpdate(
       {
-        status: { $in: ['pending', 'retry', 'processing'] },
+        status: { $in: ['pending', 'retry'] },
         nextAttemptAt: { $lte: now },
         $or: [
           { status: { $in: ['pending', 'retry'] } },
@@ -572,8 +595,10 @@ export const processBundleOutboxBatch = async (limit = 20): Promise<{
       { sort: { nextAttemptAt: 1, _id: 1 }, new: true }
     );
     if (!event) break;
+    let providerAccepted = false;
     try {
       const outcome = await processEvent(event, leaseToken);
+      providerAccepted = outcome === 'delivered';
       const completed = await BundleOutboxEvent.updateOne(
         { _id: event._id, status: 'processing', leaseToken },
         outcome === 'suppressed'
@@ -599,14 +624,16 @@ export const processBundleOutboxBatch = async (limit = 20): Promise<{
       result[outcome] += 1;
     } catch (error) {
       if (error instanceof BundleOutboxLeaseLostError) continue;
-      const dead = event.attempts >= MAX_ATTEMPTS;
+      const uncertain = providerAccepted || (error instanceof BundleDeliveryError && error.uncertain);
+      const rejected = error instanceof BundleDeliveryError && !error.retryable;
+      const dead = uncertain || rejected || event.attempts >= MAX_ATTEMPTS;
       const failed = await BundleOutboxEvent.updateOne(
         { _id: event._id, status: 'processing', leaseToken },
         {
           $set: {
-            status: dead ? 'dead_letter' : 'retry',
+            status: uncertain ? 'manual_review' : dead ? 'dead_letter' : 'retry',
             nextAttemptAt: new Date(Date.now() + Math.min(60 * 60 * 1000, 30_000 * 2 ** event.attempts)),
-            lastError: (error instanceof Error ? error.message : 'Outbox delivery failed').slice(0, 1000),
+            lastError: providerAccepted ? 'DELIVERY_UNCERTAIN_COMPLETION' : error instanceof BundleDeliveryError ? error.message : 'DELIVERY_NOT_STARTED',
             ...(dead ? { manualRecoveryRequired: true } : {}),
           },
           $unset: { leaseUntil: 1, leaseToken: 1 },

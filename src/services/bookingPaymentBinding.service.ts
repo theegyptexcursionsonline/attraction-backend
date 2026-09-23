@@ -42,6 +42,7 @@ export const claimBookingStripePaymentSession = async (
     const claimed = await Booking.findOneAndUpdate({
       _id: booking._id, tenantId: booking.tenantId, ...standaloneBookingClause,
       paymentMethod: 'card', status: 'pending', inventoryReleasedAt: { $exists: false },
+      cancellationRequestedAt: { $exists: false },
       paymentStatus: { $in: ['pending', 'failed'] },
       stripePaymentSessionClaimedAt: { $exists: false },
       $or: [{ stripePaymentIntentId: { $exists: false } }, { stripePaymentIntentId: null }, { stripePaymentIntentId: '' }],

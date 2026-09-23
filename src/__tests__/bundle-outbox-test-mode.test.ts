@@ -39,7 +39,7 @@ describe('bundle TEST-mode outbox safety', () => {
   ))('routes $audience $eventType copies only to that operator tenant', async ({ audience, eventType }) => {
     const tenantId = new Types.ObjectId();
     const event = { _id: new Types.ObjectId(), tenantId, orderId: new Types.ObjectId(), audience, eventType, payload: {} };
-    (BundleOutboxEvent.findOneAndUpdate as jest.Mock).mockResolvedValueOnce(event).mockResolvedValueOnce(null);
+    (BundleOutboxEvent.findOneAndUpdate as jest.Mock).mockResolvedValueOnce(null).mockResolvedValueOnce(event).mockResolvedValueOnce(null);
     (BundleOutboxEvent.findById as jest.Mock).mockResolvedValue(event);
     (Tenant.findById as jest.Mock).mockReturnValue({ lean: jest.fn().mockResolvedValue({
       _id: tenantId, contactInfo: { email: 'support@operator.example' },
@@ -80,7 +80,7 @@ describe('bundle TEST-mode outbox safety', () => {
     const tenantId = new Types.ObjectId();
     const event = { _id: new Types.ObjectId(), tenantId, orderId: new Types.ObjectId(),
       audience: 'supplier', eventType: 'bundle.order_refunded', payload: { componentIds: ['affected', 'foreign'] } };
-    (BundleOutboxEvent.findOneAndUpdate as jest.Mock).mockResolvedValueOnce(event).mockResolvedValueOnce(null);
+    (BundleOutboxEvent.findOneAndUpdate as jest.Mock).mockResolvedValueOnce(null).mockResolvedValueOnce(event).mockResolvedValueOnce(null);
     (BundleOutboxEvent.findById as jest.Mock).mockResolvedValue(event);
     (Tenant.findById as jest.Mock).mockReturnValue({ lean: jest.fn().mockResolvedValue({
       _id: tenantId, contactInfo: { email: 'supplier@example.test' },
@@ -106,7 +106,7 @@ describe('bundle TEST-mode outbox safety', () => {
   it.each(['supplier', 'storefront', 'customer'])('fails closed for a mismatched %s tenant', async (audience) => {
     const tenantId = new Types.ObjectId();
     const event = { _id: new Types.ObjectId(), tenantId, orderId: new Types.ObjectId(), audience, eventType: 'bundle.order_refunded', attempts: 1 };
-    (BundleOutboxEvent.findOneAndUpdate as jest.Mock).mockResolvedValueOnce(event).mockResolvedValueOnce(null);
+    (BundleOutboxEvent.findOneAndUpdate as jest.Mock).mockResolvedValueOnce(null).mockResolvedValueOnce(event).mockResolvedValueOnce(null);
     (BundleOutboxEvent.findById as jest.Mock).mockResolvedValue(event);
     (Tenant.findById as jest.Mock).mockReturnValue({ lean: jest.fn().mockResolvedValue({ _id: tenantId }) });
     (BundleOrder.findById as jest.Mock).mockResolvedValue({
@@ -124,7 +124,7 @@ describe('bundle TEST-mode outbox safety', () => {
     const event = { _id: eventId, tenantId, orderId };
 
     (BundleOutboxEvent.findOneAndUpdate as jest.Mock)
-      .mockResolvedValueOnce(event)
+      .mockResolvedValueOnce(null).mockResolvedValueOnce(event)
       .mockResolvedValueOnce(null);
     (BundleOutboxEvent.findById as jest.Mock).mockResolvedValue(event);
     (Tenant.findById as jest.Mock).mockReturnValue({
@@ -165,7 +165,7 @@ describe('bundle TEST-mode outbox safety', () => {
     };
 
     (BundleOutboxEvent.findOneAndUpdate as jest.Mock)
-      .mockResolvedValueOnce(event)
+      .mockResolvedValueOnce(null).mockResolvedValueOnce(event)
       .mockResolvedValueOnce(null);
     (BundleOutboxEvent.findById as jest.Mock).mockResolvedValue(event);
     (Tenant.findById as jest.Mock).mockReturnValue({
@@ -221,6 +221,7 @@ describe('bundle TEST-mode outbox safety', () => {
         attempts: number;
       } = { status: 'pending', attempts: 0 };
       (BundleOutboxEvent.findOneAndUpdate as jest.Mock).mockImplementation(async (_filter, update) => {
+        if (_filter.status === 'processing') return null;
         const claimable = state.status === 'pending' ||
           (state.status === 'processing' && !!state.leaseUntil && state.leaseUntil <= new Date());
         if (!claimable) return null;
@@ -255,8 +256,8 @@ describe('bundle TEST-mode outbox safety', () => {
         components: [],
       });
       let releaseProvider!: () => void;
-      (sendEmail as jest.Mock).mockImplementation(() => new Promise<void>((resolve) => {
-        releaseProvider = resolve;
+      (sendEmail as jest.Mock).mockImplementation(() => new Promise<{status: string}>((resolve) => {
+        releaseProvider = () => resolve({ status: 'sent' });
       }));
 
       const firstWorker = processBundleOutboxBatch(1);
@@ -302,7 +303,7 @@ describe('bundle TEST-mode outbox safety', () => {
     };
 
     (BundleOutboxEvent.findOneAndUpdate as jest.Mock)
-      .mockResolvedValueOnce(event)
+      .mockResolvedValueOnce(null).mockResolvedValueOnce(event)
       .mockResolvedValueOnce(null);
     (BundleOutboxEvent.findById as jest.Mock).mockResolvedValue(event);
     (Tenant.findById as jest.Mock).mockReturnValue({
@@ -343,7 +344,7 @@ describe('bundle TEST-mode outbox safety', () => {
     };
 
     (BundleOutboxEvent.findOneAndUpdate as jest.Mock)
-      .mockResolvedValueOnce(event)
+      .mockResolvedValueOnce(null).mockResolvedValueOnce(event)
       .mockResolvedValueOnce(null);
     (BundleOutboxEvent.findById as jest.Mock).mockResolvedValue(event);
     (Tenant.findById as jest.Mock).mockReturnValue({
@@ -358,7 +359,7 @@ describe('bundle TEST-mode outbox safety', () => {
       guestDetails: { email: 'safe-test-recipient@example.test' },
       components: [],
     });
-    (sendEmail as jest.Mock).mockRejectedValue(new Error('Provider rejected delivery'));
+    (sendEmail as jest.Mock).mockRejectedValue(Object.assign(new Error('Provider rejected delivery'), { status: 429 }));
     (BundleOutboxEvent.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
 
     await expect(processBundleOutboxBatch()).resolves.toEqual({
@@ -373,9 +374,55 @@ describe('bundle TEST-mode outbox safety', () => {
         $set: expect.objectContaining({
           status: 'dead_letter',
           manualRecoveryRequired: true,
-          lastError: 'Provider rejected delivery',
+          lastError: 'PROVIDER_REJECTED_429',
         }),
       })
     );
+  });
+});
+
+describe('bundle uncertain delivery reconciliation', () => {
+  beforeEach(() => { jest.clearAllMocks(); (BundleOutboxEvent.findOneAndUpdate as jest.Mock).mockReset(); });
+  const prepare = () => {
+    const tenantId = new Types.ObjectId();
+    const event = { _id: new Types.ObjectId(), tenantId, orderId: new Types.ObjectId(), audience: 'storefront', eventType: 'bundle.order_cancelled', attempts: 1 };
+    (BundleOutboxEvent.findOneAndUpdate as jest.Mock).mockResolvedValueOnce(null).mockResolvedValueOnce(event).mockResolvedValue(null);
+    (BundleOutboxEvent.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
+    (Tenant.findById as jest.Mock).mockReturnValue({ lean: jest.fn().mockResolvedValue({ _id: tenantId, contactInfo: { email: 'qa@example.invalid' } }) });
+    (BundleOrder.findById as jest.Mock).mockResolvedValue({ _id: event.orderId, storefrontTenantId: tenantId, checkoutMode: 'live', status: 'cancelled', reference: 'QA-BUNDLE', components: [] });
+    return event;
+  };
+  it.each([undefined, 408, 500, 502, 503])('quarantines a lost provider result (%s) without a second send', async (status) => {
+    prepare();
+    (sendEmail as jest.Mock).mockRejectedValue(Object.assign(new Error('provider response lost'), { status }));
+    expect(await processBundleOutboxBatch(1)).toMatchObject({ delivered: 0, retried: 0, deadLetter: 1 });
+    expect(BundleOutboxEvent.updateOne).toHaveBeenLastCalledWith(expect.any(Object), expect.objectContaining({ $set: expect.objectContaining({ status: 'manual_review', lastError: 'DELIVERY_UNCERTAIN' }) }));
+    await processBundleOutboxBatch(1);
+    expect(sendEmail).toHaveBeenCalledTimes(1);
+  });
+  it('quarantines provider acceptance when recording completion fails', async () => {
+    prepare();
+    (sendEmail as jest.Mock).mockResolvedValue({ status: 'sent' });
+    (BundleOutboxEvent.updateOne as jest.Mock).mockImplementation(async (_filter, update) => {
+      if (update.$set?.status === 'delivered') throw new Error('completion write unavailable');
+      return { modifiedCount: 1 };
+    });
+    expect(await processBundleOutboxBatch(1)).toMatchObject({ deadLetter: 1, retried: 0 });
+    expect(sendEmail).toHaveBeenCalledTimes(1);
+    expect(BundleOutboxEvent.updateOne).toHaveBeenLastCalledWith(expect.any(Object), expect.objectContaining({ $set: expect.objectContaining({ status: 'manual_review', lastError: 'DELIVERY_UNCERTAIN_COMPLETION' }) }));
+    await processBundleOutboxBatch(1);
+    expect(sendEmail).toHaveBeenCalledTimes(1);
+  });
+  it('quarantines expired legacy in-flight claims without loading an order or sending', async () => {
+    (BundleOutboxEvent.findOneAndUpdate as jest.Mock).mockResolvedValueOnce({ _id: new Types.ObjectId() });
+    expect(await processBundleOutboxBatch(1)).toMatchObject({ deadLetter: 1, delivered: 0 });
+    expect(sendEmail).not.toHaveBeenCalled(); expect(BundleOrder.findById).not.toHaveBeenCalled();
+    expect(BundleOutboxEvent.findOneAndUpdate).toHaveBeenCalledWith(expect.objectContaining({ status: 'processing' }), expect.objectContaining({ $set: expect.objectContaining({ status: 'manual_review' }) }), expect.any(Object));
+  });
+  it('retries only explicit transient rejection and never marks a skipped send delivered', async () => {
+    prepare(); (sendEmail as jest.Mock).mockRejectedValueOnce({ status: 429 });
+    expect(await processBundleOutboxBatch(1)).toMatchObject({ retried: 1, delivered: 0 });
+    prepare(); (sendEmail as jest.Mock).mockResolvedValueOnce({ status: 'skipped', reason: 'provider_not_configured' });
+    expect(await processBundleOutboxBatch(1)).toMatchObject({ deadLetter: 1, delivered: 0 });
   });
 });
