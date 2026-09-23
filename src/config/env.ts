@@ -87,6 +87,9 @@ export const env = {
   // Stripe
   stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
+  // Explicit rollout boundary: existing checkouts must never receive new follow-ups.
+  // Empty or invalid values disable this feature without affecting payment processing.
+  bookingPaymentFollowupStartAt: process.env.BOOKING_PAYMENT_FOLLOWUP_START_AT || '',
   
   // Mailgun
   mailgunApiKey: process.env.MAILGUN_API_KEY || '',
