@@ -5,7 +5,7 @@ const options: sanitizeHtml.IOptions = {
   allowedTags: [
     'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's',
     'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-    'ul', 'ol', 'li', 'blockquote', 'pre', 'code',
+    'ul', 'ol', 'li', 'dl', 'dt', 'dd', 'blockquote', 'pre', 'code',
     'a', 'img', 'figure', 'figcaption', 'hr', 'table', 'thead', 'tbody',
     'tr', 'th', 'td', 'div', 'span',
   ],
