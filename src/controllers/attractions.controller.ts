@@ -1,3 +1,4 @@
+import { localizedSlugStages } from '../services/localizationSourceSnapshot.service';
 import { requestedLocale, localizationStages, localizedPresentation, localizationIdentity, translatedSlugFilter, TranslationError } from '../services/attractionLocalization.service';
 import { publicCursorPlan, type CursorField } from '../utils/publicCursor';
 import { resolveImageAltTexts } from '../utils/imagePresentation';
@@ -429,7 +430,7 @@ export const getAttractionRouteStatus = async (req: AuthRequest, res: Response, 
     if (!/^[a-z0-9][a-z0-9-]{0,239}$/i.test(slug)) { sendError(res, 'Attraction not found', 404); return; }
     if (locale) {
       const alias = await translatedSlugFilter(slug, req.tenant._id);
-      const rows = await Attraction.aggregate([{ $match: { $or: [{ pathSlug: slug }, { slug }, ...(alias ? [alias] : [])], status: 'active', tenantIds: req.tenant._id, archivedAt: { $exists: false }, trashedAt: { $exists: false } } }, { $limit: 2 }, ...localizationStages(req.tenant._id, locale, undefined, false), { $project: { slug: 1, pathSlug: 1, status: 1, __translations: 1 } }]);
+      const rows = await Attraction.aggregate([{ $match: { $or: [{ pathSlug: slug }, { slug }, ...(alias ? [alias] : [])], status: 'active', tenantIds: req.tenant._id, archivedAt: { $exists: false }, trashedAt: { $exists: false } } }, ...localizationStages(req.tenant._id, locale, undefined, false), ...localizedSlugStages(slug,locale), { $project: { slug: 1, pathSlug: 1, status: 1, __translations: 1 } }]);
       res.setHeader('Cache-Control', 'private, no-store');
       if (rows.length !== 1) { sendError(res, 'Attraction not found', 404); return; }
       const { __translations, ...row } = rows[0]; sendSuccess(res, { ...row, ...localizationIdentity({ __translations }, locale), bookingTenantSlug: req.tenant.slug }); return;
@@ -454,7 +455,7 @@ export const getAttractionBySlug = async (
     if (locale) {
       if (!req.tenant) throw new TranslationError('Select one public site for translated content');
       const alias = await translatedSlugFilter(slug, req.tenant._id);
-      const rows = await Attraction.aggregate([{ $match: { $or: [...(Types.ObjectId.isValid(slug) ? [{ _id: new Types.ObjectId(slug) }] : [{ slug }, { pathSlug: slug }]), ...(alias ? [alias] : [])], status: 'active', tenantIds: req.tenant._id, archivedAt: { $exists: false }, trashedAt: { $exists: false } } }, { $limit: 2 }, ...localizationStages(req.tenant._id, locale, undefined, false), { $project: Object.fromEntries([...PUBLIC_ATTRACTION_FIELDS, 'updatedAt', '__translations'].map(field => [field, 1])) }]);
+      const rows = await Attraction.aggregate([{ $match: { $or: [...(Types.ObjectId.isValid(slug) ? [{ _id: new Types.ObjectId(slug) }] : [{ slug }, { pathSlug: slug }]), ...(alias ? [alias] : [])], status: 'active', tenantIds: req.tenant._id, archivedAt: { $exists: false }, trashedAt: { $exists: false } } }, ...localizationStages(req.tenant._id, locale, undefined, false), ...localizedSlugStages(slug,locale), { $project: Object.fromEntries([...PUBLIC_ATTRACTION_FIELDS, 'updatedAt', '__translations'].map(field => [field, 1])) }]);
       res.setHeader('Cache-Control', 'private, no-store');
       if (rows.length !== 1) { sendError(res, 'Attraction not found', 404); return; }
       sendSuccess(res, { ...localizedPresentation(toPublicAttractionDto(rows[0]), rows[0], locale), bookingTenantSlug: req.tenant.slug }); return;

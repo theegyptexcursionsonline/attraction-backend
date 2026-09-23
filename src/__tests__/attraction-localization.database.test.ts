@@ -57,3 +57,44 @@ it('backs up and restores exact pre-existing translation data including unknown 
 it('rejects wrong source fingerprints, incomplete language sets, modified plans and changed live sources',async()=>{ await expect(planLocalization(sourceExport,migrationPayload(),'b'.repeat(64))).rejects.toThrow('digest'); const missing=migrationPayload(); missing.tours.pop(); await expect(planLocalization(sourceExport,missing,'a'.repeat(64))).rejects.toThrow('Both languages'); const plan=await planLocalization(sourceExport,migrationPayload(),'a'.repeat(64)); await expect(executeLocalizationPlan({...plan,domain:'foreign.invalid'},plan.digest,'apply')).rejects.toThrow('digest'); await Attraction.updateOne({_id:tour},{$set:{title:'Changed source'}}); await expect(executeLocalizationPlan(plan,plan.digest,'apply')).rejects.toThrow('Source changed'); expect(await AttractionTranslation.countDocuments({})).toBe(0); });
 it('refuses to overwrite another editor during apply or rollback',async()=>{ let plan=await planLocalization(sourceExport,migrationPayload(),'a'.repeat(64)); await AttractionTranslation.create({tenantId:tenant,attractionId:tour,locale:'de',slug:'editor-draft',status:'draft',sourceUpdatedAt:sourceDate,content:input().content}); await expect(executeLocalizationPlan(plan,plan.digest,'apply')).rejects.toThrow('rows changed'); plan=await planLocalization(sourceExport,migrationPayload(),'a'.repeat(64)); await executeLocalizationPlan(plan,plan.digest,'apply'); await AttractionTranslation.collection.updateOne({tenantId:tenant,attractionId:tour,locale:'de'},{$set:{externalEdit:true}}); await expect(executeLocalizationPlan(plan,plan.digest,'rollback')).rejects.toThrow('rows changed'); expect(await DestinationTranslation.countDocuments({})).toBe(2); });
 it('rolls back all database effects if any write fails inside the transaction',async()=>{ const plan=await planLocalization(sourceExport,migrationPayload(),'a'.repeat(64)); const failure=jest.spyOn(DestinationTranslation.collection,'replaceOne').mockRejectedValueOnce(new Error('Temporary failure')); try{await expect(executeLocalizationPlan(plan,plan.digest,'apply')).rejects.toThrow('Temporary failure');}finally{failure.mockRestore();} expect(await AttractionTranslation.countDocuments({})).toBe(0); expect(await DestinationTranslation.countDocuments({})).toBe(0); });
+
+it('keeps published translations current after price, stock, rating and sort changes but invalidates every presentation source change',async()=>{
+  await publish(); await publishDestination();
+  await Attraction.updateOne({_id:tour},{$set:{priceFrom:75,'pricingOptions.0.price':75,'pricingOptions.0.timeSlots.0.adultPrice':75,'pricingOptions.0.maxParticipants':12,rating:4.9,sortOrder:99,totalReviews:7}});
+  await Destination.updateOne({_id:destinationId},{$set:{sortOrder:9}});
+  const query={tenantId:String(tenant),locale:'de'};
+  const detail=(await request(app).get('/attractions/meerfahrt').query(query).expect(200)).body.data;
+  expect(detail).toMatchObject({translationStatus:'translated',priceFrom:75}); expect(detail.pricingOptions[0].price).toBe(75); expect(detail.pricingOptions[0].maxParticipants).toBe(12);
+  expect((await request(app).get('/attractions').query({...query,search:'Meerfahrt'}).expect(200)).body.data).toHaveLength(1);
+  expect((await request(app).get('/attractions/meerfahrt/route-status').query(query).expect(200)).body.data.translationStatus).toBe('translated');
+  expect((await request(app).get(destinationUrl()).set(auth()).expect(200)).body.data.stale).toBe(false);
+  expect((await request(app).get(url()).set(auth()).expect(200)).body.data.stale).toBe(false);
+  const original=await Attraction.findById(tour).lean();
+  for(const [field,value] of Object.entries({cancellationPolicy:'New policy','pricingOptions.0.name':'New label','pricingOptions.0.id':'replacement-id','pricingOptions.0.timeSlots.0.label':'Evening',inclusions:['Different inclusion'],'meetingPoint.instructions':'New gate','imageAltTexts.0.alt':'New description','seo.metaTitle':'New search title','itinerary.0.duration':'Two hours',participantRequirements:['Different condition']})) {
+    await Attraction.collection.updateOne({_id:tour},{$set:{[field]:value}});
+    expect((await request(app).get('/attractions/sea-cruise').query(query).expect(200)).body.data.translationStatus).toBe('missing');
+    expect((await request(app).get('/attractions').query(query).expect(200)).body.data).toEqual([]);
+    await request(app).get('/attractions/meerfahrt').query(query).expect(404);
+    await Attraction.collection.replaceOne({_id:tour},original as any);
+  }
+});
+it('allows publishing a reviewed draft after operational updates and fences changed copy without timestamp changes',async()=>{
+  const draft=(await request(app).put(url()).set(auth()).send(input()).expect(201)).body.data;
+  await Attraction.updateOne({_id:tour},{$set:{priceFrom:60}});
+  await request(app).post(`${url()}/transition`).set(auth()).send({action:'publish',expectedUpdatedAt:draft.updatedAt}).expect(200);
+  const legacyId=new Types.ObjectId(); await Attraction.collection.insertOne({...source,_id:legacyId,slug:'legacy',pathSlug:'legacy'});
+  await AttractionTranslation.create({tenantId:tenant,attractionId:legacyId,locale:'de',slug:'alt',status:'published',sourceUpdatedAt:sourceDate,content:input().content});
+  expect((await request(app).get('/attractions/legacy').query({tenantId:String(tenant),locale:'de'}).expect(200)).body.data.translationStatus).toBe('translated');
+  await Attraction.updateOne({_id:legacyId},{$set:{priceFrom:60}});
+  expect((await request(app).get('/attractions/legacy').query({tenantId:String(tenant),locale:'de'}).expect(200)).body.data.translationStatus).toBe('missing');
+});
+it('resolves requested-language aliases before native slugs, English native slugs first and other aliases only as fallback',async()=>{
+  await publish(); await publish('ru'); const second=new Types.ObjectId();
+  await Attraction.collection.insertOne({...source,_id:second,slug:'meerfahrt',pathSlug:'meerfahrt',title:'Other native tour'});
+  for(const path of ['/attractions/meerfahrt','/attractions/meerfahrt/route-status']) {
+    expect((await request(app).get(path).query({tenantId:String(tenant),locale:'de'}).expect(200)).body.data._id).toBe(String(tour));
+    expect((await request(app).get(path).query({tenantId:String(tenant),locale:'en'}).expect(200)).body.data._id).toBe(String(second));
+    expect((await request(app).get(path).query({tenantId:String(tenant),locale:'ru'}).expect(200)).body.data._id).toBe(String(second));
+  }
+  expect((await request(app).get('/attractions/morskaya-progulka').query({tenantId:String(tenant),locale:'de'}).expect(200)).body.data._id).toBe(String(tour));
+});

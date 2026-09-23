@@ -1,3 +1,4 @@
+import { sourceSnapshotExpression, currentSourceExpression } from './localizationSourceSnapshot.service';
 import { Types } from 'mongoose';
 import { z } from 'zod';
 import { AttractionTranslation } from '../models/AttractionTranslation';
@@ -24,7 +25,7 @@ export function requestedLocale(value: unknown): StorefrontLocale | undefined { 
 
 /** Join only this site's current published presentation, before pagination/search. */
 export function localizationStages(tenantId: Types.ObjectId, locale: StorefrontLocale, search?: string, filterMissing = true): any[] {
-  return [{ $lookup: { from: AttractionTranslation.collection.name, let: { attraction: '$_id', sourceDate: '$updatedAt' }, pipeline: [{ $match: { tenantId, status: 'published', $expr: { $and: [{ $eq: ['$attractionId', '$$attraction'] }, { $eq: ['$sourceUpdatedAt', '$$sourceDate'] }] } } }], as: '__translations' } }, ...(locale !== 'en' && filterMissing ? [{ $match: { __translations: { $elemMatch: { locale, ...(search ? { $or: [{ 'content.title': new RegExp(escapeRegex(search), 'i') }, { 'content.shortDescription': new RegExp(escapeRegex(search), 'i') }, { 'content.description': new RegExp(escapeRegex(search), 'i') }] } : {}) } } } }] : [])];
+  return [{ $lookup: { from: AttractionTranslation.collection.name, let: { attraction: '$_id', sourceDate: '$updatedAt', snapshot: sourceSnapshotExpression('tour') }, pipeline: [{ $match: { tenantId, status: 'published', $expr: { $and: [{ $eq: ['$attractionId', '$$attraction'] }, currentSourceExpression('$$snapshot','$$sourceDate')] } } }], as: '__translations' } }, ...(locale !== 'en' && filterMissing ? [{ $match: { __translations: { $elemMatch: { locale, ...(search ? { $or: [{ 'content.title': new RegExp(escapeRegex(search), 'i') }, { 'content.shortDescription': new RegExp(escapeRegex(search), 'i') }, { 'content.description': new RegExp(escapeRegex(search), 'i') }] } : {}) } } } }] : [])];
 }
 const mappedIds = (source: any[], labels: any[], field: string) => {
   const ids = new Set(source.map(item => String(item.id)));
@@ -64,8 +65,8 @@ export function localizedPresentation(dto: Record<string, any>, source: Record<s
 }
 
 export async function translatedSlugFilter(slug: string, tenantId: Types.ObjectId): Promise<Record<string, unknown> | null> {
-  const translation = await AttractionTranslation.findOne({ tenantId, slug, status: 'published' }).select('attractionId sourceUpdatedAt').lean();
-  return translation ? { _id: translation.attractionId, updatedAt: translation.sourceUpdatedAt } : null;
+  const translation = await AttractionTranslation.findOne({ tenantId, slug, status: 'published' }).select('attractionId').lean();
+  return translation ? { _id: translation.attractionId } : null;
 }
 /** Compact identity for route decisions: all content was validated on publication,
  * and the join requires the current source version. No pricing data leaves here. */

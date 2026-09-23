@@ -1,3 +1,4 @@
+import { sourceSnapshot } from './localizationSourceSnapshot.service';
 import { createHash } from 'crypto';
 import mongoose, { Types, type ClientSession } from 'mongoose';
 import { z } from 'zod';
@@ -39,7 +40,7 @@ export async function planLocalization(sourceExport: { tenantId: string; tenantS
       const aliasCollision = await model.collection.findOne({ tenantId: tenant._id,[field]: { $ne: source._id },slug: item.slug });
       if (canonicalCollision || aliasCollision) throw new TranslationError('A translated URL collides with another record',409);
       const filter = { tenantId: tenant._id,[field]: source._id,locale: item.locale }; const before = await model.collection.findOne(filter);
-      const after = { ...(before || {}),_id: before?._id || new Types.ObjectId(),...filter,slug: item.slug,content,status: 'published',sourceUpdatedAt: source.updatedAt,createdAt: before?.createdAt || now,updatedAt: new Date(Math.max(+now,before?.updatedAt ? +new Date(before.updatedAt)+1 : +now)) };
+      const after = { ...(before || {}),_id: before?._id || new Types.ObjectId(),...filter,slug: item.slug,content,status: 'published',sourceUpdatedAt: source.updatedAt,sourceSnapshot: sourceSnapshot(kind,source),createdAt: before?.createdAt || now,updatedAt: new Date(Math.max(+now,before?.updatedAt ? +new Date(before.updatedAt)+1 : +now)) };
       rows.push({ kind,sourceId:item.id,sourceUpdatedAt:item.sourceUpdatedAt,filter,before,after });
     }
   }

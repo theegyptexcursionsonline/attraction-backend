@@ -1,3 +1,4 @@
+import { sourceSnapshot, sourceMatches } from '../services/localizationSourceSnapshot.service';
 import { Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
 import { z } from 'zod';
@@ -20,7 +21,7 @@ async function scope(req: AuthRequest) {
   return { source, filter: { tenantId: new Types.ObjectId(tenantId), attractionId: new Types.ObjectId(attractionId), locale } };
 }
 function fail(error: any, next: NextFunction) { if (error?.code === 11000) next(new TranslationError('This translation or URL already exists. Reload before saving.', 409)); else next(error); }
-export async function getAttractionTranslation(req: AuthRequest, res: Response, next: NextFunction) { try { const { source, filter } = await scope(req); const translation = await AttractionTranslation.findOne(filter).lean(); res.setHeader('Cache-Control', 'private, no-store'); res.json({ success: true, data: { source: { id: String(source._id), slug: source.slug, updatedAt: source.updatedAt, content: translationSourceTemplate(source) }, translation, stale: !!translation && translation.sourceUpdatedAt.getTime() !== source.updatedAt.getTime() } }); } catch(error) { fail(error, next); } }
+export async function getAttractionTranslation(req: AuthRequest, res: Response, next: NextFunction) { try { const { source, filter } = await scope(req); const translation = await AttractionTranslation.findOne(filter).lean(); res.setHeader('Cache-Control', 'private, no-store'); res.json({ success: true, data: { source: { id: String(source._id), slug: source.slug, updatedAt: source.updatedAt, content: translationSourceTemplate(source) }, translation, stale: !!translation && !sourceMatches('tour',source,translation) } }); } catch(error) { fail(error, next); } }
 export async function saveAttractionTranslation(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const { source, filter } = await scope(req); const parsed = input.safeParse(req.body); if (!parsed.success) throw new TranslationError(parsed.error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`).slice(0, 5).join('; '));
@@ -31,9 +32,9 @@ export async function saveAttractionTranslation(req: AuthRequest, res: Response,
     if (collision) throw new TranslationError('Another tour already uses this URL.', 409);
     let translation;
     if (expectedUpdatedAt) {
-      translation = await AttractionTranslation.findOneAndUpdate({ ...filter, status: 'draft', updatedAt: new Date(expectedUpdatedAt) }, { $set: { slug, content, sourceUpdatedAt: new Date(sourceUpdatedAt), updatedAt: new Date(Math.max(Date.now(), Date.parse(expectedUpdatedAt) + 1)) } }, { new: true, runValidators: true, timestamps: false }).lean();
+      translation = await AttractionTranslation.findOneAndUpdate({ ...filter, status: 'draft', updatedAt: new Date(expectedUpdatedAt) }, { $set: { slug, content, sourceUpdatedAt: new Date(sourceUpdatedAt), sourceSnapshot: sourceSnapshot('tour',source), updatedAt: new Date(Math.max(Date.now(), Date.parse(expectedUpdatedAt) + 1)) } }, { new: true, runValidators: true, timestamps: false }).lean();
       if (!translation) throw new TranslationError('The translation changed or is published. Reload and unpublish before editing.', 409);
-    } else translation = (await AttractionTranslation.create({ ...filter, slug, content, sourceUpdatedAt: new Date(sourceUpdatedAt), status: 'draft' })).toObject();
+    } else translation = (await AttractionTranslation.create({ ...filter, slug, content, sourceUpdatedAt: new Date(sourceUpdatedAt), sourceSnapshot: sourceSnapshot('tour',source), status: 'draft' })).toObject();
     res.status(expectedUpdatedAt ? 200 : 201).json({ success: true, data: translation });
   } catch(error) { fail(error, next); }
 }
@@ -43,7 +44,7 @@ export async function transitionAttractionTranslation(req: AuthRequest, res: Res
     const { expectedUpdatedAt, action } = parsed.data;
     const match = { ...filter, updatedAt: new Date(expectedUpdatedAt), status: action === 'publish' ? 'draft' : 'published' };
     const current = await AttractionTranslation.findOne(match).lean(); if (!current) throw new TranslationError('The translation changed. Reload before publishing.', 409);
-    if (action === 'publish') { if (source.status !== 'active' || source.updatedAt.getTime() !== current.sourceUpdatedAt.getTime()) throw new TranslationError('The source tour changed or is not published. Refresh the translation first.', 409); const content = attractionTranslationContent.parse(current.content); validateTranslationSource(source, content); if (await Attraction.exists({ tenantIds: filter.tenantId, _id: { $ne: filter.attractionId }, $or: [{ slug: current.slug }, { pathSlug: current.slug }] })) throw new TranslationError('Another tour already uses this URL.', 409); }
+    if (action === 'publish') { if (source.status !== 'active' || !sourceMatches('tour',source,current)) throw new TranslationError('The source tour changed or is not published. Refresh the translation first.', 409); const content = attractionTranslationContent.parse(current.content); validateTranslationSource(source, content); if (await Attraction.exists({ tenantIds: filter.tenantId, _id: { $ne: filter.attractionId }, $or: [{ slug: current.slug }, { pathSlug: current.slug }] })) throw new TranslationError('Another tour already uses this URL.', 409); }
     const translation = await AttractionTranslation.findOneAndUpdate(match, { $set: { status: action === 'publish' ? 'published' : 'draft', updatedAt: new Date(Math.max(Date.now(), Date.parse(expectedUpdatedAt) + 1)) } }, { new: true, timestamps: false }).lean();
     if (!translation) throw new TranslationError('The translation changed. Reload before publishing.', 409);
     res.json({ success: true, data: translation });

@@ -1,3 +1,4 @@
+import { localizedSlugStages } from '../services/localizationSourceSnapshot.service';
 import { requestedLocale, localizationStages, TranslationError, type StorefrontLocale } from '../services/attractionLocalization.service';
 import { destinationLocalizationStages, localizedDestination, destinationAliasFilters } from '../services/destinationLocalization.service';
 import { Types } from 'mongoose';
@@ -154,7 +155,7 @@ export const getDestinationBySlug = async (
     const locale = requestedLocale(req.query?.locale);
     if (locale && !req.tenant) throw new TranslationError('Select one public site for translated destinations');
     const aliases = locale && req.tenant ? await destinationAliasFilters(slug, req.tenant._id) : [];
-    const translatedRows = locale && req.tenant ? await Destination.aggregate([{ $match: { $or: [{ slug }, ...aliases], isActive: true } }, { $limit: 2 }, ...destinationLocalizationStages(req.tenant._id, locale, undefined, false)]) : null;
+    const translatedRows = locale && req.tenant ? await Destination.aggregate([{ $match: { $or: [{ slug }, ...aliases], isActive: true } }, ...destinationLocalizationStages(req.tenant._id, locale, undefined, false), ...localizedSlugStages(slug,locale)]) : null;
     const destination = translatedRows ? translatedRows.length === 1 ? translatedRows[0] : null : await Destination.findOne({ slug, isActive: true }).lean();
 
     if (!destination) {
