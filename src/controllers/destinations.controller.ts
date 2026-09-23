@@ -1,3 +1,6 @@
+import { requestedLocale, localizationStages, TranslationError, type StorefrontLocale } from '../services/attractionLocalization.service';
+import { destinationLocalizationStages, localizedDestination, destinationAliasFilters } from '../services/destinationLocalization.service';
+import { Types } from 'mongoose';
 import { Response, NextFunction } from 'express';
 import { Destination } from '../models/Destination';
 import { Attraction } from '../models/Attraction';
@@ -19,15 +22,17 @@ async function withSiteCounts(
   destinations: DestinationRow[],
   attractionFilter: Record<string, unknown>,
   pickupSlugs: string[],
+  localeContext?: { tenantId: Types.ObjectId; locale: StorefrontLocale },
 ): Promise<DestinationRow[]> {
   const counts = await Attraction.aggregate([
     { $match: attractionFilter },
+    ...(localeContext ? localizationStages(localeContext.tenantId, localeContext.locale) : []),
     { $group: { _id: '$destination.city', count: { $sum: 1 } } },
   ]);
   const countMap = new Map(counts.map((c) => [c._id, c.count]));
   const needsPickupCount = destinations.some((dest) => !countMap.get(dest.name) && pickupSlugs.includes(dest.slug));
   const pickupCount = needsPickupCount
-    ? await Attraction.countDocuments({ ...attractionFilter, hasHotelPickup: true })
+    ? localeContext ? ((await Attraction.aggregate([{ $match: { ...attractionFilter, hasHotelPickup: true } }, ...localizationStages(localeContext.tenantId, localeContext.locale), { $count: 'total' }]))[0]?.total || 0) : await Attraction.countDocuments({ ...attractionFilter, hasHotelPickup: true })
     : 0;
   return destinations.map((dest) => {
     const ownCount = countMap.get(dest.name) || 0;
@@ -44,13 +49,15 @@ export const getDestinations = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    const locale = requestedLocale(req.query.locale);
     const forEditor = req.query.forEditor === 'true';
+    if (locale && (!req.tenant || forEditor || req.query.scope === 'admin')) throw new TranslationError('Select one public site for translated destinations');
     if (forEditor && (!req.user || !['super-admin', 'brand-admin', 'manager', 'editor', 'viewer'].includes(req.user.role))) {
       sendError(res, 'Staff access is required for editor options', req.user ? 403 : 401);
       return;
     }
     const { page = 1, limit = 20, continent, search, includeCount = 'true' } = req.query;
-    const staffRequest = isStaffRequest(req);
+    const staffRequest = !locale && isStaffRequest(req);
     // Admin screens send scope=admin so an expired session is refused (and refreshed)
     // instead of quietly receiving the shorter public list.
     if (req.query.scope === 'admin' && !staffRequest) {
@@ -87,7 +94,7 @@ export const getDestinations = async (
     }
 
     const safeSearch = searchRegexValue(search);
-    if (safeSearch) {
+    if (safeSearch && (!locale || locale === 'en')) {
       query.$or = [
         { name: { $regex: safeSearch, $options: 'i' } },
         { country: { $regex: safeSearch, $options: 'i' } },
@@ -110,6 +117,13 @@ export const getDestinations = async (
       }
     }
 
+    if (locale && req.tenant) {
+      const pipeline = [{ $match: query }, ...destinationLocalizationStages(req.tenant._id, locale, safeSearch || undefined)];
+      const [rows, counts] = await Promise.all([Destination.aggregate([...pipeline, { $sort: { sortOrder: 1, name: 1, _id: 1 } }, { $skip: (pageNum - 1) * limitNum }, { $limit: limitNum }]), Destination.aggregate([...pipeline, { $count: 'total' }])]);
+      const translated = rows.map(row => localizedDestination(row, locale)) as DestinationRow[];
+      const result = includeCount === 'true' ? await withSiteCounts(translated, attractionFilter, pickupSlugs, { tenantId: req.tenant._id, locale }) : translated;
+      res.setHeader('Cache-Control', 'private, no-store'); sendPaginated(res, result, pageNum, limitNum, counts[0]?.total || 0); return;
+    }
     const [destinations, total] = await Promise.all([
       Destination.find(query)
         .sort({ sortOrder: 1, name: 1 })
@@ -137,8 +151,11 @@ export const getDestinationBySlug = async (
 ): Promise<void> => {
   try {
     const { slug } = req.params;
-
-    const destination = await Destination.findOne({ slug, isActive: true }).lean();
+    const locale = requestedLocale(req.query.locale);
+    if (locale && !req.tenant) throw new TranslationError('Select one public site for translated destinations');
+    const aliases = locale && req.tenant ? await destinationAliasFilters(slug, req.tenant._id) : [];
+    const translatedRows = locale && req.tenant ? await Destination.aggregate([{ $match: { $or: [{ slug }, ...aliases], isActive: true } }, { $limit: 2 }, ...destinationLocalizationStages(req.tenant._id, locale, undefined, false)]) : null;
+    const destination = translatedRows ? translatedRows.length === 1 ? translatedRows[0] : null : await Destination.findOne({ slug, isActive: true }).lean();
 
     if (!destination) {
       sendError(res, 'Destination not found', 404);
@@ -161,11 +178,14 @@ export const getDestinationBySlug = async (
       }
     }
 
+    const ownedCount = locale ? await Attraction.countDocuments(attractionScope) : undefined;
+    const localizedTourStages = locale && req.tenant ? localizationStages(req.tenant._id, locale) : [];
     // Get attraction count and stats
     const [attractionCount, ratingStats, priceStats] = await Promise.all([
-      Attraction.countDocuments(attractionScope),
+      locale ? Attraction.aggregate([{ $match: attractionScope }, ...localizedTourStages, { $count: 'total' }]).then(rows => rows[0]?.total || 0) : Attraction.countDocuments(attractionScope),
       Attraction.aggregate([
         { $match: attractionScope },
+        ...localizedTourStages,
         {
           $group: {
             _id: null,
@@ -176,6 +196,7 @@ export const getDestinationBySlug = async (
       ]),
       Attraction.aggregate([
         { $match: attractionScope },
+        ...localizedTourStages,
         {
           $group: {
             _id: null,
@@ -186,25 +207,25 @@ export const getDestinationBySlug = async (
     ]);
 
     // Get popular attractions
-    if (req.tenant && attractionCount === 0) {
+    if (req.tenant && (ownedCount ?? attractionCount) === 0) {
       sendError(res, 'Destination not found', 404);
       return;
     }
 
-    const popularAttractions = await Attraction.find(attractionScope)
+    const popularAttractions = locale && req.tenant ? await Attraction.aggregate([{ $match: attractionScope }, ...localizedTourStages, { $sort: { reviewCount: -1, _id: 1 } }, { $limit: 5 }, { $project: { title: 1, __translations: 1 } }]) : await Attraction.find(attractionScope)
       .sort({ reviewCount: -1 })
       .limit(5)
       .select('title slug')
       .lean();
 
     sendSuccess(res, {
-      ...destination,
+      ...(locale ? localizedDestination(destination, locale) : destination),
       ...(servedByPickup ? { servedByPickup: true } : {}),
       attractionCount,
       averageRating: ratingStats[0]?.averageRating || 0,
       reviewCount: ratingStats[0]?.totalReviews || 0,
       priceFrom: priceStats[0]?.minPrice || 0,
-      popularAttractions: popularAttractions.map((a) => a.title),
+      popularAttractions: popularAttractions.map((a: any) => locale && locale !== 'en' ? a.__translations?.find((row: any) => row.locale === locale)?.content?.title || a.title : a.title),
     });
   } catch (error) {
     next(error);
@@ -218,6 +239,8 @@ export const getFeaturedDestinations = async (
 ): Promise<void> => {
   try {
     const { limit = 6 } = req.query;
+    const locale = requestedLocale(req.query.locale);
+    if (locale && !req.tenant) throw new TranslationError('Select one public site for translated destinations');
 
     const attractionScope: Record<string, unknown> = { status: 'active' };
     if (req.tenant) attractionScope.tenantIds = { $in: [req.tenant._id] };
@@ -234,6 +257,12 @@ export const getFeaturedDestinations = async (
         : { name: { $in: destinationNames } });
     }
 
+    if (locale && req.tenant) {
+      const amount = Number(limit); if (!Number.isInteger(amount) || amount < 1 || amount > 50) throw new TranslationError('Select between 1 and 50 featured destinations');
+      const rows = await Destination.aggregate([{ $match: destinationQuery }, ...destinationLocalizationStages(req.tenant._id, locale), { $sort: { sortOrder: 1, _id: 1 } }, { $limit: amount }]);
+      const destinations = rows.map(row => localizedDestination(row, locale)) as DestinationRow[];
+      res.setHeader('Cache-Control', 'private, no-store'); sendSuccess(res, await withSiteCounts(destinations, attractionScope, pickupSlugs, { tenantId: req.tenant._id, locale })); return;
+    }
     const destinations = await Destination.find(destinationQuery)
       .sort({ sortOrder: 1 })
       .limit(parseInt(limit as string, 10))
