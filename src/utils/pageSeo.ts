@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const FIXED_PAGE_KEYS = ['home', 'cruises', 'destinations', 'deals', 'about', 'faq', 'contact', 'blog'] as const;
+export const FIXED_PAGE_KEYS = ['home', 'cruises', 'destinations', 'deals', 'about', 'faq', 'contact', 'blog', 'terms', 'privacy'] as const;
 const plain = (max: number) => z.string().trim().max(max).refine(value => !/[<>\u0000-\u001f\u007f]/.test(value), 'Use plain text without HTML or control characters');
 const image = z.string().trim().max(2048).refine(value => {
   if (!value) return true;

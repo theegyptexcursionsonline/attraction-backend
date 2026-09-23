@@ -137,12 +137,12 @@ it('route-status resolves public canonical identity without shipping tour copy o
 
 it('exposes truthful article sitemap identity and modification time in both journal list modes',async()=>{
   await seedPosts(); const updatedAt=new Date('2026-09-23T09:30:00.000Z');
-  await BlogPost.collection.updateMany({tenantId:'status-site-0'},{$set:{updatedAt}});
+  await BlogPost.collection.updateMany({tenantId:'status-site-0'},{$set:{updatedAt,featuredImageAlt:'Sailboat beside a coral island'}});
   for(const query of [{pagination:'cursor'},{}]) {
     const response=await request(app).get('/blog').query({tenant:'status-site-0',limit:50,...query}).expect(200);
     expect(response.body.data).toHaveLength(50);
     for(const row of response.body.data) {
-      expect(row).toMatchObject({tenantId:'status-site-0',status:'published',updatedAt:updatedAt.toISOString()});
+      expect(row).toMatchObject({tenantId:'status-site-0',status:'published',updatedAt:updatedAt.toISOString(),featuredImageAlt:'Sailboat beside a coral island'});
       expect(row).not.toHaveProperty('content');expect(row).not.toHaveProperty('tenantRef');
       expect(['draft','foreign','foreign-ref']).not.toContain(row.slug);
     }

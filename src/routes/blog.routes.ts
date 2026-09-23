@@ -51,7 +51,7 @@ router.get('/', async (req: Request, res: Response, next) => {
       res.json({ success: true, data: [] }); return;
     }
     const query = { $and: [tenantFilter, { status: 'published' }, ...(search ? [{ $or: ['title', 'excerpt', 'category'].map(field => ({ [field]: new RegExp(escapeRegex(search), 'i') })) }] : [])] };
-    const projection = 'slug title excerpt featuredImage category tags author readTime publishedAt updatedAt tenantId status featured';
+    const projection = 'slug title excerpt featuredImage featuredImageAlt category tags author readTime publishedAt updatedAt tenantId status featured';
     if (pagination === 'cursor') {
       const plan = publicCursorPlan(query, [{ field: 'publishedAt', direction: sort === 'oldest' ? 1 : -1, kind: 'date' }, { field: '_id', direction: sort === 'oldest' ? 1 : -1, kind: 'id' }], cursor);
       const [rows, total] = await Promise.all([

@@ -135,3 +135,13 @@ it('guards direct model writes and preserves input objects', async () => {
   expect(withoutPageSeoFields(original)).toEqual({ name: 'Kept' });
   expect(original.pageSeo).toEqual(settings);
 });
+
+it.each(['terms', 'privacy'])('saves %s settings with public readback, isolation and stale-write protection', async key => {
+  const pages = { ...settings.pages, [key]: fields };
+  await patch().send(body(0, { pages })).expect(200);
+  const publicResult = await request(app).get(`/tenants/public/${owner}`).expect(200);
+  expect(publicResult.body.data.pageSeo).toEqual({ version: 1, pages });
+  await patch().send(body(0, { pages: { [key]: { ...fields, heading: 'Stale' } } })).expect(409);
+  await patch(other).send(body(0, { pages })).expect(404);
+  expect((await stored())?.pageSeo).toEqual({ version: 1, pages });
+});
