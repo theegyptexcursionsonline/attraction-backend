@@ -761,10 +761,18 @@ export const updateAttraction = async (
       sendError(res, 'Reload the attraction before saving image settings', 400); return;
     }
     delete req.body.expectedPresentationRevision;
+    const expectedStatus = req.body.expectedStatus;
+    if (expectedStatus !== undefined && !['active', 'draft', 'archived'].includes(expectedStatus)) {
+      sendError(res, 'Use a valid expected attraction status', 400); return;
+    }
+    delete req.body.expectedStatus;
     const presentationScope = { _id: id, ...(req.user?.role === 'super-admin' ? {} : { tenantIds: { $in: callerTenantIds(req.user) } }) };
-    if (touchesPresentation) {
+    if (touchesPresentation || expectedStatus !== undefined) {
       existingAttraction = await Attraction.findOne(presentationScope);
       if (!existingAttraction) { sendError(res, 'Attraction not found', 404); return; }
+      if (expectedStatus !== undefined && existingAttraction.status !== expectedStatus) {
+        sendError(res, 'This attraction changed. Reload before saving', 409); return;
+      }
       if (expectedPresentationRevision !== undefined && expectedPresentationRevision !== (existingAttraction.presentationRevision ?? 0)) {
         sendError(res, 'This attraction changed. Reload before saving', 409); return;
       }
@@ -914,14 +922,20 @@ export const updateAttraction = async (
     };
     const options = { new: true, runValidators: true, context: 'query' };
     const revision = expectedPresentationRevision ?? existingAttraction?.presentationRevision ?? 0;
+    // A draft editor supplies its loaded status so a later save cannot undo
+    // another editor's publication. Check it in the same write as every field.
+    const statusFilter = expectedStatus === undefined ? {} : { status: expectedStatus };
     const attraction = touchesPresentation
-      ? await Attraction.findOneAndUpdate({ ...presentationScope, ...(revision === 0
+      ? await Attraction.findOneAndUpdate({ ...presentationScope, ...statusFilter, ...(revision === 0
           ? { $or: [{ presentationRevision: 0 }, { presentationRevision: { $exists: false } }] }
           : { presentationRevision: revision }) }, mutation, options)
-      : await Attraction.findByIdAndUpdate(id, mutation, options);
+      : expectedStatus !== undefined
+        ? await Attraction.findOneAndUpdate({ ...presentationScope, ...statusFilter }, mutation, options)
+        : await Attraction.findByIdAndUpdate(id, mutation, options);
 
     if (!attraction) {
-      sendError(res, touchesPresentation ? 'This attraction changed. Reload before saving' : 'Attraction not found', touchesPresentation ? 409 : 404);
+      const guarded = touchesPresentation || expectedStatus !== undefined;
+      sendError(res, guarded ? 'This attraction changed. Reload before saving' : 'Attraction not found', guarded ? 409 : 404);
       return;
     }
 

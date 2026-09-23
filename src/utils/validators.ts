@@ -456,6 +456,7 @@ export const createAttractionDraftSchema = attractionAuthoringSchema.partial().e
 // one did. The draft branch has to be relaxed on both verbs.
 export const updateAttractionDraftSchema = attractionAuthoringSchema.partial().extend({
   expectedPresentationRevision: z.number().int().nonnegative().optional(),
+  expectedStatus: z.enum(['active', 'draft', 'archived']).optional(),
   title: z.string().trim().min(1, 'Title is required').optional(),
   status: z.literal('draft'),
   ...draftRelaxedFields,
@@ -466,7 +467,10 @@ export const createAttractionRequestSchema = z.union([
   createAttractionSchema,
 ]);
 
-export const updateAttractionSchema = attractionAuthoringSchema.partial().extend({ expectedPresentationRevision: z.number().int().nonnegative().optional() });
+export const updateAttractionSchema = attractionAuthoringSchema.partial().extend({
+  expectedPresentationRevision: z.number().int().nonnegative().optional(),
+  expectedStatus: z.enum(['active', 'draft', 'archived']).optional(),
+});
 
 export const updateAttractionRequestSchema = z.union([
   updateAttractionDraftSchema,
