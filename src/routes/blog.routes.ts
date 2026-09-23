@@ -70,8 +70,11 @@ router.get('/', async (req: Request, res: Response, next) => {
 /**
  * GET /api/blog/:slug?tenant=default — single published post.
  */
-router.get('/:slug', async (req: Request, res: Response) => {
-  const tenant = (req.query.tenant as string) || 'default';
+router.get('/:slug', async (req: Request, res: Response, next) => {
+  try {
+  const parsed = z.object({ tenant: z.string().trim().min(1).max(160).default('default') }).safeParse(req.query);
+  if (!parsed.success || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(req.params.slug)) { res.status(400).json({ success: false, error: 'Invalid article address' }); return; }
+  const tenant = parsed.data.tenant;
   const tenantFilter = await tenantBlogFilter(tenant);
   if (!tenantFilter) {
     res.status(404).json({ success: false, error: 'Not found' });
@@ -94,6 +97,7 @@ router.get('/:slug', async (req: Request, res: Response) => {
       translations: sanitizeTranslations(post.translations),
     },
   });
+  } catch (error) { next(error); }
 });
 
 export default router;

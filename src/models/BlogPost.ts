@@ -9,13 +9,14 @@ export interface IBlogPost extends Document {
   excerpt: string;
   content: string;
   featuredImage?: string;
+  featuredImageAlt?: string;
   category?: string;
   tags: string[];
   author: string;
   metaTitle?: string;
   metaDescription?: string;
   readTime?: number;
-  status: 'draft' | 'published';
+  status: 'draft' | 'published' | 'archived';
   featured: boolean;
   publishedAt?: Date;
   translations?: Record<
@@ -66,16 +67,17 @@ const blogPostSchema = new Schema<IBlogPost>(
     defaultLocale: { type: String, trim: true, default: 'en' },
     slug: { type: String, required: true, lowercase: true, trim: true, index: true },
     title: { type: String, required: true, trim: true },
-    excerpt: { type: String, required: true, trim: true },
-    content: { type: String, required: true },
+    excerpt: { type: String, default: '', trim: true },
+    content: { type: String, default: '' },
     featuredImage: { type: String, trim: true },
+    featuredImageAlt: { type: String, trim: true },
     category: { type: String, trim: true, index: true },
     tags: { type: [String], default: [] },
     author: { type: String, trim: true, default: 'Editorial Team' },
     metaTitle: { type: String, trim: true },
     metaDescription: { type: String, trim: true },
     readTime: { type: Number },
-    status: { type: String, enum: ['draft', 'published'], default: 'published', index: true },
+    status: { type: String, enum: ['draft', 'published', 'archived'], default: 'published', index: true },
     featured: { type: Boolean, default: false },
     publishedAt: { type: Date, index: true },
     translations: { type: Map, of: BlogTranslationSchema },
@@ -101,6 +103,7 @@ const blogPostSchema = new Schema<IBlogPost>(
 // Same slug may exist per tenant, but is unique within a tenant.
 blogPostSchema.index({ tenantId: 1, slug: 1 }, { unique: true });
 blogPostSchema.index({ status: 1, publishedAt: -1 });
+blogPostSchema.index({ tenantId: 1, status: 1, _id: -1 });
 
 blogPostSchema.pre('save', function (next) {
   if (this.status === 'published' && !this.publishedAt) {

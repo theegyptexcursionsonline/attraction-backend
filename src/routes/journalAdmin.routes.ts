@@ -1,0 +1,11 @@
+import { Router } from 'express';
+import { authenticate, requireRole } from '../middleware/auth.middleware';
+import { journalScope, listJournal, getJournal, createJournal, updateJournal, transitionJournal } from '../controllers/journalAdmin.controller';
+const router = Router();
+router.use(authenticate, requireRole('super-admin', 'brand-admin', 'manager', 'editor'));
+router.get('/:tenantId', journalScope, listJournal);
+router.post('/:tenantId', journalScope, createJournal);
+router.get('/:tenantId/:postId', journalScope, getJournal);
+router.put('/:tenantId/:postId', journalScope, updateJournal);
+router.post('/:tenantId/:postId/transition', journalScope, requireRole('super-admin', 'brand-admin', 'manager'), transitionJournal);
+export default router;
