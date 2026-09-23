@@ -458,7 +458,7 @@ describe('Stripe payment hardening', () => {
           status: 'pending',
           inventoryReleasedAt: { $exists: false },
         }),
-        { $set: { paymentStatus: 'failed' } },
+        { $set: { paymentStatus: 'failed', paymentFailureReason: 'payment_failed', paymentFailureAt: expect.any(Date) } },
         { new: true }
       );
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ received: true }));
