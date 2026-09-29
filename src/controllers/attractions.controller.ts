@@ -14,6 +14,7 @@ import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest, IAttraction } from '../types';
 import { Types } from 'mongoose';
 import { escapeRegex, MAX_REGEX_SEARCH_LENGTH, searchRegexValue } from '../utils/helpers';
+import { catalogSearchFilter } from '../utils/catalogSearch';
 import {
   isSuperAdmin,
   callerTenantIds,
@@ -189,7 +190,6 @@ interface AttractionQuery {
   priceFrom?: { $gte?: number; $lte?: number };
   rating?: { $gte: number };
   badges?: { $in: string[] };
-  $text?: { $search: string };
   tenantIds?: { $in: Types.ObjectId[] } | { $size: number };
   archivedAt?: { $exists: boolean };
   trashedAt?: { $exists: boolean };
@@ -332,9 +332,11 @@ export const getAttractions = async (
       query.badges = { $in: (badges as string).split(',') };
     }
 
-    if (search && (!locale || locale === 'en')) {
-      query.$text = { $search: search as string };
-    }
+    // Every typed word must match (literal, case-insensitive). `$text` matched ANY one whole
+    // word and was then sorted by date, so the tour a shopper named landed pages down and a
+    // part-word found nothing. Translated catalogues search their published translation instead.
+    const searchFilter = !locale || locale === 'en' ? catalogSearchFilter(search) : null;
+    if (searchFilter) query.$and = [...(query.$and || []), ...searchFilter.$and];
 
     // Build sort
     let sortOption: Record<string, 1 | -1> = { createdAt: -1 };

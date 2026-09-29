@@ -678,7 +678,7 @@ export const attractionFiltersSchema = z.object({
   maxPrice: z.coerce.number().optional(),
   rating: z.coerce.number().optional(),
   badges: z.string().optional(), // comma-separated
-  search: z.string().trim().max(MAX_REGEX_SEARCH_LENGTH).optional(),
+  search: regexSearchSchema,
   status: z.enum(['active', 'draft', 'archived']).optional(),
   lifecycle: z.enum(['archive', 'trash']).optional(),
   ownership: z.enum(['all', 'owned', 'assigned']).optional(),
