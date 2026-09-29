@@ -6,7 +6,7 @@ import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import attractionRoutes from '../routes/attractions.routes';
 import { Tenant } from '../models/Tenant';
 import { Attraction } from '../models/Attraction';
-import { catalogSearchFilter, InvalidCatalogSearch } from '../utils/catalogSearch';
+import { catalogSearchFilter, InvalidCatalogSearch, singularStem } from '../utils/catalogSearch';
 
 jest.setTimeout(120_000);
 const site = new Types.ObjectId(), otherSite = new Types.ObjectId();
@@ -64,6 +64,16 @@ describe('storefront catalogue search', () => {
     expect(slugs((await list({ search: 'marsa' }).expect(200)).body).sort()).toEqual(['marsa-buggy', 'marsa-horse']);
   });
 
+  it('finds a singular title from a plural the shopper types', async () => {
+    await Attraction.collection.insertMany([
+      tour('khufu', 'The Great Pyramid of Khufu — Egyptologist-Led Tour', 'Giza'),
+      tour('karnak', 'Karnak Temple at Dawn — Private Tour', 'Luxor'),
+    ]);
+    expect(slugs((await list({ search: 'Giza pyramids tour' }).expect(200)).body)).toEqual(['khufu']);
+    expect(slugs((await list({ search: 'Makadi horses' }).expect(200)).body)).toEqual(['makadi-horse']);
+    expect(slugs((await list({ search: 'Marsa buggies' }).expect(200)).body)).toEqual(['marsa-buggy']);
+  });
+
   it('matches special characters literally and never as a pattern', async () => {
     expect(slugs((await list({ search: '(4x4)' }).expect(200)).body)).toEqual(['makadi-quad']);
     for (const text of ['.', '.*', '^Makadi', 'Tour$', '[', 'a|b', '\\']) {
@@ -116,6 +126,14 @@ describe('storefront catalogue search', () => {
     expect(slugs(body)).toEqual(['makadi-horse']);
     expect(slugs((await list({ locale: 'en', search: 'bugg' }).expect(200)).body).sort()).toEqual(['makadi-buggy', 'marsa-buggy']);
   });
+});
+
+describe('singularStem', () => {
+  it.each([
+    ['pyramids', 'pyramid'], ['Horses', 'Horse'], ['tours', 'tour'], ['beaches', 'beach'], ['boxes', 'box'],
+    ['glasses', 'glass'], ['activities', 'activit'], ['cruises', 'cruise'],
+    ['glass', 'glass'], ['bus', 'bus'], ['Giza', 'Giza'], ['bugg', 'bugg'], ['(4x4)', '(4x4)'],
+  ])('%s -> %s', (word, stem) => expect(singularStem(word)).toBe(stem));
 });
 
 describe('catalogSearchFilter', () => {
