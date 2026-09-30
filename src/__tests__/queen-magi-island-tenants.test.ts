@@ -26,6 +26,7 @@ import {
   validateIslandImagePlan,
 } from '../scripts/generate-queen-magi-island-images';
 import { imageAltSchema } from '../utils/imagePresentation';
+import { departureAvailabilityType } from '../utils/departureAvailability';
 
 const baseTenant = {
   slug: 'design-mode-probe',
@@ -120,6 +121,36 @@ describe('Queen Magi island tenant separation', () => {
       expect(tenant.bundleSettings.mode).toBe('off');
       expect(tenant.domainMigrated).toBe(false);
       expect(tenant.notificationSettings.bookingEmail).toBe('theegyptexcursionsonline@gmail.com');
+    }
+  });
+});
+
+describe('Queen Magi island departures are bookable', () => {
+  it('sells a tour by its time slot exactly when it publishes a departure', () => {
+    expect(departureAvailabilityType([{ startTime: '09:30' }])).toBe('time-slots');
+    expect(departureAvailabilityType([])).toBe('date-only');
+    expect(departureAvailabilityType(undefined)).toBe('date-only');
+    expect(departureAvailabilityType([{ startTime: '  ' }])).toBe('date-only');
+  });
+
+  it('never seeds a tour that asks for a departure the availability API cannot offer', () => {
+    const id = new mongoose.Types.ObjectId();
+    const built = [
+      ...PARADISE_TOURS.map((tour, index) => ({ tour, doc: buildParadiseTour(tour, index, [], id) as unknown as { availability: { type: string } } })),
+      ...HULA_HULA_TOURS.map((tour, index) => ({ tour, doc: buildHulaTour(tour, index, [], id) as unknown as { availability: { type: string } } })),
+    ];
+    const scheduled = built.filter(({ tour }) => tour.entryWindows.length > 0);
+    // Six island products publish a fixed departure; each must be sold by that slot.
+    expect(scheduled.map(({ tour }) => tour.slug).sort()).toEqual([
+      'hula-hula-island-cruise-with-lunch-and-snorkelling',
+      'hula-hula-island-private-speedboat-sunset',
+      'hula-hula-island-speedboat-morning-escape',
+      'hula-hula-island-speedboat-sunset',
+      'hula-hula-island-sunset-cruise-with-lunch-and-snorkelling',
+      'paradise-island-cruise-with-lunch-and-snorkelling',
+    ]);
+    for (const { tour, doc } of built) {
+      expect(doc.availability.type).toBe(tour.entryWindows.length > 0 ? 'time-slots' : 'date-only');
     }
   });
 });

@@ -36,6 +36,7 @@
 
 import crypto from 'crypto';
 import fs from 'fs';
+import { departureAvailabilityType } from '../utils/departureAvailability';
 
 type PricingModel = 'per-person' | 'per-booking';
 
@@ -1309,7 +1310,9 @@ export function buildTourDocument(
     instantConfirmation: false,
     mobileTicket: true,
     hasHotelPickup: tour.hasHotelPickup,
-    availability: { type: 'date-only', advanceBooking: 365 },
+    // A fixed departure is sold by its time slot: the availability API only returns slots for
+    // 'time-slots' tours, and the storefront asks for a time whenever a tour has a window.
+    availability: { type: departureAvailabilityType(tour.entryWindows), advanceBooking: 365 },
     seo: tour.seo,
     tenantIds: [tenantId],
     ownerTenantId: tenantId,
