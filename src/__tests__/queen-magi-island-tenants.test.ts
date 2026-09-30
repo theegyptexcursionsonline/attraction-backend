@@ -4,6 +4,7 @@ import { Tenant } from '../models/Tenant';
 import {
   PARADISE_FACILITY_INDEX,
   PARADISE_FACILITY_PAGES,
+  PARADISE_HERO_SOURCES,
   PARADISE_TENANT,
   PARADISE_TOURS,
   buildCustomPages as buildParadisePages,
@@ -152,6 +153,27 @@ describe('Queen Magi island departures are bookable', () => {
     for (const { tour, doc } of built) {
       expect(doc.availability.type).toBe(tour.entryWindows.length > 0 ? 'time-slots' : 'date-only');
     }
+  });
+});
+
+describe('Queen Magi island copy speaks as the venue', () => {
+  it('never calls the business "the operator" in anything a guest reads', () => {
+    const customerFacing = [
+      ...[...PARADISE_TOURS, ...HULA_HULA_TOURS].map((tour) => [tour.title, tour.shortDescription, tour.description, tour.highlights, tour.needToKnow]),
+      ...[PARADISE_FACILITY_INDEX, ...PARADISE_FACILITY_PAGES, HULA_HULA_FACILITY_INDEX, ...HULA_HULA_FACILITY_PAGES]
+        .map((page) => [page.title, page.heroDescription, page.metaDescription, (page as { body?: string }).body]),
+    ];
+    expect(JSON.stringify(customerFacing)).not.toMatch(/\boperator/i);
+  });
+});
+
+describe('Queen Magi island page photographs', () => {
+  it('never uses the archived stock photograph that was filed as an island plan', () => {
+    const pages = [PARADISE_FACILITY_INDEX, ...PARADISE_FACILITY_PAGES];
+    for (const page of pages) expect(page.heroImage).not.toMatch(/Plan-of-Paradise-Island/i);
+    // The facilities index shows the site's own beach photograph and says what it shows.
+    expect(PARADISE_FACILITY_INDEX.heroImage).toBe(PARADISE_HERO_SOURCES[2]);
+    expect(PARADISE_FACILITY_INDEX.heroImageAlt).not.toMatch(/plan/i);
   });
 });
 

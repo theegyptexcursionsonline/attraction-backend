@@ -246,7 +246,7 @@ const SPEEDBOAT_SUITABILITY = [
   'A speedboat moves quickly and can be bumpy. Tell the crew before you board if that is a problem for you.',
 ];
 const VENUE_NOTE =
-  'Which venue does this ticket admit to? Hula Hula Island. It does not admit to the operator’s other beach venue.';
+  'Which venue does this ticket admit to? Hula Hula Island. It does not admit to our other beach venue on the island.';
 const TRANSFER_NOTE =
   'How do I get to the marina? The transfer is booked separately and priced by area. Ask for your area when you book and the team will confirm the pickup time.';
 const PARK_FEE_NOTE =
@@ -281,7 +281,7 @@ export const HULA_HULA_TOURS: HulaHulaTour[] = [
       'This is the shortest way onto the island: a timed beach ticket, two hours, and nothing bundled around it. It is the ticket for guests who are already coming out to the Giftun islands and want the beach itself rather than a whole organised day.',
       'Hula Hula is a beach venue on Big Giftun, the larger and nearer of the two Giftun islands off Hurghada. What this ticket buys is entry: the sand, the shallows and the time on them.',
       'It does not include the boat out, a meal, or snorkelling equipment. Those belong to the full-day cruises and the speedboat trips, which are sold separately on this site. If you have not arranged a crossing, book one of those instead.',
-      'This ticket admits to Hula Hula Island. The operator runs a second beach venue on the same island with its own ticket, and the two are not interchangeable.',
+      'This ticket admits to Hula Hula Island. We also run a second beach venue on the same island, with its own ticket, and the two tickets are not interchangeable.',
     ].join('\n\n'),
     category: 'Beach Days',
     duration: '2 hours',
@@ -355,7 +355,7 @@ export const HULA_HULA_TOURS: HulaHulaTour[] = [
       'This is the full day, and the only product on this site with the transfer built into the price. You are collected from your hotel, taken to the marina in Hurghada, and the yacht sails out to the Giftun islands from there.',
       'The island is the middle of the day: the beach, the water and lunch, with enough time that the day does not feel like a schedule. A guided snorkelling stop with equipment is included, water sports run on the day, and a short massage is offered on board during the sail.',
       'Your island entry ticket is part of the price, so there is nothing to pay when you come ashore. The yacht leaves in the morning and is back at the marina in the late afternoon, and the transfer takes you home from there.',
-      'A child fare applies to this product at half the adult price. This ticket admits to Hula Hula Island. The operator runs a second beach venue on the same island with its own ticket, and the two are not interchangeable.',
+      'A child fare applies to this product at half the adult price. This ticket admits to Hula Hula Island. We also run a second beach venue on the same island, with its own ticket, and the two tickets are not interchangeable.',
     ].join('\n\n'),
     category: 'Island Cruises',
     duration: '7 hours',
@@ -427,7 +427,7 @@ export const HULA_HULA_TOURS: HulaHulaTour[] = [
       'The same day as the morning cruise, moved two hours later so that the return leg happens in the best light of the day. The yacht leaves the marina towards midday and sails out to the Giftun islands.',
       'On the island there is the beach, the water and lunch, with a guided snorkelling stop and equipment included, and water sports running on the day. A short massage is offered on board during the sail.',
       'The difference is the way home. You leave the island in the late afternoon and come back across the Red Sea with the sun going down behind Hurghada, which is a materially different trip from the same route at midday.',
-      'Your island entry ticket is part of the price. A child fare applies at half the adult price. This ticket admits to Hula Hula Island. The operator runs a second beach venue on the same island with its own ticket, and the two are not interchangeable.',
+      'Your island entry ticket is part of the price. A child fare applies at half the adult price. This ticket admits to Hula Hula Island. We also run a second beach venue on the same island, with its own ticket, and the two tickets are not interchangeable.',
     ].join('\n\n'),
     category: 'Island Cruises',
     duration: '7 hours',
@@ -496,7 +496,7 @@ export const HULA_HULA_TOURS: HulaHulaTour[] = [
       'A semi-submarine sits low in the water with windows below the surface, so you look straight out at the reef from a dry seat. It is the answer for anyone who wants to see what is down there without snorkelling for it: guests who do not swim, children, and anyone who simply would rather watch.',
       'The day runs to the Giftun islands and Hula Hula Island in the usual seven-hour shape, with the semi-submarine ride as the thing that makes it different. The island, the beach and the water are all still there.',
       'Your island entry ticket is part of the price. A child fare applies at half the adult price, which on a product built around watching rather than swimming is the one that tends to matter.',
-      'This ticket admits to Hula Hula Island. The operator runs a second beach venue on the same island with its own ticket, and the two are not interchangeable.',
+      'This ticket admits to Hula Hula Island. We also run a second beach venue on the same island, with its own ticket, and the two tickets are not interchangeable.',
     ].join('\n\n'),
     category: 'Semi-Submarine',
     duration: '7 hours',
@@ -565,7 +565,7 @@ export const HULA_HULA_TOURS: HulaHulaTour[] = [
       'Four hours, leaving at nine. This is the island without committing the whole day to it: a speedboat out from Hurghada, time on Hula Hula Island, and back before the afternoon is gone.',
       'A speedboat crosses to the Giftun islands considerably faster than a yacht, which is where the time saving comes from. You are on the island for the good part of the morning rather than watching the water go past.',
       'Your island entry ticket is part of the price, and the boat carries a small group rather than a full deck. Water sports run on the island day.',
-      'This ticket admits to Hula Hula Island. The operator runs a second beach venue on the same island with its own ticket, and the two are not interchangeable.',
+      'This ticket admits to Hula Hula Island. We also run a second beach venue on the same island, with its own ticket, and the two tickets are not interchangeable.',
     ].join('\n\n'),
     category: 'Speedboat Trips',
     duration: '4 hours',
@@ -637,7 +637,7 @@ export const HULA_HULA_TOURS: HulaHulaTour[] = [
       'The same four-hour speedboat trip as the morning escape, leaving at one in the afternoon instead of nine in the morning. The run out is the same; what changes is the light you spend it in.',
       'An afternoon start puts your time on Hula Hula Island in the part of the day when the heat has come off and the water has gone from bright to deep, and it puts the return leg in the evening light over the Red Sea.',
       'Your island entry ticket is part of the price, and the boat carries a small group. Water sports run on the island day.',
-      'This ticket admits to Hula Hula Island. The operator runs a second beach venue on the same island with its own ticket, and the two are not interchangeable.',
+      'This ticket admits to Hula Hula Island. We also run a second beach venue on the same island, with its own ticket, and the two tickets are not interchangeable.',
     ].join('\n\n'),
     category: 'Speedboat Trips',
     duration: '4 hours',
@@ -709,7 +709,7 @@ export const HULA_HULA_TOURS: HulaHulaTour[] = [
       'A speedboat run out from Hurghada, routed so that the crew can look for the dolphins that live in these waters. They are wild animals, so nobody can promise you will see them, and the crew will tell you that before you book rather than after.',
       'The boat carries on to Hula Hula Island, where your entry ticket is included and the beach and the shallows are waiting. Four hours is enough for the island and the dolphin run without the whole day going.',
       'Water sports run on the island day. The buffet lunch and the onboard massage belong to the seven-hour cruises rather than this trip.',
-      'This ticket admits to Hula Hula Island. The operator runs a second beach venue on the same island with its own ticket, and the two are not interchangeable.',
+      'This ticket admits to Hula Hula Island. We also run a second beach venue on the same island, with its own ticket, and the two tickets are not interchangeable.',
     ].join('\n\n'),
     category: 'Speedboat Trips',
     duration: '4 hours',
@@ -781,7 +781,7 @@ export const HULA_HULA_TOURS: HulaHulaTour[] = [
       'This is the boat rather than a seat on it. One price covers the whole speedboat for four hours in the morning, so the group on board is the group you arrived with and nobody else.',
       'The run goes out from Hurghada to Hula Hula Island in the Giftun islands, and the island entry is included. Having the boat to yourselves changes how the day works: you are not waiting on anyone, and the crew answers to your group.',
       'Water sports run on the island day. The buffet lunch and the onboard massage belong to the seven-hour cruises rather than this trip.',
-      'This ticket admits to Hula Hula Island. The operator runs a second beach venue on the same island with its own ticket, and the two are not interchangeable.',
+      'This ticket admits to Hula Hula Island. We also run a second beach venue on the same island, with its own ticket, and the two tickets are not interchangeable.',
     ].join('\n\n'),
     category: 'Speedboat Trips',
     duration: '4 hours',
@@ -854,7 +854,7 @@ export const HULA_HULA_TOURS: HulaHulaTour[] = [
       'The same private boat as the morning charter, leaving at one in the afternoon. One price covers the whole speedboat for four hours, so the group on board is yours and nobody else’s.',
       'An afternoon start puts your time on Hula Hula Island in the part of the day when the heat has come off, and it puts the run home over the Red Sea in the evening light. On a boat you have to yourselves, that is the version most groups are actually after.',
       'Island entry is included and water sports run on the island day. The buffet lunch and the onboard massage belong to the seven-hour cruises rather than this trip.',
-      'This ticket admits to Hula Hula Island. The operator runs a second beach venue on the same island with its own ticket, and the two are not interchangeable.',
+      'This ticket admits to Hula Hula Island. We also run a second beach venue on the same island, with its own ticket, and the two tickets are not interchangeable.',
     ].join('\n\n'),
     category: 'Speedboat Trips',
     duration: '4 hours',
@@ -945,7 +945,7 @@ export const HULA_HULA_FACILITY_PAGES: HulaHulaFacilityPage[] = [
     heroDescription: 'Water sports run on every island day here, which is not true of every trip in these waters.',
     body: [
       'Water sports are part of the island day on every trip to Hula Hula, rather than an extra you find out about when you arrive and then pay for.',
-      'That is a genuine difference from the operator’s other venue, where the speedboat trips do not carry them. If water sports matter to your day, this is the venue that includes them.',
+      'That is a genuine difference from our other venue on the island, where the speedboat trips do not include them. If water sports matter to your day, this is the venue that includes them.',
     ].join('\n\n'),
     heroImage: '',
     heroImageAlt: '',
@@ -986,11 +986,11 @@ export const HULA_HULA_FACILITY_PAGES: HulaHulaFacilityPage[] = [
 export const HULA_HULA_FACILITY_INDEX = {
   slug: FACILITIES_SLUG,
   title: 'On the Island',
-  heroDescription: 'What the operator confirms is on the island: the beach itself, water sports on every day, massage on the yacht days and lunch on the cruises.',
+  heroDescription: 'What is on the island: the beach itself, water sports on every day, massage on the yacht days and lunch on the cruises.',
   heroImage: '',
   heroImageAlt: '',
   metaTitle: 'On the Island | Hula Hula Island',
-  metaDescription: 'What the operator confirms about Hula Hula Island: beach entry, water sports on every day, massage on the yacht days and lunch on the cruises.',
+  metaDescription: 'What is on Hula Hula Island: beach entry, water sports on every day, massage on the yacht days and lunch on the cruises.',
 } as const;
 
 /**

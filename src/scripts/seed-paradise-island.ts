@@ -158,7 +158,8 @@ const IMG = {
   aeon1: archive('20231031104634', '/wp-content/uploads/Paradise-Island-Hurghada-boats/Aeon-one/Aeon-1-Boat-by-Paradise-Island-Hurghada-1-v2.jpg'),
   aeon2: archive('20231031104804', '/wp-content/uploads/Paradise-Island-Hurghada-boats/Aeon-two/Aeon-2-Boat-by-Paradise-Island-Hurghada-v.jpg'),
   paradise2: archive('20231031104635', '/wp-content/uploads/Paradise-Island-Hurghada-boats/Paradise-Boat-two/Paradise-2-Boat-by-Paradise-Island-Hurghada-v.jpg'),
-  islandPlan: archive('20231104231307', '/wp-content/uploads/Assets/Plan-of-Paradise-Island-Hurghada.jpg'),
+  // The archived 'Plan-of-Paradise-Island-Hurghada.jpg' is a stock photograph of wooden blocks,
+  // not a plan of the island. It is deliberately left out.
   /** The only corporate photograph whose own signage names this venue. */
   islandSign: `${CORPORATE_IMAGE_BASE}5977-358421c9/PARADISE01.jpg`,
 } as const;
@@ -261,7 +262,7 @@ export const PARADISE_TOURS: ParadiseTour[] = [
       'Paradise Island sits in the Giftun islands off Hurghada, and this is the full day there. The yacht leaves the marina in the morning and sails out across the Red Sea, so the crossing itself is part of the trip rather than something to get through.',
       'The day on the island is the point. There is the beach, with the reef close enough in that the fish are visible from the sand, an open-buffet lunch in the island restaurant looking out over the marina, and enough free time that nobody is being moved along. A guided snorkelling stop with equipment is included, and a short massage is offered on board on the way.',
       'Your island entry ticket is part of the price, so there is nothing to pay at the landing. The transfer to the marina is arranged separately and priced by the area you are staying in.',
-      'This ticket admits to Paradise Island. The operator runs a second beach venue on the same island with its own ticket, and the two are not interchangeable.',
+      'This ticket admits to Paradise Island. We also run a second beach venue on the same island, with its own ticket, and the two tickets are not interchangeable.',
     ].join('\n\n'),
     category: 'Island Cruises',
     duration: '7 hours',
@@ -311,7 +312,7 @@ export const PARADISE_TOURS: ParadiseTour[] = [
     ],
     whatToBring: ISLAND_BRING,
     needToKnow: [
-      'Which venue does this ticket admit to? Paradise Island. It does not admit to the operator’s other beach venue.',
+      'Which venue does this ticket admit to? Paradise Island. It does not admit to our other beach venue on the island.',
       TRANSFER_NOTE,
       PARK_FEE_NOTE,
       'What language is the day run in? English.',
@@ -345,7 +346,7 @@ export const PARADISE_TOURS: ParadiseTour[] = [
       'This is the fast version of the island day. A speedboat takes a small group out from Hurghada, and the run is routed so that the crew can look for the dolphins that live in these waters. They are wild animals, so nobody can promise you will see them, and the crew will tell you that before you book rather than after.',
       'The boat carries on to Paradise Island, where your entry ticket is included and the beach, the water and the reef are waiting. Four hours is enough for the island without the whole day being gone.',
       'Massage and water sports are part of the yacht day rather than this one, so what you get here is the speed, the dolphin run and the island itself.',
-      'This ticket admits to Paradise Island. The operator runs a second beach venue on the same island with its own ticket, and the two are not interchangeable.',
+      'This ticket admits to Paradise Island. We also run a second beach venue on the same island, with its own ticket, and the two tickets are not interchangeable.',
     ].join('\n\n'),
     category: 'Speedboat Trips',
     duration: '4 hours',
@@ -386,7 +387,7 @@ export const PARADISE_TOURS: ParadiseTour[] = [
     ],
     whatToBring: ISLAND_BRING,
     needToKnow: [
-      'Which venue does this ticket admit to? Paradise Island. It does not admit to the operator’s other beach venue.',
+      'Which venue does this ticket admit to? Paradise Island. It does not admit to our other beach venue on the island.',
       'Will we definitely see dolphins? No. They are wild, the crew takes the route where they are seen most often, and some days they are not there.',
       TRANSFER_NOTE,
       PARK_FEE_NOTE,
@@ -507,8 +508,8 @@ export const PARADISE_FACILITY_INDEX = {
   slug: FACILITIES_SLUG,
   title: 'Island Facilities',
   heroDescription: 'What is on the island: the beach, the restaurant, the bar, the ice cream counter, the kids area and the shisha corner.',
-  heroImage: IMG.islandPlan,
-  heroImageAlt: 'A plan drawing of Paradise Island showing where each facility sits',
+  heroImage: IMG.beach1,
+  heroImageAlt: 'Painted surfboards, straw umbrellas and a swing along the beach on Paradise Island',
   metaTitle: 'Island Facilities | Paradise Island Hurghada',
   metaDescription: 'Everything on Paradise Island: the beach, the island restaurant, the Tropicana Bar, the ice cream and waffles zone, the kids area and the shisha corner.',
 } as const;
