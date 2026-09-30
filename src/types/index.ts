@@ -637,6 +637,7 @@ export interface IWebhookEvent extends Document {
   receivedAt: Date;
   createdAt: Date;
   updatedAt: Date;
+  completedTenantIds?: Types.ObjectId[];
 }
 
 // Extended Request with User, Tenant, and (for programmatic access) ApiKey

@@ -389,19 +389,34 @@ export const safeEmitEvent = (
 export const recordInboundEvent = async (
   provider: string,
   eventId: string,
-  options: { eventType?: string; tenantId?: string | mongoose.Types.ObjectId } = {}
+  options: { eventType?: string; tenantId?: string | mongoose.Types.ObjectId; markTenantCompleted?: boolean } = {}
 ): Promise<{ duplicate: boolean }> => {
+  if (options.markTenantCompleted && (!options.tenantId || !mongoose.isValidObjectId(options.tenantId))) throw new Error('A valid bound tenant is required for event completion');
   try {
     await WebhookEvent.create({
       provider,
       eventId,
       eventType: options.eventType,
       tenantId: options.tenantId,
+      ...(options.markTenantCompleted ? { completedTenantIds: [options.tenantId] } : {}),
       receivedAt: new Date(),
     });
     return { duplicate: false };
   } catch (err) {
     if (err instanceof Error && (err as { code?: number }).code === 11000) {
+      if (options.markTenantCompleted) {
+        // A historical ignored delivery may own the global unique record.
+        // Preserve its original tenant and record ONE verified effect owner.
+        const result = await WebhookEvent.updateOne({
+          provider, eventId,
+          $or: [
+            { completedTenantIds: { $exists: false } },
+            { completedTenantIds: [] },
+            { completedTenantIds: [options.tenantId] },
+          ],
+        }, { $addToSet: { completedTenantIds: options.tenantId } });
+        if (result.matchedCount !== 1) throw new Error('Provider event completion belongs to another tenant');
+      }
       return { duplicate: true };
     }
     throw err;
@@ -409,5 +424,9 @@ export const recordInboundEvent = async (
 };
 
 /** True when an inbound provider event was already processed to completion. */
-export const hasInboundEvent = async (provider: string, eventId: string): Promise<boolean> =>
-  !!(await WebhookEvent.exists({ provider, eventId }));
+export const hasInboundEvent = async (provider: string, eventId: string, tenantId?: string | mongoose.Types.ObjectId): Promise<boolean> => {
+  if (tenantId !== undefined && !mongoose.isValidObjectId(tenantId)) throw new Error('A valid tenant is required for event completion lookup');
+  return !!(await WebhookEvent.exists({ provider, eventId, ...(tenantId === undefined ? {} : {
+    completedTenantIds: tenantId,
+  }) }));
+};

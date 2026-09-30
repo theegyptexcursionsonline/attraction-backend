@@ -9,6 +9,7 @@ import { handleWebhook, refundPayment } from '../controllers/payments.controller
 import { Booking } from '../models/Booking';
 import { Tenant } from '../models/Tenant';
 import { User } from '../models/User';
+import { hasInboundEvent, recordInboundEvent } from '../services/webhook.service';
 import { WebhookEvent } from '../models/WebhookEvent';
 import {
   createRefund,
@@ -19,6 +20,7 @@ import {
 import { sendBookingStatusEmail } from '../services/email.service';
 import { getTenantStripeConfig } from '../services/tenantPayment.service';
 import { applyBookingRefundTotal, ATN_CANCELLATION_REFUND_FLOW, ATN_REFUND_FLOW_KEY } from '../services/bookingRefund.service';
+import * as bookingRefundService from '../services/bookingRefund.service';
 
 // Stripe is never called: signature verification parses the body only for the
 // literal test signature, and every provider read is an explicit mock.
@@ -205,6 +207,102 @@ describe('Stripe refund webhook reconciliation', () => {
     expect(await WebhookEvent.countDocuments({ provider: 'stripe', eventId: 'evt_charge_refunded' })).toBe(1);
   });
 
+  it('retains global caller semantics while bounding verified tenant completion markers', async () => {
+    const eventId = 'evt_bounded_completion';
+    await WebhookEvent.create({ provider: 'stripe', eventId, tenantId: otherTenantId });
+    expect(await hasInboundEvent('stripe', eventId)).toBe(true);
+    expect(await hasInboundEvent('stripe', eventId, tenantId)).toBe(false);
+    await recordInboundEvent('stripe', eventId, { tenantId, markTenantCompleted: true });
+    expect(await hasInboundEvent('stripe', eventId, tenantId)).toBe(true);
+    await expect(recordInboundEvent('stripe', eventId, { tenantId: new Types.ObjectId(), markTenantCompleted: true })).rejects.toThrow('another tenant');
+    await expect(recordInboundEvent('stripe', eventId, { tenantId: 'invalid', markTenantCompleted: true })).rejects.toThrow('valid bound tenant');
+    await expect(hasInboundEvent('stripe', eventId, 'invalid')).rejects.toThrow('valid tenant');
+    expect((await WebhookEvent.findOne({ eventId }).lean())!.completedTenantIds).toHaveLength(1);
+  });
+
+  it.each(['payment_intent.succeeded', 'payment_intent.payment_failed'])('does not consume an unmatched shared-account %s event', async type => {
+    await insertBooking();
+    const event = { id: `evt_unmatched_${type}`, type, data: { object: { id: INTENT, object: 'payment_intent', status: type.endsWith('succeeded') ? 'succeeded' : 'requires_payment_method', metadata: { bookingId: String(bookingId), tenantId: String(tenantId) } } } };
+    const response = await invoke(handleWebhook, webhookRequest(event, otherTenantId));
+    expect(bodyOf(response).ignored).toBe('payment intent is not bound to this tenant');
+    expect(await WebhookEvent.countDocuments({ eventId: event.id })).toBe(0);
+    expect((await loadBooking()).paymentStatus).toBe('succeeded'); expect((await loadBooking()).refundedAmount).toBe(0);
+  });
+
+  it('lets the correct shared-account endpoint process after the wrong endpoint arrives first', async () => {
+    await insertBooking(); const event = chargeRefundedEvent('evt_shared_owner');
+    const wrong = await invoke(handleWebhook, webhookRequest(event, otherTenantId));
+    expect(bodyOf(wrong).ignored).toBe('payment intent is not bound to this tenant');
+    expect(await WebhookEvent.countDocuments({ eventId: event.id })).toBe(0);
+    const right = await invoke(handleWebhook, webhookRequest(event)); await flush();
+    expect(bodyOf(right).refund).toBe('applied'); expect((await loadBooking()).refundedAmount).toBe(105);
+    expect(await WebhookEvent.countDocuments({ eventId: event.id, tenantId })).toBe(1);
+    expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['foreign', 'rightful'])('recovers a historically ignored %s marker with concurrent rightful deliveries, retaining provenance', async owner => {
+    await insertBooking(); const event = chargeRefundedEvent('evt_historical_poison');
+    const originalTenantId = owner === 'foreign' ? otherTenantId : tenantId;
+    await WebhookEvent.create({ provider: 'stripe', eventId: event.id, eventType: event.type, tenantId: originalTenantId });
+    const replies = await Promise.all([
+      invoke(handleWebhook, webhookRequest(event, otherTenantId)),
+      invoke(handleWebhook, webhookRequest(event)),
+      invoke(handleWebhook, webhookRequest(event)),
+    ]); await flush();
+    expect(replies.map(statusOf)).toEqual([200, 200, 200]);
+    const booking = await loadBooking(); expect(booking.refundedAmount).toBe(105); expect(booking.refunds).toHaveLength(1); expect(await loadSpent()).toBe(0);
+    expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId, audience: 'operator' })).toBe(1);
+    const marker = await WebhookEvent.findOne({ eventId: event.id }).lean();
+    expect(String(marker!.tenantId)).toBe(String(originalTenantId)); expect(marker!.completedTenantIds!.map(String)).toEqual([String(tenantId)]);
+    const reads = (listPaymentIntentRefunds as jest.Mock).mock.calls.length;
+    const replay = await invoke(handleWebhook, webhookRequest(event));
+    expect(bodyOf(replay).duplicate).toBe(true); expect(listPaymentIntentRefunds).toHaveBeenCalledTimes(reads);
+    expect(await WebhookEvent.countDocuments({ eventId: event.id })).toBe(1);
+  });
+
+  it('safely reconciles a legacy completed refund without a completion marker, then skips replay', async () => {
+    await insertBooking(); const event = chargeRefundedEvent('evt_legacy_completed');
+    await invoke(handleWebhook, webhookRequest(event)); await flush();
+    await WebhookEvent.updateOne({ eventId: event.id }, { $unset: { completedTenantIds: 1 } });
+    expect(await hasInboundEvent('stripe', event.id, tenantId)).toBe(false);
+    const reply = await invoke(handleWebhook, webhookRequest(event)); await flush();
+    expect(bodyOf(reply).refund).toBe('no-change'); expect((await loadBooking()).refundedAmount).toBe(105);
+    expect((await loadBooking()).refunds).toHaveLength(1); expect(await loadSpent()).toBe(0);
+    expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
+    expect(await BookingOperatorNotification.countDocuments({ tenantId, bookingId, audience: 'operator' })).toBe(1);
+    const reads = (listPaymentIntentRefunds as jest.Mock).mock.calls.length;
+    await invoke(handleWebhook, webhookRequest(event)); expect(listPaymentIntentRefunds).toHaveBeenCalledTimes(reads);
+  });
+
+  it('does not mark completion when a bound booking disappears during reconciliation', async () => {
+    await insertBooking(); const event = chargeRefundedEvent('evt_missing_bound_booking');
+    const reconcile = jest.spyOn(bookingRefundService, 'reconcileBookingStripeRefunds').mockResolvedValueOnce(null);
+    try {
+      const reply = await invoke(handleWebhook, webhookRequest(event));
+      expect(statusOf(reply)).toBe(409);
+      expect(await WebhookEvent.countDocuments({ eventId: event.id })).toBe(0);
+      expect((await loadBooking()).refundedAmount).toBe(0);
+      expect(sendBookingStatusEmail).not.toHaveBeenCalled();
+    } finally { reconcile.mockRestore(); }
+    const retry = await invoke(handleWebhook, webhookRequest(event)); await flush();
+    expect(bodyOf(retry).refund).toBe('applied'); expect((await loadBooking()).refundedAmount).toBe(105);
+    expect(await hasInboundEvent('stripe', event.id, tenantId)).toBe(true);
+  });
+
+  it('recovers a crash after refund effects but before the rightful terminal marker', async () => {
+    await insertBooking(); const event = chargeRefundedEvent('evt_marker_recovery');
+    await WebhookEvent.create({ provider: 'stripe', eventId: event.id, eventType: event.type, tenantId: otherTenantId });
+    const update = jest.spyOn(WebhookEvent, 'updateOne').mockRejectedValueOnce(new Error('completion database unavailable'));
+    const res = { status: jest.fn(), json: jest.fn() } as unknown as Response; const next = jest.fn();
+    await handleWebhook(webhookRequest(event), res, next); expect(next).toHaveBeenCalledWith(expect.objectContaining({ message: 'completion database unavailable' }));
+    update.mockRestore(); await flush(); expect((await loadBooking()).refundedAmount).toBe(105);
+    const retry = await invoke(handleWebhook, webhookRequest(event)); await flush();
+    expect(bodyOf(retry).refund).toBe('no-change'); expect((await loadBooking()).refunds).toHaveLength(1); expect(await loadSpent()).toBe(0);
+    expect(sendBookingStatusEmail).toHaveBeenCalledTimes(1);
+    const marker = await WebhookEvent.findOne({ eventId: event.id }).lean(); expect(marker!.completedTenantIds!.map(String)).toEqual([String(tenantId)]);
+  });
+
   it('records a partial refund amount without cancelling the paid booking', async () => {
     await insertBooking();
     (listPaymentIntentRefunds as jest.Mock).mockResolvedValue([providerRefund({ id: 're_partial', amount: 2500 })]);
@@ -317,7 +415,7 @@ describe('Stripe refund webhook reconciliation', () => {
       paymentIntentId: 'pi_unknown',
       eventId: 'evt_unknown',
     }));
-    expect(await WebhookEvent.countDocuments({ eventId: 'evt_unknown' })).toBe(1);
+    expect(await WebhookEvent.countDocuments({ eventId: 'evt_unknown' })).toBe(0);
   });
 
   it('flags a refund that fails after success for manual review without reopening the booking', async () => {

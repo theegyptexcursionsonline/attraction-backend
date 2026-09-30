@@ -770,14 +770,9 @@ export const handleWebhook = async (
     if (isRefundEvent) {
       const refundIntentId = refundEventPaymentIntentId(eventType, event.data.object);
       const logFields = { tenantId, eventId, eventType, paymentIntentId: refundIntentId || undefined };
-      if (await hasInboundEvent('stripe', eventId)) {
-        res.json({ received: true, duplicate: true });
-        return;
-      }
       if (!refundIntentId) {
         console.warn('[stripe-refund]', { source: 'stripe-refund-webhook', event: 'refund_without_payment_intent', ...logFields });
-        const { duplicate } = await recordInboundEvent('stripe', eventId, { eventType, tenantId });
-        res.json({ received: true, duplicate, ignored: 'refund is not linked to a payment intent' });
+        res.json({ received: true, ignored: 'refund is not linked to a payment intent' });
         return;
       }
       const bound = await Booking.findOne({
@@ -791,8 +786,13 @@ export const handleWebhook = async (
           event: bound ? 'refund_account_context_mismatch' : 'refund_unmatched_payment_intent',
           ...logFields,
         });
-        const { duplicate } = await recordInboundEvent('stripe', eventId, { eventType, tenantId });
-        res.json({ received: true, duplicate, ignored: 'payment intent is not bound to this tenant' });
+        // Another endpoint on the same platform account must not consume the
+        // rightful tenant's global event id.
+        res.json({ received: true, ignored: 'payment intent is not bound to this tenant' });
+        return;
+      }
+      if (await hasInboundEvent('stripe', eventId, tenantId)) {
+        res.json({ received: true, duplicate: true });
         return;
       }
       const reconciled = await reconcileBookingStripeRefunds({
@@ -802,11 +802,15 @@ export const handleWebhook = async (
         eventId,
         eventType,
       });
+      if (!reconciled) {
+        sendError(res, 'Bound booking changed during refund reconciliation; retry delivery', 409);
+        return;
+      }
       if (reconciled?.outcome === 'retry-payment-not-finalized') {
         sendError(res, 'Payment for this booking is not finalized yet; retry delivery', 409);
         return;
       }
-      const { duplicate } = await recordInboundEvent('stripe', eventId, { eventType, tenantId });
+      const { duplicate } = await recordInboundEvent('stripe', eventId, { eventType, tenantId, markTenantCompleted: true });
       res.json({
         received: true,
         duplicate,
@@ -945,6 +949,10 @@ export const handleWebhook = async (
         tenantId,
         ...standaloneBookingClause,
       });
+      if (!booking) {
+        res.json({ received: true, ignored: 'payment intent is not bound to this tenant' });
+        return;
+      }
       if (booking) {
         if (
           obj?.metadata?.bookingId !== String(booking._id) ||

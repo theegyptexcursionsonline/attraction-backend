@@ -26,6 +26,13 @@ const webhookEventSchema = new Schema<IWebhookEvent>(
       type: Schema.Types.ObjectId,
       ref: 'Tenant',
     },
+    // Optional bounded completion marker preserves the provenance of legacy
+    // ignored shared-account deliveries. No index or backfill is required.
+    completedTenantIds: {
+      type: [Schema.Types.ObjectId],
+      default: undefined,
+      validate: (value: mongoose.Types.ObjectId[]) => value.length <= 1,
+    },
     receivedAt: {
       type: Date,
       default: Date.now,
