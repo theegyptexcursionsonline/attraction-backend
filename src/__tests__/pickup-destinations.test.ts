@@ -82,9 +82,16 @@ describe('pickup destination slugs', () => {
 
   it('keeps a stored list dormant on designs that do not show pickup areas', () => {
     expect(supportsPickupAreas({ designMode: 'nautical' })).toBe(true);
-    for (const designMode of ['safarisahara', 'speedboat', 'default', undefined]) {
+    for (const designMode of ['safarisahara', 'savanna', 'speedboat', 'default', undefined]) {
       expect(supportsPickupAreas({ designMode })).toBe(false);
       expect(tenantPickupDestinationSlugs({ designMode, pickupDestinationSlugs: ['makadi-bay'] })).toEqual([]);
+    }
+  });
+
+  it('shows pickup areas on the two Queen Magi island designs', () => {
+    for (const designMode of ['paradise', 'hulahula']) {
+      expect(supportsPickupAreas({ designMode })).toBe(true);
+      expect(tenantPickupDestinationSlugs({ designMode, pickupDestinationSlugs: ['makadi-bay', 'el-gouna'] })).toEqual(['makadi-bay', 'el-gouna']);
     }
   });
 

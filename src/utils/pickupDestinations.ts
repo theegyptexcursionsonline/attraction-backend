@@ -10,7 +10,7 @@ export const MAX_PICKUP_DESTINATIONS = 12;
  * pickup. Every other design lists destinations by departure city, so a pickup area there
  * would open onto an empty page; for those sites a stored list stays dormant.
  */
-export const PICKUP_AREA_DESIGN_MODES: ReadonlySet<string> = new Set(['nautical']);
+export const PICKUP_AREA_DESIGN_MODES: ReadonlySet<string> = new Set(['nautical', 'paradise', 'hulahula']);
 
 export function supportsPickupAreas(tenant: unknown): boolean {
   const designMode = (tenant as { designMode?: unknown } | null | undefined)?.designMode;
