@@ -30,8 +30,14 @@
  *   npm run images:queen-magi-islands -- --tenant=hula-hula-island
  * Apply in the backend service environment:
  *   npm run images:queen-magi-islands -- --apply --confirm-tenant=hula-hula-island --confirm-assets=generated-only
+ * Apply frames that were generated elsewhere (for example by Codex's image tool), one file per
+ * frame named after its public id (`<tour>-generated-01.png`, `hero-generated-01.png`,
+ * `page-<slug>.png`), instead of calling the image API:
+ *   ... --apply --confirm-tenant=hula-hula-island --confirm-assets=generated-only --source-dir=<folder>
  */
 
+import fs from 'fs';
+import path from 'path';
 import { connectDatabase, disconnectDatabase } from '../config/database';
 import { Attraction } from '../models/Attraction';
 import { Tenant } from '../models/Tenant';
@@ -357,13 +363,41 @@ function selectPlan(slug: string | null): IslandImagePlan {
   return plan;
 }
 
+const SOURCE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp'] as const;
+const MAX_SOURCE_BYTES = 15 * 1024 * 1024;
+
+/** The image type a file's own bytes declare, whatever its name says. */
+function sniffImageType(bytes: Buffer): string | null {
+  if (bytes.length >= 8 && bytes.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return 'image/png';
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return 'image/jpeg';
+  if (bytes.length >= 12 && bytes.subarray(0, 4).toString('ascii') === 'RIFF' && bytes.subarray(8, 12).toString('ascii') === 'WEBP') return 'image/webp';
+  return null;
+}
+
+/**
+ * A frame generated elsewhere, read from `<dir>/<publicId>.<png|jpg|jpeg|webp>`. A missing,
+ * empty, oversized or non-image file is refused before anything is uploaded or written.
+ */
+export function frameFromSourceDir(dir: string, publicId: string): { base64: string; mimeType: string } {
+  const file = SOURCE_EXTENSIONS.map((extension) => path.join(dir, `${publicId}.${extension}`)).find((candidate) => fs.existsSync(candidate));
+  if (!file) throw new Error(`Missing generated frame for ${publicId} in ${dir}; nothing was attached for it.`);
+  const bytes = fs.readFileSync(file);
+  if (!bytes.length || bytes.length > MAX_SOURCE_BYTES) throw new Error(`Generated frame ${path.basename(file)} has an invalid size.`);
+  const mimeType = sniffImageType(bytes);
+  if (!mimeType) throw new Error(`Generated frame ${path.basename(file)} is not a PNG, JPEG or WebP image.`);
+  return { base64: bytes.toString('base64'), mimeType };
+}
+
 async function generateAndUpload(scene: string, folder: string, publicId: string, urlMarker: string): Promise<string> {
-  const { base64, mimeType } = await generateImageFromPrompt({
-    prompt: fullPrompt(scene),
-    size: '1536x1024',
-    quality: 'high',
-    outputFormat: 'jpeg',
-  });
+  const sourceDir = argValue('source-dir');
+  const { base64, mimeType } = sourceDir
+    ? frameFromSourceDir(path.resolve(sourceDir), publicId)
+    : await generateImageFromPrompt({
+      prompt: fullPrompt(scene),
+      size: '1536x1024',
+      quality: 'high',
+      outputFormat: 'jpeg',
+    });
   const uploaded = await uploadBase64Image(`data:${mimeType};base64,${base64}`, folder, { publicId, overwrite: true });
   if (!uploaded.url.includes(urlMarker)) throw new Error(`Upload returned an unexpected asset path for ${publicId}.`);
   return uploaded.url;

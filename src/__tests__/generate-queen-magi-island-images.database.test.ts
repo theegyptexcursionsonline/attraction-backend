@@ -1,3 +1,6 @@
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
 import mongoose, { Types } from 'mongoose';
 import { spawnSync } from 'child_process';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
@@ -5,7 +8,7 @@ import { Attraction } from '../models/Attraction';
 import { Tenant } from '../models/Tenant';
 import { generateImageFromPrompt } from '../services/image-generation.service';
 import { uploadBase64Image } from '../services/upload.service';
-import { QUEEN_MAGI_ISLAND_IMAGE_PLANS, main } from '../scripts/generate-queen-magi-island-images';
+import { QUEEN_MAGI_ISLAND_IMAGE_PLANS, frameFromSourceDir, main } from '../scripts/generate-queen-magi-island-images';
 
 // The test owns the connection; the script's own connect/disconnect must not touch it.
 jest.mock('../config/database', () => ({
@@ -39,8 +42,8 @@ const paradiseId = new Types.ObjectId();
 const hulaId = new Types.ObjectId();
 const originalArgv = process.argv;
 
-const runFor = async (tenantSlug: string) => {
-  process.argv = ['node', 'generate-queen-magi-island-images', '--apply', `--confirm-tenant=${tenantSlug}`, '--confirm-assets=generated-only'];
+const runFor = async (tenantSlug: string, extra: string[] = []) => {
+  process.argv = ['node', 'generate-queen-magi-island-images', '--apply', `--confirm-tenant=${tenantSlug}`, '--confirm-assets=generated-only', ...extra];
   try {
     await main();
   } finally {
@@ -218,4 +221,54 @@ it('fills a site with no photography and only the pages that have no photograph 
 
   // The other site is never touched.
   expect((await tour(dolphin))!.images).toHaveLength(4);
+});
+
+describe('frames generated elsewhere', () => {
+  const PNG = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(512, 7)]);
+  let dir: string;
+  const paradiseFrames = [
+    `${dolphin}-generated-01`, `${dolphin}-generated-02`, `${cruise}-generated-01`,
+    'hero-generated-01', 'hero-generated-02', 'hero-generated-03',
+  ];
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), 'island-frames-'));
+    generate.mockImplementation(async () => { throw new Error('the image API must not be called'); });
+  });
+  afterEach(() => {
+    fs.rmSync(dir, { recursive: true, force: true });
+    generate.mockImplementation(async () => ({ base64: 'AAAA', mimeType: 'image/jpeg' }));
+  });
+
+  it('attaches each file through the same audited path without calling the image API', async () => {
+    for (const name of paradiseFrames) fs.writeFileSync(path.join(dir, `${name}.png`), PNG);
+    await runFor('paradise-island-hurghada', [`--source-dir=${dir}`]);
+    expect(generate).not.toHaveBeenCalled();
+    expect(upload).toHaveBeenCalledTimes(paradiseFrames.length);
+    expect(upload.mock.calls.every(([data]) => String(data).startsWith('data:image/png;base64,'))).toBe(true);
+    const record = (await tour(dolphin))!;
+    expect(record.images).toHaveLength(6);
+    expect(record.imageAltTexts.every((row: { alt: string }) => row.alt.startsWith('Illustrative image: '))).toBe(true);
+  });
+
+  it('refuses a missing frame and attaches nothing for it, keeping what was already attached', async () => {
+    fs.writeFileSync(path.join(dir, `${cruise}-generated-01.png`), PNG);
+    fs.writeFileSync(path.join(dir, `${dolphin}-generated-01.png`), PNG);
+    await expect(runFor('paradise-island-hurghada', [`--source-dir=${dir}`])).rejects.toThrow(`Missing generated frame for ${dolphin}-generated-02`);
+    expect((await tour(dolphin))!.images).toHaveLength(5);
+    expect(generate).not.toHaveBeenCalled();
+  });
+
+  it('refuses a file whose bytes are not an image, whatever its name says', async () => {
+    fs.writeFileSync(path.join(dir, `${cruise}-generated-01.png`), 'not an image');
+    await expect(runFor('paradise-island-hurghada', [`--source-dir=${dir}`])).rejects.toThrow('is not a PNG, JPEG or WebP image');
+    expect((await tour(cruise))!.images).toHaveLength(5);
+  });
+
+  it('reads JPEG and WebP by their own bytes', () => {
+    fs.writeFileSync(path.join(dir, 'a.jpg'), Buffer.from([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]));
+    fs.writeFileSync(path.join(dir, 'b.webp'), Buffer.concat([Buffer.from('RIFF'), Buffer.alloc(4), Buffer.from('WEBP'), Buffer.alloc(8)]));
+    expect(frameFromSourceDir(dir, 'a').mimeType).toBe('image/jpeg');
+    expect(frameFromSourceDir(dir, 'b').mimeType).toBe('image/webp');
+  });
 });
