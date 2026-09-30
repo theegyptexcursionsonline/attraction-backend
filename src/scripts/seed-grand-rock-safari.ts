@@ -145,7 +145,7 @@ export const GRAND_ROCK_TENANT = {
   aiSettings: {
     bookingWidget: { enabled: false, position: 'bottom-right', languages: ['en'], autoOpen: false },
     voiceAgent: { enabled: false, languages: ['en'], buttonPosition: 'bottom-right' },
-    searchWidget: { enabled: true, placeholder: 'Search quad, buggy, horse or boat trips', showPopularSearches: true, maxSuggestions: 6 },
+    searchWidget: { enabled: true, placeholder: 'Search quad, buggy, motocross, horse or boat trips', showPopularSearches: true, maxSuggestions: 6 },
   },
 } as const;
 

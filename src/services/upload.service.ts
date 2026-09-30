@@ -22,6 +22,9 @@ interface Base64UploadOptions {
   publicId?: string;
   /** Replace the same stable asset instead of creating a duplicate. */
   overwrite?: boolean;
+  /** Optional bounded raster dimensions; default imports remain 1200 by 800. */
+  maxWidth?: number;
+  maxHeight?: number;
 }
 
 export const uploadImage = async (
@@ -58,6 +61,14 @@ export const uploadBase64Image = async (
     throw new Error('Cloudinary not configured');
   }
 
+  const maxWidth = options.maxWidth === undefined ? 1200 : options.maxWidth;
+  const maxHeight = options.maxHeight === undefined ? 800 : options.maxHeight;
+  // Keep this operational helper within the largest generated raster supported
+  // by the project image service; no caller may request unbounded transforms.
+  if (![maxWidth, maxHeight].every(value => Number.isInteger(value) && value > 0 && value <= 1536)) {
+    throw new Error('Upload dimensions must be integers between 1 and 1536');
+  }
+
   const result = await cloudinary.uploader.upload(base64Data, {
     folder: `attractions-network/${folder}`,
     ...(options.publicId ? {
@@ -66,7 +77,7 @@ export const uploadBase64Image = async (
       invalidate: Boolean(options.overwrite),
     } : {}),
     transformation: [
-      { width: 1200, height: 800, crop: 'limit' },
+      { width: maxWidth, height: maxHeight, crop: 'limit' },
       { quality: 'auto:good' },
       { fetch_format: 'auto' },
     ],
