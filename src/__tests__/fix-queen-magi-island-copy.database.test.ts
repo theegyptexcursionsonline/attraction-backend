@@ -41,7 +41,7 @@ beforeEach(async () => {
     {
       _id: hula, slug: 'hula-hula-island', name: 'H', domain: 'h.invalid', status: 'active', designMode: 'hulahula',
       customPages: [
-        { slug: 'facilities', heroDescription: 'What the operator confirms is on the island: the beach itself.', metaDescription: 'What the operator confirms about Hula Hula Island: beach entry.' },
+        { slug: 'facilities', heroDescription: 'What the operator confirms is on the island: the beach itself, water sports on every day.', metaDescription: 'What the operator confirms about Hula Hula Island: beach entry.' },
         { slug: 'hula-hula-water-sports', body: 'Included. That is a genuine difference from the operator’s other venue, where the speedboat trips do not carry them.' },
       ],
     },
@@ -74,7 +74,7 @@ it('rewrites exactly those sentences, speaks as the venue, never names the other
   expect(cruise.needToKnow).toEqual(['Which venue does this ticket admit to? Paradise Island. It does not admit to our other beach venue on the island.', 'Bring a towel.']);
   expect(JSON.stringify(cruise)).not.toMatch(/hula/i);
   const site = (await Tenant.collection.findOne({ _id: hula }))!;
-  expect(site.customPages[0]).toMatchObject({ heroDescription: 'What is on the island: the beach itself.', metaDescription: 'What is on Hula Hula Island: beach entry.' });
+  expect(site.customPages[0]).toMatchObject({ heroDescription: 'What is on the island: the beach itself, water sports every day.', metaDescription: 'What is on Hula Hula Island: beach entry.' });
   expect(site.customPages[1].body).toBe('Included. That is a genuine difference from our other venue on the island, where the speedboat trips do not include them.');
   expect((await tour('other-cruise'))!.description).toBe(OLD_SECOND);
   expect(await planCopyChanges()).toEqual([]);
@@ -94,5 +94,5 @@ it('refuses a field someone changed after it was read, and reverts exactly what 
   expect(recorded).toEqual(fresh.map((_, index) => index + 1));
   await revertCopyChanges(fresh);
   expect((await tour('paradise-cruise'))!.description).toBe(OLD_SECOND);
-  expect((await Tenant.collection.findOne({ _id: hula }))!.customPages[0].heroDescription).toBe('What the operator confirms is on the island: the beach itself.');
+  expect((await Tenant.collection.findOne({ _id: hula }))!.customPages[0].heroDescription).toBe('What the operator confirms is on the island: the beach itself, water sports on every day.');
 });

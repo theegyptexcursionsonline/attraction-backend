@@ -986,11 +986,11 @@ export const HULA_HULA_FACILITY_PAGES: HulaHulaFacilityPage[] = [
 export const HULA_HULA_FACILITY_INDEX = {
   slug: FACILITIES_SLUG,
   title: 'On the Island',
-  heroDescription: 'What is on the island: the beach itself, water sports on every day, massage on the yacht days and lunch on the cruises.',
+  heroDescription: 'What is on the island: the beach itself, water sports every day, massage on the yacht days and lunch on the cruises.',
   heroImage: '',
   heroImageAlt: '',
   metaTitle: 'On the Island | Hula Hula Island',
-  metaDescription: 'What is on Hula Hula Island: beach entry, water sports on every day, massage on the yacht days and lunch on the cruises.',
+  metaDescription: 'What is on Hula Hula Island: beach entry, water sports every day, massage on the yacht days and lunch on the cruises.',
 } as const;
 
 /**

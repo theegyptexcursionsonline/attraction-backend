@@ -164,6 +164,7 @@ describe('Queen Magi island copy speaks as the venue', () => {
         .map((page) => [page.title, page.heroDescription, page.metaDescription, (page as { body?: string }).body]),
     ];
     expect(JSON.stringify(customerFacing)).not.toMatch(/\boperator/i);
+    expect(JSON.stringify(customerFacing)).not.toMatch(/on every day/);
   });
 });
 

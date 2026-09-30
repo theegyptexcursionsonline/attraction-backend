@@ -40,6 +40,7 @@ export function copyFixes(): Array<[string, string]> {
     ],
     ['What the operator confirms about Hula Hula Island:', 'What is on Hula Hula Island:'],
     ['What the operator confirms is on the island:', 'What is on the island:'],
+    ['water sports on every day', 'water sports every day'],
   ];
 }
 
