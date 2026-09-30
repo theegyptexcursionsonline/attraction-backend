@@ -9,6 +9,7 @@ import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { searchRegexValue } from '../utils/helpers';
 import { tenantPickupDestinationSlugs } from '../utils/pickupDestinations';
+import { startingPriceStages, toDestinationStartingPrice } from '../utils/destinationStartingPrice';
 
 type DestinationRow = { name: string; slug: string } & Record<string, unknown>;
 
@@ -198,12 +199,7 @@ export const getDestinationBySlug = async (
       Attraction.aggregate([
         { $match: attractionScope },
         ...localizedTourStages,
-        {
-          $group: {
-            _id: null,
-            minPrice: { $min: '$priceFrom' },
-          },
-        },
+        ...startingPriceStages(),
       ]),
     ]);
 
@@ -219,13 +215,18 @@ export const getDestinationBySlug = async (
       .select('title slug')
       .lean();
 
+    // Set explicitly, so an unpriced or mixed-currency destination carries no priceFrom/priceCurrency at all.
+    const { priceFrom, priceCurrency, startingPrices } = toDestinationStartingPrice(priceStats);
+
     sendSuccess(res, {
       ...(locale ? localizedDestination(destination, locale) : destination),
       ...(servedByPickup ? { servedByPickup: true } : {}),
       attractionCount,
       averageRating: ratingStats[0]?.averageRating || 0,
       reviewCount: ratingStats[0]?.totalReviews || 0,
-      priceFrom: priceStats[0]?.minPrice || 0,
+      priceFrom,
+      priceCurrency,
+      startingPrices,
       popularAttractions: popularAttractions.map((a: any) => locale && locale !== 'en' ? a.__translations?.find((row: any) => row.locale === locale)?.content?.title || a.title : a.title),
     });
   } catch (error) {

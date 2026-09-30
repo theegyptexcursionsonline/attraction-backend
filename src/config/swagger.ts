@@ -233,6 +233,23 @@ const options: swaggerJsdoc.Options = {
             images: { type: 'array', items: { type: 'string' } },
             highlights: { type: 'array', items: { type: 'string' }, example: ['Burj Khalifa', 'Desert Safari'] },
             attractionCount: { type: 'integer', example: 120 },
+            priceFrom: {
+              type: 'number',
+              example: 120,
+              description: 'Detail only. Lowest bookable tour price, in `priceCurrency`. Omitted when nothing is priced or the tours here use more than one currency.',
+            },
+            priceCurrency: { type: 'string', example: 'EUR', description: 'ISO 4217 code of `priceFrom`; present exactly when `priceFrom` is.' },
+            startingPrices: {
+              type: 'array',
+              description: 'Detail only. Lowest bookable tour price per currency, sorted by currency code; empty when nothing is priced.',
+              items: {
+                type: 'object',
+                properties: {
+                  currency: { type: 'string', example: 'EUR' },
+                  amount: { type: 'number', example: 120 },
+                },
+              },
+            },
           },
         },
         Tenant: {
