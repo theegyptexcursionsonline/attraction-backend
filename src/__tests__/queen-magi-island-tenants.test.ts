@@ -18,10 +18,14 @@ import {
   buildTourDocument as buildHulaTour,
 } from '../scripts/seed-hula-hula-island';
 import {
+  ILLUSTRATIVE_IMAGE_PREFIX,
   QUEEN_MAGI_ISLAND_IMAGE_PLANS,
+  illustrativeAlt,
+  isGeneratedAsset,
   sceneNeedsQualifier,
   validateIslandImagePlan,
 } from '../scripts/generate-queen-magi-island-images';
+import { imageAltSchema } from '../utils/imagePresentation';
 
 const baseTenant = {
   slug: 'design-mode-probe',
@@ -227,6 +231,39 @@ describe('Queen Magi island generated-image plan', () => {
       const otherPrefix = plan.tenantSlug === 'hula-hula-island' ? 'paradise-' : 'hula-hula-';
       expect(plan.tours.every((tour) => !tour.slug.startsWith(otherPrefix))).toBe(true);
     }
+  });
+
+  it('keeps generated frames in their own folder, apart from the real photographs', () => {
+    const cloudinary = 'https://res.cloudinary.com/dm3sxllch/image/upload/v1790783052/attractions-network';
+    for (const plan of QUEEN_MAGI_ISLAND_IMAGE_PLANS) {
+      expect(plan.folder).toBe(`tours/${plan.tenantSlug}/generated`);
+      expect(plan.urlMarker).toBe(`/attractions-network/tours/${plan.tenantSlug}/generated/`);
+      // The seeds mirror real photographs into these folders; none of them may read as generated.
+      for (const tour of plan.tours) {
+        expect(isGeneratedAsset(`${cloudinary}/tours/${plan.tenantSlug}/${tour.slug}/abc123.jpg`, plan)).toBe(false);
+        expect(isGeneratedAsset(`${cloudinary}/${plan.folder}/${tour.slug}-generated-01.jpg`, plan)).toBe(true);
+      }
+      expect(isGeneratedAsset(`${cloudinary}/tenant-heroes/${plan.tenantSlug}/1/abc123.jpg`, plan)).toBe(false);
+      expect(isGeneratedAsset(`${cloudinary}/pages/${plan.tenantSlug}/kids-area/abc123.jpg`, plan)).toBe(false);
+      // Another site's generated frame is not this site's.
+      const other = QUEEN_MAGI_ISLAND_IMAGE_PLANS.find((candidate) => candidate !== plan)!;
+      expect(isGeneratedAsset(`${cloudinary}/${other.folder}/hero-generated-01.jpg`, plan)).toBe(false);
+    }
+  });
+
+  it('describes every generated frame as an illustration the storefront can caption', () => {
+    const descriptions = QUEEN_MAGI_ISLAND_IMAGE_PLANS.flatMap((plan) => [
+      ...plan.tours.flatMap((tour) => tour.scenes.map(illustrativeAlt)),
+      ...plan.facilities.map((item) => illustrativeAlt(item.alt)),
+    ]);
+    expect(descriptions.length).toBeGreaterThan(0);
+    for (const description of descriptions) {
+      expect(description.startsWith(`${ILLUSTRATIVE_IMAGE_PREFIX} `)).toBe(true);
+      expect(imageAltSchema.safeParse(description).success).toBe(true);
+      expect(description).toMatch(/^Illustrative image: [a-z].{20,}\.$/);
+    }
+    expect(illustrativeAlt('A generic open speedboat running across clear water, spray and wake, no name on the hull.'))
+      .toBe('Illustrative image: a generic open speedboat running across clear water.');
   });
 
   it('never asks for a real venue, vessel, person, brand or any text', () => {
