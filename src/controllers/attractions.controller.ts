@@ -205,7 +205,7 @@ interface AttractionQuery {
 /** Display-only deal projection. Eligibility is filtered before pagination/count;
  * checkout still rereads and prices its own options/offers independently. */
 const displayRound2 = (value: unknown): Record<string, unknown> => ({ $divide: [{ $floor: { $add: [{ $multiply: [value, 100] }, 0.5] } }, 100] });
-const publicDealStages = (now: Date): any[] => [
+export const publicDealStages = (now: Date): any[] => [
   { $match: { enquiryOnly: { $ne: true }, priceFrom: { $gt: 0 }, currency: /^[A-Z]{3}$/ } },
   // A one-unit catalogue comparison must be selectable without a group,
   // resident, promo-code or time-slot-only condition. Never discount a fictitious base.

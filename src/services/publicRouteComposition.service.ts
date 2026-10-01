@@ -7,7 +7,7 @@ import { Review } from '../models/Review';
 import { Booking } from '../models/Booking';
 import { TenantPresentationTranslation } from '../models/TenantPresentationTranslation';
 import { PUBLIC_TENANT_PROJECTION,toPublicTenantDto } from '../controllers/tenants.controller';
-import { PUBLIC_ATTRACTION_PROJECTION,toPublicAttractionDto } from '../controllers/attractions.controller';
+import { PUBLIC_ATTRACTION_PROJECTION,toPublicAttractionDto,publicDealStages } from '../controllers/attractions.controller';
 import { localizedPublicSitePresentation,presentationReadScope,presentationSourceSnapshot } from './tenantPresentationLocalization.service';
 import { localizationStages,localizationIdentity,localizedPresentation } from './attractionLocalization.service';
 import { destinationLocalizationStages,localizedDestination } from './destinationLocalization.service';
@@ -18,6 +18,7 @@ const LANGUAGES = ['ar','de','ru','fr'] as const;
 type Row = Record<string,any>;
 const id=(value:unknown)=>String(value||'');
 const hash=(value:unknown)=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
+const publicRouteTour=(row:Row)=>({...toPublicAttractionDto(row),...(row.publicDeal?{publicDeal:row.publicDeal}:{})});
 export class RouteCompositionUnavailable extends Error { statusCode=503; constructor(){super('This page could not be loaded. Please retry.');} }
 /** Defense in depth in addition to the DB current-source join. */
 function currentRows(kind:'tour'|'destination',source:Row,tenantId:string):Row {
@@ -39,9 +40,9 @@ export function routeClosure(request:RouteRequest,tenant:Row,localizedTenant:Row
   if(kind==='destination'&&raw.isActive!==true)throw new RouteCompositionUnavailable();
   const row=currentRows(kind,raw,tenantId);const identity=kind==='tour'?localizationIdentity(row,request.locale):localizedDestination(row,request.locale);
   for(const locale of [...languages])if(!identity.localizedSlugs?.[locale])languages.delete(locale);
-  digest.update(JSON.stringify([kind,id(row._id),sourceSnapshot(kind,row),row.updatedAt,kind==='tour'?toPublicAttractionDto(row):publicDestination(row),row.__translations.map((item:Row)=>[item.locale,item.slug,item.content])]));
+  digest.update(JSON.stringify([kind,id(row._id),sourceSnapshot(kind,row),row.updatedAt,kind==='tour'?publicRouteTour(row):publicDestination(row),row.__translations.map((item:Row)=>[item.locale,item.slug,item.content])]));
   if(kind==='tour'){
-   totals.tours++;const dto=localizedPresentation(toPublicAttractionDto(row),row,request.locale);if(featured.length<8)featured.push(dto);
+   totals.tours++;const dto=localizedPresentation(publicRouteTour(row),row,request.locale);if(featured.length<8)featured.push(dto);
    for(const language of row.languages||[])if(typeof language==='string'&&language.trim()&&!guideLanguages.has(language.trim().toLowerCase()))guideLanguages.set(language.trim().toLowerCase(),language.trim());
    if(dto.duration){durations.add(dto.duration);durationCounts.set(dto.duration,(durationCounts.get(dto.duration)||0)+1);}if(row.category)categories.add(row.category);
    const category=typeof row.category==='string'?row.category.trim():'';if(category)categoryCounts.set(category,(categoryCounts.get(category)||0)+1);
@@ -57,7 +58,7 @@ export function routeClosure(request:RouteRequest,tenant:Row,localizedTenant:Row
  }
  function finish(collection:Row[] = [],pagination:unknown=null,stats:Row|null=null){
   const facts={...totals,guideLanguages:[...guideLanguages.values()].sort((a,b)=>a.localeCompare(b)),durations:[...durations],categories:[...categories],categoryCounts:[...categoryCounts].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(([name,count])=>({name,count})),durationCounts:[...durationCounts].map(([label,count])=>({label,count})),departureAreas:[...departureAreas.values()].sort((a,b)=>a.name.localeCompare(b.name)),hotelPickup,enquiries};
-  const seed={tenant:localizedTenant,featured:featured.map(row=>({...row,bookingTenantSlug:request.tenantSlug})),destinations,facts,collection,pagination,stats};digest.update(JSON.stringify(stats));
+  const seed={tenant:localizedTenant,featured:featured.map((row):Row=>({...row,bookingTenantSlug:request.tenantSlug})),destinations,facts,collection,pagination,stats};digest.update(JSON.stringify(stats));
   const receipt=publicRoutePublicationReceipt.parse({version:1,renderer:ROUTE_RENDERER,tenantId,tenantSlug:request.tenantSlug,domain:request.domain,route:request.route,locale:request.locale,sourceDigest:digest.digest('hex'),seedDigest:hash(seed),contentLocales:LANGUAGES.filter(locale=>languages.has(locale)),counts:totals});
   return {seed,receipt};
  }
@@ -66,7 +67,7 @@ export function routeClosure(request:RouteRequest,tenant:Row,localizedTenant:Row
 const DESTINATION_FIELDS=['_id','slug','name','country','continent','description','shortDescription','images','heroImage','highlights','bestTimeToVisit','tags','sortOrder','isActive','attractionCount','servedByPickup','localizedName','localizedCountry','locale','resolvedLocale','translationStatus','localizedSlugs','localizedSlug'];
 function publicDestination(row:Row){return Object.fromEntries(DESTINATION_FIELDS.filter(key=>row[key]!==undefined).map(key=>[key,row[key]]));}
 export async function composePublicRoute(input:unknown){
- const request=publicRouteCompositionRequest.parse(input);const session=await mongoose.startSession();
+ const request=publicRouteCompositionRequest.parse(input);const pricingDate=new Date();const session=await mongoose.startSession();
  try{
   let output:ReturnType<ReturnType<typeof routeClosure>['finish']>|undefined;
   await session.withTransaction(async()=>{
@@ -75,7 +76,13 @@ export async function composePublicRoute(input:unknown){
    const presentation=localizedPublicSitePresentation(toPublicTenantDto(tenant),tenant,request.locale,rows as any);
    const closure=routeClosure(request,tenant,presentation);const owner=tenant._id as Types.ObjectId;
    const scope={tenantIds:owner,status:'active',archivedAt:{$exists:false},trashedAt:{$exists:false}};
-   const tours=[{$match:scope},...localizationStages(owner,request.locale,undefined,false),{$sort:{sortOrder:1,_id:1}},{$project:{...Object.fromEntries(PUBLIC_ATTRACTION_PROJECTION.split(' ').map(key=>[key,1])),tenantIds:1,updatedAt:1,__translations:1}}];
+   // Indexed, owner-scoped self join reuses the catalogue's exact comparable
+   // deal rules without filtering non-deal or enquiry tours out of the outer
+   // catalogue. Offers and translations share this transaction's read snapshot.
+   const tours=[{$match:scope},...localizationStages(owner,request.locale,undefined,false),
+    {$lookup:{from:Attraction.collection.name,localField:'_id',foreignField:'_id',pipeline:[{$match:scope},...publicDealStages(pricingDate),{$project:{publicDeal:1}}],as:'__routeDeals'}},
+    {$set:{publicDeal:{$arrayElemAt:['$__routeDeals.publicDeal',0]}}},
+    {$sort:{sortOrder:1,_id:1}},{$project:{...Object.fromEntries(PUBLIC_ATTRACTION_PROJECTION.split(' ').map(key=>[key,1])),publicDeal:1,tenantIds:1,updatedAt:1,__translations:1}}];
    const tourCursor=Attraction.aggregate(tours as any).session(session).option({maxTimeMS:15000}).cursor({batchSize:50});
    try{for await(const row of tourCursor)closure.push('tour',row);}finally{await tourCursor.close();}
    const destinationStages=[{$match:{isActive:true}},{$lookup:{from:Attraction.collection.name,let:{city:'$name'},pipeline:[{$match:{...scope,$expr:{$eq:['$destination.city','$$city']}}},{$count:'total'}],as:'__counts'}},{$set:{attractionCount:{$ifNull:[{$arrayElemAt:['$__counts.total',0]},0]}}},{$match:{attractionCount:{$gt:0}}},...destinationLocalizationStages(owner,request.locale,undefined,false),{$sort:{sortOrder:1,_id:1}}];
@@ -87,7 +94,7 @@ export async function composePublicRoute(input:unknown){
     const stages=request.route==='safaris'?tours:destinationStages;const model=request.route==='safaris'?Attraction:Destination;
     const page=await model.aggregate([...stages,{$set:plan.normalized},...(plan.seek?[{$match:plan.seek}]:[]),{$sort:plan.sort},{$limit:21}] as any).session(session).option({maxTimeMS:15000});
     const result=plan.page(page,20,request.route==='safaris'?closure.totals.tours:closure.totals.destinations);pagination=result.pagination;
-    collection=result.rows.map(row=>request.route==='safaris'?localizedPresentation(toPublicAttractionDto(row),currentRows('tour',row,String(owner)),request.locale):publicDestination(localizedDestination(currentRows('destination',row,String(owner)),request.locale)));
+    collection=result.rows.map(row=>request.route==='safaris'?localizedPresentation(publicRouteTour(row),currentRows('tour',row,String(owner)),request.locale):publicDestination(localizedDestination(currentRows('destination',row,String(owner)),request.locale)));
    }
    let stats:Row|null=null;
    if(request.route==='home'){
