@@ -1,3 +1,4 @@
+import { tourCategorySchema, durationBandSchema } from './publicTourFilters';
 import { INTERFACE_LOCALES } from '../types';
 import { z } from 'zod';
 import { imageAltTextsSchema, secureImageUrlSchema } from './imagePresentation';
@@ -778,6 +779,8 @@ export const regexSearchSchema = z
   .optional();
 
 export const attractionFiltersSchema = z.object({
+  tourCategory: tourCategorySchema.optional(),
+  durationBand: durationBandSchema.optional(),
   locale: z.enum(['en', 'ar', 'de', 'ru', 'fr']).optional(),
   localeFallback: z.literal('source').optional(),
   pagination: z.literal('cursor').optional(),

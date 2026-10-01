@@ -1,3 +1,4 @@
+import { publicTourCategoryFilter, publicDurationBandFilter, tourCategorySchema, durationBandSchema } from '../utils/publicTourFilters';
 import { localizedSlugStages } from '../services/localizationSourceSnapshot.service';
 import { requestedLocale, sourceFallbackAllowed, localizationStages, localizedPresentation, localizationIdentity, translatedSlugFilter, TranslationError } from '../services/attractionLocalization.service';
 import { publicCursorPlan, type CursorField } from '../utils/publicCursor';
@@ -304,6 +305,17 @@ export const getAttractions = async (
 
     if (category) {
       query.category = category as string;
+    }
+
+    // Source filters are part of the shared DB match, so totals and cursor bindings
+    // describe exactly the same catalogue in every locale and pagination mode.
+    if (req.query.tourCategory !== undefined) {
+      const filter = publicTourCategoryFilter(tourCategorySchema.parse(req.query.tourCategory));
+      query.$and = [...(query.$and || []), filter];
+    }
+    if (req.query.durationBand !== undefined) {
+      const filter = publicDurationBandFilter(durationBandSchema.parse(req.query.durationBand));
+      query.$and = [...(query.$and || []), filter];
     }
 
     const safeDestination = searchRegexValue(destination);
