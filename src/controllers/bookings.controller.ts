@@ -1003,11 +1003,37 @@ export const getMyBookings = async (
       res.json({success:true,data:result.rows,pagination:result.pagination,counts:{all:counts.reduce((sum,row)=>sum+row.count,0),...summary}}); return;
     }
     if (status) query.status = status;
-    const [bookings,total] = await Promise.all([
-      Booking.find(query).populate('attractionId','title slug images destination').sort({createdAt:-1,_id:-1}).skip((pageNum-1)*limitNum).limit(limitNum).lean(),
-      Booking.countDocuments(query),
+    // Legacy clients keep their page envelope, but every joined source must belong
+    // to the booking's own seller site, including intentional network-context reads.
+    // One database pipeline validates and reads the same joined rows; a separate
+    // preflight followed by unrestricted populate would reopen a concurrent-edit gap.
+    const [legacy] = await Booking.aggregate([
+      { $match: query },
+      { $lookup: {
+        from: 'attractions',
+        let: { tourId:'$attractionId',site:'$tenantId',supplier:'$supplierTenantId',seller:'$sellerTenantId',resale:'$isResale' },
+        pipeline: [
+          { $match: { $expr: { $and: [
+            { $eq:['$_id','$$tourId'] },
+            { $eq:[{ $type:'$$site' },'objectId'] },
+            { $or: [
+              { $in:['$$site',{ $cond:[{ $isArray:'$tenantIds' },'$tenantIds',[]] }] },
+              { $and:[{ $eq:['$$resale',true] },{ $eq:['$$seller','$$site'] },{ $eq:['$ownerTenantId','$$supplier'] },{ $eq:[{ $type:'$$supplier' },'objectId'] }] },
+            ] },
+          ] } } },
+          { $project:{ _id:1,title:1,slug:1,images:1,destination:1 } },
+        ],
+        as:'__tour',
+      } },
+      { $facet: {
+        broken:[{ $match:{ '__tour.0':{ $exists:false } } },{ $limit:1 },{ $project:{_id:1} }],
+        rows:[{ $sort:{createdAt:-1,_id:-1} },{ $skip:(pageNum-1)*limitNum },{ $limit:limitNum },{ $set:{ attractionId:{ $arrayElemAt:['$__tour',0] } } },{ $project:{__tour:0} }],
+        totals:[{ $count:'total' }],
+      } },
     ]);
-    sendPaginated(res,bookings,pageNum,limitNum,total);
+    if (legacy?.broken.length) { sendError(res,'A booking reference could not be confirmed. Please contact support.',409); return; }
+    res.setHeader('Cache-Control','private, no-store');
+    sendPaginated(res,legacy?.rows || [],pageNum,limitNum,legacy?.totals[0]?.total || 0);
   } catch (error) {
     next(error);
   }

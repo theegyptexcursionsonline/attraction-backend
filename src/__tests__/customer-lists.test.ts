@@ -38,3 +38,26 @@ it('profile wishlist join preserves own profile fields while excluding foreign/i
 it('profile explicit scope is fail-closed; existing verified header wins a conflicting query',async()=>{const tours=await seed(2);await Attraction.collection.updateOne({_id:tours[1]._id},{$set:{tenantIds:[other]}});const profile=()=>request(app).get('/users/profile').set('x-customer',String(customer));await profile().query({tenantId:'unknown-site'}).expect(404);await profile().set('x-tenant-id','unknown-site').query({tenantId:String(owner)}).expect(404);await profile().query({'tenantId[]':String(owner)}).expect(400);await profile().query({tenantId:''}).expect(400);const response=await profile().set('x-tenant-id',String(owner)).query({tenantId:String(other)}).expect(200);expect(response.body.data.wishlist.map((row:any)=>row.slug)).toEqual(['trip-0']);await request(app).get('/users/profile').expect(401);});
 
 it('malformed explicit site hints cannot widen legacy customer lists or mutate saved records',async()=>{const tours=await seed(2);const auth=(test:request.Test)=>test.set('x-customer',String(customer));await auth(request(app).get('/users/wishlist')).query({'tenantId[]':String(owner)}).expect(400);await auth(request(app).get('/bookings/my')).query({'tenantId[]':String(owner)}).expect(400);await auth(request(app).get('/users/wishlist')).query({tenantId:''}).expect(400);await auth(request(app).delete(`/users/wishlist/${tours[0]._id}`)).query({'tenantId[]':String(owner)}).expect(400);await auth(request(app).post(`/users/wishlist/${tours[0]._id}`)).query({'tenantId[]':String(owner)}).expect(400);await auth(request(app).delete('/users/wishlist/page')).query({'tenantId[]':String(owner)}).send({ids:[String(tours[0]._id)]}).expect(400);expect((await User.findById(customer).lean())?.wishlist.map(String)).toEqual(tours.map(row=>String(row._id)));});
+it('legacy joins fail closed for foreign or missing sources, including own network-context reads',async()=>{
+ const tours=await seed(3);const legacy=(site?:Types.ObjectId,user=customer)=>request(app).get('/bookings/my').set('x-customer',String(user)).query({page:1,limit:1,...(site?{tenantId:String(site)}:{})});
+ const normal=(await legacy(owner).expect(200)).body;expect(normal.pagination).toMatchObject({page:1,limit:1,total:3});expect(normal.data[0].attractionId.title).toBeTruthy();expect(normal.data[0].total).toBe(40);expect(normal.data[0].currency).toBe('EUR');expect(normal.data[0].__tour).toBeUndefined();
+ await Attraction.collection.updateOne({_id:tours[0]._id},{$set:{tenantIds:[other]}});
+ for(const site of [owner,undefined]){const denied=await legacy(site).expect(409);expect(denied.body.data).toBeUndefined();}
+ expect((await legacy(undefined,foreignCustomer).expect(200)).body.data).toEqual([]);
+ await Attraction.collection.updateOne({_id:tours[0]._id},{$set:{tenantIds:[owner]}});await Attraction.collection.deleteOne({_id:tours[1]._id});await legacy(owner).expect(409);await legacy().expect(409);
+});
+it('legacy network and scoped reads preserve verified resale while rejecting fabricated supplier or seller',async()=>{
+ const tours=await seed(1);const legacy=(site?:Types.ObjectId)=>request(app).get('/bookings/my').set('x-customer',String(customer)).query(site?{tenantId:String(site)}:{});
+ await Attraction.collection.updateOne({_id:tours[0]._id},{$set:{tenantIds:[other],ownerTenantId:other}});await Booking.collection.updateOne({userId:customer},{$set:{isResale:true,supplierTenantId:other,sellerTenantId:owner}});
+ for(const site of [owner,undefined])expect((await legacy(site).expect(200)).body.data[0].attractionId.slug).toBe('trip-0');
+ await Booking.collection.updateOne({userId:customer},{$set:{supplierTenantId:owner}});await legacy(owner).expect(409);await legacy().expect(409);
+ await Booking.collection.updateOne({userId:customer},{$set:{supplierTenantId:other,sellerTenantId:other}});await legacy().expect(409);
+});
+it('legacy network reads bind each join to its own booking site and reject a missing booking tenant',async()=>{
+ const tours=await seed(2);await Booking.collection.updateOne({attractionId:tours[1]._id},{$set:{tenantId:other}});await Attraction.collection.updateOne({_id:tours[1]._id},{$set:{tenantIds:[other]}});
+ const legacy=()=>request(app).get('/bookings/my').set('x-customer',String(customer));expect((await legacy().expect(200)).body.data).toHaveLength(2);
+ await Booking.collection.updateOne({attractionId:tours[1]._id},{$unset:{tenantId:1}});await legacy().expect(409);
+});
+it('legacy database failure remains an error and retry preserves customer page data',async()=>{
+ await seed(2);const legacy=()=>request(app).get('/bookings/my').set('x-customer',String(customer)).query({tenantId:String(owner),page:1,limit:1});const spy=jest.spyOn(Booking,'aggregate').mockRejectedValueOnce(Error('Unavailable'));await legacy().expect(500);spy.mockRestore();const response=await legacy().expect(200);expect(response.body.pagination.total).toBe(2);expect(response.body.data).toHaveLength(1);expect(response.body.data[0].userId).toBe(String(customer));
+});
