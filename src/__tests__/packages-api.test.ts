@@ -322,10 +322,27 @@ describe('publishing a package', () => {
     const messages = response.body.errors.map((error: { message: string }) => error.message);
     expect(messages).toEqual(expect.arrayContaining([
       'Add the cancellation terms (a single rule with 0 % refund means non-refundable)',
-      'shortDescription: Required',
-      'description: Required',
+      'Listing: add the one-sentence summary',
+      'Listing: add a description',
     ]));
     expect((await stored(pkg._id))?.status).toBe('draft');
+    // The editor shows the same listing problems before anyone presses publish.
+    const editor = await as(request(app).get(`/packages/${pkg._id}`)).expect(200);
+    expect(editor.body.data.checklist).toEqual(expect.arrayContaining([
+      { section: 'listing', message: 'Listing: add the one-sentence summary' },
+      { section: 'listing', message: 'Listing: add a description' },
+      { section: 'cancellation', message: 'Add the cancellation terms (a single rule with 0 % refund means non-refundable)' },
+    ]));
+    expect(editor.body.data.problemTotals).toMatchObject({ listing: 2, cancellation: 1 });
+  });
+
+  it('names a missing category in words, in the editor and on publish', async () => {
+    const pkg = await createPackage({ category: undefined });
+    await savePackage(pkg._id, { expectedRevision: 0, packageDetails: details() }).expect(200);
+    const editor = await as(request(app).get(`/packages/${pkg._id}`)).expect(200);
+    expect(editor.body.data.checklist).toEqual([{ section: 'listing', message: 'Listing: choose a category' }]);
+    const refused = await as(request(app).post(`/packages/${pkg._id}/publish`)).send({ expectedRevision: 1 }).expect(400);
+    expect(refused.body.errors.map((error: { message: string }) => error.message)).toEqual(['Listing: choose a category']);
   });
 
   it('refuses a package no customer could book', async () => {
@@ -360,7 +377,7 @@ describe('publishing a package', () => {
     const before = await stored(pkg._id);
     const response = await savePackage(pkg._id, { expectedRevision: 2, packageDetails: details({ rates: [] }) }).expect(400);
     expect(response.body.error).toBe('This package is live. Fix these before saving, or unpublish it first.');
-    expect(response.body.errors[0]).toEqual({ field: 'packageDetails', message: 'Gold · Winter · 1 traveller: double room price missing' });
+    expect(response.body.errors[0]).toEqual({ field: 'packageDetails', message: 'Gold · Winter · 1 traveller: single room price missing' });
     expect(await stored(pkg._id)).toEqual(before);
     const fine = await savePackage(pkg._id, { expectedRevision: 2, packageDetails: details({ startCity: 'Giza' }) }).expect(200);
     expect(fine.body.data).toMatchObject({ status: 'active', packageRevision: 3 });

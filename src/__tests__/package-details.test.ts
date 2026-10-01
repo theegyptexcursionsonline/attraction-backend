@@ -125,28 +125,13 @@ describe('package details: ready to sell', () => {
       'Diamond · Summer · 5–16 travellers: double room price must be more than zero',
       'Diamond · Summer · 5–16 travellers: triple room price missing',
     ]);
-    expect(problemsFor({ rates: samplePackage().rates.filter(row => row.bandKey !== 'solo') })).toEqual([
-      'Gold · Winter · 1 traveller: double room price missing',
-      'Gold · Winter · 1 traveller: single room price missing',
-      'Gold · Winter · 1 traveller: triple room price missing',
-      'Gold · Winter · 1 traveller: child price missing',
-      'Gold · Winter · 1 traveller: infant price missing',
-      'Gold · Summer · 1 traveller: double room price missing',
-      'Gold · Summer · 1 traveller: single room price missing',
-      'Gold · Summer · 1 traveller: triple room price missing',
-      'Gold · Summer · 1 traveller: child price missing',
-      'Gold · Summer · 1 traveller: infant price missing',
-      'Diamond · Winter · 1 traveller: double room price missing',
-      'Diamond · Winter · 1 traveller: single room price missing',
-      'Diamond · Winter · 1 traveller: triple room price missing',
-      'Diamond · Winter · 1 traveller: child price missing',
-      'Diamond · Winter · 1 traveller: infant price missing',
-      'Diamond · Summer · 1 traveller: double room price missing',
-      'Diamond · Summer · 1 traveller: single room price missing',
-      'Diamond · Summer · 1 traveller: triple room price missing',
-      'Diamond · Summer · 1 traveller: child price missing',
-      'Diamond · Summer · 1 traveller: infant price missing',
-    ]);
+    // A solo traveller always takes a single room: only the single and infant prices are asked for.
+    expect(problemsFor({ rates: samplePackage().rates.filter(row => row.bandKey !== 'solo') })).toEqual(
+      ['Gold · Winter', 'Gold · Summer', 'Diamond · Winter', 'Diamond · Summer'].flatMap(where => [
+        `${where} · 1 traveller: single room price missing`,
+        `${where} · 1 traveller: infant price missing`,
+      ]),
+    );
   });
 
   it('asks only for the prices the room and traveller rules use', () => {
@@ -157,6 +142,11 @@ describe('package details: ready to sell', () => {
       rates: samplePackage().rates.filter(row => row.bandKey !== 'solo').map(row => ({ ...row, single: null, triple: null, child: null, infant: null })),
     });
     expect(requiredRateFields(adultsInDoubles)).toEqual(['double']);
+    // By group size: a solo traveller never shares; a triple needs three adults.
+    const all = samplePackage();
+    expect(requiredRateFields(all, { max: 1 })).toEqual(['single', 'infant']);
+    expect(requiredRateFields(all, { max: 2 })).toEqual(['double', 'single', 'child', 'infant']);
+    expect(requiredRateFields(all, { max: 4 })).toEqual(['double', 'single', 'triple', 'child', 'infant']);
     expect(packagePublishProblems(adultsInDoubles, TODAY)).toEqual([]);
   });
 
@@ -209,7 +199,8 @@ describe('package details: ready to sell', () => {
   it(`stops at ${MAX_PUBLISH_PROBLEMS} problems and says how many remain`, () => {
     const problems = packagePublishProblems(samplePackage({ rates: [] }), TODAY);
     expect(problems).toHaveLength(MAX_PUBLISH_PROBLEMS);
-    expect(problems[MAX_PUBLISH_PROBLEMS - 1]).toBe(`…and ${2 * 2 * 3 * 5 - (MAX_PUBLISH_PROBLEMS - 1)} more to fix`);
+    // Per level and season: 2 prices for the solo group (single, infant) and 5 for each larger group.
+    expect(problems[MAX_PUBLISH_PROBLEMS - 1]).toBe(`…and ${2 * 2 * (2 + 5 + 5) - (MAX_PUBLISH_PROBLEMS - 1)} more to fix`);
   });
 
   it('files every problem under the editor section that fixes it, and counts each section in full', () => {
@@ -220,10 +211,10 @@ describe('package details: ready to sell', () => {
 
     const unpriced = packagePublishChecklist(samplePackage({ rates: [] }), TODAY);
     expect(unpriced.problems).toHaveLength(MAX_PUBLISH_PROBLEMS);
-    expect(unpriced.problems[0]).toEqual({ section: 'prices', message: expect.stringContaining('double room price missing') });
+    expect(unpriced.problems[0]).toEqual({ section: 'prices', message: 'Gold · Winter · 1 traveller: single room price missing' });
     expect(unpriced.problems[MAX_PUBLISH_PROBLEMS - 1].section).toBe('more');
     // The list stops; the count per section does not.
-    expect(unpriced.totals).toEqual({ prices: 2 * 2 * 3 * 5 });
+    expect(unpriced.totals).toEqual({ prices: 2 * 2 * (2 + 5 + 5) });
   });
 
   it.each([

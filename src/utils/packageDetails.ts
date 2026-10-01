@@ -275,14 +275,25 @@ const RATE_FIELDS: Array<{ field: keyof Pick<PackageRate, 'double' | 'single' | 
   { field: 'infant', label: 'infant price' },
 ];
 
-/** Rate fields a cell must have to sell with these room and traveller rules. */
-export const requiredRateFields = (details: Pick<PackageDetails, 'rooms' | 'travellers'>): Array<keyof PackageRate> => [
-  'double',
-  ...(details.rooms.allowSingle ? ['single' as const] : []),
-  ...(details.rooms.allowTriple ? ['triple' as const] : []),
-  ...(details.travellers.allowChildren ? ['child' as const] : []),
-  ...(details.travellers.allowInfants ? ['infant' as const] : []),
-];
+/**
+ * Rate fields a cell must have to sell with these room and traveller rules. Given a group size,
+ * only the prices that group can use: a solo traveller always pays the single price (no double,
+ * no triple, no child — a child travels with an adult), and a triple needs three adults. Infants
+ * are not counted in the group, so their price applies to every size.
+ */
+export const requiredRateFields = (
+  details: Pick<PackageDetails, 'rooms' | 'travellers'>,
+  band?: Pick<PackageBand, 'max'>,
+): Array<keyof PackageRate> => {
+  const max = band?.max ?? Number.POSITIVE_INFINITY;
+  return [
+    ...(max >= 2 ? ['double' as const] : []),
+    ...(details.rooms.allowSingle ? ['single' as const] : []),
+    ...(details.rooms.allowTriple && max >= 3 ? ['triple' as const] : []),
+    ...(details.travellers.allowChildren && max >= 2 ? ['child' as const] : []),
+    ...(details.travellers.allowInfants ? ['infant' as const] : []),
+  ];
+};
 
 export const MAX_PUBLISH_PROBLEMS = 25;
 
@@ -361,10 +372,10 @@ export function packagePublishChecklist(details: PackageDetails, today: string):
   }
 
   section = 'prices';
-  const required = requiredRateFields(details);
   for (const tier of details.tiers) {
     for (const season of details.seasons) {
       for (const band of bands) {
+        const required = requiredRateFields(details, band);
         const cell = details.rates.find((row) => row.tierKey === tier.key && row.seasonKey === season.key && row.bandKey === band.key);
         const where = `${named(tier.name, 'Hotel level')} · ${named(season.name, 'Season')} · ${bandLabel(band)}`;
         for (const { field, label } of RATE_FIELDS) {

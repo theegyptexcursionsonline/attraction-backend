@@ -34,6 +34,7 @@ import {
   packageDetailsSchema,
   packagePublishChecklist,
   packagePublishProblems,
+  PublishSection,
   readPackageDetails,
 } from '../utils/packageDetails';
 import { SERVICE_FEE_BASIS_POINTS } from '../utils/serviceFee';
@@ -104,6 +105,37 @@ interface EditorRecord {
   currency?: string;
   packageDetails?: unknown;
   packageRevision?: number;
+  [field: string]: unknown;
+}
+
+/** What the listing itself still needs to go live, in words for the editor. */
+const LISTING_FIELD_PROBLEMS: Record<string, string> = {
+  title: 'Listing: add a title',
+  slug: 'Listing: the web address is missing — duplicate the package to get a new one',
+  shortDescription: 'Listing: add the one-sentence summary',
+  description: 'Listing: add a description',
+  category: 'Listing: choose a category',
+  destination: 'Listing: choose the destination (city, country and map position)',
+  currency: 'Listing: choose the currency customers pay in',
+  tenantIds: 'Listing: choose the site that sells it',
+};
+
+/**
+ * The listing (title, texts, category, destination…) meets the same publishing rules as every
+ * tour; prices, schedule and duration come from the package, so the tour fields are left out.
+ */
+function listingPublishProblems(record: EditorRecord): string[] {
+  const candidate: Record<string, unknown> = {
+    ...record,
+    status: 'active',
+    tenantIds: ((record.tenantIds as unknown[]) || []).map(String),
+  };
+  for (const field of ['priceFrom', 'pricingOptions', 'entryWindows', 'addons', 'duration']) delete candidate[field];
+  const listing = createAttractionSchema.innerType().safeParse(candidate);
+  const problems = listing.success ? [] : listing.error.issues.map((issue) =>
+    LISTING_FIELD_PROBLEMS[String(issue.path[0])] ?? `Listing: ${issue.path.join('.')}: ${issue.message}`);
+  if (record.enquiryOnly === true) problems.push('Listing: packages always show their prices — turn off enquiry only');
+  return [...new Set(problems)];
 }
 
 async function editorView(record: EditorRecord, today: string) {
@@ -115,15 +147,20 @@ async function editorView(record: EditorRecord, today: string) {
     checklist.problems.push({ section: 'departures', message: NO_BOOKABLE_DATE });
     checklist.totals.departures = 1;
   }
+  const listing = listingPublishProblems(record);
+  const problems: Array<{ section: PublishSection | 'listing' | 'more'; message: string }> = [
+    ...listing.map((message) => ({ section: 'listing' as const, message })),
+    ...checklist.problems,
+  ];
   return {
     packageDetails: details,
     packageRevision: record.packageRevision ?? 0,
     status: record.status ?? 'draft',
     currency: record.currency ?? 'USD',
-    problems: checklist.problems.map((problem) => problem.message),
+    problems: problems.map((problem) => problem.message),
     // The same problems with the editor section that fixes each, and how many each section has.
-    checklist: checklist.problems,
-    problemTotals: checklist.totals,
+    checklist: problems,
+    problemTotals: { ...(listing.length ? { listing: listing.length } : {}), ...checklist.totals },
     fromPrice: packageFromPrice(details, today, departures),
     firstBookableDate: firstDate,
     // Prices are entered before the service fee; the editor shows what customers pay with it.
@@ -147,7 +184,7 @@ export const getPackageForEditor = async (req: AuthRequest, res: Response, next:
   try {
     const params = idParams.safeParse(req.params);
     if (!params.success) { sendError(res, NOT_FOUND, 404); return; }
-    const record = await Attraction.findOne(adminScope(req, params.data.id)).select(EDITOR_FIELDS).lean<EditorRecord>();
+    const record = await Attraction.findOne(adminScope(req, params.data.id)).lean<EditorRecord>();
     if (!record) { sendError(res, NOT_FOUND, 404); return; }
     res.setHeader('Cache-Control', 'private, no-store');
     sendSuccess(res, await editorView(record, operatorToday(req)));
@@ -211,7 +248,7 @@ export const savePackageDetails = async (req: AuthRequest, res: Response, next: 
         $inc: { packageRevision: 1 },
       },
       { new: true, runValidators: true, context: 'query' },
-    ).select(EDITOR_FIELDS).lean<EditorRecord>();
+    ).lean<EditorRecord>();
     if (!updated) { sendError(res, CHANGED, 409); return; }
     console.info('[packages] details saved', {
       attractionId: String(record._id),
@@ -250,20 +287,7 @@ export const publishPackage = async (req: AuthRequest, res: Response, next: Next
     const departures = details.departureMode === 'fixed' ? await openDepartureDates(record._id, today) : [];
     const problems = packagePublishProblems(details, today);
     if (problems.length === 0 && !firstBookableDate(details, today, departures)) problems.push(NO_BOOKABLE_DATE);
-    if (record.enquiryOnly === true) problems.push('Packages always show their prices — turn off enquiry only');
-    // The listing itself (title, descriptions, category, destination, currency) meets the same
-    // publishing rules as every tour; prices and dates come from the package instead.
-    const candidate: Record<string, unknown> = {
-      ...record,
-      status: 'active',
-      tenantIds: ((record.tenantIds as unknown[]) || []).map(String),
-    };
-    // Prices, schedule and duration are the package's own; the tour fields stay unused.
-    for (const field of ['priceFrom', 'pricingOptions', 'entryWindows', 'addons', 'duration']) delete candidate[field];
-    const listing = createAttractionSchema.innerType().safeParse(candidate);
-    if (!listing.success) {
-      problems.push(...listing.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`));
-    }
+    problems.unshift(...listingPublishProblems(record));
     const fromPrice = packageFromPrice(details, today, departures);
     if (problems.length > 0 || !fromPrice) {
       sendError(res, 'Complete these before publishing', 400,
@@ -283,7 +307,7 @@ export const publishPackage = async (req: AuthRequest, res: Response, next: Next
         $inc: { packageRevision: 1 },
       },
       { new: true, runValidators: true, context: 'query' },
-    ).select(EDITOR_FIELDS).lean<EditorRecord>();
+    ).lean<EditorRecord>();
     if (!published) { sendError(res, CHANGED, 409); return; }
     console.info('[packages] published', {
       attractionId: String(record._id),
