@@ -3,6 +3,7 @@ import { imageAltTextsSchema, secureImageUrlSchema } from './imagePresentation';
 import { aiSettingsUpdateSchema } from './aiSettings';
 import { MAX_REGEX_SEARCH_LENGTH } from './helpers';
 import { MAX_PICKUP_DESTINATIONS, PICKUP_DESTINATION_SLUG_PATTERN } from './pickupDestinations';
+import { DEPARTURE_SCHEDULE_CONFLICT_MESSAGE, departureScheduleConflict } from './departureAvailability';
 
 // Auth Validators
 export const registerSchema = z.object({
@@ -342,6 +343,9 @@ export const createAttractionSchema = attractionAuthoringSchema.superRefine((val
   }
   if (value.pricingOptions.length === 0) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['pricingOptions'], message: 'At least one pricing option is required' });
+  }
+  if (departureScheduleConflict(value)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['availability', 'type'], message: DEPARTURE_SCHEDULE_CONFLICT_MESSAGE });
   }
   value.pricingOptions.forEach((option, index) => {
     if (

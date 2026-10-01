@@ -25,6 +25,7 @@ import { minimumTourPrice } from '../utils/attractionPricing';
 import { BundleOrder } from '../models/BundleOrder';
 import { runBundleTransaction } from '../services/bundleInventory.service';
 import { createAttractionSchema } from '../utils/validators';
+import { DEPARTURE_SCHEDULE_CONFLICT_MESSAGE, departureScheduleConflict } from '../utils/departureAvailability';
 import { tenantPickupDestinationSlugs } from '../utils/pickupDestinations';
 import { resolveBookingTimeZone } from '../utils/bookingCutoff';
 import {
@@ -768,6 +769,12 @@ export const createAttraction = async (
       return;
     }
 
+    // Drafts included: a tour sold by the day never lists departure times nobody can choose.
+    if (departureScheduleConflict(req.body)) {
+      sendError(res, DEPARTURE_SCHEDULE_CONFLICT_MESSAGE, 400);
+      return;
+    }
+
     const normalizedCategory = req.body.category
       ? await normalizeCategoryValue(req.body.category)
       : undefined;
@@ -933,6 +940,22 @@ export const updateAttraction = async (
           .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
           .join('\n');
         sendError(res, missing || 'Complete all required fields before publishing', 400);
+        return;
+      }
+    }
+
+    // Editors send only the fields that changed, so judge the schedule on the merged record.
+    // A save that leaves these fields alone keeps working on older records holding the pair.
+    if (['availability', 'entryWindows', 'pricingOptions'].some((field) => req.body[field] !== undefined)) {
+      const stored = existingAttraction
+        ?? await Attraction.findById(id).select('availability entryWindows pricingOptions enquiryOnly').lean();
+      if (stored && departureScheduleConflict({
+        availability: req.body.availability ?? stored.availability,
+        entryWindows: req.body.entryWindows ?? stored.entryWindows,
+        pricingOptions: req.body.pricingOptions ?? stored.pricingOptions,
+        enquiryOnly: req.body.enquiryOnly ?? stored.enquiryOnly,
+      })) {
+        sendError(res, DEPARTURE_SCHEDULE_CONFLICT_MESSAGE, 400);
         return;
       }
     }
