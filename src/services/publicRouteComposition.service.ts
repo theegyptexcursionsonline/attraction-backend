@@ -76,23 +76,29 @@ export async function composePublicRoute(input:unknown){
    const presentation=localizedPublicSitePresentation(toPublicTenantDto(tenant),tenant,request.locale,rows as any);
    const closure=routeClosure(request,tenant,presentation);const owner=tenant._id as Types.ObjectId;
    const scope={tenantIds:owner,status:'active',archivedAt:{$exists:false},trashedAt:{$exists:false}};
+   const firstPagePlan=!request.cursor&&['safaris','destinations'].includes(request.route)?publicCursorPlan({tenantId:String(owner),domain:request.domain,route:request.route,locale:request.locale},[{field:'sortOrder',direction:1,kind:'number'},{field:'_id',direction:1,kind:'id'}]):null;
+   const firstPageRows:Row[]=[];
    // Indexed, owner-scoped self join reuses the catalogue's exact comparable
    // deal rules without filtering non-deal or enquiry tours out of the outer
    // catalogue. Offers and translations share this transaction's read snapshot.
    const tours=[{$match:scope},...localizationStages(owner,request.locale,undefined,false),
     {$lookup:{from:Attraction.collection.name,localField:'_id',foreignField:'_id',pipeline:[{$match:scope},...publicDealStages(pricingDate),{$project:{publicDeal:1}}],as:'__routeDeals'}},
     {$set:{publicDeal:{$arrayElemAt:['$__routeDeals.publicDeal',0]}}},
-    {$sort:{sortOrder:1,_id:1}},{$project:{...Object.fromEntries(PUBLIC_ATTRACTION_PROJECTION.split(' ').map(key=>[key,1])),publicDeal:1,tenantIds:1,updatedAt:1,__translations:1}}];
+    ...(firstPagePlan&&request.route==='safaris'?[{$set:firstPagePlan.normalized},{$sort:firstPagePlan.sort}]:[{$sort:{sortOrder:1,_id:1}}]),
+    {$project:{...Object.fromEntries(PUBLIC_ATTRACTION_PROJECTION.split(' ').map(key=>[key,1])),publicDeal:1,tenantIds:1,updatedAt:1,__translations:1,...(firstPagePlan&&request.route==='safaris'?{_cursor0:1,_cursor1:1}:{})}}];
    const tourCursor=Attraction.aggregate(tours as any).session(session).option({maxTimeMS:15000}).cursor({batchSize:50});
-   try{for await(const row of tourCursor)closure.push('tour',row);}finally{await tourCursor.close();}
+   try{for await(const row of tourCursor){closure.push('tour',row);if(firstPagePlan&&request.route==='safaris'&&firstPageRows.length<21)firstPageRows.push(row);}}finally{await tourCursor.close();}
    const destinationStages=[{$match:{isActive:true}},{$lookup:{from:Attraction.collection.name,let:{city:'$name'},pipeline:[{$match:{...scope,$expr:{$eq:['$destination.city','$$city']}}},{$count:'total'}],as:'__counts'}},{$set:{attractionCount:{$ifNull:[{$arrayElemAt:['$__counts.total',0]},0]}}},{$match:{attractionCount:{$gt:0}}},...destinationLocalizationStages(owner,request.locale,undefined,false),{$sort:{sortOrder:1,_id:1}}];
-   const destinationCursor=Destination.aggregate(destinationStages as any).session(session).option({maxTimeMS:15000}).cursor({batchSize:50});
-   try{for await(const row of destinationCursor)closure.push('destination',row);}finally{await destinationCursor.close();}
+   const destinationCursor=Destination.aggregate([...destinationStages,...(firstPagePlan&&request.route==='destinations'?[{$set:firstPagePlan.normalized},{$sort:firstPagePlan.sort}]:[])] as any).session(session).option({maxTimeMS:15000}).cursor({batchSize:50});
+   try{for await(const row of destinationCursor){closure.push('destination',row);if(firstPagePlan&&request.route==='destinations'&&firstPageRows.length<21)firstPageRows.push(row);}}finally{await destinationCursor.close();}
    let collection:Row[]=[];let pagination:unknown=null;
    if(request.route==='safaris'||request.route==='destinations'){
-    const plan=publicCursorPlan({tenantId:String(owner),domain:request.domain,route:request.route,locale:request.locale},[{field:'sortOrder',direction:1,kind:'number'},{field:'_id',direction:1,kind:'id'}],request.cursor);
+    const plan=firstPagePlan||publicCursorPlan({tenantId:String(owner),domain:request.domain,route:request.route,locale:request.locale},[{field:'sortOrder',direction:1,kind:'number'},{field:'_id',direction:1,kind:'id'}],request.cursor);
     const stages=request.route==='safaris'?tours:destinationStages;const model=request.route==='safaris'?Attraction:Destination;
-    const page=await model.aggregate([...stages,{$set:plan.normalized},...(plan.seek?[{$match:plan.seek}]:[]),{$sort:plan.sort},{$limit:21}] as any).session(session).option({maxTimeMS:15000});
+    // Initial collection rows come from the complete sorted proof stream. Keep
+    // at most limit+1 rows, avoiding a second identical DB read. Subsequent
+    // positions remain filtered/paginated in Mongo with the bound cursor.
+    const page=firstPagePlan?firstPageRows:await model.aggregate([...stages,{$set:plan.normalized},...(plan.seek?[{$match:plan.seek}]:[]),{$sort:plan.sort},{$limit:21}] as any).session(session).option({maxTimeMS:15000});
     const result=plan.page(page,20,request.route==='safaris'?closure.totals.tours:closure.totals.destinations);pagination=result.pagination;
     collection=result.rows.map(row=>request.route==='safaris'?localizedPresentation(publicRouteTour(row),currentRows('tour',row,String(owner)),request.locale):publicDestination(localizedDestination(currentRows('destination',row,String(owner)),request.locale)));
    }
