@@ -575,11 +575,19 @@ export const quotePackage = async (req: AuthRequest, res: Response, next: NextFu
     const seats = seatRefusal(state, seatsLeft, priced.quote.travellers.adults + priced.quote.travellers.children);
     if (seats) { sendRefusal(res, seats); return; }
 
+    // Each level priced for the same party, date and extras. `tripPerPerson` leaves the extras out,
+    // so a level's own price does not move when an extra is added.
     const alternatives = details.tiers.map((tier) => {
-      if (tier.key === chosen.tierKey) return { key: tier.key, name: tier.name, total: priced.quote.total, perPerson: priced.quote.perPerson, difference: 0 };
-      const other = pricePackageSelection({ details, currency, selection: { ...chosen, tierKey: tier.key }, today });
+      const other = tier.key === chosen.tierKey ? priced : pricePackageSelection({ details, currency, selection: { ...chosen, tierKey: tier.key }, today });
       return other.ok
-        ? { key: tier.key, name: tier.name, total: other.quote.total, perPerson: other.quote.perPerson, difference: Math.round((other.quote.total - priced.quote.total) * 100) / 100 }
+        ? {
+          key: tier.key,
+          name: tier.name,
+          total: other.quote.total,
+          perPerson: other.quote.perPerson,
+          tripPerPerson: other.quote.tripPerPerson,
+          difference: Math.round((other.quote.total - priced.quote.total) * 100) / 100,
+        }
         : { key: tier.key, name: tier.name, unavailable: other.message };
     });
     const cancellation = [...details.cancellation]

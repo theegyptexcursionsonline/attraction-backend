@@ -200,6 +200,8 @@ export interface PackageQuote {
   subtotal: number;
   /** total ÷ (adults + children), for display. */
   perPerson: number;
+  /** The rooms alone, without extras, ÷ (adults + children): what one hotel level costs against another. */
+  tripPerPerson: number;
   feeBasisPoints: number;
 }
 
@@ -401,6 +403,7 @@ export function pricePackageSelection(input: {
     shownCents += amounts.shownCents;
     rooms.push({ room: index + 1, occupancy: result.occupancy, ...room, charges: amounts.shown, amount: money(amounts.shownCents) });
   }
+  const tripCents = shownCents;
 
   const seen = new Set<string>();
   const extras: PackageQuoteExtra[] = [];
@@ -432,6 +435,7 @@ export function pricePackageSelection(input: {
       serviceFee: money(shownCents - baseCents),
       subtotal: money(baseCents),
       perPerson: money(Math.round(shownCents / party)),
+      tripPerPerson: money(Math.round(tripCents / party)),
       feeBasisPoints: basisPoints,
     },
   };

@@ -59,6 +59,9 @@ const expectConsistent = (result: PackageQuote) => {
   }
   expect(cents(result.total)).toBe(total);
   expect(cents(result.subtotal) + cents(result.serviceFee)).toBe(cents(result.total));
+  const party = result.travellers.adults + result.travellers.children;
+  const roomCents = result.rooms.reduce((sum, room) => sum + cents(room.amount), 0);
+  expect(cents(result.tripPerPerson)).toBe(Math.round(roomCents / party));
 };
 
 describe('service fee helpers', () => {
@@ -90,7 +93,7 @@ describe('package rooms and occupancy', () => {
       currency: 'USD', departureDate: WINTER_DAY, returnDate: '2026-11-17',
       tier: { key: 'gold', name: 'Gold' }, season: { key: 'winter', name: 'Winter' }, groupSize: { min: 2, max: 4 },
       travellers: { adults: 2, children: 0, infants: 0 },
-      total: 2100, serviceFee: 100, subtotal: 2000, perPerson: 1050, feeBasisPoints: 500,
+      total: 2100, serviceFee: 100, subtotal: 2000, perPerson: 1050, tripPerPerson: 1050, feeBasisPoints: 500,
     });
     expectConsistent(result);
   });
@@ -324,6 +327,16 @@ describe('package extras', () => {
     expect(result.total).toBe(rooms + 4 * 126 + 94.5 + 42);
     expect(result.perPerson).toBe(Math.round(cents(result.total) / 5) / 100);
     expectConsistent(result);
+  });
+
+  it('keeps the trip price per person apart from extras, so a hotel level does not look dearer once an extra is added', () => {
+    const without = priced(party);
+    const withExtras = priced({ ...party, extras: [{ id: 'balloon', adults: 4, children: 1 }, { id: 'airport', quantity: 1 }] });
+    expect(without.tripPerPerson).toBe(756);
+    expect(without.perPerson).toBe(756);
+    expect(withExtras.tripPerPerson).toBe(756);
+    expect(withExtras.perPerson).toBeGreaterThan(756);
+    expectConsistent(withExtras);
   });
 
   it.each([

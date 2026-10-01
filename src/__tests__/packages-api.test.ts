@@ -438,8 +438,9 @@ describe('public calendar and quote', () => {
     expect(response.body.data.quote.total).toBe(2 * 1050 + 525 + 42);
     expect(response.body.data.quoteHash).toBe(packageQuoteHash(pkg._id, parsedSelection, engine.quote));
     expect(response.body.data.alternatives).toEqual([
-      { key: 'gold', name: 'Gold', total: 2667, perPerson: 889, difference: 0 },
-      { key: 'diamond', name: 'Diamond', total: 2 * 1470 + 735 + 42, perPerson: 1239, difference: 1050 },
+      // The extra (42) is in every total but not in the trip price per person: (2 × 1050 + 525) ÷ 3.
+      { key: 'gold', name: 'Gold', total: 2667, perPerson: 889, tripPerPerson: 875, difference: 0 },
+      { key: 'diamond', name: 'Diamond', total: 2 * 1470 + 735 + 42, perPerson: 1239, tripPerPerson: 1225, difference: 1050 },
     ]);
     expect(response.body.data.cancellation).toEqual([
       { daysBefore: 30, refundPercent: 100, cancelBy: addDays(TODAY, -20) },
