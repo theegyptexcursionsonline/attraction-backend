@@ -23,6 +23,7 @@ import {
   getMarketplaceBrands,
 } from '../controllers/tenants.controller';
 import { authenticate, requireSuperAdmin, requireAdmin, requireRole, canAccessTenant } from '../middleware/auth.middleware';
+import { getTenantSeoSettings, updateTenantSeoSettings } from '../controllers/tenantSeoSettings.controller';
 import { validate, validateQuery } from '../middleware/validate.middleware';
 import { createTenantSchema, updateTenantSchema, paginationSchema, regexSearchSchema } from '../utils/validators';
 import { z } from 'zod';
@@ -318,6 +319,15 @@ router.post(
  * Empty strings and [] clear settings; stale revisions return 409.
  */
 router.patch('/:id/page-seo', authenticate, requireRole('super-admin', 'brand-admin'), updateTenantPageSeo);
+
+/**
+ * GET /tenants/:id/seo-settings — the site SEO editor's snapshot (titles, share image,
+ * keywords, search visibility) with its revision. PATCH replaces the whole snapshot:
+ * { expectedRevision, seoSettings: { metaTitle, metaDescription, keywords, ogImage,
+ * searchVisibility: 'visible' | 'hidden' } }; a stale revision returns 409.
+ */
+router.get('/:id/seo-settings', authenticate, requireRole('super-admin', 'brand-admin'), getTenantSeoSettings);
+router.patch('/:id/seo-settings', authenticate, requireRole('super-admin', 'brand-admin'), updateTenantSeoSettings);
 
 router.patch(
   '/:id/tracking-settings',

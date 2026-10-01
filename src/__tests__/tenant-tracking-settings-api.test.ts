@@ -182,7 +182,8 @@ it.each([
   await auth(request(app).patch(`/tenants/${owner}/settings`)).send({ seoSettings: { metaTitle: 'Changed' }, ...attemptedWrite }).expect(200);
   const tenant = await stored();
   expect(tenant?.name).toBe('Changed');
-  expect(tenant?.seoSettings?.metaTitle).toBe('Changed');
+  // Site SEO is owned by its revision-checked editor; a general settings save leaves it as it was.
+  expect(tenant?.seoSettings?.metaTitle).toBe('Existing title');
   expect(tenant?.trackingSettings).toEqual(settings);
   expect(tenant?.trackingSettingsRevision).toBe(1);
 });
@@ -196,8 +197,9 @@ it.each(['brand-admin', 'super-admin'])('preserves newer tracking settings when 
   expect(legacyPayload.trackingSettingsRevision).toBe(0);
   await patch().send(body()).expect(200);
   const saved = await auth(request(app).patch(`/tenants/${owner}/settings`), role).send(legacyPayload).expect(200);
+  // The echoed SEO text is not the SEO editor's: site SEO keeps its own snapshot.
   expect(saved.body.data).toMatchObject({
-    seoSettings: { metaTitle: 'Legacy save' }, trackingSettings: settings, trackingSettingsRevision: 1,
+    seoSettings: { metaTitle: 'Existing title' }, trackingSettings: settings, trackingSettingsRevision: 1,
   });
   const tenant = await stored();
   expect(tenant?.trackingSettings).toEqual(settings);

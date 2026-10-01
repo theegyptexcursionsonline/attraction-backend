@@ -151,7 +151,10 @@ export interface ITenant extends Document {
     metaDescription: string;
     keywords: string[];
     ogImage?: string;
+    /** Absent on older sites, which means visible. */
+    searchVisibility?: 'visible' | 'hidden';
   };
+  seoSettingsRevision?: number;
   trackingSettings?: {
     googleTagManagerId: string;
     googleAnalyticsId: string;
