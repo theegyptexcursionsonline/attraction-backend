@@ -10,8 +10,9 @@ import { DestinationTranslation } from '../models/DestinationTranslation';
 import { attractionTranslationContent,cleanTranslation,validateTranslationSource,TranslationError } from './attractionLocalization.service';
 import { destinationTranslationContent,cleanDestinationTranslation,validateDestinationTranslation } from './destinationLocalization.service';
 import { tenantPickupDestinationSlugs } from '../utils/pickupDestinations';
-const entry = z.object({ id: z.string().regex(/^[a-f\d]{24}$/i),locale: z.enum(['de','ru']),slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(180),sourceUpdatedAt: z.string().datetime(),content: z.record(z.unknown()) }).strict();
-export const localizationPayload = z.object({ tenantId: z.string().regex(/^[a-f\d]{24}$/i),tenantSlug: z.string().min(1),domain: z.string().min(1),sourceSha256: z.string().regex(/^[a-f\d]{64}$/),tours: z.array(entry).max(10000),destinations: z.array(entry).max(10000) }).strict();
+const targetLocale = z.enum(['ar','de','ru','fr']);
+const entry = z.object({ id: z.string().regex(/^[a-f\d]{24}$/i),locale: targetLocale,slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(180),sourceUpdatedAt: z.string().datetime(),content: z.record(z.unknown()) }).strict();
+export const localizationPayload = z.object({ tenantId: z.string().regex(/^[a-f\d]{24}$/i),tenantSlug: z.string().min(1),domain: z.string().min(1),sourceSha256: z.string().regex(/^[a-f\d]{64}$/),locales: z.array(targetLocale).min(1).max(4).refine(values => new Set(values).size === values.length, 'Select each target language once').optional(),tours: z.array(entry).max(10000),destinations: z.array(entry).max(10000) }).strict();
 export type LocalizationPayload = z.infer<typeof localizationPayload>;
 type Kind = 'tour'|'destination';
 export interface LocalizationPlan { version: 1; tenantId: string; tenantSlug: string; domain: string; sourceSha256: string; payloadSha256: string; rows: Array<{ kind: Kind; sourceId: string; sourceUpdatedAt: string; filter: Record<string,any>; before: Record<string,any>|null; after: Record<string,any> }>; digest: string }
@@ -23,11 +24,14 @@ async function verifiedTenant(plan: Pick<LocalizationPlan,'tenantId'|'tenantSlug
 async function sourceFor(kind: Kind,id: string,tenant: any,session?: ClientSession): Promise<any> { const query = kind === 'tour' ? { _id: id,tenantIds: tenant._id,status: 'active',archivedAt: { $exists: false },trashedAt: { $exists: false } } : { _id: id,isActive: true }; const source = await (sourceModel(kind) as any).findOne(query).session(session || null).lean(); if (!source?.updatedAt) throw new TranslationError('An active source record is missing or unversioned',409); if (kind === 'destination' && !tenantPickupDestinationSlugs(tenant).includes(source.slug) && !await Attraction.exists({ tenantIds: tenant._id,status: 'active','destination.city': source.name }).session(session || null)) throw new TranslationError('Destination does not belong to this site',409); return source; }
 export async function planLocalization(sourceExport: { tenantId: string; tenantSlug: string; domain: string; tours: Array<{id:string;sourceUpdatedAt:string}>;destinations:Array<{id:string;sourceUpdatedAt:string}> },rawPayload: unknown,sourceSha256: string): Promise<LocalizationPlan> {
   const payload = localizationPayload.parse(rawPayload);
+  // Old approved exports retain their two-language contract. New batches declare
+  // exactly which languages may be written; undeclared rows never expand it.
+  const locales = payload.locales || ['de','ru'] as const;
   if (payload.sourceSha256 !== sourceSha256 || payload.tenantId !== sourceExport.tenantId || payload.tenantSlug !== sourceExport.tenantSlug || payload.domain !== sourceExport.domain) throw new TranslationError('Payload and reviewed source identity/digest differ',409);
   const tenant = await verifiedTenant(payload); const rows: LocalizationPlan['rows'] = []; const now = new Date();
   for (const [kind,key] of [['tour','tours'],['destination','destinations']] as const) {
     const expected = new Map(sourceExport[key].map(row => [row.id,row.sourceUpdatedAt])); const entries = payload[key];
-    if (entries.length !== expected.size*2 || new Set(entries.map(row => `${row.id}:${row.locale}`)).size !== entries.length || [...expected.keys()].some(id => !entries.some(row=>row.id===id&&row.locale==='de')||!entries.some(row=>row.id===id&&row.locale==='ru'))) throw new TranslationError('Both languages are required for every reviewed source, without extra records',409);
+    if (entries.length !== expected.size*locales.length || entries.some(row => !locales.some(locale => locale === row.locale)) || new Set(entries.map(row => `${row.id}:${row.locale}`)).size !== entries.length || [...expected.keys()].some(id => locales.some(locale => !entries.some(row => row.id === id && row.locale === locale)))) throw new TranslationError(payload.locales ? 'Every declared language is required for every reviewed source, without extra records' : 'Both languages are required for every reviewed source, without extra records',409);
     const aliases = new Map<string,string>();
     for (const item of entries) {
       if (expected.get(item.id) !== item.sourceUpdatedAt) throw new TranslationError('Source version changed in the payload',409);
@@ -37,7 +41,9 @@ export async function planLocalization(sourceExport: { tenantId: string; tenantS
       if (kind === 'tour') validateTranslationSource(source,content as any); else validateDestinationTranslation(source,content as any);
       const canonicalCollision = await (sourceModel(kind) as any).exists({ _id: { $ne: source._id },...(kind === 'tour' ? { tenantIds: tenant._id,$or: [{ slug: item.slug },{ pathSlug: item.slug }] } : { slug: item.slug }) });
       const field = kind === 'tour' ? 'attractionId' : 'destinationId'; const model = translationModel(kind);
-      const aliasCollision = await model.collection.findOne({ tenantId: tenant._id,[field]: { $ne: source._id },slug: item.slug });
+      // Tour URL uniqueness spans locales even for the same source. An update
+      // may retain its own alias, but another language cannot claim that URL.
+      const aliasCollision = await model.collection.findOne({ tenantId: tenant._id,slug: item.slug,...(kind === 'tour' ? { $or: [{ [field]: { $ne: source._id } }, { locale: { $ne: item.locale } }] } : { [field]: { $ne: source._id } }) });
       if (canonicalCollision || aliasCollision) throw new TranslationError('A translated URL collides with another record',409);
       const filter = { tenantId: tenant._id,[field]: source._id,locale: item.locale }; const before = await model.collection.findOne(filter);
       const after = { ...(before || {}),_id: before?._id || new Types.ObjectId(),...filter,slug: item.slug,content,status: 'published',sourceUpdatedAt: source.updatedAt,sourceSnapshot: sourceSnapshot(kind,source),createdAt: before?.createdAt || now,updatedAt: new Date(Math.max(+now,before?.updatedAt ? +new Date(before.updatedAt)+1 : +now)) };

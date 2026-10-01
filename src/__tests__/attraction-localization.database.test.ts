@@ -52,6 +52,56 @@ it('fences destination duplicate saves, stale edits, published edits and unsafe 
 
 const sourceExport = { tenantId: String(tenant),tenantSlug:'cruise-a',domain:'cruise-a.invalid',tours:[{id:String(tour),sourceUpdatedAt:sourceDate.toISOString()}],destinations:[{id:String(destinationId),sourceUpdatedAt:sourceDate.toISOString()}] };
 const migrationPayload = () => ({ ...sourceExport,sourceSha256:'a'.repeat(64),tours:['de','ru'].map(locale=>({id:String(tour),locale,...input(locale)})),destinations:['de','ru'].map(locale=>({id:String(destinationId),locale,...destinationInput,slug:locale==='de'?'hurghada-de':'hurgada'})) });
+const declaredLanguagePayload = (locales = ['ar','de','ru','fr']) => ({
+  ...migrationPayload(), locales,
+  tours: locales.map(locale => ({id:String(tour),locale,...input(locale),slug:`${locale}-sea-cruise`})),
+  destinations: locales.map(locale => ({id:String(destinationId),locale,...destinationInput,slug:`${locale}-hurghada`})),
+});
+
+it('publishes an explicit four-language batch atomically with authoritative source money and reversible readback',async()=>{
+ const before=localizationDigest(await Attraction.collection.findOne({_id:tour}));
+ const plan=await planLocalization(sourceExport,declaredLanguagePayload(),'a'.repeat(64));
+ expect(plan.rows).toHaveLength(8);expect(await AttractionTranslation.countDocuments({})).toBe(0);
+ expect(await executeLocalizationPlan(plan,plan.digest,'apply')).toMatchObject({changed:true,verified:true,rows:8});
+ for(const locale of ['ar','de','ru','fr']){
+  const detail=(await request(app).get(`/attractions/${locale}-sea-cruise`).query({tenantId:String(tenant),locale}).expect(200)).body.data;
+  expect(detail).toMatchObject({resolvedLocale:locale,translationStatus:'translated',priceFrom:49,currency:'USD'});
+  expect(detail.pricingOptions[0]).toMatchObject({id:'adult',price:49,childPrice:25});
+  expect(detail.addons[0]).toMatchObject({id:'transfer',price:10});
+ }
+ expect(localizationDigest(await Attraction.collection.findOne({_id:tour}))).toBe(before);
+ expect(await executeLocalizationPlan(plan,plan.digest,'apply')).toMatchObject({changed:false});
+ await executeLocalizationPlan(plan,plan.digest,'rollback');
+ expect(await AttractionTranslation.countDocuments({})).toBe(0);expect(await DestinationTranslation.countDocuments({})).toBe(0);
+});
+
+it('a declared Arabic-only batch preserves other existing language rows on apply and rollback',async()=>{
+ await publish('de');const before=localizationDigest(await AttractionTranslation.collection.findOne({tenantId:tenant,attractionId:tour,locale:'de'}));
+ const plan=await planLocalization(sourceExport,declaredLanguagePayload(['ar']),'a'.repeat(64));
+ expect(plan.rows).toHaveLength(2);await executeLocalizationPlan(plan,plan.digest,'apply');
+ expect(localizationDigest(await AttractionTranslation.collection.findOne({tenantId:tenant,attractionId:tour,locale:'de'}))).toBe(before);
+ await executeLocalizationPlan(plan,plan.digest,'rollback');
+ expect(localizationDigest(await AttractionTranslation.collection.findOne({tenantId:tenant,attractionId:tour,locale:'de'}))).toBe(before);
+});
+
+it('refuses duplicate, missing, undeclared or unsupported language batches before any writes',async()=>{
+ for(const locales of [[],['ar','ar'],['en'],['es']])await expect(planLocalization(sourceExport,declaredLanguagePayload(locales),'a'.repeat(64))).rejects.toThrow();
+ const missing=declaredLanguagePayload();missing.tours.pop();await expect(planLocalization(sourceExport,missing,'a'.repeat(64))).rejects.toThrow('Every declared');
+ const undeclared=declaredLanguagePayload(['ar']);undeclared.tours[0].locale='fr';await expect(planLocalization(sourceExport,undeclared,'a'.repeat(64))).rejects.toThrow('Every declared');
+ const oldScope=declaredLanguagePayload();delete (oldScope as {locales?:string[]}).locales;await expect(planLocalization(sourceExport,oldScope,'a'.repeat(64))).rejects.toThrow('Both languages');
+ expect(await AttractionTranslation.countDocuments({})).toBe(0);expect(await DestinationTranslation.countDocuments({})).toBe(0);
+});
+
+it('dry-run rejects another locale alias of the same tour but permits retaining its own alias',async()=>{
+ await publish('de');const before=localizationDigest(await AttractionTranslation.collection.findOne({tenantId:tenant,attractionId:tour,locale:'de'}));
+ const collision=declaredLanguagePayload(['ar']);collision.tours[0].slug='meerfahrt';
+ await expect(planLocalization(sourceExport,collision,'a'.repeat(64))).rejects.toThrow('collides');
+ expect(localizationDigest(await AttractionTranslation.collection.findOne({tenantId:tenant,attractionId:tour,locale:'de'}))).toBe(before);
+ const own=declaredLanguagePayload(['de']);own.tours[0].slug='meerfahrt';
+ await expect(planLocalization(sourceExport,own,'a'.repeat(64))).resolves.toMatchObject({rows:expect.any(Array)});
+ await AttractionTranslation.collection.insertOne({tenantId:other,attractionId:tour,locale:'ar',slug:'ar-sea-cruise',status:'draft'});
+ await expect(planLocalization(sourceExport,declaredLanguagePayload(['ar']),'a'.repeat(64))).resolves.toMatchObject({rows:expect.any(Array)});
+});
 it('dry-runs without writes, applies atomically, supports idempotent replay and removes only its rows on rollback',async()=>{ const plan=await planLocalization(sourceExport,migrationPayload(),'a'.repeat(64)); expect(await AttractionTranslation.countDocuments({})).toBe(0); expect(await DestinationTranslation.countDocuments({})).toBe(0); const persisted=mongoose.mongo.BSON.EJSON.parse(mongoose.mongo.BSON.EJSON.stringify(plan,{relaxed:false})); expect(await executeLocalizationPlan(persisted,plan.digest,'apply')).toMatchObject({changed:true,verified:true,rows:4}); expect(await AttractionTranslation.countDocuments({status:'published'})).toBe(2); expect(await executeLocalizationPlan(persisted,plan.digest,'apply')).toMatchObject({changed:false}); expect(await executeLocalizationPlan(persisted,plan.digest,'rollback')).toMatchObject({changed:true}); expect(await AttractionTranslation.countDocuments({})).toBe(0); expect(await DestinationTranslation.countDocuments({})).toBe(0); expect(await executeLocalizationPlan(persisted,plan.digest,'rollback')).toMatchObject({changed:false}); });
 it('backs up and restores exact pre-existing translation data including unknown future fields',async()=>{ const before={_id:new Types.ObjectId(),tenantId:tenant,attractionId:tour,locale:'de',slug:'old-translation',status:'draft',sourceUpdatedAt:sourceDate,content:input().content,createdAt:sourceDate,updatedAt:sourceDate,retainedField:{value:'preserve'}}; await AttractionTranslation.collection.insertOne(before); const plan=await planLocalization(sourceExport,migrationPayload(),'a'.repeat(64)); await executeLocalizationPlan(plan,plan.digest,'apply'); await executeLocalizationPlan(plan,plan.digest,'rollback'); expect(localizationDigest(await AttractionTranslation.collection.findOne({_id:before._id}))).toBe(localizationDigest(before)); });
 it('rejects wrong source fingerprints, incomplete language sets, modified plans and changed live sources',async()=>{ await expect(planLocalization(sourceExport,migrationPayload(),'b'.repeat(64))).rejects.toThrow('digest'); const missing=migrationPayload(); missing.tours.pop(); await expect(planLocalization(sourceExport,missing,'a'.repeat(64))).rejects.toThrow('Both languages'); const plan=await planLocalization(sourceExport,migrationPayload(),'a'.repeat(64)); await expect(executeLocalizationPlan({...plan,domain:'foreign.invalid'},plan.digest,'apply')).rejects.toThrow('digest'); await Attraction.updateOne({_id:tour},{$set:{title:'Changed source'}}); await expect(executeLocalizationPlan(plan,plan.digest,'apply')).rejects.toThrow('Source changed'); expect(await AttractionTranslation.countDocuments({})).toBe(0); });
