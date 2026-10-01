@@ -78,10 +78,10 @@ export async function executeTenantPresentation(plan:TenantPresentationPlan,mode
    // removed before commit; final source/settings/timestamps are unchanged. Abort
    // restores it automatically. Existing markers are never overwritten.
    const marker=new Types.ObjectId().toHexString();
-   const fence=await Tenant.collection.updateOne({_id:tenant._id,updatedAt:tenant.updatedAt,__presentationPublicationFence:{$exists:false}},{$set:{__presentationPublicationFence:marker}},{session});
+   const fence=await Tenant.updateOne({_id:tenant._id,updatedAt:tenant.updatedAt,__presentationPublicationFence:{$exists:false}},{$set:{__presentationPublicationFence:marker}},{session,strict:false,timestamps:false});
    if(fence.matchedCount!==1)throw new PresentationTranslationError('Source changed before publication',409);
    for(const row of plan.rows){const desiredRow=row[desired];if(desiredRow)await TenantPresentationTranslation.collection.replaceOne(row.filter,desiredRow as any,{session,upsert:true});else await TenantPresentationTranslation.collection.deleteOne({...row.filter,_id:row.after._id},{session});}
-   const restored=await Tenant.collection.updateOne({_id:tenant._id,__presentationPublicationFence:marker},{$unset:{__presentationPublicationFence:''}},{session});
+   const restored=await Tenant.updateOne({_id:tenant._id,__presentationPublicationFence:marker},{$unset:{__presentationPublicationFence:''}},{session,strict:false,timestamps:false});
    if(restored.matchedCount!==1)throw new PresentationTranslationError('Source fence was lost',409);
    changed=true;
   },{readConcern:{level:'snapshot'},writeConcern:{w:'majority'}});

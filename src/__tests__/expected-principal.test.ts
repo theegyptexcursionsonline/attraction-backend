@@ -11,6 +11,10 @@ jest.mock('../utils/jwt',()=>({verifyToken:jest.fn(),generateAccessToken:jest.fn
 jest.mock('../services/email.service',()=>({sendPasswordChangedEmail:jest.fn(),sendPasswordResetEmail:jest.fn(),sendWelcomeEmail:jest.fn()}));
 jest.mock('../services/notification.service',()=>({createAdminNotifications:jest.fn()}));
 const owner='123456789012345678901234',other='223456789012345678901234';
+it('accepts absent legacy header containers but rejects an unparsed raw assertion',()=>{
+ expect(expectedPrincipal({headers:undefined,rawHeaders:undefined} as never)).toEqual({valid:true});
+ expect(expectedPrincipal({headers:undefined,rawHeaders:['X-Expected-Principal',owner]} as never)).toEqual({valid:false});
+});
 const user={_id:owner,status:'active',tokenVersion:1,refreshToken:hashToken('old-refresh'),save:jest.fn()};
 const app=express();app.use((req,_res,next)=>{(req as unknown as {cookies:unknown}).cookies={accessToken:'access',refreshToken:'old-refresh'};next();});app.get('/required',authenticate,(_req,res)=>res.json({ok:true}));app.get('/optional',optionalAuth,(req,res)=>res.json({owner:(req as unknown as {user?:typeof user}).user?._id || null}));app.post('/refresh',refreshToken);
 beforeEach(()=>{jest.clearAllMocks();(verifyToken as jest.Mock).mockReturnValue({userId:owner,sessionVersion:1});(User.findById as jest.Mock).mockReturnValue(Object.assign(Promise.resolve(user),{select:()=>Promise.resolve(user)}));user.refreshToken=hashToken('old-refresh');});
