@@ -42,7 +42,19 @@ export const changePasswordSchema = z.object({
 });
 
 export const updateProfileSchema = z.preprocess((value, context) => {
-  if (value && typeof value === 'object' && ['__proto__', 'constructor', 'prototype'].some(key => Object.prototype.hasOwnProperty.call(value, key))) {
+  // Preserve benign unknown-field stripping for old clients, but never accept
+  // identity, membership, security or commerce fields through this endpoint.
+  const protectedFields = new Set([
+    '__proto__', 'constructor', 'prototype', 'userId', 'id', '_id', 'email',
+    'role', 'status', 'assignedTenants', 'tenantId', 'tenant', 'tenants', 'permissions',
+    'password', 'refreshToken', 'tokenVersion', 'twoFactorEnabled', 'twoFactorSecretEnc',
+    'twoFactorPendingSecretEnc', 'twoFactorSetupExpires', 'twoFactorLastUsedStep',
+    'twoFactorRecoveryCodeHashes', 'passwordResetToken', 'passwordResetExpires',
+    'wishlist', 'loyaltyPoints', 'totalBookings', 'totalSpent', 'lastLogin',
+    'createdAt', 'updatedAt', '__v',
+  ]);
+  if (value && typeof value === 'object' && Object.keys(value).some(key =>
+    protectedFields.has(key) || key.startsWith('$') || key.includes('.'))) {
     context.addIssue({ code: z.ZodIssueCode.custom, message: 'Invalid profile fields' });
   }
   return value;
@@ -55,7 +67,7 @@ export const updateProfileSchema = z.preprocess((value, context) => {
   avatar: z.string().url().optional(),
   language: z.string().optional(),
   currency: z.string().optional(),
-}).strict());
+}));
 
 // Attraction Validators
 const hhmmRegex = /^([01]\d|2[0-3]):[0-5]\d$/;

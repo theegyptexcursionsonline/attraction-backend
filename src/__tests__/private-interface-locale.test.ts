@@ -50,11 +50,19 @@ it.each(['es','it','AR',' ar ','ar-EG','',null,[],{},42,'<script>alert(1)</scrip
   expect(stored!.interfaceLocale).toBe('en');
   expect(stored!.firstName).toBe('QA');
 });
-it.each(['userId','id','_id','role','assignedTenants','tenantId','permissions','email','$set','__proto__','constructor','prototype'])('rejects principal/security field %s alongside a language update',async key => {
+it.each(['userId','id','_id','role','assignedTenants','tenantId','permissions','email','$set','__proto__','constructor','prototype','password','status','tokenVersion','twoFactorEnabled','twoFactorSecretEnc','refreshToken','passwordResetToken','totalSpent','loyaltyPoints','assignedTenants.0','$unset'])('rejects principal/security field %s alongside a language update',async key => {
   const body=JSON.parse(`{"interfaceLocale":"ar","${key}":"${other._id}"}`);
   await save(body).expect(400);
   expect((await User.findById(owner._id))!.interfaceLocale).toBe('en');
   expect((await User.findById(other._id))!.interfaceLocale).toBe('en');
+});
+it('strips benign extra fields from old clients while saving only authenticated profile fields',async()=> {
+  const response=await save({interfaceLocale:'ar',firstName:'QA updated',timezone:'UTC',clientVersion:2,preferences:{theme:'dark'}}).expect(200);
+  expect(response.body.data).toMatchObject({interfaceLocale:'ar',firstName:'QA updated',language:'de',currency:'EUR',role:'customer'});
+  const stored=await User.collection.findOne({_id:owner._id});
+  for(const key of ['timezone','clientVersion','preferences']) expect(stored).not.toHaveProperty(key);
+  expect((await User.findById(other._id))!.interfaceLocale).toBe('en');
+  expect(updateProfileSchema.parse({interfaceLocale:'fr',timezone:'UTC'})).toEqual({interfaceLocale:'fr'});
 });
 it('cannot target another account using a public tenant header or query',async()=> {
   await request(app).patch(`/auth/profile?userId=${other._id}&tenantId=${otherTenant}&lang=ru`).set('X-Tenant-ID',String(otherTenant)).set('Authorization',`Bearer ${token}`).send({interfaceLocale:'fr'}).expect(200);
