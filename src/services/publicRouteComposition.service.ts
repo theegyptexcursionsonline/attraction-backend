@@ -32,7 +32,7 @@ export function routeClosure(request:RouteRequest,tenant:Row,localizedTenant:Row
  const proof=localizedTenant.publishedPresentationLocales;
  const languages=new Set<string>(Array.isArray(proof)&&proof.every((locale:unknown)=>typeof locale==='string'&&LANGUAGES.some(value=>value===locale))&&new Set(proof).size===proof.length?proof:[]);
  const totals={tours:0,destinations:0};const featured:Row[]=[];const destinations:Row[]=[];
- const guideLanguages=new Set<string>();const durations=new Set<string>();const categories=new Set<string>();let hotelPickup=false,enquiries=0;
+ const guideLanguages=new Map<string,string>();const durations=new Set<string>();const categories=new Set<string>();let hotelPickup=false,enquiries=0;
  function push(kind:'tour'|'destination',raw:Row){
   if(!/^[a-f0-9]{24}$/.test(id(raw._id)))throw new RouteCompositionUnavailable();
   if(kind==='tour'&&(!(raw.tenantIds||[]).some((owner:unknown)=>id(owner)===tenantId)||raw.status!=='active'||raw.archivedAt||raw.trashedAt))throw new RouteCompositionUnavailable();
@@ -42,7 +42,7 @@ export function routeClosure(request:RouteRequest,tenant:Row,localizedTenant:Row
   digest.update(JSON.stringify([kind,id(row._id),sourceSnapshot(kind,row),row.updatedAt,kind==='tour'?toPublicAttractionDto(row):publicDestination(row),row.__translations.map((item:Row)=>[item.locale,item.slug,item.content])]));
   if(kind==='tour'){
    totals.tours++;const dto=localizedPresentation(toPublicAttractionDto(row),row,request.locale);if(featured.length<8)featured.push(dto);
-   for(const language of row.languages||[])if(typeof language==='string'&&language.trim())guideLanguages.add(language.trim());
+   for(const language of row.languages||[])if(typeof language==='string'&&language.trim()&&!guideLanguages.has(language.trim().toLowerCase()))guideLanguages.set(language.trim().toLowerCase(),language.trim());
    if(dto.duration)durations.add(dto.duration);if(row.category)categories.add(row.category);hotelPickup ||= row.hasHotelPickup===true;
    // These are prose facts, not a growing entity list. Refuse pathological
    // taxonomy cardinality rather than silently truncating its language proof.
@@ -51,7 +51,7 @@ export function routeClosure(request:RouteRequest,tenant:Row,localizedTenant:Row
   }else{totals.destinations++;if(destinations.length<6)destinations.push(publicDestination(identity));}
  }
  function finish(collection:Row[] = [],pagination:unknown=null,stats:Row|null=null){
-  const facts={...totals,guideLanguages:[...guideLanguages].sort(),durations:[...durations],categories:[...categories],hotelPickup,enquiries};
+  const facts={...totals,guideLanguages:[...guideLanguages.values()].sort((a,b)=>a.localeCompare(b)),durations:[...durations],categories:[...categories],hotelPickup,enquiries};
   const seed={tenant:localizedTenant,featured:featured.map(row=>({...row,bookingTenantSlug:request.tenantSlug})),destinations,facts,collection,pagination,stats};digest.update(JSON.stringify(stats));
   const receipt=publicRoutePublicationReceipt.parse({version:1,renderer:ROUTE_RENDERER,tenantId,tenantSlug:request.tenantSlug,domain:request.domain,route:request.route,locale:request.locale,sourceDigest:digest.digest('hex'),seedDigest:hash(seed),contentLocales:LANGUAGES.filter(locale=>languages.has(locale)),counts:totals});
   return {seed,receipt};

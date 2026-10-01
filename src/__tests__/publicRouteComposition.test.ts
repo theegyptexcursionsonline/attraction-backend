@@ -68,3 +68,5 @@ test('collection cursor reaches record 55 and rejects different tenant/locale/ro
 });
 
 test('pathological prose facts refuse instead of truncating completeness',()=>{const c=routeClosure(request,tenant,presentation);expect(()=>{for(let index=1;index<=101;index++)c.push('tour',{...tour(index),category:`Category ${index}`});}).toThrow();});
+
+test('derived guide-language facts preserve existing case-insensitive uniqueness',()=>{const c=routeClosure(request,tenant,presentation);c.push('tour',{...tour(1),languages:['English',' english ','German']});expect(c.finish().seed.facts.guideLanguages).toEqual(['English','German']);});
