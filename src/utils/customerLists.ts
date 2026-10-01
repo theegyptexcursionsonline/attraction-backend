@@ -18,6 +18,19 @@ export const wishlistProjection={_id:1,slug:1,pathSlug:1,title:1,images:1,priceF
 
 /** An explicit malformed site hint must not become an unscoped legacy read. */
 export const validateCustomerSiteHint = (req:AuthRequest,res:Response,next:NextFunction):void => {
+ // Query parsers differ between callers and middleware. Check the original
+ // address too, so bracketed, duplicated or emptied hints cannot disappear
+ // during parsing and become a legacy network-context read or mutation.
+ const raw = new URLSearchParams((req.originalUrl || req.url || '').split('?')[1] || '');
+ for (const key of raw.keys()) {
+  if (/^tenant(?:id)?(?:\[|\.|$)/i.test(key) && !['tenant', 'tenantId'].includes(key)) {
+   sendError(res,'Select a valid site',400);return;
+  }
+ }
+ for (const key of ['tenant', 'tenantId']) {
+  const entries=raw.getAll(key);
+  if(entries.length>1 || entries.some(value=>!value.trim())){sendError(res,'Select a valid site',400);return;}
+ }
  const values=[req.query.tenantId,req.query.tenant,req.headers['x-tenant-id']];
  if(values.some(value=>value!==undefined&&(typeof value!=='string'||!value.trim()))){sendError(res,'Select a valid site',400);return;}
  next();
