@@ -732,7 +732,7 @@ export const updateProfile = async (
       return;
     }
 
-    const allowedUpdates = ['firstName', 'lastName', 'phone', 'country', 'avatar', 'language', 'currency'];
+    const allowedUpdates = ['firstName', 'lastName', 'phone', 'country', 'avatar', 'language', 'currency', 'interfaceLocale'];
     const updates: Record<string, unknown> = {};
 
     for (const key of allowedUpdates) {

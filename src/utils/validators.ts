@@ -1,3 +1,4 @@
+import { INTERFACE_LOCALES } from '../types';
 import { z } from 'zod';
 import { imageAltTextsSchema, secureImageUrlSchema } from './imagePresentation';
 import { aiSettingsUpdateSchema } from './aiSettings';
@@ -40,7 +41,13 @@ export const changePasswordSchema = z.object({
   newPassword: z.string().min(8, 'New password must be at least 8 characters'),
 });
 
-export const updateProfileSchema = z.object({
+export const updateProfileSchema = z.preprocess((value, context) => {
+  if (value && typeof value === 'object' && ['__proto__', 'constructor', 'prototype'].some(key => Object.prototype.hasOwnProperty.call(value, key))) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: 'Invalid profile fields' });
+  }
+  return value;
+}, z.object({
+  interfaceLocale: z.enum(INTERFACE_LOCALES).optional(),
   firstName: z.string().min(1).optional(),
   lastName: z.string().min(1).optional(),
   phone: z.string().optional(),
@@ -48,7 +55,7 @@ export const updateProfileSchema = z.object({
   avatar: z.string().url().optional(),
   language: z.string().optional(),
   currency: z.string().optional(),
-});
+}).strict());
 
 // Attraction Validators
 const hhmmRegex = /^([01]\d|2[0-3]):[0-5]\d$/;

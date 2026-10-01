@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
-import { IUser } from '../types';
+import { IUser, INTERFACE_LOCALES } from '../types';
 import { revokeUserSessions } from '../utils/session';
 
 const userSchema = new Schema<IUser>(
@@ -50,6 +50,12 @@ const userSchema = new Schema<IUser>(
     },
     language: {
       type: String,
+      default: 'en',
+    },
+    interfaceLocale: {
+      type: String,
+      enum: INTERFACE_LOCALES,
+      required: true,
       default: 'en',
     },
     currency: {
@@ -137,6 +143,9 @@ const userSchema = new Schema<IUser>(
         delete obj.twoFactorLastUsedStep;
         delete obj.twoFactorRecoveryCodeHashes;
         delete obj.__v;
+        // Old accounts require no migration; expose a validated default on reads.
+        obj.interfaceLocale = INTERFACE_LOCALES.some(locale => locale === obj.interfaceLocale)
+          ? obj.interfaceLocale : 'en';
         return obj;
       },
     },

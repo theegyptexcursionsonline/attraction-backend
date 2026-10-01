@@ -3,6 +3,10 @@ import type { PageSection } from '../utils/siteContent';
 import { Request } from 'express';
 import { Document, Types } from 'mongoose';
 
+// Account interface language is separate from correspondence language.
+export const INTERFACE_LOCALES = ['en', 'ar', 'de', 'ru', 'fr'] as const;
+export type InterfaceLocale = typeof INTERFACE_LOCALES[number];
+
 // User Types
 export type AdminRole = 'super-admin' | 'brand-admin' | 'manager' | 'editor' | 'viewer';
 export type CustomerRole = 'customer' | 'guest';
@@ -21,6 +25,7 @@ export interface IUser extends Document {
   phone?: string;
   country?: string;
   language?: string;
+  interfaceLocale?: InterfaceLocale;
   currency?: string;
   assignedTenants: Types.ObjectId[];
   wishlist: Types.ObjectId[];
