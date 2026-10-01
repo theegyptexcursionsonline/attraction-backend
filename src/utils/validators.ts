@@ -779,6 +779,8 @@ export const regexSearchSchema = z
   .optional();
 
 export const attractionFiltersSchema = z.object({
+  /** Cursor-only public deal units, evaluated in MongoDB before count/seek. */
+  deals: z.literal('true').optional(),
   tourCategory: tourCategorySchema.optional(),
   durationBand: durationBandSchema.optional(),
   locale: z.enum(['en', 'ar', 'de', 'ru', 'fr']).optional(),

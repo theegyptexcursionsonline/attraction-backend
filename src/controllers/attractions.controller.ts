@@ -202,6 +202,39 @@ interface AttractionQuery {
   hasHotelPickup?: boolean;
 }
 
+/** Display-only deal projection. Eligibility is filtered before pagination/count;
+ * checkout still rereads and prices its own options/offers independently. */
+const displayRound2 = (value: unknown): Record<string, unknown> => ({ $divide: [{ $floor: { $add: [{ $multiply: [value, 100] }, 0.5] } }, 100] });
+const publicDealStages = (now: Date): any[] => [
+  { $match: { enquiryOnly: { $ne: true }, priceFrom: { $gt: 0 }, currency: /^[A-Z]{3}$/ } },
+  // A one-unit catalogue comparison must be selectable without a group,
+  // resident, promo-code or time-slot-only condition. Never discount a fictitious base.
+  { $match: { $expr: { $anyElementTrue: [{ $map: { input: { $ifNull: ['$pricingOptions', []] }, as: 'option', in: { $and: [
+    { $isNumber: '$$option.price' }, { $gt: ['$$option.price', 0] }, { $eq: [{ $ifNull: ['$$option.minParticipants', 1] }, 1] },
+    { $eq: [{ $cond: [{ $isNumber: '$$option.price' }, displayRound2({ $multiply: ['$$option.price', { $subtract: [1, { $divide: [{ $min: [99.99, { $max: [0, { $ifNull: ['$$option.discountPercentage', 0] }] }] }, 100] }] }] }), null] }, '$priceFrom'] },
+  ] } } }] } } },
+  { $lookup: { from: SpecialOffer.collection.name, let: { tour: '$_id', currency: '$currency' }, pipeline: [
+    { $match: { isActive: true, validFrom: { $lte: now }, validUntil: { $gte: now }, $expr: { $and: [
+      { $eq: ['$attractionId', '$$tour'] }, { $lt: ['$usageCount', '$usageLimit'] },
+      { $or: [{ $eq: ['$discountType', 'percentage'] }, { $and: [{ $eq: ['$discountType', 'fixed'] }, { $eq: ['$currency', '$$currency'] }] }] },
+    ] } } }, { $sort: { discountValue: -1, _id: 1 } }, { $limit: 1 },
+    { $project: { discountType: 1, discountValue: 1 } },
+  ], as: '__dealOffers' } },
+  { $set: { __dealOffer: { $arrayElemAt: ['$__dealOffers', 0] }, __wasOptions: { $filter: {
+    input: { $map: { input: { $ifNull: ['$pricingOptions', []] }, as: 'option', in: {
+      originalPrice: '$$option.originalPrice', minParticipants: { $ifNull: ['$$option.minParticipants', 1] },
+      price: { $cond: [{ $isNumber: '$$option.price' }, displayRound2({ $multiply: ['$$option.price', { $subtract: [1, { $divide: [{ $min: [99.99, { $max: [0, { $ifNull: ['$$option.discountPercentage', 0] }] }] }, 100] }] }] }), null] },
+    } } }, as: 'option', cond: { $and: [{ $eq: ['$$option.minParticipants', 1] }, { $isNumber: '$$option.originalPrice' }, { $gt: ['$$option.price', 0] }, { $eq: ['$$option.price', '$priceFrom'] }, { $gt: ['$$option.originalPrice', '$$option.price'] }] },
+  } } } },
+  { $set: { __offerPrice: { $cond: [{ $isNumber: '$__dealOffer.discountValue' }, displayRound2({ $max: [0, { $subtract: ['$priceFrom', { $cond: [{ $eq: ['$__dealOffer.discountType', 'percentage'] }, displayRound2({ $multiply: ['$priceFrom', { $divide: ['$__dealOffer.discountValue', 100] }] }), '$__dealOffer.discountValue'] }] }] }), '$priceFrom'] }, __wasOption: { $arrayElemAt: ['$__wasOptions', 0] } } },
+  { $set: { publicDeal: { $cond: [{ $and: [{ $gt: ['$__dealOffer.discountValue', 0] }, { $lt: ['$__offerPrice', '$priceFrom'] }] },
+    { source: 'special-offer', offerId: '$__dealOffer._id', currency: '$currency', originalPrice: '$priceFrom', price: '$__offerPrice', discountPercent: { $multiply: [{ $divide: [{ $subtract: ['$priceFrom', '$__offerPrice'] }, '$priceFrom'] }, 100] } },
+    { $cond: [{ $gt: ['$__wasOption.originalPrice', '$__wasOption.price'] }, { source: 'was-price', currency: '$currency', originalPrice: '$__wasOption.originalPrice', price: '$__wasOption.price', discountPercent: { $multiply: [{ $divide: [{ $subtract: ['$__wasOption.originalPrice', '$__wasOption.price'] }, '$__wasOption.originalPrice'] }, 100] } }, null] },
+  ] } } },
+  { $match: { publicDeal: { $ne: null } } },
+  { $unset: ['__dealOffers', '__dealOffer', '__wasOptions', '__wasOption', '__offerPrice'] },
+];
+
 export const getAttractions = async (
   req: AuthRequest,
   res: Response,
@@ -229,6 +262,9 @@ export const getAttractions = async (
     const sourceFallback = sourceFallbackAllowed(req.query?.localeFallback, req.tenant);
     if (locale && (!req.tenant || req.query.scope === 'admin' || ownership !== 'all' || lifecycle)) { throw new TranslationError('Select one public site for translated content'); }
     const cursorMode = req.query.pagination === 'cursor';
+    const dealsOnly = req.query.deals === 'true';
+    if (dealsOnly && (!cursorMode || !req.tenant)) throw new TranslationError('Select one public site and cursor pagination for deals');
+    const dealStages = dealsOnly ? publicDealStages(new Date()) : [];
     if (cursorMode && (req.query.scope === 'admin' || ownership !== 'all' || lifecycle)) {
       sendError(res, 'Cursor pagination is for the public catalogue', 400); return;
     }
@@ -369,15 +405,15 @@ export const getAttractions = async (
     const isAdminRequest = !locale && !cursorMode && !!req.user && req.user.role !== 'customer';
     if (locale && req.tenant) {
       if (!['-createdAt', 'recommended', 'price-low', 'price-high', 'rating', 'popularity', 'sortOrder'].includes(String(sort))) throw new TranslationError('Select a supported catalogue order');
-      const pipeline = [{ $match: query }, ...localizationStages(req.tenant._id, locale, typeof search === 'string' ? search : undefined, !sourceFallback)];
-      const projection = Object.fromEntries([...PUBLIC_ATTRACTION_FIELDS, 'updatedAt', '__translations'].map(field => [field, 1]));
+      const pipeline = [{ $match: query }, ...dealStages, ...localizationStages(req.tenant._id, locale, typeof search === 'string' ? search : undefined, !sourceFallback)];
+      const projection = Object.fromEntries([...PUBLIC_ATTRACTION_FIELDS, ...(dealsOnly ? ['publicDeal'] : []), 'updatedAt', '__translations'].map(field => [field, 1]));
       if (cursorMode) {
         const fields: CursorField[] = Object.entries({ ...sortOption, _id: -1 as const }).map(([field, direction]) => ({ field, direction, kind: field === '_id' ? 'id' : field === 'createdAt' ? 'date' : field === 'featured' ? 'boolean' : 'number' }));
-        const plan = publicCursorPlan({ query, locale, search, sourceFallback }, fields, req.query.cursor as string | undefined);
+        const plan = publicCursorPlan({ query, locale, search, sourceFallback, ...(dealsOnly ? { dealsOnly: true } : {}) }, fields, req.query.cursor as string | undefined);
         const [rows, counts] = await Promise.all([Attraction.aggregate([...pipeline, { $set: plan.normalized }, ...(plan.seek ? [{ $match: plan.seek }] : []), { $sort: plan.sort }, { $limit: limitNum + 1 }, { $project: { ...projection, ...Object.fromEntries(fields.map((_field, index) => [`_cursor${index}`, 1])) } }]), Attraction.aggregate([...pipeline, { $count: 'total' }])]);
         const result = plan.page(rows, limitNum, counts[0]?.total || 0);
         res.setHeader('Cache-Control', 'private, no-store');
-        res.json({ success: true, data: result.rows.map(row => localizedPresentation(toPublicAttractionDto(row), row, locale)), pagination: result.pagination }); return;
+        res.json({ success: true, data: result.rows.map(row => localizedPresentation({ ...toPublicAttractionDto(row), ...(dealsOnly ? { publicDeal: row.publicDeal } : {}) }, row, locale)), pagination: result.pagination }); return;
       }
       const [rows, counts] = await Promise.all([Attraction.aggregate([...pipeline, { $sort: { ...sortOption, _id: -1 as const } }, { $skip: (pageNum - 1) * limitNum }, { $limit: limitNum }, { $project: projection }]), Attraction.aggregate([...pipeline, { $count: 'total' }])]);
       res.setHeader('Cache-Control', 'private, no-store'); sendPaginated(res, rows.map(row => localizedPresentation(toPublicAttractionDto(row), row, locale)), pageNum, limitNum, counts[0]?.total || 0); return;
@@ -389,17 +425,17 @@ export const getAttractions = async (
       const fields: CursorField[] = Object.entries({ ...sortOption, _id: -1 as const }).map(([field, direction]) => ({
         field, direction, kind: field === '_id' ? 'id' : field === 'createdAt' ? 'date' : field === 'featured' ? 'boolean' : 'number',
       }));
-      const plan = publicCursorPlan(query, fields, req.query.cursor as string | undefined);
+      const plan = publicCursorPlan(dealsOnly ? { query, dealsOnly: true } : query, fields, req.query.cursor as string | undefined);
       const [rows, total] = await Promise.all([
         Attraction.aggregate([
-          { $match: query }, { $set: plan.normalized }, ...(plan.seek ? [{ $match: plan.seek }] : []),
+          { $match: query }, ...dealStages, { $set: plan.normalized }, ...(plan.seek ? [{ $match: plan.seek }] : []),
           { $sort: plan.sort }, { $limit: limitNum + 1 },
-          { $project: Object.fromEntries([...PUBLIC_ATTRACTION_FIELDS, ...fields.map((_field, index) => `_cursor${index}`)].map(field => [field, 1])) },
-        ]), Attraction.countDocuments(query),
+          { $project: Object.fromEntries([...PUBLIC_ATTRACTION_FIELDS, ...(dealsOnly ? ['publicDeal'] : []), ...fields.map((_field, index) => `_cursor${index}`)].map(field => [field, 1])) },
+        ]), dealsOnly ? Attraction.aggregate([{ $match: query }, ...dealStages, { $count: 'total' }]).then(rows => rows[0]?.total || 0) : Attraction.countDocuments(query),
       ]);
       const result = plan.page(rows, limitNum, total);
       res.setHeader('Cache-Control', 'private, no-store');
-      res.json({ success: true, data: result.rows.map(toPublicAttractionDto), pagination: result.pagination });
+      res.json({ success: true, data: result.rows.map(row => ({ ...toPublicAttractionDto(row), ...(dealsOnly ? { publicDeal: row.publicDeal } : {}) })), pagination: result.pagination });
       return;
     }
     const attractionsQuery = Attraction.find(query).select(

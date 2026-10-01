@@ -74,6 +74,8 @@ router.get(
       z.object({
         locale: z.enum(['en', 'ar', 'de', 'ru', 'fr']).optional(),
         localeFallback: z.literal('source').optional(),
+        pagination: z.literal('cursor').optional(),
+        cursor: z.string().regex(/^[A-Za-z0-9_-]{1,2048}$/).optional(),
         continent: z.string().optional(),
         search: regexSearchSchema,
         includeCount: z.enum(['true', 'false']).optional(),

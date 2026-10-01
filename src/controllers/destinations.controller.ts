@@ -1,3 +1,4 @@
+import { publicCursorPlan } from '../utils/publicCursor';
 import { localizedSlugStages } from '../services/localizationSourceSnapshot.service';
 import { requestedLocale, sourceFallbackAllowed, localizationStages, TranslationError, type StorefrontLocale } from '../services/attractionLocalization.service';
 import { destinationLocalizationStages, localizedDestination, destinationAliasFilters } from '../services/destinationLocalization.service';
@@ -52,6 +53,10 @@ export const getDestinations = async (
 ): Promise<void> => {
   try {
     const locale = requestedLocale(req.query?.locale);
+    const cursorMode = req.query.pagination === 'cursor';
+    if (cursorMode && req.query.sort && req.query.sort !== 'sortOrder') throw new TranslationError('Select a supported destination order');
+    if (req.query.cursor && !cursorMode) throw new TranslationError('Select cursor pagination');
+    if (cursorMode && (!req.tenant || req.query.forEditor === 'true' || req.query.scope === 'admin')) throw new TranslationError('Select one public site for cursor destinations');
     const sourceFallback = sourceFallbackAllowed(req.query?.localeFallback, req.tenant);
     const forEditor = req.query.forEditor === 'true';
     if (locale && (!req.tenant || forEditor || req.query.scope === 'admin')) throw new TranslationError('Select one public site for translated destinations');
@@ -102,6 +107,42 @@ export const getDestinations = async (
         { name: { $regex: safeSearch, $options: 'i' } },
         { country: { $regex: safeSearch, $options: 'i' } },
       ];
+    }
+
+    // Cursor reads keep eligibility and counts in MongoDB rather than loading all
+    // destination names into process memory. Each destination joins only this
+    // site's active public tours, including explicitly configured pickup areas.
+    if (cursorMode && req.tenant) {
+      const pickupSlugs = tenantPickupDestinationSlugs(req.tenant);
+      const tourScope = { tenantIds: req.tenant._id, status: 'active', archivedAt: { $exists: false }, trashedAt: { $exists: false } };
+      const pipeline = [
+        { $match: query },
+        { $lookup: { from: Attraction.collection.name, let: { city: '$name', pickup: { $in: ['$slug', pickupSlugs] } }, pipeline: [
+          { $match: { ...tourScope, $expr: { $or: [{ $eq: ['$destination.city', '$$city'] }, { $and: ['$$pickup', { $eq: ['$hasHotelPickup', true] }] }] } } },
+          ...(locale ? localizationStages(req.tenant._id, locale, undefined, !sourceFallback) : []),
+          { $group: { _id: null, ownCount: { $sum: { $cond: [{ $eq: ['$destination.city', '$$city'] }, 1, 0] } }, pickupCount: { $sum: { $cond: [{ $eq: ['$hasHotelPickup', true] }, 1, 0] } } } },
+        ], as: '__tourCounts' } },
+        { $set: { __counts: { $ifNull: [{ $arrayElemAt: ['$__tourCounts', 0] }, { ownCount: 0, pickupCount: 0 }] } } },
+        { $set: { attractionCount: { $cond: [{ $gt: ['$__counts.ownCount', 0] }, '$__counts.ownCount', '$__counts.pickupCount'] }, servedByPickup: { $and: [{ $eq: ['$__counts.ownCount', 0] }, { $gt: ['$__counts.pickupCount', 0] }] } } },
+        { $match: { attractionCount: { $gt: 0 } } },
+        ...(locale ? destinationLocalizationStages(req.tenant._id, locale, typeof search === 'string' ? search.trim() : undefined, !sourceFallback) : []),
+        { $unset: ['__tourCounts', '__counts'] },
+      ];
+      const plan = publicCursorPlan({ tenantId: String(req.tenant._id), query, locale, sourceFallback, search, pickupSlugs }, [
+        { field: 'sortOrder', direction: 1, kind: 'number' }, { field: '_id', direction: 1, kind: 'id' },
+      ], req.query.cursor as string | undefined);
+      const [rows, counts] = await Promise.all([
+        Destination.aggregate([...pipeline, { $set: plan.normalized }, ...(plan.seek ? [{ $match: plan.seek }] : []), { $sort: plan.sort }, { $limit: limitNum + 1 }]),
+        Destination.aggregate([...pipeline, { $count: 'total' }]),
+      ]);
+      const result = plan.page(rows, limitNum, counts[0]?.total || 0);
+      res.setHeader('Cache-Control', 'private, no-store');
+      res.json({ success: true, data: result.rows.map(row => {
+        const destination = locale ? localizedDestination(row, locale) : row;
+        if (includeCount === 'false') { delete destination.attractionCount; delete destination.servedByPickup; }
+        return destination;
+      }), pagination: result.pagination });
+      return;
     }
 
     // If scoped to tenant, only return destinations that have matching attractions
