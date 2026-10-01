@@ -32,7 +32,7 @@ export function routeClosure(request:RouteRequest,tenant:Row,localizedTenant:Row
  const proof=localizedTenant.publishedPresentationLocales;
  const languages=new Set<string>(Array.isArray(proof)&&proof.every((locale:unknown)=>typeof locale==='string'&&LANGUAGES.some(value=>value===locale))&&new Set(proof).size===proof.length?proof:[]);
  const totals={tours:0,destinations:0};const featured:Row[]=[];const destinations:Row[]=[];
- const guideLanguages=new Map<string,string>();const durations=new Set<string>();const categories=new Set<string>();let hotelPickup=false,enquiries=0;
+ const guideLanguages=new Map<string,string>();const durations=new Set<string>();const categories=new Set<string>();const categoryCounts=new Map<string,number>();const durationCounts=new Map<string,number>();const departureAreas=new Map<string,{name:string,count:number,bookable:number,enquiries:number}>();let hotelPickup=false,enquiries=0;
  function push(kind:'tour'|'destination',raw:Row){
   if(!/^[a-f0-9]{24}$/.test(id(raw._id)))throw new RouteCompositionUnavailable();
   if(kind==='tour'&&(!(raw.tenantIds||[]).some((owner:unknown)=>id(owner)===tenantId)||raw.status!=='active'||raw.archivedAt||raw.trashedAt))throw new RouteCompositionUnavailable();
@@ -43,15 +43,20 @@ export function routeClosure(request:RouteRequest,tenant:Row,localizedTenant:Row
   if(kind==='tour'){
    totals.tours++;const dto=localizedPresentation(toPublicAttractionDto(row),row,request.locale);if(featured.length<8)featured.push(dto);
    for(const language of row.languages||[])if(typeof language==='string'&&language.trim()&&!guideLanguages.has(language.trim().toLowerCase()))guideLanguages.set(language.trim().toLowerCase(),language.trim());
-   if(dto.duration)durations.add(dto.duration);if(row.category)categories.add(row.category);hotelPickup ||= row.hasHotelPickup===true;
+   if(dto.duration){durations.add(dto.duration);durationCounts.set(dto.duration,(durationCounts.get(dto.duration)||0)+1);}if(row.category)categories.add(row.category);
+   const category=typeof row.category==='string'?row.category.trim():'';if(category)categoryCounts.set(category,(categoryCounts.get(category)||0)+1);
+   const city=typeof row.destination==='string'?row.destination:row.destination?.city;const area=typeof city==='string'?city.trim():'';
+   const enquiry=dto.enquiryOnly===true||!(Array.isArray(dto.pricingOptions)&&dto.pricingOptions.some((option:Row)=>Number.isFinite(option.price)&&option.price>0));
+   if(area){const key=area.toLowerCase();const fact=departureAreas.get(key)||{name:area,count:0,bookable:0,enquiries:0};fact.count++;if(enquiry)fact.enquiries++;else fact.bookable++;departureAreas.set(key,fact);}
+   hotelPickup ||= row.hasHotelPickup===true;
    // These are prose facts, not a growing entity list. Refuse pathological
    // taxonomy cardinality rather than silently truncating its language proof.
-   if(guideLanguages.size>64||durations.size>100||categories.size>100)throw new RouteCompositionUnavailable();
-   if(dto.enquiryOnly===true||!(Array.isArray(dto.pricingOptions)&&dto.pricingOptions.some((option:Row)=>Number.isFinite(option.price)&&option.price>0)))enquiries++;
+   if(guideLanguages.size>64||durations.size>100||categories.size>100||departureAreas.size>100)throw new RouteCompositionUnavailable();
+   if(enquiry)enquiries++;
   }else{totals.destinations++;if(destinations.length<6)destinations.push(publicDestination(identity));}
  }
  function finish(collection:Row[] = [],pagination:unknown=null,stats:Row|null=null){
-  const facts={...totals,guideLanguages:[...guideLanguages.values()].sort((a,b)=>a.localeCompare(b)),durations:[...durations],categories:[...categories],hotelPickup,enquiries};
+  const facts={...totals,guideLanguages:[...guideLanguages.values()].sort((a,b)=>a.localeCompare(b)),durations:[...durations],categories:[...categories],categoryCounts:[...categoryCounts].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(([name,count])=>({name,count})),durationCounts:[...durationCounts].map(([label,count])=>({label,count})),departureAreas:[...departureAreas.values()].sort((a,b)=>a.name.localeCompare(b.name)),hotelPickup,enquiries};
   const seed={tenant:localizedTenant,featured:featured.map(row=>({...row,bookingTenantSlug:request.tenantSlug})),destinations,facts,collection,pagination,stats};digest.update(JSON.stringify(stats));
   const receipt=publicRoutePublicationReceipt.parse({version:1,renderer:ROUTE_RENDERER,tenantId,tenantSlug:request.tenantSlug,domain:request.domain,route:request.route,locale:request.locale,sourceDigest:digest.digest('hex'),seedDigest:hash(seed),contentLocales:LANGUAGES.filter(locale=>languages.has(locale)),counts:totals});
   return {seed,receipt};
