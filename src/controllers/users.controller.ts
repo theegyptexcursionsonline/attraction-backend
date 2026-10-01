@@ -40,9 +40,14 @@ export const getProfile = async (
 
     const user = await User.findById(req.user._id)
       .select(PUBLIC_USER_PROJECTION)
-      .populate('wishlist', 'slug title images priceFrom currency destination')
+       .populate({
+        path:'wishlist',
+        match: { status:'active',archivedAt:{$exists:false},trashedAt:{$exists:false},...(req.tenant?{tenantIds:req.tenant._id}:{}) },
+        select:'slug title images priceFrom currency destination',
+      })
       .lean();
 
+    res.setHeader('Cache-Control','private, no-store');
     sendSuccess(
       res,
       user ? redactUserSecrets(user as unknown as Record<string, unknown>) : user

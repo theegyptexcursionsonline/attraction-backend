@@ -1,6 +1,6 @@
 import { optionalTenant } from '../middleware/tenant.middleware';
 import { removeWishlistPage } from '../controllers/users.controller';
-import { customerListQuery, wishlistPageRemoval } from '../utils/customerLists';
+import { customerListQuery, wishlistPageRemoval, validateCustomerSiteHint } from '../utils/customerLists';
 import { Router } from 'express';
 import {
   getProfile,
@@ -46,7 +46,7 @@ const router = Router();
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get('/profile', authenticate, getProfile);
+router.get('/profile', authenticate, validateCustomerSiteHint, optionalTenant, getProfile);
 
 /**
  * @swagger
