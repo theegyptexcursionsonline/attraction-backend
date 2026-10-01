@@ -801,7 +801,7 @@ describe('API security and pricing guards', () => {
 
   it('requires a guest token for reference lookup and returns only confirmation-safe fields', async () => {
     const bookingId = new Types.ObjectId().toHexString();
-    const reference = 'ATT-RDMI-SAFE';
+    const reference = 'ATT-QA-SAFE';
     const bookingDocument: Record<string, any> = {
       _id: bookingId,
       reference,
@@ -818,12 +818,12 @@ describe('API security and pricing guards', () => {
         quantities: { adults: 1, children: 0, infants: 1 },
         unitPrice: 50,
         totalPrice: 50,
-        hotelPickup: { hotelName: 'RDMI Hotel', roomNumber: '214' },
+        hotelPickup: { hotelName: 'QA Hotel', roomNumber: '214' },
       }],
       guestDetails: {
-        firstName: 'RDMI',
-        lastName: 'Team',
-        email: 'info@rdmiwebservices.com',
+        firstName: 'QA',
+        lastName: 'Guest',
+        email: 'qa@example.invalid',
         phone: '+201000000000',
       },
       subtotal: 50,
@@ -841,7 +841,7 @@ describe('API security and pricing guards', () => {
           images: ['https://images.example/ride.jpg'],
           destination: { city: 'Hurghada' },
         };
-        this.tenantId = { _id: TENANT_ID, name: 'RDMI Adventures', logo: '/logo.png' };
+        this.tenantId = { _id: TENANT_ID, name: 'QA Adventures', logo: '/logo.png', slug: 'qa-adventures', contactInfo: { email: 'private@example.invalid' } };
         return this;
       }),
       toObject: function (this: Record<string, any>) { return { ...this }; },
@@ -850,11 +850,13 @@ describe('API security and pricing guards', () => {
 
     const withoutToken = await request(app).get(`/api/bookings/reference/${reference}`);
     expect(withoutToken.status).toBe(401);
+    expect(withoutToken.body).not.toHaveProperty('data.tenant');
 
     const invalidToken = await request(app)
       .get(`/api/bookings/reference/${reference}`)
       .set('x-booking-access-token', 'invalid-token');
     expect(invalidToken.status).toBe(403);
+    expect(invalidToken.body).not.toHaveProperty('data.tenant');
 
     const token = generateBookingAccessToken(bookingId, reference);
     const response = await request(app)
@@ -868,8 +870,10 @@ describe('API security and pricing guards', () => {
       status: 'confirmed',
       total: 52.5,
       attraction: { title: 'Sunrise Ride' },
-      tenant: { name: 'RDMI Adventures' },
+      tenant: { name: 'QA Adventures', slug: 'qa-adventures' },
     });
+    expect(response.body.data.tenant).toEqual({ name: 'QA Adventures', slug: 'qa-adventures', logo: '/logo.png' });
+    expect(bookingDocument.populate).toHaveBeenCalledWith(expect.arrayContaining([{ path: 'tenantId', select: 'name logo slug' }]));
     expect(response.body.data).not.toHaveProperty('_id');
     expect(response.body.data).not.toHaveProperty('guestDetails');
     expect(response.body.data).not.toHaveProperty('tenantId');

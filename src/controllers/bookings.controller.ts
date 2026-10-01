@@ -789,7 +789,7 @@ const confirmationSafeBooking = (booking: IBooking): Record<string, unknown> => 
           destination: attraction.destination,
         }
       : undefined,
-    tenant: tenant ? { name: tenant.name, logo: tenant.logo } : undefined,
+    tenant: tenant ? { name: tenant.name, logo: tenant.logo, slug: tenant.slug } : undefined,
     ticketAvailable: raw.status === 'confirmed',
     createdAt: raw.createdAt,
     updatedAt: raw.updatedAt,
@@ -825,7 +825,7 @@ export const getBookingByReference = async (
 
     await booking.populate([
       { path: 'attractionId', select: 'title slug images destination' },
-      { path: 'tenantId', select: 'name logo' },
+      { path: 'tenantId', select: 'name logo slug' },
     ]);
     sendSuccess(res, confirmationSafeBooking(booking));
   } catch (error) {

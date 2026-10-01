@@ -452,7 +452,7 @@ describe('GET /api/bookings/reference/:reference — add-on echo', () => {
     (Booking.findOne as jest.Mock).mockResolvedValue({
       ...raw,
       populate: jest.fn().mockResolvedValue(undefined),
-      toObject: () => raw,
+      toObject: () => ({ ...raw, tenantId: { _id: raw.tenantId, name: 'Operator site', slug: 'operator-site', logo: '/operator-logo.png', contactInfo: { email: 'private@example.invalid' } } }),
     });
 
     const response = await request(app)
@@ -460,6 +460,9 @@ describe('GET /api/bookings/reference/:reference — add-on echo', () => {
       .set('x-booking-access-token', generateBookingAccessToken(String(bookingId), 'ATT-QA-LEGACY'));
 
     expect(response.status).toBe(200);
+    expect(response.body.data.tenant).toEqual({ name: 'Operator site', slug: 'operator-site', logo: '/operator-logo.png' });
+    expect(response.body.data).not.toHaveProperty('tenantId');
+    expect(response.body.data).not.toHaveProperty('guestDetails');
     expect(response.body.data.items[0].addons).toEqual([
       { name: 'Lunch', price: 15, quantity: 1, totalPrice: 15, lineTotal: 15 },
       { name: 'Snorkel gear', price: 10, quantity: 3, pricingType: 'per_person', totalPrice: 30, lineTotal: 30 },
