@@ -1,3 +1,4 @@
+import {expectedPrincipal,principalMatches} from './expected-principal';
 import { Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwt';
 import { User } from '../models/User';
@@ -9,6 +10,8 @@ export const authenticate = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
+  const assertion=expectedPrincipal(req);
+  if(!assertion.valid){sendError(res,'Invalid session account assertion',400);return;}
   try {
     // Get token from Authorization header or cookies
     let token: string | undefined;
@@ -45,6 +48,7 @@ export const authenticate = async (
       return;
     }
 
+    if(!principalMatches(assertion.expected,String(user._id))){sendError(res,'Sign-in session changed',409);return;}
     req.user = user;
     next();
   } catch {
@@ -57,6 +61,8 @@ export const optionalAuth = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
+  const assertion=expectedPrincipal(req);
+  if(!assertion.valid){sendError(res,'Invalid session account assertion',400);return;}
   try {
     let token: string | undefined;
 
@@ -78,9 +84,11 @@ export const optionalAuth = async (
       }
     }
 
+    if(!principalMatches(assertion.expected,req.user?String(req.user._id):undefined)){sendError(res,'Sign-in session changed',409);return;}
     next();
   } catch {
-    // Token is invalid, but we continue without user
+    // An asserted account must never downgrade into an anonymous request.
+    if(assertion.expected!==undefined&&assertion.expected!=='anonymous'){sendError(res,'Sign-in session changed',409);return;}
     next();
   }
 };

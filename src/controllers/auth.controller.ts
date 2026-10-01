@@ -1,3 +1,4 @@
+import {expectedPrincipal,principalMatches} from '../middleware/expected-principal';
 import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 import { User } from '../models/User';
@@ -477,6 +478,8 @@ export const refreshToken = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
+  const assertion=expectedPrincipal(req);
+  if(!assertion.valid){sendError(res,'Invalid session account assertion',400);return;}
   try {
     const token = req.cookies?.refreshToken;
 
@@ -513,6 +516,8 @@ export const refreshToken = async (
       sendError(res, 'Invalid refresh token', 401);
       return;
     }
+
+    if(!principalMatches(assertion.expected,String(user._id))){sendError(res,'Sign-in session changed',409);return;}
 
     // Generate new tokens
     const accessToken = generateAccessToken(user);

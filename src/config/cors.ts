@@ -94,6 +94,7 @@ export const corsOptions: CorsOptions = {
   allowedHeaders: [
     'Content-Type',
     'Authorization',
+    'X-Expected-Principal',
     'X-Tenant-ID',
     'X-Tenant-Slug',
     'X-Booking-Access-Token',
