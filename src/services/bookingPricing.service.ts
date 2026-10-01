@@ -2,6 +2,7 @@ import { IAttraction, ITenant, IBooking } from '../types';
 import { PromoCode, IPromoCode } from '../models/PromoCode';
 import { SpecialOffer } from '../models/SpecialOffer';
 import { calculateTourLinePrice } from '../utils/attractionPricing';
+import { applicableOfferClause, evaluatePromo, offerDiscountFor, OFFER_PRIORITY_SORT } from '../utils/discountCurrency';
 import { normalizeBookingAddons, addonsTotal } from '../utils/bookingAddons';
 import { CreateBookingInput } from '../utils/validators';
 const round2 = (n: number): number => Math.round(n * 100) / 100;
@@ -131,11 +132,9 @@ export async function priceBookingSelection(attraction: IAttraction, bookingTena
     if (promoCode) {
       const promoBase = {
         code: String(promoCode).trim().toUpperCase(),
-        currency: attraction.currency.toUpperCase(),
         isActive: true,
         validFrom: { $lte: now },
         validUntil: { $gte: now },
-        minOrderAmount: { $lte: subtotal },
         $expr: { $lt: ['$usageCount', '$usageLimit'] },
       };
       promoCandidate = await PromoCode.findOne({ ...promoBase, tenantId });
@@ -147,29 +146,30 @@ export async function priceBookingSelection(attraction: IAttraction, bookingTena
       }
       if (!promoCandidate) throw new Error('INVALID_PROMO');
 
-      promoDiscount = promoCandidate.discountType === 'percentage'
-        ? round2(subtotal * (promoCandidate.discountValue / 100))
-        : promoCandidate.discountValue;
-      if (promoCandidate.maxDiscount !== undefined) {
-        promoDiscount = Math.min(promoDiscount, promoCandidate.maxDiscount);
+      // The code's amounts are in its own currency: it applies only to a tour
+      // priced in that currency (minimum order and cap included). Never converted.
+      const evaluation = evaluatePromo(promoCandidate, { tourCurrency: attraction.currency, subtotal });
+      if (!evaluation.ok) {
+        throw new Error(evaluation.reason === 'currency'
+          ? `INVALID_PROMO_CURRENCY:${evaluation.promoCurrency ?? ''}`
+          : 'INVALID_PROMO');
       }
+      promoDiscount = evaluation.discount;
     }
 
-    // Auto-apply best special offer (if better than promo code)
+    // Auto-apply the tour's offer (if better than the promo code). A fixed amount
+    // applies only while the tour is priced in the offer's currency; the public
+    // offer reads pick the same offer, so the storefront shows what is charged.
     const activeOffer = await SpecialOffer.findOne({
       attractionId,
       isActive: true,
       validFrom: { $lte: now },
       validUntil: { $gte: now },
       $expr: { $lt: ['$usageCount', '$usageLimit'] },
-    }).sort({ discountValue: -1 });
+      ...applicableOfferClause(attraction.currency),
+    }).sort(OFFER_PRIORITY_SORT);
 
-    let offerDiscount = 0;
-    if (activeOffer) {
-      offerDiscount = activeOffer.discountType === 'percentage'
-        ? round2(subtotal * (activeOffer.discountValue / 100))
-        : activeOffer.discountValue;
-    }
+    const offerDiscount = activeOffer ? offerDiscountFor(activeOffer, subtotal) : 0;
 
     const useSpecialOffer = !!activeOffer && offerDiscount > promoDiscount;
     const discount = round2(Math.min(Math.max(useSpecialOffer ? offerDiscount : promoDiscount, 0), subtotal));

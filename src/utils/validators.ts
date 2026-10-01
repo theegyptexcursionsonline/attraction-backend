@@ -482,11 +482,18 @@ export const updateAttractionRequestSchema = z.union([
 ]);
 
 const objectIdSchema = z.string().trim().regex(/^[a-f\d]{24}$/i, 'Must be a valid MongoDB ObjectId');
+/** A three-letter currency code, upper-cased. Discount amounts are never converted (PLATFORM #1046). */
+export const currencyCodeSchema = z.string()
+  .trim()
+  .toUpperCase()
+  .regex(/^[A-Z]{3}$/, 'Use a three-letter currency code such as USD');
 const specialOfferFields = z.object({
   title: z.string().trim().min(1).max(160),
   description: z.string().trim().max(2000).optional().default(''),
   discountType: z.enum(['percentage', 'fixed']),
   discountValue: z.number().finite().positive().max(10_000_000),
+  // Required with a fixed amount: it must be the tour's own currency.
+  currency: currencyCodeSchema.optional(),
   validFrom: z.coerce.date(),
   validUntil: z.coerce.date(),
   usageLimit: z.number().int().positive().max(1_000_000).optional().default(100),
@@ -505,20 +512,99 @@ const validateSpecialOfferDates = (
   }
 };
 
+const requireFixedOfferCurrency = (
+  value: { discountType?: 'percentage' | 'fixed'; currency?: string },
+  ctx: z.RefinementCtx
+) => {
+  if (value.discountType === 'fixed' && !value.currency) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['currency'], message: 'Choose the currency of the fixed amount' });
+  }
+};
+
 export const createSpecialOfferSchema = specialOfferFields
   .extend({ attractionId: objectIdSchema })
-  .superRefine(validateSpecialOfferDates);
+  .superRefine((value, ctx) => {
+    validateSpecialOfferDates(value, ctx);
+    requireFixedOfferCurrency(value, ctx);
+  });
 
 export const createSpecialOffersBulkSchema = specialOfferFields
   .extend({ attractionIds: z.array(objectIdSchema).min(1).max(100) })
   .superRefine((value, ctx) => {
     validateSpecialOfferDates(value, ctx);
+    requireFixedOfferCurrency(value, ctx);
     if (new Set(value.attractionIds).size !== value.attractionIds.length) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['attractionIds'], message: 'Tour selections must be unique' });
     }
   });
 
+// Partial edits are judged on the merged record by the controller (currency included).
 export const updateSpecialOfferSchema = specialOfferFields.partial().superRefine(validateSpecialOfferDates);
+
+// Promo codes. Every amount on a code (fixed value, minimum order, maximum
+// discount) is written in the code's currency, so the currency is required.
+const promoCodeValue = z.string()
+  .trim()
+  .toUpperCase()
+  .min(1, 'Promo code is required')
+  .max(40, 'Keep the code to 40 characters or fewer')
+  .regex(/^[A-Z0-9][A-Z0-9_-]*$/, 'Use letters, numbers, dashes or underscores in the code');
+const moneyAmount = z.number().finite().min(0).max(10_000_000);
+const promoCodeFields = {
+  code: promoCodeValue,
+  description: z.string().trim().min(1, 'Add a short description').max(500),
+  discountType: z.enum(['percentage', 'fixed']),
+  discountValue: z.number().finite().positive('Discount value must be greater than 0').max(10_000_000),
+  currency: currencyCodeSchema,
+  minOrderAmount: moneyAmount,
+  maxDiscount: z.number().finite().positive('Maximum discount must be greater than 0').max(10_000_000).nullable(),
+  usageLimit: z.number().int().positive().max(1_000_000),
+  validFrom: z.coerce.date(),
+  validUntil: z.coerce.date(),
+  isActive: z.boolean(),
+  tenantId: objectIdSchema,
+};
+
+const validatePromoTerms = (
+  value: { discountType?: 'percentage' | 'fixed'; discountValue?: number; maxDiscount?: number | null; validFrom?: Date; validUntil?: Date },
+  ctx: z.RefinementCtx
+) => {
+  if (value.validFrom && value.validUntil && value.validUntil <= value.validFrom) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['validUntil'], message: 'Valid until must be after valid from' });
+  }
+  if (value.discountType === 'percentage' && value.discountValue !== undefined && value.discountValue > 100) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['discountValue'], message: 'Percentage discount cannot exceed 100' });
+  }
+  if (value.discountType === 'fixed' && typeof value.maxDiscount === 'number') {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['maxDiscount'], message: 'A maximum discount applies only to percentage codes' });
+  }
+};
+
+// Server-owned fields (usageCount, timestamps) are not accepted and are stripped.
+export const createPromoCodeSchema = z.object({
+  ...promoCodeFields,
+  minOrderAmount: moneyAmount.optional().default(0),
+  maxDiscount: promoCodeFields.maxDiscount.optional(),
+  usageLimit: promoCodeFields.usageLimit.optional().default(100),
+  isActive: promoCodeFields.isActive.optional().default(true),
+  tenantId: promoCodeFields.tenantId.optional(),
+}).superRefine(validatePromoTerms);
+
+// No defaults on edits: an absent field keeps its stored value.
+export const updatePromoCodeSchema = z.object({
+  code: promoCodeFields.code.optional(),
+  description: promoCodeFields.description.optional(),
+  discountType: promoCodeFields.discountType.optional(),
+  discountValue: promoCodeFields.discountValue.optional(),
+  currency: promoCodeFields.currency.optional(),
+  minOrderAmount: promoCodeFields.minOrderAmount.optional(),
+  maxDiscount: promoCodeFields.maxDiscount.optional(),
+  usageLimit: promoCodeFields.usageLimit.optional(),
+  validFrom: promoCodeFields.validFrom.optional(),
+  validUntil: promoCodeFields.validUntil.optional(),
+  isActive: promoCodeFields.isActive.optional(),
+  tenantId: promoCodeFields.tenantId.optional(),
+}).superRefine(validatePromoTerms);
 
 // Booking Validators
 const isoDateSchema = z.string()

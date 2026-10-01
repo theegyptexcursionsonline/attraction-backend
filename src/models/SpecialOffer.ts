@@ -6,6 +6,8 @@ export interface ISpecialOffer extends Document {
   description: string;
   discountType: 'percentage' | 'fixed';
   discountValue: number;
+  /** Set only on fixed offers: the tour's currency the amount is written in. */
+  currency?: string;
   validFrom: Date;
   validUntil: Date;
   usageLimit: number;
@@ -40,6 +42,22 @@ const specialOfferSchema = new Schema<ISpecialOffer>(
       type: Number,
       required: true,
       min: 0,
+    },
+    // A fixed amount is money in its tour's currency and applies only while the
+    // tour is priced in it; percentage offers carry no currency (PLATFORM #1046).
+    // Offers saved before this field existed have none, so their fixed amounts
+    // never apply until an admin confirms the currency.
+    currency: {
+      type: String,
+      uppercase: true,
+      trim: true,
+      match: /^[A-Z]{3}$/,
+      // Document saves only: update validators run with a query (or no) `this`,
+      // and the offer controller checks the merged record itself.
+      required: [
+        function (this: { discountType?: string } | null | undefined) { return this?.discountType === 'fixed'; },
+        'A fixed-amount offer needs the currency of its tour',
+      ],
     },
     validFrom: {
       type: Date,

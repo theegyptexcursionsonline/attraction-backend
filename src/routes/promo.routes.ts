@@ -3,6 +3,7 @@ import {
   validatePromoCode,
   getPromoCodes,
   getPromoCodeStats,
+  getPromoCurrencyOptions,
   getPromoCodeById,
   createPromoCode,
   updatePromoCode,
@@ -11,8 +12,8 @@ import {
 import { authenticate, requireRole } from '../middleware/auth.middleware';
 import { optionalTenant, requireTenant } from '../middleware/tenant.middleware';
 import { publicWriteLimiter } from '../middleware/rate-limit.middleware';
-import { validateQuery } from '../middleware/validate.middleware';
-import { paginationSchema, regexSearchSchema } from '../utils/validators';
+import { validate, validateQuery } from '../middleware/validate.middleware';
+import { createPromoCodeSchema, paginationSchema, regexSearchSchema, updatePromoCodeSchema } from '../utils/validators';
 import { z } from 'zod';
 
 const router = Router();
@@ -27,9 +28,10 @@ router.post('/validate', publicWriteLimiter, optionalTenant, requireTenant, vali
 // Admin — CRUD
 router.get('/', authenticate, validateQuery(promoCodeListQuerySchema), requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, getPromoCodes);
 router.get('/stats', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, getPromoCodeStats);
+router.get('/currency-options', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, getPromoCurrencyOptions);
 router.get('/:id', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, getPromoCodeById);
-router.post('/', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, createPromoCode);
-router.patch('/:id', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, updatePromoCode);
+router.post('/', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, validate(createPromoCodeSchema), createPromoCode);
+router.patch('/:id', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, validate(updatePromoCodeSchema), updatePromoCode);
 router.delete('/:id', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, deletePromoCode);
 
 export default router;

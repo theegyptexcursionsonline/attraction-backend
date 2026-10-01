@@ -42,11 +42,15 @@ const promoCodeSchema = new Schema<IPromoCode>(
       required: true,
       min: 0,
     },
+    // The currency the fixed amount, minimum order and maximum discount are
+    // written in. No default: a silent default once priced every admin-made code
+    // in EGP whatever the site sold in (PLATFORM #1046).
     currency: {
       type: String,
-      default: 'EGP',
+      required: true,
       uppercase: true,
       trim: true,
+      match: /^[A-Z]{3}$/,
     },
     minOrderAmount: {
       type: Number,

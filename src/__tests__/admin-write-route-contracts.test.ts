@@ -12,7 +12,8 @@ describe('admin write route contracts', () => {
 
   it.each([
     ['attractions.routes.ts', "requireRole('super-admin', 'brand-admin', 'manager'), blockDates"],
-    ['promo.routes.ts', "requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, createPromoCode"],
+    ['promo.routes.ts', "requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, validate(createPromoCodeSchema), createPromoCode"],
+    ['promo.routes.ts', "requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, validate(updatePromoCodeSchema), updatePromoCode"],
     ['reviews.routes.ts', "requireRole('super-admin', 'brand-admin', 'manager'), updateReviewStatus"],
     ['rsvps.routes.ts', "requireRole('super-admin', 'brand-admin', 'manager'), updateRsvpStatus"],
     ['preview.routes.ts', "requireRole('super-admin', 'brand-admin'), getPreviewCode"],
@@ -23,6 +24,7 @@ describe('admin write route contracts', () => {
 
   it.each([
     ['promo.routes.ts', "requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, getPromoCodes"],
+    ['promo.routes.ts', "requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, getPromoCurrencyOptions"],
     ['specialOffers.routes.ts', "requireRole('super-admin', 'brand-admin', 'manager'), getOfferStats"],
     ['reviews.routes.ts', "requireRole('super-admin', 'brand-admin', 'manager'), getAdminReviews"],
     ['rsvps.routes.ts', "requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, getAllRsvps"],

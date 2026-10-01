@@ -1117,13 +1117,45 @@ describe('API security and pricing guards', () => {
     expect(response.status).toBe(201);
     expect(response.body.data.discount).toBe(10);
     expect(response.body.data.total).toBe(95);
+    // Found within the booking's site; the code's currency is then checked
+    // against the tour's (PLATFORM #1046) and re-asserted when it is claimed.
     expect((PromoCode.findOne as jest.Mock).mock.calls[0][0]).toMatchObject({
       code: 'RDMI10',
-      currency: 'USD',
       tenantId: TENANT_ID,
     });
     expect(PromoCode.findOneAndUpdate).toHaveBeenCalledTimes(1);
+    expect((PromoCode.findOneAndUpdate as jest.Mock).mock.calls[0][0]).toMatchObject({
+      _id: 'promo-1',
+      currency: 'USD',
+      discountType: 'percentage',
+      discountValue: 10,
+    });
     expect(SpecialOffer.findOneAndUpdate).not.toHaveBeenCalled();
+
+    // The same code written in another currency is refused before anything is claimed.
+    (PromoCode.findOne as jest.Mock).mockResolvedValueOnce({ ...promo, currency: 'EGP' });
+    const refused = await request(app)
+      .post('/api/bookings')
+      .set('Idempotency-Key', 'booking-test-key-0005-egp')
+      .send({
+      attractionId: ATTR_ID,
+      promoCode: 'rdmi10',
+      items: [{
+        optionId: 'ride',
+        date: '2030-03-10',
+        quantities: { adults: 1, children: 0, infants: 0 },
+      }],
+      guestDetails: {
+        firstName: 'RDMI',
+        lastName: 'Team',
+        email: 'info@rdmiwebservices.com',
+        phone: '+201000000000',
+        country: 'EG',
+      },
+    });
+    expect(refused.status).toBe(400);
+    expect(refused.body.error).toBe('This promo code applies only to bookings priced in EGP');
+    expect(PromoCode.findOneAndUpdate).toHaveBeenCalledTimes(1);
   });
 
   it('requires authentication for notification failure lists and reconciliation', async () => {

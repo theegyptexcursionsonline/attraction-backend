@@ -9,6 +9,13 @@ jest.mock('../models/PromoCode', () => ({
     countDocuments: jest.fn(),
   },
 }));
+// A site that sells in one currency, so a request without a tour is judged in it.
+jest.mock('../utils/discountCurrency', () => ({
+  ...jest.requireActual('../utils/discountCurrency'),
+  siteSaleCurrencies: jest.fn().mockResolvedValue(['USD']),
+  saleCurrenciesBySite: jest.fn().mockResolvedValue(new Map()),
+  platformSaleCurrencies: jest.fn().mockResolvedValue(['USD']),
+}));
 
 const response = () => {
   const res: any = {};

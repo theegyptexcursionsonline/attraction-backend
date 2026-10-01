@@ -43,6 +43,7 @@ import {
   standaloneBookingClause,
 } from '../services/bookingRecordScope.service';
 import { priceBookingSelection } from '../services/bookingPricing.service';
+import { offerClaimFilter, promoClaimFilter, promoCurrencyMessage } from '../utils/discountCurrency';
 import {
   AddonSelectionError,
   addonLineTotal,
@@ -424,29 +425,18 @@ export const createBooking = async (
     const booking = await runBookingTransaction<IBooking>(async (session) => {
       await reserveInventory(inventoryEntries, session);
 
+      // Claim only the exact terms this booking was priced with (amount, type
+      // and, for money amounts, the tour's currency); an edit in between fails closed.
       if (useSpecialOffer && activeOffer) {
         const consumed = await SpecialOffer.findOneAndUpdate(
-          {
-            _id: activeOffer._id,
-            isActive: true,
-            validFrom: { $lte: now },
-            validUntil: { $gte: now },
-            $expr: { $lt: ['$usageCount', '$usageLimit'] },
-          },
+          offerClaimFilter(activeOffer, attraction.currency, now),
           { $inc: { usageCount: 1 } },
           { ...sessionOption(session), new: true }
         );
         if (!consumed) throw new Error('DISCOUNT_UNAVAILABLE');
       } else if (promoCandidate) {
         const consumed = await PromoCode.findOneAndUpdate(
-          {
-            _id: promoCandidate._id,
-            currency: attraction.currency.toUpperCase(),
-            isActive: true,
-            validFrom: { $lte: now },
-            validUntil: { $gte: now },
-            $expr: { $lt: ['$usageCount', '$usageLimit'] },
-          },
+          promoClaimFilter(promoCandidate, attraction.currency, subtotal, now),
           { $inc: { usageCount: 1 } },
           { ...sessionOption(session), new: true }
         );
@@ -729,6 +719,10 @@ export const createBooking = async (
     }
     if (error instanceof Error && error.message === 'INVALID_TIME_SLOT') {
       sendError(res, 'Select an available time slot for this tour', 400);
+      return;
+    }
+    if (error instanceof Error && error.message.startsWith('INVALID_PROMO_CURRENCY:')) {
+      sendError(res, promoCurrencyMessage(error.message.slice('INVALID_PROMO_CURRENCY:'.length) || null), 400);
       return;
     }
     if (error instanceof Error && error.message === 'INVALID_PROMO') {

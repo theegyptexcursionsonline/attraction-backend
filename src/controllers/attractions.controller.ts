@@ -22,6 +22,8 @@ import {
   attractionOwnedByCallerTenants,
 } from '../utils/tenantScope';
 import { minimumTourPrice } from '../utils/attractionPricing';
+import { normalizeCurrencyCode } from '../utils/discountCurrency';
+import { SpecialOffer } from '../models/SpecialOffer';
 import { BundleOrder } from '../models/BundleOrder';
 import { runBundleTransaction } from '../services/bundleInventory.service';
 import { createAttractionSchema } from '../utils/validators';
@@ -967,6 +969,69 @@ export const updateAttraction = async (
       })) {
         sendError(res, DEPARTURE_SCHEDULE_CONFLICT_MESSAGE, 400);
         return;
+      }
+    }
+
+    // A tour's currency denominates every price on it (options, tiers, time
+    // slots, add-ons). A change must restate those prices in the same save, and
+    // waits while upcoming bookings were sold in the old currency (PLATFORM #1046).
+    if (req.body.currency !== undefined) {
+      const nextCurrency = normalizeCurrencyCode(req.body.currency);
+      if (!nextCurrency) {
+        sendError(res, 'Use a three-letter currency code such as USD', 400);
+        return;
+      }
+      req.body.currency = nextCurrency;
+      const stored = await Attraction.findById(id).select('currency priceFrom pricingOptions addons entryWindows').lean();
+      const storedCurrency = normalizeCurrencyCode(stored?.currency);
+      if (stored && storedCurrency !== nextCurrency) {
+        // Every stored price must be restated with the new currency. The tour
+        // editor shows that currency next to each price it sends, so a change
+        // there is a deliberate re-pricing; a save without them is not.
+        const priced = (value: unknown) => Number(value) > 0;
+        const sendsOptions = Array.isArray(req.body.pricingOptions) && req.body.pricingOptions.length > 0;
+        const restatesPrices =
+          (!(stored.pricingOptions || []).length || sendsOptions)
+          && (!priced(stored.priceFrom) || sendsOptions || req.body.priceFrom !== undefined)
+          && (!(stored.addons || []).some((addon) => priced(addon.price)) || req.body.addons !== undefined)
+          && (!(stored.entryWindows || []).some((window) => priced(window.price)) || req.body.entryWindows !== undefined);
+        if (!restatesPrices) {
+          sendError(res, `Changing the currency re-prices this tour. Save its prices in ${nextCurrency} in the same change.`, 400);
+          return;
+        }
+        // A live fixed-amount offer is money in the old currency and would stop
+        // applying without anyone being told; it has to be dealt with first.
+        const now = new Date();
+        const liveFixedOffers = await SpecialOffer.countDocuments({
+          attractionId: id,
+          discountType: 'fixed',
+          isActive: true,
+          validUntil: { $gte: now },
+          $expr: { $lt: ['$usageCount', '$usageLimit'] },
+        });
+        if (liveFixedOffers > 0) {
+          sendError(
+            res,
+            `This tour has ${liveFixedOffers} live fixed-amount offer${liveFixedOffers === 1 ? '' : 's'} in ${storedCurrency ?? stored.currency}. `
+              + `End ${liveFixedOffers === 1 ? 'it' : 'them'} or switch ${liveFixedOffers === 1 ? 'it' : 'them'} to a percentage before changing the tour's currency.`,
+            400
+          );
+          return;
+        }
+        const upcoming = await Booking.countDocuments({
+          attractionId: id,
+          status: { $in: ['pending', 'confirmed'] },
+          'items.date': { $gte: new Date().toISOString().slice(0, 10) },
+        });
+        if (upcoming > 0) {
+          sendError(
+            res,
+            `This tour has ${upcoming} upcoming booking${upcoming === 1 ? '' : 's'} sold in ${storedCurrency ?? stored.currency}. `
+              + `Change its currency once ${upcoming === 1 ? 'it is' : 'they are'} completed or cancelled, or duplicate the tour and price the copy in ${nextCurrency}.`,
+            400
+          );
+          return;
+        }
       }
     }
 

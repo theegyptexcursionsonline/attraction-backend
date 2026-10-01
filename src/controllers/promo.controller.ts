@@ -1,30 +1,100 @@
 import { Response, NextFunction } from 'express';
 import { PromoCode } from '../models/PromoCode';
+import { Attraction } from '../models/Attraction';
+import { Tenant } from '../models/Tenant';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { searchRegexValue } from '../utils/helpers';
 import { isSuperAdmin, callerTenantIds } from '../utils/tenantScope';
+import {
+  evaluatePromo,
+  normalizeCurrencyCode,
+  platformSaleCurrencies,
+  promoCurrencyMessage,
+  saleCurrenciesBySite,
+  siteSaleCurrencies,
+} from '../utils/discountCurrency';
 
 const adminTenantScope = (req: AuthRequest): string[] | undefined => {
   if (req.tenant) return [req.tenant._id.toString()];
   return req.user && !isSuperAdmin(req.user) ? callerTenantIds(req.user) : undefined;
 };
 
+/**
+ * The site a new code belongs to. A non-super admin's code is always owned by
+ * one of their sites — never global, and never a site they don't manage; the
+ * selected site wins, otherwise their first site. A super-admin's code belongs
+ * to the selected site, else the requested one, else every site (global).
+ */
+type PromoSiteResolution = { tenantId: string | null } | { error: string; status: number };
+const resolvePromoSite = (req: AuthRequest, requestedTenantId?: unknown): PromoSiteResolution => {
+  if (req.user && !isSuperAdmin(req.user)) {
+    const mine = callerTenantIds(req.user);
+    if (!mine.length) return { error: 'You are not assigned to any tenant', status: 403 };
+    const requested = req.tenant?._id?.toString() || (requestedTenantId ? String(requestedTenantId) : '');
+    if (requested && !mine.includes(requested)) return { error: 'You can only assign your own tenants', status: 403 };
+    return { tenantId: requested || mine[0] };
+  }
+  if (req.tenant) return { tenantId: req.tenant._id.toString() };
+  return { tenantId: requestedTenantId ? String(requestedTenantId) : null };
+};
+
+const saleCurrenciesFor = (tenantId: string | null): Promise<string[]> =>
+  tenantId ? siteSaleCurrencies(tenantId) : platformSaleCurrencies();
+
+const currencyMismatchMessage = (allowed: string[], global: boolean): string => {
+  if (!allowed.length) return 'This site has no currency to sell in yet. Set its currency before creating a code.';
+  const list = allowed.join(', ');
+  return global
+    ? `Choose a currency the sites sell in (${list}).`
+    : allowed.length === 1
+      ? `This site sells in ${list}. Enter the code's amounts in ${list}.`
+      : `This site sells in ${list}. Choose one of them for the code's amounts.`;
+};
+
 // POST /promo-codes/validate (public)
+// A preview for the cart and checkout. The booking service applies the same
+// rule (`evaluatePromo`) when the booking is made.
 export const validatePromoCode = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { code, subtotal } = req.body;
+    const { code, subtotal, attractionId } = req.body;
     if (
       typeof code !== 'string' || !code.trim() || code.trim().length > 80 ||
       typeof subtotal !== 'number' || !Number.isFinite(subtotal) || subtotal < 0 ||
+      (attractionId !== undefined && (typeof attractionId !== 'string' || !/^[a-f0-9]{24}$/i.test(attractionId))) ||
       !req.tenant
     ) {
       sendError(res, 'Invalid promo validation request', 400);
       return;
+    }
+
+    // The tour being booked sets the currency. Callers that predate per-tour
+    // checks are judged in the site's currency only when the site sells in just
+    // one; otherwise the answer would be a guess, so they must name the tour.
+    let tourCurrency: string | null;
+    if (attractionId !== undefined) {
+      const tour = await Attraction.findOne({
+        _id: attractionId,
+        tenantIds: req.tenant._id,
+        status: 'active',
+        enquiryOnly: { $ne: true },
+      }).select('currency').lean();
+      if (!tour) {
+        sendError(res, 'This tour is not available on this site', 404);
+        return;
+      }
+      tourCurrency = normalizeCurrencyCode(tour.currency);
+    } else {
+      const currencies = await siteSaleCurrencies(req.tenant._id);
+      if (currencies.length !== 1) {
+        sendError(res, 'Choose the tour this promo code is for', 400);
+        return;
+      }
+      tourCurrency = currencies[0];
     }
 
     const promo = await PromoCode.findOne({
@@ -49,19 +119,16 @@ export const validatePromoCode = async (
       return;
     }
 
-    if (subtotal < promo.minOrderAmount) {
-      sendError(res, `Minimum order amount is ${promo.minOrderAmount}`, 400);
+    const evaluation = evaluatePromo(promo, { tourCurrency, subtotal });
+    if (!evaluation.ok) {
+      sendError(
+        res,
+        evaluation.reason === 'currency'
+          ? promoCurrencyMessage(evaluation.promoCurrency)
+          : `Minimum order amount is ${evaluation.currency} ${evaluation.minimum}`,
+        400
+      );
       return;
-    }
-
-    let discount = 0;
-    if (promo.discountType === 'percentage') {
-      discount = Math.round(subtotal * (promo.discountValue / 100) * 100) / 100;
-      if (promo.maxDiscount) {
-        discount = Math.min(discount, promo.maxDiscount);
-      }
-    } else {
-      discount = promo.discountValue;
     }
 
     sendSuccess(res, {
@@ -69,8 +136,10 @@ export const validatePromoCode = async (
       code: promo.code,
       discountType: promo.discountType,
       discountValue: promo.discountValue,
-      discount,
-      maxDiscount: promo.maxDiscount,
+      currency: evaluation.currency,
+      discount: evaluation.discount,
+      maxDiscount: evaluation.maxDiscount,
+      minOrderAmount: promo.minOrderAmount || 0,
       description: promo.description,
     }, 'Promo code is valid');
   } catch (error) {
@@ -115,7 +184,48 @@ export const getPromoCodes = async (
       PromoCode.countDocuments(query),
     ]);
 
-    sendPaginated(res, promoCodes, pageNum, limitNum, total);
+    // Each row says which currencies its site sells in, so the list can flag a
+    // code written in a currency it can never be used in.
+    const bySite = await saleCurrenciesBySite(promoCodes.map((promo) => promo.tenantId).filter(Boolean));
+    const global = promoCodes.some((promo) => !promo.tenantId) ? await platformSaleCurrencies() : [];
+    const rows = promoCodes.map((promo) => ({
+      ...promo,
+      siteCurrencies: promo.tenantId ? bySite.get(String(promo.tenantId)) || [] : global,
+    }));
+
+    sendPaginated(res, rows, pageNum, limitNum, total);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /promo-codes/currency-options (admin)
+// Which site a new code will belong to and the currencies it may be written in.
+export const getPromoCurrencyOptions = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const site = resolvePromoSite(req);
+    if ('error' in site) {
+      sendError(res, site.error, site.status);
+      return;
+    }
+    const tenant = site.tenantId
+      ? await Tenant.findById(site.tenantId).select('name slug defaultCurrency').lean()
+      : null;
+    if (site.tenantId && !tenant) {
+      sendError(res, 'Site not found', 404);
+      return;
+    }
+    const currencies = await saleCurrenciesFor(site.tenantId);
+    const preferred = tenant ? normalizeCurrencyCode(tenant.defaultCurrency) : 'USD';
+    sendSuccess(res, {
+      site: tenant ? { id: String(tenant._id), name: tenant.name, slug: tenant.slug } : null,
+      currencies,
+      defaultCurrency: preferred && currencies.includes(preferred) ? preferred : currencies[0] ?? null,
+    });
   } catch (error) {
     next(error);
   }
@@ -176,67 +286,111 @@ export const getPromoCodeById = async (
   }
 };
 
-// POST /promo-codes (admin)
+const isDuplicateCode = (error: unknown): boolean =>
+  Boolean(error && typeof error === 'object' && (error as { code?: unknown }).code === 11000);
+
+// POST /promo-codes (admin) — body validated by createPromoCodeSchema
 export const createPromoCode = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    if (typeof req.body.code !== 'string' || !req.body.code.trim()) {
-      sendError(res, 'Promo code is required', 400);
+    const body = { ...req.body };
+    const site = resolvePromoSite(req, body.tenantId);
+    if ('error' in site) {
+      sendError(res, site.error, site.status);
       return;
     }
-    const body = { ...req.body, code: req.body.code.trim().toUpperCase() };
-    // A non-super admin's code is always owned by one of their tenants — never left
-    // global, and never assignable to a tenant they don't manage.
-    if (req.user && !isSuperAdmin(req.user)) {
-      const mine = callerTenantIds(req.user);
-      if (!mine.length) {
-        sendError(res, 'You are not assigned to any tenant', 403);
-        return;
-      }
-      const requested = req.tenant?._id?.toString() || (body.tenantId ? String(body.tenantId) : '');
-      if (requested && !mine.includes(requested)) {
-        sendError(res, 'You can only assign your own tenants', 403);
-        return;
-      }
-      body.tenantId = requested || mine[0];
-    } else if (req.tenant) {
-      body.tenantId = req.tenant._id;
+    if (site.tenantId && !(await Tenant.exists({ _id: site.tenantId }))) {
+      sendError(res, 'Site not found', 404);
+      return;
     }
+    if (site.tenantId) body.tenantId = site.tenantId;
+    else delete body.tenantId;
+
+    // The code's amounts are written in its currency; it must be one the site
+    // (or, for a code valid everywhere, some site) actually sells in.
+    const allowed = await saleCurrenciesFor(site.tenantId);
+    if (!allowed.includes(body.currency)) {
+      sendError(res, currencyMismatchMessage(allowed, !site.tenantId), 400);
+      return;
+    }
+
     const promo = await PromoCode.create(body);
     sendSuccess(res, promo, 'Promo code created', 201);
   } catch (error) {
+    if (isDuplicateCode(error)) {
+      sendError(res, 'A promo code with this name already exists', 409);
+      return;
+    }
     next(error);
   }
 };
 
-// PATCH /promo-codes/:id (admin)
+// Fields whose meaning depends on the code's currency (or its site's).
+const PROMO_MONEY_FIELDS = ['discountType', 'discountValue', 'minOrderAmount', 'maxDiscount', 'currency', 'tenantId'] as const;
+
+// PATCH /promo-codes/:id (admin) — body validated by updatePromoCodeSchema
 export const updatePromoCode = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    if (req.body.code) {
-      req.body.code = req.body.code.toUpperCase();
-    }
+    const patch: Record<string, unknown> = { ...req.body };
     const tenantScope = adminTenantScope(req);
-    if (tenantScope) {
-      const existing = await PromoCode.findById(req.params.id).select('tenantId');
-      if (!existing || !existing.tenantId || !tenantScope.includes(String(existing.tenantId))) {
-        sendError(res, 'Promo code not found', 404);
+    const existing = await PromoCode.findById(req.params.id).lean();
+    if (!existing || (tenantScope && (!existing.tenantId || !tenantScope.includes(String(existing.tenantId))))) {
+      sendError(res, 'Promo code not found', 404);
+      return;
+    }
+    if (tenantScope && patch.tenantId !== undefined && !tenantScope.includes(String(patch.tenantId))) {
+      sendError(res, 'You can only assign your own tenants', 403);
+      return;
+    }
+    if (patch.tenantId !== undefined && !(await Tenant.exists({ _id: patch.tenantId }))) {
+      sendError(res, 'Site not found', 404);
+      return;
+    }
+
+    // Judge the code as it will be saved, not only the fields in this edit.
+    const merged = { ...existing, ...patch } as typeof existing & Record<string, unknown>;
+    if (merged.validUntil <= merged.validFrom) {
+      sendError(res, 'Valid until must be after valid from', 400);
+      return;
+    }
+    if (merged.discountType === 'percentage' && merged.discountValue > 100) {
+      sendError(res, 'Percentage discount cannot exceed 100', 400);
+      return;
+    }
+
+    // An edit that changes an amount, the discount type, the currency or the
+    // site must state the currency it was written in. Pausing, renaming or
+    // re-dating a code never needs (or stamps) one.
+    if (PROMO_MONEY_FIELDS.some((field) => patch[field] !== undefined)) {
+      if (typeof patch.currency !== 'string') {
+        sendError(res, "Confirm the currency of this code's amounts", 400);
         return;
       }
-      if (req.body.tenantId !== undefined && !tenantScope.includes(String(req.body.tenantId))) {
-        sendError(res, 'You can only assign your own tenants', 403);
+      const siteId = merged.tenantId ? String(merged.tenantId) : null;
+      const allowed = await saleCurrenciesFor(siteId);
+      if (!allowed.includes(patch.currency)) {
+        sendError(res, currencyMismatchMessage(allowed, !siteId), 400);
         return;
       }
     }
-    const promo = await PromoCode.findByIdAndUpdate(
-      req.params.id,
-      { $set: req.body },
+
+    // A cap belongs to percentage codes only; `null` clears it.
+    const unset: Record<string, 1> = {};
+    if (patch.maxDiscount === null || merged.discountType === 'fixed') {
+      delete patch.maxDiscount;
+      if (existing.maxDiscount !== undefined && existing.maxDiscount !== null) unset.maxDiscount = 1;
+    }
+
+    const promo = await PromoCode.findOneAndUpdate(
+      { _id: existing._id, ...(tenantScope ? { tenantId: { $in: tenantScope } } : {}) },
+      { $set: patch, ...(Object.keys(unset).length ? { $unset: unset } : {}) },
       { new: true, runValidators: true }
     );
     if (!promo) {
@@ -245,6 +399,10 @@ export const updatePromoCode = async (
     }
     sendSuccess(res, promo, 'Promo code updated');
   } catch (error) {
+    if (isDuplicateCode(error)) {
+      sendError(res, 'A promo code with this name already exists', 409);
+      return;
+    }
     next(error);
   }
 };
