@@ -53,8 +53,16 @@ export function validateTranslationSource(source: Record<string, any>, content: 
   if (source.cancellationPolicy?.trim() && !content.cancellationPolicy.trim()) throw new TranslationError('Translate the existing cancellation policy');
 }
 export function cleanTranslation(content: TranslationContent): TranslationContent { return { ...content, description: sanitizeRichText(content.description), cancellationPolicy: sanitizeRichText(content.cancellationPolicy) }; }
+/** The source-bound join is necessary; complete content must also validate for every advertised locale. */
+function completePublishedRows(source: Record<string, any>): any[] {
+  return (Array.isArray(source.__translations) ? source.__translations : []).filter((row: any) => {
+    const parsed = attractionTranslationContent.safeParse(row.content);
+    if (!parsed.success || !['ar', 'de', 'ru', 'fr'].includes(row.locale) || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(row.slug || '')) return false;
+    try { validateTranslationSource(source, cleanTranslation(parsed.data)); return true; } catch { return false; }
+  });
+}
 export function localizedPresentation(dto: Record<string, any>, source: Record<string, any>, locale: StorefrontLocale): Record<string, any> {
-  const translations = Array.isArray(source.__translations) ? source.__translations : [];
+  const translations = completePublishedRows(source);
   const localizedSlugs = Object.fromEntries(translations.filter((row: any) => ['ar', 'de', 'ru', 'fr'].includes(row.locale)).map((row: any) => [row.locale, row.slug]));
   const base = { ...dto, locale, resolvedLocale: 'en', translationStatus: locale === 'en' ? 'source' : 'missing', localizedSlugs };
   const selected = translations.find((row: any) => row.locale === locale);
@@ -78,7 +86,7 @@ export async function translatedSlugFilter(slug: string, tenantId: Types.ObjectI
 /** Compact identity for route decisions: all content was validated on publication,
  * and the join requires the current source version. No pricing data leaves here. */
 export function localizationIdentity(source: Record<string, any>, locale: StorefrontLocale): Record<string, unknown> {
-  const rows = (Array.isArray(source.__translations) ? source.__translations : []).filter((row: any) => attractionTranslationContent.safeParse(row.content).success);
+  const rows = completePublishedRows(source);
   const selected = rows.find((row: any) => row.locale === locale);
   return { locale, resolvedLocale: selected && locale !== 'en' ? locale : 'en', translationStatus: locale === 'en' ? 'source' : selected ? 'translated' : 'missing', localizedSlugs: Object.fromEntries(rows.map((row: any) => [row.locale, row.slug])), ...(selected ? { localizedSlug: selected.slug } : {}) };
 }

@@ -58,6 +58,51 @@ const declaredLanguagePayload = (locales = ['ar','de','ru','fr']) => ({
   destinations: locales.map(locale => ({id:String(destinationId),locale,...destinationInput,slug:`${locale}-hurghada`})),
 });
 
+it.each(['en','ar','de','ru','fr'])('resolves a single scoped localized primary tour in %s without altering source money or leaking internal fields',async locale=>{
+ if(locale!=='en')await publish(locale);
+ await Attraction.collection.updateOne({_id:tour},{$set:{internalNotes:'Private operator detail'}});
+ const before=localizationDigest(await Attraction.collection.findOne({_id:tour}));
+ const value=(await request(app).get('/page/resolve').query({slug:'sea-cruise',tenantId:String(tenant),locale,localeFallback:'source'}).expect(200)).body.data;
+ expect(value.type).toBe('attraction');expect(value.attraction).toMatchObject({resolvedLocale:locale,translationStatus:locale==='en'?'source':'translated',bookingTenantSlug:'cruise-a',priceFrom:49,currency:'USD'});
+ expect(value.attraction.pricingOptions[0]).toMatchObject({id:'adult',price:49,childPrice:25});
+ for(const field of ['internalNotes','ownerTenantId','tenantIds','__translations','updatedAt'])expect(value.attraction).not.toHaveProperty(field);
+ expect(localizationDigest(await Attraction.collection.findOne({_id:tour}))).toBe(before);
+});
+
+it('uses explicit source fallback and cannot widen Royal strict publication or serve retired/foreign tours',async()=>{
+ const fallback=(await request(app).get('/page/resolve').query({slug:'sea-cruise',tenantId:String(tenant),locale:'ar',localeFallback:'source'}).expect(200)).body.data;
+ expect(fallback.attraction).toMatchObject({resolvedLocale:'en',translationStatus:'missing',localizedSlugs:{}});
+ expect((await request(app).get('/page/resolve').query({slug:'sea-cruise',tenantId:String(other),locale:'ar',localeFallback:'source'}).expect(200)).body.data.type).toBe('none');
+ await Tenant.collection.updateOne({_id:tenant},{$set:{slug:'royal-cruise-hurghada'}});
+ expect((await request(app).get('/page/resolve').query({slug:'sea-cruise',tenantId:String(tenant),locale:'de',localeFallback:'source'}).expect(200)).body.data.type).toBe('none');
+ await Tenant.collection.updateOne({_id:tenant},{$set:{slug:'cruise-a'}});
+ await Attraction.collection.updateOne({_id:tour},{$set:{trashedAt:new Date()}});
+ expect((await request(app).get('/page/resolve').query({slug:'sea-cruise',tenantId:String(tenant),locale:'en'}).expect(200)).body.data.type).toBe('none');
+});
+
+it('keeps published CMS source explicitly English and rejects malformed locale requests',async()=>{
+ await Tenant.collection.updateOne({_id:tenant},{$set:{customPages:[{_id:new Types.ObjectId(),slug:'guide',title:'English guide',body:'<p>Current guide</p><script>bad()</script>',status:'active',isPublished:true}]}});
+ const value=(await request(app).get('/page/resolve').query({slug:'guide',tenantId:String(tenant),locale:'ar',localeFallback:'source'}).expect(200)).body.data.page;
+ expect(value).toMatchObject({resolvedLocale:'en',locale:'ar',translationStatus:'missing',body:'<p>Current guide</p>'});
+ for(const locale of ['es',['ar','fr'],{language:'ar'}])await request(app).get('/page/resolve').query({slug:'guide',tenantId:String(tenant),locale}).expect(400);
+ await request(app).get('/page/resolve').query({slug:'guide',tenantId:String(tenant),locale:'ar',localeFallback:'any'}).expect(400);
+});
+
+it('excludes incomplete published siblings from detail, status and sitemap language alternatives without exposing presentation through compact feeds',async()=>{
+ await publish('de');await publish('ru');
+ await AttractionTranslation.collection.updateOne({tenantId:tenant,attractionId:tour,locale:'ru'},{$set:{'content.inclusions':[]}});
+ for(const route of ['/attractions/sea-cruise','/attractions/sea-cruise/route-status','/page/resolve','/page/sitemap/tours']){
+  const data=(await request(app).get(route).query({slug:'sea-cruise',tenantId:String(tenant),locale:'en',localeFallback:'source'}).expect(200)).body.data;
+  const row=route==='/page/resolve'?data.attraction:route.includes('sitemap')?data.items[0]:data;
+  expect(row.localizedSlugs).toEqual({de:'meerfahrt'});
+  if(route.includes('route-status')||route.includes('sitemap'))for(const field of ['description','pricingOptions','inclusions','seo','__translations'])expect(row).not.toHaveProperty(field);
+ }
+ await publishDestination('de');await publishDestination('ru');
+ await DestinationTranslation.collection.updateOne({tenantId:tenant,destinationId,locale:'ru'},{$set:{'content.highlights':[]}});
+ const destination=(await request(app).get('/destinations/hurghada').query({tenantId:String(tenant),locale:'en'}).expect(200)).body.data;
+ expect(destination.localizedSlugs).toEqual({de:'hurghada-de'});
+});
+
 it('publishes an explicit four-language batch atomically with authoritative source money and reversible readback',async()=>{
  const before=localizationDigest(await Attraction.collection.findOne({_id:tour}));
  const plan=await planLocalization(sourceExport,declaredLanguagePayload(),'a'.repeat(64));

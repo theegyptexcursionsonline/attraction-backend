@@ -15,6 +15,10 @@ const tourFields: Field[] = [
 ];
 const destinationFields: Field[] = ['name','country','description','shortDescription','bestTimeToVisit',{path:'highlights'},{path:'tags'}];
 const fieldsFor = (kind: Kind) => kind === 'tour' ? tourFields : destinationFields;
+/** Source information needed to verify completeness; never a public response projection. */
+export function localizationSourceProjection(kind: Kind): Record<string, 1> {
+  return Object.fromEntries(fieldsFor(kind).map(field => [typeof field === 'string' ? field : field.path, 1]));
+}
 const at = (source: any,path: string) => path.split('.').reduce((value,key)=>value?.[key],source);
 function values(source: any,fields: Field[]): any[] { return fields.map(field => typeof field === 'string' ? (at(source,field) ?? '') : (at(source,field.path) ?? []).map((item: any)=>field.fields ? values(item,field.fields) : (item ?? ''))); }
 function expressions(fields: Field[],prefix: string,depth = 0): any[] { return fields.map(field => typeof field === 'string' ? {$ifNull:[`${prefix}${field}`,'']} : {$map:{input:{$ifNull:[`${prefix}${field.path}`,[]]},as:`entry${depth}`,in:field.fields ? expressions(field.fields,`$$entry${depth}.`,depth+1) : {$ifNull:[`$$entry${depth}`,'']}}}); }

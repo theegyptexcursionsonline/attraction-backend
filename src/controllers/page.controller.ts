@@ -1,4 +1,6 @@
-import { requestedLocale, localizationStages, localizationIdentity } from '../services/attractionLocalization.service';
+import { requestedLocale, sourceFallbackAllowed, localizationStages, localizationIdentity, localizedPresentation, translatedSlugFilter } from '../services/attractionLocalization.service';
+import { localizedSlugStages, localizationSourceProjection } from '../services/localizationSourceSnapshot.service';
+import { toPublicAttractionDto } from './attractions.controller';
 import { Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
 import { Attraction } from '../models/Attraction';
@@ -279,6 +281,8 @@ export const resolvePage = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    const locale = requestedLocale(req.query.locale);
+    const sourceFallback = sourceFallbackAllowed(req.query.localeFallback, req.tenant);
     const slug = typeof req.query.slug === 'string' ? req.query.slug.toLowerCase().trim() : '';
     if (!slug) {
       sendError(res, 'slug query param required', 400);
@@ -301,7 +305,7 @@ export const resolvePage = async (
       const page = tenant?.customPages?.[0];
       sendSuccess(res, page ? {
         type: 'page',
-        page: { ...page, layoutMode: page.layoutMode ?? 'website', body: sanitizeRichText(page.body), ...(page.sections !== undefined ? { sections: sanitizePageSections(page.sections) } : {}) },
+        page: { ...page, layoutMode: page.layoutMode ?? 'website', body: sanitizeRichText(page.body), ...(page.sections !== undefined ? { sections: sanitizePageSections(page.sections) } : {}), ...(locale ? { locale, resolvedLocale: 'en', translationStatus: locale === 'en' ? 'source' : 'missing' } : {}) },
       } : { type: 'none' });
       return;
     }
@@ -309,14 +313,28 @@ export const resolvePage = async (
     // 1. Try matching an attraction. flatUrls tenants use pathSlug for URLs
     // (so multiple tenants can own the same path without colliding on the
     // globally-unique slug index). Fall back to slug for compatibility.
-    const attraction = await Attraction.findOne({
-      $or: [{ pathSlug: slug }, { slug }],
-      status: 'active',
-      tenantIds: { $in: [req.tenant._id] },
-    }).lean();
+    const liveScope = { status: 'active', tenantIds: { $in: [req.tenant._id] }, archivedAt: { $exists: false }, trashedAt: { $exists: false } };
+    let attraction: Record<string, any> | null;
+    if (locale) {
+      const alias = await translatedSlugFilter(slug, req.tenant._id);
+      const rows = await Attraction.aggregate([
+        { $match: { ...liveScope, $or: [{ pathSlug: slug }, { slug }, ...(alias ? [alias] : [])] } },
+        ...localizationStages(req.tenant._id, locale, undefined, locale !== 'en' && !sourceFallback),
+        ...localizedSlugStages(slug, locale),
+      ]);
+      if (rows.length > 1) { sendError(res, 'This public address is ambiguous', 409); return; }
+      attraction = rows[0] || null;
+      res.setHeader('Cache-Control', 'private, no-store');
+    } else {
+      attraction = await Attraction.findOne({ ...liveScope, $or: [{ pathSlug: slug }, { slug }] }).lean();
+    }
 
     if (attraction) {
-      sendSuccess(res, { type: 'attraction', attraction });
+      const dto = toPublicAttractionDto(attraction);
+      sendSuccess(res, { type: 'attraction', attraction: {
+        ...(locale ? localizedPresentation(dto, attraction, locale) : dto),
+        ...(req.tenant.slug ? { bookingTenantSlug: req.tenant.slug } : {}),
+      } });
       return;
     }
 
@@ -328,7 +346,7 @@ export const resolvePage = async (
     if (page) {
       sendSuccess(res, {
         type: 'page',
-        page: { ...page, layoutMode: page.layoutMode ?? 'website', body: sanitizeRichText(page.body), ...(page.sections !== undefined ? { sections: sanitizePageSections(page.sections) } : {}) },
+        page: { ...page, layoutMode: page.layoutMode ?? 'website', body: sanitizeRichText(page.body), ...(page.sections !== undefined ? { sections: sanitizePageSections(page.sections) } : {}), ...(locale ? { locale, resolvedLocale: 'en', translationStatus: locale === 'en' ? 'source' : 'missing' } : {}) },
       });
       return;
     }
@@ -452,7 +470,7 @@ export const sitemapTours = async (req: AuthRequest, res: Response, next: NextFu
     const rows = locale ? await Attraction.aggregate([
       { $match: filter }, { $sort: { _id: 1 } }, { $limit: limit + 1 },
       ...localizationStages(req.tenant._id, locale, undefined, false),
-      { $project: { slug: 1, pathSlug: 1, 'parentPage.path': 1, updatedAt: 1, __translations: 1 } },
+      { $project: { ...localizationSourceProjection('tour'), slug: 1, pathSlug: 1, 'parentPage.path': 1, updatedAt: 1, __translations: 1 } },
     ]) : await Attraction.find(filter).select('_id slug pathSlug parentPage.path updatedAt').sort({ _id: 1 }).limit(limit + 1).lean();
     const items = rows.slice(0, limit);
     // Tenant-scoped payload: never cacheable by a shared edge.

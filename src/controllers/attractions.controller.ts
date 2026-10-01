@@ -1,5 +1,5 @@
 import { publicTourCategoryFilter, publicDurationBandFilter, tourCategorySchema, durationBandSchema } from '../utils/publicTourFilters';
-import { localizedSlugStages } from '../services/localizationSourceSnapshot.service';
+import { localizedSlugStages, localizationSourceProjection } from '../services/localizationSourceSnapshot.service';
 import { requestedLocale, sourceFallbackAllowed, localizationStages, localizedPresentation, localizationIdentity, translatedSlugFilter, TranslationError } from '../services/attractionLocalization.service';
 import { publicCursorPlan, type CursorField } from '../utils/publicCursor';
 import { resolveImageAltTexts } from '../utils/imagePresentation';
@@ -449,10 +449,10 @@ export const getAttractionRouteStatus = async (req: AuthRequest, res: Response, 
     if (!/^[a-z0-9][a-z0-9-]{0,239}$/i.test(slug)) { sendError(res, 'Attraction not found', 404); return; }
     if (locale) {
       const alias = await translatedSlugFilter(slug, req.tenant._id);
-      const rows = await Attraction.aggregate([{ $match: { $or: [{ pathSlug: slug }, { slug }, ...(alias ? [alias] : [])], status: 'active', tenantIds: req.tenant._id, archivedAt: { $exists: false }, trashedAt: { $exists: false } } }, ...localizationStages(req.tenant._id, locale, undefined, false), ...localizedSlugStages(slug,locale), { $project: { slug: 1, pathSlug: 1, status: 1, __translations: 1 } }]);
+      const rows = await Attraction.aggregate([{ $match: { $or: [{ pathSlug: slug }, { slug }, ...(alias ? [alias] : [])], status: 'active', tenantIds: req.tenant._id, archivedAt: { $exists: false }, trashedAt: { $exists: false } } }, ...localizationStages(req.tenant._id, locale, undefined, false), ...localizedSlugStages(slug,locale), { $project: { ...localizationSourceProjection('tour'), slug: 1, pathSlug: 1, status: 1, __translations: 1 } }]);
       res.setHeader('Cache-Control', 'private, no-store');
       if (rows.length !== 1) { sendError(res, 'Attraction not found', 404); return; }
-      const { __translations, ...row } = rows[0]; sendSuccess(res, { ...row, ...localizationIdentity({ __translations }, locale), bookingTenantSlug: req.tenant.slug }); return;
+      const row = rows[0]; sendSuccess(res, { _id: row._id, slug: row.slug, ...(row.pathSlug ? { pathSlug: row.pathSlug } : {}), status: row.status, ...localizationIdentity(row, locale), bookingTenantSlug: req.tenant.slug }); return;
     }
     const attraction = await Attraction.findOne({
       $or: [{ pathSlug: slug }, { slug }], status: 'active', tenantIds: { $in: [req.tenant._id] },
