@@ -6,6 +6,7 @@ import { aiSettingsUpdateSchema } from './aiSettings';
 import { MAX_REGEX_SEARCH_LENGTH } from './helpers';
 import { MAX_PICKUP_DESTINATIONS, PICKUP_DESTINATION_SLUG_PATTERN } from './pickupDestinations';
 import { DEPARTURE_SCHEDULE_CONFLICT_MESSAGE, departureScheduleConflict } from './departureAvailability';
+import { LISTING_TYPES } from './packageDetails';
 
 // Auth Validators
 export const registerSchema = z.object({
@@ -274,6 +275,19 @@ const attractionAuthoringSchema = z.object({
   languages: z.array(z.string()).optional().default(['English']),
   priceFrom: z.number().positive().optional(),
   enquiryOnly: z.boolean().optional().default(false),
+  listingType: z.enum(LISTING_TYPES).optional(),
+  /** The older name some editors still send: 'attraction-ticket' is an attraction listing. */
+  productType: z.enum(['tour', 'attraction-ticket']).optional(),
+  validityDuration: z.string().trim().max(120).optional(),
+  venueInfo: z.object({
+    address: z.string().trim().max(300).optional(),
+    openingHours: z.string().trim().max(300).optional(),
+    instructions: z.string().trim().max(1000).optional(),
+    mapUrl: z.string().trim().max(2048).refine(
+      (value) => value === '' || /^https:\/\/[^\s<>"']+$/i.test(value),
+      'Use a map link that starts with https://',
+    ).optional(),
+  }).optional(),
   currency: z.string().min(1),
   pricingOptions: pricingOptionsSchema.optional().default([]),
   entryWindows: z.array(publishEntryWindowSchema).optional().default([]),

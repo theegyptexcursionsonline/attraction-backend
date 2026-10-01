@@ -241,6 +241,13 @@ export interface IAttraction extends Document {
   priceFrom: number;
   /** Public catalogue record that can be discussed, but cannot be priced or booked. */
   enquiryOnly?: boolean;
+  /** 'tour' when absent (records saved before listing types were stored). */
+  listingType?: 'tour' | 'attraction' | 'package';
+  validityDuration?: string;
+  venueInfo?: { address?: string; openingHours?: string; instructions?: string; mapUrl?: string };
+  /** Packages only — see utils/packageDetails. */
+  packageDetails?: unknown;
+  packageRevision?: number;
   currency: string;
   pricingOptions: Array<{
     id: string;

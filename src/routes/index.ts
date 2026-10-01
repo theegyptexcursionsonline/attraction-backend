@@ -34,6 +34,7 @@ import bundlesRoutes from './bundles.routes';
 import bundleOrdersRoutes from './bundleOrders.routes';
 import bundleSupplyOffersRoutes from './bundleSupplyOffers.routes';
 import publicRouteCompositionRoutes from './publicRouteComposition.routes';
+import packagesRoutes from './packages.routes';
 
 const router = Router();
 
@@ -299,6 +300,7 @@ router.use('/special-offers', specialOffersRoutes);
 router.use('/bundles', bundlesRoutes);
 router.use('/bundle-orders', bundleOrdersRoutes);
 router.use('/bundle-supply-offers', bundleSupplyOffersRoutes);
+router.use('/packages', packagesRoutes);
 router.use('/rsvps', rsvpsRoutes);
 router.use('/preview', previewRoutes);
 router.use('/page', pageRoutes);
