@@ -224,7 +224,13 @@ describe('package details: what a storefront sees', () => {
       groupBands: [{ min: 1, max: 1 }, { min: 2, max: 4 }, { min: 5, max: 16 }],
       cancellation: [{ daysBefore: 30, refundPercent: 100 }, { daysBefore: 14, refundPercent: 50 }, { daysBefore: 0, refundPercent: 0 }],
     });
-    expect((shown.extras as Array<Record<string, unknown>>)[0]).toEqual({ id: 'balloon', name: 'Hot-air balloon over Luxor', description: '', unit: 'per_traveller', maxQuantity: 1 });
+    // Extras show their customer price (service fee inside, rounded like the quote) before they are added.
+    expect(shown.extras).toEqual([
+      { id: 'balloon', name: 'Hot-air balloon over Luxor', description: '', unit: 'per_traveller', maxQuantity: 1, price: 126, priceChild: 94.5 },
+      { id: 'abu-simbel', name: 'Abu Simbel by road', description: '', unit: 'per_traveller', maxQuantity: 1, price: 157.5 },
+      { id: 'extra-night', name: 'Extra night in Cairo', description: '', unit: 'per_room', maxQuantity: 3, price: 99.75 },
+      { id: 'airport', name: 'Private airport transfer', description: '', unit: 'per_booking', maxQuantity: 2, price: 42 },
+    ]);
     expect((shown.tiers as Array<Record<string, unknown>>)[0]).toMatchObject({ key: 'gold', name: 'Gold', hotels: [{ city: 'Cairo', name: 'Steigenberger Pyramids', nights: 3, stars: 5 }, expect.any(Object)] });
   });
 

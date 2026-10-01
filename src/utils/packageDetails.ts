@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { secureImageUrlSchema } from './imagePresentation';
+import { withServiceFeeCents } from './serviceFee';
 
 /**
  * Package listings: multi-day trips priced by departure date × hotel level × season × group size
@@ -402,6 +403,8 @@ export function packagePublishProblems(details: PackageDetails, today: string): 
  * matrix (prices reach customers only through the server-computed quote and calendar, with
  * the service fee inside them).
  */
+const shownPrice = (amount: number): number => withServiceFeeCents(Math.round(amount * 100)) / 100;
+
 export const publicPackageDetails = (value: unknown): Record<string, unknown> | undefined => {
   const details = readPackageDetails(value);
   if (!details) return undefined;
@@ -417,7 +420,20 @@ export const publicPackageDetails = (value: unknown): Record<string, unknown> | 
     groupBands: [...details.groupBands].sort((left, right) => left.min - right.min).map(({ min, max }) => ({ min, max })),
     rooms: details.rooms,
     travellers: details.travellers,
-    extras: details.extras.map(({ id, name, description, unit, maxQuantity }) => ({ id, name, description, unit, maxQuantity })),
+    // Extras have one fixed price each, shown before the visitor adds one — with the service fee
+    // inside, rounded exactly as the quote rounds it. Room rates stay server-side (they depend on
+    // date, group size and occupancy and reach customers only through the quote and calendar).
+    extras: details.extras
+      .filter((extra) => extra.price !== null)
+      .map(({ id, name, description, unit, maxQuantity, price, priceChild }) => ({
+        id,
+        name,
+        description,
+        unit,
+        maxQuantity,
+        price: shownPrice(price as number),
+        ...(unit === 'per_traveller' && priceChild !== null ? { priceChild: shownPrice(priceChild) } : {}),
+      })),
     cancellation: [...details.cancellation].sort((left, right) => right.daysBefore - left.daysBefore),
     itinerary: [...details.itinerary].sort((left, right) => left.day - right.day),
   };
