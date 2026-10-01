@@ -415,6 +415,9 @@ describe('public calendar and quote', () => {
     expect(days.find(day => day.date === TODAY)).toMatchObject({ status: 'closed', reason: 'too-soon' });
     if (FIRST_DAY.startsWith(month)) expect(days.find(day => day.date === FIRST_DAY)).toMatchObject({ status: 'available', seatsLeft: 20, perPersonFrom: 1050 });
     await site(request(app).get(`/packages/${pkg._id}/calendar?month=2020-01`)).expect(400);
+    // The storefront client adds its site scope to every request.
+    await site(request(app).get(`/packages/${pkg._id}/calendar?month=${month}&tenantId=${owner}`)).expect(200);
+    await site(request(app).post(`/packages/${pkg._id}/quote?tenantId=${owner}`)).send(selection()).expect(200);
     await site(request(app).get(`/packages/${pkg._id}/calendar?month=${month}&travellers=0`)).expect(400);
   });
 

@@ -478,10 +478,11 @@ const departureStates = async (attractionId: Types.ObjectId, from: string, to: s
   }]));
 };
 
+// Not strict: the storefront client adds its site scope (tenantId) to every request.
 const calendarQuerySchema = z.object({
   month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Use a month like 2026-11'),
   travellers: z.coerce.number().int().min(1).max(PACKAGE_LIMITS.travellers).default(2),
-}).strict();
+});
 
 export const getPackageCalendar = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
