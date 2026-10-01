@@ -447,6 +447,7 @@ describe('public calendar and quote', () => {
       { daysBefore: 0, refundPercent: 0, cancelBy: addDays(TODAY, 10) },
     ]);
     expect(response.body.data.seatsLeft).toBe(20);
+    expect(response.body.data.today).toBe(TODAY);
   });
 
   it('never accepts a price from the client', async () => {

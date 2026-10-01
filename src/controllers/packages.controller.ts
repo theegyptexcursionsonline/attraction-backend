@@ -593,6 +593,9 @@ export const quotePackage = async (req: AuthRequest, res: Response, next: NextFu
       seatsLeft,
       quoteHash: packageQuoteHash(String(record._id), chosen, priced.quote),
       quotedAt: new Date().toISOString(),
+      // The operator's calendar day, so the storefront can tell which cancellation deadlines
+      // have already passed for a booking made now.
+      today,
     });
   } catch (error) {
     next(error);
