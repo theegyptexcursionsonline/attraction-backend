@@ -355,6 +355,14 @@ export const getAttractions = async (
       query.category = category as string;
     }
 
+    // Listing type (validated by the query schema). Listings saved before types existed are tours.
+    if (req.query.listingType !== undefined) {
+      const listingType = String(req.query.listingType);
+      query.$and = [...(query.$and || []), listingType === 'tour'
+        ? { $or: [{ listingType: 'tour' }, { listingType: { $exists: false } }] }
+        : { listingType }];
+    }
+
     // Source filters are part of the shared DB match, so totals and cursor bindings
     // describe exactly the same catalogue in every locale and pagination mode.
     if (req.query.tourCategory !== undefined) {

@@ -1,6 +1,7 @@
 import {
   MAX_PUBLISH_PROBLEMS,
   packageDetailsSchema,
+  packagePublishChecklist,
   packagePublishProblems,
   publicPackageDetails,
   readPackageDetails,
@@ -209,6 +210,28 @@ describe('package details: ready to sell', () => {
     const problems = packagePublishProblems(samplePackage({ rates: [] }), TODAY);
     expect(problems).toHaveLength(MAX_PUBLISH_PROBLEMS);
     expect(problems[MAX_PUBLISH_PROBLEMS - 1]).toBe(`…and ${2 * 2 * 3 * 5 - (MAX_PUBLISH_PROBLEMS - 1)} more to fix`);
+  });
+
+  it('files every problem under the editor section that fixes it, and counts each section in full', () => {
+    const empty = packagePublishChecklist(packageDetailsSchema.parse({ version: 1 }), TODAY);
+    expect(empty.problems.map((problem) => problem.section)).toEqual(['trip', 'trip', 'trip', 'trip', 'seasons', 'levels', 'groups', 'cancellation']);
+    expect(empty.problems.map((problem) => problem.message)).toEqual(packagePublishProblems(packageDetailsSchema.parse({ version: 1 }), TODAY));
+    expect(empty.totals).toEqual({ trip: 4, seasons: 1, levels: 1, groups: 1, cancellation: 1 });
+
+    const unpriced = packagePublishChecklist(samplePackage({ rates: [] }), TODAY);
+    expect(unpriced.problems).toHaveLength(MAX_PUBLISH_PROBLEMS);
+    expect(unpriced.problems[0]).toEqual({ section: 'prices', message: expect.stringContaining('double room price missing') });
+    expect(unpriced.problems[MAX_PUBLISH_PROBLEMS - 1].section).toBe('more');
+    // The list stops; the count per section does not.
+    expect(unpriced.totals).toEqual({ prices: 2 * 2 * 3 * 5 });
+  });
+
+  it.each([
+    [{ daily: { weekdays: [], blackoutDates: [], horizonMonths: 12, dailyCapacity: 20 } }, 'departures', 'Choose at least one weekday the trip can start on'],
+    [{ extras: [{ id: 'balloon', name: '', description: '', unit: 'per_traveller', price: 100, priceChild: null, maxQuantity: 1 }] }, 'extras', 'Extra 1: add a name'],
+    [{ rooms: { allowSingle: false, allowTriple: true, maxChildrenPerRoom: 1, maxInfantsPerRoom: 1 } }, 'rooms', 'A solo traveller needs a single room — allow single rooms or start group sizes at 2'],
+  ] as const)('files %j under %s', (overrides, section, message) => {
+    expect(packagePublishChecklist(samplePackage(overrides as never), TODAY).problems).toContainEqual({ section, message });
   });
 });
 

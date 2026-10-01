@@ -286,23 +286,33 @@ export const requiredRateFields = (details: Pick<PackageDetails, 'rooms' | 'trav
 
 export const MAX_PUBLISH_PROBLEMS = 25;
 
+/** The part of the package editor where a problem is fixed. */
+export const PUBLISH_SECTIONS = ['trip', 'departures', 'seasons', 'levels', 'groups', 'rooms', 'prices', 'extras', 'cancellation', 'itinerary'] as const;
+export type PublishSection = (typeof PUBLISH_SECTIONS)[number];
+export interface PublishProblem { section: PublishSection | 'more'; message: string }
+
 /**
- * Everything that stops this package from being sold, in the order an editor would fix it.
- * Empty means publishable. `today` is the operator's calendar day (YYYY-MM-DD).
+ * Everything that stops this package from being sold, in the order an editor would fix it, each
+ * with the editor section that fixes it, plus how many problems each section has in all (the
+ * list itself stops at MAX_PUBLISH_PROBLEMS). Empty means publishable. `today` is the operator's
+ * calendar day (YYYY-MM-DD).
  */
-export function packagePublishProblems(details: PackageDetails, today: string): string[] {
-  const problems: string[] = [];
-  const add = (message: string) => { problems.push(message); };
+export function packagePublishChecklist(details: PackageDetails, today: string): { problems: PublishProblem[]; totals: Partial<Record<PublishSection, number>> } {
+  const all: Array<{ section: PublishSection; message: string }> = [];
+  let section: PublishSection = 'trip';
+  const add = (message: string) => { all.push({ section, message }); };
 
   if (details.durationDays === undefined) add('Set how many days the trip lasts');
   if (details.durationNights === undefined) add('Set how many nights the trip lasts');
   if (!details.startCity) add('Set the city where the trip starts');
   if (!details.endCity) add('Set the city where the trip ends');
 
+  section = 'departures';
   if (details.departureMode === 'daily' && details.daily.weekdays.length === 0) {
     add('Choose at least one weekday the trip can start on');
   }
 
+  section = 'seasons';
   if (details.seasons.length === 0) add('Add at least one season with its dates');
   details.seasons.forEach((season, index) => {
     const label = named(season.name, `Season ${index + 1}`);
@@ -321,6 +331,7 @@ export function packagePublishProblems(details: PackageDetails, today: string): 
     add('Every season has ended — add a season with future dates');
   }
 
+  section = 'levels';
   if (details.tiers.length === 0) add('Add at least one hotel level');
   details.tiers.forEach((tier, index) => {
     const label = named(tier.name, `Hotel level ${index + 1}`);
@@ -330,6 +341,7 @@ export function packagePublishProblems(details: PackageDetails, today: string): 
     });
   });
 
+  section = 'groups';
   if (details.groupBands.length === 0) add('Add at least one group size');
   const bands = [...details.groupBands].sort((left, right) => left.min - right.min);
   for (let index = 1; index < bands.length; index += 1) {
@@ -337,6 +349,7 @@ export function packagePublishProblems(details: PackageDetails, today: string): 
       add(`Group sizes must follow on without gaps or overlaps: ${bandLabel(bands[index - 1])} is followed by ${bandLabel(bands[index])}`);
     }
   }
+  section = 'rooms';
   if (bands.length > 0 && bands[0].min === 1 && !details.rooms.allowSingle) {
     add('A solo traveller needs a single room — allow single rooms or start group sizes at 2');
   }
@@ -347,8 +360,8 @@ export function packagePublishProblems(details: PackageDetails, today: string): 
     add('Infants are welcome, but no room can take an infant — set how many infants can share a room');
   }
 
+  section = 'prices';
   const required = requiredRateFields(details);
-  const missing: string[] = [];
   for (const tier of details.tiers) {
     for (const season of details.seasons) {
       for (const band of bands) {
@@ -357,20 +370,21 @@ export function packagePublishProblems(details: PackageDetails, today: string): 
         for (const { field, label } of RATE_FIELDS) {
           if (!required.includes(field)) continue;
           const value = cell?.[field];
-          if (value === null || value === undefined) missing.push(`${where}: ${label} missing`);
-          else if (field !== 'child' && field !== 'infant' && value <= 0) missing.push(`${where}: ${label} must be more than zero`);
+          if (value === null || value === undefined) add(`${where}: ${label} missing`);
+          else if (field !== 'child' && field !== 'infant' && value <= 0) add(`${where}: ${label} must be more than zero`);
         }
       }
     }
   }
-  problems.push(...missing);
 
+  section = 'extras';
   details.extras.forEach((extra, index) => {
     const label = named(extra.name, `Extra ${index + 1}`);
     if (!extra.name) add(`Extra ${index + 1}: add a name`);
     if (extra.price === null) add(`${label}: set a price`);
   });
 
+  section = 'cancellation';
   if (details.cancellation.length === 0) {
     add('Add the cancellation terms (a single rule with 0 % refund means non-refundable)');
   }
@@ -381,6 +395,7 @@ export function packagePublishProblems(details: PackageDetails, today: string): 
     }
   }
 
+  section = 'itinerary';
   if (details.durationDays !== undefined) {
     const days = new Set(details.itinerary.map((entry) => entry.day));
     for (let day = 1; day <= details.durationDays; day += 1) {
@@ -394,9 +409,18 @@ export function packagePublishProblems(details: PackageDetails, today: string): 
     if (!entry.title) add(`Itinerary: day ${entry.day} needs a title`);
   });
 
-  if (problems.length <= MAX_PUBLISH_PROBLEMS) return problems;
-  return [...problems.slice(0, MAX_PUBLISH_PROBLEMS - 1), `…and ${problems.length - (MAX_PUBLISH_PROBLEMS - 1)} more to fix`];
+  const totals: Partial<Record<PublishSection, number>> = {};
+  for (const problem of all) totals[problem.section] = (totals[problem.section] ?? 0) + 1;
+  if (all.length <= MAX_PUBLISH_PROBLEMS) return { problems: all, totals };
+  return {
+    problems: [...all.slice(0, MAX_PUBLISH_PROBLEMS - 1), { section: 'more', message: `…and ${all.length - (MAX_PUBLISH_PROBLEMS - 1)} more to fix` }],
+    totals,
+  };
 }
+
+/** The checklist's messages only — what publish and live saves report. */
+export const packagePublishProblems = (details: PackageDetails, today: string): string[] =>
+  packagePublishChecklist(details, today).problems.map((problem) => problem.message);
 
 /**
  * What a storefront may show about a package: everything descriptive, never the raw rate

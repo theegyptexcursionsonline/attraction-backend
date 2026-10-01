@@ -32,9 +32,11 @@ import {
   PACKAGE_LIMITS,
   PackageDetails,
   packageDetailsSchema,
+  packagePublishChecklist,
   packagePublishProblems,
   readPackageDetails,
 } from '../utils/packageDetails';
+import { SERVICE_FEE_BASIS_POINTS } from '../utils/serviceFee';
 import {
   addDays,
   addMonths,
@@ -108,16 +110,24 @@ async function editorView(record: EditorRecord, today: string) {
   const details = readPackageDetails(record.packageDetails) ?? packageDetailsSchema.parse({ version: 1 });
   const departures = details.departureMode === 'fixed' ? await openDepartureDates(record._id, today) : [];
   const firstDate = firstBookableDate(details, today, departures);
-  const problems = packagePublishProblems(details, today);
-  if (!firstDate && problems.length === 0) problems.push(NO_BOOKABLE_DATE);
+  const checklist = packagePublishChecklist(details, today);
+  if (!firstDate && checklist.problems.length === 0) {
+    checklist.problems.push({ section: 'departures', message: NO_BOOKABLE_DATE });
+    checklist.totals.departures = 1;
+  }
   return {
     packageDetails: details,
     packageRevision: record.packageRevision ?? 0,
     status: record.status ?? 'draft',
     currency: record.currency ?? 'USD',
-    problems,
+    problems: checklist.problems.map((problem) => problem.message),
+    // The same problems with the editor section that fixes each, and how many each section has.
+    checklist: checklist.problems,
+    problemTotals: checklist.totals,
     fromPrice: packageFromPrice(details, today, departures),
     firstBookableDate: firstDate,
+    // Prices are entered before the service fee; the editor shows what customers pay with it.
+    feeBasisPoints: SERVICE_FEE_BASIS_POINTS,
   };
 }
 

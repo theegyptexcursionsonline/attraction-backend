@@ -23,6 +23,12 @@ jest.mock('../middleware/auth.middleware', () => ({
     req.user = { _id: new Types.ObjectId(), role, assignedTenants: req.header('x-test-assigned')?.split(',').filter(Boolean) || [] };
     next();
   },
+  // Routes open to visitors (the catalogue list): signed in only when the test says so.
+  optionalAuth: (req: any, _res: any, next: any) => {
+    const role = req.header('x-test-role');
+    if (role) req.user = { _id: new Types.ObjectId(), role, assignedTenants: req.header('x-test-assigned')?.split(',').filter(Boolean) || [] };
+    next();
+  },
 }));
 jest.setTimeout(120_000);
 
@@ -182,6 +188,26 @@ describe('listing types on the shared attraction endpoints (PLATFORM #1069)', ()
   });
 });
 
+describe('listing type filter on the admin list', () => {
+  it('lists packages, tours (including listings saved before types existed) or tickets on their own', async () => {
+    const pkg = await createPackage();
+    const tour = await Attraction.collection.insertOne({ title: 'Old tour', slug: `old-tour-${new Types.ObjectId()}`, status: 'draft', tenantIds: [owner], createdAt: new Date() });
+    const ticket = await Attraction.collection.insertOne({ title: 'Museum ticket', slug: `ticket-${new Types.ObjectId()}`, status: 'draft', listingType: 'attraction', tenantIds: [owner], createdAt: new Date() });
+    const ids = async (listingType: string) => (await as(request(app).get(`/attractions?scope=admin&status=draft&listingType=${listingType}`)).expect(200))
+      .body.data.map((row: { _id?: string; id?: string }) => String(row._id ?? row.id));
+    expect(await ids('package')).toEqual([pkg._id]);
+    expect(await ids('tour')).toEqual([String(tour.insertedId)]);
+    expect(await ids('attraction')).toEqual([String(ticket.insertedId)]);
+  });
+
+  it("never widens an admin's sites, and refuses an unknown type", async () => {
+    await createPackage();
+    const foreign = await as(request(app).get('/attractions?scope=admin&status=draft&listingType=package'), 'brand-admin', other).expect(200);
+    expect(foreign.body.data).toEqual([]);
+    await as(request(app).get('/attractions?scope=admin&status=draft&listingType=cruise')).expect(400);
+  });
+});
+
 describe('package editor', () => {
   it('opens a new package with defaults and says what is missing', async () => {
     const pkg = await createPackage();
@@ -190,6 +216,22 @@ describe('package editor', () => {
     expect(response.body.data).toMatchObject({ packageRevision: 0, status: 'draft', currency: 'USD', fromPrice: null, firstBookableDate: null });
     expect(response.body.data.packageDetails).toMatchObject({ version: 1, departureMode: 'daily', tiers: [] });
     expect(response.body.data.problems).toEqual(expect.arrayContaining(['Set how many days the trip lasts', 'Add at least one hotel level']));
+    // The same problems for the editor, each with the section that fixes it, and the fee it shows prices with.
+    expect(response.body.data.checklist).toEqual(expect.arrayContaining([
+      { section: 'trip', message: 'Set how many days the trip lasts' },
+      { section: 'levels', message: 'Add at least one hotel level' },
+    ]));
+    expect(response.body.data.checklist.map((problem: { message: string }) => problem.message)).toEqual(response.body.data.problems);
+    expect(response.body.data.problemTotals).toMatchObject({ trip: 4, levels: 1 });
+    expect(response.body.data.feeBasisPoints).toBe(500);
+  });
+
+  it("names a complete package's last problem — no bookable date — under departures", async () => {
+    const pkg = await createPackage();
+    await savePackage(pkg._id, { expectedRevision: 0, packageDetails: details({ daily: { weekdays: [0, 1, 2, 3, 4, 5, 6], blackoutDates: [], horizonMonths: 1, dailyCapacity: 20 }, minNoticeDays: 60 }) }).expect(200);
+    const response = await as(request(app).get(`/packages/${pkg._id}`)).expect(200);
+    expect(response.body.data.checklist).toEqual([{ section: 'departures', message: expect.stringContaining('No date can be booked yet') }]);
+    expect(response.body.data.problemTotals).toEqual({ departures: 1 });
   });
 
   it.each([

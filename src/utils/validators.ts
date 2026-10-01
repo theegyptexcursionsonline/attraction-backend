@@ -815,6 +815,8 @@ export const attractionFiltersSchema = z.object({
   scope: z.enum(['admin']).optional(),
   /** A pickup-area destination slug; the controller only honours the site's own configured areas. */
   pickupFrom: pickupDestinationSlugSchema.optional(),
+  /** Only listings of this type (listings saved before types existed are tours). */
+  listingType: z.enum(LISTING_TYPES).optional(),
 });
 
 // Payment Validators
