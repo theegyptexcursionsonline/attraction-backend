@@ -1,3 +1,4 @@
+import { customerCursor, wishlistPipeline, wishlistProjection, activeSiteAttractions } from '../utils/customerLists';
 import { Response, NextFunction } from 'express';
 import { Types, type PipelineStage } from 'mongoose';
 import { User } from '../models/User';
@@ -62,10 +63,23 @@ export const getWishlist = async (
       return;
     }
 
+    if (req.query.pagination === 'cursor') {
+      if (!req.tenant) { sendError(res,'Select a site for your wishlist',400); return; }
+      const search = typeof req.query.search === 'string' ? req.query.search : undefined;
+      const base = wishlistPipeline(req.user._id,req.tenant._id,search);
+      const limit = Number(req.query.limit || 20);
+      const plan = customerCursor({owner:String(req.user._id),site:String(req.tenant._id),search:search || ''},req.query.cursor as string | undefined);
+      const [rows,counts] = await Promise.all([
+        User.aggregate([...base,{$set:plan.normalized},...(plan.seek?[{$match:plan.seek}]:[]),{$sort:plan.sort},{$limit:limit+1},{$project:{...wishlistProjection,_cursor0:1,_cursor1:1}}]),
+        User.aggregate([...base,{$count:'total'}]),
+      ]);
+      const result=plan.page(rows,limit,counts[0]?.total || 0);
+      res.setHeader('Cache-Control','private, no-store');res.json({success:true,data:result.rows,pagination:result.pagination});return;
+    }
     const user = await User.findById(req.user._id)
       .populate({
         path: 'wishlist',
-        match: { status: 'active' },
+        match: { status: 'active', archivedAt: { $exists:false }, trashedAt: { $exists:false }, ...(req.tenant ? { tenantIds:req.tenant._id } : {}) },
         select: 'slug title images priceFrom currency destination rating reviewCount badges',
       })
       .lean();
@@ -89,8 +103,9 @@ export const addToWishlist = async (
 
     const { attractionId } = req.params;
 
+    if (!Types.ObjectId.isValid(String(attractionId))) { sendError(res, 'Attraction not found',404); return; }
     // Verify attraction exists
-    const attraction = await Attraction.findById(attractionId);
+    const attraction = await Attraction.findOne({ _id:attractionId, status:'active',archivedAt:{$exists:false},trashedAt:{$exists:false},...(req.tenant?{tenantIds:req.tenant._id}:{}) });
     if (!attraction) {
       sendError(res, 'Attraction not found', 404);
       return;
@@ -121,6 +136,11 @@ export const removeFromWishlist = async (
 
     const { attractionId } = req.params;
 
+    if (!Types.ObjectId.isValid(String(attractionId))) { sendError(res,'Attraction not found',404); return; }
+    if (req.tenant) {
+      const allowed = await Attraction.exists({_id:attractionId,tenantIds:req.tenant._id});
+      if (!allowed) { sendError(res,'Attraction not found',404); return; }
+    }
     await User.findByIdAndUpdate(
       req.user._id,
       { $pull: { wishlist: attractionId } }
@@ -130,6 +150,20 @@ export const removeFromWishlist = async (
   } catch (error) {
     next(error);
   }
+};
+
+/** Bounded atomic removal of the displayed saved page, never another site's list. */
+export const removeWishlistPage = async (req: AuthRequest,res:Response,next:NextFunction):Promise<void> => {
+ try {
+  if(!req.user){sendError(res,'Not authenticated',401);return;}
+  if(!req.tenant){sendError(res,'Select a site for your wishlist',400);return;}
+  const ids=(req.body.ids as string[]).map(id=>new Types.ObjectId(id));
+  const allowed=await Attraction.find({...activeSiteAttractions(req.tenant._id),_id:{$in:ids}}).select('_id').limit(100).lean();
+  if(allowed.length!==new Set(ids.map(String)).size){sendError(res,'Saved page could not be confirmed',409);return;}
+  const updated=await User.findOneAndUpdate({_id:req.user._id,wishlist:{$all:ids}},{$pull:{wishlist:{$in:ids}}});
+  if(!updated){sendError(res,'Saved page changed. Refresh and try again.',409);return;}
+  sendSuccess(res,null,'Saved page removed');
+ } catch(error){next(error);}
 };
 
 // Admin User Management

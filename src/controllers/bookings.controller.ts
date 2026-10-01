@@ -1,3 +1,5 @@
+import { escapeRegex } from '../utils/helpers';
+import { customerCursor } from '../utils/customerLists';
 import { bookingGuestTotals, bookingLineSummaries, bookingTicketAddons } from '../utils/bookingLineSummary';
 import { normalizeHotelPickup, HotelPickupError } from '../utils/hotel-pickup';
 import { Response, NextFunction } from 'express';
@@ -968,26 +970,44 @@ export const getMyBookings = async (
       return;
     }
 
-    const { page = 1, limit = 10, status } = req.query;
-    const pageNum = parseInt(page as string, 10);
-    const limitNum = parseInt(limit as string, 10);
-
+    const { page = 1, limit = 10, status, search } = req.query;
+    const pageNum = Number(page), limitNum = Number(limit);
     const query: Record<string, unknown> = { ...standaloneBookingClause, userId: req.user._id };
-    if (status) {
-      query.status = status;
+    if (req.tenant) query.tenantId = req.tenant._id;
+    if (req.query.pagination === 'cursor') {
+      if (!req.tenant) { sendError(res, 'Select a site for your bookings', 400); return; }
+      const siteId = req.tenant._id;
+      const literal = typeof search === 'string' ? escapeRegex(search) : '';
+      const base: import('mongoose').PipelineStage[] = [
+        { $match: query },
+        { $lookup: { from: 'attractions', let: { tourId: '$attractionId',supplier:'$supplierTenantId',seller:'$sellerTenantId',resale:'$isResale' }, pipeline: [
+          { $match: { $expr: { $eq: ['$_id', '$$tourId'] }, $or:[{tenantIds:siteId},{$expr:{$and:[{$eq:['$$resale',true]},{$eq:['$$seller',siteId]},{$eq:['$ownerTenantId','$$supplier']},{$ne:['$$supplier',null]}]}}] } },
+          { $project: { _id:1,title:1,slug:1,images:1,destination:1 } },
+        ], as: '__tour' } },
+        { $set: { attractionId: { $arrayElemAt: ['$__tour', 0] } } },
+      ];
+      // Do not silently discard bookings whose catalogue reference is malformed.
+      const broken = await Booking.aggregate([...base, { $match: { attractionId: { $exists:false } } }, { $limit:1 }, { $project:{_id:1} }]);
+      if (broken.length) { sendError(res, 'A booking reference could not be confirmed. Please contact support.', 409); return; }
+      if (literal) base.push({ $match: { $or: [{ reference: { $regex:literal,$options:'i' } }, { 'attractionId.title': { $regex:literal,$options:'i' } }] } });
+      const counts = await Booking.aggregate([...base, { $group: { _id:'$status',count:{$sum:1} } }]);
+      const summary = Object.fromEntries(counts.map(row => [row._id,row.count]));
+      if (status) base.push({ $match: { status } });
+      const plan = customerCursor({ owner:String(req.user._id),site:String(siteId),status:status || null,search:search || '' },req.query.cursor as string | undefined);
+      const [rows, totals] = await Promise.all([
+        Booking.aggregate([...base,{ $set:plan.normalized },...(plan.seek?[{ $match:plan.seek }]:[]),{ $sort:plan.sort },{ $limit:limitNum+1 },{ $project:{ _id:1,reference:1,items:1,currency:1,total:1,totalPrice:1,status:1,paymentStatus:1,paymentFailureReason:1,paymentFailureAt:1,createdAt:1,attractionId:1,tenantId:1,_cursor0:1,_cursor1:1 } }]),
+        Booking.aggregate([...base,{ $count:'total' }]),
+      ]);
+      const result = plan.page(rows,limitNum,totals[0]?.total || 0);
+      res.setHeader('Cache-Control','private, no-store');
+      res.json({success:true,data:result.rows,pagination:result.pagination,counts:{all:counts.reduce((sum,row)=>sum+row.count,0),...summary}}); return;
     }
-
-    const [bookings, total] = await Promise.all([
-      Booking.find(query)
-        .populate('attractionId', 'title slug images destination')
-        .sort({ createdAt: -1 })
-        .skip((pageNum - 1) * limitNum)
-        .limit(limitNum)
-        .lean(),
+    if (status) query.status = status;
+    const [bookings,total] = await Promise.all([
+      Booking.find(query).populate('attractionId','title slug images destination').sort({createdAt:-1,_id:-1}).skip((pageNum-1)*limitNum).limit(limitNum).lean(),
       Booking.countDocuments(query),
     ]);
-
-    sendPaginated(res, bookings, pageNum, limitNum, total);
+    sendPaginated(res,bookings,pageNum,limitNum,total);
   } catch (error) {
     next(error);
   }

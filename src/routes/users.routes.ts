@@ -1,3 +1,6 @@
+import { optionalTenant } from '../middleware/tenant.middleware';
+import { removeWishlistPage } from '../controllers/users.controller';
+import { customerListQuery, wishlistPageRemoval } from '../utils/customerLists';
 import { Router } from 'express';
 import {
   getProfile,
@@ -70,7 +73,8 @@ router.get('/profile', authenticate, getProfile);
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get('/wishlist', authenticate, getWishlist);
+router.get('/wishlist', authenticate, optionalTenant, validateQuery(customerListQuery), getWishlist);
+router.delete('/wishlist/page', authenticate, optionalTenant, validate(wishlistPageRemoval), removeWishlistPage);
 
 /**
  * @swagger
@@ -92,7 +96,7 @@ router.get('/wishlist', authenticate, getWishlist);
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post('/wishlist/:attractionId', authenticate, addToWishlist);
+router.post('/wishlist/:attractionId', authenticate, optionalTenant, addToWishlist);
 
 /**
  * @swagger
@@ -114,7 +118,7 @@ router.post('/wishlist/:attractionId', authenticate, addToWishlist);
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.delete('/wishlist/:attractionId', authenticate, removeFromWishlist);
+router.delete('/wishlist/:attractionId', authenticate, optionalTenant, removeFromWishlist);
 
 /**
  * @swagger

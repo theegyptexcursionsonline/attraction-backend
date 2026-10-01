@@ -1,3 +1,4 @@
+import { customerListQuery } from '../utils/customerLists';
 import { Router } from 'express';
 import {
   createBooking,
@@ -124,7 +125,7 @@ router.get('/reference/:reference', optionalAuth, getBookingByReference);
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get('/my', authenticate, validateQuery(paginationSchema), getMyBookings);
+router.get('/my', authenticate, optionalTenant, validateQuery(customerListQuery), getMyBookings);
 
 /**
  * @swagger
