@@ -630,6 +630,8 @@ export const getAttractionAvailability = async (
     const availability: Array<{
       date: string;
       available: boolean;
+      /** A day sold by date: seats left in its one pool. Departure tours report per slot. */
+      spotsLeft?: number;
       timeSlots?: Array<{ time: string; available: boolean; spotsLeft: number }>;
     }> = [];
 
@@ -664,10 +666,17 @@ export const getAttractionAvailability = async (
             timeSlots,
           });
         } else {
-          const spotsLeft = (record.allDayCapacity || defaultCapacity) - (record.allDayBooked || 0);
+          // A day sold by date shares one pool of seats; say what is left so the guest sees it
+          // before checkout. Report a day exactly as the by-date reservation would treat it: a
+          // stored row with time slots but no day pool cannot take one, and a pool of 0 is full.
+          const reservableByDay = typeof record.allDayCapacity === 'number' || !(record.timeSlots?.length);
+          const spotsLeft = reservableByDay
+            ? Math.max(0, (record.allDayCapacity ?? defaultCapacity) - (record.allDayBooked || 0))
+            : 0;
           availability.push({
             date: dateStr,
             available: spotsLeft > 0,
+            spotsLeft,
           });
         }
       } else {
@@ -687,6 +696,7 @@ export const getAttractionAvailability = async (
           availability.push({
             date: dateStr,
             available: true,
+            spotsLeft: defaultCapacity,
           });
         }
       }

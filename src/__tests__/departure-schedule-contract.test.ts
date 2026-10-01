@@ -225,7 +225,7 @@ describe('writes over HTTP', () => {
     // The storefront reads the day as available and receives no departures to choose from.
     const day = await request(app).get(`/attractions/${id}/availability?date=${date}&tenant=day-sold-site`).expect(200);
     const days = day.body.data.availability as Array<{ date: string; timeSlots?: unknown }>;
-    expect(days.find((entry) => entry.date === date)).toEqual({ date, available: true });
+    expect(days.find((entry) => entry.date === date)).toEqual({ date, available: true, spotsLeft: 25 });
     expect(days.some((entry) => entry.timeSlots !== undefined)).toBe(false);
 
     const booking = await request(app).post('/bookings?tenant=day-sold-site')
@@ -241,6 +241,48 @@ describe('writes over HTTP', () => {
 
     const inventory = await Availability.collection.findOne({ attractionId: new Types.ObjectId(id) });
     expect(inventory).toMatchObject({ allDayCapacity: 25, allDayBooked: 2, timeSlots: [] });
+  });
+
+  // The day pool is what a by-date reservation draws on; the calendar must say exactly that.
+  const dayOf = async (id: string, date: string) => {
+    const response = await request(app).get(`/attractions/${id}/availability?date=${date}&tenant=day-sold-site`).expect(200);
+    return (response.body.data.availability as Array<{ date: string }>).find((entry) => entry.date === date);
+  };
+  const bookByDate = (id: string, date: string, adults: number) => request(app).post('/bookings?tenant=day-sold-site')
+    .set('Idempotency-Key', `departures-${new Types.ObjectId()}`)
+    .send({
+      attractionId: id,
+      items: [{ optionId: 'shared', date, quantities: { adults, children: 0, infants: 0 } }],
+      guestDetails: { firstName: 'Egypt Excursions', lastName: 'Online QA', email: 'theegyptexcursionsonline@gmail.com', phone: '+201000000000', country: 'Egypt' },
+      paymentMethod: 'pay-later',
+    });
+
+  it('reports the seats left in a day-sold day, and a full or unusable day as closed, as the reservation does', async () => {
+    const id = await insertLegacyTour();
+    const attractionId = new Types.ObjectId(id);
+    const day = (offset: number) => new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
+    const utc = (date: string) => new Date(`${date}T00:00:00.000Z`);
+    await Availability.collection.insertMany([
+      { attractionId, date: utc(day(11)), timeSlots: [], allDayCapacity: 10, allDayBooked: 7, isBlocked: false },
+      { attractionId, date: utc(day(12)), timeSlots: [], allDayCapacity: 0, allDayBooked: 0, isBlocked: false },
+      // Older bundle fixture: a slot but no day pool. A by-date reservation cannot use it.
+      { attractionId, date: utc(day(13)), timeSlots: [{ time: '08:00', capacity: 8, booked: 0 }], allDayBooked: 0, isBlocked: false },
+      // Older all-day row without a stored pool: the reservation gives it the default of 25.
+      { attractionId, date: utc(day(14)), timeSlots: [], allDayBooked: 4, isBlocked: false },
+    ]);
+
+    expect(await dayOf(id, day(11))).toEqual({ date: day(11), available: true, spotsLeft: 3 });
+    expect(await dayOf(id, day(12))).toEqual({ date: day(12), available: false, spotsLeft: 0 });
+    expect(await dayOf(id, day(13))).toEqual({ date: day(13), available: false, spotsLeft: 0 });
+    expect(await dayOf(id, day(14))).toEqual({ date: day(14), available: true, spotsLeft: 21 });
+
+    // The reservation agrees with each answer.
+    await bookByDate(id, day(11), 4).expect(409);
+    await bookByDate(id, day(11), 3).expect(201);
+    await bookByDate(id, day(12), 1).expect(409);
+    await bookByDate(id, day(13), 1).expect(409);
+    await bookByDate(id, day(14), 21).expect(201);
+    expect(await dayOf(id, day(14))).toEqual({ date: day(14), available: false, spotsLeft: 0 });
   });
 
   it('still requires a departure for a tour sold by time slot', async () => {
