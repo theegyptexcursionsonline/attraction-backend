@@ -33,6 +33,7 @@ import octoRoutes from './octo.routes';
 import bundlesRoutes from './bundles.routes';
 import bundleOrdersRoutes from './bundleOrders.routes';
 import bundleSupplyOffersRoutes from './bundleSupplyOffers.routes';
+import publicRouteCompositionRoutes from './publicRouteComposition.routes';
 
 const router = Router();
 
@@ -278,6 +279,7 @@ router.get('/', (req, res) => {
 });
 
 // API routes
+router.use('/public', publicRouteCompositionRoutes);
 router.use('/auth', authRoutes);
 router.use('/attractions', attractionsRoutes);
 router.use('/bookings', bookingsRoutes);
