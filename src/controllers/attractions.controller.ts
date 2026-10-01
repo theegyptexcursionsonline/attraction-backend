@@ -1,5 +1,5 @@
 import { localizedSlugStages } from '../services/localizationSourceSnapshot.service';
-import { requestedLocale, localizationStages, localizedPresentation, localizationIdentity, translatedSlugFilter, TranslationError } from '../services/attractionLocalization.service';
+import { requestedLocale, sourceFallbackAllowed, localizationStages, localizedPresentation, localizationIdentity, translatedSlugFilter, TranslationError } from '../services/attractionLocalization.service';
 import { publicCursorPlan, type CursorField } from '../utils/publicCursor';
 import { resolveImageAltTexts } from '../utils/imagePresentation';
 import { publicBookingTenantSlug } from '../utils/public-booking-tenant';
@@ -225,6 +225,7 @@ export const getAttractions = async (
     } = req.query;
 
     const locale = requestedLocale(req.query?.locale);
+    const sourceFallback = sourceFallbackAllowed(req.query?.localeFallback, req.tenant);
     if (locale && (!req.tenant || req.query.scope === 'admin' || ownership !== 'all' || lifecycle)) { throw new TranslationError('Select one public site for translated content'); }
     const cursorMode = req.query.pagination === 'cursor';
     if (cursorMode && (req.query.scope === 'admin' || ownership !== 'all' || lifecycle)) {
@@ -356,11 +357,11 @@ export const getAttractions = async (
     const isAdminRequest = !locale && !cursorMode && !!req.user && req.user.role !== 'customer';
     if (locale && req.tenant) {
       if (!['-createdAt', 'recommended', 'price-low', 'price-high', 'rating', 'popularity', 'sortOrder'].includes(String(sort))) throw new TranslationError('Select a supported catalogue order');
-      const pipeline = [{ $match: query }, ...localizationStages(req.tenant._id, locale, typeof search === 'string' ? search : undefined)];
+      const pipeline = [{ $match: query }, ...localizationStages(req.tenant._id, locale, typeof search === 'string' ? search : undefined, !sourceFallback)];
       const projection = Object.fromEntries([...PUBLIC_ATTRACTION_FIELDS, 'updatedAt', '__translations'].map(field => [field, 1]));
       if (cursorMode) {
         const fields: CursorField[] = Object.entries({ ...sortOption, _id: -1 as const }).map(([field, direction]) => ({ field, direction, kind: field === '_id' ? 'id' : field === 'createdAt' ? 'date' : field === 'featured' ? 'boolean' : 'number' }));
-        const plan = publicCursorPlan({ query, locale, search }, fields, req.query.cursor as string | undefined);
+        const plan = publicCursorPlan({ query, locale, search, sourceFallback }, fields, req.query.cursor as string | undefined);
         const [rows, counts] = await Promise.all([Attraction.aggregate([...pipeline, { $set: plan.normalized }, ...(plan.seek ? [{ $match: plan.seek }] : []), { $sort: plan.sort }, { $limit: limitNum + 1 }, { $project: { ...projection, ...Object.fromEntries(fields.map((_field, index) => [`_cursor${index}`, 1])) } }]), Attraction.aggregate([...pipeline, { $count: 'total' }])]);
         const result = plan.page(rows, limitNum, counts[0]?.total || 0);
         res.setHeader('Cache-Control', 'private, no-store');
@@ -432,6 +433,7 @@ export const getAttractionRouteStatus = async (req: AuthRequest, res: Response, 
     if (!req.tenant) { sendError(res, 'Tenant context required', 400); return; }
     const slug = req.params.slug;
     const locale = requestedLocale(req.query?.locale);
+    const sourceFallback = sourceFallbackAllowed(req.query?.localeFallback, req.tenant);
     if (!/^[a-z0-9][a-z0-9-]{0,239}$/i.test(slug)) { sendError(res, 'Attraction not found', 404); return; }
     if (locale) {
       const alias = await translatedSlugFilter(slug, req.tenant._id);
@@ -457,6 +459,7 @@ export const getAttractionBySlug = async (
   try {
     const { slug } = req.params;
     const locale = requestedLocale(req.query?.locale);
+    const sourceFallback = sourceFallbackAllowed(req.query?.localeFallback, req.tenant);
     if (locale) {
       if (!req.tenant) throw new TranslationError('Select one public site for translated content');
       const alias = await translatedSlugFilter(slug, req.tenant._id);
@@ -1994,6 +1997,7 @@ export const getFeaturedAttractions = async (
   try {
     const { limit = 6 } = req.query;
     const locale = requestedLocale(req.query?.locale);
+    const sourceFallback = sourceFallbackAllowed(req.query?.localeFallback, req.tenant);
     if (locale && !req.tenant) throw new TranslationError('Select one public site for translated content');
 
     const query: Record<string, unknown> = {
@@ -2013,7 +2017,7 @@ export const getFeaturedAttractions = async (
 
     if (locale && req.tenant) {
       const amount = Number(limit); if (!Number.isInteger(amount) || amount < 1 || amount > 50) throw new TranslationError('Select between 1 and 50 featured tours');
-      const rows = await Attraction.aggregate([{ $match: { ...query, archivedAt: { $exists: false }, trashedAt: { $exists: false } } }, ...localizationStages(req.tenant._id, locale), { $sort: { sortOrder: 1, rating: -1, _id: 1 } }, { $limit: amount }, { $project: Object.fromEntries([...PUBLIC_ATTRACTION_FIELDS, 'updatedAt', '__translations'].map(field => [field, 1])) }]);
+      const rows = await Attraction.aggregate([{ $match: { ...query, archivedAt: { $exists: false }, trashedAt: { $exists: false } } }, ...localizationStages(req.tenant._id, locale, undefined, !sourceFallback), { $sort: { sortOrder: 1, rating: -1, _id: 1 } }, { $limit: amount }, { $project: Object.fromEntries([...PUBLIC_ATTRACTION_FIELDS, 'updatedAt', '__translations'].map(field => [field, 1])) }]);
       res.setHeader('Cache-Control', 'private, no-store'); sendSuccess(res, rows.map(row => localizedPresentation(toPublicAttractionDto(row), row, locale))); return;
     }
     const attractions = await Attraction.find(query)

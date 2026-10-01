@@ -131,3 +131,77 @@ it('requires complete identity and slug uniqueness indexes before applying or ro
     }
   }
 });
+
+it('keeps Arabic and French source catalogues available with explicit opt-in fallback and authoritative prices', async () => {
+  for (const locale of ['ar','fr']) {
+    const query = { tenantId: String(tenant), locale, localeFallback: 'source' };
+    const list = (await request(app).get('/attractions').query({ ...query, pagination:'cursor', search:'Sea cruise' }).expect(200)).body;
+    expect(list.pagination.total).toBe(1);
+    expect(list.data[0]).toMatchObject({ title:'Sea cruise',locale,resolvedLocale:'en',translationStatus:'missing',priceFrom:49,currency:'USD' });
+    expect(list.data[0]).not.toHaveProperty('__translations');
+    const featured = (await request(app).get('/attractions/featured').query(query).expect(200)).body.data;
+    expect(featured).toHaveLength(1);
+    const detail = (await request(app).get('/destinations/hurghada').query(query).expect(200)).body.data;
+    expect(detail).toMatchObject({ locale,resolvedLocale:'en',translationStatus:'missing',attractionCount:1,priceFrom:49 });
+    const destinations = (await request(app).get('/destinations').query({ ...query,search:'Egypt' }).expect(200)).body;
+    expect(destinations.data).toHaveLength(1);
+    expect(destinations.data[0].attractionCount).toBe(1);
+    expect((await request(app).get('/destinations').query({ ...query,search:'does not exist' }).expect(200)).body.data).toEqual([]);
+    expect((await request(app).get('/attractions').query({ ...query,search:'does not exist' }).expect(200)).body.data).toEqual([]);
+    expect((await request(app).get('/attractions').query({ ...query,tenantId:String(other) }).expect(200)).body.data).toEqual([]);
+  }
+  await request(app).get('/attractions').query({ tenantId:String(tenant),locale:'xx',localeFallback:'source' }).expect(400);
+  await request(app).get('/attractions').query({ tenantId:String(tenant),locale:'ar',localeFallback:'anything' }).expect(400);
+});
+it('publishes Arabic and French presentation without exposing drafts, stale translations or foreign overlays', async () => {
+  for (const locale of ['ar','fr']) {
+    await publish(locale);
+    const query={ tenantId:String(tenant),locale,localeFallback:'source' };
+    const translated=(await request(app).get('/attractions/sea-cruise').query(query).expect(200)).body.data;
+    expect(translated).toMatchObject({ resolvedLocale:locale,translationStatus:'translated',priceFrom:49,currency:'USD' });
+    expect(translated.pricingOptions[0].price).toBe(49);
+    expect(translated.localizedSlugs[locale]).toBe('morskaya-progulka');
+    // Remove before using the same alias for the next locale.
+    await AttractionTranslation.deleteMany({});
+  }
+  await publish('ar');
+  await Attraction.collection.updateOne({_id:tour},{$set:{cancellationPolicy:'Updated policy'}});
+  const query={tenantId:String(tenant),locale:'ar',localeFallback:'source'};
+  const list=(await request(app).get('/attractions').query(query).expect(200)).body.data;
+  expect(list[0]).toMatchObject({title:'Sea cruise',resolvedLocale:'en',translationStatus:'missing'});
+  expect(list[0].localizedSlugs).toEqual({});
+  await request(app).get('/attractions/morskaya-progulka').query(query).expect(404);
+  await AttractionTranslation.updateMany({},{$set:{status:'draft'}});
+  expect((await request(app).get('/attractions').query(query).expect(200)).body.data[0].translationStatus).toBe('missing');
+});
+it('cannot widen Royal Cruise publication policy through the generic fallback switch', async () => {
+  await Tenant.collection.updateOne({_id:tenant},{$set:{slug:'royal-cruise-hurghada'}});
+  try {
+    expect((await request(app).get('/attractions').query({tenantId:String(tenant),locale:'ar',localeFallback:'source'}).expect(200)).body.data).toEqual([]);
+    expect((await request(app).get('/destinations').query({tenantId:String(tenant),locale:'ar',localeFallback:'source'}).expect(200)).body.data).toEqual([]);
+  } finally { await Tenant.collection.updateOne({_id:tenant},{$set:{slug:'cruise-a'}}); }
+});
+it('paginates the complete mixed source catalogue and fences fallback cursor replay', async () => {
+  for (let index=0;index<5;index++) await Attraction.collection.insertOne({...source,_id:new Types.ObjectId(),slug:`extra-${index}`,pathSlug:`extra-${index}`,priceFrom:index+1});
+  const query={tenantId:String(tenant),locale:'ar',localeFallback:'source',pagination:'cursor',limit:2};
+  let cursor:string|undefined; let initialCursor=''; const seen:string[]=[];
+  do { const response=(await request(app).get('/attractions').query({...query,...(cursor?{cursor}:{})}).expect(200)).body;
+    expect(response.pagination.total).toBe(6); seen.push(...response.data.map((row:any)=>row._id)); cursor=response.pagination.nextCursor; initialCursor ||= cursor||'';
+  } while(cursor);
+  expect(new Set(seen).size).toBe(6);
+  await request(app).get('/attractions').query({tenantId:String(tenant),locale:'ar',pagination:'cursor',limit:2,cursor:initialCursor}).expect(400);
+});
+it('supports tenant-scoped Arabic destination overlays and keeps draft or stale destination source readable', async () => {
+  await publishDestination('ar');
+  const query={tenantId:String(tenant),locale:'ar',localeFallback:'source'};
+  let list=(await request(app).get('/destinations').query(query).expect(200)).body.data;
+  expect(list[0]).toMatchObject({resolvedLocale:'ar',translationStatus:'translated',attractionCount:1});
+  await DestinationTranslation.updateMany({},{$set:{status:'draft'}});
+  list=(await request(app).get('/destinations').query(query).expect(200)).body.data;
+  expect(list[0]).toMatchObject({resolvedLocale:'en',translationStatus:'missing',attractionCount:1});
+  await DestinationTranslation.updateMany({},{$set:{status:'published'}});
+  await Destination.collection.updateOne({_id:destinationId},{$set:{shortDescription:'Source changed'}});
+  list=(await request(app).get('/destinations').query(query).expect(200)).body.data;
+  expect(list[0].translationStatus).toBe('missing');
+  expect(list[0].localizedSlugs).toEqual({});
+});

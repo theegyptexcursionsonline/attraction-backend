@@ -72,7 +72,8 @@ router.get(
   validateQuery(
     paginationSchema.merge(
       z.object({
-        locale: z.enum(['en', 'de', 'ru']).optional(),
+        locale: z.enum(['en', 'ar', 'de', 'ru', 'fr']).optional(),
+        localeFallback: z.literal('source').optional(),
         continent: z.string().optional(),
         search: regexSearchSchema,
         includeCount: z.enum(['true', 'false']).optional(),

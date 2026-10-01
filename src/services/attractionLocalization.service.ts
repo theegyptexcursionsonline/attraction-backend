@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { AttractionTranslation } from '../models/AttractionTranslation';
 import { sanitizeRichText } from '../utils/sanitizeHtml';
 import { escapeRegex } from '../utils/helpers';
-export type StorefrontLocale = 'en' | 'de' | 'ru';
+export type StorefrontLocale = 'en' | 'ar' | 'de' | 'ru' | 'fr';
 const text = z.string().trim().max(2000); const short = z.string().trim().max(250); const items = z.array(text).max(100);
 const byId = z.object({ id: z.string().min(1).max(100), name: short, description: text.optional(), timeSlots: z.array(z.object({ id: z.string().min(1).max(100), label: short }).strict()).max(100).optional() }).strict();
 export const attractionTranslationContent = z.object({
@@ -21,11 +21,18 @@ export const attractionTranslationContent = z.object({
 }).strict();
 export type TranslationContent = z.infer<typeof attractionTranslationContent>;
 export class TranslationError extends Error { constructor(message: string, public statusCode = 400) { super(message); } }
-export function requestedLocale(value: unknown): StorefrontLocale | undefined { if (value === undefined) return undefined; if (value === 'en' || value === 'de' || value === 'ru') return value; throw new TranslationError('Unsupported language'); }
+export function requestedLocale(value: unknown): StorefrontLocale | undefined { if (value === undefined) return undefined; if (value === 'en' || value === 'ar' || value === 'de' || value === 'ru' || value === 'fr') return value; throw new TranslationError('Unsupported language'); }
+
+/** Source fallback is opt-in; Royal's approved translated-only catalogue stays strict. */
+export function sourceFallbackAllowed(value: unknown, tenant?: { slug?: string }): boolean {
+  if (value !== undefined && value !== 'source') throw new TranslationError('Unsupported language fallback');
+  if (value && !tenant) throw new TranslationError('Select one public site for translated content');
+  return value === 'source' && tenant?.slug !== 'royal-cruise-hurghada';
+}
 
 /** Join only this site's current published presentation, before pagination/search. */
 export function localizationStages(tenantId: Types.ObjectId, locale: StorefrontLocale, search?: string, filterMissing = true): any[] {
-  return [{ $lookup: { from: AttractionTranslation.collection.name, let: { attraction: '$_id', sourceDate: '$updatedAt', snapshot: sourceSnapshotExpression('tour') }, pipeline: [{ $match: { tenantId, status: 'published', $expr: { $and: [{ $eq: ['$attractionId', '$$attraction'] }, currentSourceExpression('$$snapshot','$$sourceDate')] } } }], as: '__translations' } }, ...(locale !== 'en' && filterMissing ? [{ $match: { __translations: { $elemMatch: { locale, ...(search ? { $or: [{ 'content.title': new RegExp(escapeRegex(search), 'i') }, { 'content.shortDescription': new RegExp(escapeRegex(search), 'i') }, { 'content.description': new RegExp(escapeRegex(search), 'i') }] } : {}) } } } }] : [])];
+  return [{ $lookup: { from: AttractionTranslation.collection.name, let: { attraction: '$_id', sourceDate: '$updatedAt', snapshot: sourceSnapshotExpression('tour') }, pipeline: [{ $match: { tenantId, status: 'published', $expr: { $and: [{ $eq: ['$attractionId', '$$attraction'] }, currentSourceExpression('$$snapshot','$$sourceDate')] } } }], as: '__translations' } }, ...(locale !== 'en' && filterMissing ? [{ $match: { __translations: { $elemMatch: { locale, ...(search ? { $or: [{ 'content.title': new RegExp(escapeRegex(search), 'i') }, { 'content.shortDescription': new RegExp(escapeRegex(search), 'i') }, { 'content.description': new RegExp(escapeRegex(search), 'i') }] } : {}) } } } }] : !filterMissing && locale !== 'en' && search ? [{ $match: { $or: [{ __translations: { $elemMatch: { locale, $or: ['content.title','content.shortDescription','content.description'].map(field => ({ [field]: new RegExp(escapeRegex(search),'i') })) } } }, { $and: [{ __translations: { $not: { $elemMatch: { locale } } } }, { $or: ['title','shortDescription','description'].map(field => ({ [field]: new RegExp(escapeRegex(search),'i') })) }] }] } }] : [])];
 }
 const mappedIds = (source: any[], labels: any[], field: string) => {
   const ids = new Set(source.map(item => String(item.id)));
@@ -48,7 +55,7 @@ export function validateTranslationSource(source: Record<string, any>, content: 
 export function cleanTranslation(content: TranslationContent): TranslationContent { return { ...content, description: sanitizeRichText(content.description), cancellationPolicy: sanitizeRichText(content.cancellationPolicy) }; }
 export function localizedPresentation(dto: Record<string, any>, source: Record<string, any>, locale: StorefrontLocale): Record<string, any> {
   const translations = Array.isArray(source.__translations) ? source.__translations : [];
-  const localizedSlugs = Object.fromEntries(translations.filter((row: any) => ['de', 'ru'].includes(row.locale)).map((row: any) => [row.locale, row.slug]));
+  const localizedSlugs = Object.fromEntries(translations.filter((row: any) => ['ar', 'de', 'ru', 'fr'].includes(row.locale)).map((row: any) => [row.locale, row.slug]));
   const base = { ...dto, locale, resolvedLocale: 'en', translationStatus: locale === 'en' ? 'source' : 'missing', localizedSlugs };
   const selected = translations.find((row: any) => row.locale === locale);
   if (locale === 'en' || !selected) return base;

@@ -7,7 +7,7 @@ import { AttractionTranslation } from '../models/AttractionTranslation';
 import { Tenant } from '../models/Tenant';
 import { AuthRequest } from '../types';
 import { attractionTranslationContent, cleanTranslation, validateTranslationSource, translationSourceTemplate, TranslationError } from '../services/attractionLocalization.service';
-const params = z.object({ tenantId: z.string().regex(/^[a-f\d]{24}$/i), attractionId: z.string().regex(/^[a-f\d]{24}$/i), locale: z.enum(['de', 'ru']) });
+const params = z.object({ tenantId: z.string().regex(/^[a-f\d]{24}$/i), attractionId: z.string().regex(/^[a-f\d]{24}$/i), locale: z.enum(['ar', 'de', 'ru', 'fr']) });
 const input = z.object({ slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).min(1).max(180), content: attractionTranslationContent, sourceUpdatedAt: z.string().datetime(), expectedUpdatedAt: z.string().datetime().optional() }).strict();
 async function scope(req: AuthRequest) {
   const parsed = params.safeParse(req.params); if (!parsed.success) throw new TranslationError('Invalid translation address');
