@@ -1,3 +1,5 @@
+import { TenantPresentationTranslation } from '../models/TenantPresentationTranslation';
+import { localizedTenantPresentation, presentationReadScope, ownedPresentationSource } from '../services/tenantPresentationLocalization.service';
 import { requestedLocale, sourceFallbackAllowed, localizationStages, localizationIdentity, localizedPresentation, translatedSlugFilter } from '../services/attractionLocalization.service';
 import { localizedSlugStages, localizationSourceProjection } from '../services/localizationSourceSnapshot.service';
 import { toPublicAttractionDto } from './attractions.controller';
@@ -275,6 +277,15 @@ export const permanentlyDeleteAdminPage = async (req: AuthRequest, res: Response
  * tenant is in scope we return null — the catch-all only applies for tenants
  * that opt in via flatUrls=true, which the frontend already checks.
  */
+async function localizedPublicPage(page: any, tenantId: Types.ObjectId, tenantSlug: string | undefined, locale: ReturnType<typeof requestedLocale>): Promise<Record<string, unknown>> {
+ const dto={...page,layoutMode:page.layoutMode??'website',body:sanitizeRichText(page.body),...(page.sections!==undefined?{sections:sanitizePageSections(page.sections)}:{})};
+ if(!locale || ['royal-cruise-hurghada','makadi-horse-club'].includes(tenantSlug||''))return locale?{...dto,locale,resolvedLocale:'en',translationStatus:locale==='en'?'source':'missing'}:dto;
+ const owner={_id:tenantId,customPages:[page]};
+ const source=ownedPresentationSource(owner,'page',page._id);
+ const rows=await TenantPresentationTranslation.find(presentationReadScope(owner)).lean();
+ return localizedTenantPresentation(dto,source,tenantId,locale,rows,'page');
+}
+
 export const resolvePage = async (
   req: AuthRequest,
   res: Response,
@@ -283,6 +294,7 @@ export const resolvePage = async (
   try {
     const locale = requestedLocale(req.query.locale);
     const sourceFallback = sourceFallbackAllowed(req.query.localeFallback, req.tenant);
+    if(locale)res.setHeader('Cache-Control','private, no-store');
     const slug = typeof req.query.slug === 'string' ? req.query.slug.toLowerCase().trim() : '';
     if (!slug) {
       sendError(res, 'slug query param required', 400);
@@ -305,7 +317,7 @@ export const resolvePage = async (
       const page = tenant?.customPages?.[0];
       sendSuccess(res, page ? {
         type: 'page',
-        page: { ...page, layoutMode: page.layoutMode ?? 'website', body: sanitizeRichText(page.body), ...(page.sections !== undefined ? { sections: sanitizePageSections(page.sections) } : {}), ...(locale ? { locale, resolvedLocale: 'en', translationStatus: locale === 'en' ? 'source' : 'missing' } : {}) },
+        page: await localizedPublicPage(page, req.tenant._id, req.tenant.slug, locale),
       } : { type: 'none' });
       return;
     }
@@ -346,7 +358,7 @@ export const resolvePage = async (
     if (page) {
       sendSuccess(res, {
         type: 'page',
-        page: { ...page, layoutMode: page.layoutMode ?? 'website', body: sanitizeRichText(page.body), ...(page.sections !== undefined ? { sections: sanitizePageSections(page.sections) } : {}), ...(locale ? { locale, resolvedLocale: 'en', translationStatus: locale === 'en' ? 'source' : 'missing' } : {}) },
+        page: await localizedPublicPage(page, req.tenant._id, req.tenant.slug, locale),
       });
       return;
     }

@@ -1,0 +1,13 @@
+import {Types} from 'mongoose';
+import {Tenant} from '../models/Tenant';
+import {writeFile} from 'fs/promises';
+import {presentationExportArguments,exportTenantPresentationToFile} from '../scripts/export-tenant-presentation-localization';
+jest.mock('fs/promises',()=>({writeFile:jest.fn()}));
+const owner=new Types.ObjectId();
+const fixture={_id:owner,slug:'qa-site',customDomain:'qa-site.invalid',status:'active',tagline:'Our trips',description:'Our coast',customPages:[],paymentSettings:{stripe:{secretKeyEnc:'private-marker'}},contactInfo:{email:'private-marker'},aiSettings:{private:'private-marker'}};
+beforeEach(()=>{jest.clearAllMocks();jest.spyOn(Tenant,'findOne').mockReturnValue({select:jest.fn().mockReturnValue({lean:jest.fn().mockResolvedValue(fixture)})} as any);});
+afterEach(()=>jest.restoreAllMocks());
+it('exports whitelisted public prose/snapshots with verified owner hash to a new private file',async()=>{await expect(exportTenantPresentationToFile(['--tenant','qa-site','--domain','qa-site.invalid','--out','/tmp/qa-export.json'])).resolves.toMatchObject({databaseWrites:0,sources:1});expect(Tenant.findOne).toHaveBeenCalledWith({slug:'qa-site',customDomain:'qa-site.invalid',status:'active'});expect(writeFile).toHaveBeenCalledWith('/tmp/qa-export.json',expect.any(String),{flag:'wx',mode:0o600});const output=JSON.parse((writeFile as jest.Mock).mock.calls[0][1]);expect(output.sourceSha256).toMatch(/^[a-f\d]{64}$/);expect(output.sources[0].snapshot.content).toMatchObject({tagline:'Our trips'});expect(JSON.stringify(output)).not.toMatch(/private-marker|paymentSettings|contactInfo|aiSettings/);});
+it.each([[],['--tenant','qa-site','--domain','https://qa-site.invalid','--out','x'],['--tenant','qa-site','--domain','qa-site.invalid','--apply','x'],['--tenant','qa-site','--tenant','qa-site.invalid','--out','x']].map(args=>[args]))('rejects incomplete/hostile arguments before DB read %j',args=>{expect(()=>presentationExportArguments(args)).toThrow();expect(Tenant.findOne).not.toHaveBeenCalled();});
+it('refuses absent or changed owner before writing',async()=>{(Tenant.findOne as jest.Mock).mockReturnValue({select:()=>({lean:async()=>null})});await expect(exportTenantPresentationToFile(['--tenant','qa-site','--domain','qa-site.invalid','--out','x'])).rejects.toThrow('ownership');expect(writeFile).not.toHaveBeenCalled();});
+it('does not replace an existing output or expose errors',async()=>{(writeFile as jest.Mock).mockRejectedValue(new Error('EEXIST'));await expect(exportTenantPresentationToFile(['--tenant','qa-site','--domain','qa-site.invalid','--out','x'])).rejects.toThrow('EEXIST');});

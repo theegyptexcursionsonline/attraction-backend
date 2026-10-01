@@ -1,3 +1,6 @@
+import { requestedLocale, sourceFallbackAllowed } from '../services/attractionLocalization.service';
+import { TenantPresentationTranslation } from '../models/TenantPresentationTranslation';
+import { localizedPublicSitePresentation, presentationReadScope } from '../services/tenantPresentationLocalization.service';
 import { pageSeoUpdateSchema, publicPageSeo, withoutPageSeoFields } from '../utils/pageSeo';
 import { publicExternalRatings } from '../utils/externalRatings';
 import { Response, NextFunction } from 'express';
@@ -253,18 +256,32 @@ export const getTenantById = async (
  * Public endpoint – returns all active + coming_soon tenants (no auth required).
  * Used by the frontend LayoutWrapper for tenant resolution.
  */
+async function localizedPublicTenant(source: any, req: AuthRequest, res: Response): Promise<Record<string, unknown>> {
+ const locale=requestedLocale(req.query?.locale);
+ sourceFallbackAllowed(req.query?.localeFallback,source);
+ const dto=toPublicTenantDto(source);
+ if(!locale || ['royal-cruise-hurghada','makadi-horse-club'].includes(source.slug))return dto;
+ res.setHeader('Cache-Control','private, no-store');
+ if(req.tenant && String(req.tenant._id)!==String(source._id))throw Object.assign(new Error('Tenant not found'),{statusCode:404});
+ const rows=await TenantPresentationTranslation.find(presentationReadScope(source)).lean();
+ return localizedPublicSitePresentation(dto,source,locale,rows);
+}
+
 export const getPublicTenants = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const tenants = await Tenant.find({ status: { $in: ['active', 'coming_soon'] } })
+    const locale=requestedLocale(req.query?.locale);
+    sourceFallbackAllowed(req.query?.localeFallback,req.tenant);
+    if(locale && !req.tenant){sendError(res,'Select one public site for translated content',400);return;}
+    const tenants = await Tenant.find({ status: { $in: ['active', 'coming_soon'] },...(locale ? {_id:req.tenant!._id}: {}) })
       .select(PUBLIC_TENANT_PROJECTION)
       .sort({ name: 1 })
       .lean();
 
-    sendSuccess(res, tenants.map(toPublicTenantDto));
+    sendSuccess(res, locale ? await Promise.all(tenants.map(tenant=>localizedPublicTenant(tenant,req,res))) : tenants.map(toPublicTenantDto));
   } catch (error) {
     next(error);
   }
@@ -290,7 +307,7 @@ export const getPublicTenantById = async (
       return;
     }
 
-    sendSuccess(res, toPublicTenantDto(tenant));
+    sendSuccess(res, await localizedPublicTenant(tenant,req,res));
   } catch (error) {
     next(error);
   }
@@ -313,7 +330,7 @@ export const getTenantBySlug = async (
       return;
     }
 
-    sendSuccess(res, toPublicTenantDto(tenant));
+    sendSuccess(res, await localizedPublicTenant(tenant,req,res));
   } catch (error) {
     next(error);
   }

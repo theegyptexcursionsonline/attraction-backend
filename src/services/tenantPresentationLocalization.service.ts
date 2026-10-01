@@ -3,7 +3,8 @@ import { z } from 'zod';
 import { Types } from 'mongoose';
 import sanitizeHtml from 'sanitize-html';
 import { sanitizeRichText } from '../utils/sanitizeHtml';
-import { FIXED_PAGE_KEYS } from '../utils/pageSeo';
+import { FIXED_PAGE_KEYS, publicPageSeo } from '../utils/pageSeo';
+import { navigationSchema } from '../utils/siteContent';
 export const PRESENTATION_LOCALES = ['ar','de','ru','fr'] as const;
 const plain = (max:number) => z.string().max(max).refine(v=>!/[<>\u0000-\u001f\u007f]/.test(v),'Use plain text');
 const title=plain(250), prose=plain(10000), rich=z.string().max(100000);
@@ -21,6 +22,8 @@ export const pagePresentationContent = z.object({
 export type PresentationKind='tenant'|'page';
 type Source=Record<string,any>;
 const value=(input:unknown)=>typeof input==='string'?input:'';
+const publicNavigation=(input:unknown)=>{const parsed=navigationSchema.safeParse(input||[]);return parsed.success?parsed.data:[];};
+const publicSections=(input:Source[]) => (input||[]).map(section=>Object.fromEntries(['id','type','title','body','layout','attractionIds','categoryIds','pageIds'].filter(key=>section[key]!==undefined).map(key=>[key,key==='body'?sanitizeRichText(section[key]):section[key]])));
 const identity=(input:unknown)=>input instanceof Types.ObjectId?input.toHexString():typeof input==='string'&&Types.ObjectId.isValid(input)?new Types.ObjectId(input).toHexString():null;
 export class PresentationTranslationError extends Error {constructor(message:string, public statusCode=400){super(message);}}
 function requireSource(kind:PresentationKind,source:Source) {
@@ -30,12 +33,12 @@ function requireSource(kind:PresentationKind,source:Source) {
 /** Export only text and immutable positions; operational and commercial fields never enter content. */
 export function presentationSourceTemplate(kind:PresentationKind,source:Source):Record<string,any> {
  requireSource(kind,source);
- if(kind==='tenant') return {
+ if(kind==='tenant') {const seo=publicPageSeo(source.pageSeo);return {
   tagline:value(source.tagline),description:value(source.description),seoSettings:{metaTitle:value(source.seoSettings?.metaTitle),metaDescription:value(source.seoSettings?.metaDescription),keywords:source.seoSettings?.keywords||[]},
-  pageSeo:FIXED_PAGE_KEYS.filter(key=>source.pageSeo?.pages?.[key]).map(key=>({key,title:value(source.pageSeo.pages[key].title),description:value(source.pageSeo.pages[key].description),heading:value(source.pageSeo.pages[key].heading)})),
-  navigation:(source.navigation||[]).map((item:Source)=>({label:value(item.label),columns:(item.columns||[]).map((column:Source)=>({label:value(column.label),links:(column.links||[]).map((entry:Source)=>({label:value(entry.label)}))}))})),
- };
- return {title:value(source.title),body:value(source.body),metaTitle:value(source.metaTitle),metaDescription:value(source.metaDescription),heroDescription:value(source.heroDescription),heroImageAlt:value(source.heroImageAlt),sections:(source.sections||[]).map((section:Source)=>({id:section.id,type:section.type,title:value(section.title),body:section.type==='content'?value(section.body):''}))};
+  pageSeo:FIXED_PAGE_KEYS.filter(key=>seo.pages[key]).map(key=>({key,title:value(seo.pages[key]?.title),description:value(seo.pages[key]?.description),heading:value(seo.pages[key]?.heading)})),
+  navigation:publicNavigation(source.navigation).map((item:Source)=>({label:value(item.label),columns:(item.columns||[]).map((column:Source)=>({label:value(column.label),links:(column.links||[]).map((entry:Source)=>({label:value(entry.label)}))}))})),
+ };}
+ return {title:value(source.title),body:sanitizeRichText(source.body),metaTitle:value(source.metaTitle),metaDescription:value(source.metaDescription),heroDescription:value(source.heroDescription),heroImageAlt:value(source.heroImageAlt),sections:(source.sections||[]).map((section:Source)=>({id:section.id,type:section.type,title:value(section.title),body:section.type==='content'?sanitizeRichText(section.body):''}))};
 }
 function htmlResources(html:string):string[] {
  const resources:string[]=[];
@@ -45,7 +48,7 @@ function htmlResources(html:string):string[] {
 /** Source topology and image/link identities are part of freshness, not translatable data. */
 export function presentationSourceSnapshot(kind:PresentationKind,source:Source):Record<string,unknown> {
  const template=presentationSourceTemplate(kind,source);
- return {version:1,kind,sourceId:identity(source._id),content:template,topology:kind==='tenant'?{slug:source.slug,heroImages:source.heroImages||[],navigation:source.navigation||[],pageSeo:source.pageSeo||null}: {slug:source.slug,layoutMode:source.layoutMode||'website',heroImage:value(source.heroImage),ogImage:value(source.ogImage),pageType:source.pageType,parentPath:source.parentPath,categoryIds:source.categoryIds||[],sections:source.sections||[],revision:source.revision||0,isPublished:source.isPublished!==false,status:source.status||'active'}};
+ return {version:1,kind,sourceId:identity(source._id),content:template,topology:kind==='tenant'?{slug:source.slug,heroImages:source.heroImages||[],navigation:publicNavigation(source.navigation),pageSeo:publicPageSeo(source.pageSeo)}: {slug:source.slug,layoutMode:source.layoutMode||'website',heroImage:value(source.heroImage),ogImage:value(source.ogImage),pageType:value(source.pageType),parentPath:value(source.parentPath)||'/',categoryIds:source.categoryIds||[],sections:publicSections(source.sections),revision:source.revision||0,isPublished:source.isPublished!==false,status:source.status||'active'}};
 }
 function validateComplete(original:any,translated:any,path='content'):void {
  if(typeof original==='string') {if(original.trim()&&!translated.trim())throw new PresentationTranslationError(`Translate ${path} without removing information`);if(!original.trim()&&translated.trim())throw new PresentationTranslationError(`Do not invent ${path}`);return;}
@@ -80,7 +83,7 @@ export function localizedTenantPresentation(dto:Source,source:Source,tenantId:un
  const dtoIds=[dto._id,dto.id].filter(value=>value!==undefined);
  const ownsDto=dtoIds.length>0 && dtoIds.every(value=>identity(value)===identity(source._id)) && dto.slug===source.slug;
  const accepted=ownsDto?currentPresentationRows(tenantId,kind,source,rows):[];
- const base={...dto,locale,resolvedLocale:'en',translationStatus:locale==='en'?'source':'missing',publishedPresentationLocales:accepted.map(row=>row.locale)};
+ const base={...dto,locale,resolvedLocale:'en',translationStatus:locale==='en'?'source':'missing',publishedPresentationLocales:PRESENTATION_LOCALES.filter(language=>accepted.some(row=>row.locale===language))};
  const row=accepted.find(item=>item.locale===locale);if(locale==='en'||!row)return base;
  const content=cleanPresentationContent(kind,source,row.content);
  const out:Source={...base,resolvedLocale:locale,translationStatus:'translated'};
