@@ -73,8 +73,8 @@ router.get('/profile', authenticate, validateCustomerSiteHint, optionalTenant, g
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get('/wishlist', authenticate, optionalTenant, validateQuery(customerListQuery), getWishlist);
-router.delete('/wishlist/page', authenticate, optionalTenant, validate(wishlistPageRemoval), removeWishlistPage);
+router.get('/wishlist', authenticate, validateCustomerSiteHint, optionalTenant, validateQuery(customerListQuery), getWishlist);
+router.delete('/wishlist/page', authenticate, validateCustomerSiteHint, optionalTenant, validate(wishlistPageRemoval), removeWishlistPage);
 
 /**
  * @swagger
@@ -96,7 +96,7 @@ router.delete('/wishlist/page', authenticate, optionalTenant, validate(wishlistP
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.post('/wishlist/:attractionId', authenticate, optionalTenant, addToWishlist);
+router.post('/wishlist/:attractionId', authenticate, validateCustomerSiteHint, optionalTenant, addToWishlist);
 
 /**
  * @swagger
@@ -118,7 +118,7 @@ router.post('/wishlist/:attractionId', authenticate, optionalTenant, addToWishli
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.delete('/wishlist/:attractionId', authenticate, optionalTenant, removeFromWishlist);
+router.delete('/wishlist/:attractionId', authenticate, validateCustomerSiteHint, optionalTenant, removeFromWishlist);
 
 /**
  * @swagger
