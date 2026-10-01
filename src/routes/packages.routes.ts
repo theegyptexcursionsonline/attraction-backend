@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   addPackageDepartures,
+  bookPackage,
   deletePackageDeparture,
   getPackageCalendar,
   getPackageForEditor,
@@ -10,7 +11,8 @@ import {
   savePackageDetails,
   upsertPackageDeparture,
 } from '../controllers/packages.controller';
-import { authenticate, requireRole } from '../middleware/auth.middleware';
+import { authenticate, optionalAuth, requireRole } from '../middleware/auth.middleware';
+import { bookingLimiter } from '../middleware/rate-limit.middleware';
 import { optionalTenant } from '../middleware/tenant.middleware';
 
 /**
@@ -28,6 +30,7 @@ const SEAT_ROLES = ['super-admin', 'brand-admin', 'manager'];
 // Public: a published package listed on the requesting site.
 router.get('/:id/calendar', optionalTenant, getPackageCalendar);
 router.post('/:id/quote', optionalTenant, quotePackage);
+router.post('/:id/bookings', bookingLimiter, optionalAuth, optionalTenant, bookPackage);
 
 // Package editor.
 router.get('/:id', authenticate, requireRole(...READ_ROLES), getPackageForEditor);

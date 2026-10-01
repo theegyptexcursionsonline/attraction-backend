@@ -1,13 +1,32 @@
+import crypto from 'crypto';
 import { NextFunction, Response } from 'express';
 import { Types } from 'mongoose';
 import { z } from 'zod';
 import { Attraction } from '../models/Attraction';
 import { Availability } from '../models/Availability';
-import { AuthRequest } from '../types';
+import { Booking } from '../models/Booking';
+import { IdempotencyKey } from '../models/IdempotencyKey';
+import { User } from '../models/User';
+import { AuthRequest, IAttraction, IBooking } from '../types';
+import { generateBookingReference } from '../utils/hash';
+import { resaleFieldsFor } from '../utils/resaleSplit';
+import { bookingDate, runBookingTransaction, sessionOption } from '../services/bookingInventory.service';
+import { getTenantStripeConfig } from '../services/tenantPayment.service';
+import { assertTenantIdsBookingCreationAllowed, assertTenantPaymentMethodAllowed } from '../services/tenantBookingPolicy.service';
+import { safeEmitEvent } from '../services/webhook.service';
+import { createAdminNotifications } from '../services/notification.service';
+import { bookingEventPayload, bookingResponse } from './bookings.controller';
+import {
+  cancellationPolicyText,
+  packageBookingItem,
+  packageBookingSnapshot,
+  PackageSeatsUnavailableError,
+  reservePackageSeats,
+} from '../services/packageBooking.service';
 import { resolveBookingTimeZone } from '../utils/bookingCutoff';
 import { sendError, sendSuccess } from '../utils/response';
 import { callerTenantIds, isSuperAdmin } from '../utils/tenantScope';
-import { createAttractionSchema } from '../utils/validators';
+import { createAttractionSchema, createBookingSchema } from '../utils/validators';
 import {
   isRealIsoDate,
   PACKAGE_LIMITS,
@@ -175,6 +194,8 @@ export const savePackageDetails = async (req: AuthRequest, res: Response, next: 
           packageDetails: details,
           ...(fromPrice ? { priceFrom: fromPrice.perPerson } : {}),
           ...(duration ? { duration } : {}),
+          // Emails, tickets and pages state the package's own schedule, not the tour default.
+          ...(details.cancellation.length ? { cancellationPolicy: cancellationPolicyText(details.cancellation) } : {}),
         },
         ...(!fromPrice && !live ? { $unset: { priceFrom: 1 } } : {}),
         $inc: { packageRevision: 1 },
@@ -243,7 +264,12 @@ export const publishPackage = async (req: AuthRequest, res: Response, next: Next
     const published = await Attraction.findOneAndUpdate(
       { ...scope, status: record.status, archivedAt: { $exists: false }, ...packageRevisionFilter(body.data.expectedRevision) },
       {
-        $set: { status: 'active', priceFrom: fromPrice.perPerson, ...(duration ? { duration } : {}) },
+        $set: {
+          status: 'active',
+          priceFrom: fromPrice.perPerson,
+          cancellationPolicy: cancellationPolicyText(details.cancellation),
+          ...(duration ? { duration } : {}),
+        },
         $inc: { packageRevision: 1 },
       },
       { new: true, runValidators: true, context: 'query' },
@@ -568,6 +594,189 @@ export const quotePackage = async (req: AuthRequest, res: Response, next: NextFu
       quotedAt: new Date().toISOString(),
     });
   } catch (error) {
+    next(error);
+  }
+};
+
+// ── booking ───────────────────────────────────────────────────────────────────────────────────
+
+export const bookPackageSchema = z.object({
+  selection: packageSelectionSchema,
+  quoteHash: z.string().regex(/^[a-f0-9]{32}$/, 'Review the price before booking'),
+  guestDetails: createBookingSchema.shape.guestDetails,
+  /** Names as on passports, lead traveller first; optional at booking. */
+  travellerNames: z.array(z.string().trim().min(1).max(120)).max(PACKAGE_LIMITS.travellers).optional(),
+}).strict();
+
+const IDEMPOTENCY_KEY = /^[A-Za-z0-9._:-]{16,128}$/;
+const sha256 = (value: string): string => crypto.createHash('sha256').update(value).digest('hex');
+const stableStringify = (value: unknown): string => {
+  if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`;
+  if (value && typeof value === 'object') {
+    return `{${Object.entries(value as Record<string, unknown>)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, item]) => `${JSON.stringify(key)}:${stableStringify(item)}`)
+      .join(',')}}`;
+  }
+  return JSON.stringify(value) ?? 'null';
+};
+
+/**
+ * Books a package on the requesting site: re-prices the selection on the server, refuses a price
+ * that changed since the customer's quote (409 PRICE_CHANGED with the new figure), takes the seats
+ * and writes a pending card booking in one transaction. Payment continues through the shared card
+ * payment endpoints; an unpaid hold is released by the shared hold sweep. A retry with the same
+ * Idempotency-Key returns the same booking.
+ *
+ * Card only: a multi-day trip commits hotels, so it is never booked to be paid on arrival
+ * (deposits are designed separately). A site that cannot take cards is told to send an enquiry.
+ */
+export const bookPackage = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  let idempotencyRecordId: Types.ObjectId | undefined;
+  try {
+    const idempotencyKey = req.headers['idempotency-key'];
+    if (typeof idempotencyKey !== 'string' || !IDEMPOTENCY_KEY.test(idempotencyKey)) {
+      sendError(res, 'A valid Idempotency-Key header is required', 400);
+      return;
+    }
+    const body = bookPackageSchema.safeParse(req.body);
+    if (!body.success) { sendError(res, firstIssue(body.error), 400); return; }
+    if (!req.tenant) { sendError(res, 'Book this trip from the website that lists it', 400); return; }
+    const params = idParams.safeParse(req.params);
+    if (!params.success) { sendError(res, NOT_FOUND, 404); return; }
+    const attraction = await Attraction.findOne(publicScope(req, params.data.id)).lean<IAttraction>();
+    const details = attraction ? readPackageDetails(attraction.packageDetails) : null;
+    if (!attraction || !details) { sendError(res, NOT_FOUND, 404); return; }
+
+    const tenantId = req.tenant._id;
+    const currency = attraction.currency ?? 'USD';
+    const { selection, guestDetails, travellerNames } = body.data;
+    const priced = pricePackageSelection({ details, currency, selection, today: operatorToday(req) });
+    if (!priced.ok) { sendRefusal(res, priced); return; }
+    const quote = priced.quote;
+    const quoteHash = packageQuoteHash(String(attraction._id), selection, quote);
+    if (quoteHash !== body.data.quoteHash) {
+      res.status(409).json({
+        success: false,
+        code: 'PRICE_CHANGED',
+        error: `The price for this trip is now ${currency} ${quote.total.toFixed(2)}. Review it before booking.`,
+        quote,
+        quoteHash,
+      });
+      return;
+    }
+    // The same seat answers the quote gives (no departure, full, only N left); the booking
+    // transaction below remains the authority when two customers race for the last places.
+    const state = (await departureStates(attraction._id, selection.date, selection.date)).get(selection.date);
+    const seats = seatRefusal(state, seatsLeftOn(details, state), quote.travellers.adults + quote.travellers.children);
+    if (seats) { sendRefusal(res, seats); return; }
+    const travellers = quote.travellers.adults + quote.travellers.children + quote.travellers.infants;
+    if (travellerNames && travellerNames.length > travellers) {
+      sendError(res, `Enter at most ${travellers} traveller name${travellers === 1 ? '' : 's'}`, 400);
+      return;
+    }
+    const gateway = await getTenantStripeConfig(tenantId);
+    if (!gateway?.enabled || !gateway.secretKey || !gateway.publishableKey) {
+      sendError(res, 'This website does not take card payments online yet. Please send an enquiry for this trip.', 409);
+      return;
+    }
+
+    const keyHash = sha256(idempotencyKey);
+    const requestHash = sha256(stableStringify({
+      tenantId: String(tenantId),
+      attractionId: String(attraction._id),
+      selection,
+      guestDetails,
+      travellerNames: travellerNames ?? null,
+      paymentMethod: 'card',
+      quoteHash,
+    }));
+    try {
+      const record = await IdempotencyKey.create({
+        scope: 'booking.create', tenantId, keyHash, requestHash, status: 'processing',
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+      });
+      idempotencyRecordId = record._id as Types.ObjectId;
+    } catch (claimError) {
+      if ((claimError as { code?: number }).code !== 11000) throw claimError;
+      const existing = await IdempotencyKey.findOne({ scope: 'booking.create', tenantId, keyHash }).lean();
+      if (!existing || existing.requestHash !== requestHash) {
+        sendError(res, 'Idempotency key was already used for a different booking request', 409);
+        return;
+      }
+      if (existing.status === 'completed' && existing.resourceId) {
+        const replayed = await Booking.findById(existing.resourceId);
+        if (replayed) {
+          res.setHeader('Idempotency-Replayed', 'true');
+          sendSuccess(res, bookingResponse(replayed as IBooking), 'Booking already created');
+          return;
+        }
+      }
+      res.setHeader('Retry-After', '2');
+      sendError(res, 'An identical booking request is already processing', 409);
+      return;
+    }
+
+    await assertTenantIdsBookingCreationAllowed([tenantId]);
+    await assertTenantPaymentMethodAllowed(tenantId, 'card');
+
+    const guests = quote.travellers.adults + quote.travellers.children;
+    const bookingId = new Types.ObjectId();
+    const reference = generateBookingReference();
+    const packageBooking = packageBookingSnapshot({ details, quote, quoteHash, travellerNames });
+    const booking = await runBookingTransaction<IBooking>(async (session) => {
+      await reservePackageSeats(attraction._id, details, selection.date, guests, session);
+      const payload = {
+        _id: bookingId,
+        reference,
+        inventoryReservedAt: new Date(),
+        inventoryReservations: [{ date: bookingDate(selection.date), guests }],
+        userId: req.user?._id,
+        tenantId,
+        attractionId: attraction._id,
+        items: [packageBookingItem(details, quote)],
+        guestDetails,
+        // Every figure includes the service fee, as quoted; the fee itself is in packageBooking.
+        subtotal: quote.total,
+        fees: 0,
+        discount: 0,
+        total: quote.total,
+        currency,
+        paymentMethod: 'card',
+        status: 'pending',
+        paymentStatus: 'pending',
+        packageBooking,
+        ...resaleFieldsFor(attraction, tenantId, quote.total),
+      };
+      const created = session ? (await Booking.create([payload], { session }))[0] : await Booking.create(payload);
+      await IdempotencyKey.findByIdAndUpdate(idempotencyRecordId, {
+        $set: { status: 'completed', resourceId: created._id, expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) },
+      }, sessionOption(session));
+      if (req.user) await User.findByIdAndUpdate(req.user._id, { $inc: { totalBookings: 1 } }, sessionOption(session));
+      return created as IBooking;
+    });
+
+    safeEmitEvent(tenantId, 'booking.created', bookingEventPayload(booking));
+    createAdminNotifications({
+      type: 'booking',
+      title: 'New package booking',
+      message: `${guestDetails.firstName} ${guestDetails.lastName} booked "${attraction.title}" for ${selection.date} — ${currency} ${quote.total.toFixed(2)}, awaiting card payment`,
+      link: '/admin/bookings',
+      data: { bookingId: booking._id, reference: booking.reference },
+      tenantId: String(tenantId),
+    }).catch(() => undefined);
+    console.info('[packages] booking created', {
+      bookingId: String(booking._id), attractionId: String(attraction._id), tenantId: String(tenantId), guests, total: quote.total, currency,
+    });
+    sendSuccess(res, bookingResponse(booking), 'Booking created successfully', 201);
+  } catch (error) {
+    if (idempotencyRecordId) {
+      await IdempotencyKey.deleteOne({ _id: idempotencyRecordId, status: 'processing' }).catch(() => undefined);
+    }
+    if (error instanceof PackageSeatsUnavailableError) {
+      res.status(409).json({ success: false, code: 'SEATS_UNAVAILABLE', error: 'Those places were just taken. Choose another date or fewer travellers.' });
+      return;
+    }
     next(error);
   }
 };

@@ -10,11 +10,11 @@
  *   another.
  */
 
-const PACKAGE_MANAGED_FIELDS = ['pricingOptions', 'entryWindows', 'addons', 'priceFrom', 'duration'] as const;
+const PACKAGE_MANAGED_FIELDS = ['pricingOptions', 'entryWindows', 'addons', 'priceFrom', 'duration', 'cancellationPolicy'] as const;
 
 const present = (value: unknown): boolean => (Array.isArray(value) ? value.length > 0 : value !== undefined);
 
-const MANAGED_MESSAGE = 'Package prices, dates and duration are set in the package editor.';
+const MANAGED_MESSAGE = 'Package prices, dates, duration and cancellation terms are set in the package editor.';
 
 /** Reads the older `productType` field as the listing type, in place. */
 export const normalizeListingTypeInput = (body: Record<string, unknown>): void => {

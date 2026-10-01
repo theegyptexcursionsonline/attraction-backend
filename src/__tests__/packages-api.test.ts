@@ -130,17 +130,17 @@ describe('listing types on the shared attraction endpoints (PLATFORM #1069)', ()
     const pkg = await createPackage();
     expect(await stored(pkg._id)).toMatchObject({ listingType: 'package', status: 'draft' });
     const priced = await as(request(app).post('/attractions')).send(listing({ priceFrom: 900 })).expect(400);
-    expect(priced.body.error).toBe('Package prices, dates and duration are set in the package editor.');
+    expect(priced.body.error).toBe('Package prices, dates, duration and cancellation terms are set in the package editor.');
   });
 
   it.each([
     [{ status: 'active' }, 'Publish a package from the package editor, so its prices and dates are checked first.'],
     [{ listingType: 'tour' }, 'A package cannot be changed into another kind of listing.'],
     [{ productType: 'tour' }, 'A package cannot be changed into another kind of listing.'],
-    [{ pricingOptions: [{ id: 'adult', name: 'Adult', price: 10 }] }, 'Package prices, dates and duration are set in the package editor.'],
-    [{ priceFrom: 1 }, 'Package prices, dates and duration are set in the package editor.'],
-    [{ duration: '3 hours' }, 'Package prices, dates and duration are set in the package editor.'],
-    [{ enquiryOnly: true }, 'Package prices, dates and duration are set in the package editor.'],
+    [{ pricingOptions: [{ id: 'adult', name: 'Adult', price: 10 }] }, 'Package prices, dates, duration and cancellation terms are set in the package editor.'],
+    [{ priceFrom: 1 }, 'Package prices, dates, duration and cancellation terms are set in the package editor.'],
+    [{ duration: '3 hours' }, 'Package prices, dates, duration and cancellation terms are set in the package editor.'],
+    [{ enquiryOnly: true }, 'Package prices, dates, duration and cancellation terms are set in the package editor.'],
   ])('keeps the tour editor from changing a package with %j', async (body, message) => {
     const pkg = await createPackage();
     const before = await stored(pkg._id);

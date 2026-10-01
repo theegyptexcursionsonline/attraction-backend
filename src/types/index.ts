@@ -457,6 +457,8 @@ export interface IBooking extends Document {
   // BundleOrder. They must never enter the legacy single-booking payment,
   // cancellation, settlement, notification, or customer-history flows.
   bundleOrderId?: Types.ObjectId;
+  /** Package bookings only — see services/packageBooking.service. */
+  packageBooking?: unknown;
   bundleComponentId?: string;
   ticketPdfUrl?: string;
   specialOfferId?: Types.ObjectId;
