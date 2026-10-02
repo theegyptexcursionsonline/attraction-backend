@@ -161,6 +161,7 @@ export function packageBookingSnapshot(input: {
     returnDate: quote.returnDate,
     ...(quote.cancellationReferenceDate ? { cancellationReferenceDate: quote.cancellationReferenceDate } : {}),
     ...(quote.packageRevision !== undefined ? { packageRevision: quote.packageRevision } : {}),
+    ...(quote.promotion ? { preDiscountTotal: quote.preDiscountTotal, discount: quote.discount, promotion: { ...quote.promotion }, promotionHash: quote.promotionHash } : {}),
     ...(details.durationDays !== undefined ? { durationDays: details.durationDays } : {}),
     ...(details.durationNights !== undefined ? { durationNights: details.durationNights } : {}),
     startCity: details.startCity,

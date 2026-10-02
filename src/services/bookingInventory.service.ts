@@ -7,6 +7,7 @@ import { standaloneBookingClause } from './bookingRecordScope.service';
 import { bookingStripePaymentRequest, bookingStripeContextMatches } from './bookingPaymentBinding.service';
 import { createPaymentIntent, cancelPaymentIntent, retrievePaymentIntent } from './stripe.service';
 import { enqueueBookingPaymentNotifications } from './bookingPaymentNotification.service';
+import { releaseUnpaidPackagePromo } from './packagePromo.service';
 
 const DEFAULT_CAPACITY = 25;
 const LEGACY_DEFAULT_TIME_SLOTS = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'];
@@ -219,6 +220,7 @@ export const releaseBookingInventory = async (
   session?: ClientSession
 ): Promise<void> => {
   if (booking.inventoryReleasedAt) return;
+  await releaseUnpaidPackagePromo(booking, session);
 
   // Bookings created before transactional inventory did not reserve capacity.
   // Mark them released without decrementing a counter they never incremented.

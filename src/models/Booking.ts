@@ -104,6 +104,15 @@ const bookingSchema = new Schema<IBooking>(
     promoCode: {
       type: String,
     },
+    // New package promo reservations only. A failed unpaid hold returns its use once; paid
+    // redemptions remain used. Ordinary tour discount behavior is unchanged.
+    packagePromoClaim: { type: new Schema({
+      promoId: { type: Schema.Types.ObjectId, required: true },
+      code: { type: String, required: true },
+      discount: { type: Number, required: true, min: 0 },
+      claimedAt: { type: Date, required: true },
+      releasedAt: Date,
+    }, { _id: false }), default: undefined },
     paymentMethod: {
       type: String,
       enum: ['card', 'pay-later', 'cash'],
@@ -203,6 +212,7 @@ const bookingSchema = new Schema<IBooking>(
       transform: (_, ret) => {
         const obj = ret as Record<string, unknown>;
         delete obj.__v;
+        delete obj.packagePromoClaim;
         return obj;
       },
     },

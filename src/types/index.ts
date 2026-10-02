@@ -422,6 +422,7 @@ export interface IBooking extends Document {
   total: number;
   currency: string;
   promoCode?: string;
+  packagePromoClaim?: { promoId: Types.ObjectId; code: string; discount: number; claimedAt: Date; releasedAt?: Date };
   paymentMethod?: string;
   paymentStatus: PaymentStatus;
   paymentFailureReason?: 'payment_failed' | 'expired';

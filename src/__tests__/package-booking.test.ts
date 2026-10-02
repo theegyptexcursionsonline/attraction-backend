@@ -11,12 +11,16 @@ import { Attraction } from '../models/Attraction';
 import { Availability } from '../models/Availability';
 import { Booking } from '../models/Booking';
 import { IdempotencyKey } from '../models/IdempotencyKey';
+import { PromoCode } from '../models/PromoCode';
 import { encryptSecret } from '../utils/secretCrypto';
 import { addDays, packageQuoteHash, packageSelectionSchema, todayInZone } from '../services/packagePricing.service';
-import { expireStaleCardHolds } from '../services/bookingInventory.service';
+import { expireStaleCardHolds, failCardBookingAndReleaseInventory, markCardPaymentFailed, releaseBookingInventory, runBookingTransaction } from '../services/bookingInventory.service';
+import { bookingStripePaymentRequest } from '../services/bookingPaymentBinding.service';
 import { PackageDetailsInput } from '../utils/packageDetails';
 import { samplePackageInput } from '../test/packageFixture';
 import * as packageBookingService from '../services/packageBooking.service';
+import * as packagePromoService from '../services/packagePromo.service';
+import * as stripeService from '../services/stripe.service';
 
 // Real routes, middleware, controllers and Mongo transactions; only the signed-in identity is injected.
 jest.mock('../middleware/auth.middleware', () => {
@@ -96,14 +100,14 @@ beforeAll(async () => {
   mongo = await MongoMemoryReplSet.create({ replSet: { count: 1 }, binary: { version: version || '7.0.14', ...(systemBinary ? { systemBinary } : {}) } });
   await mongoose.connect(mongo.getUri('package_booking'));
   // autoIndex is off in production; build the unique indexes these guarantees rely on.
-  await Promise.all([Tenant.init(), Attraction.init(), Availability.init(), Booking.init(), IdempotencyKey.init()]);
+  await Promise.all([Tenant.init(), Attraction.init(), Availability.init(), Booking.init(), IdempotencyKey.init(), PromoCode.init()]);
 });
 afterAll(async () => { await mongoose.disconnect(); await mongo?.stop(); });
 beforeEach(async () => {
   process.env.URL_NAMESPACE_WRITES_READY = 'true';
   process.env.PACKAGES_PUBLISHING_ENABLED = 'true';
   info = jest.spyOn(console, 'info').mockImplementation(() => undefined);
-  await Promise.all([Tenant, Attraction, Availability, Booking, IdempotencyKey].map(model => model.collection.deleteMany({})));
+  await Promise.all([Tenant, Attraction, Availability, Booking, IdempotencyKey, PromoCode].map(model => model.collection.deleteMany({})));
   await Tenant.collection.insertMany([
     { _id: owner, slug: 'package-site', name: 'Package site', domain: 'package-site.invalid', status: 'active', timezone: 'Africa/Cairo', customPages: [],
       paymentSettings: { stripe: { enabled: true, publishableKey: 'pk_test_qa', secretKeyEnc: encryptSecret('sk_test_qa') } } },
@@ -338,6 +342,206 @@ describe('cancelling a package booking', () => {
     const id = await publishedPackage();
     expect((await Attraction.collection.findOne({ _id: new Types.ObjectId(id) }))?.cancellationPolicy)
       .toBe('Cancel at least 30 days before departure: full refund. At least 14 days before: 50% refund. Later: no refund.');
+  });
+});
+
+describe('package promotion lifecycle', () => {
+  const promo = (changes: Record<string, unknown> = {}) => PromoCode.create({
+    code: 'PACKAGE10', description: 'Package savings', tenantId: owner, currency: 'USD', discountType: 'percentage', discountValue: 10,
+    minOrderAmount: 0, usageLimit: 10, usageCount: 0, validFrom: new Date(Date.now() - 60_000), validUntil: new Date(Date.now() + 86_400_000), isActive: true,
+    ...changes,
+  });
+  const chosen = () => selection({ promoCode: 'PACKAGE10' });
+  const discountedBooking = async () => {
+    const promotion = await promo(); const id = await publishedPackage(); const selected = chosen(); const quoted = await quote(id, selected);
+    const response = await book(id, { selection: selected, quoteHash: quoted.quoteHash, guestDetails }).expect(201);
+    return { promotion, id, quoted, bookingId: new Types.ObjectId(response.body.data._id) };
+  };
+
+  it('prices the verified operator discount, keeps the fee and snapshots the exact net payment', async () => {
+    const promotion = await promo(); const id = await publishedPackage();
+    await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $set: { ownerTenantId: other, reseller: { enabled: true, value: 10 } } });
+    const selected = selection({ promoCode: ' package10 ' }); const quoted = await quote(id, selected);
+    expect(quoted.quote).toMatchObject({ subtotal: 2540, serviceFee: 127, preDiscountTotal: 2667, discount: 254, total: 2413, perPerson: 804.33,
+      promotion: { code: 'PACKAGE10', currency: 'USD', discount: 254, discountType: 'percentage', discountValue: 10 } });
+    expect((await PromoCode.findById(promotion._id))?.usageCount).toBe(0);
+    const created = await book(id, { selection: selected, quoteHash: quoted.quoteHash, guestDetails }).expect(201);
+    const stored = (await Booking.findById(created.body.data._id))!;
+    expect(stored.toObject()).toMatchObject({ subtotal: 2667, fees: 0, discount: 254, total: 2413, promoCode: 'PACKAGE10',
+      revenueBreakdown: { sellerEarnings: 241.3, paymentFee: 69.98, supplierEarnings: 2101.72 },
+      packageBooking: { operatorSubtotal: 2540, serviceFee: 127, preDiscountTotal: 2667, discount: 254, total: 2413 },
+      packagePromoClaim: { promoId: promotion._id, discount: 254 } });
+    expect(bookingStripePaymentRequest(stored)).toMatchObject({ amount: 241300, currency: 'usd' });
+    expect((await PromoCode.findById(promotion._id))?.usageCount).toBe(1);
+  });
+
+  it.each([
+    { discountType: 'fixed', discountValue: 100, expected: 100 },
+    { discountType: 'percentage', discountValue: 20, maxDiscount: 50, expected: 50 },
+    { discountType: 'fixed', discountValue: 9000, expected: 2540 },
+  ])('caps and rounds a $discountType promotion without discounting the fee ($expected)', async ({ expected, ...changes }) => {
+    await promo(changes); const id = await publishedPackage(); const quoted = await quote(id, chosen());
+    expect(quoted.quote).toMatchObject({ discount: expected, total: 2667 - expected, serviceFee: 127, subtotal: 2540 });
+    expect(quoted.quote.total).toBeGreaterThan(0);
+  });
+
+  it.each(['foreign', 'currency', 'expired', 'future', 'minimum', 'exhausted', 'inactive'] as const)('refuses %s eligibility without consuming a use or making a booking', async failure => {
+    const changes = failure === 'foreign' ? { tenantId: other } : failure === 'currency' ? { currency: 'EUR' }
+      : failure === 'expired' ? { validUntil: new Date(Date.now() - 1) } : failure === 'future' ? { validFrom: new Date(Date.now() + 60_000) }
+        : failure === 'minimum' ? { minOrderAmount: 2600 } : failure === 'exhausted' ? { usageCount: 10 } : { isActive: false };
+    await promo(changes); const id = await publishedPackage();
+    const result = await request(app).post(`/packages/${id}/quote`).set('x-tenant-id', String(owner)).send(chosen()).expect(409);
+    expect(result.body.code).toBe('PROMO_UNAVAILABLE');
+    expect(await Booking.countDocuments()).toBe(0); expect(await IdempotencyKey.countDocuments()).toBe(0);
+  });
+
+  it('supports an explicitly global code but never accepts a client-supplied discount or promo identity', async () => {
+    await promo({ tenantId: null }); const id = await publishedPackage(); const quoted = await quote(id, chosen());
+    expect(quoted.quote.discount).toBe(254);
+    await book(id, { selection: { ...chosen(), discount: 999 }, quoteHash: quoted.quoteHash, guestDetails }).expect(400);
+    await book(id, { selection: chosen(), quoteHash: quoted.quoteHash, guestDetails, packagePromoClaim: { code: 'PACKAGE10' } }).expect(400);
+    expect(await Booking.countDocuments()).toBe(0);
+  });
+
+  it('refuses a fully discounted zero-payable selection instead of creating an unpayable card hold', async () => {
+    await promo({ discountType: 'percentage', discountValue: 100 });
+    const id = await publishedPackage({ rates: details().rates!.map(rate => ({ ...rate, single: 0.01, double: 0.01, triple: 0.01, child: 0.01 })) });
+    const response = await request(app).post(`/packages/${id}/quote`).set('x-tenant-id', String(owner))
+      .send(selection({ rooms: [{ adults: 2 }], extras: [], promoCode: 'PACKAGE10' })).expect(409);
+    expect(response.body.code).toBe('PROMO_UNAVAILABLE');
+    expect(await Booking.countDocuments()).toBe(0);
+  });
+
+  it('binds equal-value promotion terms into the reviewed hash', async () => {
+    const promotion = await promo(); const id = await publishedPackage(); const quoted = await quote(id, chosen());
+    await PromoCode.updateOne({ _id: promotion._id }, { $set: { discountType: 'fixed', discountValue: 254 } });
+    const refused = await book(id, { selection: chosen(), quoteHash: quoted.quoteHash, guestDetails }).expect(409);
+    expect(refused.body).toMatchObject({ code: 'PRICE_CHANGED', quote: { total: quoted.quote.total } });
+    expect(refused.body.quoteHash).not.toBe(quoted.quoteHash); expect(await Booking.countDocuments()).toBe(0);
+  });
+
+  it.each(['tenant', 'code', 'cap', 'minimum', 'expiry', 'active', 'amount'] as const)('rolls back all effects when promo %s changes after pricing', async change => {
+    const promotion = await promo(); const id = await publishedPackage(); const quoted = await quote(id, chosen());
+    const original = packagePromoService.claimPackagePromo;
+    jest.spyOn(packagePromoService, 'claimPackagePromo').mockImplementationOnce(async (...args) => {
+      const changed = change === 'tenant' ? { tenantId: other } : change === 'code' ? { code: 'RENAMED' }
+        : change === 'cap' ? { maxDiscount: 5 } : change === 'minimum' ? { minOrderAmount: 1 }
+          : change === 'expiry' ? { validUntil: new Date(Date.now() - 1) } : change === 'active' ? { isActive: false } : { discountValue: 20 };
+      await PromoCode.collection.updateOne({ _id: promotion._id as Types.ObjectId }, { $set: changed });
+      return original(...args);
+    });
+    const refused = await book(id, { selection: chosen(), quoteHash: quoted.quoteHash, guestDetails }).expect(409);
+    expect(refused.body.code).toBe('PROMO_CHANGED');
+    expect(await Booking.countDocuments()).toBe(0); expect(await IdempotencyKey.countDocuments()).toBe(0); expect(await seatsBooked(id, 10)).toBe(0);
+    expect((await PromoCode.findById(promotion._id))?.usageCount).toBe(0);
+  });
+
+  it('gives the last promo use to one concurrent booking only', async () => {
+    const promotion = await promo({ usageLimit: 1 }); const id = await publishedPackage(); const quoted = await quote(id, chosen());
+    const body = { selection: chosen(), quoteHash: quoted.quoteHash, guestDetails };
+    const results = await Promise.all([book(id, body, 'qa-promo-last-use-00001'), book(id, body, 'qa-promo-last-use-00002')]);
+    expect(results.map(result => result.status).sort()).toEqual([201, 409]);
+    expect(['PROMO_CHANGED', 'PROMO_UNAVAILABLE']).toContain(results.find(result => result.status === 409)!.body.code);
+    expect((await PromoCode.findById(promotion._id))?.usageCount).toBe(1);
+    expect(await Booking.countDocuments()).toBe(1); expect(await IdempotencyKey.countDocuments()).toBe(1); expect(await seatsBooked(id, 10)).toBe(3);
+  });
+
+  it('replays a lost booking response after promo expiry without claiming again', async () => {
+    const promotion = await promo(); const id = await publishedPackage(); const quoted = await quote(id, chosen());
+    const body = { selection: chosen(), quoteHash: quoted.quoteHash, guestDetails }; const key = 'qa-promo-lost-response-0001';
+    const first = await book(id, body, key).expect(201);
+    await PromoCode.updateOne({ _id: promotion._id }, { $set: { isActive: false } });
+    const replay = await book(id, body, key).expect(200);
+    expect(replay.body.data._id).toBe(first.body.data._id); expect((await PromoCode.findById(promotion._id))?.usageCount).toBe(1);
+    expect((await book(id, { ...body, selection: selection() }, key).expect(409)).body.code).toBe('IDEMPOTENCY_CONFLICT');
+  });
+
+  it('consumes once for concurrent submissions of the same idempotent request', async () => {
+    const promotion = await promo(); const id = await publishedPackage(); const quoted = await quote(id, chosen());
+    const body = { selection: chosen(), quoteHash: quoted.quoteHash, guestDetails }; const key = 'qa-promo-duplicate-request-0001';
+    const results = await Promise.all([book(id, body, key), book(id, body, key)]);
+    expect(results.filter(result => result.status === 201)).toHaveLength(1);
+    expect(results.every(result => [200, 201, 409].includes(result.status))).toBe(true);
+    for (const result of results.filter(result => result.status === 409)) expect(result.body.code).toBe('IDEMPOTENCY_PROCESSING');
+    await book(id, body, key).expect(200);
+    expect((await PromoCode.findById(promotion._id))?.usageCount).toBe(1);
+    expect(await Booking.countDocuments()).toBe(1); expect(await seatsBooked(id, 10)).toBe(3);
+  });
+
+  it('rolls the claimed use back if persisting the booking fails', async () => {
+    const promotion = await promo(); const id = await publishedPackage(); const quoted = await quote(id, chosen());
+    jest.spyOn(Booking, 'create').mockRejectedValueOnce(new Error('Simulated booking write failure'));
+    await book(id, { selection: chosen(), quoteHash: quoted.quoteHash, guestDetails }).expect(500);
+    expect((await PromoCode.findById(promotion._id))?.usageCount).toBe(0);
+    expect(await Booking.countDocuments()).toBe(0); expect(await IdempotencyKey.countDocuments()).toBe(0); expect(await seatsBooked(id, 10)).toBe(0);
+  });
+
+  it('releases the unpaid reservation once when competing expiry workers run', async () => {
+    const { promotion, id, bookingId } = await discountedBooking();
+    await Booking.collection.updateOne({ _id: bookingId }, { $set: { createdAt: new Date(Date.now() - 60 * 60_000) } });
+    await Promise.all([expireStaleCardHolds(), expireStaleCardHolds()]);
+    expect((await PromoCode.findById(promotion._id))?.usageCount).toBe(0); expect(await seatsBooked(id, 10)).toBe(0);
+    expect((await Booking.findById(bookingId))?.packagePromoClaim?.releasedAt).toBeInstanceOf(Date);
+    await expireStaleCardHolds(); expect((await PromoCode.findById(promotion._id))?.usageCount).toBe(0);
+  });
+
+  it('returns a use after customer cancellation of an unstarted unpaid checkout', async () => {
+    const { promotion, id, bookingId } = await discountedBooking();
+    await Booking.collection.updateOne({ _id: bookingId }, { $set: { userId: new Types.ObjectId(customerId) } });
+    await request(app).patch(`/bookings/${bookingId}/cancel`).set('x-test-role', 'customer').set('x-test-user', customerId).expect(200);
+    expect((await PromoCode.findById(promotion._id))?.usageCount).toBe(0); expect(await seatsBooked(id, 10)).toBe(0);
+  });
+
+  it('keeps usage while a declined payment can retry or a provider payment is processing', async () => {
+    const { promotion, id, bookingId } = await discountedBooking();
+    await Booking.collection.updateOne({ _id: bookingId }, { $set: { stripePaymentIntentId: 'pi_package_promo', createdAt: new Date(Date.now() - 60 * 60_000) } });
+    await markCardPaymentFailed(bookingId, owner, 'pi_package_promo');
+    expect((await PromoCode.findById(promotion._id))?.usageCount).toBe(1);
+    jest.spyOn(stripeService, 'retrievePaymentIntent').mockResolvedValue({ id: 'pi_package_promo', status: 'processing' } as never);
+    await expireStaleCardHolds();
+    expect((await PromoCode.findById(promotion._id))?.usageCount).toBe(1); expect(await seatsBooked(id, 10)).toBe(3);
+  });
+
+  it('restores a claimed payment-session use only after provider cancellation is confirmed', async () => {
+    const { promotion, id, bookingId } = await discountedBooking();
+    await Booking.collection.updateOne({ _id: bookingId }, { $set: { stripePaymentIntentId: 'pi_package_promo', createdAt: new Date(Date.now() - 60 * 60_000) } });
+    jest.spyOn(stripeService, 'retrievePaymentIntent').mockResolvedValue({ id: 'pi_package_promo', status: 'canceled' } as never);
+    await expireStaleCardHolds();
+    expect((await PromoCode.findById(promotion._id))?.usageCount).toBe(0); expect(await seatsBooked(id, 10)).toBe(0);
+    expect((await Booking.findById(bookingId))?.stripePaymentSessionClosedAt).toBeInstanceOf(Date);
+  });
+
+  it('releases a hold for a deleted promotion without touching another code', async () => {
+    const { promotion, id, bookingId } = await discountedBooking();
+    await PromoCode.deleteOne({ _id: promotion._id });
+    const replacement = await promo({ usageCount: 4 });
+    await failCardBookingAndReleaseInventory(bookingId, owner);
+    expect((await PromoCode.findById(replacement._id))?.usageCount).toBe(4);
+    expect(await seatsBooked(id, 10)).toBe(0);
+  });
+
+  it.each(['succeeded', 'refunded'] as const)('never restores a %s payment redemption when inventory is released', async paymentStatus => {
+    const { promotion, bookingId } = await discountedBooking();
+    await Booking.collection.updateOne({ _id: bookingId }, { $set: { paymentStatus } });
+    await runBookingTransaction(async session => {
+      const booking = (await Booking.findById(bookingId).session(session!))!;
+      await releaseBookingInventory(booking, session); await booking.save({ session }); return true;
+    });
+    expect((await PromoCode.findById(promotion._id))?.usageCount).toBe(1);
+    expect((await Booking.findById(bookingId))?.packagePromoClaim?.releasedAt).toBeUndefined();
+  });
+
+  it('rolls back a release if payment succeeds while expiry holds an older booking snapshot', async () => {
+    const { promotion, id, bookingId } = await discountedBooking();
+    const original = packagePromoService.releaseUnpaidPackagePromo;
+    jest.spyOn(packagePromoService, 'releaseUnpaidPackagePromo').mockImplementationOnce(async (...args) => {
+      await Booking.collection.updateOne({ _id: bookingId }, { $set: { paymentStatus: 'succeeded', status: 'confirmed' } });
+      return original(...args);
+    });
+    await failCardBookingAndReleaseInventory(bookingId, owner);
+    expect((await Booking.findById(bookingId))?.paymentStatus).toBe('succeeded');
+    expect((await PromoCode.findById(promotion._id))?.usageCount).toBe(1); expect(await seatsBooked(id, 10)).toBe(3);
+    expect((await Booking.findById(bookingId))?.packagePromoClaim?.releasedAt).toBeUndefined();
   });
 });
 

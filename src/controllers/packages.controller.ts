@@ -12,6 +12,7 @@ import { generateBookingReference } from '../utils/hash';
 import { resaleFieldsFor } from '../utils/resaleSplit';
 import { bookingDate, runBookingTransaction, sessionOption } from '../services/bookingInventory.service';
 import { getTenantStripeConfig } from '../services/tenantPayment.service';
+import { claimPackagePromo, PackagePromoError, pricePackagePromo } from '../services/packagePromo.service';
 import { assertTenantIdsBookingCreationAllowed, assertTenantPaymentMethodAllowed } from '../services/tenantBookingPolicy.service';
 import { safeEmitEvent } from '../services/webhook.service';
 import { createAdminNotifications } from '../services/notification.service';
@@ -610,6 +611,7 @@ export const quotePackage = async (req: AuthRequest, res: Response, next: NextFu
     const priced = pricePackageSelection({ details, currency, selection: chosen, today });
     if (!priced.ok) { sendRefusal(res, priced); return; }
     priced.quote.packageRevision = record.packageRevision ?? 0;
+    await pricePackagePromo(priced.quote, chosen.promoCode, req.tenant?._id);
     const state = (await departureStates(record._id, chosen.date, chosen.date)).get(chosen.date);
     const seatsLeft = seatsLeftOn(details, state);
     const seats = seatRefusal(state, seatsLeft, priced.quote.travellers.adults + priced.quote.travellers.children);
@@ -617,8 +619,15 @@ export const quotePackage = async (req: AuthRequest, res: Response, next: NextFu
 
     // Each level priced for the same party, date and extras. `tripPerPerson` leaves the extras out,
     // so a level's own price does not move when an extra is added.
-    const alternatives = details.tiers.map((tier) => {
+    const alternatives = await Promise.all(details.tiers.map(async (tier) => {
       const other = tier.key === chosen.tierKey ? priced : pricePackageSelection({ details, currency, selection: { ...chosen, tierKey: tier.key }, today });
+      if (other.ok && tier.key !== chosen.tierKey) {
+        try { await pricePackagePromo(other.quote, chosen.promoCode, req.tenant?._id); }
+        catch (error) {
+          if (error instanceof PackagePromoError) return { key: tier.key, name: tier.name, unavailable: error.message };
+          throw error;
+        }
+      }
       return other.ok
         ? {
           key: tier.key,
@@ -629,7 +638,7 @@ export const quotePackage = async (req: AuthRequest, res: Response, next: NextFu
           difference: Math.round((other.quote.total - priced.quote.total) * 100) / 100,
         }
         : { key: tier.key, name: tier.name, unavailable: other.message };
-    });
+    }));
     const cancellation = [...details.cancellation]
       .sort((left, right) => right.daysBefore - left.daysBefore)
       .map((rule) => ({ ...rule, cancelBy: addDays(priced.quote.cancellationReferenceDate ?? chosen.date, -rule.daysBefore) }));
@@ -646,6 +655,10 @@ export const quotePackage = async (req: AuthRequest, res: Response, next: NextFu
       today,
     });
   } catch (error) {
+    if (error instanceof PackagePromoError) {
+      res.status(409).json({ success: false, code: error.code, error: error.message });
+      return;
+    }
     next(error);
   }
 };
@@ -772,6 +785,7 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
     if (!priced.ok) { sendRefusal(res, priced); return; }
     const quote = priced.quote;
     quote.packageRevision = packageRevision;
+    const promo = await pricePackagePromo(quote, selection.promoCode, tenantId);
     if (!quote.bookingReady) {
       res.status(400).json({ success: false, code: 'OPTIONS_INCOMPLETE', error: quote.selectionProblems[0].message, selectionProblems: quote.selectionProblems });
       return;
@@ -833,6 +847,7 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
     const booking = await runBookingTransaction<IBooking>(async (session) => {
       await fencePackageBooking({ attractionId: attraction._id, tenantId, revision: packageRevision, currency }, session);
       await reservePackageSeats(attraction._id, details, selection.date, guests, session);
+      const packagePromoClaim = promo ? await claimPackagePromo(promo, quote, session) : undefined;
       const payload = {
         _id: bookingId,
         reference,
@@ -844,10 +859,11 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
         items: [packageBookingItem(details, quote)],
         guestDetails,
         // Every figure includes the service fee, as quoted; the fee itself is in packageBooking.
-        subtotal: quote.total,
+        subtotal: quote.preDiscountTotal ?? quote.total,
         fees: 0,
-        discount: 0,
+        discount: quote.discount ?? 0,
         total: quote.total,
+        ...(packagePromoClaim ? { packagePromoClaim, promoCode: promo!.code } : {}),
         currency,
         paymentMethod: 'card',
         status: 'pending',
@@ -889,6 +905,10 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
     }
     if (error instanceof PackageChangedError) {
       res.status(409).json({ success: false, code: 'PACKAGE_CHANGED', error: 'This package has changed. Reload the package to review its current details before booking.' });
+      return;
+    }
+    if (error instanceof PackagePromoError) {
+      res.status(409).json({ success: false, code: error.code, error: error.message });
       return;
     }
     next(error);

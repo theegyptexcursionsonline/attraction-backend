@@ -40,6 +40,7 @@ export const packageSelectionSchema = z.object({
     children: z.number().int().min(0).max(PACKAGE_LIMITS.travellers).optional(),
     quantity: z.number().int().min(1).max(PACKAGE_LIMITS.extraQuantity).optional(),
   }).strict()).max(PACKAGE_LIMITS.extras).default([]),
+  promoCode: z.string().trim().toUpperCase().min(1).max(80).optional(),
 }).strict();
 
 export type PackageSelection = z.infer<typeof packageSelectionSchema>;
@@ -191,6 +192,11 @@ export interface PackageQuoteExtra {
 }
 
 export interface PackageQuote {
+  /** Only present when an actual promo has been verified by the API. */
+  preDiscountTotal?: number;
+  discount?: number;
+  promotion?: { code: string; currency: string; discountType: 'percentage' | 'fixed'; discountValue: number; minOrderAmount: number; maxDiscount?: number; discount: number };
+  promotionHash?: string;
   /** Added by the API from the attraction revision; pure pricing has no database dependency. */
   packageRevision?: number;
   bookingReady: boolean;
@@ -212,7 +218,7 @@ export interface PackageQuote {
   total: number;
   /** The part of `total` that is the service fee. */
   serviceFee: number;
-  /** The operator's own prices: total − serviceFee. */
+  /** The operator's own prices before any promotion: total + discount − serviceFee. */
   subtotal: number;
   /** total ÷ (adults + children), for display. */
   perPerson: number;
@@ -520,7 +526,7 @@ export function pricePackageSelection(input: {
  * Identifies what the customer was shown: the selection and its total. Booking re-prices and
  * compares, so a price that changed in between is refused with the new figure rather than charged.
  */
-export const packageQuoteHash = (attractionId: string, selection: PackageSelection, quote: Pick<PackageQuote, 'currency' | 'total' | 'configurationHash'>): string =>
+export const packageQuoteHash = (attractionId: string, selection: PackageSelection, quote: Pick<PackageQuote, 'currency' | 'total' | 'configurationHash' | 'promotionHash'>): string =>
   createHash('sha256').update(JSON.stringify([
     attractionId,
     selection.date,
@@ -532,6 +538,7 @@ export const packageQuoteHash = (attractionId: string, selection: PackageSelecti
     quote.currency,
     cents(quote.total),
     ...(quote.configurationHash ? [quote.configurationHash] : []),
+    ...(selection.promoCode ? [selection.promoCode, quote.promotionHash ?? null] : []),
   ])).digest('hex').slice(0, 32);
 
 // ── "from" prices ─────────────────────────────────────────────────────────────────────────────
