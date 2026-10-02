@@ -175,6 +175,12 @@ const itineraryDaySchema = z.object({
   meals: z.array(z.enum(PACKAGE_MEALS)).max(3).default([]),
   overnight: line(120).default(''),
   imageUrl: secureImageUrlSchema.optional(),
+  /** Operator-authored places; never inferred from itinerary prose. */
+  stops: z.array(z.object({
+    name: line(120).refine(value => value.length > 0, 'Enter a place name'),
+    lat: z.number().finite().min(-90).max(90),
+    lng: z.number().finite().min(-180).max(180),
+  }).strict()).max(20).optional(),
 }).strict();
 
 const duplicates = <T>(values: T[]): T[] => values.filter((value, index) => values.indexOf(value) !== index);
