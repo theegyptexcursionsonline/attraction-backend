@@ -690,13 +690,57 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
     if (!req.tenant) { sendError(res, 'Book this trip from the website that lists it', 400); return; }
     const params = idParams.safeParse(req.params);
     if (!params.success) { sendError(res, NOT_FOUND, 404); return; }
+    const tenantId = req.tenant._id;
+    const { selection, guestDetails, travellerNames } = body.data;
+    const keyHash = sha256(idempotencyKey);
+    const principalId = req.user?._id ? String(req.user._id) : null;
+    const immutableRequest = {
+      tenantId: String(tenantId), attractionId: String(asObjectId(params.data.id)), selection,
+      guestDetails, travellerNames: travellerNames ?? null, paymentMethod: 'card',
+      quoteHash: body.data.quoteHash,
+    };
+    const legacyRequestHash = sha256(stableStringify(immutableRequest));
+    const requestHash = sha256(stableStringify({ ...immutableRequest, principalId }));
+    // Completed receipts are immutable authority. Recover them before reading today's
+    // price, stock or gateway, but only for their original payload, site and principal.
+    const replayClaim = async (existing: { requestHash: string; status: string; resourceId?: Types.ObjectId | null } | null): Promise<boolean> => {
+      if (!existing) return false;
+      if (existing.requestHash !== requestHash && existing.requestHash !== legacyRequestHash) {
+        res.status(409).json({ success: false, code: 'IDEMPOTENCY_CONFLICT', error: 'Idempotency key was already used for a different booking request' });
+        return true;
+      }
+      if (existing.status === 'completed' && existing.resourceId) {
+        const replayed = await Booking.findOne({ _id: existing.resourceId, tenantId, attractionId: params.data.id });
+        if (!replayed || (replayed.userId ? String(replayed.userId) : null) !== principalId) {
+          res.status(409).json({ success: false, code: 'IDEMPOTENCY_CONFLICT', error: 'This booking request cannot be recovered in the current session' });
+          return true;
+        }
+        // Retain an existing, verified legacy receipt before its old TTL removes
+        // the binding. Never infer or recreate a journal that is already gone.
+        const retained = await IdempotencyKey.updateOne(
+          { scope: 'booking.create', tenantId, keyHash, requestHash: existing.requestHash, status: 'completed', resourceId: replayed._id },
+          { $unset: { expiresAt: '' } },
+        );
+        if (retained.matchedCount !== 1) {
+          res.status(409).json({ success: false, code: 'IDEMPOTENCY_PROCESSING', retryable: true, error: 'Booking recovery changed. Try again with the same request.' });
+          return true;
+        }
+        res.setHeader('Idempotency-Replayed', 'true');
+        sendSuccess(res, bookingResponse(replayed as IBooking), 'Booking already created');
+        return true;
+      }
+      // Legacy processing claims lack a principal commitment: expose no receipt,
+      // and never let their ambiguity start a second booking.
+      res.setHeader('Retry-After', '2');
+      res.status(409).json({ success: false, code: 'IDEMPOTENCY_PROCESSING', retryable: true, error: 'An identical booking request is already processing' });
+      return true;
+    };
+    if (await replayClaim(await IdempotencyKey.findOne({ scope: 'booking.create', tenantId, keyHash }).lean())) return;
     const attraction = await Attraction.findOne(publicScope(req, params.data.id)).lean<IAttraction>();
     const details = attraction ? readPackageDetails(attraction.packageDetails) : null;
     if (!attraction || !details) { sendError(res, NOT_FOUND, 404); return; }
 
-    const tenantId = req.tenant._id;
     const currency = attraction.currency ?? 'USD';
-    const { selection, guestDetails, travellerNames } = body.data;
     const priced = pricePackageSelection({ details, currency, selection, today: operatorToday(req) });
     if (!priced.ok) { sendRefusal(res, priced); return; }
     const quote = priced.quote;
@@ -727,16 +771,6 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
       return;
     }
 
-    const keyHash = sha256(idempotencyKey);
-    const requestHash = sha256(stableStringify({
-      tenantId: String(tenantId),
-      attractionId: String(attraction._id),
-      selection,
-      guestDetails,
-      travellerNames: travellerNames ?? null,
-      paymentMethod: 'card',
-      quoteHash,
-    }));
     try {
       const record = await IdempotencyKey.create({
         scope: 'booking.create', tenantId, keyHash, requestHash, status: 'processing',
@@ -746,20 +780,9 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
     } catch (claimError) {
       if ((claimError as { code?: number }).code !== 11000) throw claimError;
       const existing = await IdempotencyKey.findOne({ scope: 'booking.create', tenantId, keyHash }).lean();
-      if (!existing || existing.requestHash !== requestHash) {
-        sendError(res, 'Idempotency key was already used for a different booking request', 409);
-        return;
-      }
-      if (existing.status === 'completed' && existing.resourceId) {
-        const replayed = await Booking.findById(existing.resourceId);
-        if (replayed) {
-          res.setHeader('Idempotency-Replayed', 'true');
-          sendSuccess(res, bookingResponse(replayed as IBooking), 'Booking already created');
-          return;
-        }
-      }
+      if (await replayClaim(existing)) return;
       res.setHeader('Retry-After', '2');
-      sendError(res, 'An identical booking request is already processing', 409);
+      res.status(409).json({ success: false, code: 'IDEMPOTENCY_PROCESSING', retryable: true, error: 'An identical booking request is already processing' });
       return;
     }
 
@@ -796,7 +819,10 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
       };
       const created = session ? (await Booking.create([payload], { session }))[0] : await Booking.create(payload);
       await IdempotencyKey.findByIdAndUpdate(idempotencyRecordId, {
-        $set: { status: 'completed', resourceId: created._id, expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) },
+        $set: { status: 'completed', resourceId: created._id },
+        // Completed package commitments must outlive the hold and Mongo TTL sweep.
+        // A missing expiry is ignored by the existing TTL index; no migration needed.
+        $unset: { expiresAt: '' },
       }, sessionOption(session));
       if (req.user) await User.findByIdAndUpdate(req.user._id, { $inc: { totalBookings: 1 } }, sessionOption(session));
       return created as IBooking;

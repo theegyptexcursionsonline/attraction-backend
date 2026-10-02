@@ -161,6 +161,78 @@ describe('booking a package', () => {
     expect(await seatsBooked(id, 10)).toBe(3);
   });
 
+  it.each(['price', 'stock', 'gateway', 'source'] as const)('recovers the immutable receipt after %s changes and retains its commitment beyond TTL', async change => {
+    const id = await publishedPackage();
+    const quoted = await quote(id);
+    const body = { selection: selection(), quoteHash: quoted.quoteHash, guestDetails };
+    const key = 'qa-replay-mutable-000001';
+    const first = await book(id, body, key).expect(201);
+    if (change === 'price') await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $set: { 'packageDetails.rates.0.double': 99999, currency: 'EUR' } });
+    if (change === 'stock') await Availability.collection.updateOne({ attractionId: new Types.ObjectId(id), date: day(10) }, { $set: { isBlocked: true, allDayCapacity: 0 } });
+    if (change === 'gateway') await Tenant.collection.updateOne({ _id: owner }, { $set: { 'paymentSettings.stripe.enabled': false } });
+    if (change === 'source') await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $set: { status: 'draft', archivedAt: new Date() }, $unset: { packageDetails: '' } });
+    const replay = await book(id, body, key).expect(200);
+    expect(replay.headers['idempotency-replayed']).toBe('true');
+    expect(replay.body.data).toMatchObject({ _id: first.body.data._id, reference: first.body.data.reference, total: first.body.data.total, currency: first.body.data.currency });
+    expect(await Booking.countDocuments()).toBe(1);
+    expect(await seatsBooked(id, 10)).toBe(3);
+    expect((await IdempotencyKey.findOne({ resourceId: first.body.data._id }).lean())?.expiresAt).toBeUndefined();
+  });
+
+  it('binds replay to its site, input and principal including guest/account changes', async () => {
+    const id = await publishedPackage();
+    const quoted = await quote(id);
+    const body = { selection: selection(), quoteHash: quoted.quoteHash, guestDetails };
+    const key = 'qa-replay-owner-000001';
+    const first = await book(id, body, key).set('x-test-role', 'customer').set('x-test-user', customerId).expect(201);
+    await book(id, body, key).set('x-test-role', 'customer').set('x-test-user', customerId).expect(200);
+    for (const response of [await book(id, body, key), await book(id, body, key).set('x-test-role', 'customer').set('x-test-user', '0000000000000000000000c2'), await book(id, { ...body, guestDetails: { ...guestDetails, firstName: 'Other' } }, key).set('x-test-role', 'customer').set('x-test-user', customerId)]) {
+      expect(response.status).toBe(409); expect(response.body.code).toBe('IDEMPOTENCY_CONFLICT'); expect(response.body).not.toHaveProperty('data');
+    }
+    const foreign = await book(id, body, key, other);
+    expect(foreign.status).toBe(409); expect(foreign.body).not.toHaveProperty('data');
+    expect(await Booking.countDocuments()).toBe(1);
+    expect(await seatsBooked(id,10)).toBe(3);
+    // Legacy commitments omitted principal; immutable Booking ownership still denies adoption.
+    const record = await IdempotencyKey.findOne({ resourceId: first.body.data._id });
+    expect(record).not.toBeNull();
+    const crypto = require('crypto') as typeof import('crypto');
+    const stable = (value: unknown): string => Array.isArray(value) ? `[${value.map(stable).join(',')}]` : value && typeof value === 'object' ? `{${Object.entries(value).sort(([a],[b])=>a.localeCompare(b)).map(([k,v])=>`${JSON.stringify(k)}:${stable(v)}`).join(',')}}` : JSON.stringify(value) ?? 'null';
+    const legacyHash = crypto.createHash('sha256').update(stable({ tenantId: String(owner), attractionId:id, selection:packageSelectionSchema.parse(selection()), guestDetails, travellerNames:null, paymentMethod:'card', quoteHash:quoted.quoteHash })).digest('hex');
+    await IdempotencyKey.updateOne({ _id:record!._id },{ $set:{requestHash:legacyHash, expiresAt:new Date(Date.now()+60000)} });
+    await book(id,body,key).set('x-test-role','customer').set('x-test-user',customerId).expect(200);
+    expect((await IdempotencyKey.findById(record!._id).lean())?.expiresAt).toBeUndefined();
+    expect((await book(id,body,key)).body.code).toBe('IDEMPOTENCY_CONFLICT');
+  });
+
+  it('serializes concurrent same-key calls into one booking and one seat reservation', async () => {
+    const id = await publishedPackage(); const quoted = await quote(id);
+    const body = { selection: selection(), quoteHash: quoted.quoteHash, guestDetails };
+    const responses = await Promise.all([book(id,body,'qa-concurrent-same-0001'),book(id,body,'qa-concurrent-same-0001')]);
+    expect(responses.filter(r=>r.status===201)).toHaveLength(1);
+    const otherResponse = responses.find(r=>r.status!==201)!;
+    expect([200,409]).toContain(otherResponse.status);
+    if(otherResponse.status===409) expect(otherResponse.body).toMatchObject({code:'IDEMPOTENCY_PROCESSING',retryable:true});
+    expect(await Booking.countDocuments()).toBe(1); expect(await seatsBooked(id,10)).toBe(3);
+    await book(id,body,'qa-concurrent-same-0001').expect(200);
+  });
+
+  it('returns a retryable processing commitment without creating another hold', async () => {
+    const id = await publishedPackage(); const quoted = await quote(id);
+    const body = { selection: selection(), quoteHash: quoted.quoteHash, guestDetails };
+    const key = 'qa-processing-key-000001';
+    const first = await book(id,body,key).expect(201);
+    await IdempotencyKey.updateOne({ resourceId:first.body.data._id },{$set:{status:'processing'}});
+    const pending = await book(id,body,key).expect(409);
+    expect(pending.headers['retry-after']).toBe('2');
+    expect(pending.body).toMatchObject({code:'IDEMPOTENCY_PROCESSING',retryable:true});
+    expect(pending.body).not.toHaveProperty('data');
+    await book(id,{...body,guestDetails:{...guestDetails,firstName:'Changed'}},key).expect(409);
+    expect(await Booking.countDocuments()).toBe(1); expect(await seatsBooked(id,10)).toBe(3);
+    await IdempotencyKey.updateOne({ resourceId:first.body.data._id },{$set:{status:'completed'}});
+    await book(id,body,key).expect(200);
+  });
+
   it('gives the last places to exactly one of two customers booking at the same moment', async () => {
     const departure = addDays(TODAY, 20);
     const id = await publishedPackage({ departureMode: 'fixed' }, [[departure, 3]]);
