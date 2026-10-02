@@ -6,7 +6,8 @@ import {
   packageSelfCancellationProblem,
 } from '../services/packageBooking.service';
 import { packageSelectionSchema, pricePackageSelection, PackageQuote } from '../services/packagePricing.service';
-import { resaleFieldsFor, RESELLER_PAYMENT_FEE_PERCENT } from '../utils/resaleSplit';
+import { Types } from 'mongoose';
+import { resaleFieldsFor, RESELLER_PAYMENT_FEE_PERCENT, sameResaleFields } from '../utils/resaleSplit';
 
 it('keeps the payment fee rate tour bookings use', () => { expect(RESELLER_PAYMENT_FEE_PERCENT).toBe(2.9); });
 import { samplePackage } from '../test/packageFixture';
@@ -162,5 +163,18 @@ describe('reseller split for package bookings', () => {
         supplierEarnings: 2256.28,
       },
     });
+  });
+
+  it('compares splits by parties and amounts, not by how ids are stored', () => {
+    const id = new Types.ObjectId();
+    const split = resaleFieldsFor({ reseller: { enabled: true, value: 10 }, ownerTenantId: id }, 'seller', 2667);
+    expect(sameResaleFields(split, resaleFieldsFor({ reseller: { enabled: true, value: 10 }, ownerTenantId: String(id) }, 'seller', 2667))).toBe(true);
+    expect(sameResaleFields({ isResale: false }, { isResale: false })).toBe(true);
+    expect(sameResaleFields(split, { isResale: false })).toBe(false);
+    expect(sameResaleFields({ isResale: false }, split)).toBe(false);
+    expect(sameResaleFields(split, resaleFieldsFor({ reseller: { enabled: true, value: 11 }, ownerTenantId: id }, 'seller', 2667))).toBe(false);
+    expect(sameResaleFields(split, resaleFieldsFor({ reseller: { enabled: true, value: 10 }, ownerTenantId: new Types.ObjectId() }, 'seller', 2667))).toBe(false);
+    expect(sameResaleFields(split, resaleFieldsFor({ reseller: { enabled: true, value: 10 }, ownerTenantId: id }, 'another-seller', 2667))).toBe(false);
+    expect(sameResaleFields(split, resaleFieldsFor({ reseller: { enabled: true, value: 10 }, ownerTenantId: id }, 'seller', 2668))).toBe(false);
   });
 });

@@ -677,6 +677,135 @@ describe('package booking/editor transaction fence', () => {
   });
 });
 
+describe('package booking resale terms fence', () => {
+  // The supplier is `other`; the paying site `owner` sells it, so the booking carries a resale split.
+  const resalePackage = async (reseller: Record<string, unknown> | null = { enabled: true, value: 10, allowedTenants: [] }) => {
+    const id = await publishedPackage();
+    await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $set: { ownerTenantId: other, reseller } });
+    return id;
+  };
+  const stored = (id: string) => Attraction.collection.findOne({ _id: new Types.ObjectId(id) });
+  const resellerSettings = (id: string, body: Record<string, unknown>) =>
+    staff(request(app).patch(`/attractions/${id}/reseller-config`)).send(body).expect(200);
+  const changeDuringBooking = (change: () => Promise<unknown>) => {
+    const original = packageBookingService.fencePackageBooking;
+    return jest.spyOn(packageBookingService, 'fencePackageBooking').mockImplementationOnce(async (input, session) => {
+      await change();
+      return original(input, session);
+    });
+  };
+  const expectNoBookingEffects = async (id: string) => {
+    expect(await Booking.countDocuments()).toBe(0);
+    expect(await IdempotencyKey.countDocuments()).toBe(0);
+    expect(await seatsBooked(id, 10)).toBe(0);
+    expect((await stored(id))?.packageBookingFence).toBeUndefined();
+  };
+
+  it.each([
+    { name: 'commission', initial: { enabled: true, value: 10, allowedTenants: [] }, change: { value: 25 } },
+    { name: 'resale switched off', initial: { enabled: true, value: 10, allowedTenants: [] }, change: { enabled: false } },
+    { name: 'resale switched on', initial: { enabled: false, value: 10, allowedTenants: [] }, change: { enabled: true } },
+  ])('refuses a $name change saved from the reseller settings during booking', async ({ initial, change }) => {
+    const id = await resalePackage(initial); const quoted = await quote(id);
+    const revision = (await stored(id))?.packageRevision;
+    changeDuringBooking(() => resellerSettings(id, change));
+    const refused = await book(id, { selection: selection(), quoteHash: quoted.quoteHash, guestDetails }).expect(409);
+    expect(refused.body.code).toBe('PACKAGE_CHANGED');
+    // The settings save does not move the package revision; only the resale fence notices it.
+    expect((await stored(id))?.packageRevision).toBe(revision);
+    await expectNoBookingEffects(id);
+  });
+
+  it('refuses an ownership change during booking', async () => {
+    const id = await resalePackage(); const quoted = await quote(id);
+    changeDuringBooking(() => Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $set: { ownerTenantId: owner } }));
+    expect((await book(id, { selection: selection(), quoteHash: quoted.quoteHash, guestDetails }).expect(409)).body.code).toBe('PACKAGE_CHANGED');
+    await expectNoBookingEffects(id);
+  });
+
+  it('refuses a reordered site list when a legacy record without an owner takes its supplier from the first site', async () => {
+    const id = await resalePackage();
+    await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $unset: { ownerTenantId: '' }, $set: { tenantIds: [other, owner] } });
+    const quoted = await quote(id);
+    changeDuringBooking(() => Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $set: { tenantIds: [owner, other] } }));
+    expect((await book(id, { selection: selection(), quoteHash: quoted.quoteHash, guestDetails }).expect(409)).body.code).toBe('PACKAGE_CHANGED');
+    await expectNoBookingEffects(id);
+  });
+
+  it('retries a write conflict with a commission change and refuses instead of keeping the earlier split or code use', async () => {
+    const promotion = await PromoCode.create({
+      code: 'PACKAGE10', description: 'Package savings', tenantId: owner, currency: 'USD', discountType: 'percentage', discountValue: 10,
+      minOrderAmount: 0, usageLimit: 10, usageCount: 0, validFrom: new Date(Date.now() - 60_000), validUntil: new Date(Date.now() + 86_400_000), isActive: true,
+    });
+    const id = await resalePackage(); const chosen = selection({ promoCode: 'PACKAGE10' }); const quoted = await quote(id, chosen);
+    const original = packageBookingService.fencePackageBooking;
+    const fence = jest.spyOn(packageBookingService, 'fencePackageBooking').mockImplementationOnce(async (input, session) => {
+      expect(session?.inTransaction()).toBe(true);
+      // Open the transaction snapshot first, so the competing settings save becomes a write conflict.
+      await Attraction.findById(id).session(session!);
+      await resellerSettings(id, { value: 30 });
+      return original(input, session);
+    });
+    const refused = await book(id, { selection: chosen, quoteHash: quoted.quoteHash, guestDetails }).expect(409);
+    expect(refused.body.code).toBe('PACKAGE_CHANGED');
+    expect(fence).toHaveBeenCalledTimes(2);
+    expect((await PromoCode.findById(promotion._id))?.usageCount).toBe(0);
+    expect((await stored(id))?.reseller).toMatchObject({ enabled: true, value: 30 });
+    await expectNoBookingEffects(id);
+  });
+
+  it('refuses when the reseller settings take this site off the package during booking', async () => {
+    const reseller = new Types.ObjectId();
+    await Tenant.collection.insertOne({ _id: reseller, slug: 'reseller-site', name: 'Reseller site', domain: 'reseller-site.invalid', status: 'active', timezone: 'Africa/Cairo', customPages: [] });
+    const id = await resalePackage(); const quoted = await quote(id);
+    changeDuringBooking(() => resellerSettings(id, { allowedTenants: [String(reseller)] }));
+    expect((await book(id, { selection: selection(), quoteHash: quoted.quoteHash, guestDetails }).expect(409)).body.code).toBe('PACKAGE_CHANGED');
+    expect((await stored(id))?.tenantIds.map(String)).toEqual([String(other)]);
+    await expectNoBookingEffects(id);
+  });
+
+  it('books with the unchanged split when the reseller settings change only which sites may sell it', async () => {
+    const id = await resalePackage(); const quoted = await quote(id);
+    changeDuringBooking(() => resellerSettings(id, { allowedTenants: [String(owner)] }));
+    const created = await book(id, { selection: selection(), quoteHash: quoted.quoteHash, guestDetails }).expect(201);
+    expect(await Booking.collection.findOne({ _id: new Types.ObjectId(created.body.data._id) }))
+      .toMatchObject({ isResale: true, supplierTenantId: other, sellerTenantId: owner, revenueBreakdown: { commissionPercent: 10 } });
+    expect((await stored(id))?.reseller.allowedTenants.map(String)).toEqual([String(owner)]);
+  });
+
+  it('books with the unchanged split when a site unrelated to this sale is added during booking', async () => {
+    const id = await resalePackage(); const quoted = await quote(id);
+    changeDuringBooking(() => Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $push: { tenantIds: new Types.ObjectId() } as never }));
+    const created = await book(id, { selection: selection(), quoteHash: quoted.quoteHash, guestDetails }).expect(201);
+    const booking = await Booking.collection.findOne({ _id: new Types.ObjectId(created.body.data._id) });
+    expect(booking).toMatchObject({ isResale: true, supplierTenantId: other, sellerTenantId: owner, revenueBreakdown: { commissionPercent: 10 } });
+    expect((await stored(id))?.packageBookingFence).toBe(1);
+  });
+
+  it.each([
+    { name: 'no resale settings and no recorded owner', set: {}, unset: { reseller: '', ownerTenantId: '' }, resale: false, commission: undefined },
+    { name: 'empty resale settings', set: { reseller: null }, unset: {}, resale: false, commission: undefined },
+    { name: 'settings saved before allowed sites existed', set: { reseller: { enabled: true, value: 12 } }, unset: {}, resale: true, commission: 12 },
+    { name: 'settings stored in a different field order', set: { reseller: { allowedTenants: [], value: 12, enabled: true } }, unset: {}, resale: true, commission: 12 },
+    { name: 'resale switched on without a stored commission', set: { reseller: { enabled: true } }, unset: {}, resale: true, commission: 0 },
+    { name: 'an unrelated site stored as text', set: { tenantIds: [owner, other, '0000000000000000000000f1'] }, unset: {}, resale: true, commission: 10 },
+    { name: 'an allowed site stored as text', set: { reseller: { enabled: true, value: 10, allowedTenants: [String(owner)] } }, unset: {}, resale: true, commission: 10 },
+  ])('books a legacy record with $name and records its exact split', async ({ set, unset, resale, commission }) => {
+    const id = await resalePackage();
+    await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $set: set, ...(Object.keys(unset).length ? { $unset: unset } : {}) });
+    const quoted = await quote(id);
+    const created = await book(id, { selection: selection(), quoteHash: quoted.quoteHash, guestDetails }).expect(201);
+    const booking = await Booking.collection.findOne({ _id: new Types.ObjectId(created.body.data._id) });
+    if (resale) {
+      expect(booking).toMatchObject({ isResale: true, supplierTenantId: other, sellerTenantId: owner, revenueBreakdown: { commissionPercent: commission } });
+    } else {
+      expect(booking?.isResale).toBe(false);
+      expect(booking?.revenueBreakdown).toBeUndefined();
+    }
+    expect((await stored(id))?.packageBookingFence).toBe(1);
+  });
+});
+
 describe('configured package choices and guest details', () => {
   const choiceDetails = (): Partial<PackageDetailsInput> => ({
     rooms: { bedPreferences: ['double', 'twin'] },

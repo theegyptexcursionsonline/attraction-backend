@@ -2,9 +2,11 @@ import { ClientSession, Types } from 'mongoose';
 import { z } from 'zod';
 import { Availability } from '../models/Availability';
 import { Attraction } from '../models/Attraction';
+import { IAttraction } from '../types';
 import { bookingDate } from './bookingInventory.service';
 import { packageRevisionFilter } from './packageCatalog.service';
 import { isoDateSchema, PackageDetails } from '../utils/packageDetails';
+import { ResaleFields, resaleFieldsFor, sameResaleFields } from '../utils/resaleSplit';
 import { PackageQuote, PackageQuoteCharge, PackageQuoteExtra } from './packagePricing.service';
 import { PackageArrivalDetails, PackageTravellerDetails } from './packageGuestDetails.service';
 
@@ -32,12 +34,18 @@ export class PackageChangedError extends Error {
  * real write makes Mongo retry such a transaction; its retried compare-and-set then refuses the
  * stale revision before seats, booking and receipt can commit. The internal counter is excluded
  * from ordinary reads and timestamp updates so bookings do not invalidate public content.
+ *
+ * Reseller settings, ownership and the site list change without a package revision. The resale
+ * split is recomputed from the record this transaction reads and must equal `resale`, the split
+ * the booking stores; the fence write then turns any later change into a conflict whose retry
+ * checks again. Comparing the computed split, not the stored settings, refuses exactly when the
+ * recorded money would differ, whatever form an older record keeps those settings in.
  */
 export async function fencePackageBooking(
-  input: { attractionId: Types.ObjectId; tenantId: Types.ObjectId; revision: number; currency: string },
+  input: { attractionId: Types.ObjectId; tenantId: Types.ObjectId; revision: number; currency: string; total: number; resale: ResaleFields },
   session?: ClientSession,
 ): Promise<void> {
-  const fenced = await Attraction.updateOne({
+  const filter = {
     _id: input.attractionId,
     tenantIds: input.tenantId,
     listingType: 'package',
@@ -46,7 +54,11 @@ export async function fencePackageBooking(
     trashedAt: { $exists: false },
     currency: input.currency,
     ...packageRevisionFilter(input.revision),
-  }, { $inc: { packageBookingFence: 1 } }, { ...(session ? { session } : {}), timestamps: false });
+  };
+  const current = await Attraction.findOne(filter).select('ownerTenantId tenantIds reseller').session(session ?? null)
+    .lean<Pick<IAttraction, 'ownerTenantId' | 'tenantIds' | 'reseller'>>();
+  if (!current || !sameResaleFields(resaleFieldsFor(current, input.tenantId, input.total), input.resale)) throw new PackageChangedError();
+  const fenced = await Attraction.updateOne(filter, { $inc: { packageBookingFence: 1 } }, { ...(session ? { session } : {}), timestamps: false });
   if (fenced.matchedCount !== 1) throw new PackageChangedError();
 }
 

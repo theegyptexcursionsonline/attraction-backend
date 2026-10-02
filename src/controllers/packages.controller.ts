@@ -862,8 +862,10 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
     const bookingId = new Types.ObjectId();
     const reference = generateBookingReference();
     const packageBooking = packageBookingSnapshot({ details, quote, quoteHash, travellerNames, travellerDetails, arrivalDetails });
+    // Computed once from the record read above; the fence refuses unless the transaction's record yields the same split.
+    const resale = resaleFieldsFor(attraction, tenantId, quote.total);
     const booking = await runBookingTransaction<IBooking>(async (session) => {
-      await fencePackageBooking({ attractionId: attraction._id, tenantId, revision: packageRevision, currency }, session);
+      await fencePackageBooking({ attractionId: attraction._id, tenantId, revision: packageRevision, currency, total: quote.total, resale }, session);
       await reservePackageSeats(attraction._id, details, selection.date, guests, session);
       const packagePromoClaim = promo ? await claimPackagePromo(promo, quote, session) : undefined;
       const payload = {
@@ -887,7 +889,7 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
         status: 'pending',
         paymentStatus: 'pending',
         packageBooking,
-        ...resaleFieldsFor(attraction, tenantId, quote.total),
+        ...resale,
       };
       const created = session ? (await Booking.create([payload], { session }))[0] : await Booking.create(payload);
       await IdempotencyKey.findByIdAndUpdate(idempotencyRecordId, {

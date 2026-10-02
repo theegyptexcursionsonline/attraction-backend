@@ -40,3 +40,16 @@ export function resaleFieldsFor(listing: Listing, sellerTenantId: unknown, total
     revenueBreakdown: { commissionPercent, sellerEarnings, paymentFee, supplierEarnings: round2(total - sellerEarnings - paymentFee) },
   };
 }
+
+/** True when both splits record the same parties and the same amounts. */
+export function sameResaleFields(left: ResaleFields, right: ResaleFields): boolean {
+  if (!left.isResale || !right.isResale) return left.isResale === right.isResale;
+  const a = left.revenueBreakdown;
+  const b = right.revenueBreakdown;
+  return String(left.supplierTenantId) === String(right.supplierTenantId)
+    && String(left.sellerTenantId) === String(right.sellerTenantId)
+    && a.commissionPercent === b.commissionPercent
+    && a.sellerEarnings === b.sellerEarnings
+    && a.paymentFee === b.paymentFee
+    && a.supplierEarnings === b.supplierEarnings;
+}
