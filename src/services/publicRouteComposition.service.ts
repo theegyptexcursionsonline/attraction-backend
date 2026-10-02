@@ -59,7 +59,7 @@ export function routeClosure(request:RouteRequest,tenant:Row,localizedTenant:Row
  function finish(collection:Row[] = [],pagination:unknown=null,stats:Row|null=null){
   const facts={...totals,guideLanguages:[...guideLanguages.values()].sort((a,b)=>a.localeCompare(b)),durations:[...durations],categories:[...categories],categoryCounts:[...categoryCounts].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(([name,count])=>({name,count})),durationCounts:[...durationCounts].map(([label,count])=>({label,count})),departureAreas:[...departureAreas.values()].sort((a,b)=>a.name.localeCompare(b.name)),hotelPickup,enquiries};
   const seed={tenant:localizedTenant,featured:featured.map((row):Row=>({...row,bookingTenantSlug:request.tenantSlug})),destinations,facts,collection,pagination,stats};digest.update(JSON.stringify(stats));
-  const receipt=publicRoutePublicationReceipt.parse({version:1,renderer:ROUTE_RENDERER,tenantId,tenantSlug:request.tenantSlug,domain:request.domain,route:request.route,locale:request.locale,sourceDigest:digest.digest('hex'),seedDigest:hash(seed),contentLocales:LANGUAGES.filter(locale=>languages.has(locale)),counts:totals});
+  const receipt=publicRoutePublicationReceipt.parse({version:2,renderer:ROUTE_RENDERER,tenantId,tenantSlug:request.tenantSlug,domain:request.domain,route:request.route,locale:request.locale,sourceDigest:digest.digest('hex'),seedDigest:hash(seed),contentLocales:LANGUAGES.filter(locale=>languages.has(locale)),counts:totals});
   return {seed,receipt};
  }
  return {push,finish,totals};

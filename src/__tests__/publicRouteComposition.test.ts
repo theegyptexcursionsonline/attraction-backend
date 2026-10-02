@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 import { routeClosure,composePublicRoute } from '../services/publicRouteComposition.service';
-import { publicRouteCompositionRequest } from '../services/publicRouteComposition.schema';
+import { publicRouteCompositionRequest, publicRoutePublicationReceipt } from '../services/publicRouteComposition.schema';
 import { sourceSnapshot } from '../services/localizationSourceSnapshot.service';
 import { translationSourceTemplate } from '../services/attractionLocalization.service';
 const owner=new Types.ObjectId('aaaaaaaaaaaaaaaaaaaaaaaa');
@@ -12,6 +12,7 @@ function tour(index:number,locales=['ar','de','ru','fr']){
  source.__translations=locales.map(locale=>({tenantId:owner,attractionId:source._id,status:'published',locale,slug:`tour-${index}-${locale}`,sourceSnapshot:sourceSnapshot('tour',source),content:{...translationSourceTemplate(source),title:`Translated ${index}`}}));return source;
 }
 describe('complete scoped route composition closure',()=>{
+ test('promotion-qualified v2 receipt rejects old server contracts and unknown versions',()=>{const result=routeClosure(request,tenant,presentation).finish();expect(result.receipt).toMatchObject({version:2,renderer:'savanna-public-composition-v2'});for(const patch of [{version:1},{renderer:'savanna-public-composition-v1'},{version:3},{renderer:'foreign-renderer'}])expect(publicRoutePublicationReceipt.safeParse({...result.receipt,...patch}).success).toBe(false);expect(publicRoutePublicationReceipt.safeParse(result.receipt).success).toBe(true);});
  test('rejects hostile, foreign, independent and filtered request identities',()=>{for(const input of [{...request,tenantSlug:'royal-cruise-hurghada'},{...request,domain:'foreign.example'},{...request,locale:'xx'},{...request,search:'anything'},{...request,cursor:'abc'}])expect(publicRouteCompositionRequest.safeParse(input).success).toBe(false);});
  test('a missing translation beyond the visible rail closes its locale',()=>{const c=routeClosure(request,tenant,presentation);for(let i=1;i<=55;i++)c.push('tour',tour(i,i===55?['de','ru','fr']:undefined));const result=c.finish();expect(result.seed.featured).toHaveLength(8);expect(result.receipt.counts.tours).toBe(55);expect(result.receipt.contentLocales).toEqual(['de','ru','fr']);});
  test('source edit and draft/foreign row cannot qualify the native variant',()=>{for(const mutate of [(r:any)=>{r.description='Edited';},(r:any)=>{r.__translations[0].status='draft';},(r:any)=>{r.__translations[0].tenantId=new Types.ObjectId();},(r:any)=>{r.__translations[0].attractionId=new Types.ObjectId();}]){const c=routeClosure(request,tenant,presentation);const row=tour(1);mutate(row);c.push('tour',row);expect(c.finish().receipt.contentLocales).not.toContain('ar');}});
