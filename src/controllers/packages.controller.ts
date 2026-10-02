@@ -21,6 +21,8 @@ import {
   cancellationPolicyText,
   packageBookingItem,
   packageBookingSnapshot,
+  PackageChangedError,
+  fencePackageBooking,
   PackageSeatsUnavailableError,
   reservePackageSeats,
 } from '../services/packageBooking.service';
@@ -829,6 +831,7 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
     const reference = generateBookingReference();
     const packageBooking = packageBookingSnapshot({ details, quote, quoteHash, travellerNames, travellerDetails, arrivalDetails });
     const booking = await runBookingTransaction<IBooking>(async (session) => {
+      await fencePackageBooking({ attractionId: attraction._id, tenantId, revision: packageRevision, currency }, session);
       await reservePackageSeats(attraction._id, details, selection.date, guests, session);
       const payload = {
         _id: bookingId,
@@ -882,6 +885,10 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
     }
     if (error instanceof PackageSeatsUnavailableError) {
       res.status(409).json({ success: false, code: 'SEATS_UNAVAILABLE', error: 'Those places were just taken. Choose another date or fewer travellers.' });
+      return;
+    }
+    if (error instanceof PackageChangedError) {
+      res.status(409).json({ success: false, code: 'PACKAGE_CHANGED', error: 'This package has changed. Reload the package to review its current details before booking.' });
       return;
     }
     next(error);

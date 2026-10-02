@@ -1,7 +1,9 @@
 import { ClientSession, Types } from 'mongoose';
 import { z } from 'zod';
 import { Availability } from '../models/Availability';
+import { Attraction } from '../models/Attraction';
 import { bookingDate } from './bookingInventory.service';
+import { packageRevisionFilter } from './packageCatalog.service';
 import { isoDateSchema, PackageDetails } from '../utils/packageDetails';
 import { PackageQuote, PackageQuoteCharge, PackageQuoteExtra } from './packagePricing.service';
 import { PackageArrivalDetails, PackageTravellerDetails } from './packageGuestDetails.service';
@@ -18,6 +20,34 @@ export const PACKAGE_OPTION_PREFIX = 'package:';
 
 export class PackageSeatsUnavailableError extends Error {
   constructor() { super('PACKAGE_SEATS_UNAVAILABLE'); }
+}
+
+export class PackageChangedError extends Error {
+  constructor() { super('PACKAGE_CHANGED'); }
+}
+
+/**
+ * Serialize the reviewed package against editor/unpublish writes in the booking transaction.
+ * A snapshot read alone permits an editor to commit while stale terms are being booked. This
+ * real write makes Mongo retry such a transaction; its retried compare-and-set then refuses the
+ * stale revision before seats, booking and receipt can commit. The internal counter is excluded
+ * from ordinary reads and timestamp updates so bookings do not invalidate public content.
+ */
+export async function fencePackageBooking(
+  input: { attractionId: Types.ObjectId; tenantId: Types.ObjectId; revision: number; currency: string },
+  session?: ClientSession,
+): Promise<void> {
+  const fenced = await Attraction.updateOne({
+    _id: input.attractionId,
+    tenantIds: input.tenantId,
+    listingType: 'package',
+    status: 'active',
+    archivedAt: { $exists: false },
+    trashedAt: { $exists: false },
+    currency: input.currency,
+    ...packageRevisionFilter(input.revision),
+  }, { $inc: { packageBookingFence: 1 } }, { ...(session ? { session } : {}), timestamps: false });
+  if (fenced.matchedCount !== 1) throw new PackageChangedError();
 }
 
 /**

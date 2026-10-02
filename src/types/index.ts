@@ -248,6 +248,7 @@ export interface IAttraction extends Document {
   /** Packages only — see utils/packageDetails. */
   packageDetails?: unknown;
   packageRevision?: number;
+  packageBookingFence?: number;
   currency: string;
   pricingOptions: Array<{
     id: string;

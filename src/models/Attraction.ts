@@ -191,6 +191,9 @@ const attractionSchema = new Schema<IAttraction>(
       validate: (value: unknown) => value === undefined || packageDetailsSchema.safeParse(value).success,
     },
     packageRevision: { type: Number, default: 0, min: 0, validate: Number.isSafeInteger },
+    // Transactional booking/editor serialization only. Never changes the public package revision
+    // or source timestamp, and is not returned by ordinary listing/admin reads.
+    packageBookingFence: { type: Number, select: false, min: 0, validate: Number.isSafeInteger },
     currency: {
       type: String,
       required: true,

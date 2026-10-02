@@ -16,6 +16,7 @@ import { addDays, packageQuoteHash, packageSelectionSchema, todayInZone } from '
 import { expireStaleCardHolds } from '../services/bookingInventory.service';
 import { PackageDetailsInput } from '../utils/packageDetails';
 import { samplePackageInput } from '../test/packageFixture';
+import * as packageBookingService from '../services/packageBooking.service';
 
 // Real routes, middleware, controllers and Mongo transactions; only the signed-in identity is injected.
 jest.mock('../middleware/auth.middleware', () => {
@@ -337,6 +338,95 @@ describe('cancelling a package booking', () => {
     const id = await publishedPackage();
     expect((await Attraction.collection.findOne({ _id: new Types.ObjectId(id) }))?.cancellationPolicy)
       .toBe('Cancel at least 30 days before departure: full refund. At least 14 days before: 50% refund. Later: no refund.');
+  });
+});
+
+describe('package booking/editor transaction fence', () => {
+  it.each(['edit', 'unpublish', 'unlist', 'archive', 'currency'] as const)(
+    'refuses a concurrent %s after the preliminary checks without booking or inventory effects', async (change) => {
+      const id = await publishedPackage();
+      const quoted = await quote(id);
+      const original = packageBookingService.fencePackageBooking;
+      jest.spyOn(packageBookingService, 'fencePackageBooking').mockImplementationOnce(async (input, session) => {
+        if (change === 'edit') {
+          await staff(request(app).put(`/packages/${id}`)).send({ expectedRevision: quoted.quote.packageRevision, packageDetails: details({ startCity: 'New meeting city' }) }).expect(200);
+        } else {
+          const changes = change === 'unpublish' ? { status: 'draft' }
+            : change === 'unlist' ? { tenantIds: [other] }
+              : change === 'archive' ? { archivedAt: new Date() }
+                : { currency: 'EUR' };
+          await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $set: changes });
+        }
+        return original(input, session);
+      });
+      const response = await book(id, { selection: selection(), quoteHash: quoted.quoteHash, guestDetails }).expect(409);
+      expect(response.body.code).toBe('PACKAGE_CHANGED');
+      expect(await Booking.countDocuments()).toBe(0);
+      expect(await IdempotencyKey.countDocuments()).toBe(0);
+      expect(await seatsBooked(id, 10)).toBe(0);
+      expect((await Attraction.collection.findOne({ _id: new Types.ObjectId(id) }))?.packageBookingFence).toBeUndefined();
+    },
+  );
+
+  it('retries a Mongo write conflict and rechecks the revision instead of committing a stale snapshot', async () => {
+    const id = await publishedPackage(); const quoted = await quote(id);
+    const original = packageBookingService.fencePackageBooking;
+    const fence = jest.spyOn(packageBookingService, 'fencePackageBooking').mockImplementationOnce(async (input, session) => {
+      expect(session?.inTransaction()).toBe(true);
+      // Establish an old transaction snapshot before a competing editor writes the same record.
+      await Attraction.findById(id).session(session!);
+      await staff(request(app).put(`/packages/${id}`)).send({ expectedRevision: quoted.quote.packageRevision, packageDetails: details({ startCity: 'Changed city' }) }).expect(200);
+      return original(input, session);
+    });
+    const response = await book(id, { selection: selection(), quoteHash: quoted.quoteHash, guestDetails }).expect(409);
+    expect(response.body.code).toBe('PACKAGE_CHANGED');
+    expect(fence).toHaveBeenCalledTimes(2);
+    expect(await Booking.countDocuments()).toBe(0);
+    expect(await IdempotencyKey.countDocuments()).toBe(0);
+    expect(await seatsBooked(id, 10)).toBe(0);
+  });
+
+  it('books a legacy record without a stored revision and leaves its public revision and timestamp unchanged', async () => {
+    const id = await publishedPackage();
+    await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $unset: { packageRevision: '' } });
+    const before = await Attraction.collection.findOne({ _id: new Types.ObjectId(id) });
+    const quoted = await quote(id);
+    expect(quoted.quote.packageRevision).toBe(0);
+    const body = { selection: selection(), quoteHash: quoted.quoteHash, guestDetails };
+    const key = 'qa-legacy-fence-replay-0001';
+    const created = await book(id, body, key).expect(201);
+    await book(id, body, key).expect(200);
+    const after = await Attraction.collection.findOne({ _id: new Types.ObjectId(id) });
+    expect(after?.packageRevision).toBeUndefined();
+    expect(after?.updatedAt).toEqual(before?.updatedAt);
+    expect(after?.packageBookingFence).toBe(1);
+    expect((await Attraction.findById(id).lean())?.packageBookingFence).toBeUndefined();
+    expect((await Booking.collection.findOne({ _id: new Types.ObjectId(created.body.data._id) }))?.packageBooking.packageRevision).toBe(0);
+  });
+
+  it('fences the first editor save on a legacy record with no stored revision', async () => {
+    const id = await publishedPackage();
+    await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $unset: { packageRevision: '' } });
+    const quoted = await quote(id); const original = packageBookingService.fencePackageBooking;
+    jest.spyOn(packageBookingService, 'fencePackageBooking').mockImplementationOnce(async (input, session) => {
+      await staff(request(app).put(`/packages/${id}`)).send({ expectedRevision: 0, packageDetails: details({ startCity: 'Changed city' }) }).expect(200);
+      return original(input, session);
+    });
+    const refused = await book(id, { selection: selection(), quoteHash: quoted.quoteHash, guestDetails }).expect(409);
+    expect(refused.body.code).toBe('PACKAGE_CHANGED');
+    expect(await Booking.countDocuments()).toBe(0);
+    expect(await IdempotencyKey.countDocuments()).toBe(0);
+    expect(await seatsBooked(id, 10)).toBe(0);
+  });
+
+  it('rolls the internal fence back when a later reservation fails', async () => {
+    const id = await publishedPackage(); const quoted = await quote(id);
+    jest.spyOn(packageBookingService, 'reservePackageSeats').mockRejectedValueOnce(new packageBookingService.PackageSeatsUnavailableError());
+    const refused = await book(id, { selection: selection(), quoteHash: quoted.quoteHash, guestDetails }).expect(409);
+    expect(refused.body.code).toBe('SEATS_UNAVAILABLE');
+    expect((await Attraction.collection.findOne({ _id: new Types.ObjectId(id) }))?.packageBookingFence).toBeUndefined();
+    expect(await Booking.countDocuments()).toBe(0);
+    expect(await IdempotencyKey.countDocuments()).toBe(0);
   });
 });
 
