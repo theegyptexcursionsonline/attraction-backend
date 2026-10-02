@@ -385,6 +385,49 @@ describe('package promotion lifecycle', () => {
     expect(quoted.quote.total).toBeGreaterThan(0);
   });
 
+  it.each([{ currency: 'USD', minimum: 0.5 }, { currency: 'EUR', minimum: 0.5 }, { currency: 'GBP', minimum: 0.3 }])('refuses below the $currency card minimum before a hold, and accepts exactly $minimum', async ({ currency, minimum }) => {
+    const id = await publishedPackage({ rates: samplePackageInput().rates!.map(row => ({ ...row, single: 1, double: 1, triple: 1, child: 1, infant: 0 })) });
+    await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $set: { currency } });
+    // Three travellers at 1.05 each. The code discounts the operator portion while the fee stays.
+    const promotion = await promo({ currency, discountType: 'fixed', discountValue: Math.round((3.15 - minimum + 0.01) * 100) / 100 });
+    const selected = selection({ promoCode: 'PACKAGE10', extras: [] });
+    const refused = await request(app).post(`/packages/${id}/quote`).set('x-tenant-id', String(owner)).send(selected).expect(409);
+    expect(refused.body).toMatchObject({ code: 'PROMO_UNAVAILABLE' });
+    expect(refused.body.error).toContain(`less than ${currency} ${minimum.toFixed(2)} payable`);
+    const direct = await book(id, { selection: selected, quoteHash: 'a'.repeat(32), guestDetails }).expect(409);
+    expect(direct.body.code).toBe('PROMO_UNAVAILABLE');
+    expect(await Booking.countDocuments()).toBe(0);
+    expect(await IdempotencyKey.countDocuments()).toBe(0);
+    expect(await seatsBooked(id, 10)).toBe(0);
+    expect((await PromoCode.findById(promotion._id))?.usageCount).toBe(0);
+
+    await PromoCode.updateOne({ _id: promotion._id }, { $set: { discountValue: Math.round((3.15 - minimum) * 100) / 100 } });
+    const quoted = await quote(id, selected);
+    expect(quoted.quote).toMatchObject({ preDiscountTotal: 3.15, total: minimum, serviceFee: 0.15 });
+    const created = await book(id, { selection: selected, quoteHash: quoted.quoteHash, guestDetails }).expect(201);
+    expect(bookingStripePaymentRequest((await Booking.findById(created.body.data._id))!)).toMatchObject({ amount: Math.round(minimum * 100), currency: currency.toLowerCase() });
+    expect((await PromoCode.findById(promotion._id))?.usageCount).toBe(1);
+  });
+
+  it('explains unsupported discount currency without guessing FX or changing bookings without a code', async () => {
+    const id = await publishedPackage();
+    await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $set: { currency: 'EGP' } });
+    const promotion = await promo({ currency: 'EGP' });
+    const refused = await request(app).post(`/packages/${id}/quote`).set('x-tenant-id', String(owner)).send(chosen()).expect(409);
+    expect(refused.body).toMatchObject({ code: 'PROMO_UNAVAILABLE', error: 'Package discount codes are not supported for EGP yet. Remove the code to continue.' });
+    const direct = await book(id, { selection: chosen(), quoteHash: 'a'.repeat(32), guestDetails }).expect(409);
+    expect(direct.body.code).toBe('PROMO_UNAVAILABLE');
+    expect(await Booking.countDocuments()).toBe(0);
+    expect(await IdempotencyKey.countDocuments()).toBe(0);
+    expect(await seatsBooked(id, 10)).toBe(0);
+    expect((await PromoCode.findById(promotion._id))?.usageCount).toBe(0);
+    const unchanged = await quote(id);
+    expect(unchanged.quote).toMatchObject({ currency: 'EGP', total: 2667 });
+    expect(unchanged.quote).not.toHaveProperty('promotion');
+    await book(id, { selection: selection(), quoteHash: unchanged.quoteHash, guestDetails }).expect(201);
+    expect((await PromoCode.findById(promotion._id))?.usageCount).toBe(0);
+  });
+
   it.each(['foreign', 'currency', 'expired', 'future', 'minimum', 'exhausted', 'inactive'] as const)('refuses %s eligibility without consuming a use or making a booking', async failure => {
     const changes = failure === 'foreign' ? { tenantId: other } : failure === 'currency' ? { currency: 'EUR' }
       : failure === 'expired' ? { validUntil: new Date(Date.now() - 1) } : failure === 'future' ? { validFrom: new Date(Date.now() + 60_000) }

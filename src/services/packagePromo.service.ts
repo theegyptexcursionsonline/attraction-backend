@@ -10,6 +10,12 @@ export class PackagePromoError extends Error {
 }
 
 const cents = (value: number): number => Math.round(value * 100);
+// Package authoring currently offers USD/EUR/GBP/EGP. Stripe documents these minimum
+// charge amounts for the first three; EGP requires settlement conversion we cannot verify
+// from saved gateway configuration. Do not guess FX or probe payment creation during quoting.
+// This bounded policy uses same-currency floors; converted settlement may be stricter.
+// https://docs.stripe.com/currencies#minimum-and-maximum-charge-amounts (checked 2026-10-03)
+const PACKAGE_PROMO_MINIMUM_MINOR: Readonly<Record<string, number>> = { USD: 50, EUR: 50, GBP: 30 };
 const scopeOf = (promo: Pick<IPromoCode, 'tenantId'>) => promo.tenantId ? { tenantId: promo.tenantId } : { tenantId: null };
 const termsOf = (promo: IPromoCode) => ({
   id: String(promo._id), tenantId: promo.tenantId ? String(promo.tenantId) : null,
@@ -36,6 +42,9 @@ export async function pricePackagePromo(quote: PackageQuote, code: string | unde
   const discount = Math.min(cents(quote.subtotal), Math.max(0, cents(evaluated.discount)));
   if (!Number.isSafeInteger(discount) || discount <= 0) throw new PackagePromoError('PROMO_UNAVAILABLE', 'This promo code does not reduce the price of this selection.');
   if (cents(quote.total) - discount <= 0) throw new PackagePromoError('PROMO_UNAVAILABLE', 'This code leaves no payable card amount. Remove it to continue.');
+  const minimum = PACKAGE_PROMO_MINIMUM_MINOR[evaluated.currency];
+  if (minimum === undefined) throw new PackagePromoError('PROMO_UNAVAILABLE', `Package discount codes are not supported for ${evaluated.currency} yet. Remove the code to continue.`);
+  if (cents(quote.total) - discount < minimum) throw new PackagePromoError('PROMO_UNAVAILABLE', `This code leaves less than ${evaluated.currency} ${(minimum / 100).toFixed(2)} payable. Remove it or choose another code.`);
   quote.preDiscountTotal = quote.total;
   quote.discount = discount / 100;
   quote.total = (cents(quote.total) - discount) / 100;
