@@ -236,6 +236,11 @@ bookingSchema.add({
   bundleComponentId: {
     type: String,
   },
+  // Package bookings only: what the customer was quoted and booked — departure and return,
+  // hotel level and its hotels, rooms with their charges, extras, the service fee inside the
+  // total, and the cancellation schedule with its dates. Written once at booking (see
+  // services/packageBooking.service); never recomputed from the package afterwards.
+  packageBooking: { type: Schema.Types.Mixed, default: undefined },
   bundleAllocation: {
     supplierNetMinor: { type: Number, min: 0 },
     customerAllocationMinor: { type: Number, min: 0 },

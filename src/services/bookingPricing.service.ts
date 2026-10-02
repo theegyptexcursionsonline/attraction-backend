@@ -5,6 +5,7 @@ import { calculateTourLinePrice } from '../utils/attractionPricing';
 import { applicableOfferClause, evaluatePromo, offerDiscountFor, OFFER_PRIORITY_SORT } from '../utils/discountCurrency';
 import { normalizeBookingAddons, addonsTotal } from '../utils/bookingAddons';
 import { CreateBookingInput } from '../utils/validators';
+import { serviceFeeOn } from '../utils/serviceFee';
 const round2 = (n: number): number => Math.round(n * 100) / 100;
 
 /** Read-only price authority shared by checkout quotes and actual booking creation.
@@ -120,7 +121,7 @@ export async function priceBookingSelection(attraction: IAttraction, bookingTena
       0
     ));
 
-    const fees = round2(subtotal * 0.05); // 5% service fee
+    const fees = serviceFeeOn(subtotal);
     const tenantId = bookingTenant?._id || attraction.tenantIds[0];
     if (!tenantId) {
       throw new Error('MISSING_TENANT');

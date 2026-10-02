@@ -1,4 +1,5 @@
 import { pageSeoSchema } from '../utils/pageSeo';
+import { SEARCH_VISIBILITY, dropUnrevisionedSeoWrites } from '../utils/seoSettings';
 import { externalRatingsSchema } from '../utils/externalRatings';
 import { pagePresentationSchema } from '../utils/siteContent';
 import { urlNamespacePlugin } from '../plugins/urlNamespace';
@@ -216,12 +217,17 @@ const tenantSchema = new Schema<ITenant>(
       href: { type: String, required: true },
       columns: [{ label: { type: String, required: true }, links: [{ label: { type: String, required: true }, href: { type: String, required: true } }] }],
     }],
+    // Owned by the revision-checked site SEO editor (PATCH /tenants/:id/seo-settings); general
+    // settings saves cannot overwrite it (see dropUnrevisionedSeoWrites below).
     seoSettings: {
       metaTitle: String,
       metaDescription: String,
       keywords: [{ type: String }],
       ogImage: String,
+      // Absent means visible: every site was indexable before this switch existed.
+      searchVisibility: { type: String, enum: [...SEARCH_VISIBILITY] },
     },
+    seoSettingsRevision: { type: Number, default: 0, min: 0, validate: Number.isSafeInteger },
     // Explicit identifiers/tokens only. Changes are made by the revision-checked route.
     trackingSettings: {
       type: trackingSchema,
@@ -412,6 +418,18 @@ tenantSchema.pre(['updateOne', 'updateMany', 'findOneAndUpdate'], function () {
         throw new Error('Replace the full external ratings snapshot');
       }
     }
+  }
+});
+
+// Site SEO (titles, share image, "hide from search engines") changes only through its
+// revision-checked editor. General settings saves echo the snapshot they loaded, so a stale
+// save would otherwise undo an SEO change; drop that echo. A whole-site upsert (onboarding and
+// seed scripts) still writes it, and so does any update that sets the revision.
+tenantSchema.pre(['updateOne', 'updateMany', 'findOneAndUpdate'], function () {
+  const update = this.getUpdate();
+  if (!update || Array.isArray(update) || this.getOptions().upsert === true) return;
+  if (dropUnrevisionedSeoWrites(update as Record<string, unknown>)) {
+    console.warn('[tenants] site SEO left unchanged: use the SEO settings editor', { filter: Object.keys(this.getFilter()) });
   }
 });
 

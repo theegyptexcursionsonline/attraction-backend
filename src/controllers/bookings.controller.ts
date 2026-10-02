@@ -56,10 +56,12 @@ import { assertTenantIdsBookingCreationAllowed, assertTenantPaymentMethodAllowed
 import { configuredAvailabilityTimes } from '../utils/publicAvailability';
 import { bookingEligibility, resolveBookingTimeZone } from '../utils/bookingCutoff';
 import { bookingNotificationEmail } from '../utils/notificationRecipients';
+import { packageSelfCancellationProblem } from '../services/packageBooking.service';
+import { todayInZone } from '../services/packagePricing.service';
 
 // Compact, tenant-safe booking summary for webhook payloads. Contains only the
 // booking's own fields — never other tenants' data.
-const bookingEventPayload = (
+export const bookingEventPayload = (
   booking: Pick<
     IBooking,
     | '_id'
@@ -106,7 +108,7 @@ const stableStringify = (value: unknown): string => {
   return JSON.stringify(value) ?? 'null';
 };
 
-const bookingResponse = (booking: IBooking): Record<string, unknown> => {
+export const bookingResponse = (booking: IBooking): Record<string, unknown> => {
   const raw = typeof (booking as any).toJSON === 'function'
     ? (booking as any).toJSON()
     : { ...(booking as any) };
@@ -1068,6 +1070,17 @@ export const cancelBooking = async (
     if (!['pending', 'confirmed'].includes(booking.status)) {
       sendError(res, 'Booking cannot be cancelled', 400);
       return;
+    }
+
+    // A package trip's terms can refund less than everything, but this path refunds in full: a
+    // customer cancels a paid trip themselves only while its terms give a full refund, and the
+    // operator handles later cancellations.
+    if (!req.user || !adminRoles.includes(req.user.role)) {
+      const packageProblem = packageSelfCancellationProblem(booking, todayInZone(resolveBookingTimeZone(undefined)));
+      if (packageProblem) {
+        sendError(res, packageProblem, 409);
+        return;
+      }
     }
 
     if (booking.paymentStatus === 'succeeded') {

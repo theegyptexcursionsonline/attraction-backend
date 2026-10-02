@@ -39,6 +39,7 @@ import { startImageGenerationWorker } from './services/image-generation-job.serv
 import { BookingCancellation } from './models/BookingCancellation';
 import { processPendingBookingCancellations } from './services/bookingCancellation.service';
 import { ensureBookingOperatorNotificationIndexes, processBookingOperatorNotifications } from './services/bookingOperatorNotification.service';
+import { refreshPackagePrices } from './services/packageCatalog.service';
 
 export const createApp = (): express.Application => {
   const app = express();
@@ -255,6 +256,23 @@ export const startServer = async (): Promise<void> => {
     void deliverBundleOutbox();
     const bundleOutboxSweep = setInterval(deliverBundleOutbox, 30 * 1000);
     bundleOutboxSweep.unref();
+
+    // Package catalogue prices: a season that ends or a departure that fills changes the cheapest
+    // price a customer can book although nobody edited the package (see refreshPackagePrices).
+    let packagePriceSweepRunning = false;
+    const refreshPackageCatalogPrices = async (): Promise<void> => {
+      if (packagePriceSweepRunning) return;
+      packagePriceSweepRunning = true;
+      try {
+        const result = await refreshPackagePrices();
+        if (result.updated || result.unbookable) console.info('[packages] catalogue price sweep', result);
+      } catch (error) {
+        console.error('[packages] catalogue price sweep failed:', error);
+      } finally { packagePriceSweepRunning = false; }
+    };
+    void refreshPackageCatalogPrices();
+    const packagePriceSweep = setInterval(refreshPackageCatalogPrices, 60 * 60 * 1000);
+    packagePriceSweep.unref();
 
     // Departure reminders and after-trip thank-you messages. Registered here rather than as a
     // cron ROUTE, because a route nothing calls never sends. Each send is claimed against a

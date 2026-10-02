@@ -483,13 +483,14 @@ export const sitemapTours = async (req: AuthRequest, res: Response, next: NextFu
       { $match: filter }, { $sort: { _id: 1 } }, { $limit: limit + 1 },
       ...localizationStages(req.tenant._id, locale, undefined, false),
       { $project: { ...localizationSourceProjection('tour'), slug: 1, pathSlug: 1, 'parentPage.path': 1, updatedAt: 1, __translations: 1 } },
-    ]) : await Attraction.find(filter).select('_id slug pathSlug parentPage.path updatedAt').sort({ _id: 1 }).limit(limit + 1).lean();
+    ]) : await Attraction.find(filter).select('_id slug pathSlug parentPage.path updatedAt listingType').sort({ _id: 1 }).limit(limit + 1).lean();
     const items = rows.slice(0, limit);
     // Tenant-scoped payload: never cacheable by a shared edge.
     res.setHeader('Cache-Control', 'private, max-age=60');
     sendSuccess(res, {
       items: items.map(row => ({
         id: String(row._id),
+        listingType: row.listingType ?? 'tour',
         ...(locale ? localizationIdentity(row, locale) : {}),
         slug: row.slug,
         ...(row.pathSlug ? { pathSlug: row.pathSlug } : {}),

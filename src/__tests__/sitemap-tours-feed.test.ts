@@ -97,9 +97,9 @@ describe('GET /page/sitemap/tours', () => {
     const response = await request(app).get('/page/sitemap/tours').set('X-Tenant-ID', 'owner-site');
     expect(response.body.data.nextCursor).toBeNull();
     expect(response.body.data.items[0]).toEqual({
-      id: String(siteTours[0]._id), slug: 'quad-one', pathSlug: 'quad-one-flat', parentPath: '/quad-biking', updatedAt: '2026-09-10T00:00:00.000Z',
+      id: String(siteTours[0]._id), listingType: 'tour', slug: 'quad-one', pathSlug: 'quad-one-flat', parentPath: '/quad-biking', updatedAt: '2026-09-10T00:00:00.000Z',
     });
-    expect(Object.keys(response.body.data.items[1]).sort()).toEqual(['id', 'slug', 'updatedAt']);
+    expect(Object.keys(response.body.data.items[1]).sort()).toEqual(['id', 'listingType', 'slug', 'updatedAt']);
   });
 
   it('never includes another site\'s tours, drafts, archive or trash', async () => {

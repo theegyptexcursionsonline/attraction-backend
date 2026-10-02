@@ -28,6 +28,8 @@ import { SpecialOffer } from '../models/SpecialOffer';
 import { BundleOrder } from '../models/BundleOrder';
 import { runBundleTransaction } from '../services/bundleInventory.service';
 import { createAttractionSchema } from '../utils/validators';
+import { publicPackageDetails } from '../utils/packageDetails';
+import { listingCreateProblem, listingUpdateProblem, normalizeListingTypeInput } from '../services/listingType.service';
 import { DEPARTURE_SCHEDULE_CONFLICT_MESSAGE, departureScheduleConflict } from '../utils/departureAvailability';
 import { tenantPickupDestinationSlugs } from '../utils/pickupDestinations';
 import { resolveBookingTimeZone } from '../utils/bookingCutoff';
@@ -60,6 +62,10 @@ const PUBLIC_ATTRACTION_FIELDS = [
   'reviewCount',
   'priceFrom',
   'enquiryOnly',
+  'listingType',
+  'validityDuration',
+  'venueInfo',
+  'packageDetails',
   'currency',
   'pricingOptions',
   'addons',
@@ -109,6 +115,12 @@ export const toPublicAttractionDto = (source: unknown): Record<string, unknown> 
       'badges',
       'availability',
     ]) delete dto[field];
+  }
+  // A package shows its trip, never its rate matrix: prices come from the package quote.
+  if (dto.packageDetails !== undefined) {
+    const shown = publicPackageDetails(dto.packageDetails);
+    if (shown) dto.packageDetails = shown;
+    else delete dto.packageDetails;
   }
   return dto;
 };
@@ -341,6 +353,14 @@ export const getAttractions = async (
 
     if (category) {
       query.category = category as string;
+    }
+
+    // Listing type (validated by the query schema). Listings saved before types existed are tours.
+    if (req.query.listingType !== undefined) {
+      const listingType = String(req.query.listingType);
+      query.$and = [...(query.$and || []), listingType === 'tour'
+        ? { $or: [{ listingType: 'tour' }, { listingType: { $exists: false } }] }
+        : { listingType }];
     }
 
     // Source filters are part of the shared DB match, so totals and cursor bindings
@@ -803,6 +823,12 @@ export const createAttraction = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    const listingProblem = listingCreateProblem(req.body);
+    if (listingProblem) {
+      sendError(res, listingProblem, 400);
+      return;
+    }
+
     // Delegated admins must always create inside at least one explicitly assigned
     // tenant. An empty tenant list would create a globally visible orphan record.
     if (req.user?.role !== 'super-admin' && !req.body.tenantIds?.length) {
@@ -977,6 +1003,15 @@ export const updateAttraction = async (
         return;
       }
       delete req.body.ownerTenantId;
+    }
+
+    // After the access checks above, so a refusal never describes another site's listing.
+    normalizeListingTypeInput(req.body);
+    if (!existingAttraction) existingAttraction = await Attraction.findById(id);
+    const listingProblem = existingAttraction ? listingUpdateProblem(existingAttraction.listingType, req.body) : null;
+    if (listingProblem) {
+      sendError(res, listingProblem, 400);
+      return;
     }
 
     if (req.body.status === 'active') {
@@ -1215,6 +1250,10 @@ const DUPLICATE_AUTHORING_FIELDS = [
   'seo',
   'tenantIds',
   'ownerTenantId',
+  'listingType',
+  'packageDetails',
+  'validityDuration',
+  'venueInfo',
 ] as const;
 
 const isObjectIdLike = (value: object): boolean =>

@@ -2,6 +2,7 @@ import { urlNamespacePlugin } from '../plugins/urlNamespace';
 import mongoose, { Schema } from 'mongoose';
 import { imageAltSchema, imageAltTextsSchema, secureImageUrlSchema } from '../utils/imagePresentation';
 import { IAttraction } from '../types';
+import { LISTING_TYPES, packageDetailsSchema } from '../utils/packageDetails';
 
 type ValidatorContext = {
   status?: string;
@@ -163,6 +164,33 @@ const attractionSchema = new Schema<IAttraction>(
       default: false,
       index: true,
     },
+    // What the listing sells: a tour or activity, an attraction ticket, or a multi-day package.
+    // Records saved before this field existed are tours (PLATFORM #1069: the editor's choice was
+    // never stored, so every attraction ticket came back as a tour).
+    listingType: {
+      type: String,
+      enum: LISTING_TYPES,
+      default: 'tour',
+    },
+    // Attraction tickets: how long a ticket stays valid and the venue (PLATFORM #1069). Ticket
+    // prices live in pricingOptions like every other listing.
+    validityDuration: { type: String, trim: true, maxlength: 120 },
+    venueInfo: {
+      address: { type: String, trim: true, maxlength: 300 },
+      openingHours: { type: String, trim: true, maxlength: 300 },
+      instructions: { type: String, trim: true, maxlength: 1000 },
+      mapUrl: { type: String, trim: true, maxlength: 2048 },
+    },
+    // Packages only: the trip, its hotel levels, seasons, group sizes and per-person rates. Written
+    // through the package editor with `packageRevision` as its optimistic lock; a stored value is
+    // always a valid document (see utils/packageDetails).
+    packageDetails: {
+      type: Schema.Types.Mixed,
+      default: undefined,
+      set: (value: unknown) => (value === undefined || value === null ? undefined : packageDetailsSchema.parse(value)),
+      validate: (value: unknown) => value === undefined || packageDetailsSchema.safeParse(value).success,
+    },
+    packageRevision: { type: Number, default: 0, min: 0, validate: Number.isSafeInteger },
     currency: {
       type: String,
       required: true,
