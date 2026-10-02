@@ -8,6 +8,7 @@ import { enqueueBookingOperatorNotification } from './bookingOperatorNotificatio
 import { getTenantStripeConfig } from './tenantPayment.service';
 import { bookingStripeContextMatches } from './bookingPaymentBinding.service';
 import { createRefund, listPaymentIntentRefunds, ProviderRefund } from './stripe.service';
+import { releaseUnpaidPackagePromo } from './packagePromo.service';
 
 export const ATN_REFUND_FLOW_KEY = 'atnRefundFlow';
 export const ATN_CANCELLATION_REFUND_FLOW = 'booking-cancellation';
@@ -69,6 +70,9 @@ export const finalizeBookingCancellation = async (
   } else if (booking.paymentStatus !== 'pending' && booking.paymentStatus !== 'failed') {
     throw new Error('CANCELLATION_PAYMENT_UNRESOLVED');
   }
+  // Only an authorized terminal cancellation returns an unpaid promotion reservation.
+  // Paid/refunded redemptions stay consumed, including when their seats are released.
+  if (!paid) await releaseUnpaidPackagePromo(booking, session);
   await releaseBookingInventory(booking, session);
   booking.cancellationRequestedAt = booking.cancellationRequestedAt || new Date();
   booking.status = 'cancelled';

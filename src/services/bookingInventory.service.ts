@@ -220,7 +220,8 @@ export const releaseBookingInventory = async (
   session?: ClientSession
 ): Promise<void> => {
   if (booking.inventoryReleasedAt) return;
-  await releaseUnpaidPackagePromo(booking, session);
+  // This helper also serves nonterminal inventory realignment. Promotional claims
+  // belong to the booking lifecycle and must remain reserved during such repairs.
 
   // Bookings created before transactional inventory did not reserve capacity.
   // Mark them released without decrementing a counter they never incremented.
@@ -297,6 +298,9 @@ export const failCardBookingAndReleaseInventory = async (
     ) as BookingWithInventoryMarker | null;
     if (!booking) return null;
 
+    // The hold is ending only after the query/provider reconciliation above permits it.
+    // Return its promotion use atomically with the terminal booking and inventory state.
+    await releaseUnpaidPackagePromo(booking, session);
     await releaseBookingInventory(booking, session);
     booking.paymentStatus = 'failed';
     booking.status = 'cancelled';
