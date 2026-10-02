@@ -45,9 +45,10 @@ const HTML_TAG = /<[a-z!/?]/i;
 const LINE_CONTROL = /[\u0000-\u001f\u007f]/;
 const PROSE_CONTROL = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 
-const line = (max: number) => z.string().trim().max(max)
+// Messages are written for the people editing a package: they appear next to the field.
+const line = (max: number) => z.string().trim().max(max, `Use at most ${max} characters`)
   .refine((value) => !HTML_TAG.test(value) && !LINE_CONTROL.test(value), 'Use plain text without HTML');
-const prose = (max: number) => z.string().trim().max(max)
+const prose = (max: number) => z.string().trim().max(max, `Use at most ${max} characters`)
   .refine((value) => !HTML_TAG.test(value) && !PROSE_CONTROL.test(value), 'Use plain text without HTML');
 
 export const PACKAGE_KEY_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
@@ -62,10 +63,13 @@ export const isRealIsoDate = (value: string): boolean => {
 export const isoDateSchema = z.string().trim().refine(isRealIsoDate, 'Use a real date (YYYY-MM-DD)');
 
 const hasCents = (value: number): boolean => Math.abs(value * 100 - Math.round(value * 100)) < 1e-6;
-const money = z.number().finite().min(0, 'Prices cannot be negative').max(PACKAGE_LIMITS.price)
+const money = z.number({ invalid_type_error: 'Enter the price as a number' }).finite('Enter the price as a number')
+  .min(0, 'Prices cannot be negative')
+  .max(PACKAGE_LIMITS.price, `Use at most ${PACKAGE_LIMITS.price.toLocaleString('en-US')}`)
   .refine(hasCents, 'Use at most two decimal places');
 const rate = money.nullable().default(null);
-const int = (min: number, max: number) => z.number().int().min(min).max(max);
+const int = (min: number, max: number) => z.number({ invalid_type_error: 'Enter a whole number' }).int('Use a whole number')
+  .min(min, `Use ${min} or more`).max(max, `Use ${max} or less`);
 
 const seasonSchema = z.object({
   key,
