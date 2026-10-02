@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
 import { packageDetailsSchema, publicPackageDetails, PackageDetailsInput, packagePublishProblems } from '../utils/packageDetails';
-import { datePerPersonFrom, packageQuoteHash, packageSelectionSchema, pricePackageSelection } from '../services/packagePricing.service';
+import { datePerPersonFrom, packageCalendar, packageFromPrice, packageQuoteHash, packageSelectionSchema, pricePackageSelection } from '../services/packagePricing.service';
 import { packageArrivalDetailsSchema, packageGuestDetailsProblem, packageTravellerDetailsSchema } from '../services/packageGuestDetails.service';
 import { packageBookingSnapshot, packageSelfCancellationProblem } from '../services/packageBooking.service';
 import { samplePackage, samplePackageInput } from '../test/packageFixture';
@@ -118,6 +118,43 @@ describe('package grouped choices and quoted requests', () => {
     const actual = good({ rooms: [{ adults: 3 }], extras: [{ id: 'before', quantity: 1 }] }, details);
     expect(from?.perPerson).toBe(actual.perPerson);
     expect(price({ rooms: [{ adults: 3, bedPreference: 'twin' }] }, samplePackage({ rooms: { bedPreferences: ['twin'] } }))).toMatchObject({ ok: false, code: 'ROOM_INVALID' });
+  });
+  it('keeps valid family dates open with exact rooms, child rates and mandatory choices', () => {
+    const details = samplePackage({ ...configured(), rooms: { allowSingle: false, allowTriple: false, maxChildrenPerRoom: 1 }, optionGroups: [{ id: 'guide', name: 'Guide', kind: 'guide', required: true, extraIds: ['french'] }] });
+    // A three-person family fits a double room; an all-adult reference party does not.
+    const rooms = select({ rooms: [{ adults: 2, children: 1 }] }).rooms;
+    expect(datePerPersonFrom(details, DEPARTURE, 3)).toBeNull();
+    const quote = good({ rooms, extras: [{ id: 'french', adults: 2, children: 1 }] }, details);
+    expect(quote.total).toBe(2703.75);
+    expect(datePerPersonFrom(details, DEPARTURE, 3, undefined, TODAY, rooms)).toEqual({ perPerson: quote.perPerson, tierKey: 'gold' });
+    const days = packageCalendar({ details, month: DEPARTURE.slice(0, 7), today: TODAY, travellers: 3, rooms, departures: new Map([[DEPARTURE, { booked: 17, blocked: false }]]) });
+    expect(days.find(day => day.date === DEPARTURE)).toMatchObject({ status: 'available', seatsLeft: 3, perPersonFrom: 901.25 });
+    // A catalogue reference must not quietly substitute a discounted child for an adult.
+    details.groupBands = [{ key: 'small', min: 3, max: 3 }];
+    expect(packageFromPrice(details, TODAY)).toBeNull();
+    expect(datePerPersonFrom(details, DEPARTURE, 3, undefined, TODAY, rooms)?.perPerson).toBe(901.25);
+  });
+  it('uses actual rooms for per-room choices and prices infants without consuming a seat', () => {
+    const details = samplePackage({ ...configured(), tiers: [samplePackage().tiers[1]], rates: samplePackageInput().rates!.filter(row => row.tierKey === 'diamond'), optionGroups: [
+      { id: 'guide', name: 'Guide', kind: 'guide', required: true, extraIds: ['french'] },
+      { id: 'stay', name: 'Stay', kind: 'extra_night', required: true, extraIds: ['before'] },
+    ] });
+    const rooms = select({ rooms: [{ adults: 2, children: 1, infants: 1 }, { adults: 1, children: 1 }] }).rooms;
+    const quote = good({ tierKey: 'diamond', rooms, extras: [{ id: 'french', adults: 3, children: 2 }, { id: 'before', quantity: 1 }] }, details);
+    const from = datePerPersonFrom(details, DEPARTURE, 5, undefined, TODAY, rooms);
+    expect(from).toEqual({ perPerson: quote.perPerson, tierKey: 'diamond' });
+    expect(quote.extras.find(extra => extra.id === 'before')?.amount).toBe(210);
+    expect(quote.rooms[0].charges.find(charge => charge.traveller === 'infant')?.amount).toBe(52.5);
+    const days = packageCalendar({ details, month: DEPARTURE.slice(0, 7), today: TODAY, travellers: 5, rooms, departures: new Map([[DEPARTURE, { booked: 15, blocked: false }]]) });
+    expect(days.find(day => day.date === DEPARTURE)).toMatchObject({ status: 'available', seatsLeft: 5, perPersonFrom: quote.perPerson });
+  });
+  it('never falls back to adult prices for malformed, mismatched or unsupported selected rooms', () => {
+    const details = samplePackage();
+    expect(datePerPersonFrom(details, DEPARTURE, 3, undefined, TODAY, select().rooms)).toBeNull();
+    expect(datePerPersonFrom(details, DEPARTURE, 2, undefined, TODAY, [{ adults: -1, children: 3, infants: 0 }])).toBeNull();
+    expect(datePerPersonFrom(samplePackage({ travellers: { allowChildren: false } }), DEPARTURE, 3, undefined, TODAY, select({ rooms: [{ adults: 2, children: 1 }] }).rooms)).toBeNull();
+    const noChildRate = samplePackage({ rates: samplePackageInput().rates!.map(row => ({ ...row, child: null })) });
+    expect(datePerPersonFrom(noChildRate, DEPARTURE, 3, undefined, TODAY, select({ rooms: [{ adults: 2, children: 1 }] }).rooms)).toBeNull();
   });
   it.each(['timing', 'hotel', 'required-group', 'bed-requirement'] as const)('binds a same-price %s change into the reviewed quote', (change) => {
     const details = samplePackage({ ...configured(), rooms: { bedPreferences: ['twin'] } });

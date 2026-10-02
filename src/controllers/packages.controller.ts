@@ -103,6 +103,7 @@ const durationLabel = (details: PackageDetails): string | undefined => (details.
   : undefined);
 
 const NO_BOOKABLE_DATE = 'No date can be booked yet — check the seasons, start days, notice period and departures';
+const NO_REFERENCE_PRICE = 'The catalogue needs a bookable price for its reference adult party. Check room types, group sizes and required options.';
 
 interface EditorRecord {
   _id: Types.ObjectId;
@@ -147,10 +148,15 @@ async function editorView(record: EditorRecord, today: string) {
   const details = readPackageDetails(record.packageDetails) ?? packageDetailsSchema.parse({ version: 1 });
   const departures = details.departureMode === 'fixed' ? await openDepartureDates(record._id, today) : [];
   const firstDate = firstBookableDate(details, today, departures);
+  const fromPrice = packageFromPrice(details, today, departures);
   const checklist = packagePublishChecklist(details, today);
   if (!firstDate && checklist.problems.length === 0) {
     checklist.problems.push({ section: 'departures', message: NO_BOOKABLE_DATE });
     checklist.totals.departures = 1;
+  }
+  if (firstDate && !fromPrice && checklist.problems.length === 0) {
+    checklist.problems.push({ section: 'prices', message: NO_REFERENCE_PRICE });
+    checklist.totals.prices = 1;
   }
   const listing = listingPublishProblems(record);
   const problems: Array<{ section: PublishSection | 'listing' | 'more'; message: string }> = [
@@ -166,7 +172,7 @@ async function editorView(record: EditorRecord, today: string) {
     // The same problems with the editor section that fixes each, and how many each section has.
     checklist: problems,
     problemTotals: { ...(listing.length ? { listing: listing.length } : {}), ...checklist.totals },
-    fromPrice: packageFromPrice(details, today, departures),
+    fromPrice,
     firstBookableDate: firstDate,
     // Prices are entered before the service fee; the editor shows what customers pay with it.
     feeBasisPoints: SERVICE_FEE_BASIS_POINTS,
@@ -226,18 +232,19 @@ export const savePackageDetails = async (req: AuthRequest, res: Response, next: 
     const today = operatorToday(req);
     const departures = details.departureMode === 'fixed' ? await openDepartureDates(record._id, today) : [];
     const live = record.status === 'active';
+    const fromPrice = packageFromPrice(details, today, departures);
     if (live) {
       // A published package keeps selling while it is edited: never save it into a state that
       // cannot be sold. Unpublish first to rework it.
       const problems = packagePublishProblems(details, today);
       if (problems.length === 0 && !firstBookableDate(details, today, departures)) problems.push(NO_BOOKABLE_DATE);
+      if (problems.length === 0 && !fromPrice) problems.push(NO_REFERENCE_PRICE);
       if (problems.length > 0) {
         sendError(res, 'This package is live. Fix these before saving, or unpublish it first.', 400,
           problems.map((message) => ({ field: 'packageDetails', message })));
         return;
       }
     }
-    const fromPrice = packageFromPrice(details, today, departures);
     const duration = durationLabel(details);
     const updated = await Attraction.findOneAndUpdate(
       { ...scope, status: record.status, ...packageRevisionFilter(body.data.expectedRevision) },
@@ -296,7 +303,7 @@ export const publishPackage = async (req: AuthRequest, res: Response, next: Next
     const fromPrice = packageFromPrice(details, today, departures);
     if (problems.length > 0 || !fromPrice) {
       sendError(res, 'Complete these before publishing', 400,
-        (problems.length ? problems : [NO_BOOKABLE_DATE]).map((message) => ({ field: 'packageDetails', message })));
+        (problems.length ? problems : [NO_REFERENCE_PRICE]).map((message) => ({ field: 'packageDetails', message })));
       return;
     }
     const duration = durationLabel(details);
@@ -522,6 +529,17 @@ const departureStates = async (attractionId: Types.ObjectId, from: string, to: s
 const calendarQuerySchema = z.object({
   month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Use a month like 2026-11'),
   travellers: z.coerce.number().int().min(1).max(PACKAGE_LIMITS.travellers).default(2),
+  rooms: z.string().max(2048).transform((value, context) => {
+    try { return JSON.parse(value) as unknown; }
+    catch { context.addIssue({ code: z.ZodIssueCode.custom, message: 'Use valid room details' }); return z.NEVER; }
+  }).pipe(packageSelectionSchema.shape.rooms.refine(rooms => rooms.every(room => room.adults >= 1), 'Each room needs at least one adult')).optional(),
+}).superRefine((value, context) => {
+  // A dirty JSON transform may still reach this refinement. Do not dereference its aborted
+  // value: the original parse issue must stay a 400, never become a server error.
+  const rooms = packageSelectionSchema.shape.rooms.safeParse(value.rooms);
+  if (rooms.success && rooms.data.reduce((count, room) => count + room.adults + room.children, 0) !== value.travellers) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ['rooms'], message: 'The traveller count must match the adults and children in the rooms' });
+  }
 });
 
 export const getPackageCalendar = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
@@ -529,7 +547,7 @@ export const getPackageCalendar = async (req: AuthRequest, res: Response, next: 
     const query = calendarQuerySchema.safeParse(req.query);
     if (!query.success) { sendError(res, firstIssue(query.error), 400); return; }
     const today = operatorToday(req);
-    const { month, travellers } = query.data;
+    const { month, travellers, rooms } = query.data;
     if (month < today.slice(0, 7) || month > addMonths(today, PACKAGE_LIMITS.horizonMonths).slice(0, 7)) {
       sendError(res, 'Choose a month within the next two years', 400);
       return;
@@ -538,19 +556,19 @@ export const getPackageCalendar = async (req: AuthRequest, res: Response, next: 
     if (!loaded) return;
     const { record, details } = loaded;
     const monthEnd = addDays(addMonths(`${month}-01`, 1), -1);
-    const days = packageCalendar({ details, month, today, travellers, departures: await departureStates(record._id, `${month}-01`, monthEnd) });
+    const days = packageCalendar({ details, month, today, travellers, rooms, departures: await departureStates(record._id, `${month}-01`, monthEnd) });
     const nextAvailableDate = days.some((day) => day.status === 'available')
       ? null
-      : await nextAvailableAfter(record._id, details, monthEnd, today, travellers);
+      : await nextAvailableAfter(record._id, details, monthEnd, today, travellers, rooms);
     res.setHeader('Cache-Control', 'private, no-store');
-    sendSuccess(res, { month, currency: record.currency ?? 'USD', travellers, days, nextAvailableDate });
+    sendSuccess(res, { month, currency: record.currency ?? 'USD', travellers, days, nextAvailableDate, priceBasis: rooms ? 'selected-rooms' : 'reference-adults' });
   } catch (error) {
     next(error);
   }
 };
 
 /** The first day after `after` that can start the trip for this many travellers, or null. */
-async function nextAvailableAfter(attractionId: Types.ObjectId, details: PackageDetails, after: string, today: string, travellers: number): Promise<string | null> {
+async function nextAvailableAfter(attractionId: Types.ObjectId, details: PackageDetails, after: string, today: string, travellers: number, rooms?: PackageSelection['rooms']): Promise<string | null> {
   const horizonEnd = addMonths(today, details.departureMode === 'daily' ? details.daily.horizonMonths : PACKAGE_LIMITS.horizonMonths);
   let from = addDays(after, 1);
   while (from <= horizonEnd) {
@@ -559,7 +577,7 @@ async function nextAvailableAfter(attractionId: Types.ObjectId, details: Package
     for (let date = from; date <= to; date = addDays(date, 1)) {
       if (packageDateStatus(details, date, today) !== 'open') continue;
       const seats = seatsLeftOn(details, states.get(date));
-      if (seats !== null && seats >= travellers && datePerPersonFrom(details, date, travellers, undefined, today)) return date;
+      if (seats !== null && seats >= travellers && datePerPersonFrom(details, date, travellers, undefined, today, rooms)) return date;
     }
     if (details.departureMode === 'fixed') {
       // Jump to the next dated departure instead of scanning empty months.

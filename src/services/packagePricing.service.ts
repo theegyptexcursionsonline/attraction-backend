@@ -553,7 +553,7 @@ const referenceParty = (details: PackageDetails): { travellers: number; rate: 's
 
 /** Cheapest valid required choice combination, including the fee, without selecting for the guest.
  * The two-bit mask prevents two different required groups claiming the same pre/post-trip stay. */
-const requiredExtrasMinimum = (details: PackageDetails, adults: number, rooms: number, basisPoints: number, departureDate: string, today?: string): number | null => {
+const requiredExtrasMinimum = (details: PackageDetails, adults: number, rooms: number, basisPoints: number, departureDate: string, today?: string, children = 0): number | null => {
   let amounts = new Map<number, number>([[0, 0]]);
   for (const group of details.optionGroups.filter((candidate) => candidate.required)) {
     const next = new Map<number, number>();
@@ -562,7 +562,8 @@ const requiredExtrasMinimum = (details: PackageDetails, adults: number, rooms: n
       if (!extra || extra.price === null) continue;
       if (extra.timing === 'before_trip' && today && addDays(departureDate, -1) < today) continue;
       const count = extra.unit === 'per_traveller' ? adults : extra.unit === 'per_room' ? rooms : 1;
-      const amount = withServiceFeeCents(cents(extra.price), basisPoints) * count;
+      const amount = withServiceFeeCents(cents(extra.price), basisPoints) * count
+        + (extra.unit === 'per_traveller' ? withServiceFeeCents(cents(extra.priceChild ?? extra.price), basisPoints) * children : 0);
       const bit = extra.timing === 'before_trip' ? 1 : extra.timing === 'after_trip' ? 2 : 0;
       for (const [mask, previous] of amounts) {
         if ((mask & bit) !== 0) continue;
@@ -610,14 +611,33 @@ export function datePerPersonFrom(
   travellers: number,
   basisPoints = SERVICE_FEE_BASIS_POINTS,
   today?: string,
+  selectedRooms?: PackageSelection['rooms'],
 ): { perPerson: number; tierKey: string } | null {
   const season = seasonForDate(details, date);
   const band = bandForParty(details, travellers);
   if (!season || !band) return null;
+  const parsedRooms = selectedRooms === undefined ? undefined : packageSelectionSchema.shape.rooms.safeParse(selectedRooms);
+  if (parsedRooms && !parsedRooms.success) return null;
+  const rooms = parsedRooms?.success ? parsedRooms.data : undefined;
+  const party = rooms?.reduce((sum, room) => ({ adults: sum.adults + room.adults, children: sum.children + room.children }), { adults: 0, children: 0 });
+  if (party && (party.adults + party.children !== travellers || travellers > PACKAGE_LIMITS.travellers)) return null;
   const field: RateField = travellers === 1 ? 'single' : 'double';
   let best: { cents: number; tierKey: string } | null = null;
   for (const tier of details.tiers) {
     const cell = rateCell(details, tier.key, season.key, band.key);
+    if (cell && rooms && party) {
+      // The calendar must price the actual family/room composition. A three-person party can
+      // be two adults and one child in a double room; treating it as three adults incorrectly
+      // closes every date when the package has no triple or single rooms.
+      if (rooms.some((room, index) => roomProblem(details, room, index + 1))) continue;
+      const amounts = rooms.map(room => priced(roomCharges(details, cell, room).charges, basisPoints));
+      if (amounts.some(amount => amount === null)) continue;
+      const extras = requiredExtrasMinimum(details, party.adults, rooms.length, basisPoints, date, today, party.children);
+      if (extras === null) continue;
+      const shown = Math.round((amounts.reduce((sum, amount) => sum + amount!.shownCents, 0) + extras) / travellers);
+      if (!best || shown < best.cents) best = { cents: shown, tierKey: tier.key };
+      continue;
+    }
     if (cell && details.optionGroups.some((group) => group.required)) {
       const shown = requiredGroupFrom(details, cell, travellers, basisPoints, date, today);
       if (shown !== null && (!best || shown < best.cents)) best = { cents: shown, tierKey: tier.key };
@@ -697,6 +717,7 @@ export function packageCalendar(input: {
   travellers: number;
   departures: Map<string, PackageDepartureState>;
   feeBasisPoints?: number;
+  rooms?: PackageSelection['rooms'];
 }): PackageCalendarDay[] {
   const { details } = input;
   return monthDays(input.month).map((date): PackageCalendarDay => {
@@ -708,7 +729,7 @@ export function packageCalendar(input: {
     if (seatsLeft === null) return { date, status: 'closed', reason: 'no-departure' };
     if (seatsLeft === 0) return { date, status: 'sold-out', seatsLeft };
     if (seatsLeft < input.travellers) return { date, status: 'closed', reason: 'not-enough-seats', seatsLeft };
-    const price = datePerPersonFrom(details, date, input.travellers, input.feeBasisPoints, input.today);
+    const price = datePerPersonFrom(details, date, input.travellers, input.feeBasisPoints, input.today, input.rooms);
     if (!price) {
       return { date, status: 'closed', reason: bandForParty(details, input.travellers) ? 'no-price' : 'party-size', seatsLeft };
     }

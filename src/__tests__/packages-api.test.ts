@@ -382,6 +382,28 @@ describe('publishing a package', () => {
     const fine = await savePackage(pkg._id, { expectedRevision: 2, packageDetails: details({ startCity: 'Giza' }) }).expect(200);
     expect(fine.body.data).toMatchObject({ status: 'active', packageRevision: 3 });
   });
+  it('does not save a stale headline price or publish a discounted family rate as an adult reference', async () => {
+    const pkg = await publishedPackage();
+    const before = await stored(pkg._id);
+    const familyOnly = details({
+      rooms: { allowSingle: false, allowTriple: false, maxChildrenPerRoom: 1 },
+      groupBands: [{ key: 'small', min: 3, max: 3 }],
+      rates: samplePackageInput().rates!.filter(row => row.bandKey === 'small'),
+      extras: [{ id: 'guide', name: 'Guide', unit: 'per_traveller', price: 30, priceChild: 15 }],
+      optionGroups: [{ id: 'guide', name: 'Guide', kind: 'guide', required: true, extraIds: ['guide'] }],
+    });
+    const message = 'The catalogue needs a bookable price for its reference adult party. Check room types, group sizes and required options.';
+    const response = await savePackage(pkg._id, { expectedRevision: 2, packageDetails: familyOnly }).expect(400);
+    expect(response.body.errors).toContainEqual({ field: 'packageDetails', message });
+    expect(await stored(pkg._id)).toEqual(before);
+    const draft = await createPackage();
+    const saved = await savePackage(draft._id, { expectedRevision: 0, packageDetails: familyOnly }).expect(200);
+    expect(saved.body.data).toMatchObject({ status: 'draft', fromPrice: null, problemTotals: { prices: 1 } });
+    expect(saved.body.data.checklist).toContainEqual({ section: 'prices', message });
+    const publication = await as(request(app).post(`/packages/${draft._id}/publish`)).send({ expectedRevision: 1 }).expect(400);
+    expect(publication.body.errors).toContainEqual({ field: 'packageDetails', message });
+    expect((await stored(draft._id))?.status).toBe('draft');
+  });
 });
 
 describe('package departures', () => {
@@ -470,7 +492,7 @@ describe('public calendar and quote', () => {
     const response = await site(request(app).get(`/packages/${pkg._id}/calendar?month=${month}&travellers=2`)).expect(200);
     expect(response.headers['cache-control']).toBe('private, no-store');
     const days = response.body.data.days as Array<{ date: string; status: string; reason?: string; perPersonFrom?: number }>;
-    expect(response.body.data).toMatchObject({ month, currency: 'USD', travellers: 2 });
+    expect(response.body.data).toMatchObject({ month, currency: 'USD', travellers: 2, priceBasis: 'reference-adults' });
     expect(days.find(day => day.date === TODAY)).toMatchObject({ status: 'closed', reason: 'too-soon' });
     if (FIRST_DAY.startsWith(month)) expect(days.find(day => day.date === FIRST_DAY)).toMatchObject({ status: 'available', seatsLeft: 20, perPersonFrom: 1050 });
     await site(request(app).get(`/packages/${pkg._id}/calendar?month=2020-01`)).expect(400);
@@ -485,6 +507,51 @@ describe('public calendar and quote', () => {
     const response = await site(request(app).get(`/packages/${pkg._id}/calendar?month=${month}`)).expect(200);
     expect(response.body.data.days.every((day: { status: string }) => day.status !== 'available')).toBe(true);
     expect(response.body.data.nextAvailableDate).toBe(addDays(TODAY, 60));
+  });
+
+  const familyOptions: Partial<PackageDetailsInput> = {
+    rooms: { allowSingle: false, allowTriple: false, maxChildrenPerRoom: 1 },
+    groupBands: samplePackageInput().groupBands!.filter(band => band.min >= 2),
+    rates: samplePackageInput().rates!.filter(row => row.bandKey !== 'solo'),
+    extras: [{ id: 'guide', name: 'Guide', unit: 'per_traveller', price: 30, priceChild: 15 }],
+    optionGroups: [{ id: 'guide', name: 'Guide language', kind: 'guide', required: true, extraIds: ['guide'] }],
+  };
+  it('prices the selected family rooms instead of treating the child as an extra adult', async () => {
+    const pkg = await publishedPackage(familyOptions);
+    const date = addDays(TODAY, 10);
+    const rooms = [{ adults: 2, children: 1, infants: 1 }];
+    const response = await site(request(app).get(`/packages/${pkg._id}/calendar`)).query({ month: date.slice(0, 7), travellers: 3, rooms: JSON.stringify(rooms) }).expect(200);
+    expect(response.body.data.priceBasis).toBe('selected-rooms');
+    const day = response.body.data.days.find((item: { date: string }) => item.date === date);
+    const quoted = await site(request(app).post(`/packages/${pkg._id}/quote`)).send(selection({ date, rooms, extras: [{ id: 'guide', adults: 2, children: 1 }] })).expect(200);
+    expect(day).toMatchObject({ status: 'available', perPersonFrom: quoted.body.data.quote.perPerson });
+    expect(day.perPersonFrom).toBe(901.25);
+    const old = await site(request(app).get(`/packages/${pkg._id}/calendar`)).query({ month: date.slice(0, 7), travellers: 3 }).expect(200);
+    expect(old.body.data.days.find((item: { date: string }) => item.date === date)).toMatchObject({ status: 'closed', reason: 'no-price' });
+  });
+  it('finds the next family departure using the same exact room composition', async () => {
+    const pkg = await publishedPackage({ ...familyOptions, minNoticeDays: 60 });
+    const response = await site(request(app).get(`/packages/${pkg._id}/calendar`)).query({ month, travellers: 3, rooms: JSON.stringify([{ adults: 2, children: 1 }]) }).expect(200);
+    expect(response.body.data.days.every((day: { status: string }) => day.status !== 'available')).toBe(true);
+    expect(response.body.data.nextAvailableDate).toBe(addDays(TODAY, 60));
+    expect(response.body.data.priceBasis).toBe('selected-rooms');
+  });
+  it.each([
+    { travellers: 2, rooms: '[' },
+    { travellers: 2, rooms: 'null' },
+    { travellers: 2, rooms: '[null]' },
+    { travellers: 2, rooms: JSON.stringify({ adults: 2 }) },
+    { travellers: 2, rooms: '[]' },
+    { travellers: 3, rooms: JSON.stringify([{ adults: 2 }]) },
+    { travellers: 2, rooms: JSON.stringify([{ adults: 0, children: 2 }]) },
+    { travellers: 2, rooms: JSON.stringify([{ adults: -1, children: 3 }]) },
+    { travellers: 2, rooms: JSON.stringify([{ adults: 2.5 }]) },
+    { travellers: 2, rooms: JSON.stringify([{ adults: 2, price: 1 }]) },
+    { travellers: 21, rooms: JSON.stringify(Array.from({ length: 21 }, () => ({ adults: 1 }))) },
+    { travellers: 61, rooms: JSON.stringify([...Array.from({ length: 19 }, () => ({ adults: 3 })), { adults: 3, children: 1 }]) },
+  ])('refuses malformed or inconsistent calendar parties without a fallback: %j', async query => {
+    const pkg = await publishedPackage();
+    await site(request(app).get(`/packages/${pkg._id}/calendar`)).query({ month, ...query }).expect(400);
   });
 
   it('quotes exactly what the pricing engine computes, with tier comparisons and cancellation dates', async () => {
