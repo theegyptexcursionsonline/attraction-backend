@@ -2,8 +2,9 @@ import { ClientSession, Types } from 'mongoose';
 import { z } from 'zod';
 import { Availability } from '../models/Availability';
 import { bookingDate } from './bookingInventory.service';
-import { PackageDetails } from '../utils/packageDetails';
+import { isoDateSchema, PackageDetails } from '../utils/packageDetails';
 import { PackageQuote, PackageQuoteCharge, PackageQuoteExtra } from './packagePricing.service';
+import { PackageArrivalDetails, PackageTravellerDetails } from './packageGuestDetails.service';
 
 /**
  * Package bookings on the shared booking rails. A package booking is an ordinary Booking (one
@@ -107,6 +108,7 @@ export const packageBookingSnapshotSchema = z.object({
   version: z.literal(1),
   departureDate: z.string(),
   returnDate: z.string(),
+  cancellationReferenceDate: isoDateSchema.optional(),
   cancellation: z.array(cancellationRuleSchema),
 }).passthrough();
 
@@ -117,24 +119,32 @@ export function packageBookingSnapshot(input: {
   quote: PackageQuote;
   quoteHash: string;
   travellerNames?: string[];
+  travellerDetails?: PackageTravellerDetails;
+  arrivalDetails?: PackageArrivalDetails;
 }) {
   const { details, quote } = input;
   const tier = details.tiers.find((candidate) => candidate.key === quote.tier.key);
+  const names = input.travellerDetails?.map((traveller) => traveller.name) ?? input.travellerNames;
   return {
     version: 1 as const,
     departureDate: quote.departureDate,
     returnDate: quote.returnDate,
+    ...(quote.cancellationReferenceDate ? { cancellationReferenceDate: quote.cancellationReferenceDate } : {}),
+    ...(quote.packageRevision !== undefined ? { packageRevision: quote.packageRevision } : {}),
     ...(details.durationDays !== undefined ? { durationDays: details.durationDays } : {}),
     ...(details.durationNights !== undefined ? { durationNights: details.durationNights } : {}),
     startCity: details.startCity,
     endCity: details.endCity,
-    tier: { key: quote.tier.key, name: quote.tier.name, hotels: tier?.hotels ?? [] },
-    season: quote.season,
-    groupSize: quote.groupSize,
-    travellers: quote.travellers,
-    ...(input.travellerNames?.length ? { travellerNames: input.travellerNames } : {}),
-    rooms: quote.rooms,
-    extras: quote.extras,
+    tier: { key: quote.tier.key, name: quote.tier.name, hotels: structuredClone(tier?.hotels ?? []) },
+    season: { ...quote.season },
+    groupSize: { ...quote.groupSize },
+    travellers: { ...quote.travellers },
+    ...(input.travellerDetails?.length ? { travellerDetails: structuredClone(input.travellerDetails) } : {}),
+    ...(names?.length ? { travellerNames: [...names] } : {}),
+    ...(input.arrivalDetails ? { arrivalDetails: { ...input.arrivalDetails } } : {}),
+    bookingRequirements: { ...details.bookingRequirements },
+    rooms: structuredClone(quote.rooms),
+    extras: structuredClone(quote.extras),
     total: quote.total,
     serviceFee: quote.serviceFee,
     operatorSubtotal: quote.subtotal,
@@ -143,7 +153,7 @@ export function packageBookingSnapshot(input: {
     quoteHash: input.quoteHash,
     cancellation: [...details.cancellation]
       .sort((left, right) => right.daysBefore - left.daysBefore)
-      .map((rule) => ({ ...rule, cancelBy: shiftDays(quote.departureDate, -rule.daysBefore) })),
+      .map((rule) => ({ ...rule, cancelBy: shiftDays(quote.cancellationReferenceDate ?? quote.departureDate, -rule.daysBefore) })),
   };
 }
 
@@ -182,7 +192,10 @@ export function packageSelfCancellationProblem(booking: { packageBooking?: unkno
   if (booking.paymentStatus !== 'succeeded') return null;
   const snapshot = packageBookingSnapshotSchema.safeParse(booking.packageBooking);
   if (!snapshot.success) return 'Please contact us to cancel this trip.';
-  const percent = packageRefundPercentOn(snapshot.data.cancellation, snapshot.data.departureDate, today);
+  if (snapshot.data.cancellationReferenceDate && today >= snapshot.data.cancellationReferenceDate) {
+    return 'This booking has reached its first service date. Please contact us to cancel this trip.';
+  }
+  const percent = packageRefundPercentOn(snapshot.data.cancellation, snapshot.data.cancellationReferenceDate ?? snapshot.data.departureDate, today);
   if (percent >= 100) return null;
   return percent > 0
     ? `Under this trip's terms, cancelling now refunds ${percent}% of the price. Please contact us to cancel and we will arrange that refund.`

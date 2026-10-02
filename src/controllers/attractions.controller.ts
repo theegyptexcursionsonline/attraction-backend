@@ -66,6 +66,7 @@ const PUBLIC_ATTRACTION_FIELDS = [
   'validityDuration',
   'venueInfo',
   'packageDetails',
+  'packageRevision',
   'currency',
   'pricingOptions',
   'addons',
@@ -118,10 +119,11 @@ export const toPublicAttractionDto = (source: unknown): Record<string, unknown> 
   }
   // A package shows its trip, never its rate matrix: prices come from the package quote.
   if (dto.packageDetails !== undefined) {
-    const shown = publicPackageDetails(dto.packageDetails);
+    const shown = publicPackageDetails(dto.packageDetails, typeof record.packageRevision === 'number' ? record.packageRevision : 0);
     if (shown) dto.packageDetails = shown;
     else delete dto.packageDetails;
   }
+  delete dto.packageRevision;
   return dto;
 };
 

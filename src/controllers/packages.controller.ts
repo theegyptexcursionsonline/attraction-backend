@@ -15,6 +15,7 @@ import { getTenantStripeConfig } from '../services/tenantPayment.service';
 import { assertTenantIdsBookingCreationAllowed, assertTenantPaymentMethodAllowed } from '../services/tenantBookingPolicy.service';
 import { safeEmitEvent } from '../services/webhook.service';
 import { createAdminNotifications } from '../services/notification.service';
+import { packageArrivalDetailsSchema, packageGuestDetailsProblem, packageTravellerDetailsSchema } from '../services/packageGuestDetails.service';
 import { bookingEventPayload, bookingResponse } from './bookings.controller';
 import {
   cancellationPolicyText,
@@ -36,6 +37,7 @@ import {
   packagePublishProblems,
   PublishSection,
   readPackageDetails,
+  packageHasCompletionFeatures,
 } from '../utils/packageDetails';
 import { SERVICE_FEE_BASIS_POINTS } from '../utils/serviceFee';
 import {
@@ -491,12 +493,13 @@ interface PublicPackage {
   _id: Types.ObjectId;
   currency?: string;
   packageDetails?: unknown;
+  packageRevision?: number;
 }
 
 async function loadPublicPackage(req: AuthRequest, res: Response): Promise<{ record: PublicPackage; details: PackageDetails } | null> {
   const params = idParams.safeParse(req.params);
   if (!params.success) { sendError(res, NOT_FOUND, 404); return null; }
-  const record = await Attraction.findOne(publicScope(req, params.data.id)).select('_id currency packageDetails').lean<PublicPackage>();
+  const record = await Attraction.findOne(publicScope(req, params.data.id)).select('_id currency packageDetails packageRevision').lean<PublicPackage>();
   const details = record ? readPackageDetails(record.packageDetails) : null;
   if (!record || !details) { sendError(res, NOT_FOUND, 404); return null; }
   return { record, details };
@@ -553,7 +556,7 @@ async function nextAvailableAfter(attractionId: Types.ObjectId, details: Package
     for (let date = from; date <= to; date = addDays(date, 1)) {
       if (packageDateStatus(details, date, today) !== 'open') continue;
       const seats = seatsLeftOn(details, states.get(date));
-      if (seats !== null && seats >= travellers && datePerPersonFrom(details, date, travellers)) return date;
+      if (seats !== null && seats >= travellers && datePerPersonFrom(details, date, travellers, undefined, today)) return date;
     }
     if (details.departureMode === 'fixed') {
       // Jump to the next dated departure instead of scanning empty months.
@@ -604,6 +607,7 @@ export const quotePackage = async (req: AuthRequest, res: Response, next: NextFu
     const chosen: PackageSelection = selection.data;
     const priced = pricePackageSelection({ details, currency, selection: chosen, today });
     if (!priced.ok) { sendRefusal(res, priced); return; }
+    priced.quote.packageRevision = record.packageRevision ?? 0;
     const state = (await departureStates(record._id, chosen.date, chosen.date)).get(chosen.date);
     const seatsLeft = seatsLeftOn(details, state);
     const seats = seatRefusal(state, seatsLeft, priced.quote.travellers.adults + priced.quote.travellers.children);
@@ -626,7 +630,7 @@ export const quotePackage = async (req: AuthRequest, res: Response, next: NextFu
     });
     const cancellation = [...details.cancellation]
       .sort((left, right) => right.daysBefore - left.daysBefore)
-      .map((rule) => ({ ...rule, cancelBy: addDays(chosen.date, -rule.daysBefore) }));
+      .map((rule) => ({ ...rule, cancelBy: addDays(priced.quote.cancellationReferenceDate ?? chosen.date, -rule.daysBefore) }));
     res.setHeader('Cache-Control', 'private, no-store');
     sendSuccess(res, {
       quote: priced.quote,
@@ -649,9 +653,12 @@ export const quotePackage = async (req: AuthRequest, res: Response, next: NextFu
 export const bookPackageSchema = z.object({
   selection: packageSelectionSchema,
   quoteHash: z.string().regex(/^[a-f0-9]{32}$/, 'Review the price before booking'),
+  packageRevision: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER).optional(),
   guestDetails: createBookingSchema.shape.guestDetails,
   /** Names as on passports, lead traveller first; optional at booking. */
   travellerNames: z.array(z.string().trim().min(1).max(120)).max(PACKAGE_LIMITS.travellers).optional(),
+  travellerDetails: packageTravellerDetailsSchema.optional(),
+  arrivalDetails: packageArrivalDetailsSchema.optional(),
 }).strict();
 
 const IDEMPOTENCY_KEY = /^[A-Za-z0-9._:-]{16,128}$/;
@@ -686,17 +693,30 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
       return;
     }
     const body = bookPackageSchema.safeParse(req.body);
-    if (!body.success) { sendError(res, firstIssue(body.error), 400); return; }
+    if (!body.success) {
+      // A reset-safe validation response must never discard an existing commitment. A malformed
+      // correction with a previously used key is a conflict, even before it can be normalized.
+      if (req.tenant && await IdempotencyKey.exists({ scope: 'booking.create', tenantId: req.tenant._id, keyHash: sha256(idempotencyKey) })) {
+        res.status(409).json({ success: false, code: 'IDEMPOTENCY_CONFLICT', error: 'Idempotency key was already used for a different booking request' });
+        return;
+      }
+      res.status(400).json({ success: false, code: 'BOOKING_DETAILS_INVALID', error: firstIssue(body.error) });
+      return;
+    }
     if (!req.tenant) { sendError(res, 'Book this trip from the website that lists it', 400); return; }
     const params = idParams.safeParse(req.params);
     if (!params.success) { sendError(res, NOT_FOUND, 404); return; }
     const tenantId = req.tenant._id;
-    const { selection, guestDetails, travellerNames } = body.data;
+    const { selection, guestDetails, travellerNames, travellerDetails, arrivalDetails } = body.data;
     const keyHash = sha256(idempotencyKey);
     const principalId = req.user?._id ? String(req.user._id) : null;
     const immutableRequest = {
       tenantId: String(tenantId), attractionId: String(asObjectId(params.data.id)), selection,
       guestDetails, travellerNames: travellerNames ?? null, paymentMethod: 'card',
+      // Omit absent additions so pre-upgrade idempotency commitments continue to replay.
+      ...(travellerDetails ? { travellerDetails } : {}),
+      ...(arrivalDetails ? { arrivalDetails } : {}),
+      ...(body.data.packageRevision !== undefined ? { packageRevision: body.data.packageRevision } : {}),
       quoteHash: body.data.quoteHash,
     };
     const legacyRequestHash = sha256(stableStringify(immutableRequest));
@@ -739,11 +759,26 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
     const attraction = await Attraction.findOne(publicScope(req, params.data.id)).lean<IAttraction>();
     const details = attraction ? readPackageDetails(attraction.packageDetails) : null;
     if (!attraction || !details) { sendError(res, NOT_FOUND, 404); return; }
+    const packageRevision = attraction.packageRevision ?? 0;
+    if ((packageHasCompletionFeatures(details) || body.data.packageRevision !== undefined) && body.data.packageRevision !== packageRevision) {
+      res.status(409).json({ success: false, code: 'PACKAGE_CHANGED', error: 'This package has changed. Reload the package to review its current details before booking.', packageRevision });
+      return;
+    }
 
     const currency = attraction.currency ?? 'USD';
     const priced = pricePackageSelection({ details, currency, selection, today: operatorToday(req) });
     if (!priced.ok) { sendRefusal(res, priced); return; }
     const quote = priced.quote;
+    quote.packageRevision = packageRevision;
+    if (!quote.bookingReady) {
+      res.status(400).json({ success: false, code: 'OPTIONS_INCOMPLETE', error: quote.selectionProblems[0].message, selectionProblems: quote.selectionProblems });
+      return;
+    }
+    const detailsProblem = packageGuestDetailsProblem({ details, selection, quote, today: operatorToday(req), travellerNames, travellerDetails, arrivalDetails });
+    if (detailsProblem) {
+      res.status(400).json({ success: false, code: 'BOOKING_DETAILS_INVALID', error: detailsProblem });
+      return;
+    }
     const quoteHash = packageQuoteHash(String(attraction._id), selection, quote);
     if (quoteHash !== body.data.quoteHash) {
       res.status(409).json({
@@ -792,7 +827,7 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
     const guests = quote.travellers.adults + quote.travellers.children;
     const bookingId = new Types.ObjectId();
     const reference = generateBookingReference();
-    const packageBooking = packageBookingSnapshot({ details, quote, quoteHash, travellerNames });
+    const packageBooking = packageBookingSnapshot({ details, quote, quoteHash, travellerNames, travellerDetails, arrivalDetails });
     const booking = await runBookingTransaction<IBooking>(async (session) => {
       await reservePackageSeats(attraction._id, details, selection.date, guests, session);
       const payload = {

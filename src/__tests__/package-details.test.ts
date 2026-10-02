@@ -29,9 +29,11 @@ describe('package details: stored shape', () => {
       tiers: [],
       groupBands: [],
       rates: [],
-      rooms: { allowSingle: true, allowTriple: true, maxChildrenPerRoom: 1, maxInfantsPerRoom: 1 },
+      rooms: { allowSingle: true, allowTriple: true, maxChildrenPerRoom: 1, maxInfantsPerRoom: 1, bedPreferences: [] },
       travellers: { allowChildren: true, allowInfants: true, childMinAge: 2, childMaxAge: 11, childWithOneAdult: 'double' },
       extras: [],
+      optionGroups: [],
+      bookingRequirements: { travellerNames: false, dateOfBirth: false, nationality: false, arrivalDetails: 'hidden', bedPreference: false },
       cancellation: [],
       itinerary: [],
     });

@@ -30,6 +30,7 @@ export const PACKAGE_LIMITS = {
   bands: 8,
   hotelsPerTier: 20,
   extras: 30,
+  optionGroups: 12,
   cancellationRules: 8,
   blackoutDates: 366,
   roomsPerBooking: 20,
@@ -83,6 +84,12 @@ const hotelSchema = z.object({
   name: line(120).default(''),
   nights: int(1, PACKAGE_LIMITS.maxDays).optional(),
   stars: int(1, 5).optional(),
+  description: prose(2000).optional(),
+  imageUrls: z.array(secureImageUrlSchema.refine((value) => value.length > 0, 'Enter an image URL')).max(8).optional(),
+  amenities: z.array(line(80)).max(20).optional(),
+  accommodationType: z.enum(['hotel', 'cruise', 'train']).optional(),
+  roomType: line(120).optional(),
+  vesselName: line(120).optional(),
 }).strict();
 
 const tierSchema = z.object({
@@ -119,6 +126,8 @@ const roomsSchema = z.object({
   allowTriple: z.boolean().default(true),
   maxChildrenPerRoom: int(0, 2).default(1),
   maxInfantsPerRoom: int(0, 2).default(1),
+  /** Requests, not guaranteed inventory. Only expose preferences the operator accepts. */
+  bedPreferences: z.array(z.enum(['double', 'twin'])).max(2).default([]),
 }).strict();
 
 const travellersSchema = z.object({
@@ -158,6 +167,25 @@ const extraSchema = z.object({
   priceChild: rate,
   /** per_room / per_booking: the most units one booking can take (e.g. extra nights). */
   maxQuantity: int(1, PACKAGE_LIMITS.extraQuantity).default(1),
+  accommodation: hotelSchema.optional(),
+  /** Per-room units are nights before or after the main itinerary. */
+  timing: z.enum(['before_trip', 'after_trip']).optional(),
+}).strict();
+
+const optionGroupSchema = z.object({
+  id: key,
+  name: line(80).default(''),
+  kind: z.enum(['hotel', 'cabin', 'meal', 'guide', 'transport', 'transfer', 'extra_night', 'other']),
+  required: z.boolean().default(false),
+  extraIds: z.array(key).max(PACKAGE_LIMITS.extras).default([]),
+}).strict();
+
+const bookingRequirementsSchema = z.object({
+  travellerNames: z.boolean().default(false),
+  dateOfBirth: z.boolean().default(false),
+  nationality: z.boolean().default(false),
+  arrivalDetails: z.enum(['hidden', 'optional', 'required']).default('hidden'),
+  bedPreference: z.boolean().default(false),
 }).strict();
 
 const cancellationRuleSchema = z.object({
@@ -203,6 +231,8 @@ export const packageDetailsSchema = z.object({
   rooms: roomsSchema.default({}),
   travellers: travellersSchema.default({}),
   extras: z.array(extraSchema).max(PACKAGE_LIMITS.extras).default([]),
+  optionGroups: z.array(optionGroupSchema).max(PACKAGE_LIMITS.optionGroups).default([]),
+  bookingRequirements: bookingRequirementsSchema.default({}),
   cancellation: z.array(cancellationRuleSchema).max(PACKAGE_LIMITS.cancellationRules).default([]),
   itinerary: z.array(itineraryDaySchema).max(PACKAGE_LIMITS.maxDays).default([]),
 }).strict().superRefine((details, ctx) => {
@@ -212,6 +242,7 @@ export const packageDetailsSchema = z.object({
     ['tiers', details.tiers.map((tier) => tier.key)],
     ['groupBands', details.groupBands.map((band) => band.key)],
     ['extras', details.extras.map((extra) => extra.id)],
+    ['optionGroups', details.optionGroups.map((group) => group.id)],
   ];
   for (const [path, keys] of keyed) {
     for (const repeated of new Set(duplicates(keys))) issue([path], `"${repeated}" is used twice`);
@@ -238,6 +269,10 @@ export const packageDetailsSchema = z.object({
     cells.add(cell);
   });
   if (duplicates(details.daily.weekdays).length) issue(['daily', 'weekdays'], 'Each weekday can be listed once');
+  if (duplicates(details.rooms.bedPreferences).length) issue(['rooms', 'bedPreferences'], 'Each bed preference can be listed once');
+  if (details.bookingRequirements.bedPreference && details.rooms.bedPreferences.length === 0) {
+    issue(['rooms', 'bedPreferences'], 'Offer at least one bed preference before requiring a request');
+  }
   if (duplicates(details.daily.blackoutDates).length) issue(['daily', 'blackoutDates'], 'Each closed date can be listed once');
   if (details.travellers.childMinAge > details.travellers.childMaxAge) {
     issue(['travellers', 'childMaxAge'], 'The oldest child age must be at least the youngest');
@@ -253,6 +288,16 @@ export const packageDetailsSchema = z.object({
     if (extra.unit !== 'per_traveller' && extra.priceChild !== null) {
       issue(['extras', index, 'priceChild'], 'Only extras priced per traveller have a child price');
     }
+    if (extra.timing && extra.unit !== 'per_room') issue(['extras', index, 'timing'], 'Extra nights must be priced per room');
+  });
+  const extras = new Set(details.extras.map((extra) => extra.id));
+  const grouped = new Set<string>();
+  details.optionGroups.forEach((group, index) => {
+    group.extraIds.forEach((id) => {
+      if (!extras.has(id)) issue(['optionGroups', index, 'extraIds'], 'Choose an extra that exists');
+      if (grouped.has(id)) issue(['optionGroups', index, 'extraIds'], 'Each extra can belong to only one option group');
+      grouped.add(id);
+    });
   });
 });
 
@@ -263,6 +308,17 @@ export type PackageTier = PackageDetails['tiers'][number];
 export type PackageBand = PackageDetails['groupBands'][number];
 export type PackageRate = PackageDetails['rates'][number];
 export type PackageExtra = PackageDetails['extras'][number];
+
+/** Old package documents keep their original booking/quote contract until a completion feature
+ * is configured. New customers must review the current revision of configured features. */
+export const packageHasCompletionFeatures = (details: PackageDetails): boolean => {
+  const hotelHasMetadata = (hotel: PackageDetails['tiers'][number]['hotels'][number]) =>
+    ['description', 'imageUrls', 'amenities', 'accommodationType', 'roomType', 'vesselName'].some((field) => field in hotel);
+  return details.optionGroups.length > 0 || details.rooms.bedPreferences.length > 0
+    || Object.values(details.bookingRequirements).some((value) => value === true || value === 'optional' || value === 'required')
+    || details.tiers.some((tier) => tier.hotels.some(hotelHasMetadata))
+    || details.extras.some((extra) => Boolean(extra.accommodation || extra.timing));
+};
 
 /** The stored document, or null when the value is not a valid package document. */
 export const readPackageDetails = (value: unknown): PackageDetails | null => {
@@ -403,6 +459,11 @@ export function packagePublishChecklist(details: PackageDetails, today: string):
     const label = named(extra.name, `Extra ${index + 1}`);
     if (!extra.name) add(`Extra ${index + 1}: add a name`);
     if (extra.price === null) add(`${label}: set a price`);
+    if (extra.accommodation && (!extra.accommodation.name || !extra.accommodation.city)) add(`${label}: accommodation needs a name and city`);
+  });
+  details.optionGroups.forEach((group, index) => {
+    if (!group.name) add(`Option group ${index + 1}: add a name`);
+    if (group.extraIds.length === 0) add(`${group.name || `Option group ${index + 1}`}: add at least one choice`);
   });
 
   section = 'cancellation';
@@ -450,11 +511,12 @@ export const packagePublishProblems = (details: PackageDetails, today: string): 
  */
 const shownPrice = (amount: number): number => withServiceFeeCents(Math.round(amount * 100)) / 100;
 
-export const publicPackageDetails = (value: unknown): Record<string, unknown> | undefined => {
+export const publicPackageDetails = (value: unknown, packageRevision = 0): Record<string, unknown> | undefined => {
   const details = readPackageDetails(value);
   if (!details) return undefined;
   return {
     version: details.version,
+    packageRevision,
     durationDays: details.durationDays,
     durationNights: details.durationNights,
     startCity: details.startCity,
@@ -465,17 +527,21 @@ export const publicPackageDetails = (value: unknown): Record<string, unknown> | 
     groupBands: [...details.groupBands].sort((left, right) => left.min - right.min).map(({ min, max }) => ({ min, max })),
     rooms: details.rooms,
     travellers: details.travellers,
+    optionGroups: details.optionGroups,
+    bookingRequirements: details.bookingRequirements,
     // Extras have one fixed price each, shown before the visitor adds one — with the service fee
     // inside, rounded exactly as the quote rounds it. Room rates stay server-side (they depend on
     // date, group size and occupancy and reach customers only through the quote and calendar).
     extras: details.extras
       .filter((extra) => extra.price !== null)
-      .map(({ id, name, description, unit, maxQuantity, price, priceChild }) => ({
+      .map(({ id, name, description, unit, maxQuantity, price, priceChild, accommodation, timing }) => ({
         id,
         name,
         description,
         unit,
         maxQuantity,
+        ...(accommodation ? { accommodation } : {}),
+        ...(timing ? { timing } : {}),
         price: shownPrice(price as number),
         ...(unit === 'per_traveller' && priceChild !== null ? { priceChild: shownPrice(priceChild) } : {}),
       })),

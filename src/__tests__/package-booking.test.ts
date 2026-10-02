@@ -339,3 +339,113 @@ describe('cancelling a package booking', () => {
       .toBe('Cancel at least 30 days before departure: full refund. At least 14 days before: 50% refund. Later: no refund.');
   });
 });
+
+describe('configured package choices and guest details', () => {
+  const choiceDetails = (): Partial<PackageDetailsInput> => ({
+    rooms: { bedPreferences: ['double', 'twin'] },
+    bookingRequirements: { travellerNames: true, dateOfBirth: true, nationality: true, arrivalDetails: 'required', bedPreference: true },
+    extras: [
+      { id: 'included-cabin', name: 'Included river cabin', unit: 'per_booking', price: 0, accommodation: { name: 'Example vessel', city: 'Luxor', accommodationType: 'cruise', roomType: 'River cabin', imageUrls: ['https://example.com/cabin.jpg'] } },
+      { id: 'suite-cabin', name: 'Suite cabin', unit: 'per_booking', price: 200 },
+    ],
+    optionGroups: [{ id: 'cabin', name: 'Cabin', kind: 'cabin', required: true, extraIds: ['included-cabin', 'suite-cabin'] }],
+  });
+  const chosen = () => selection({ rooms: [{ adults: 2, bedPreference: 'twin' }], extras: [{ id: 'included-cabin', quantity: 1 }] });
+  const people = () => [
+    { name: 'First Traveller', type: 'adult', dateOfBirth: '1990-01-01', nationality: 'Egypt' },
+    { name: 'Second Traveller', type: 'adult', dateOfBirth: '1991-01-01', nationality: 'Egypt' },
+  ];
+  const arrival = () => ({ date: addDays(TODAY, 10), time: '15:20', airport: 'CAI', pickupLocation: 'Cairo airport', flightNumber: 'MS 123' });
+
+  it('quotes incomplete required choices but never reserves seats or claims a booking for them', async () => {
+    const id = await publishedPackage(choiceDetails());
+    const selection = { ...chosen(), extras: [] };
+    const quoted = await quote(id, selection);
+    expect(quoted.quote).toMatchObject({ bookingReady: false, selectionProblems: [{ code: 'OPTION_REQUIRED', groupId: 'cabin' }] });
+    const refused = await book(id, { selection, quoteHash: quoted.quoteHash, packageRevision: quoted.quote.packageRevision, guestDetails, travellerDetails: people(), arrivalDetails: arrival() }).expect(400);
+    expect(refused.body.code).toBe('OPTIONS_INCOMPLETE');
+    expect(await seatsBooked(id, 10)).toBe(0);
+    expect(await Booking.countDocuments()).toBe(0);
+    expect(await IdempotencyKey.countDocuments()).toBe(0);
+  });
+
+  it('refuses missing or inconsistent required personal fields before any booking effects', async () => {
+    const id = await publishedPackage(choiceDetails());
+    const selection = chosen(); const quoted = await quote(id, selection);
+    for (const changes of [
+      {},
+      { travellerDetails: people() },
+      { travellerDetails: [people()[0]], arrivalDetails: arrival() },
+      { travellerDetails: [people()[0], { ...people()[1], dateOfBirth: addDays(TODAY, 1) }], arrivalDetails: arrival() },
+      { travellerDetails: people(), arrivalDetails: { ...arrival(), time: '99:00' } },
+    ]) {
+      const refused = await book(id, { selection, quoteHash: quoted.quoteHash, packageRevision: quoted.quote.packageRevision, guestDetails, ...changes }).expect(400);
+      expect(refused.body.code).toBe('BOOKING_DETAILS_INVALID');
+    }
+    expect(await Booking.countDocuments()).toBe(0);
+    expect(await IdempotencyKey.countDocuments()).toBe(0);
+    expect(await seatsBooked(id, 10)).toBe(0);
+  });
+
+  it('persists typed details and accommodation choices, and binds replay to every submitted field', async () => {
+    const id = await publishedPackage(choiceDetails());
+    const selection = chosen(); const quoted = await quote(id, selection);
+    expect(quoted.quote.bookingReady).toBe(true);
+    const body = { selection, quoteHash: quoted.quoteHash, packageRevision: quoted.quote.packageRevision, guestDetails, travellerDetails: people(), arrivalDetails: arrival() };
+    const key = 'qa-completion-replay-0001';
+    const first = await book(id, body, key).expect(201);
+    const stored = await Booking.collection.findOne({ _id: new Types.ObjectId(first.body.data._id) });
+    expect(stored?.packageBooking).toMatchObject({
+      travellerDetails: people(), arrivalDetails: arrival(), travellerNames: ['First Traveller', 'Second Traveller'],
+      rooms: [{ bedPreference: 'twin' }],
+      extras: [{ optionGroup: { id: 'cabin', name: 'Cabin', kind: 'cabin' }, accommodation: { name: 'Example vessel', roomType: 'River cabin' } }],
+      bookingRequirements: { dateOfBirth: true },
+    });
+    await book(id, { ...body, arrivalDetails: { ...arrival(), time: '16:00' } }, key).expect(409);
+    await book(id, { ...body, travellerDetails: [people()[0], { ...people()[1], nationality: 'France' }] }, key).expect(409);
+    const malformedReplay = await book(id, { ...body, arrivalDetails: { ...arrival(), time: '99:00' } }, key).expect(409);
+    expect(malformedReplay.body.code).toBe('IDEMPOTENCY_CONFLICT');
+    await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $unset: { packageDetails: '' }, $set: { status: 'draft' } });
+    const replay = await book(id, body, key).expect(200);
+    expect(replay.body.data._id).toBe(first.body.data._id);
+    expect(await Booking.countDocuments()).toBe(1);
+    expect(await seatsBooked(id, 10)).toBe(2);
+  });
+
+  it('refuses changed requested bedding against the previously reviewed quote', async () => {
+    const id = await publishedPackage(choiceDetails());
+    const selection = chosen(); const quoted = await quote(id, selection);
+    const response = await book(id, { selection: { ...selection, rooms: [{ adults: 2, bedPreference: 'double' }] }, quoteHash: quoted.quoteHash, packageRevision: quoted.quote.packageRevision, guestDetails, travellerDetails: people(), arrivalDetails: arrival() }).expect(409);
+    expect(response.body.code).toBe('PRICE_CHANGED');
+    expect(await Booking.countDocuments()).toBe(0);
+  });
+
+  it('exposes the reviewed revision and refuses missing or stale package details without effects', async () => {
+    const id = await publishedPackage(choiceDetails());
+    const selection = chosen(); const quoted = await quote(id, selection);
+    const listing = await request(app).get(`/attractions/${id}`).set('x-tenant-id', String(owner)).expect(200);
+    expect(listing.body.data.packageDetails.packageRevision).toBe(quoted.quote.packageRevision);
+    const body = { selection, quoteHash: quoted.quoteHash, guestDetails, travellerDetails: people(), arrivalDetails: arrival() };
+    const missing = await book(id, body).expect(409);
+    expect(missing.body.code).toBe('PACKAGE_CHANGED');
+    await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $inc: { packageRevision: 1 }, $set: { 'packageDetails.extras.0.accommodation.name': 'Changed accommodation' } });
+    const stale = await book(id, { ...body, packageRevision: quoted.quote.packageRevision }).expect(409);
+    expect(stale.body.code).toBe('PACKAGE_CHANGED');
+    expect(await Booking.countDocuments()).toBe(0);
+    expect(await IdempotencyKey.countDocuments()).toBe(0);
+    expect(await seatsBooked(id, 10)).toBe(0);
+  });
+
+  it('refuses equal-price stay timing changes and shifts quote cancellation to the first paid stay', async () => {
+    const id = await publishedPackage({ extras: [{ id: 'night', name: 'Extra night', unit: 'per_room', price: 100, maxQuantity: 3, timing: 'before_trip' }] });
+    const picked = selection({ rooms: [{ adults: 2 }], extras: [{ id: 'night', quantity: 2 }] });
+    const quoted = await quote(id, picked);
+    expect(quoted.quote.cancellationReferenceDate).toBe(addDays(TODAY, 8));
+    expect(quoted.cancellation[0].cancelBy).toBe(addDays(TODAY, 8 - 30));
+    // Even a direct legacy writer that forgot the revision cannot silently change the booked stay.
+    await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $set: { 'packageDetails.extras.0.timing': 'after_trip' } });
+    const changed = await book(id, { selection: picked, quoteHash: quoted.quoteHash, packageRevision: quoted.quote.packageRevision, guestDetails }).expect(409);
+    expect(changed.body).toMatchObject({ code: 'PRICE_CHANGED', quote: { total: quoted.quote.total } });
+    expect(await Booking.countDocuments()).toBe(0);
+  });
+});

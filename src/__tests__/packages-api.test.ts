@@ -493,7 +493,7 @@ describe('public calendar and quote', () => {
     const parsedSelection = packageSelectionSchema.parse(selection());
     const engine = pricePackageSelection({ details: packageDetailsSchema.parse(details()), currency: 'USD', selection: parsedSelection, today: TODAY });
     if (!engine.ok) throw new Error(engine.message);
-    expect(response.body.data.quote).toEqual(engine.quote);
+    expect(response.body.data.quote).toEqual({ ...engine.quote, packageRevision: 2 });
     expect(response.body.data.quote.total).toBe(2 * 1050 + 525 + 42);
     expect(response.body.data.quoteHash).toBe(packageQuoteHash(pkg._id, parsedSelection, engine.quote));
     expect(response.body.data.alternatives).toEqual([

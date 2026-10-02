@@ -9,6 +9,7 @@ import {
   PackageExtraUnit,
   PackageRate,
   PackageSeason,
+  packageHasCompletionFeatures,
 } from '../utils/packageDetails';
 import { SERVICE_FEE_BASIS_POINTS, withServiceFeeCents } from '../utils/serviceFee';
 
@@ -31,6 +32,7 @@ export const packageSelectionSchema = z.object({
     adults: z.number().int().min(0).max(3),
     children: z.number().int().min(0).max(2).default(0),
     infants: z.number().int().min(0).max(2).default(0),
+    bedPreference: z.enum(['double', 'twin']).optional(),
   }).strict()).min(1, 'Add at least one room').max(PACKAGE_LIMITS.roomsPerBooking, `A booking can hold up to ${PACKAGE_LIMITS.roomsPerBooking} rooms`),
   extras: z.array(z.object({
     id: keySchema,
@@ -165,6 +167,7 @@ export interface PackageQuoteRoom {
   adults: number;
   children: number;
   infants: number;
+  bedPreference?: 'double' | 'twin';
   charges: PackageQuoteCharge[];
   amount: number;
 }
@@ -180,9 +183,22 @@ export interface PackageQuoteExtra {
   children?: number;
   charges: PackageQuoteCharge[];
   amount: number;
+  accommodation?: PackageDetails['tiers'][number]['hotels'][number];
+  timing?: 'before_trip' | 'after_trip';
+  fromDate?: string;
+  toDate?: string;
+  optionGroup?: { id: string; name: string; kind: PackageDetails['optionGroups'][number]['kind'] };
 }
 
 export interface PackageQuote {
+  /** Added by the API from the attraction revision; pure pricing has no database dependency. */
+  packageRevision?: number;
+  bookingReady: boolean;
+  selectionProblems: Array<{ code: 'OPTION_REQUIRED'; message: string; groupId: string }>;
+  /** Present only for configured completion features; binds their non-price meaning. */
+  configurationHash?: string;
+  /** An earlier paid pre-trip stay moves cancellation deadlines ahead of the main itinerary. */
+  cancellationReferenceDate?: string;
   currency: string;
   departureDate: string;
   returnDate: string;
@@ -373,6 +389,9 @@ export function pricePackageSelection(input: {
   for (const [index, room] of selection.rooms.entries()) {
     const problem = roomProblem(details, room, index + 1);
     if (problem) return problem;
+    if (room.bedPreference && !details.rooms.bedPreferences.includes(room.bedPreference)) {
+      return refusal('ROOM_INVALID', `Room ${index + 1}: choose an offered bed preference.`, { room: index + 1 });
+    }
   }
   const travellers = selection.rooms.reduce((sum, room) => ({
     adults: sum.adults + room.adults,
@@ -397,6 +416,7 @@ export function pricePackageSelection(input: {
   const rooms: PackageQuoteRoom[] = [];
   for (const [index, room] of selection.rooms.entries()) {
     const result = roomCharges(details, cell, room);
+    if (room.bedPreference && result.occupancy !== 'double') return refusal('ROOM_INVALID', `Room ${index + 1}: bed preferences apply only to double or twin rooms.`, { room: index + 1 });
     const amounts = priced(result.charges, basisPoints);
     if (!amounts) return refusal('NO_PRICE', NO_PRICE_MESSAGE, { room: index + 1 });
     baseCents += amounts.baseCents;
@@ -405,23 +425,78 @@ export function pricePackageSelection(input: {
   }
   const tripCents = shownCents;
 
+  const selectionProblems: PackageQuote['selectionProblems'] = [];
+  for (const group of details.optionGroups) {
+    const selected = selection.extras.filter((extra) => group.extraIds.includes(extra.id));
+    if (selected.length > 1) return refusal('EXTRA_INVALID', `${group.name}: choose only one option.`);
+    if (!selected.length && group.required) selectionProblems.push({ code: 'OPTION_REQUIRED', message: `Choose an option for ${group.name}.`, groupId: group.id });
+    if (selected.length) {
+      const chosen = selected[0];
+      const extra = details.extras.find((candidate) => candidate.id === chosen.id);
+      if (extra?.unit === 'per_traveller' && (chosen.adults !== travellers.adults || (chosen.children ?? 0) !== travellers.children)) {
+        return refusal('EXTRA_INVALID', `${group.name}: the selected option must cover every adult and child.`, { extraId: chosen.id });
+      }
+      if (extra && extra.unit !== 'per_traveller' && !extra.timing && (chosen.quantity ?? 1) !== 1) {
+        return refusal('EXTRA_INVALID', `${group.name}: select one option for the booking.`, { extraId: chosen.id });
+      }
+    }
+  }
+
   const seen = new Set<string>();
+  const timings = new Set<string>();
   const extras: PackageQuoteExtra[] = [];
   for (const chosen of selection.extras) {
     if (seen.has(chosen.id)) return refusal('EXTRA_INVALID', 'Each extra can be added once.', { extraId: chosen.id });
     seen.add(chosen.id);
     const result = extraCharges(details, chosen, { adults: travellers.adults, children: travellers.children, rooms: rooms.length });
     if ('ok' in result) return result;
+    const definition = details.extras.find((extra) => extra.id === chosen.id)!;
+    if (definition.timing && timings.has(definition.timing)) return refusal('EXTRA_INVALID', 'Choose only one accommodation option for nights before or after the trip.', { extraId: chosen.id });
+    if (definition.timing) timings.add(definition.timing);
     const amounts = priced(result.charges, basisPoints);
     if (!amounts) return refusal('NO_PRICE', NO_PRICE_MESSAGE, { extraId: chosen.id });
     baseCents += amounts.baseCents;
     shownCents += amounts.shownCents;
-    extras.push({ ...result.line, charges: amounts.shown, amount: money(amounts.shownCents) });
+    const group = details.optionGroups.find((candidate) => candidate.extraIds.includes(chosen.id));
+    const returnDate = details.durationDays ? addDays(selection.date, details.durationDays - 1) : selection.date;
+    const timingDates = definition.timing === 'before_trip'
+      ? { fromDate: addDays(selection.date, -(chosen.quantity ?? 1)), toDate: selection.date }
+      : definition.timing === 'after_trip'
+        ? { fromDate: returnDate, toDate: addDays(returnDate, chosen.quantity ?? 1) }
+        : {};
+    if (timingDates.fromDate && timingDates.fromDate < input.today) return refusal('EXTRA_INVALID', 'Extra nights cannot start before today. Choose fewer nights or a later departure.', { extraId: chosen.id });
+    extras.push({
+      ...result.line, charges: amounts.shown, amount: money(amounts.shownCents),
+      ...(definition.accommodation ? { accommodation: definition.accommodation } : {}),
+      ...(definition.timing ? { timing: definition.timing, ...timingDates } : {}),
+      ...(group ? { optionGroup: { id: group.id, name: group.name, kind: group.kind } } : {}),
+    });
   }
+
+  const firstServiceDate = extras.reduce((earliest, extra) => extra.timing === 'before_trip' && extra.fromDate && extra.fromDate < earliest ? extra.fromDate : earliest, selection.date);
+  const cancellationReferenceDate = firstServiceDate < selection.date ? firstServiceDate : undefined;
+  const configurationHash = packageHasCompletionFeatures(details) ? createHash('sha256').update(JSON.stringify({
+    tier,
+    optionGroups: details.optionGroups,
+    bookingRequirements: details.bookingRequirements,
+    rooms: details.rooms,
+    travellers: details.travellers,
+    extras: [...extras].sort((left, right) => left.id.localeCompare(right.id)),
+    cancellation: details.cancellation,
+    cancellationReferenceDate,
+    startCity: details.startCity,
+    endCity: details.endCity,
+    durationDays: details.durationDays,
+    durationNights: details.durationNights,
+  })).digest('hex').slice(0, 32) : undefined;
 
   return {
     ok: true,
     quote: {
+      bookingReady: selectionProblems.length === 0,
+      selectionProblems,
+      ...(configurationHash ? { configurationHash } : {}),
+      ...(cancellationReferenceDate ? { cancellationReferenceDate } : {}),
       currency: input.currency,
       departureDate: selection.date,
       returnDate: details.durationDays ? addDays(selection.date, details.durationDays - 1) : selection.date,
@@ -445,17 +520,18 @@ export function pricePackageSelection(input: {
  * Identifies what the customer was shown: the selection and its total. Booking re-prices and
  * compares, so a price that changed in between is refused with the new figure rather than charged.
  */
-export const packageQuoteHash = (attractionId: string, selection: PackageSelection, quote: Pick<PackageQuote, 'currency' | 'total'>): string =>
+export const packageQuoteHash = (attractionId: string, selection: PackageSelection, quote: Pick<PackageQuote, 'currency' | 'total' | 'configurationHash'>): string =>
   createHash('sha256').update(JSON.stringify([
     attractionId,
     selection.date,
     selection.tierKey,
-    selection.rooms.map((room) => [room.adults, room.children, room.infants]),
+    selection.rooms.map((room) => room.bedPreference ? [room.adults, room.children, room.infants, room.bedPreference] : [room.adults, room.children, room.infants]),
     [...selection.extras]
       .sort((left, right) => left.id.localeCompare(right.id))
       .map((extra) => [extra.id, extra.adults ?? 0, extra.children ?? 0, extra.quantity ?? 0]),
     quote.currency,
     cents(quote.total),
+    ...(quote.configurationHash ? [quote.configurationHash] : []),
   ])).digest('hex').slice(0, 32);
 
 // ── "from" prices ─────────────────────────────────────────────────────────────────────────────
@@ -468,12 +544,65 @@ const referenceParty = (details: PackageDetails): { travellers: number; rate: 's
   return { travellers, rate: travellers === 1 ? 'single' : 'double' };
 };
 
+/** Cheapest valid required choice combination, including the fee, without selecting for the guest.
+ * The two-bit mask prevents two different required groups claiming the same pre/post-trip stay. */
+const requiredExtrasMinimum = (details: PackageDetails, adults: number, rooms: number, basisPoints: number, departureDate: string, today?: string): number | null => {
+  let amounts = new Map<number, number>([[0, 0]]);
+  for (const group of details.optionGroups.filter((candidate) => candidate.required)) {
+    const next = new Map<number, number>();
+    for (const id of group.extraIds) {
+      const extra = details.extras.find((candidate) => candidate.id === id);
+      if (!extra || extra.price === null) continue;
+      if (extra.timing === 'before_trip' && today && addDays(departureDate, -1) < today) continue;
+      const count = extra.unit === 'per_traveller' ? adults : extra.unit === 'per_room' ? rooms : 1;
+      const amount = withServiceFeeCents(cents(extra.price), basisPoints) * count;
+      const bit = extra.timing === 'before_trip' ? 1 : extra.timing === 'after_trip' ? 2 : 0;
+      for (const [mask, previous] of amounts) {
+        if ((mask & bit) !== 0) continue;
+        const combined = mask | bit;
+        next.set(combined, Math.min(next.get(combined) ?? Infinity, previous + amount));
+      }
+    }
+    amounts = next;
+  }
+  return amounts.size ? Math.min(...amounts.values()) : null;
+};
+
+/** For packages with required extras, find an actually bookable adult room allocation. Legacy
+ * packages retain their original from-price rule; no changed price without new configuration. */
+const requiredGroupFrom = (details: PackageDetails, cell: PackageRate, adults: number, basisPoints: number, departureDate: string, today?: string): number | null => {
+  const maximumRooms = Math.min(adults, PACKAGE_LIMITS.roomsPerBooking);
+  const costs = Array.from({ length: maximumRooms + 1 }, () => Array<number>(adults + 1).fill(Infinity));
+  costs[0][0] = 0;
+  const occupancies = [
+    ...(details.rooms.allowSingle && cell.single !== null ? [{ count: 1, price: cell.single }] : []),
+    ...(cell.double !== null ? [{ count: 2, price: cell.double }] : []),
+    ...(details.rooms.allowTriple && cell.triple !== null ? [{ count: 3, price: cell.triple }] : []),
+  ];
+  let best = Infinity;
+  for (let rooms = 1; rooms <= maximumRooms; rooms += 1) {
+    for (let count = 1; count <= adults; count += 1) {
+      for (const occupancy of occupancies) {
+        if (occupancy.count <= count && occupancy.price > 0) {
+          costs[rooms][count] = Math.min(costs[rooms][count], costs[rooms - 1][count - occupancy.count]
+            + occupancy.count * withServiceFeeCents(cents(occupancy.price), basisPoints));
+        }
+      }
+    }
+    if (!Number.isFinite(costs[rooms][adults])) continue;
+    const extras = requiredExtrasMinimum(details, adults, rooms, basisPoints, departureDate, today);
+    if (extras !== null) best = Math.min(best, costs[rooms][adults] + extras);
+  }
+  return Number.isFinite(best) ? Math.round(best / adults) : null;
+};
+
 /** The cheapest per-person price (fee included) on one date for a party size, across hotel levels. */
 export function datePerPersonFrom(
   details: PackageDetails,
   date: string,
   travellers: number,
   basisPoints = SERVICE_FEE_BASIS_POINTS,
+  today?: string,
 ): { perPerson: number; tierKey: string } | null {
   const season = seasonForDate(details, date);
   const band = bandForParty(details, travellers);
@@ -481,7 +610,13 @@ export function datePerPersonFrom(
   const field: RateField = travellers === 1 ? 'single' : 'double';
   let best: { cents: number; tierKey: string } | null = null;
   for (const tier of details.tiers) {
-    const unit = rateCell(details, tier.key, season.key, band.key)?.[field];
+    const cell = rateCell(details, tier.key, season.key, band.key);
+    if (cell && details.optionGroups.some((group) => group.required)) {
+      const shown = requiredGroupFrom(details, cell, travellers, basisPoints, date, today);
+      if (shown !== null && (!best || shown < best.cents)) best = { cents: shown, tierKey: tier.key };
+      continue;
+    }
+    const unit = cell?.[field];
     if (typeof unit !== 'number' || unit <= 0) continue;
     const shown = withServiceFeeCents(cents(unit), basisPoints);
     if (!best || shown < best.cents) best = { cents: shown, tierKey: tier.key };
@@ -514,7 +649,7 @@ export function packageFromPrice(
   let best: PackageFromPrice | null = null;
   for (const date of candidates) {
     if (packageDateStatus(details, date, today) !== 'open') continue;
-    const price = datePerPersonFrom(details, date, reference.travellers, basisPoints);
+    const price = datePerPersonFrom(details, date, reference.travellers, basisPoints, today);
     if (price && (!best || price.perPerson < best.perPerson)) {
       best = { perPerson: price.perPerson, date, tierKey: price.tierKey, travellers: reference.travellers, basis: reference.rate };
     }
@@ -566,7 +701,7 @@ export function packageCalendar(input: {
     if (seatsLeft === null) return { date, status: 'closed', reason: 'no-departure' };
     if (seatsLeft === 0) return { date, status: 'sold-out', seatsLeft };
     if (seatsLeft < input.travellers) return { date, status: 'closed', reason: 'not-enough-seats', seatsLeft };
-    const price = datePerPersonFrom(details, date, input.travellers, input.feeBasisPoints);
+    const price = datePerPersonFrom(details, date, input.travellers, input.feeBasisPoints, input.today);
     if (!price) {
       return { date, status: 'closed', reason: bandForParty(details, input.travellers) ? 'no-price' : 'party-size', seatsLeft };
     }
