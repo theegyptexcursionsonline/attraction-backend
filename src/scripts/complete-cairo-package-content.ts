@@ -11,7 +11,9 @@ import { createHash } from 'crypto';
 import { existsSync, readFileSync, writeFileSync, renameSync, mkdirSync, openSync, fsyncSync, closeSync } from 'fs';
 import { dirname } from 'path';
 import { parse as parseEnv } from 'dotenv';
-import { Db, MongoClient, ObjectId } from 'mongodb';
+import { Db, ObjectId } from 'mongodb';
+import mongoose from 'mongoose';
+import { Attraction } from '../models/Attraction';
 import { packageDetailsSchema } from '../utils/packageDetails';
 
 export const CAIRO_TARGET = {
@@ -25,6 +27,7 @@ export const CAIRO_SOURCE = {
   tariffs: { premium: { adult: 2100, child: 1400 }, deluxe: { adult: 2200, child: 1650 }, luxury: { adult: 2250, child: 1750 } },
   guideSupplement: 250, currency: 'USD',
   provenance: 'Exact published first-party record, read-only on 3 October 2026. One-language exclusivity and conservative age floor are approved product decisions. Overnight cities follow the published itinerary and 1+1+3-night inclusions; named properties and daily meal allocations are unconfirmed.',
+  cancellationProvenance: 'Preserves the existing Attraction Network 7/3/0-day refund schedule. Online cancellation wording follows packageSelfCancellationProblem in src/services/packageBooking.service.ts: self-service is available only for a full refund; later requests go to the operator.',
 } as const;
 
 type Details = Record<string, unknown> & {
@@ -37,8 +40,9 @@ type Details = Record<string, unknown> & {
   optionGroups?: Array<{ id: string; [key: string]: unknown }>;
   bookingRequirements?: Record<string, unknown>;
   itinerary: Array<{ day: number; overnight: string; [key: string]: unknown }>;
+  cancellation: Array<{ daysBefore: number; refundPercent: number }>;
 };
-type Mutable = { packageDetails: Details; inclusions: string[]; exclusions: string[]; participantRequirements: string[] };
+type Mutable = { packageDetails: Details; inclusions: string[]; exclusions: string[]; participantRequirements: string[]; needToKnow: string[] };
 export type CairoRecord = Mutable & {
   _id: string; slug: string; ownerTenantId: string; tenantIds: string[]; listingType: string; status: string; currency: string;
   packageRevision: number; presentationRevision: number; __v: number; updatedAt: string;
@@ -61,7 +65,7 @@ const stable = (value: unknown): string => {
 const equal = (a: unknown, b: unknown): boolean => stable(a) === stable(b);
 const digest = (value: unknown): string => createHash('sha256').update(stable(value)).digest('hex');
 const timestamp = (value: unknown): value is string => typeof value === 'string' && Number.isFinite(Date.parse(value)) && new Date(value).toISOString() === value;
-const MUTABLE = ['packageDetails', 'inclusions', 'exclusions', 'participantRequirements'] as const;
+const MUTABLE = ['packageDetails', 'inclusions', 'exclusions', 'participantRequirements', 'needToKnow'] as const;
 const mutable = (record: CairoRecord): Mutable => Object.fromEntries(MUTABLE.map(key => [key, clone(record[key])])) as Mutable;
 const expectedOf = (record: CairoRecord): Expected => Object.fromEntries(['_id', 'slug', 'ownerTenantId', 'tenantIds', 'listingType', 'status', 'currency', 'packageRevision', 'presentationRevision', '__v', 'updatedAt'].map(key => [key, record[key as keyof CairoRecord]])) as Expected;
 const scope = (record: CairoRecord): void => {
@@ -69,7 +73,7 @@ const scope = (record: CairoRecord): void => {
     || !equal(record.tenantIds, [CAIRO_TARGET.tenantId]) || record.listingType !== 'package' || record.status !== 'active' || record.currency !== 'USD') fail('Exact owned Cairo package not found; no write allowed.');
   for (const key of ['packageRevision', 'presentationRevision', '__v'] as const) if (!Number.isSafeInteger(record[key]) || record[key] < 0) fail('Package revision is unavailable; review required.');
   if (!timestamp(record.updatedAt)) fail('Listing modification timestamp is unavailable.');
-  for (const key of ['inclusions', 'exclusions', 'participantRequirements'] as const) if (!Array.isArray(record[key]) || record[key].some(value => typeof value !== 'string')) fail('Listing text is not in the expected format.');
+  for (const key of ['inclusions', 'exclusions', 'participantRequirements', 'needToKnow'] as const) if (!Array.isArray(record[key]) || record[key].some(value => typeof value !== 'string')) fail('Listing text is not in the expected format.');
 };
 const changes = (before: unknown, after: unknown, path = ''): string[] => {
   if (equal(before, after)) return [];
@@ -90,6 +94,24 @@ const accommodation = [
   { name: '5-star hotel in Luxor', city: 'Luxor', nights: 1, stars: 5, accommodationType: 'hotel', description: 'The exact property will be confirmed by the operator. Double or twin beds may be requested, subject to availability.' },
   { name: '5-star Nile cruise', city: 'Nile cruise', nights: 3, stars: 5, accommodationType: 'cruise', description: 'Three cruise nights with full board. The exact vessel will be confirmed by the operator; bed requests are subject to availability.' },
 ];
+const partyNotice = 'This package is for two travellers sharing one room: two adults, or one adult aged 13 or older and one child aged 6–12. Single rooms, triple rooms, infants and children under 6 are not offered.';
+const departureNotice = 'Select an available departure date when booking.';
+const priorPartyNotices = new Set([
+  'This package is for two adults sharing one room. Single rooms, triple rooms, children and infants are not offered.',
+  'This draft is configured for two adults sharing one room. Single rooms, triple rooms, children and infants are not offered in this configuration.',
+  partyNotice,
+]);
+const priorDepartureNotices = new Set([
+  'No departure dates or seats have been entered. Travel cannot be booked until the operator confirms and adds departure availability.',
+  departureNotice,
+]);
+const cancellationSchedule = [{ daysBefore: 7, refundPercent: 100 }, { daysBefore: 3, refundPercent: 50 }, { daysBefore: 0, refundPercent: 0 }];
+const cancellationNotice = 'Cancellation refunds: 100% at least seven days before departure; 50% from three to fewer than seven days; no refund within three days. Online cancellation with a full refund is available at least seven days before departure. Contact the operator for later cancellation or refund requests under these terms.';
+const priorCancellationNotices = new Set([
+  'Cancellation refunds: 100% at least seven days before departure; 50% from three to fewer than seven days; no refund within three days. Online cancellation closes 24 hours before departure.',
+  'Refund schedule chosen for this configuration: 100% at least seven days before departure; 50% from three days to fewer than seven days; no refund below three days. The source operator’s self-service cancellation cutoff is 24 hours before departure.',
+  cancellationNotice,
+]);
 
 export function buildCairoContentPlan(record: CairoRecord): CairoPlan {
   scope(record);
@@ -127,6 +149,14 @@ export function buildCairoContentPlan(record: CairoRecord): CairoPlan {
     ? 'Optional German-, Spanish-, French- or Italian-speaking guide (choose one language)' : line);
   const notices = ['Children must be 6–12 years old; adults are 13 or older. Children under 6 cannot join this package because of the included balloon flight.', 'Double or twin beds may be requested, subject to availability.'];
   after.participantRequirements = [...new Set([...after.participantRequirements, ...notices])];
+  // Replace only the exact earlier draft/live notices. Operator-written terms are retained,
+  // and the calendar remains the authority for dates and seats; no inventory is inferred here.
+  if (before.needToKnow.filter(line => priorPartyNotices.has(line)).length !== 1
+    || before.needToKnow.filter(line => priorDepartureNotices.has(line)).length !== 1) fail('The party or departure notice was edited; review it before applying this source patch.');
+  if (!equal([...details.cancellation].sort((a, b) => b.daysBefore - a.daysBefore), cancellationSchedule)
+    || before.needToKnow.filter(line => priorCancellationNotices.has(line)).length !== 1) fail('Cancellation terms were edited; review the wording against the current schedule.');
+  after.needToKnow = before.needToKnow.map(line => priorPartyNotices.has(line) ? partyNotice
+    : priorDepartureNotices.has(line) ? departureNotice : priorCancellationNotices.has(line) ? cancellationNotice : line);
   const body = { version: 1 as const, target: CAIRO_TARGET, source: CAIRO_SOURCE, expected: expectedOf(record), before, after, changedPaths: changes(before, after) };
   return { ...body, checksum: digest(body) };
 }
@@ -171,15 +201,34 @@ export async function rollbackCairoContent(store: CairoStore, receipt: CairoRece
   return 'rolled-back';
 }
 
-export function cairoMongoStore(db: Pick<Db, 'collection'>): CairoStore {
+/** A private connection-local model keeps the full Attraction middleware (including URL guards).
+ * Its package validator intentionally does not normalize: adding defaults during a recovery write
+ * would make it impossible to restore the exact reviewed legacy JSON. The application model is
+ * untouched, and both apply and rollback still validate against the current package schema.
+ */
+export function cairoContentModel(connection: mongoose.Connection): Pick<typeof Attraction, 'updateOne'> {
+  const schema = Attraction.schema.clone();
+  schema.path('packageDetails', {
+    type: mongoose.Schema.Types.Mixed,
+    default: undefined,
+    validate: (value: unknown) => value === undefined || packageDetailsSchema.safeParse(value).success,
+  });
+  return connection.model('CairoContentAttraction', schema, 'attractions');
+}
+
+export function cairoMongoStore(db: Pick<Db, 'collection'>, model: Pick<typeof Attraction, 'updateOne'>): CairoStore {
     const id = new ObjectId(CAIRO_TARGET.packageId), tenantId = new ObjectId(CAIRO_TARGET.tenantId);
     const filter = { _id: id, ownerTenantId: tenantId, tenantIds: [tenantId], slug: CAIRO_TARGET.slug, listingType: 'package', status: 'active', currency: 'USD', archivedAt: { $exists: false }, trashedAt: { $exists: false } };
     const projection = Object.fromEntries([...MUTABLE, '_id', 'slug', 'ownerTenantId', 'tenantIds', 'listingType', 'status', 'currency', 'packageRevision', 'presentationRevision', '__v', 'updatedAt'].map(key => [key, 1]));
     return {
       read: async () => { const row = await db.collection('attractions').findOne(filter, { projection }); return row ? clone(row) as unknown as CairoRecord : null; },
-      cas: async (expected, before, after, writeAt) => (await db.collection('attractions').updateOne({ ...filter, ...before,
-        status: expected.status, currency: expected.currency, packageRevision: expected.packageRevision, presentationRevision: expected.presentationRevision, __v: expected.__v, updatedAt: new Date(expected.updatedAt),
-      }, { $set: { ...after, updatedAt: new Date(writeAt) }, $inc: { packageRevision: 1, presentationRevision: 1, __v: 1 } })).matchedCount === 1,
+      cas: async (expected, before, after, writeAt) => {
+        if (!packageDetailsSchema.safeParse(after.packageDetails).success) fail('The target package content does not meet the current schema.');
+        return (await model.updateOne({ ...filter, ...before,
+          status: expected.status, currency: expected.currency, packageRevision: expected.packageRevision, presentationRevision: expected.presentationRevision, __v: expected.__v, updatedAt: new Date(expected.updatedAt),
+        }, { $set: { ...after, updatedAt: new Date(writeAt) }, $inc: { packageRevision: 1, presentationRevision: 1, __v: 1 } },
+        { timestamps: false, runValidators: true, context: 'query' })).matchedCount === 1;
+      },
     };
 }
 
@@ -201,13 +250,12 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
   const values = args.filter(arg => arg.startsWith('--env-file=')).reduce<Record<string, string>>((all, arg) => ({ ...all, ...parseEnv(readFileSync(arg.slice(11))) }), {});
   const uri = process.env.MONGODB_URI || values.MONGODB_URI;
   if (!uri) fail('MONGODB_URI is required through the environment or an approved --env-file.');
-  const client = new MongoClient(uri, { serverSelectionTimeoutMS: 10000 });
-  await client.connect();
+  const connection = await mongoose.createConnection(uri, { serverSelectionTimeoutMS: 10000, autoIndex: false, autoCreate: false }).asPromise();
   try {
-    const db = client.db(), tenantId = new ObjectId(CAIRO_TARGET.tenantId);
+    const db = connection.db!, tenantId = new ObjectId(CAIRO_TARGET.tenantId);
     const tenant = await db.collection('tenants').findOne({ _id: tenantId, slug: CAIRO_TARGET.tenantSlug }, { projection: { _id: 1 } });
     if (!tenant) fail('Exact Cairo tenant not found.');
-    const store = cairoMongoStore(db);
+    const store = cairoMongoStore(db, cairoContentModel(connection));
     if (!apply) {
       const current = await store.read(); if (!current) fail('Exact owned Cairo package not found.'); const plan = buildCairoContentPlan(current!);
       let schemaReady = true; try { assertCompletionSchema(plan); } catch { schemaReady = false; }
@@ -225,6 +273,6 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
     if (!existsSync(receiptFile)) save(receiptFile, receipt, true);
     console.log(JSON.stringify({ mode: 'apply', matched: CAIRO_TARGET, expectedRevision: plan.expected.packageRevision, changedPaths: plan.changedPaths }));
     const result = await applyCairoContent(store, plan, receipt, confirm!); receipt.state = 'applied'; save(receiptFile, receipt); console.log(JSON.stringify({ result, target: CAIRO_TARGET }));
-  } finally { await client.close(); }
+  } finally { await connection.close(); }
 }
 if (require.main === module) main().catch(error => { console.error(error instanceof CairoContentError ? error.message : 'Operation failed; connection and credential details withheld. Reuse any prepared recovery receipt.'); process.exitCode = 1; });
