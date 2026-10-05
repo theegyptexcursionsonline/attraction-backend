@@ -366,6 +366,10 @@ router.patch(
  *             properties:
  *               contactInfo:
  *                 type: object
+ *                 properties:
+ *                   supportEmail:
+ *                     type: string
+ *                     description: Optional public support mailbox. An empty string clears it.
  *               socialLinks:
  *                 type: object
  *               paymentSettings:

@@ -5,6 +5,7 @@ jest.mock('../services/bookingOperatorNotification.service', () => ({
   processBookingOperatorNotifications: jest.fn().mockResolvedValue({ sent: 0 }),
 }));
 import type { NextFunction, Request, Response } from 'express';
+import { randomBytes } from 'node:crypto';
 import {
   confirmPayment,
   createPaymentIntent,
@@ -697,6 +698,13 @@ describe('Stripe payment hardening', () => {
     });
 
     it('invalidates old-context webhook trust when TEST credentials change to LIVE credentials', async () => {
+      // Generate mock-only credentials while retaining the real mode prefixes.
+      const syntheticSuffix = `synthetic_${randomBytes(16).toString('hex')}`;
+      const replacement = {
+        publishableKey: ['pk', 'live', syntheticSuffix].join('_'),
+        secretKey: ['sk', 'live', syntheticSuffix].join('_'),
+        webhookSecret: ['whsec', syntheticSuffix].join('_'),
+      };
       (verifyStripeCredentialBinding as jest.Mock).mockResolvedValue({
         accountId: 'acct_live',
         chargesEnabled: true,
@@ -707,16 +715,16 @@ describe('Stripe payment hardening', () => {
         params: { tenantId: TENANT_ID },
         protocol: 'https',
         get: jest.fn(() => 'api.example.test'),
-        body: {
-          publishableKey: 'pk_live_replacement',
-          secretKey: 'sk_live_replacement',
-          webhookSecret: 'whsec_live_replacement',
-        },
+        body: replacement,
       });
 
+      expect(verifyStripeCredentialBinding).toHaveBeenCalledWith(
+        replacement.secretKey,
+        replacement.publishableKey
+      );
       expect(saveTenantStripeConfig).toHaveBeenCalledWith(
         TENANT_ID,
-        expect.objectContaining({ resetWebhookTrust: true })
+        expect.objectContaining({ ...replacement, resetWebhookTrust: true })
       );
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
     });

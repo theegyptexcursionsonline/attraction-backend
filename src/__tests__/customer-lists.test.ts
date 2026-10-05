@@ -61,3 +61,79 @@ it('legacy network reads bind each join to its own booking site and reject a mis
 it('legacy database failure remains an error and retry preserves customer page data',async()=>{
  await seed(2);const legacy=()=>request(app).get('/bookings/my').set('x-customer',String(customer)).query({tenantId:String(owner),page:1,limit:1});const spy=jest.spyOn(Booking,'aggregate').mockRejectedValueOnce(Error('Unavailable'));await legacy().expect(500);spy.mockRestore();const response=await legacy().expect(200);expect(response.body.pagination.total).toBe(2);expect(response.body.data).toHaveLength(1);expect(response.body.data[0].userId).toBe(String(customer));
 });
+
+it('saved cursor summaries expose own and partner operators with public routes, never booking or private data', async () => {
+ const tours=await seed(5);
+ await Tenant.collection.updateOne({_id:owner},{$set:{name:'QA own operator',contactInfo:{email:'private@qa.invalid'},paymentSettings:{internal:'private'}}});
+ await Tenant.collection.updateOne({_id:other},{$set:{name:'QA partner operator',contactInfo:{phone:'private'},notificationSettings:{internal:'private'}}});
+ await Attraction.collection.updateMany({},{$set:{
+  ownerTenantId:owner,languages:['English','Arabic'],listingType:'tour',pathSlug:'public-path',
+  parentPage:{path:'/journeys',label:'Unused summary label',internal:'private'},
+  pricingOptions:[{id:'published-option',name:'Private option',price:40}],
+  addons:[{id:'extra',price:10}],availability:{internal:'private'},reseller:{value:15},internalNotes:'private',
+ }});
+ await Attraction.collection.updateOne({_id:tours[0]._id},{$set:{enquiryOnly:false}});
+ await Attraction.collection.updateOne({_id:tours[1]._id},{$set:{tenantIds:[owner,other],ownerTenantId:other,enquiryOnly:true}});
+ await Attraction.collection.updateOne({_id:tours[2]._id},{$set:{listingType:'package',packageDetails:{rateMatrix:[{privateRate:99}]}}});
+ await Attraction.collection.updateOne({_id:tours[3]._id},{$set:{tenantIds:[other],ownerTenantId:other}});
+ await Attraction.collection.updateOne({_id:tours[4]._id},{$set:{status:'draft'}});
+ const response=await getSaved().expect(200);
+ expect(response.headers['cache-control']).toBe('private, no-store');
+ expect(response.body.pagination.total).toBe(3);
+ const rows=response.body.data;
+ expect(rows.map((row:any)=>row.slug).sort()).toEqual(['trip-0','trip-1','trip-2']);
+ expect(rows.find((row:any)=>row.slug==='trip-0')).toMatchObject({priceFrom:40,currency:'EUR',enquiryOnly:false,operator:{name:'QA own operator',relationship:'own'}});
+ expect(rows.find((row:any)=>row.slug==='trip-1')).toMatchObject({enquiryOnly:true,operator:{name:'QA partner operator',relationship:'partner'}});
+ expect(rows.find((row:any)=>row.slug==='trip-2').listingType).toBe('package');
+ for(const row of rows){
+  expect(row.languages).toEqual(['English','Arabic']);
+  expect(row.pathSlug).toBe('public-path');
+  expect(row.parentPage).toEqual({path:'/journeys'});
+  expect(Object.keys(row.operator).sort()).toEqual(['name','relationship']);
+  for(const field of ['tenantIds','ownerTenantId','pricingOptions','addons','availability','packageDetails','reseller','internalNotes','contactInfo','paymentSettings','notificationSettings','_cursor0','_cursor1'])expect(row).not.toHaveProperty(field);
+ }
+ expect((await getSaved({},foreignCustomer).expect(200)).body.data).toEqual([]);
+});
+
+it('saved operator identity remains absent for missing, inactive or ambiguous ownership', async () => {
+ const tours=await seed(4);
+ await Tenant.collection.updateOne({_id:other},{$set:{status:'inactive'}});
+ await Attraction.collection.updateOne({_id:tours[0]._id},{$set:{ownerTenantId:new Types.ObjectId()}});
+ await Attraction.collection.updateOne({_id:tours[1]._id},{$set:{ownerTenantId:other}});
+ await Attraction.collection.updateOne({_id:tours[2]._id},{$set:{tenantIds:[owner,other]}});
+ await Attraction.collection.updateOne({_id:tours[3]._id},{$set:{ownerTenantId:'invalid-owner'}});
+ const rows=(await getSaved().expect(200)).body.data;
+ expect(rows).toHaveLength(4);
+ for(const row of rows){expect(row).not.toHaveProperty('operator');expect(row).not.toHaveProperty('ownerTenantId');expect(row).not.toHaveProperty('tenantIds');}
+});
+
+it('saved operator lookup includes only the returned page while cursor and search bindings stay scoped', async () => {
+ const tours=await seed(3);
+ await Attraction.collection.updateOne({_id:tours[0]._id},{$set:{ownerTenantId:owner,createdAt:new Date('2026-03-01')}});
+ await Attraction.collection.updateOne({_id:tours[1]._id},{$set:{ownerTenantId:other,tenantIds:[owner,other],createdAt:new Date('2026-02-01')}});
+ const lookup=jest.spyOn(Tenant,'find');
+ const first=(await getSaved({limit:1}).expect(200)).body;
+ expect(first.data[0].slug).toBe('trip-0');
+ expect(lookup).toHaveBeenCalledTimes(1);
+ expect(lookup).toHaveBeenCalledWith({_id:{$in:[owner]},status:'active'});
+ const cursor=first.pagination.nextCursor;
+ for(const pending of [getSaved({limit:1,cursor},foreignCustomer),getSaved({limit:1,cursor},customer,other),getSaved({limit:1,cursor,search:'Trip'})])await pending.expect(400);
+ const second=(await getSaved({limit:1,cursor}).expect(200)).body;
+ expect(second.data[0]).toMatchObject({slug:'trip-1',operator:{relationship:'partner'}});
+ expect((await getSaved({limit:1,cursor:second.pagination.previousCursor}).expect(200)).body.data[0].slug).toBe('trip-0');
+ const searched=(await getSaved({search:'Unique tail'}).expect(200)).body;
+ expect(searched.data.map((row:any)=>row.slug)).toEqual(['trip-2']);
+ expect(searched.data[0].operator.relationship).toBe('own'); // Single-assignment legacy owner.
+});
+
+it('saved operator lookup failure returns an error and a repeat read safely recovers', async () => {
+ await seed(1);
+ const lookup=jest.spyOn(Tenant,'find').mockImplementationOnce(()=>{throw new Error('Operator lookup unavailable');});
+ const failed=await getSaved().expect(500);
+ expect(failed.body.data).toBeUndefined();
+ lookup.mockRestore();
+ const recovered=await getSaved().expect(200);
+ expect(recovered.body.data).toHaveLength(1);
+ expect(recovered.body.data[0].operator).toEqual({name:'QA site',relationship:'own'});
+ expect((await User.findById(customer).lean())?.wishlist).toHaveLength(1);
+});

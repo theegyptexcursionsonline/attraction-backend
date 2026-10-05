@@ -25,6 +25,7 @@ import { Booking } from '../models/Booking';
 import { Destination } from '../models/Destination';
 import { isValidPickupDestinationList, normalizePickupDestinationSlugs } from '../utils/pickupDestinations';
 import { notificationSettingsUpdate } from '../utils/notificationRecipients';
+import { publicTenantContactInfo, tenantContactInfoSchema, tenantContactInfoSetPaths } from '../utils/tenantContactInfo';
 import { withoutTrackingSettingsFields, publicTrackingSettings, trackingRevisionOf, trackingSettingsUpdateSchema } from '../utils/trackingSettings';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
@@ -105,6 +106,7 @@ export const toPublicTenantDto = (source: unknown): Record<string, unknown> => {
   if (dto.trackingSettings !== undefined) dto.trackingSettings = publicTrackingSettings(dto.trackingSettings);
 
   if (dto.externalRatings !== undefined) dto.externalRatings = publicExternalRatings(dto.externalRatings);
+  if (dto.contactInfo !== undefined) dto.contactInfo = publicTenantContactInfo(dto.contactInfo);
 
   const paymentSettings = record.paymentSettings;
   if (paymentSettings && typeof paymentSettings === 'object') {
@@ -674,6 +676,11 @@ export const createTenant = async (
 ): Promise<void> => {
   try {
     req.body = withoutPageSeoFields(withoutTrackingSettingsFields(req.body));
+    if (req.body.contactInfo !== undefined) {
+      const contact = tenantContactInfoSchema.safeParse(req.body.contactInfo);
+      if (!contact.success) { sendError(res, 'Invalid contact information', 400); return; }
+      req.body.contactInfo = contact.data;
+    }
     // A new site starts with AI products off; a super admin switches them on in the AI products card
     // so the change carries a revision and an audit stamp.
     const { aiProductsRevision: _revision, ...createBody } = req.body as Record<string, unknown>;
@@ -922,9 +929,12 @@ export const updateTenant = async (
     // Dotted paths would reach the same fields without the revision check.
     if (Object.keys(req.body).some((key) => key.startsWith('aiSettings.') || key.startsWith('aiProductsRevision'))) { sendError(res, AI_PRODUCTS_ELSEWHERE, 400); return; }
 
-    const { aiSettings, ...otherUpdates } = req.body;
+    const contact = tenantContactInfoSchema.optional().safeParse(req.body.contactInfo);
+    if (!contact.success) { sendError(res, 'Invalid contact information', 400); return; }
+    const { aiSettings, contactInfo: _contactInfo, ...otherUpdates } = req.body;
     const updates = {
       ...otherUpdates,
+      ...(contact.data === undefined ? {} : tenantContactInfoSetPaths(contact.data)),
       ...(aiSettings === undefined ? {} : aiSettingsSetPaths(aiSettingsUpdateSchema.parse(aiSettings))),
       ...(req.body.customPages !== undefined
         ? { customPages: sanitizeCustomPages(req.body.customPages) }
@@ -1007,7 +1017,6 @@ export const updateTenantSettings = async (
 
     // Allow-list of fields brand-admins may change on their own sites
     const allowedFields = [
-      'contactInfo',
       'socialLinks',
       // NOTE: paymentSettings is intentionally NOT here — the Stripe keys live in an
       // encrypted subdoc and are managed only via PUT /payments/gateway/:tenantId, so
@@ -1052,6 +1061,11 @@ export const updateTenantSettings = async (
       aiSettings = split.settings;
     }
     const updates: Record<string, unknown> = aiSettings === undefined ? {} : aiSettingsSetPaths(aiSettings);
+    if (req.body.contactInfo !== undefined) {
+      const contact = tenantContactInfoSchema.safeParse(req.body.contactInfo);
+      if (!contact.success) { sendError(res, 'Invalid contact information', 400); return; }
+      Object.assign(updates, tenantContactInfoSetPaths(contact.data));
+    }
     if (req.body.notificationSettings !== undefined) {
       const notifications = notificationSettingsUpdate(req.body.notificationSettings);
       if ('error' in notifications) { sendError(res, notifications.error, 400); return; }

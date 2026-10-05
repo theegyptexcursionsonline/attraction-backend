@@ -3,6 +3,7 @@ import { localizedTenantPresentation, presentationReadScope, ownedPresentationSo
 import { requestedLocale, sourceFallbackAllowed, localizationStages, localizationIdentity, localizedPresentation, translatedSlugFilter } from '../services/attractionLocalization.service';
 import { localizedSlugStages, localizationSourceProjection } from '../services/localizationSourceSnapshot.service';
 import { toPublicAttractionDto } from './attractions.controller';
+import { publicAttractionOperators } from '../services/publicAttractionOperator.service';
 import { Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
 import { Attraction } from '../models/Attraction';
@@ -343,8 +344,10 @@ export const resolvePage = async (
 
     if (attraction) {
       const dto = toPublicAttractionDto(attraction);
+      const [operator] = await publicAttractionOperators([attraction], req.tenant._id);
       sendSuccess(res, { type: 'attraction', attraction: {
         ...(locale ? localizedPresentation(dto, attraction, locale) : dto),
+        ...(operator ? { operator } : {}),
         ...(req.tenant.slug ? { bookingTenantSlug: req.tenant.slug } : {}),
       } });
       return;

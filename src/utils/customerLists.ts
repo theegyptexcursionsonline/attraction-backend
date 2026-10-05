@@ -14,7 +14,9 @@ export function wishlistPipeline(userId: Types.ObjectId, tenantId: Types.ObjectI
  const literal=search ? escapeRegex(search) : '';
  return [{$match:{_id:userId}},{$unwind:'$wishlist'},{$lookup:{from:'attractions',localField:'wishlist',foreignField:'_id',pipeline:[{$match:{...activeSiteAttractions(tenantId),...(literal?{$or:[{title:{$regex:literal,$options:'i'}},{slug:{$regex:literal,$options:'i'}}]}:{})}}],as:'tour'}},{$unwind:'$tour'},{$replaceRoot:{newRoot:'$tour'}}];
 }
-export const wishlistProjection={_id:1,slug:1,pathSlug:1,title:1,images:1,priceFrom:1,currency:1,destination:1,rating:1,reviewCount:1,badges:1,duration:1,enquiryOnly:1,hasHotelPickup:1,createdAt:1};
+// Saved lists are discovery summaries. Booking inputs and package rates are read
+// from the canonical detail/quote endpoints, never reconstructed from this page.
+export const wishlistProjection={_id:1,slug:1,pathSlug:1,'parentPage.path':1,listingType:1,languages:1,title:1,images:1,priceFrom:1,currency:1,destination:1,rating:1,reviewCount:1,badges:1,duration:1,enquiryOnly:1,hasHotelPickup:1,createdAt:1};
 
 /** An explicit malformed site hint must not become an unscoped legacy read. */
 export const validateCustomerSiteHint = (req:AuthRequest,res:Response,next:NextFunction):void => {

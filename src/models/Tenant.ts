@@ -6,6 +6,7 @@ import { urlNamespacePlugin } from '../plugins/urlNamespace';
 import mongoose, { Schema } from 'mongoose';
 import { ITenant } from '../types';
 import { notificationCopyEmails } from '../utils/notificationRecipients';
+import { supportEmailSchema } from '../utils/tenantContactInfo';
 import { GOOGLE_ANALYTICS_ID, GOOGLE_TAG_MANAGER_ID, trackingSettingsSchema, trackingVerificationSchema, TrackingSettings } from '../utils/trackingSettings';
 import { AI_SEARCH_WIDGET_ID_PATTERN, VOICE_WIDGET_ID_PATTERN } from '../utils/aiSettings';
 export { AI_SEARCH_WIDGET_ID_PATTERN, VOICE_WIDGET_ID_PATTERN } from '../utils/aiSettings';
@@ -117,7 +118,7 @@ const tenantSchema = new Schema<ITenant>(
     },
     designMode: {
       type: String,
-      enum: ['default', 'luxury', 'minimal', 'nautical', 'equestrian', 'marine', 'desert', 'safari', 'travel', 'stable', 'sunmarine', 'rittal', 'speedboat', 'ancient', 'pyramid', 'skyride', 'temple', 'ranch', 'reef', 'obelisk', 'dune', 'savanna', 'expedition', 'dolphin', 'safarisahara', 'quadtour', 'desertfox', 'pharaonic', 'luxorballoon', 'nilenight', 'seascope', 'pirates', 'nefertari', 'elitevip', 'classic', 'majestic', 'bazaar', 'abyss', 'island', 'angler', 'lagoon', 'sandbar', 'evening', 'atlas', 'premium', 'caravan', 'pod', 'overland', 'azure', 'concierge', 'mirage', 'meridian', 'depth', 'paradise', 'hulahula'],
+      enum: ['default', 'luxury', 'minimal', 'nautical', 'equestrian', 'marine', 'desert', 'safari', 'travel', 'stable', 'sunmarine', 'rittal', 'speedboat', 'ancient', 'pyramid', 'skyride', 'temple', 'ranch', 'reef', 'obelisk', 'dune', 'savanna', 'expedition', 'dolphin', 'safarisahara', 'quadtour', 'desertfox', 'pharaonic', 'luxorballoon', 'nilenight', 'seascope', 'pirates', 'nefertari', 'elitevip', 'classic', 'majestic', 'bazaar', 'abyss', 'island', 'angler', 'lagoon', 'sandbar', 'evening', 'atlas', 'premium', 'caravan', 'pod', 'overland', 'azure', 'concierge', 'mirage', 'meridian', 'depth', 'paradise', 'hulahula', 'crown'],
       default: 'default',
     },
     defaultCurrency: {
@@ -139,6 +140,11 @@ const tenantSchema = new Schema<ITenant>(
     },
     contactInfo: {
       email: String,
+      supportEmail: {
+        type: String,
+        set: (value: unknown) => value === undefined ? undefined : supportEmailSchema.parse(value),
+        validate: (value: unknown) => value === undefined || supportEmailSchema.safeParse(value).success,
+      },
       phone: String,
       whatsapp: String,
       address: String,

@@ -4,6 +4,7 @@ import { requestedLocale, sourceFallbackAllowed, localizationStages, localizedPr
 import { publicCursorPlan, type CursorField } from '../utils/publicCursor';
 import { resolveImageAltTexts } from '../utils/imagePresentation';
 import { publicBookingTenantSlug } from '../utils/public-booking-tenant';
+import { publicAttractionOperators } from '../services/publicAttractionOperator.service';
 import { Response, NextFunction } from 'express';
 import { Attraction } from '../models/Attraction';
 import { Booking } from '../models/Booking';
@@ -94,6 +95,8 @@ const PUBLIC_ATTRACTION_FIELDS = [
 ] as const;
 
 export const PUBLIC_ATTRACTION_PROJECTION = PUBLIC_ATTRACTION_FIELDS.join(' ');
+// Required for the scoped operator join, but never copied to the public DTO.
+const OPERATOR_SOURCE_FIELDS = ['tenantIds', 'ownerTenantId'] as const;
 
 export const toPublicAttractionDto = (source: unknown): Record<string, unknown> => {
   if (!source || typeof source !== 'object') return {};
@@ -125,6 +128,14 @@ export const toPublicAttractionDto = (source: unknown): Record<string, unknown> 
   }
   delete dto.packageRevision;
   return dto;
+};
+
+const publicAttractionDtos = async (rows: readonly unknown[], tenantId: unknown): Promise<Record<string, unknown>[]> => {
+  const operators = await publicAttractionOperators(rows, tenantId);
+  return rows.map((row, index) => ({
+    ...toPublicAttractionDto(row),
+    ...(operators[index] ? { operator: operators[index] } : {}),
+  }));
 };
 
 export const toAdminAttractionDto = (
@@ -428,17 +439,19 @@ export const getAttractions = async (
     if (locale && req.tenant) {
       if (!['-createdAt', 'recommended', 'price-low', 'price-high', 'rating', 'popularity', 'sortOrder'].includes(String(sort))) throw new TranslationError('Select a supported catalogue order');
       const pipeline = [{ $match: query }, ...dealStages, ...localizationStages(req.tenant._id, locale, typeof search === 'string' ? search : undefined, !sourceFallback)];
-      const projection = Object.fromEntries([...PUBLIC_ATTRACTION_FIELDS, ...(dealsOnly ? ['publicDeal'] : []), 'updatedAt', '__translations'].map(field => [field, 1]));
+      const projection = Object.fromEntries([...PUBLIC_ATTRACTION_FIELDS, ...OPERATOR_SOURCE_FIELDS, ...(dealsOnly ? ['publicDeal'] : []), 'updatedAt', '__translations'].map(field => [field, 1]));
       if (cursorMode) {
         const fields: CursorField[] = Object.entries({ ...sortOption, _id: -1 as const }).map(([field, direction]) => ({ field, direction, kind: field === '_id' ? 'id' : field === 'createdAt' ? 'date' : field === 'featured' ? 'boolean' : 'number' }));
         const plan = publicCursorPlan({ query, locale, search, sourceFallback, ...(dealsOnly ? { dealsOnly: true } : {}) }, fields, req.query.cursor as string | undefined);
         const [rows, counts] = await Promise.all([Attraction.aggregate([...pipeline, { $set: plan.normalized }, ...(plan.seek ? [{ $match: plan.seek }] : []), { $sort: plan.sort }, { $limit: limitNum + 1 }, { $project: { ...projection, ...Object.fromEntries(fields.map((_field, index) => [`_cursor${index}`, 1])) } }]), Attraction.aggregate([...pipeline, { $count: 'total' }])]);
         const result = plan.page(rows, limitNum, counts[0]?.total || 0);
+        const publicRows = await publicAttractionDtos(result.rows, req.tenant._id);
         res.setHeader('Cache-Control', 'private, no-store');
-        res.json({ success: true, data: result.rows.map(row => localizedPresentation({ ...toPublicAttractionDto(row), ...(dealsOnly ? { publicDeal: row.publicDeal } : {}) }, row, locale)), pagination: result.pagination }); return;
+        res.json({ success: true, data: result.rows.map((row, index) => localizedPresentation({ ...publicRows[index], ...(dealsOnly ? { publicDeal: row.publicDeal } : {}) }, row, locale)), pagination: result.pagination }); return;
       }
       const [rows, counts] = await Promise.all([Attraction.aggregate([...pipeline, { $sort: { ...sortOption, _id: -1 as const } }, { $skip: (pageNum - 1) * limitNum }, { $limit: limitNum }, { $project: projection }]), Attraction.aggregate([...pipeline, { $count: 'total' }])]);
-      res.setHeader('Cache-Control', 'private, no-store'); sendPaginated(res, rows.map(row => localizedPresentation(toPublicAttractionDto(row), row, locale)), pageNum, limitNum, counts[0]?.total || 0); return;
+      const publicRows = await publicAttractionDtos(rows, req.tenant._id);
+      res.setHeader('Cache-Control', 'private, no-store'); sendPaginated(res, rows.map((row, index) => localizedPresentation(publicRows[index], row, locale)), pageNum, limitNum, counts[0]?.total || 0); return;
     }
     if (cursorMode) {
       if (!['-createdAt', 'recommended', 'price-low', 'price-high', 'rating', 'popularity', 'sortOrder'].includes(String(sort))) {
@@ -452,16 +465,17 @@ export const getAttractions = async (
         Attraction.aggregate([
           { $match: query }, ...dealStages, { $set: plan.normalized }, ...(plan.seek ? [{ $match: plan.seek }] : []),
           { $sort: plan.sort }, { $limit: limitNum + 1 },
-          { $project: Object.fromEntries([...PUBLIC_ATTRACTION_FIELDS, ...(dealsOnly ? ['publicDeal'] : []), ...fields.map((_field, index) => `_cursor${index}`)].map(field => [field, 1])) },
+          { $project: Object.fromEntries([...PUBLIC_ATTRACTION_FIELDS, ...OPERATOR_SOURCE_FIELDS, ...(dealsOnly ? ['publicDeal'] : []), ...fields.map((_field, index) => `_cursor${index}`)].map(field => [field, 1])) },
         ]), dealsOnly ? Attraction.aggregate([{ $match: query }, ...dealStages, { $count: 'total' }]).then(rows => rows[0]?.total || 0) : Attraction.countDocuments(query),
       ]);
       const result = plan.page(rows, limitNum, total);
+      const publicRows = await publicAttractionDtos(result.rows, req.tenant?._id);
       res.setHeader('Cache-Control', 'private, no-store');
-      res.json({ success: true, data: result.rows.map(row => ({ ...toPublicAttractionDto(row), ...(dealsOnly ? { publicDeal: row.publicDeal } : {}) })), pagination: result.pagination });
+      res.json({ success: true, data: result.rows.map((row, index) => ({ ...publicRows[index], ...(dealsOnly ? { publicDeal: row.publicDeal } : {}) })), pagination: result.pagination });
       return;
     }
     const attractionsQuery = Attraction.find(query).select(
-      isAdminRequest ? `${PUBLIC_ATTRACTION_PROJECTION} tenantIds ownerTenantId presentationRevision` : PUBLIC_ATTRACTION_PROJECTION
+      `${PUBLIC_ATTRACTION_PROJECTION} ${OPERATOR_SOURCE_FIELDS.join(' ')}${isAdminRequest ? ' presentationRevision' : ''}`
     );
 
     // Execute query
@@ -478,10 +492,12 @@ export const getAttractions = async (
     // tenant's catalog to another (2026-07-21 Netlify edge poisoning incident).
     res.setHeader('Cache-Control', 'private, max-age=60');
 
+    const publicAttractions = isAdminRequest ? [] : await publicAttractionDtos(attractions, req.tenant?._id);
+
     sendPaginated(
       res,
-      attractions.map((attraction) => {
-        if (!isAdminRequest) return toPublicAttractionDto(attraction);
+      attractions.map((attraction, index) => {
+        if (!isAdminRequest) return publicAttractions[index];
         const allowedTenantIds = req.user?.role === 'super-admin'
           ? undefined
           : (req.user?.assignedTenants || []).map(String);
@@ -533,10 +549,11 @@ export const getAttractionBySlug = async (
     if (locale) {
       if (!req.tenant) throw new TranslationError('Select one public site for translated content');
       const alias = await translatedSlugFilter(slug, req.tenant._id);
-      const rows = await Attraction.aggregate([{ $match: { $or: [...(Types.ObjectId.isValid(slug) ? [{ _id: new Types.ObjectId(slug) }] : [{ slug }, { pathSlug: slug }]), ...(alias ? [alias] : [])], status: 'active', tenantIds: req.tenant._id, archivedAt: { $exists: false }, trashedAt: { $exists: false } } }, ...localizationStages(req.tenant._id, locale, undefined, false), ...localizedSlugStages(slug,locale), { $project: Object.fromEntries([...PUBLIC_ATTRACTION_FIELDS, 'updatedAt', '__translations'].map(field => [field, 1])) }]);
+      const rows = await Attraction.aggregate([{ $match: { $or: [...(Types.ObjectId.isValid(slug) ? [{ _id: new Types.ObjectId(slug) }] : [{ slug }, { pathSlug: slug }]), ...(alias ? [alias] : [])], status: 'active', tenantIds: req.tenant._id, archivedAt: { $exists: false }, trashedAt: { $exists: false } } }, ...localizationStages(req.tenant._id, locale, undefined, false), ...localizedSlugStages(slug,locale), { $project: Object.fromEntries([...PUBLIC_ATTRACTION_FIELDS, ...OPERATOR_SOURCE_FIELDS, 'updatedAt', '__translations'].map(field => [field, 1])) }]);
       res.setHeader('Cache-Control', 'private, no-store');
       if (rows.length !== 1) { sendError(res, 'Attraction not found', 404); return; }
-      sendSuccess(res, { ...localizedPresentation(toPublicAttractionDto(rows[0]), rows[0], locale), bookingTenantSlug: req.tenant.slug }); return;
+      const [publicAttraction] = await publicAttractionDtos(rows, req.tenant._id);
+      sendSuccess(res, { ...localizedPresentation(publicAttraction, rows[0], locale), bookingTenantSlug: req.tenant.slug }); return;
     }
 
     // Public single-attraction lookup. Accept an ObjectId as well as a slug so
@@ -559,7 +576,8 @@ export const getAttractionBySlug = async (
     }
 
     const bookingTenantSlug = req.tenant?.slug || await publicBookingTenantSlug(attraction);
-    sendSuccess(res, { ...toPublicAttractionDto(attraction), ...(bookingTenantSlug ? { bookingTenantSlug } : {}) });
+    const [publicAttraction] = await publicAttractionDtos([attraction], req.tenant?._id);
+    sendSuccess(res, { ...publicAttraction, ...(bookingTenantSlug ? { bookingTenantSlug } : {}) });
   } catch (error) {
     next(error);
   }
@@ -2088,6 +2106,8 @@ export const getFeaturedAttractions = async (
     const locale = requestedLocale(req.query?.locale);
     const sourceFallback = sourceFallbackAllowed(req.query?.localeFallback, req.tenant);
     if (locale && !req.tenant) throw new TranslationError('Select one public site for translated content');
+    const amount = Number(limit);
+    if (!Number.isInteger(amount) || amount < 1 || amount > 50) throw new TranslationError('Select between 1 and 50 featured tours');
 
     const query: Record<string, unknown> = {
       status: 'active',
@@ -2105,20 +2125,20 @@ export const getFeaturedAttractions = async (
     }
 
     if (locale && req.tenant) {
-      const amount = Number(limit); if (!Number.isInteger(amount) || amount < 1 || amount > 50) throw new TranslationError('Select between 1 and 50 featured tours');
-      const rows = await Attraction.aggregate([{ $match: { ...query, archivedAt: { $exists: false }, trashedAt: { $exists: false } } }, ...localizationStages(req.tenant._id, locale, undefined, !sourceFallback), { $sort: { sortOrder: 1, rating: -1, _id: 1 } }, { $limit: amount }, { $project: Object.fromEntries([...PUBLIC_ATTRACTION_FIELDS, 'updatedAt', '__translations'].map(field => [field, 1])) }]);
-      res.setHeader('Cache-Control', 'private, no-store'); sendSuccess(res, rows.map(row => localizedPresentation(toPublicAttractionDto(row), row, locale))); return;
+      const rows = await Attraction.aggregate([{ $match: { ...query, archivedAt: { $exists: false }, trashedAt: { $exists: false } } }, ...localizationStages(req.tenant._id, locale, undefined, !sourceFallback), { $sort: { sortOrder: 1, rating: -1, _id: 1 } }, { $limit: amount }, { $project: Object.fromEntries([...PUBLIC_ATTRACTION_FIELDS, ...OPERATOR_SOURCE_FIELDS, 'updatedAt', '__translations'].map(field => [field, 1])) }]);
+      const publicRows = await publicAttractionDtos(rows, req.tenant._id);
+      res.setHeader('Cache-Control', 'private, no-store'); sendSuccess(res, rows.map((row, index) => localizedPresentation(publicRows[index], row, locale))); return;
     }
     const attractions = await Attraction.find(query)
-      .select(PUBLIC_ATTRACTION_PROJECTION)
+      .select(`${PUBLIC_ATTRACTION_PROJECTION} ${OPERATOR_SOURCE_FIELDS.join(' ')}`)
       .sort({ sortOrder: 1, rating: -1 })
-      .limit(parseInt(limit as string, 10))
+      .limit(amount)
       .lean();
 
     // Cache for 10 minutes (featured attractions change less frequently)
     res.setHeader('Cache-Control', 'private, max-age=300');
 
-    sendSuccess(res, attractions.map(toPublicAttractionDto));
+    sendSuccess(res, await publicAttractionDtos(attractions, req.tenant?._id));
   } catch (error) {
     next(error);
   }

@@ -25,6 +25,7 @@ import {
 } from '../utils/tenantScope';
 import { revokeUserSessions } from '../utils/session';
 import { PUBLIC_USER_PROJECTION, redactUserSecrets } from '../utils/userProjection';
+import { publicAttractionOperators } from '../services/publicAttractionOperator.service';
 
 // User Profile Endpoints
 export const getProfile = async (
@@ -75,11 +76,16 @@ export const getWishlist = async (
       const limit = Number(req.query.limit || 20);
       const plan = customerCursor({owner:String(req.user._id),site:String(req.tenant._id),search:search || ''},req.query.cursor as string | undefined);
       const [rows,counts] = await Promise.all([
-        User.aggregate([...base,{$set:plan.normalized},...(plan.seek?[{$match:plan.seek}]:[]),{$sort:plan.sort},{$limit:limit+1},{$project:{...wishlistProjection,_cursor0:1,_cursor1:1}}]),
+        User.aggregate([...base,{$set:plan.normalized},...(plan.seek?[{$match:plan.seek}]:[]),{$sort:plan.sort},{$limit:limit+1},{$project:{...wishlistProjection,tenantIds:1,ownerTenantId:1,_cursor0:1,_cursor1:1}}]),
         User.aggregate([...base,{$count:'total'}]),
       ]);
       const result=plan.page(rows,limit,counts[0]?.total || 0);
-      res.setHeader('Cache-Control','private, no-store');res.json({success:true,data:result.rows,pagination:result.pagination});return;
+      // Resolve only owners of this already scoped page, excluding the lookahead row.
+      const operators=await publicAttractionOperators(result.rows,req.tenant._id);
+      const data=result.rows.map(({tenantIds:_tenantIds,ownerTenantId:_ownerTenantId,...row},index)=>({
+        ...row,...(operators[index]?{operator:operators[index]}:{}),
+      }));
+      res.setHeader('Cache-Control','private, no-store');res.json({success:true,data,pagination:result.pagination});return;
     }
     const user = await User.findById(req.user._id)
       .populate({

@@ -3,6 +3,7 @@ import { INTERFACE_LOCALES } from '../types';
 import { z } from 'zod';
 import { imageAltTextsSchema, secureImageUrlSchema } from './imagePresentation';
 import { aiSettingsUpdateSchema } from './aiSettings';
+import { tenantContactInfoSchema } from './tenantContactInfo';
 import { MAX_REGEX_SEARCH_LENGTH } from './helpers';
 import { MAX_PICKUP_DESTINATIONS, PICKUP_DESTINATION_SLUG_PATTERN } from './pickupDestinations';
 import { DEPARTURE_SCHEDULE_CONFLICT_MESSAGE, departureScheduleConflict } from './departureAvailability';
@@ -757,6 +758,7 @@ const pickupDestinationSlugsSchema = z.array(pickupDestinationSlugSchema).max(MA
 
 // Tenant Validators
 export const createTenantSchema = z.object({
+  contactInfo: tenantContactInfoSchema.optional(),
   aiSettings: aiSettingsUpdateSchema.optional(),
   slug: z.string().min(1, 'Slug is required'),
   name: z.string().min(1, 'Name is required'),

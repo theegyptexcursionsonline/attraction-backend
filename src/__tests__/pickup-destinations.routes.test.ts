@@ -148,7 +148,7 @@ describe('saving pickup areas through the tenant routes', () => {
     expect(response.status).toBe(200);
     expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith(
       { _id: String(royalCruiseId) },
-      { $set: { contactInfo: { email: 'bookings@example.org', phone: '+20 100 000 0000' }, logo: '/logos/royal-cruise.png', timezone: 'Africa/Cairo', name: 'Royal Cruise Hurghada' } },
+      { $set: { 'contactInfo.email': 'bookings@example.org', 'contactInfo.phone': '+20 100 000 0000', logo: '/logos/royal-cruise.png', timezone: 'Africa/Cairo', name: 'Royal Cruise Hurghada' } },
       { new: true, runValidators: true, lean: true }
     );
   });
