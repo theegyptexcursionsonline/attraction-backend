@@ -4,8 +4,13 @@ import { ITenant } from '../types';
 
 // Stable, reversible tenant policy. The closure is keyed by tenant slug, never
 // by a deployment-specific ObjectId, custom domain, or mutable display name.
+//
+// king-of-egypt-tours is a protected preview: it shows published tours and
+// prices, and the booking drawer works up to checkout, but no real booking is
+// created until the owner opens the site. Opening it is removing this slug.
 const BOOKING_CREATION_CLOSED_TENANT_SLUGS = [
   'makadi-horse-club',
+  'king-of-egypt-tours',
 ] as const;
 
 export class TenantBookingCreationClosedError extends AppError {

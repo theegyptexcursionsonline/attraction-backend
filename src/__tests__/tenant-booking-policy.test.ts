@@ -29,6 +29,15 @@ describe('tenant booking-creation closure policy', () => {
     }
   });
 
+  it('keeps the King of Egypt Tours preview closed to real bookings, by slug', () => {
+    expect(isTenantBookingCreationClosed({ slug: 'king-of-egypt-tours' })).toBe(true);
+    expect(() => assertTenantBookingCreationAllowed({ slug: 'king-of-egypt-tours' }))
+      .toThrow(TenantBookingCreationClosedError);
+    // A look-alike slug is a different site and is not closed by this policy.
+    expect(isTenantBookingCreationClosed({ slug: 'king-of-egypt-tours-2' })).toBe(false);
+    expect(isTenantBookingCreationClosed({ slug: 'KING-OF-EGYPT-TOURS' })).toBe(false);
+  });
+
   it('leaves every other tenant and a missing optional tenant unaffected', () => {
     expect(isTenantBookingCreationClosed({ slug: 'rittal-travel-egypt' })).toBe(false);
     expect(() => assertTenantBookingCreationAllowed({ slug: 'rittal-travel-egypt' })).not.toThrow();
@@ -45,7 +54,7 @@ describe('tenant booking-creation closure policy', () => {
       .rejects.toBeInstanceOf(TenantBookingCreationClosedError);
     expect(findOne).toHaveBeenCalledWith({
       _id: { $in: [otherId.toString(), makadiId.toString()] },
-      slug: { $in: ['makadi-horse-club'] },
+      slug: { $in: ['makadi-horse-club', 'king-of-egypt-tours'] },
     });
 
     findOne.mockResolvedValueOnce(null);
