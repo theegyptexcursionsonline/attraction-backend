@@ -1,3 +1,5 @@
+import { recordAudit } from '../services/auditLog.service';
+import { accountSections } from '../middleware/section.middleware';
 import {expectedPrincipal,principalMatches} from '../middleware/expected-principal';
 import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
@@ -39,7 +41,18 @@ const refreshCookieOptions = (rememberMe = false) => ({
   path: '/api/auth/refresh-token',
 });
 
-const issueSession = async (user: IUser, res: Response, rememberMe = false) => {
+/**
+ * The account as JSON plus `effectiveSections`: the admin sections (tours, attractions, packages,
+ * bundles) this account may use across its brands, so the admin menu can hide the rest. The API
+ * enforces the same rule on every section endpoint.
+ */
+const withEffectiveSections = async (user: IUser): Promise<Record<string, unknown>> => {
+  const json = user.toJSON() as Record<string, unknown>;
+  if (ADMIN_ROLES.has(user.role)) json.effectiveSections = await accountSections(user);
+  return json;
+};
+
+const issueSession = async (user: IUser, res: Response, rememberMe = false, req?: AuthRequest) => {
   const accessToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);
   user.refreshToken = hashToken(refreshToken);
@@ -47,7 +60,8 @@ const issueSession = async (user: IUser, res: Response, rememberMe = false) => {
   await user.save();
   res.cookie('accessToken', accessToken, ACCESS_COOKIE_OPTIONS);
   res.cookie('refreshToken', refreshToken, refreshCookieOptions(rememberMe));
-  return user.toJSON();
+  if (req && ADMIN_ROLES.has(user.role)) recordAudit(req, { action: 'auth.login', outcome: 'success', actor: user, statusCode: 200 });
+  return withEffectiveSections(user);
 };
 
 const TENANT_EMAIL_FIELDS =
@@ -179,12 +193,14 @@ export const login = async (
     // Check password
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
+      if (ADMIN_ROLES.has(user.role)) recordAudit(req, { action: 'auth.login_failed', outcome: 'failure', actor: user, statusCode: 401 });
       sendError(res, 'Invalid email or password', 401);
       return;
     }
 
     // Check status
     if (user.status !== 'active') {
+      if (ADMIN_ROLES.has(user.role)) recordAudit(req, { action: 'auth.login_failed', outcome: 'failure', actor: user, statusCode: 403 });
       sendError(res, 'Account is not active. Please contact support.', 403);
       return;
     }
@@ -202,7 +218,7 @@ export const login = async (
       return;
     }
 
-    const userResponse = await issueSession(user, res, rememberMe === true);
+    const userResponse = await issueSession(user, res, rememberMe === true, req);
 
     sendSuccess(res, { user: userResponse }, 'Login successful');
   } catch (error) {
@@ -294,7 +310,7 @@ export const confirmTwoFactorSetup = async (req: AuthRequest, res: Response): Pr
       sendError(res, 'Two-factor setup was already completed or the session changed', 409);
       return;
     }
-    const userResponse = await issueSession(enabledUser, res, challenge.rememberMe);
+    const userResponse = await issueSession(enabledUser, res, challenge.rememberMe, req);
     sendSuccess(res, { user: userResponse, recoveryCodes }, 'Two-factor authentication enabled');
   } catch {
     sendError(res, 'Invalid or expired two-factor challenge', 401);
@@ -327,10 +343,11 @@ export const verifyTwoFactorLogin = async (req: AuthRequest, res: Response): Pro
         { new: true }
       );
       if (!recoveredUser) {
+        recordAudit(req, { action: 'auth.two_factor_failed', outcome: 'failure', actor: user, statusCode: 401 });
         sendError(res, 'Invalid or already-used recovery code', 401);
         return;
       }
-      const userResponse = await issueSession(recoveredUser, res, challenge.rememberMe);
+      const userResponse = await issueSession(recoveredUser, res, challenge.rememberMe, req);
       sendSuccess(res, { user: userResponse }, 'Login successful');
       return;
     }
@@ -341,6 +358,7 @@ export const verifyTwoFactorLogin = async (req: AuthRequest, res: Response): Pro
       afterTimeStep: user.twoFactorLastUsedStep,
     });
     if (!result.valid || result.timeStep === undefined) {
+      recordAudit(req, { action: 'auth.two_factor_failed', outcome: 'failure', actor: user, statusCode: 401 });
       sendError(res, 'Invalid or already-used authenticator code', 401);
       return;
     }
@@ -361,7 +379,7 @@ export const verifyTwoFactorLogin = async (req: AuthRequest, res: Response): Pro
       sendError(res, 'Authenticator code was already used', 409);
       return;
     }
-    const userResponse = await issueSession(verifiedUser, res, challenge.rememberMe);
+    const userResponse = await issueSession(verifiedUser, res, challenge.rememberMe, req);
     sendSuccess(res, { user: userResponse }, 'Login successful');
   } catch {
     sendError(res, 'Invalid or expired two-factor challenge', 401);
@@ -457,6 +475,7 @@ export const logout = async (
 ): Promise<void> => {
   try {
     if (req.user) {
+      if (ADMIN_ROLES.has(req.user.role)) recordAudit(req, { action: 'auth.logout', outcome: 'success', actor: req.user, statusCode: 200 });
       await User.findByIdAndUpdate(req.user._id, {
         $unset: { refreshToken: 1 },
         $inc: { tokenVersion: 1 },
@@ -557,7 +576,7 @@ export const me = async (
       return;
     }
 
-    sendSuccess(res, user, 'User retrieved');
+    sendSuccess(res, await withEffectiveSections(user), 'User retrieved');
   } catch (error) {
     next(error);
   }
@@ -720,6 +739,7 @@ export const changePassword = async (
 
     void notifyPasswordChanged(req, user);
 
+    if (req.user && ADMIN_ROLES.has(req.user.role)) recordAudit(req, { action: 'auth.password_changed', outcome: 'success', actor: req.user, statusCode: 200 });
     sendSuccess(res, null, 'Password changed successfully');
   } catch (error) {
     next(error);

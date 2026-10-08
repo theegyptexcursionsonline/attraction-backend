@@ -1,3 +1,4 @@
+import type { AdminSection } from '../utils/sectionAccess';
 import type { ExternalRatingSnapshot } from '../utils/externalRatings';
 import type { PageSection } from '../utils/siteContent';
 import { Request } from 'express';
@@ -28,6 +29,7 @@ export interface IUser extends Document {
   interfaceLocale?: InterfaceLocale;
   currency?: string;
   assignedTenants: Types.ObjectId[];
+  sectionAccess?: AdminSection[];
   wishlist: Types.ObjectId[];
   loyaltyPoints?: number;
   totalBookings?: number;
@@ -54,6 +56,7 @@ export type BundleLaunchMode = 'off' | 'discovery' | 'test' | 'live';
 
 export interface ITenant extends Document {
   _id: Types.ObjectId;
+  enabledSections?: AdminSection[];
   slug: string;
   name: string;
   domain: string;

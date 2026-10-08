@@ -34,6 +34,7 @@ import {
   refundBundleOrderSchema,
 } from '../bundles/validators';
 import { authenticate, optionalAuth, requireRole, requireSuperAdmin } from '../middleware/auth.middleware';
+import { requireSection } from '../middleware/section.middleware';
 import { optionalTenant, requireTenant } from '../middleware/tenant.middleware';
 import { validate, validateParams, validateQuery } from '../middleware/validate.middleware';
 import { bookingLimiter, paymentLimiter } from '../middleware/rate-limit.middleware';
@@ -44,6 +45,7 @@ router.get(
   '/admin',
   authenticate,
   requireRole('super-admin', 'brand-admin', 'manager', 'viewer'),
+  requireSection('bundles'),
   validateQuery(bundleOrderListQuerySchema),
   listBundleOrdersAdmin
 );
@@ -51,6 +53,7 @@ router.get(
   '/admin/:id',
   authenticate,
   requireRole('super-admin', 'brand-admin', 'manager', 'viewer'),
+  requireSection('bundles'),
   validateParams(bundleIdParamsSchema),
   getBundleOrderAdmin
 );
@@ -67,6 +70,7 @@ router.post(
   '/admin/:id/components/:componentId/fulfil',
   authenticate,
   requireRole('super-admin', 'brand-admin', 'manager'),
+  requireSection('bundles'),
   validateParams(bundleComponentParamsSchema),
   fulfilBundleComponentHandler
 );

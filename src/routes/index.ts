@@ -35,6 +35,7 @@ import bundleOrdersRoutes from './bundleOrders.routes';
 import bundleSupplyOffersRoutes from './bundleSupplyOffers.routes';
 import publicRouteCompositionRoutes from './publicRouteComposition.routes';
 import packagesRoutes from './packages.routes';
+import auditLogsRoutes from './auditLogs.routes';
 
 const router = Router();
 
@@ -291,6 +292,7 @@ router.use('/reviews', reviewsRoutes);
 router.use('/tenants', notificationFailuresRoutes);
 router.use('/tenants', tenantsRoutes);
 router.use('/users', usersRoutes);
+router.use('/audit-logs', auditLogsRoutes);
 router.use('/payments', paymentsRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/contact', contactRoutes);

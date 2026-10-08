@@ -11,7 +11,7 @@ describe('admin write route contracts', () => {
   });
 
   it.each([
-    ['attractions.routes.ts', "requireRole('super-admin', 'brand-admin', 'manager'), blockDates"],
+    ['attractions.routes.ts', "requireRole('super-admin', 'brand-admin', 'manager'), requireListingSection, blockDates"],
     ['promo.routes.ts', "requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, validate(createPromoCodeSchema), createPromoCode"],
     ['promo.routes.ts', "requireRole('super-admin', 'brand-admin', 'manager'), optionalTenant, validate(updatePromoCodeSchema), updatePromoCode"],
     ['reviews.routes.ts', "requireRole('super-admin', 'brand-admin', 'manager'), updateReviewStatus"],

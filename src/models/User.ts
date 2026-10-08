@@ -2,6 +2,7 @@ import mongoose, { Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import { IUser, INTERFACE_LOCALES } from '../types';
 import { revokeUserSessions } from '../utils/session';
+import { ADMIN_SECTIONS } from '../utils/sectionAccess';
 
 const userSchema = new Schema<IUser>(
   {
@@ -66,6 +67,12 @@ const userSchema = new Schema<IUser>(
       type: Schema.Types.ObjectId,
       ref: 'Tenant',
     }],
+    // Admin sections this team member may open (tours, attractions, packages, bundles).
+    // Unset means every section the member's brands have switched on; super-admins ignore it.
+    sectionAccess: {
+      type: [{ type: String, enum: ADMIN_SECTIONS }],
+      default: undefined,
+    },
     wishlist: [{
       type: Schema.Types.ObjectId,
       ref: 'Attraction',

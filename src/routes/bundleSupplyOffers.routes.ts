@@ -7,6 +7,7 @@ import {
   transitionBundleSupplyOfferHandler,
 } from '../controllers/bundleSupplyOffers.controller';
 import { authenticate, requireRole } from '../middleware/auth.middleware';
+import { requireSection } from '../middleware/section.middleware';
 import { optionalTenant } from '../middleware/tenant.middleware';
 import { validate, validateParams, validateQuery } from '../middleware/validate.middleware';
 import {
@@ -22,6 +23,7 @@ import {
 const router = Router();
 
 router.use(authenticate, requireRole('super-admin', 'brand-admin'));
+router.use(requireSection('bundles'));
 router.get(
   '/',
   validateQuery(supplyOfferListQuerySchema),

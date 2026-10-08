@@ -2,17 +2,19 @@ import { Types } from 'mongoose';
 import { getTravelers, getUsers } from '../controllers/users.controller';
 import { User } from '../models/User';
 import { Tenant } from '../models/Tenant';
+import { Booking } from '../models/Booking';
 import { AuthRequest } from '../types';
 
 jest.mock('../models/User', () => ({
   User: {
+    collection: { name: 'users' },
     aggregate: jest.fn(),
     find: jest.fn(),
     countDocuments: jest.fn(),
   },
 }));
 jest.mock('../models/Tenant', () => ({ Tenant: { find: jest.fn() } }));
-jest.mock('../models/Booking', () => ({ Booking: { collection: { name: 'bookings' } } }));
+jest.mock('../models/Booking', () => ({ Booking: { collection: { name: 'bookings' }, aggregate: jest.fn() } }));
 jest.mock('../models/Attraction', () => ({ Attraction: {} }));
 jest.mock('../services/email.service', () => ({ sendUserInvitation: jest.fn() }));
 
@@ -22,6 +24,10 @@ const response = () => {
   res.json = jest.fn().mockReturnValue(res);
   res.setHeader = jest.fn();
   return res;
+};
+
+const installAggregate = (rows: unknown[]) => {
+  (Booking.aggregate as jest.Mock).mockReturnValue({ allowDiskUse: jest.fn().mockResolvedValue(rows) });
 };
 
 const request = (overrides: Record<string, unknown> = {}): AuthRequest => ({
@@ -100,63 +106,65 @@ describe('traveler directory', () => {
     const res = response();
     await getTravelers(request({ user: { role: 'manager', assignedTenants: [] } }), res, jest.fn());
 
-    expect(User.aggregate).not.toHaveBeenCalled();
+    expect(Booking.aggregate).not.toHaveBeenCalled();
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({ data: [], pagination: expect.objectContaining({ hasMore: false }) }),
     }));
   });
 
-  it('injects assigned tenant scope into the booking lookup before returning travelers', async () => {
+  it('builds the directory from bookings scoped to the assigned brands, without bundle children', async () => {
     const tenantId = new Types.ObjectId();
-    (User.aggregate as jest.Mock).mockResolvedValue([]);
+    installAggregate([]);
     const res = response();
 
     await getTravelers(request({ user: { role: 'manager', assignedTenants: [tenantId] } }), res, jest.fn());
 
-    const pipeline = (User.aggregate as jest.Mock).mock.calls[0][0];
-    const serialized = JSON.stringify(pipeline);
-    expect(serialized).toContain(tenantId.toString());
-    expect(serialized).toContain('customer');
-    expect(serialized).toContain('guest');
-    expect(serialized).toContain('guestDetails.email');
-    expect(serialized).toContain('bundleOrderId');
-    expect(serialized).toContain('$exists');
-    const lookup = pipeline.find((stage: Record<string, unknown>) => '$lookup' in stage) as {
-      $lookup: { pipeline: Array<Record<string, unknown>> };
-    };
-    expect(lookup.$lookup.pipeline[0]).toEqual({ $match: { bundleOrderId: { $exists: false } } });
+    const pipeline = (Booking.aggregate as jest.Mock).mock.calls[0][0];
+    expect(pipeline[0]).toEqual({ $match: expect.objectContaining({
+      bundleOrderId: { $exists: false },
+      tenantId: { $in: [tenantId] },
+    }) });
+    // Account holders without a booking on the brand are a super admin view only.
+    expect(JSON.stringify(pipeline)).not.toContain('$unionWith');
   });
 
-  it('maps booking brands, latest activity, and currency-safe spend summaries', async () => {
-    const travelerId = new Types.ObjectId();
+  it('lists guest-checkout travellers and accounts without bookings for a super admin', async () => {
+    installAggregate([]);
+    await getTravelers(request(), response(), jest.fn());
+
+    const pipeline = (Booking.aggregate as jest.Mock).mock.calls[0][0];
+    expect(pipeline[0].$match).not.toHaveProperty('tenantId');
+    expect(JSON.stringify(pipeline)).toContain('$unionWith');
+  });
+
+  it('refuses a brand filter outside the caller brands', async () => {
+    const res = response();
+    await getTravelers(request({
+      query: { tenantId: new Types.ObjectId().toString() },
+      user: { role: 'brand-admin', assignedTenants: [new Types.ObjectId()] },
+    }), res, jest.fn());
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(Booking.aggregate).not.toHaveBeenCalled();
+  });
+
+  it('maps guest travellers, brands, latest activity and spend per currency', async () => {
     const tenantId = new Types.ObjectId();
     const bookingId = new Types.ObjectId();
-    (User.aggregate as jest.Mock).mockResolvedValue([{
-      _id: travelerId,
-      email: 'traveler@example.test',
-      firstName: 'Sample',
-      lastName: 'Traveler',
-      status: 'active',
-      createdAt: new Date('2026-08-01T00:00:00Z'),
-      bookingRollup: [{
-        summary: [{ count: 2 }],
-        brands: [{ _id: tenantId }],
-        spending: [{ _id: 'USD', total: 120 }],
-        latest: [{
-          _id: bookingId,
-          reference: 'BOOK-100',
-          tenantId,
-          status: 'confirmed',
-          total: 70,
-          currency: 'USD',
-          createdAt: new Date('2026-08-05T00:00:00Z'),
-          items: [{ date: '2026-08-10', time: '09:00' }],
-        }],
-      }],
+    installAggregate([{
+      _id: 'traveler@example.test',
+      bookingCount: 2,
+      lastActivityAt: new Date('2026-08-05T00:00:00Z'),
+      firstSeenAt: new Date('2026-08-01T00:00:00Z'),
+      brands: [tenantId],
+      spending: [{ currency: 'USD', total: 120 }, { currency: 'EUR', total: 30 }],
+      guest: { firstName: 'Sample', lastName: 'Traveler', phone: '+100', country: 'DE' },
+      latest: {
+        _id: bookingId, reference: 'BOOK-100', tenantId, status: 'confirmed', total: 70, currency: 'USD',
+        createdAt: new Date('2026-08-05T00:00:00Z'), items: [{ date: '2026-08-10', time: '09:00' }],
+      },
     }]);
     const lean = jest.fn().mockResolvedValue([{ _id: tenantId, name: 'Sample Brand', slug: 'sample-brand' }]);
-    const select = jest.fn().mockReturnValue({ lean });
-    (Tenant.find as jest.Mock).mockReturnValue({ select });
+    (Tenant.find as jest.Mock).mockReturnValue({ select: jest.fn().mockReturnValue({ lean }) });
     const res = response();
 
     await getTravelers(request(), res, jest.fn());
@@ -164,20 +172,25 @@ describe('traveler directory', () => {
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
         data: [expect.objectContaining({
+          id: 'guest:traveler@example.test',
+          hasAccount: false,
+          status: 'guest',
+          firstName: 'Sample',
+          phone: '+100',
           bookingCount: 2,
           brands: [{ id: tenantId.toString(), name: 'Sample Brand', slug: 'sample-brand' }],
-          spendingByCurrency: [{ currency: 'USD', total: 120 }],
+          spendingByCurrency: [{ currency: 'USD', total: 120 }, { currency: 'EUR', total: 30 }],
           latestBooking: expect.objectContaining({ reference: 'BOOK-100', travelDate: '2026-08-10' }),
         })],
       }),
     }));
   });
 
-  it('rejects malformed cursors without querying customers', async () => {
+  it('rejects malformed cursors without querying bookings', async () => {
     const res = response();
-    await getTravelers(request({ query: { cursor: 'not-an-object-id' } }), res, jest.fn());
+    await getTravelers(request({ query: { cursor: 'not-a-cursor' } }), res, jest.fn());
 
     expect(res.status).toHaveBeenCalledWith(400);
-    expect(User.aggregate).not.toHaveBeenCalled();
+    expect(Booking.aggregate).not.toHaveBeenCalled();
   });
 });

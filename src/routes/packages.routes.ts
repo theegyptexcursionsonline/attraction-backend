@@ -14,6 +14,7 @@ import {
 import { authenticate, optionalAuth, requireRole } from '../middleware/auth.middleware';
 import { bookingLimiter } from '../middleware/rate-limit.middleware';
 import { optionalTenant } from '../middleware/tenant.middleware';
+import { requireSection } from '../middleware/section.middleware';
 
 /**
  * Package listings. The listing itself (title, text, images, sites, URL) is created and edited
@@ -33,14 +34,14 @@ router.post('/:id/quote', optionalTenant, quotePackage);
 router.post('/:id/bookings', bookingLimiter, optionalAuth, optionalTenant, bookPackage);
 
 // Package editor.
-router.get('/:id', authenticate, requireRole(...READ_ROLES), getPackageForEditor);
-router.put('/:id', authenticate, requireRole(...EDIT_ROLES), savePackageDetails);
-router.post('/:id/publish', authenticate, requireRole(...EDIT_ROLES), publishPackage);
+router.get('/:id', authenticate, requireRole(...READ_ROLES), requireSection('packages'), getPackageForEditor);
+router.put('/:id', authenticate, requireRole(...EDIT_ROLES), requireSection('packages'), savePackageDetails);
+router.post('/:id/publish', authenticate, requireRole(...EDIT_ROLES), requireSection('packages'), publishPackage);
 
 // Dated departures and their seats.
-router.get('/:id/departures', authenticate, requireRole(...READ_ROLES), listPackageDepartures);
-router.post('/:id/departures', authenticate, requireRole(...SEAT_ROLES), addPackageDepartures);
-router.put('/:id/departures/:date', authenticate, requireRole(...SEAT_ROLES), upsertPackageDeparture);
-router.delete('/:id/departures/:date', authenticate, requireRole(...SEAT_ROLES), deletePackageDeparture);
+router.get('/:id/departures', authenticate, requireRole(...READ_ROLES), requireSection('packages'), listPackageDepartures);
+router.post('/:id/departures', authenticate, requireRole(...SEAT_ROLES), requireSection('packages'), addPackageDepartures);
+router.put('/:id/departures/:date', authenticate, requireRole(...SEAT_ROLES), requireSection('packages'), upsertPackageDeparture);
+router.delete('/:id/departures/:date', authenticate, requireRole(...SEAT_ROLES), requireSection('packages'), deletePackageDeparture);
 
 export default router;

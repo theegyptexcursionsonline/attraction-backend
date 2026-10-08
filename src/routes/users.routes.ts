@@ -9,17 +9,20 @@ import {
   removeFromWishlist,
   getUsers,
   getTravelers,
+  getTravelerDetail,
   getUserById,
   inviteUser,
   createInvitationLink,
   setUserPassword,
   updateUser,
   deleteUser,
+  revokeUserSessionsById,
 } from '../controllers/users.controller';
 import { authenticate, requireRole, requireSuperAdmin } from '../middleware/auth.middleware';
 import { validate, validateQuery } from '../middleware/validate.middleware';
 import { paginationSchema, regexSearchSchema } from '../utils/validators';
 import { z } from 'zod';
+import { ADMIN_SECTIONS } from '../utils/sectionAccess';
 
 const router = Router();
 
@@ -185,11 +188,21 @@ router.get(
     z.object({
       limit: z.coerce.number().int().min(1).max(50).optional(),
       cursor: z.string().optional(),
-      status: z.enum(['active', 'inactive', 'pending', 'suspended']).optional(),
+      // 'guest': booked without an account.
+      status: z.enum(['active', 'inactive', 'pending', 'suspended', 'guest']).optional(),
       search: regexSearchSchema,
+      tenantId: z.string().optional(),
     })
   ),
   getTravelers
+);
+
+router.get(
+  '/travelers/detail',
+  authenticate,
+  requireRole('super-admin', 'brand-admin', 'manager'),
+  validateQuery(z.object({ email: z.string().email().max(254) })),
+  getTravelerDetail
 );
 
 /**
@@ -274,6 +287,7 @@ router.post(
       lastName: z.string().min(1),
       role: z.enum(['super-admin', 'brand-admin', 'manager', 'editor', 'viewer']),
       assignedTenants: z.array(z.string()).optional(),
+      sectionAccess: z.array(z.enum(ADMIN_SECTIONS)).nullable().optional(),
     })
   ),
   inviteUser
@@ -409,6 +423,8 @@ router.patch(
       role: z.enum(['super-admin', 'brand-admin', 'manager', 'editor', 'viewer']).optional(),
       status: z.enum(['active', 'inactive', 'pending', 'suspended']).optional(),
       assignedTenants: z.array(z.string()).optional(),
+      // null restores "every section the member's brands allow".
+      sectionAccess: z.array(z.enum(ADMIN_SECTIONS)).nullable().optional(),
     })
   ),
   updateUser
@@ -436,6 +452,13 @@ router.patch(
  *       403:
  *         $ref: '#/components/responses/ForbiddenError'
  */
+router.post(
+  '/:id/revoke-sessions',
+  authenticate,
+  requireRole('super-admin', 'brand-admin'),
+  revokeUserSessionsById
+);
+
 router.delete(
   '/:id',
   authenticate,
