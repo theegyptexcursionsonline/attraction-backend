@@ -3,6 +3,8 @@ import { Response, NextFunction } from 'express';
 import { Types, type PipelineStage } from 'mongoose';
 import { User } from '../models/User';
 import { Booking } from '../models/Booking';
+import { BundleOrder } from '../models/BundleOrder';
+import { BundleDefinition } from '../models/BundleDefinition';
 import { Attraction } from '../models/Attraction';
 import { Tenant } from '../models/Tenant';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
@@ -184,12 +186,14 @@ export const removeWishlistPage = async (req: AuthRequest,res:Response,next:Next
  * else only sections they can use themselves, so a brand admin cannot hand out a section their
  * own brand has switched off.
  */
-const sectionGrantProblem = async (req: AuthRequest, sections: unknown): Promise<string | null> => {
+const sectionGrantProblem = async (req: AuthRequest, sections: unknown, alreadyHas: readonly string[] = []): Promise<string | null> => {
   if (sections === undefined || isSuperAdmin(req.user)) return null;
   const own = req.user ? await accountSections(req.user) : [];
   const wanted = sections === null ? [...ADMIN_SECTIONS] : normalizeSectionList(sections as unknown[]);
   if (sections === null && own.length < ADMIN_SECTIONS.length) return 'Only a super admin can give access to every section';
-  return wanted.every((section) => own.includes(section)) ? null : 'You can only give access to sections you can use yourself';
+  // Sections the member already had may stay; only new ones must be the caller's own.
+  return wanted.every((section) => own.includes(section) || alreadyHas.includes(section))
+    ? null : 'You can only give access to sections you can use yourself';
 };
 
 // Admin User Management
@@ -331,12 +335,38 @@ const travelerScope = (req: AuthRequest): Types.ObjectId[] | null =>
     : callerTenantIds(req.user).filter((id) => Types.ObjectId.isValid(id)).map((id) => new Types.ObjectId(id));
 
 /**
- * Bookings grouped into one row per traveller email: count, spend per currency, brands, the
- * latest booking and the latest contact details given at checkout. Bundle child bookings belong
- * to their master order and are left out.
+ * Bundle orders the caller may see as a traveller's purchases: sold on one of their brands
+ * (storefront), never test checkouts. A supplier brand does not see the bundle buyer here, as on
+ * Bundle Operations.
  */
-const travelerBookingStages = (bookingMatch: Record<string, unknown>): PipelineStage[] => [
+const bundleOrderTravelerMatch = (scope: Types.ObjectId[] | null): Record<string, unknown> => ({
+  checkoutMode: { $ne: 'test' },
+  ...(scope ? { storefrontTenantId: { $in: scope } } : {}),
+});
+
+/**
+ * Bookings and bundle orders grouped into one row per traveller email: count, spend per currency,
+ * brands, the latest purchase and the latest contact details given at checkout. Bundle child
+ * bookings belong to their master order (counted once, as the bundle order) and are left out.
+ */
+const travelerBookingStages = (bookingMatch: Record<string, unknown>, scope: Types.ObjectId[] | null): PipelineStage[] => [
   { $match: { bundleOrderId: { $exists: false }, 'guestDetails.email': { $type: 'string', $ne: '' }, ...bookingMatch } },
+  {
+    $unionWith: {
+      coll: BundleOrder.collection.name,
+      pipeline: [
+        { $match: { ...bundleOrderTravelerMatch(scope), 'guestDetails.email': { $type: 'string', $ne: '' } } },
+        {
+          $project: {
+            reference: 1, status: 1, currency: 1, createdAt: 1, guestDetails: 1,
+            tenantId: '$storefrontTenantId',
+            total: { $divide: ['$totalMinor', 100] },
+            items: { $map: { input: { $slice: ['$components', 1] }, as: 'component', in: { date: '$$component.date', time: '$$component.time' } } },
+          },
+        },
+      ],
+    },
+  },
   { $sort: { createdAt: -1 } },
   {
     $group: {
@@ -412,7 +442,7 @@ export const getTravelers = async (
     }
 
     const bookingMatch: Record<string, unknown> = scope ? { tenantId: { $in: scope } } : {};
-    const pipeline: PipelineStage[] = [...travelerBookingStages(bookingMatch)];
+    const pipeline: PipelineStage[] = [...travelerBookingStages(bookingMatch, scope)];
 
     // A super admin looking at the whole network also sees registered customers who have not
     // booked yet.
@@ -566,7 +596,7 @@ export const getTravelerDetail = async (
       sendError(res, 'Traveler not found', 404);
       return;
     }
-    const [account, bookings] = await Promise.all([
+    const [account, bookings, bundleOrders] = await Promise.all([
       User.findOne({ email, role: { $in: ['customer', 'guest'] } })
         .select('firstName lastName email avatar phone country status createdAt lastLogin language currency')
         .lean(),
@@ -575,24 +605,37 @@ export const getTravelerDetail = async (
         .sort({ createdAt: -1 })
         .limit(200)
         .lean(),
+      BundleOrder.find({ 'guestDetails.email': email, ...bundleOrderTravelerMatch(scope) })
+        .select('reference storefrontTenantId bundleDefinitionId status paymentStatus totalMinor currency createdAt components guestDetails')
+        .sort({ createdAt: -1 })
+        .limit(100)
+        .lean(),
     ]);
-    if (bookings.length === 0 && (scope || !account)) {
+    if (bookings.length === 0 && bundleOrders.length === 0 && (scope || !account)) {
       sendError(res, 'Traveler not found', 404);
       return;
     }
 
-    const tenantIds = Array.from(new Set(bookings.map((booking) => String(booking.tenantId))));
+    const tenantIds = Array.from(new Set([
+      ...bookings.map((booking) => String(booking.tenantId)),
+      ...bundleOrders.map((order) => String(order.storefrontTenantId)),
+    ]));
+    const definitionIds = Array.from(new Set(bundleOrders.map((order) => String(order.bundleDefinitionId))));
     const attractionIds = Array.from(new Set(bookings.map((booking) => String(booking.attractionId)).filter((id) => Types.ObjectId.isValid(id))));
-    const [tenants, attractions] = await Promise.all([
+    const [tenants, attractions, definitions] = await Promise.all([
       tenantIds.length ? Tenant.find({ _id: { $in: tenantIds } }).select('name slug').lean() : [],
       attractionIds.length ? Attraction.find({ _id: { $in: attractionIds } }).select('title slug listingType').lean() : [],
+      definitionIds.length ? BundleDefinition.find({ _id: { $in: definitionIds } }).select('title slug').lean() : [],
     ]);
+    const definitionById = new Map(definitions.map((definition) => [String(definition._id), definition]));
     const tenantById = new Map(tenants.map((tenant) => [String(tenant._id), tenant]));
     const attractionById = new Map(attractions.map((attraction) => [String(attraction._id), attraction]));
 
     // Every distinct contact the traveller gave at checkout, newest first.
     const contacts = new Map<string, { firstName: string; lastName: string; phone?: string; country?: string; lastUsedAt: Date }>();
-    for (const booking of bookings) {
+    const purchasesNewestFirst = [...bookings, ...bundleOrders]
+      .sort((a, b) => new Date(b.createdAt as Date).getTime() - new Date(a.createdAt as Date).getTime());
+    for (const booking of purchasesNewestFirst) {
       const guest = booking.guestDetails as { firstName?: string; lastName?: string; phone?: string; country?: string } | undefined;
       if (!guest) continue;
       const key = [guest.firstName, guest.lastName, guest.phone, guest.country].map((part) => String(part || '').trim().toLowerCase()).join('|');
@@ -615,7 +658,7 @@ export const getTravelerDetail = async (
         lastLogin: account.lastLogin,
       } : null,
       contacts: Array.from(contacts.values()),
-      bookings: bookings.map((booking) => {
+      bookings: [...bookings.map((booking) => {
         const tenant = tenantById.get(String(booking.tenantId));
         const attraction = attractionById.get(String(booking.attractionId));
         const guest = booking.guestDetails as { specialRequests?: string } | undefined;
@@ -641,8 +684,38 @@ export const getTravelerDetail = async (
           specialRequests: guest?.specialRequests || null,
           travellerDetails: Array.isArray(packageBooking?.travellerDetails) ? packageBooking.travellerDetails : [],
           arrivalDetails: packageBooking?.arrivalDetails || null,
+          kind: 'booking' as const,
         };
-      }),
+      }), ...bundleOrders.map((order) => {
+        const tenant = tenantById.get(String(order.storefrontTenantId));
+        const definition = definitionById.get(String(order.bundleDefinitionId));
+        const components = order.components || [];
+        const first = components[0];
+        return {
+          id: String(order._id),
+          reference: order.reference,
+          status: order.status,
+          paymentStatus: order.paymentStatus,
+          total: (order.totalMinor || 0) / 100,
+          currency: order.currency,
+          createdAt: order.createdAt,
+          brand: tenant ? { id: String(tenant._id), name: tenant.name, slug: tenant.slug } : null,
+          product: definition ? { id: String(definition._id), title: definition.title, slug: definition.slug, listingType: 'bundle' } : null,
+          travelDate: first?.date,
+          travelTime: first?.time,
+          // Every component carries the whole party; the largest is the party size.
+          guests: components.reduce((party, component) => ({
+            adults: Math.max(party.adults, component.quantities?.adults || 0),
+            children: Math.max(party.children, component.quantities?.children || 0),
+            infants: Math.max(party.infants, component.quantities?.infants || 0),
+          }), { adults: 0, children: 0, infants: 0 }),
+          optionName: components.map((component) => component.attractionTitle).filter(Boolean).join(' + ') || undefined,
+          specialRequests: order.guestDetails?.specialRequests || null,
+          travellerDetails: [],
+          arrivalDetails: null,
+          kind: 'bundle' as const,
+        };
+      })].sort((a, b) => new Date(b.createdAt as Date).getTime() - new Date(a.createdAt as Date).getTime()),
     });
   } catch (error) {
     next(error);
@@ -997,7 +1070,12 @@ export const updateUser = async (
       }
     }
 
-    const updateSectionProblem = await sectionGrantProblem(req, sectionAccess);
+    // Only a real change is checked: re-saving a member's existing access (with a name edit, say)
+    // must not need the right to give it.
+    const currentSections = Array.isArray(target.sectionAccess) ? normalizeSectionList(target.sectionAccess) : null;
+    const requestedSections = sectionAccess === null ? null : Array.isArray(sectionAccess) ? normalizeSectionList(sectionAccess) : undefined;
+    const sectionsChanged = requestedSections !== undefined && JSON.stringify(requestedSections) !== JSON.stringify(currentSections);
+    const updateSectionProblem = sectionsChanged ? await sectionGrantProblem(req, sectionAccess, currentSections ?? []) : null;
     if (updateSectionProblem) {
       sendError(res, updateSectionProblem, 403);
       return;
@@ -1015,8 +1093,7 @@ export const updateUser = async (
     if (role !== undefined) target.role = role;
     if (status !== undefined) target.status = status;
     if (assignedTenants !== undefined) target.assignedTenants = assignedTenants;
-    if (sectionAccess === null) target.sectionAccess = undefined;
-    else if (Array.isArray(sectionAccess)) target.sectionAccess = normalizeSectionList(sectionAccess);
+    if (sectionsChanged) target.sectionAccess = requestedSections ?? undefined;
     if (securityContextChanged) revokeUserSessions(target);
     await target.save();
     await target.populate('assignedTenants', 'name slug');
