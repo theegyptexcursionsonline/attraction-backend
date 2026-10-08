@@ -314,7 +314,7 @@ router.post(
  * /tenants/{id}/ai-products:
  *   patch:
  *     summary: Switch AI Search and Voice for a site (Super Admin)
- *     description: Body `{ expectedRevision, search?: { enabled?, widgetId? }, voice?: { enabled?, widgetId? } }`. 409 when the revision is stale.
+ *     description: 'Body `{ expectedRevision, search?: { enabled?, widgetId? }, voice?: { enabled?, widgetId? } }`. 409 when the revision is stale.'
  *     tags: [Tenants]
  *     security:
  *       - bearerAuth: []
