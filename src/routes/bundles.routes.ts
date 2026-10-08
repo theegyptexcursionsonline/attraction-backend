@@ -37,6 +37,7 @@ import {
   updateBundleLaunchModeSchema,
 } from '../bundles/validators';
 import { authenticate, requireRole, requireSuperAdmin } from '../middleware/auth.middleware';
+import { requireSection } from '../middleware/section.middleware';
 import { optionalAdminTenant, optionalTenant, requireTenant } from '../middleware/tenant.middleware';
 import { validate, validateParams, validateQuery } from '../middleware/validate.middleware';
 
@@ -46,6 +47,7 @@ router.get(
   '/admin/readiness',
   authenticate,
   requireRole('super-admin', 'brand-admin', 'manager', 'viewer'),
+  requireSection('bundles'),
   validateQuery(bundleReadinessQuerySchema),
   optionalAdminTenant,
   requireTenant,

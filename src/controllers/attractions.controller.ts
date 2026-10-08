@@ -30,6 +30,8 @@ import { BundleOrder } from '../models/BundleOrder';
 import { runBundleTransaction } from '../services/bundleInventory.service';
 import { createAttractionSchema } from '../utils/validators';
 import { publicPackageDetails } from '../utils/packageDetails';
+import { requestSections } from '../middleware/section.middleware';
+import { listingTypesForSections } from '../utils/sectionAccess';
 import { listingCreateProblem, listingUpdateProblem, normalizeListingTypeInput } from '../services/listingType.service';
 import { DEPARTURE_SCHEDULE_CONFLICT_MESSAGE, departureScheduleConflict } from '../utils/departureAvailability';
 import { tenantPickupDestinationSlugs } from '../utils/pickupDestinations';
@@ -374,6 +376,16 @@ export const getAttractions = async (
       query.$and = [...(query.$and || []), listingType === 'tour'
         ? { $or: [{ listingType: 'tour' }, { listingType: { $exists: false } }] }
         : { listingType }];
+    }
+
+    // Admin catalogue: a team member sees only the listing types their section access allows.
+    if (req.query.scope === 'admin' && req.user && req.user.role !== 'super-admin') {
+      const allowedTypes = listingTypesForSections(await requestSections(req));
+      if (allowedTypes.length < 3) {
+        query.$and = [...(query.$and || []), allowedTypes.includes('tour')
+          ? { $or: [{ listingType: { $in: allowedTypes } }, { listingType: { $exists: false } }] }
+          : { listingType: { $in: allowedTypes } }];
+      }
     }
 
     // Source filters are part of the shared DB match, so totals and cursor bindings

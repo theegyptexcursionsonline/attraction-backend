@@ -24,6 +24,8 @@ import {
   canManageRole,
 } from '../utils/tenantScope';
 import { revokeUserSessions } from '../utils/session';
+import { accountSections } from '../middleware/section.middleware';
+import { ADMIN_SECTIONS, normalizeSectionList } from '../utils/sectionAccess';
 import { PUBLIC_USER_PROJECTION, redactUserSecrets } from '../utils/userProjection';
 import { publicAttractionOperators } from '../services/publicAttractionOperator.service';
 
@@ -177,6 +179,19 @@ export const removeWishlistPage = async (req: AuthRequest,res:Response,next:Next
  } catch(error){next(error);}
 };
 
+/**
+ * Why the caller may not give these sections, or null. Super admins may give any section; anyone
+ * else only sections they can use themselves, so a brand admin cannot hand out a section their
+ * own brand has switched off.
+ */
+const sectionGrantProblem = async (req: AuthRequest, sections: unknown): Promise<string | null> => {
+  if (sections === undefined || isSuperAdmin(req.user)) return null;
+  const own = req.user ? await accountSections(req.user) : [];
+  const wanted = sections === null ? [...ADMIN_SECTIONS] : normalizeSectionList(sections as unknown[]);
+  if (sections === null && own.length < ADMIN_SECTIONS.length) return 'Only a super admin can give access to every section';
+  return wanted.every((section) => own.includes(section)) ? null : 'You can only give access to sections you can use yourself';
+};
+
 // Admin User Management
 export const getUsers = async (
   req: AuthRequest,
@@ -275,41 +290,95 @@ export const getUsers = async (
   }
 };
 
-type TravelerRollup = {
-  _id: unknown;
-  email: string;
-  firstName: string;
-  lastName: string;
-  avatar?: string;
-  phone?: string;
-  country?: string;
-  status: string;
-  createdAt: Date;
-  lastLogin?: Date;
-  bookingRollup?: Array<{
-    summary?: Array<{ count: number }>;
-    brands?: Array<{ _id: unknown }>;
-    spending?: Array<{ _id: string; total: number }>;
-    latest?: Array<{
-      _id: unknown;
-      reference: string;
-      tenantId: unknown;
-      status: string;
-      total: number;
-      currency: string;
-      createdAt: Date;
-      items?: Array<{ date?: string; time?: string }>;
-    }>;
-  }>;
+type TravelerRow = {
+  _id: string;
+  bookingCount: number;
+  lastActivityAt?: Date;
+  firstSeenAt?: Date;
+  brands: unknown[];
+  spending: Array<{ currency: string; total: number }>;
+  guest?: { firstName?: string; lastName?: string; phone?: string; country?: string };
+  latest?: {
+    _id: unknown;
+    reference: string;
+    tenantId: unknown;
+    status: string;
+    total: number;
+    currency: string;
+    createdAt: Date;
+    items?: Array<{ date?: string; time?: string }>;
+  };
+  account?: {
+    _id: unknown;
+    firstName?: string;
+    lastName?: string;
+    avatar?: string;
+    phone?: string;
+    country?: string;
+    status?: string;
+    role?: string;
+    createdAt?: Date;
+    lastLogin?: Date;
+  };
 };
 
+const TRAVELER_STATUSES = ['active', 'inactive', 'pending', 'suspended'];
+
+/** The caller's brand ids as ObjectIds, or null for a super admin (every brand). */
+const travelerScope = (req: AuthRequest): Types.ObjectId[] | null =>
+  isSuperAdmin(req.user)
+    ? null
+    : callerTenantIds(req.user).filter((id) => Types.ObjectId.isValid(id)).map((id) => new Types.ObjectId(id));
+
 /**
- * Tenant-safe traveler directory for admin users.
+ * Bookings grouped into one row per traveller email: count, spend per currency, brands, the
+ * latest booking and the latest contact details given at checkout. Bundle child bookings belong
+ * to their master order and are left out.
+ */
+const travelerBookingStages = (bookingMatch: Record<string, unknown>): PipelineStage[] => [
+  { $match: { bundleOrderId: { $exists: false }, 'guestDetails.email': { $type: 'string', $ne: '' }, ...bookingMatch } },
+  { $sort: { createdAt: -1 } },
+  {
+    $group: {
+      _id: { email: { $toLower: '$guestDetails.email' }, currency: '$currency' },
+      count: { $sum: 1 },
+      total: { $sum: '$total' },
+      lastAt: { $max: '$createdAt' },
+      firstAt: { $min: '$createdAt' },
+      brands: { $addToSet: '$tenantId' },
+      latest: { $first: { createdAt: '$createdAt', _id: '$_id', reference: '$reference', tenantId: '$tenantId', status: '$status', total: '$total', currency: '$currency', items: { $slice: ['$items', 1] }, guest: '$guestDetails' } },
+    },
+  },
+  {
+    $group: {
+      _id: '$_id.email',
+      bookingCount: { $sum: '$count' },
+      spending: { $push: { currency: '$_id.currency', total: '$total' } },
+      lastActivityAt: { $max: '$lastAt' },
+      firstSeenAt: { $min: '$firstAt' },
+      brandSets: { $push: '$brands' },
+      // Embedded documents compare field by field, so the newest `createdAt` wins.
+      latest: { $max: '$latest' },
+    },
+  },
+  {
+    $project: {
+      bookingCount: 1, spending: 1, lastActivityAt: 1, firstSeenAt: 1,
+      brands: { $reduce: { input: '$brandSets', initialValue: [], in: { $setUnion: ['$$value', '$$this'] } } },
+      latest: 1,
+      guest: '$latest.guest',
+    },
+  },
+];
+
+/**
+ * Traveller directory for the admin.
  *
- * A traveler is a registered customer/guest identity. Booking relationships are
- * matched by userId and normalized guest email because checkout can precede account
- * creation. Non-super-admins only see travelers with a booking in one of their
- * assigned tenants; the booking lookup is scoped before any PII is returned.
+ * A traveller is anyone who booked (by the email given at checkout, account or not) and, for a
+ * super admin, also every registered customer account even before a first booking. Most
+ * customers check out as guests, so listing only accounts (the earlier behaviour) left the
+ * page empty for most of the network. Brand admins and managers see only travellers with a
+ * booking on one of their brands, and only those bookings count towards the row.
  */
 export const getTravelers = async (
   req: AuthRequest,
@@ -320,134 +389,138 @@ export const getTravelers = async (
     const requestedLimit = Number.parseInt(String(req.query.limit ?? '25'), 10);
     const limit = Math.min(Math.max(Number.isFinite(requestedLimit) ? requestedLimit : 25, 1), 50);
     const cursor = req.query.cursor ? String(req.query.cursor) : undefined;
-    const search = req.query.search ? String(req.query.search).trim() : '';
-    const status = req.query.status ? String(req.query.status) : undefined;
-
-    const mongoose = await import('mongoose');
-    if (cursor && !mongoose.Types.ObjectId.isValid(cursor)) {
+    const offset = cursor && /^\d{1,6}$/.test(cursor) ? Number(cursor) : 0;
+    if (cursor && !/^\d{1,6}$/.test(cursor)) {
       sendError(res, 'Invalid traveler cursor', 400);
       return;
     }
+    const search = req.query.search ? String(req.query.search).trim() : '';
+    const status = req.query.status ? String(req.query.status) : undefined;
+    const tenantFilter = typeof req.query.tenantId === 'string' && req.query.tenantId.trim() ? req.query.tenantId.trim() : undefined;
 
-    const scopedTenantIds = isSuperAdmin(req.user)
-      ? null
-      : callerTenantIds(req.user).filter(mongoose.Types.ObjectId.isValid).map((id) => new mongoose.Types.ObjectId(id));
-
-    if (scopedTenantIds && scopedTenantIds.length === 0) {
+    let scope = travelerScope(req);
+    if (scope && scope.length === 0) {
       sendSuccess(res, { data: [], pagination: { limit, nextCursor: null, hasMore: false } });
       return;
     }
+    if (tenantFilter) {
+      if (!Types.ObjectId.isValid(tenantFilter) || (scope && !scope.some((id) => String(id) === tenantFilter))) {
+        sendError(res, 'Access denied to this tenant', 403);
+        return;
+      }
+      scope = [new Types.ObjectId(tenantFilter)];
+    }
 
-    const userMatch: Record<string, unknown> = {
-      role: { $in: ['customer', 'guest'] },
-    };
-    if (cursor) userMatch._id = { $lt: new mongoose.Types.ObjectId(cursor) };
-    if (status) userMatch.status = status;
+    const bookingMatch: Record<string, unknown> = scope ? { tenantId: { $in: scope } } : {};
+    const pipeline: PipelineStage[] = [...travelerBookingStages(bookingMatch)];
+
+    // A super admin looking at the whole network also sees registered customers who have not
+    // booked yet.
+    if (!scope) {
+      pipeline.push(
+        {
+          $unionWith: {
+            coll: User.collection.name,
+            pipeline: [
+              { $match: { role: { $in: ['customer', 'guest'] } } },
+              { $project: { _id: { $toLower: '$email' }, bookingCount: { $literal: 0 }, spending: { $literal: [] }, brands: { $literal: [] }, lastActivityAt: '$createdAt', firstSeenAt: '$createdAt' } },
+            ],
+          },
+        },
+        {
+          $group: {
+            _id: '$_id',
+            bookingCount: { $sum: '$bookingCount' },
+            spending: { $push: '$spending' },
+            brands: { $push: '$brands' },
+            lastActivityAt: { $max: '$lastActivityAt' },
+            firstSeenAt: { $min: '$firstSeenAt' },
+            latest: { $max: '$latest' },
+            guest: { $max: '$guest' },
+          },
+        },
+        {
+          $project: {
+            bookingCount: 1, lastActivityAt: 1, firstSeenAt: 1, latest: 1, guest: 1,
+            spending: { $reduce: { input: '$spending', initialValue: [], in: { $concatArrays: ['$$value', '$$this'] } } },
+            brands: { $reduce: { input: '$brands', initialValue: [], in: { $setUnion: ['$$value', '$$this'] } } },
+          },
+        }
+      );
+    }
+
+    pipeline.push(
+      { $lookup: { from: User.collection.name, localField: '_id', foreignField: 'email', as: 'account' } },
+      { $set: { account: { $first: { $filter: { input: '$account', cond: { $in: ['$$this.role', ['customer', 'guest']] } } } } } }
+    );
+
     const safeSearch = searchRegexValue(search);
     if (safeSearch) {
-      userMatch.$or = [
-        { email: { $regex: safeSearch, $options: 'i' } },
-        { firstName: { $regex: safeSearch, $options: 'i' } },
-        { lastName: { $regex: safeSearch, $options: 'i' } },
-      ];
-    }
-
-    const bookingExpressions: Record<string, unknown>[] = [
-      {
-        $or: [
-          { $eq: ['$userId', '$$travelerId'] },
-          { $eq: [{ $toLower: '$guestDetails.email' }, '$$travelerEmail'] },
-        ],
-      },
-    ];
-    if (scopedTenantIds) bookingExpressions.unshift({ $in: ['$tenantId', scopedTenantIds] });
-
-    const pipeline: PipelineStage[] = [
-      { $match: userMatch },
-      {
-        $lookup: {
-          from: Booking.collection.name,
-          let: { travelerId: '$_id', travelerEmail: { $toLower: '$email' } },
-          pipeline: [
-            // Bundle children belong to the master-order projection contract.
-            // A raw aggregation bypasses Booking query middleware, so exclude
-            // them explicitly before matching customer identity or tenant.
-            { $match: { bundleOrderId: { $exists: false } } },
-            { $match: { $expr: { $and: bookingExpressions } } },
-            {
-              $facet: {
-                summary: [{ $count: 'count' }],
-                brands: [{ $group: { _id: '$tenantId' } }],
-                spending: [{ $group: { _id: '$currency', total: { $sum: '$total' } } }],
-                latest: [
-                  { $sort: { createdAt: -1 } },
-                  { $limit: 1 },
-                  { $project: { reference: 1, tenantId: 1, status: 1, total: 1, currency: 1, createdAt: 1, items: { $slice: ['$items', 1] } } },
-                ],
-              },
-            },
+      pipeline.push({
+        $match: {
+          $or: [
+            { _id: { $regex: safeSearch, $options: 'i' } },
+            { 'guest.firstName': { $regex: safeSearch, $options: 'i' } },
+            { 'guest.lastName': { $regex: safeSearch, $options: 'i' } },
+            { 'account.firstName': { $regex: safeSearch, $options: 'i' } },
+            { 'account.lastName': { $regex: safeSearch, $options: 'i' } },
+            { 'guest.phone': { $regex: safeSearch, $options: 'i' } },
           ],
-          as: 'bookingRollup',
         },
-      },
-    ];
-
-    if (scopedTenantIds) {
-      pipeline.push({ $match: { 'bookingRollup.0.summary.0.count': { $gt: 0 } } });
+      });
     }
+    if (status === 'guest') pipeline.push({ $match: { account: { $exists: false } } });
+    else if (status && TRAVELER_STATUSES.includes(status)) pipeline.push({ $match: { 'account.status': status } });
+
     pipeline.push(
-      { $sort: { _id: -1 } },
+      { $sort: { lastActivityAt: -1, _id: 1 } },
+      { $skip: offset },
       { $limit: limit + 1 },
       {
         $project: {
-          email: 1,
-          firstName: 1,
-          lastName: 1,
-          avatar: 1,
-          phone: 1,
-          country: 1,
-          status: 1,
-          createdAt: 1,
-          lastLogin: 1,
-          bookingRollup: 1,
+          bookingCount: 1, spending: 1, lastActivityAt: 1, firstSeenAt: 1, brands: 1, guest: 1,
+          latest: { _id: 1, reference: 1, tenantId: 1, status: 1, total: 1, currency: 1, createdAt: 1, items: 1 },
+          account: { _id: 1, firstName: 1, lastName: 1, avatar: 1, phone: 1, country: 1, status: 1, role: 1, createdAt: 1, lastLogin: 1 },
         },
       }
     );
 
-    const rows = await User.aggregate<TravelerRollup>(pipeline);
+    const rows = await Booking.aggregate<TravelerRow>(pipeline).allowDiskUse(true);
     const hasMore = rows.length > limit;
     const pageRows = hasMore ? rows.slice(0, limit) : rows;
-    const brandIds = Array.from(new Set(pageRows.flatMap((row) =>
-      (row.bookingRollup?.[0]?.brands || []).map((brand) => String(brand._id))
-    )));
+    const brandIds = Array.from(new Set(pageRows.flatMap((row) => (row.brands || []).map(String))));
     const brands = brandIds.length
       ? await Tenant.find({ _id: { $in: brandIds } }).select('name slug').lean()
       : [];
     const brandById = new Map(brands.map((brand) => [String(brand._id), brand]));
+    const brandRef = (id: unknown) => {
+      const brand = brandById.get(String(id));
+      return brand ? { id: String(brand._id), name: brand.name, slug: brand.slug } : null;
+    };
 
     const travelers = pageRows.map((row) => {
-      const rollup = row.bookingRollup?.[0];
-      const latest = rollup?.latest?.[0];
-      const travelerBrands = (rollup?.brands || [])
-        .map((brand) => brandById.get(String(brand._id)))
-        .filter(Boolean)
-        .map((brand) => ({ id: String(brand!._id), name: brand!.name, slug: brand!.slug }));
-      const latestBrand = latest ? brandById.get(String(latest.tenantId)) : undefined;
-
+      const latest = row.latest;
+      const account = row.account;
+      const spending = new Map<string, number>();
+      for (const item of row.spending || []) {
+        if (item?.currency) spending.set(item.currency, (spending.get(item.currency) || 0) + (item.total || 0));
+      }
       return {
-        id: String(row._id),
-        email: row.email,
-        firstName: row.firstName,
-        lastName: row.lastName,
-        avatar: row.avatar,
-        phone: row.phone,
-        country: row.country,
-        status: row.status,
-        createdAt: row.createdAt,
-        lastActiveAt: row.lastLogin,
-        bookingCount: rollup?.summary?.[0]?.count || 0,
-        spendingByCurrency: (rollup?.spending || []).map((item) => ({ currency: item._id, total: item.total })),
-        brands: travelerBrands,
+        id: account ? String(account._id) : `guest:${row._id}`,
+        accountId: account ? String(account._id) : null,
+        hasAccount: Boolean(account),
+        email: row._id,
+        firstName: account?.firstName || row.guest?.firstName || '',
+        lastName: account?.lastName || row.guest?.lastName || '',
+        avatar: account?.avatar,
+        phone: row.guest?.phone || account?.phone,
+        country: row.guest?.country || account?.country,
+        status: account?.status || 'guest',
+        createdAt: account?.createdAt || row.firstSeenAt,
+        lastActiveAt: account?.lastLogin || row.lastActivityAt,
+        bookingCount: row.bookingCount || 0,
+        spendingByCurrency: Array.from(spending, ([currency, total]) => ({ currency, total })),
+        brands: (row.brands || []).map(brandRef).filter((brand): brand is NonNullable<typeof brand> => Boolean(brand)),
         latestBooking: latest ? {
           id: String(latest._id),
           reference: latest.reference,
@@ -457,18 +530,119 @@ export const getTravelers = async (
           createdAt: latest.createdAt,
           travelDate: latest.items?.[0]?.date,
           travelTime: latest.items?.[0]?.time,
-          brand: latestBrand ? { id: String(latestBrand._id), name: latestBrand.name, slug: latestBrand.slug } : null,
+          brand: brandRef(latest.tenantId),
         } : null,
       };
     });
 
     sendSuccess(res, {
       data: travelers,
-      pagination: {
-        limit,
-        hasMore,
-        nextCursor: hasMore && pageRows.length ? String(pageRows[pageRows.length - 1]._id) : null,
-      },
+      pagination: { limit, hasMore, nextCursor: hasMore ? String(offset + limit) : null },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * One traveller's full record: contact details (account and the details given at each checkout),
+ * and every booking with its brand, product, dates, guests, special requests and package
+ * traveller details. Same brand scope as the directory: a brand admin sees only their brands'
+ * bookings, and a traveller with none of them is not found.
+ */
+export const getTravelerDetail = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const email = String(req.query.email || '').trim().toLowerCase();
+    if (!email || email.length > 254) {
+      sendError(res, 'Traveler email is required', 400);
+      return;
+    }
+    const scope = travelerScope(req);
+    if (scope && scope.length === 0) {
+      sendError(res, 'Traveler not found', 404);
+      return;
+    }
+    const [account, bookings] = await Promise.all([
+      User.findOne({ email, role: { $in: ['customer', 'guest'] } })
+        .select('firstName lastName email avatar phone country status createdAt lastLogin language currency')
+        .lean(),
+      Booking.find({ 'guestDetails.email': email, ...(scope ? { tenantId: { $in: scope } } : {}) })
+        .select('reference tenantId attractionId status paymentStatus total currency createdAt items guestDetails packageBooking.travellerDetails packageBooking.arrivalDetails')
+        .sort({ createdAt: -1 })
+        .limit(200)
+        .lean(),
+    ]);
+    if (bookings.length === 0 && (scope || !account)) {
+      sendError(res, 'Traveler not found', 404);
+      return;
+    }
+
+    const tenantIds = Array.from(new Set(bookings.map((booking) => String(booking.tenantId))));
+    const attractionIds = Array.from(new Set(bookings.map((booking) => String(booking.attractionId)).filter((id) => Types.ObjectId.isValid(id))));
+    const [tenants, attractions] = await Promise.all([
+      tenantIds.length ? Tenant.find({ _id: { $in: tenantIds } }).select('name slug').lean() : [],
+      attractionIds.length ? Attraction.find({ _id: { $in: attractionIds } }).select('title slug listingType').lean() : [],
+    ]);
+    const tenantById = new Map(tenants.map((tenant) => [String(tenant._id), tenant]));
+    const attractionById = new Map(attractions.map((attraction) => [String(attraction._id), attraction]));
+
+    // Every distinct contact the traveller gave at checkout, newest first.
+    const contacts = new Map<string, { firstName: string; lastName: string; phone?: string; country?: string; lastUsedAt: Date }>();
+    for (const booking of bookings) {
+      const guest = booking.guestDetails as { firstName?: string; lastName?: string; phone?: string; country?: string } | undefined;
+      if (!guest) continue;
+      const key = [guest.firstName, guest.lastName, guest.phone, guest.country].map((part) => String(part || '').trim().toLowerCase()).join('|');
+      if (!contacts.has(key)) contacts.set(key, { firstName: guest.firstName || '', lastName: guest.lastName || '', phone: guest.phone, country: guest.country, lastUsedAt: booking.createdAt as Date });
+    }
+
+    sendSuccess(res, {
+      email,
+      account: account ? {
+        id: String(account._id),
+        firstName: account.firstName,
+        lastName: account.lastName,
+        avatar: account.avatar,
+        phone: account.phone,
+        country: account.country,
+        status: account.status,
+        language: account.language,
+        currency: account.currency,
+        createdAt: account.createdAt,
+        lastLogin: account.lastLogin,
+      } : null,
+      contacts: Array.from(contacts.values()),
+      bookings: bookings.map((booking) => {
+        const tenant = tenantById.get(String(booking.tenantId));
+        const attraction = attractionById.get(String(booking.attractionId));
+        const guest = booking.guestDetails as { specialRequests?: string } | undefined;
+        const packageBooking = (booking as { packageBooking?: { travellerDetails?: unknown; arrivalDetails?: unknown } }).packageBooking;
+        return {
+          id: String(booking._id),
+          reference: booking.reference,
+          status: booking.status,
+          paymentStatus: (booking as { paymentStatus?: string }).paymentStatus,
+          total: booking.total,
+          currency: booking.currency,
+          createdAt: booking.createdAt,
+          brand: tenant ? { id: String(tenant._id), name: tenant.name, slug: tenant.slug } : null,
+          product: attraction ? { id: String(attraction._id), title: attraction.title, slug: attraction.slug, listingType: (attraction as { listingType?: string }).listingType || 'tour' } : null,
+          travelDate: booking.items?.[0]?.date,
+          travelTime: booking.items?.[0]?.time,
+          guests: (booking.items || []).reduce((sum, item) => ({
+            adults: sum.adults + (item.quantities?.adults || 0),
+            children: sum.children + (item.quantities?.children || 0),
+            infants: sum.infants + (item.quantities?.infants || 0),
+          }), { adults: 0, children: 0, infants: 0 }),
+          optionName: booking.items?.[0]?.optionName,
+          specialRequests: guest?.specialRequests || null,
+          travellerDetails: Array.isArray(packageBooking?.travellerDetails) ? packageBooking.travellerDetails : [],
+          arrivalDetails: packageBooking?.arrivalDetails || null,
+        };
+      }),
     });
   } catch (error) {
     next(error);
@@ -543,7 +717,7 @@ export const inviteUser = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { email, firstName, lastName, role, assignedTenants } = req.body;
+    const { email, firstName, lastName, role, assignedTenants, sectionAccess } = req.body;
 
     // Role ceiling: a non-super admin (e.g. brand-admin) must not be able to mint a
     // super-admin or another brand-admin — that would be a privilege-escalation path.
@@ -561,6 +735,12 @@ export const inviteUser = async (
         sendError(res, 'You can only invite users to your own tenants', 403);
         return;
       }
+    }
+
+    const inviteSectionProblem = await sectionGrantProblem(req, sectionAccess);
+    if (inviteSectionProblem) {
+      sendError(res, inviteSectionProblem, 403);
+      return;
     }
 
     // Check if user already exists
@@ -583,6 +763,7 @@ export const inviteUser = async (
       role,
       status: 'pending',
       assignedTenants,
+      ...(Array.isArray(sectionAccess) ? { sectionAccess: normalizeSectionList(sectionAccess) } : {}),
       passwordResetToken: hashToken(invitationToken),
       passwordResetExpires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     });
@@ -766,7 +947,7 @@ export const updateUser = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const { firstName, lastName, role, status, assignedTenants } = req.body;
+    const { firstName, lastName, role, status, assignedTenants, sectionAccess } = req.body;
 
     // Load the target first so we can enforce tenant scope + role ceiling BEFORE
     // applying any change. Previously this blindly $set role/assignedTenants from the
@@ -816,6 +997,12 @@ export const updateUser = async (
       }
     }
 
+    const updateSectionProblem = await sectionGrantProblem(req, sectionAccess);
+    if (updateSectionProblem) {
+      sendError(res, updateSectionProblem, 403);
+      return;
+    }
+
     const securityContextChanged =
       (role !== undefined && role !== target.role) ||
       (status !== undefined && status !== target.status) ||
@@ -828,6 +1015,8 @@ export const updateUser = async (
     if (role !== undefined) target.role = role;
     if (status !== undefined) target.status = status;
     if (assignedTenants !== undefined) target.assignedTenants = assignedTenants;
+    if (sectionAccess === null) target.sectionAccess = undefined;
+    else if (Array.isArray(sectionAccess)) target.sectionAccess = normalizeSectionList(sectionAccess);
     if (securityContextChanged) revokeUserSessions(target);
     await target.save();
     await target.populate('assignedTenants', 'name slug');
@@ -857,6 +1046,39 @@ export const updateUser = async (
     }
 
     sendSuccess(res, target, 'User updated successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Signs a team member out everywhere: their current sessions and refresh tokens stop working at
+ * once. For a lost device or a suspected compromise. Same scope rules as editing the member.
+ */
+export const revokeUserSessionsById = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const target = await User.findById(req.params.id);
+    if (!target || !['super-admin', 'brand-admin', 'manager', 'editor', 'viewer'].includes(target.role)) {
+      sendError(res, 'User not found', 404);
+      return;
+    }
+    if (!isSuperAdmin(req.user)) {
+      if (!sharesAnyTenant(callerTenantIds(req.user), (target.assignedTenants || []).map(String))) {
+        sendError(res, 'User not found', 404);
+        return;
+      }
+      if (String(target._id) !== String(req.user?._id) && !canManageRole(req.user?.role, target.role)) {
+        sendError(res, 'You are not allowed to manage this user', 403);
+        return;
+      }
+    }
+    revokeUserSessions(target);
+    await target.save();
+    sendSuccess(res, { id: String(target._id) }, 'All sessions signed out');
   } catch (error) {
     next(error);
   }

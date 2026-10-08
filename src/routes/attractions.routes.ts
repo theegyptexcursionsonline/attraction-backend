@@ -29,6 +29,7 @@ import {
   duplicateAttraction,
 } from '../controllers/attractions.controller';
 import { authenticate, optionalAuth, requireAdmin, requireRole } from '../middleware/auth.middleware';
+import { requireListingSection } from '../middleware/section.middleware';
 import { optionalTenant } from '../middleware/tenant.middleware';
 import { publicWriteLimiter } from '../middleware/rate-limit.middleware';
 import { validate, validateParams, validateQuery } from '../middleware/validate.middleware';
@@ -311,8 +312,8 @@ router.get(
   getPublicBlockedDates
 );
 router.get('/:id/blocked-dates', optionalAuth, optionalTenant, getBlockedDates);
-router.post('/:id/block-dates', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), blockDates);
-router.delete('/:id/block-dates/:date', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), unblockDate);
+router.post('/:id/block-dates', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), requireListingSection, blockDates);
+router.delete('/:id/block-dates/:date', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), requireListingSection, unblockDate);
 
 /**
  * @swagger
@@ -341,21 +342,21 @@ router.delete('/:id/block-dates/:date', authenticate, requireRole('super-admin',
  *         description: A concurrent duplicate already claimed the generated copy identifier
  */
 // Owner-scoped in the query; a cross-tenant id is a 404.
-router.post('/:id/duplicate', authenticate, requireRole('super-admin', 'brand-admin', 'manager', 'editor'), duplicateAttraction);
-router.post('/:id/restore', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), restoreAttraction);
-router.post('/:id/archive', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), archiveAttraction);
-router.post('/:id/unarchive', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), unarchiveAttraction);
-router.delete('/:id/permanent', authenticate, requireRole('super-admin', 'brand-admin'), permanentlyDeleteAttraction);
+router.post('/:id/duplicate', authenticate, requireRole('super-admin', 'brand-admin', 'manager', 'editor'), requireListingSection, duplicateAttraction);
+router.post('/:id/restore', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), requireListingSection, restoreAttraction);
+router.post('/:id/archive', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), requireListingSection, archiveAttraction);
+router.post('/:id/unarchive', authenticate, requireRole('super-admin', 'brand-admin', 'manager'), requireListingSection, unarchiveAttraction);
+router.delete('/:id/permanent', authenticate, requireRole('super-admin', 'brand-admin'), requireListingSection, permanentlyDeleteAttraction);
 
 // Reseller marketplace — opt the current tenant in/out of selling an attraction.
-router.post('/:id/resell', authenticate, optionalTenant, requireRole('super-admin', 'brand-admin'), addReseller);
-router.delete('/:id/resell', authenticate, optionalTenant, requireRole('super-admin', 'brand-admin'), removeReseller);
+router.post('/:id/resell', authenticate, optionalTenant, requireRole('super-admin', 'brand-admin'), requireListingSection, addReseller);
+router.delete('/:id/resell', authenticate, optionalTenant, requireRole('super-admin', 'brand-admin'), requireListingSection, removeReseller);
 
 // Resellers hub (supplier side) — owner lists their tours + sets commission.
 // MUST stay above `/admin/:id` so it is not captured as an id.
 router.get('/admin/reseller-config', authenticate, optionalTenant, requireRole('super-admin', 'brand-admin', 'manager'), getResellerConfig);
 router.patch('/admin/reseller-config/bulk', authenticate, optionalTenant, requireRole('super-admin', 'brand-admin', 'manager'), updateResellerVisibilityBulk);
-router.patch('/:id/reseller-config', authenticate, optionalTenant, requireRole('super-admin', 'brand-admin', 'manager'), updateResellerConfig);
+router.patch('/:id/reseller-config', authenticate, optionalTenant, requireRole('super-admin', 'brand-admin', 'manager'), requireListingSection, updateResellerConfig);
 
 // Submit a review
 router.post(
@@ -422,6 +423,7 @@ router.post(
   authenticate,
   requireRole('super-admin', 'brand-admin', 'manager', 'editor'),
   validate(createAttractionRequestSchema),
+  requireListingSection,
   createAttraction
 );
 
@@ -449,6 +451,7 @@ router.get(
   '/admin/:id',
   authenticate,
   requireAdmin,
+  requireListingSection,
   getAttractionById
 );
 
@@ -493,6 +496,7 @@ router.patch(
   authenticate,
   requireRole('super-admin', 'brand-admin', 'manager', 'editor'),
   validate(updateAttractionRequestSchema),
+  requireListingSection,
   updateAttraction
 );
 
@@ -522,6 +526,7 @@ router.delete(
   '/:id',
   authenticate,
   requireRole('super-admin', 'brand-admin'),
+  requireListingSection,
   deleteAttraction
 );
 

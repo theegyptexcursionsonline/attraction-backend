@@ -7,6 +7,12 @@ import { Tenant } from '../models/Tenant';
 import { BundleSupplyOffer } from '../models/BundleSupplyOffer';
 import bundleSupplyOffersRouter from '../routes/bundleSupplyOffers.routes';
 
+// Section access has its own tests (section-access.test.ts); here every section is allowed.
+jest.mock('../middleware/section.middleware', () => {
+  const pass = (_req: unknown, _res: unknown, next: () => void) => next();
+  const all = async () => ['tours', 'attractions', 'packages', 'bundles'];
+  return { requireListingSection: pass, requireSection: () => pass, requireSections: () => pass, requestSections: all, accountSections: all };
+});
 jest.mock('../utils/jwt', () => ({ verifyToken: jest.fn() }));
 jest.mock('../models/User', () => ({ User: { findById: jest.fn() } }));
 jest.mock('../models/Tenant', () => ({ Tenant: { findOne: jest.fn() } }));

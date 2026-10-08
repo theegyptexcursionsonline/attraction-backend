@@ -27,6 +27,12 @@ import { getTenantSeoSettings, updateTenantSeoSettings } from '../controllers/te
 import { validate, validateQuery } from '../middleware/validate.middleware';
 import { createTenantSchema, updateTenantSchema, paginationSchema, regexSearchSchema } from '../utils/validators';
 import { z } from 'zod';
+import { Response, NextFunction } from 'express';
+import { Types } from 'mongoose';
+import { Tenant } from '../models/Tenant';
+import { AuthRequest } from '../types';
+import { sendError, sendSuccess } from '../utils/response';
+import { ADMIN_SECTIONS, normalizeSectionList, sectionsOrAll } from '../utils/sectionAccess';
 
 const router = Router();
 
@@ -468,6 +474,32 @@ router.delete(
   authenticate,
   requireSuperAdmin,
   deleteTenant
+);
+
+/**
+ * Super admin only: which admin sections (tours, attractions, packages, bundles) this brand may
+ * use. `null` restores every section. Team members of the brand lose a switched-off section at
+ * once, in the admin menu and on every endpoint of that section.
+ */
+router.put(
+  '/:id/sections',
+  authenticate,
+  requireSuperAdmin,
+  validate(z.object({ enabledSections: z.array(z.enum(ADMIN_SECTIONS)).nullable() })),
+  async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      if (!Types.ObjectId.isValid(req.params.id)) { sendError(res, 'Site not found', 404); return; }
+      const { enabledSections } = req.body as { enabledSections: string[] | null };
+      const update = enabledSections === null
+        ? { $unset: { enabledSections: 1 } }
+        : { $set: { enabledSections: normalizeSectionList(enabledSections) } };
+      const tenant = await Tenant.findByIdAndUpdate(req.params.id, update, { new: true }).select('name slug enabledSections').lean();
+      if (!tenant) { sendError(res, 'Site not found', 404); return; }
+      sendSuccess(res, { id: String(tenant._id), enabledSections: sectionsOrAll(tenant.enabledSections) }, 'Sections updated');
+    } catch (error) {
+      next(error);
+    }
+  }
 );
 
 export default router;

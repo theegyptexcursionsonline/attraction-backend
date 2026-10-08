@@ -24,6 +24,7 @@ import swaggerUi from 'swagger-ui-express';
 
 import { env, connectDatabase, corsOptions, swaggerSpec } from './config';
 import routes from './routes';
+import { auditTrail } from './middleware/audit.middleware';
 import { notFoundHandler, errorHandler, apiLimiter } from './middleware';
 import { expireStaleCardHolds } from './services/bookingInventory.service';
 import { ensureBookingPaymentNotificationIndexes, processBookingPaymentNotifications } from './services/bookingPaymentNotification.service';
@@ -128,6 +129,8 @@ export const createApp = (): express.Application => {
   });
 
   // API routes
+  // User log: every change an admin account makes is recorded once the response is sent.
+  app.use('/api', auditTrail);
   app.use('/api', routes);
 
   // 404 handler

@@ -36,7 +36,7 @@ jest.mock('../models/Attraction', () => ({
   },
 }));
 jest.mock('../models/Booking', () => ({
-  Booking: { collection: { name: 'bookings' }, countDocuments: jest.fn(), find: jest.fn() },
+  Booking: { collection: { name: 'bookings' }, aggregate: jest.fn(), countDocuments: jest.fn(), find: jest.fn() },
 }));
 jest.mock('../models/Destination', () => ({
   Destination: { countDocuments: jest.fn(), find: jest.fn() },
@@ -57,7 +57,7 @@ jest.mock('../models/Tenant', () => ({
   Tenant: { countDocuments: jest.fn(), find: jest.fn() },
 }));
 jest.mock('../models/User', () => ({
-  User: { aggregate: jest.fn(), countDocuments: jest.fn(), find: jest.fn() },
+  User: { collection: { name: 'users' }, aggregate: jest.fn(), countDocuments: jest.fn(), find: jest.fn() },
 }));
 
 const response = () => {
@@ -280,9 +280,9 @@ const harnesses: SearchHarness[] = [
     name: 'GET /users/travelers?search=',
     run: async (input) => {
       let pipeline: unknown;
-      (User.aggregate as jest.Mock).mockImplementation((value) => {
+      (Booking.aggregate as jest.Mock).mockImplementation((value) => {
         pipeline = value;
-        return Promise.resolve([]);
+        return { allowDiskUse: () => Promise.resolve([]) };
       });
       await runController(getTravelers, {
         user: { role: 'super-admin', assignedTenants: [] },

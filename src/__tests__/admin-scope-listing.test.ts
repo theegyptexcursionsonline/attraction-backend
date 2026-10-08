@@ -8,8 +8,19 @@
  */
 import { Types } from 'mongoose';
 import { Attraction } from '../models/Attraction';
+import { Tenant } from '../models/Tenant';
 import { getAttractions } from '../controllers/attractions.controller';
 import { AuthRequest } from '../types';
+
+jest.mock('../models/Tenant', () => ({
+  Tenant: { find: jest.fn() },
+}));
+
+const installBrands = (brands: Array<{ _id: Types.ObjectId; enabledSections?: string[] }>) => {
+  (Tenant.find as jest.Mock).mockReturnValue({
+    select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(brands) }),
+  });
+};
 
 jest.mock('../models/Attraction', () => ({
   Attraction: {
@@ -76,6 +87,7 @@ describe('admin-scope listing fails closed', () => {
   it('bounds the aggregate (no tenant) admin listing to the caller assigned tenants', async () => {
     const assigned = [new Types.ObjectId(), new Types.ObjectId()];
     installFindChain([]);
+    installBrands(assigned.map((_id) => ({ _id })));
     const req = listRequest({
       query: { scope: 'admin' },
       user: { role: 'brand-admin', assignedTenants: assigned },
@@ -100,5 +112,34 @@ describe('admin-scope listing fails closed', () => {
     expect(Attraction.find).toHaveBeenCalledWith(
       expect.objectContaining({ status: 'active' })
     );
+  });
+
+  it('shows a team member only the listing types their section access allows', async () => {
+    const assigned = [new Types.ObjectId()];
+    installFindChain([]);
+    installBrands([{ _id: assigned[0], enabledSections: ['tours', 'attractions', 'bundles'] }]);
+    const req = listRequest({
+      query: { scope: 'admin' },
+      user: { role: 'manager', assignedTenants: assigned, sectionAccess: ['attractions', 'packages'] },
+    });
+
+    await getAttractions(req, response(), jest.fn());
+
+    const query = (Attraction.find as jest.Mock).mock.calls[0][0];
+    expect(query.$and).toEqual(expect.arrayContaining([{ listingType: { $in: ['attraction'] } }]));
+  });
+
+  it('does not narrow the catalogue for a super admin', async () => {
+    installFindChain([]);
+    const req = listRequest({
+      query: { scope: 'admin' },
+      user: { role: 'super-admin', assignedTenants: [], sectionAccess: ['tours'] },
+    });
+
+    await getAttractions(req, response(), jest.fn());
+
+    const query = (Attraction.find as jest.Mock).mock.calls[0][0];
+    expect(query.$and).toBeUndefined();
+    expect(Tenant.find).not.toHaveBeenCalled();
   });
 });

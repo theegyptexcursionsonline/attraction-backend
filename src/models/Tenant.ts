@@ -1,4 +1,5 @@
 import { pageSeoSchema } from '../utils/pageSeo';
+import { ADMIN_SECTIONS } from '../utils/sectionAccess';
 import { SEARCH_VISIBILITY, dropUnrevisionedSeoWrites } from '../utils/seoSettings';
 import { externalRatingsSchema } from '../utils/externalRatings';
 import { pagePresentationSchema } from '../utils/siteContent';
@@ -32,6 +33,12 @@ const trackingSchema = new Schema<TrackingSettings>({
 
 const tenantSchema = new Schema<ITenant>(
   {
+    // Admin sections this brand may use (tours, attractions, packages, bundles). Unset means
+    // every section, which is how brands created before section access behave.
+    enabledSections: {
+      type: [{ type: String, enum: ADMIN_SECTIONS }],
+      default: undefined,
+    },
     slug: {
       type: String,
       required: true,
