@@ -16,6 +16,8 @@ jest.mock('../models/User', () => ({
 jest.mock('../models/Tenant', () => ({ Tenant: { find: jest.fn() } }));
 jest.mock('../models/Booking', () => ({ Booking: { collection: { name: 'bookings' }, aggregate: jest.fn() } }));
 jest.mock('../models/Attraction', () => ({ Attraction: {} }));
+jest.mock('../models/BundleOrder', () => ({ BundleOrder: { collection: { name: 'bundleorders' } } }));
+jest.mock('../models/BundleDefinition', () => ({ BundleDefinition: {} }));
 jest.mock('../services/email.service', () => ({ sendUserInvitation: jest.fn() }));
 
 const response = () => {
@@ -124,8 +126,12 @@ describe('traveler directory', () => {
       bundleOrderId: { $exists: false },
       tenantId: { $in: [tenantId] },
     }) });
-    // Account holders without a booking on the brand are a super admin view only.
-    expect(JSON.stringify(pipeline)).not.toContain('$unionWith');
+    // Bundle orders count only when sold on the caller's brand; account holders without a booking
+    // on the brand are a super admin view only.
+    const unions = pipeline.filter((stage: Record<string, unknown>) => '$unionWith' in stage);
+    expect(unions).toHaveLength(1);
+    expect(unions[0].$unionWith.coll).toBe('bundleorders');
+    expect(unions[0].$unionWith.pipeline[0].$match).toMatchObject({ checkoutMode: { $ne: 'test' }, storefrontTenantId: { $in: [tenantId] } });
   });
 
   it('lists guest-checkout travellers and accounts without bookings for a super admin', async () => {
@@ -134,7 +140,8 @@ describe('traveler directory', () => {
 
     const pipeline = (Booking.aggregate as jest.Mock).mock.calls[0][0];
     expect(pipeline[0].$match).not.toHaveProperty('tenantId');
-    expect(JSON.stringify(pipeline)).toContain('$unionWith');
+    const unions = pipeline.filter((stage: Record<string, unknown>) => '$unionWith' in stage).map((stage: { $unionWith: { coll: string } }) => stage.$unionWith.coll);
+    expect(unions).toEqual(['bundleorders', 'users']);
   });
 
   it('refuses a brand filter outside the caller brands', async () => {
