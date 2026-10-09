@@ -2,13 +2,14 @@ import { Types } from 'mongoose';
 import { authenticate, optionalAuth } from '../middleware/auth.middleware';
 import { login, logout, refreshToken as refreshSession } from '../controllers/auth.controller';
 import { User } from '../models/User';
-import { generateAccessToken, generateRefreshToken, verifyToken } from '../utils/jwt';
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken, verifyToken } from '../utils/jwt';
 import { hashToken } from '../utils/hash';
 import { revokeUserSessions } from '../utils/session';
 import { AuthRequest, IUser } from '../types';
 
 jest.mock('../utils/jwt', () => ({
   verifyToken: jest.fn(),
+  verifyRefreshToken: jest.fn(),
   generateAccessToken: jest.fn(),
   generateRefreshToken: jest.fn(),
   generateTwoFactorChallenge: jest.fn(),
@@ -174,7 +175,7 @@ describe('session revocation', () => {
       refreshToken: hashToken('current-refresh'),
       save: jest.fn().mockResolvedValue(undefined),
     };
-    (verifyToken as jest.Mock).mockReturnValue({ userId: 'user-id', sessionVersion: 2 });
+    (verifyRefreshToken as jest.Mock).mockReturnValue({ userId: 'user-id', sessionVersion: 2 });
     (User.findById as jest.Mock).mockReturnValue({
       select: jest.fn().mockResolvedValue(user),
     });

@@ -9,7 +9,7 @@ import {
   generateAccessToken,
   generateRefreshToken,
   generateTwoFactorChallenge,
-  verifyToken,
+  verifyRefreshToken,
   verifyTwoFactorChallenge,
 } from '../utils/jwt';
 import { generateRandomToken, hashToken } from '../utils/hash';
@@ -420,6 +420,14 @@ export const passportLogin = async (
 
     if (user && user.status !== 'active') return fail('account_inactive');
 
+    // The assertion proves an email at the portal, not this platform's second factor. A team
+    // account therefore never rides it: every admin role signs in here with its password and
+    // two-factor code, whatever the portal itself verified.
+    if (user && ADMIN_ROLES.has(user.role)) {
+      recordAudit(req, { action: 'auth.login_failed', outcome: 'failure', actor: user, statusCode: 403 });
+      return fail('use_password_sign_in');
+    }
+
     if (!user) {
       // First arrival → provision with an UNUSABLE random password (the pre-save hook
       // hashes it; no password login is possible) and the LOWEST role. We NEVER grant
@@ -507,10 +515,11 @@ export const refreshToken = async (
       return;
     }
 
-    // Verify token
+    // Only a refresh token is exchanged here; an access token or a two-factor challenge is refused
+    // even before the stored-hash comparison below.
     let decoded;
     try {
-      decoded = verifyToken(token);
+      decoded = verifyRefreshToken(token);
     } catch {
       sendError(res, 'Invalid refresh token', 401);
       return;
