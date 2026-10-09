@@ -48,6 +48,12 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # The email mobile-budget suite measures rendered templates in headless Chromium. Install the
+      # build the locked playwright-core expects through its own CLI: `npx playwright` would fetch
+      # the newest unlocked `playwright` package and could install a different Chromium revision.
+      - name: Install Chromium for email measurements
+        run: npm exec --no -- playwright-core install --with-deps --only-shell chromium
+
       - name: Full tests
         run: npm test
 
