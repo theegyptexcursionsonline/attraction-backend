@@ -20,7 +20,9 @@ import { BundleEvent } from '../models/BundleEvent';
 import { BundleOutboxEvent } from '../models/BundleOutboxEvent';
 import { BundleLedgerEntry } from '../models/BundleLedgerEntry';
 import { createBundleQuote, createBundleOrder, customerBundleQuoteDto, customerBundleOrderDto } from '../services/bundleOrder.service';
-import { finalizeBundlePayment } from '../services/bundlePayment.service';
+import { finalizeBundlePayment, refundBundleOrder } from '../services/bundlePayment.service';
+import * as stripeService from '../services/stripe.service';
+import * as tenantPaymentService from '../services/tenantPayment.service';
 import { initialFinanceFees } from '../utils/financeSettings';
 import { hashToken } from '../utils/hash';
 
@@ -47,6 +49,7 @@ beforeAll(async () => {
  await mongoose.connect(mongo.getUri('channel_finance')); await Promise.all(models.map(model => model.init()));
 });
 afterAll(async () => { await mongoose.disconnect(); await mongo?.stop(); });
+afterEach(() => jest.restoreAllMocks());
 beforeEach(async () => {
  await Promise.all(models.map(model => model.collection.deleteMany({})));
  await Tenant.collection.insertMany([{ _id: site, slug: 'finance-channel', domain: 'finance-channel.invalid', status: 'active', defaultCurrency: 'EUR' }, { _id: supplier, slug: 'finance-supplier', domain: 'finance-supplier.invalid', status: 'active' }]);
@@ -99,4 +102,31 @@ it('balances captured bundle ledger using its original configured fee reserve', 
  expect(entries.find(entry => entry.account === 'configured_fee_reserve')).toMatchObject({ direction: 'credit', amountMinor: 1800 });
  expect(entries.filter(entry => entry.direction === 'debit').reduce((sum, entry) => sum + entry.amountMinor, 0)).toBe(entries.filter(entry => entry.direction === 'credit').reduce((sum, entry) => sum + entry.amountMinor, 0));
  expect(entries.filter(entry => entry.account === 'configured_fee_reserve')).toHaveLength(1);
+});
+
+it('reverses the accepted configured fee reserve exactly once on full refund after a policy edit', async () => {
+ await activate(); const quoted = await bundleQuote();
+ const { order } = await createBundleOrder({ quoteId: String(quoted._id), guestDetails, idempotencyKey: 'finance-bundle-refund-key', checkoutMode: 'test' });
+ await BundleOrder.updateOne({ _id: order._id }, { $set: { status: 'payment_pending', paymentStatus: 'intent_created', stripePaymentIntentId: 'pi_local_refund_bound' } });
+ await finalizeBundlePayment(String(order._id), { id: 'pi_local_refund_bound', clientSecret: '', amount: order.totalMinor, amountReceived: order.totalMinor,
+  currency: 'eur', status: 'succeeded', livemode: false, metadata: { paymentKind: 'bundle', bundleOrderId: String(order._id), storefrontTenantId: String(site), checkoutMode: 'test' } }, 'stripe');
+ await activate(2, 10);
+ jest.spyOn(tenantPaymentService, 'getTenantStripeConfig').mockResolvedValue({ enabled: true, publishableKey: 'pk_test_local', secretKey: 'sk_test_local', webhookSecret: '' });
+ const provider = jest.spyOn(stripeService, 'createRefund').mockResolvedValue({ id: 're_local_finance', amount: 21200, paymentIntentId: 'pi_local_refund_bound', status: 'succeeded' });
+ const request = { orderId: String(order._id), operationId: 'finance-full-refund', amountMinor: 21200, reason: 'Full cancellation', actorId: new Types.ObjectId() };
+ const refunded = await refundBundleOrder(request);
+ expect(refunded.duplicate).toBe(false);
+ expect(refunded.order).toMatchObject({ status: 'refunded', totalMinor: 21200, refundedMinor: 21200,
+  financeSnapshot: { policyRevision: 1, customerFeesMinor: 1200, businessFeesMinor: 600 } });
+ expect((await refundBundleOrder(request)).duplicate).toBe(true);
+ expect(provider).toHaveBeenCalledTimes(1);
+ expect(provider).toHaveBeenCalledWith('sk_test_local', 'pi_local_refund_bound', 21200, expect.objectContaining({ idempotencyKey: `bundle-refund:${order._id}:finance-full-refund` }));
+ const entries = await BundleLedgerEntry.find({ orderId: order._id }).lean();
+ const reversals = entries.filter(entry => entry.operationId === 'refund:finance-full-refund');
+ expect(reversals.find(entry => entry.account === 'configured_fee_reserve')).toMatchObject({ direction: 'debit', amountMinor: 1800 });
+ expect(entries.filter(entry => entry.account === 'configured_fee_reserve')).toHaveLength(2);
+ for (const lines of [entries, reversals]) expect(lines.filter(entry => entry.direction === 'debit').reduce((sum, entry) => sum + entry.amountMinor, 0))
+  .toBe(lines.filter(entry => entry.direction === 'credit').reduce((sum, entry) => sum + entry.amountMinor, 0));
+ expect((await Availability.findOne().lean())?.allDayBooked).toBe(0);
+ expect((await Booking.find({ bundleOrderId: order._id }).lean())[0]).toMatchObject({ status: 'cancelled', paymentStatus: 'refunded' });
 });
