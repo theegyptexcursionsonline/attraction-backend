@@ -162,10 +162,12 @@ export const getTenants = async (
 
     const safeSearch = searchRegexValue(search);
     if (safeSearch) {
+      // The admin shows a site's own domain when it has one, so search it as well.
       query.$or = [
         { name: { $regex: safeSearch, $options: 'i' } },
         { slug: { $regex: safeSearch, $options: 'i' } },
         { domain: { $regex: safeSearch, $options: 'i' } },
+        { customDomain: { $regex: safeSearch, $options: 'i' } },
       ];
     }
 

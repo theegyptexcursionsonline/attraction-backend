@@ -132,9 +132,10 @@ router.get('/admin/marketplace-brands', authenticate, requireRole('super-admin',
  *         name: status
  *         schema:
  *           type: string
- *           enum: [active, inactive, pending, suspended]
+ *           enum: [active, inactive, pending, suspended, coming_soon]
  *       - in: query
  *         name: search
+ *         description: Literal text matched against the name, slug, network address and the site's own domain.
  *         schema:
  *           type: string
  *     responses:
