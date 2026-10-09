@@ -17,11 +17,13 @@ import userRoutes from '../routes/users.routes';
 import auditLogRoutes from '../routes/auditLogs.routes';
 import attractionTranslationRoutes from '../routes/attractionTranslations.routes';
 import specialOfferRoutes from '../routes/specialOffers.routes';
+import tenantRoutes from '../routes/tenants.routes';
 import { AuditLog } from '../models/AuditLog';
 import { Attraction } from '../models/Attraction';
 import { Booking } from '../models/Booking';
 import { PromoCode } from '../models/PromoCode';
 import { SpecialOffer } from '../models/SpecialOffer';
+import { TenantFinanceRevision } from '../models/TenantFinanceRevision';
 import { Tenant } from '../models/Tenant';
 import { User } from '../models/User';
 import { takeSnapshot } from '../services/auditSubjects';
@@ -40,6 +42,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/audit-logs', auditLogRoutes);
 app.use('/api/admin/attraction-translations', attractionTranslationRoutes);
 app.use('/api/special-offers', specialOfferRoutes);
+app.use('/api/tenants', tenantRoutes);
 app.use((error: Error & { statusCode?: number }, _req: Request, res: Response, _next: NextFunction) => {
   res.status(error.statusCode || 500).json({ success: false, error: error.message });
 });
@@ -50,6 +53,7 @@ const nile = new Types.ObjectId();
 const giftun = new Types.ObjectId();
 const felucca = new Types.ObjectId();
 const booking = new Types.ObjectId();
+const pastBooking = new Types.ObjectId();
 const ids = { super: new Types.ObjectId(), redAdmin: new Types.ObjectId(), ops: new Types.ObjectId(), nileDesk: new Types.ObjectId() };
 const tokens: Record<keyof typeof ids, string> = { super: '', redAdmin: '', ops: '', nileDesk: '' };
 const PASSWORD_HASH = '$2a$12$abcdefghijklmnopqrstuvABCDEFGHIJKLMNOPQRSTUVWXYZ012345';
@@ -99,7 +103,7 @@ beforeAll(async () => {
   const version = systemBinary ? spawnSync(systemBinary, ['--version'], { encoding: 'utf8' }).stdout.match(/db version v([\d.]+)/)?.[1] : undefined;
   mongo = await MongoMemoryReplSet.create({ replSet: { count: 1 }, binary: { version: version || '7.0.14', ...(systemBinary ? { systemBinary } : {}) } });
   await mongoose.connect(mongo.getUri('audit_log_detail'));
-  await Promise.all([Tenant.init(), User.init(), Attraction.init(), Booking.init(), PromoCode.init(), SpecialOffer.init(), AuditLog.init()]);
+  await Promise.all([Tenant.init(), User.init(), Attraction.init(), Booking.init(), PromoCode.init(), SpecialOffer.init(), AuditLog.init(), TenantFinanceRevision.init()]);
   await Tenant.collection.insertMany([
     { _id: red, slug: 'red-sea-qa', name: 'Red Sea QA Trips', domain: 'red-sea-qa.invalid', status: 'active', defaultCurrency: 'USD', customPages: [] },
     { _id: nile, slug: 'nile-qa', name: 'Nile QA Trips', domain: 'nile-qa.invalid', status: 'active', defaultCurrency: 'USD', customPages: [] },
@@ -223,6 +227,46 @@ describe('user log detail', () => {
     for (const value of [GUEST.email, GUEST.phone, GUEST.firstName, GUEST.lastName, 'Window seat']) expect(stored).not.toContain(value);
     const snapshot = await takeSnapshot('booking', String(booking));
     expect(JSON.stringify(snapshot)).not.toContain(GUEST.email);
+  });
+
+  it('names a fee change on the Finance tab, with before → after for the fee and its lock', async () => {
+    const fee = (enabled: boolean, payer: 'customer' | 'business', percentage: number) => ({ enabled, type: 'percentage', payer, percentage });
+    const fees = (booking: number) => ({ transaction: fee(false, 'business', 0), tax: fee(false, 'customer', 0), booking: fee(true, 'customer', booking), payout: fee(false, 'business', 0) });
+    await request(app).put(`/api/tenants/${red}/finance`).set(as('super', red)).send({ expectedRevision: 0, fees: fees(5) }).expect(200);
+    await request(app).put(`/api/tenants/${red}/finance`).set(as('super', red))
+      .send({ expectedRevision: 1, fees: fees(7), locks: { transaction: false, booking: true, payout: false } }).expect(200);
+    const [latest, first] = await entries({ resourceId: String(red), verb: 'finance' }, 2);
+    expect(latest).toMatchObject({
+      action: 'record.update', outcome: 'success', subject: 'site', verb: 'finance', resourceLabel: 'Red Sea QA Trips',
+      summary: 'Changed the fees of site: Red Sea QA Trips',
+    });
+    expect(String(latest.tenantId)).toBe(String(red));
+    expect(latest.changes).toEqual([
+      { field: 'financeSettings.fees.booking.percentage', before: 5, after: 7 },
+      { field: 'financeSettings.locks.booking', before: false, after: true },
+    ]);
+    // The first save turned the fees on: every value is named, from "not set".
+    expect(first.changes).toEqual(expect.arrayContaining([
+      { field: 'financeSettings.fees.booking.enabled', before: null, after: true },
+      { field: 'financeSettings.fees.booking.payer', before: null, after: 'customer' },
+    ]));
+  });
+
+  it('names a no-show on a booking by its reference only', async () => {
+    await Booking.collection.insertOne({
+      _id: pastBooking, reference: 'QA-UL-0002', tenantId: red, attractionId: giftun, status: 'confirmed', paymentStatus: 'paid', paymentMethod: 'cash',
+      total: 90, subtotal: 90, currency: 'USD', guestDetails: { ...GUEST },
+      items: [{ attractionId: giftun, optionName: 'Shared boat', date: '2026-10-01', time: '09:00', guests: 2, quantities: { adults: 2, children: 0, infants: 0 }, price: 90 }],
+      createdAt: new Date(), updatedAt: new Date(),
+    });
+    await request(app).patch(`/api/bookings/admin/${pastBooking}/attendance`).set(as('redAdmin', red))
+      .send({ attendanceStatus: 'no-show', expectedRevision: 0 }).expect(200);
+    const [entry] = await entries({ resourceId: String(pastBooking) });
+    expect(entry).toMatchObject({
+      subject: 'booking', verb: 'attendance', resourceLabel: 'QA-UL-0002', summary: 'Changed attendance on booking: QA-UL-0002',
+      changes: [{ field: 'attendanceStatus', before: null, after: 'no-show' }],
+    });
+    for (const value of [GUEST.email, GUEST.phone, GUEST.firstName, GUEST.lastName]) expect(JSON.stringify(entry)).not.toContain(value);
   });
 
   it('names a new record from the database and lists what it was set to', async () => {

@@ -212,6 +212,8 @@ describe('which record a request concerns', () => {
     ['PATCH', `/api/bookings/admin/${id}`, 'booking', 'update'],
     ['POST', `/api/payments/${id}/refund`, 'booking', 'refund'],
     ['PUT', `/api/payments/gateway/${id}`, 'site', 'payment-settings'],
+    ['PUT', `/api/tenants/${id}/finance`, 'siteFinance', 'finance'],
+    ['PATCH', `/api/bookings/admin/${id}/attendance`, 'booking', 'attendance'],
     ['POST', '/api/users/invite', 'user', 'invite'],
     ['POST', `/api/users/${id}/revoke-sessions`, 'user', 'revoke-sessions'],
     ['PUT', `/api/tenants/${id}/sections`, 'site', 'sections'],

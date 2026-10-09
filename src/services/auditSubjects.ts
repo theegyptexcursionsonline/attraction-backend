@@ -27,6 +27,7 @@ export const AUDIT_VERBS = [
   'domain-add', 'domain-check', 'domain-remove', 'tracking', 'ai-products', 'seo', 'payment-settings',
   'preview-code', 'menu', 'reply', 'upload', 'generate', 'fulfil', 'release-settlement', 'mark-settled',
   'resolve-dispute', 'recover', 'retry', 'readiness', 'resolve-notification', 'revoke', 'test', 'export',
+  'finance', 'attendance',
 ] as const;
 export type AuditVerb = (typeof AUDIT_VERBS)[number];
 
@@ -132,6 +133,23 @@ const SITE_FIELDS: Record<string, FieldMode> = {
   externalRatings: 'name', bundleSettings: 'name', pickupDestinationSlugs: 'name',
 };
 
+/**
+ * A site's fees (Finance tab): whether each fee is on, how it is charged, who pays it, the
+ * percentage and whether the platform locked it. Fixed amounts are a per-currency table, so only
+ * their name is kept.
+ */
+const SITE_FINANCE_FIELDS: Record<string, FieldMode> = Object.fromEntries([
+  ...(['transaction', 'tax', 'booking', 'payout'] as const).flatMap((kind) => [
+    [`financeSettings.fees.${kind}.enabled`, 'value'],
+    [`financeSettings.fees.${kind}.type`, 'value'],
+    [`financeSettings.fees.${kind}.payer`, 'value'],
+    [`financeSettings.fees.${kind}.percentage`, 'value'],
+    [`financeSettings.fees.${kind}.fixedAmounts`, 'name'],
+  ]),
+  // Tax is the site's own and is never locked.
+  ...(['transaction', 'booking', 'payout'] as const).map((kind) => [`financeSettings.locks.${kind}`, 'value']),
+]) as Record<string, FieldMode>;
+
 const PAGE_FIELDS: Record<string, FieldMode> = {
   title: 'value', slug: 'value', isPublished: 'value', status: 'value', pageType: 'value',
   layoutMode: 'value', parentPath: 'value', sortOrder: 'value', metaTitle: 'value', trashedAt: 'value',
@@ -152,7 +170,7 @@ const SPECS = {
     model: 'Booking',
     subject: 'booking',
     // Booked items carry the guest's pickup hotel and room, so they are not on the list.
-    fields: { status: 'value', settlementStatus: 'name', settledAt: 'name' },
+    fields: { status: 'value', attendanceStatus: 'value', settlementStatus: 'name', settledAt: 'name' },
     identity: ['reference', 'tenantId', 'sellerTenantId', 'supplierTenantId'],
     label: (doc: Doc) => text(doc.reference),
     brands: (doc: Doc) => [doc.tenantId, doc.sellerTenantId, doc.supplierTenantId],
@@ -173,6 +191,14 @@ const SPECS = {
     model: 'Tenant',
     subject: 'site',
     fields: SITE_FIELDS,
+    identity: ['name'],
+    label: (doc: Doc) => text(doc.name),
+    brands: (doc: Doc) => [doc._id],
+  },
+  siteFinance: {
+    model: 'Tenant',
+    subject: 'site',
+    fields: SITE_FINANCE_FIELDS,
     identity: ['name'],
     label: (doc: Doc) => text(doc.name),
     brands: (doc: Doc) => [doc._id],
@@ -420,6 +446,7 @@ const ROUTES: RouteRule[] = [
   // Bookings and payments.
   rule('POST', /^\/(?:admin\/)?bookings\/admin\/settlement\/settle$/, undefined, 'settle', { subject: 'booking' }),
   rule('PATCH', new RegExp(`^/(?:admin/)?bookings/admin/${ID}/settlement$`), 'booking', 'settlement'),
+  rule('PATCH', new RegExp(`^/(?:admin/)?bookings/admin/${ID}/attendance$`), 'booking', 'attendance'),
   rule('POST', new RegExp(`^/(?:admin/)?bookings/admin/${ID}/payment-link$`), 'booking', 'payment-link'),
   rule('PATCH', new RegExp(`^/(?:admin/)?bookings/admin/${ID}$`), 'booking', 'update'),
   rule('DELETE', new RegExp(`^/(?:admin/)?bookings/admin/${ID}$`), 'booking', 'delete'),
@@ -442,6 +469,7 @@ const ROUTES: RouteRule[] = [
   rule('POST', new RegExp(`^/(?:admin/)?tenants/${ID}/custom-domain/verify$`), 'site', 'domain-check'),
   rule('POST', new RegExp(`^/(?:admin/)?tenants/${ID}/custom-domain$`), 'site', 'domain-add'),
   rule('DELETE', new RegExp(`^/(?:admin/)?tenants/${ID}/custom-domain$`), 'site', 'domain-remove'),
+  rule('PUT', new RegExp(`^/(?:admin/)?tenants/${ID}/finance$`), 'siteFinance', 'finance'),
   rule('PATCH', new RegExp(`^/(?:admin/)?tenants/${ID}/settings$`), 'site', 'settings'),
   rule('PUT', new RegExp(`^/(?:admin/)?tenants/${ID}/sections$`), 'site', 'sections'),
   rule('PATCH', new RegExp(`^/(?:admin/)?tenants/${ID}/tracking-settings$`), 'site', 'tracking'),
@@ -756,6 +784,8 @@ const VERB_TEXT: Record<AuditVerb, [string, string]> = {
   revoke: ['Revoked {subject}', 'revoke {subject}'],
   test: ['Tested {subject}', 'test {subject}'],
   export: ['Exported {subject}', 'export {subject}'],
+  finance: ['Changed the fees of {subject}', 'change the fees of {subject}'],
+  attendance: ['Changed attendance on {subject}', 'change attendance on {subject}'],
 };
 
 export const SUBJECT_TEXT: Record<AuditSubject, string> = {
