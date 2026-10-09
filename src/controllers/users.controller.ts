@@ -182,6 +182,21 @@ export const removeWishlistPage = async (req: AuthRequest,res:Response,next:Next
 };
 
 /**
+ * A team member's brands as the caller may see them: a non-super admin sees only the brands they
+ * work for themselves. A member shared with another brand would otherwise name that brand to
+ * every brand they work for. Saving the member keeps the brands left out here (see updateUser).
+ */
+const withCallerBrandsOnly = <T extends object>(req: AuthRequest, user: T): T => {
+  const tenants = (user as { assignedTenants?: unknown }).assignedTenants;
+  if (isSuperAdmin(req.user) || !Array.isArray(tenants)) return user;
+  const mine = new Set(callerTenantIds(req.user));
+  return {
+    ...user,
+    assignedTenants: tenants.filter((tenant) => mine.has(String((tenant as { _id?: unknown })?._id ?? tenant))),
+  };
+};
+
+/**
  * Why the caller may not give these sections, or null. Super admins may give any section; anyone
  * else only sections they can use themselves, so a brand admin cannot hand out a section their
  * own brand has switched off.
@@ -286,7 +301,7 @@ export const getUsers = async (
     ]);
 
     const safeUsers = users.map((user) =>
-      redactUserSecrets(user as unknown as Record<string, unknown>)
+      redactUserSecrets(withCallerBrandsOnly(req, user) as unknown as Record<string, unknown>)
     );
     sendPaginated(res, safeUsers, pageNum, limitNum, total);
   } catch (error) {
@@ -758,7 +773,7 @@ export const getUserById = async (
       }
     }
 
-    sendSuccess(res, redactUserSecrets(user as unknown as Record<string, unknown>));
+    sendSuccess(res, redactUserSecrets(withCallerBrandsOnly(req, user) as unknown as Record<string, unknown>));
   } catch (error) {
     next(error);
   }
@@ -1032,6 +1047,11 @@ export const updateUser = async (
       return;
     }
 
+    // The member's brands after this save; undefined when the request does not change them.
+    let tenantsAfter: string[] | undefined = assignedTenants === undefined
+      ? undefined
+      : (Array.isArray(assignedTenants) ? assignedTenants : []).map(String);
+
     if (!isSuperAdmin(req.user)) {
       const mine = callerTenantIds(req.user);
       const theirs = (target.assignedTenants || []).map((t) => String(t));
@@ -1060,13 +1080,20 @@ export const updateUser = async (
         sendError(res, 'You cannot change your own role', 403);
         return;
       }
-      // May only (re)assign tenants the caller manages.
-      if (assignedTenants !== undefined) {
-        const requested = (Array.isArray(assignedTenants) ? assignedTenants : []).map(String);
-        if (!requested.every((t) => mine.includes(t))) {
+      // May only add tenants the caller manages, and changes only those memberships: the member's
+      // other brands are kept as they are. The admin screen shows (and sends back) only the
+      // caller's brands, so a save must never drop the rest — nor refuse them when an older
+      // screen sends them back unchanged.
+      if (tenantsAfter !== undefined) {
+        const requested = tenantsAfter;
+        if (!requested.every((t) => mine.includes(t) || theirs.includes(t))) {
           sendError(res, 'You can only assign your own tenants', 403);
           return;
         }
+        tenantsAfter = [...new Set([
+          ...theirs.filter((t) => !mine.includes(t)),
+          ...requested.filter((t) => mine.includes(t)),
+        ])];
       }
     }
 
@@ -1084,15 +1111,16 @@ export const updateUser = async (
     const securityContextChanged =
       (role !== undefined && role !== target.role) ||
       (status !== undefined && status !== target.status) ||
-      (assignedTenants !== undefined &&
+      (tenantsAfter !== undefined &&
         JSON.stringify((target.assignedTenants || []).map(String).sort()) !==
-          JSON.stringify((assignedTenants || []).map(String).sort()));
+          JSON.stringify([...tenantsAfter].sort()));
 
     if (firstName !== undefined) target.firstName = firstName;
     if (lastName !== undefined) target.lastName = lastName;
     if (role !== undefined) target.role = role;
     if (status !== undefined) target.status = status;
-    if (assignedTenants !== undefined) target.assignedTenants = assignedTenants;
+    // Mongoose casts the ids (and rejects a malformed one) exactly as it did for the raw body.
+    if (tenantsAfter !== undefined) target.assignedTenants = tenantsAfter as unknown as Types.ObjectId[];
     if (sectionsChanged) target.sectionAccess = requestedSections ?? undefined;
     if (securityContextChanged) revokeUserSessions(target);
     await target.save();
@@ -1122,7 +1150,7 @@ export const updateUser = async (
         .catch((error) => console.error('[email] access-changed notice failed', { error: error?.message }));
     }
 
-    sendSuccess(res, target, 'User updated successfully');
+    sendSuccess(res, withCallerBrandsOnly(req, target.toJSON()), 'User updated successfully');
   } catch (error) {
     next(error);
   }
