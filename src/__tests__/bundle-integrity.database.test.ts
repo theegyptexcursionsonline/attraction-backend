@@ -1,10 +1,7 @@
 import express from 'express';
-import fs from 'fs';
-import net from 'net';
-import os from 'os';
-import path from 'path';
-import { ChildProcess, spawn, spawnSync } from 'child_process';
+import { spawnSync } from 'child_process';
 import mongoose, { Types } from 'mongoose';
+import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import request from 'supertest';
 import { Attraction } from '../models/Attraction';
 import { Availability } from '../models/Availability';
@@ -29,96 +26,31 @@ import {
 
 jest.setTimeout(60_000);
 
-const systemMongod = (() => {
-  const homebrew = '/opt/homebrew/bin/mongod';
-  if (fs.existsSync(homebrew)) return homebrew;
-  const located = spawnSync('which', ['mongod'], { encoding: 'utf8' });
-  return located.status === 0 ? located.stdout.trim() : '';
-})();
-
-const describeWithMongo = systemMongod ? describe : describe.skip;
-
-const reservePort = async (): Promise<number> => new Promise((resolve, reject) => {
-  const server = net.createServer();
-  server.once('error', reject);
-  server.listen(0, '127.0.0.1', () => {
-    const address = server.address();
-    if (!address || typeof address === 'string') {
-      server.close();
-      reject(new Error('Could not reserve a MongoDB test port'));
-      return;
-    }
-    const port = address.port;
-    server.close((error) => error ? reject(error) : resolve(port));
-  });
-});
-
-const waitForPort = async (port: number): Promise<void> => {
-  for (let attempt = 0; attempt < 100; attempt += 1) {
-    const ready = await new Promise<boolean>((resolve) => {
-      const socket = net.createConnection({ host: '127.0.0.1', port });
-      socket.once('connect', () => {
-        socket.destroy();
-        resolve(true);
-      });
-      socket.once('error', () => resolve(false));
-    });
-    if (ready) return;
-    await new Promise((resolve) => setTimeout(resolve, 50));
-  }
-  throw new Error('Temporary MongoDB did not start');
-};
-
-const waitForPrimary = async (uri: string): Promise<void> => {
-  for (let attempt = 0; attempt < 100; attempt += 1) {
-    const connection = mongoose.createConnection(uri, { serverSelectionTimeoutMS: 500 });
-    try {
-      await connection.asPromise();
-      const hello = await connection.db!.admin().command({ hello: 1 });
-      await connection.close();
-      if (hello.isWritablePrimary) return;
-    } catch {
-      await connection.close().catch(() => undefined);
-    }
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-  throw new Error('Temporary MongoDB replica set did not elect a primary');
-};
-
-describeWithMongo('Bundle integrity database integration', () => {
-  let mongoProcess: ChildProcess | undefined;
-  let dbPath = '';
-  let mongoUri = '';
+// These are money-path proofs, so there is deliberately no skip path: a machine
+// that cannot start a replica set fails the suite instead of reporting it skipped.
+describe('Bundle integrity database integration', () => {
+  let mongo: MongoMemoryReplSet | undefined;
 
   beforeAll(async () => {
-    const port = await reservePort();
-    dbPath = fs.mkdtempSync(path.join(os.tmpdir(), 'bundle-integrity-mongo-'));
-    mongoProcess = spawn(systemMongod, [
-      '--dbpath', dbPath,
-      '--bind_ip', '127.0.0.1',
-      '--port', String(port),
-      '--replSet', 'bundleIntegrityRs',
-      // Homebrew MongoDB 8.2 can briefly hold the collection lock while its
-      // first model indexes settle. The production invariant under test is the
-      // transaction/CAS result, not whether that local lock clears within the
-      // server's 5 ms default transaction wait.
-      '--setParameter', 'maxTransactionLockRequestTimeoutMillis=1000',
-      '--quiet',
-    ], { stdio: 'ignore' });
-    await waitForPort(port);
-
-    const directUri = `mongodb://127.0.0.1:${port}/admin?directConnection=true`;
-    const bootstrap = await mongoose.createConnection(directUri).asPromise();
-    await bootstrap.db!.admin().command({
-      replSetInitiate: {
-        _id: 'bundleIntegrityRs',
-        members: [{ _id: 0, host: `127.0.0.1:${port}` }],
+    // Use the machine's mongod only when `which` finds one; otherwise
+    // mongodb-memory-server supplies its own 7.0.14 (the CI runner has none).
+    const located = spawnSync('which', ['mongod'], { encoding: 'utf8' });
+    const systemBinary = located.status === 0 ? located.stdout.trim() : undefined;
+    const version = systemBinary
+      ? spawnSync(systemBinary, ['--version'], { encoding: 'utf8' }).stdout.match(/db version v([\d.]+)/)?.[1]
+      : undefined;
+    mongo = await MongoMemoryReplSet.create({
+      replSet: {
+        count: 1,
+        // Homebrew MongoDB 8.2 can briefly hold the collection lock while its
+        // first model indexes settle. The production invariant under test is the
+        // transaction/CAS result, not whether that local lock clears within the
+        // server's 5 ms default transaction wait.
+        args: ['--setParameter', 'maxTransactionLockRequestTimeoutMillis=1000'],
       },
+      binary: { version: version || '7.0.14', ...(systemBinary ? { systemBinary } : {}) },
     });
-    await bootstrap.close();
-    mongoUri = `mongodb://127.0.0.1:${port}/bundle_integrity?replicaSet=bundleIntegrityRs`;
-    await waitForPrimary(mongoUri);
-    await mongoose.connect(mongoUri);
+    await mongoose.connect(mongo.getUri('bundle_integrity'));
 
     await BundleOutboxRecovery.collection.createIndex(
       { outboxEventId: 1, operationId: 1 },
@@ -136,17 +68,7 @@ describeWithMongo('Bundle integrity database integration', () => {
 
   afterAll(async () => {
     await mongoose.disconnect();
-    if (mongoProcess && mongoProcess.exitCode === null) {
-      mongoProcess.kill('SIGTERM');
-      await new Promise<void>((resolve) => {
-        const timeout = setTimeout(resolve, 3_000);
-        mongoProcess!.once('exit', () => {
-          clearTimeout(timeout);
-          resolve();
-        });
-      });
-    }
-    if (dbPath) fs.rmSync(dbPath, { recursive: true, force: true });
+    await mongo?.stop();
   });
 
   beforeEach(async () => {
