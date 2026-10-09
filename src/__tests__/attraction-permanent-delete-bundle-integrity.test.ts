@@ -1,5 +1,5 @@
 import express from 'express';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import { Types } from 'mongoose';
 import { Booking } from '../models/Booking';
 import { BundleOrder } from '../models/BundleOrder';

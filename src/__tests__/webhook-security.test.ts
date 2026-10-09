@@ -1,5 +1,5 @@
 import express from 'express';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import { Types } from 'mongoose';
 import { isPublicIp, validateWebhookDestination } from '../utils/webhookDestination';
 import { runDeliveryWithRetry, sendWebhookRequest } from '../services/webhook.service';

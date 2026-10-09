@@ -1,5 +1,5 @@
 import express from 'express';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import router from '../routes';
 
 const KEYS = ['RAILWAY_GIT_COMMIT_SHA', 'RAILWAY_DEPLOYMENT_ID'] as const;

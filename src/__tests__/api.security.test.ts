@@ -4,7 +4,7 @@ jest.mock('../services/bookingOperatorNotification.service', () => ({
   ensureBookingOperatorNotificationIndexes: jest.fn().mockResolvedValue(undefined),
   processBookingOperatorNotifications: jest.fn().mockResolvedValue({ sent: 0 }),
 }));
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import { Types } from 'mongoose';
 import app from '../app';
 import { Attraction } from '../models/Attraction';

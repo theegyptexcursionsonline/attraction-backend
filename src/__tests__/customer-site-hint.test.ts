@@ -1,5 +1,5 @@
 import express from 'express';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import { validateCustomerSiteHint } from '../utils/customerLists';
 
 describe.each(['simple','extended'] as const)('customer site hints with %s query parser', parser => {

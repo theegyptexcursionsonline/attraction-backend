@@ -1,6 +1,6 @@
 import { spawnSync } from 'child_process';
 import express from 'express';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import mongoose, { Types } from 'mongoose';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import { BundleOrder } from '../models/BundleOrder';

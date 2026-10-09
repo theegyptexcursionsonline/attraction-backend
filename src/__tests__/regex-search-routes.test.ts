@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from 'express';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import { MAX_REGEX_SEARCH_LENGTH } from '../utils/helpers';
 
 function controllerMockFactory() {

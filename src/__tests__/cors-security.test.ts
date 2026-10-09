@@ -1,5 +1,5 @@
 import { corsOptions } from '../config/cors';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import app from '../app';
 
 const evaluateOrigin = (origin: string): Promise<{ allowed: boolean; error?: Error }> =>

@@ -1,5 +1,5 @@
 import express from 'express';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import { Types } from 'mongoose';
 import { setUserPassword } from '../controllers/users.controller';
 import { User } from '../models/User';

@@ -3,7 +3,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import multer from 'multer';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import { Readable } from 'stream';
 import { uploadMultipleImages, uploadSingleImage } from '../controllers/upload.controller';
 import { runUpload } from '../routes/upload.routes';

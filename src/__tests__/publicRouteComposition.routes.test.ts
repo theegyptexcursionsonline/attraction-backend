@@ -1,5 +1,5 @@
 import express from 'express';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import { Types } from 'mongoose';
 import { Tenant } from '../models/Tenant';
 import { composePublicRoute } from '../services/publicRouteComposition.service';

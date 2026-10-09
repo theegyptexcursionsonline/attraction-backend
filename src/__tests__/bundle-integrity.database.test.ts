@@ -2,7 +2,7 @@ import express from 'express';
 import { spawnSync } from 'child_process';
 import mongoose, { Types } from 'mongoose';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import { Attraction } from '../models/Attraction';
 import { Availability } from '../models/Availability';
 import { Booking } from '../models/Booking';
