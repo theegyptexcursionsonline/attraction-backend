@@ -604,7 +604,7 @@ const requiredGroupFrom = (details: PackageDetails, cell: PackageRate, adults: n
     const extras = requiredExtrasMinimum(details, adults, rooms, basisPoints, departureDate, today);
     if (extras !== null) best = Math.min(best, costs[rooms][adults] + extras);
   }
-  return Number.isFinite(best) ? Math.round(best / adults) : null;
+  return Number.isFinite(best) ? best : null;
 };
 
 /** The cheapest per-person price (fee included) on one date for a party size, across hotel levels. */
@@ -615,6 +615,7 @@ export function datePerPersonFrom(
   basisPoints = SERVICE_FEE_BASIS_POINTS,
   today?: string,
   selectedRooms?: PackageSelection['rooms'],
+  priceTotal?: (serviceTotalMinor: number) => number,
 ): { perPerson: number; tierKey: string } | null {
   const season = seasonForDate(details, date);
   const band = bandForParty(details, travellers);
@@ -637,18 +638,21 @@ export function datePerPersonFrom(
       if (amounts.some(amount => amount === null)) continue;
       const extras = requiredExtrasMinimum(details, party.adults, rooms.length, basisPoints, date, today, party.children);
       if (extras === null) continue;
-      const shown = Math.round((amounts.reduce((sum, amount) => sum + amount!.shownCents, 0) + extras) / travellers);
+      const total = amounts.reduce((sum, amount) => sum + amount!.shownCents, 0) + extras;
+      const shown = Math.round((priceTotal ? priceTotal(total) : total) / travellers);
       if (!best || shown < best.cents) best = { cents: shown, tierKey: tier.key };
       continue;
     }
     if (cell && details.optionGroups.some((group) => group.required)) {
-      const shown = requiredGroupFrom(details, cell, travellers, basisPoints, date, today);
+      const total = requiredGroupFrom(details, cell, travellers, basisPoints, date, today);
+      const shown = total === null ? null : Math.round((priceTotal ? priceTotal(total) : total) / travellers);
       if (shown !== null && (!best || shown < best.cents)) best = { cents: shown, tierKey: tier.key };
       continue;
     }
     const unit = cell?.[field];
     if (typeof unit !== 'number' || unit <= 0) continue;
-    const shown = withServiceFeeCents(cents(unit), basisPoints);
+    const total = withServiceFeeCents(cents(unit), basisPoints) * travellers;
+    const shown = Math.round((priceTotal ? priceTotal(total) : total) / travellers);
     if (!best || shown < best.cents) best = { cents: shown, tierKey: tier.key };
   }
   return best ? { perPerson: money(best.cents), tierKey: best.tierKey } : null;
@@ -672,6 +676,7 @@ export function packageFromPrice(
   today: string,
   departureDates: string[] = [],
   basisPoints = SERVICE_FEE_BASIS_POINTS,
+  priceTotal?: (serviceTotalMinor: number) => number,
 ): PackageFromPrice | null {
   const reference = referenceParty(details);
   if (!reference) return null;
@@ -679,7 +684,7 @@ export function packageFromPrice(
   let best: PackageFromPrice | null = null;
   for (const date of candidates) {
     if (packageDateStatus(details, date, today) !== 'open') continue;
-    const price = datePerPersonFrom(details, date, reference.travellers, basisPoints, today);
+    const price = datePerPersonFrom(details, date, reference.travellers, basisPoints, today, undefined, priceTotal);
     if (price && (!best || price.perPerson < best.perPerson)) {
       best = { perPerson: price.perPerson, date, tierKey: price.tierKey, travellers: reference.travellers, basis: reference.rate };
     }
@@ -721,6 +726,7 @@ export function packageCalendar(input: {
   departures: Map<string, PackageDepartureState>;
   feeBasisPoints?: number;
   rooms?: PackageSelection['rooms'];
+  priceTotal?: (serviceTotalMinor: number) => number;
 }): PackageCalendarDay[] {
   const { details } = input;
   return monthDays(input.month).map((date): PackageCalendarDay => {
@@ -732,7 +738,7 @@ export function packageCalendar(input: {
     if (seatsLeft === null) return { date, status: 'closed', reason: 'no-departure' };
     if (seatsLeft === 0) return { date, status: 'sold-out', seatsLeft };
     if (seatsLeft < input.travellers) return { date, status: 'closed', reason: 'not-enough-seats', seatsLeft };
-    const price = datePerPersonFrom(details, date, input.travellers, input.feeBasisPoints, input.today, input.rooms);
+    const price = datePerPersonFrom(details, date, input.travellers, input.feeBasisPoints, input.today, input.rooms, input.priceTotal);
     if (!price) {
       return { date, status: 'closed', reason: bandForParty(details, input.travellers) ? 'no-price' : 'party-size', seatsLeft };
     }

@@ -756,7 +756,8 @@ function withoutAiProductControls(body: Record<string, unknown>): Record<string,
 }
 
 function adminTenantAiView<T extends object>(tenant: T, isSuperAdmin: boolean): T {
-  const view = { ...tenant } as Record<string, unknown>;
+  const view = withoutFinanceFields(tenant);
+  delete view.attendanceBookingFence;
   view.pageSeo = publicPageSeo(view.pageSeo);
   view.pageSeoRevision = trackingRevisionOf(view.pageSeoRevision);
   view.trackingSettings = publicTrackingSettings(view.trackingSettings);
@@ -1134,6 +1135,8 @@ export const getPortfolioStats = async (
       if (assigned.length === 0) {
         sendSuccess(res, {
           totalBookings: 0,
+          currency: null,
+          currencyTotals: [],
           totalRevenue: 0,
           bookedRevenue: 0,
           collectedRevenue: 0,
@@ -1145,9 +1148,10 @@ export const getPortfolioStats = async (
 
     const agg = await Booking.aggregate([
       { $match: match },
+      { $set: { reportingCurrency: { $toUpper: { $trim: { input: { $convert: { input: '$currency', to: 'string', onError: '', onNull: '' } } } } } } },
       {
         $group: {
-          _id: null,
+          _id: { $cond: [{ $regexMatch: { input: '$reportingCurrency', regex: /^[A-Z]{3}$/ } }, '$reportingCurrency', null] },
           totalBookings: { $sum: 1 },
           // Booked revenue = anything that's a real, non-cancelled commitment.
           // We treat 'confirmed' and 'completed' as locked-in bookings (this
@@ -1166,15 +1170,22 @@ export const getPortfolioStats = async (
       },
     ]);
 
-    const row = agg[0] || { totalBookings: 0, bookedRevenue: 0, collectedRevenue: 0 };
+    const roundMoney = (amount: number) => Math.round(amount * 100) / 100;
+    const currencyTotals = agg.map((row: { _id: string | null; bookedRevenue: number; collectedRevenue: number }) => ({
+      currency: row._id, bookedRevenue: roundMoney(row.bookedRevenue), collectedRevenue: roundMoney(row.collectedRevenue),
+    })).sort((left, right) => left.currency === null ? 1 : right.currency === null ? -1 : left.currency.localeCompare(right.currency));
+    const row = currencyTotals.length === 0 ? { bookedRevenue: 0, collectedRevenue: 0 }
+      : currencyTotals.length === 1 && currencyTotals[0].currency ? currencyTotals[0] : null;
     sendSuccess(res, {
-      totalBookings: row.totalBookings,
+      totalBookings: agg.reduce((total, currency) => total + currency.totalBookings, 0),
+      currency: currencyTotals.length === 1 ? currencyTotals[0].currency : null,
+      currencyTotals,
       // Default totalRevenue to bookedRevenue so the Sites list tile reflects
       // what the operator intuitively thinks of as revenue (every confirmed
       // pay-later booking still counts).
-      totalRevenue: row.bookedRevenue,
-      bookedRevenue: row.bookedRevenue,
-      collectedRevenue: row.collectedRevenue,
+      totalRevenue: row?.bookedRevenue ?? null,
+      bookedRevenue: row?.bookedRevenue ?? null,
+      collectedRevenue: row?.collectedRevenue ?? null,
     });
   } catch (error) {
     next(error);
@@ -1190,6 +1201,22 @@ export const getTenantStats = async (
   try {
     const { id } = req.params;
     const { period = '30d' } = req.query;
+    if (!req.user || !['super-admin', 'brand-admin', 'manager', 'editor', 'viewer'].includes(req.user.role)) {
+      sendError(res, 'Administrator access required', req.user ? 403 : 401); return;
+    }
+    if (!Types.ObjectId.isValid(id)) { sendError(res, 'Tenant not found', 404); return; }
+    if (req.user.role !== 'super-admin' && !(req.user.assignedTenants || []).some(assigned => String(assigned) === id)) {
+      sendError(res, 'Access denied to this tenant', 403); return;
+    }
+    const reportingCurrency = { $let: { vars: { code: { $toUpper: { $trim: { input: { $convert: { input: '$currency', to: 'string', onError: '', onNull: '' } } } } } },
+      in: { $cond: [{ $regexMatch: { input: '$$code', regex: /^[A-Z]{3}$/ } }, '$$code', null] } } };
+    const moneySummary = (rows: Array<{ currency: string | null; bookedRevenue: number; collectedRevenue: number; bookingCount?: number }>) => {
+      const currencyTotals = rows.map(row => ({ currency: row.currency, ...(row.bookingCount === undefined ? {} : { bookingCount: row.bookingCount }), bookedRevenue: Math.round(row.bookedRevenue * 100) / 100, collectedRevenue: Math.round(row.collectedRevenue * 100) / 100 }))
+        .sort((left, right) => left.currency === null ? 1 : right.currency === null ? -1 : left.currency.localeCompare(right.currency));
+      const known = currencyTotals.length === 1 && currencyTotals[0].currency ? currencyTotals[0] : null;
+      return { currency: currencyTotals.length === 1 ? currencyTotals[0].currency : null, currencyTotals,
+        totalRevenue: known?.bookedRevenue ?? (rows.length ? null : 0), bookedRevenue: known?.bookedRevenue ?? (rows.length ? null : 0), collectedRevenue: known?.collectedRevenue ?? (rows.length ? null : 0) };
+    };
 
     // Calculate date range
     const now = new Date();
@@ -1232,7 +1259,8 @@ export const getTenantStats = async (
         },
         {
           $group: {
-            _id: null,
+            _id: reportingCurrency,
+            bookingCount: { $sum: 1 },
             // Booked = confirmed/completed commitments (includes pay-later, which
             // never reaches paymentStatus 'succeeded'). Collected = money cleared.
             bookedRevenue: { $sum: { $cond: [{ $in: ['$status', ['confirmed', 'completed']] }, '$total', 0] } },
@@ -1249,33 +1277,38 @@ export const getTenantStats = async (
         },
         {
           $group: {
-            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+            _id: { date: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, currency: reportingCurrency },
             bookings: { $sum: 1 },
             // Daily revenue tracks booked revenue so the chart matches the headline.
-            revenue: { $sum: { $cond: [{ $in: ['$status', ['confirmed', 'completed']] }, '$total', 0] } },
+            bookedRevenue: { $sum: { $cond: [{ $in: ['$status', ['confirmed', 'completed']] }, '$total', 0] } },
+            collectedRevenue: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'succeeded'] }, '$total', 0] } },
           },
         },
         { $sort: { _id: 1 } },
       ]),
     ]);
 
+    const daily = new Map<string, { bookings: number; rows: Array<{ currency: string | null; bookedRevenue: number; collectedRevenue: number }> }>();
+    for (const row of dailyBookings) {
+      const day = daily.get(row._id.date) || { bookings: 0, rows: [] };
+      day.bookings += row.bookings;
+      day.rows.push({ currency: row._id.currency, bookedRevenue: row.bookedRevenue, collectedRevenue: row.collectedRevenue });
+      daily.set(row._id.date, day);
+    }
     sendSuccess(res, {
       overview: {
         totalAttractions,
         totalBookings,
         confirmedBookings,
-        totalRevenue: revenue[0]?.bookedRevenue || 0,
-        bookedRevenue: revenue[0]?.bookedRevenue || 0,
-        collectedRevenue: revenue[0]?.collectedRevenue || 0,
+        ...moneySummary(revenue.map(row => ({ currency: row._id, bookingCount: row.bookingCount, bookedRevenue: row.bookedRevenue, collectedRevenue: row.collectedRevenue }))),
         conversionRate: totalBookings > 0
           ? ((confirmedBookings / totalBookings) * 100).toFixed(2) 
           : 0,
       },
-      dailyData: dailyBookings.map((d) => ({
-        date: d._id,
-        bookings: d.bookings,
-        revenue: d.revenue,
-      })),
+      dailyData: [...daily.entries()].sort(([left], [right]) => left.localeCompare(right)).map(([date, day]) => {
+        const money = moneySummary(day.rows);
+        return { date, bookings: day.bookings, revenue: money.bookedRevenue, currency: money.currency, currencyTotals: money.currencyTotals };
+      }),
     });
   } catch (error) {
     next(error);

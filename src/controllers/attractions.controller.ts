@@ -1,3 +1,5 @@
+import { financePolicy } from '../utils/financeSettings';
+import { packagePublicPrices } from '../services/packagePublicPrice.service';
 import { publicTourCategoryFilter, publicDurationBandFilter, tourCategorySchema, durationBandSchema } from '../utils/publicTourFilters';
 import { localizedSlugStages, localizationSourceProjection } from '../services/localizationSourceSnapshot.service';
 import { requestedLocale, sourceFallbackAllowed, localizationStages, localizedPresentation, localizationIdentity, translatedSlugFilter, TranslationError } from '../services/attractionLocalization.service';
@@ -133,9 +135,10 @@ export const toPublicAttractionDto = (source: unknown): Record<string, unknown> 
 };
 
 const publicAttractionDtos = async (rows: readonly unknown[], tenantId: unknown): Promise<Record<string, unknown>[]> => {
-  const operators = await publicAttractionOperators(rows, tenantId);
+  const [operators, packagePrices] = await Promise.all([publicAttractionOperators(rows, tenantId), packagePublicPrices(rows, tenantId)]);
   return rows.map((row, index) => ({
     ...toPublicAttractionDto(row),
+    ...(packagePrices.has(String((row as any)?._id)) ? { priceFrom: packagePrices.get(String((row as any)._id)) } : {}),
     ...(operators[index] ? { operator: operators[index] } : {}),
   }));
 };
@@ -262,6 +265,14 @@ export const publicDealStages = (now: Date): any[] => [
   { $unset: ['__dealOffers', '__dealOffer', '__wasOptions', '__wasOption', '__offerPrice'] },
 ];
 
+const sendCataloguePage = (res: Response, data: unknown[], page: number, limit: number, total: number, priceFiltersAvailable = true): void => {
+  const totalPages = Math.ceil(total / limit);
+  res.setHeader('X-Total-Count', String(total));
+  res.setHeader('X-Total-Pages', String(totalPages));
+  res.status(200).json({ success: true, message: 'Success', data,
+    pagination: { page, limit, total, totalPages }, capabilities: { priceFiltersAvailable } });
+};
+
 export const getAttractions = async (
   req: AuthRequest,
   res: Response,
@@ -339,8 +350,8 @@ export const getAttractions = async (
         query.tenantIds = { $in: req.user.assignedTenants.map(id => new Types.ObjectId(String(id))) };
       } else if (adminRoles.includes(req.user.role)) {
         // Admin with no assigned tenants sees nothing
-        if (cursorMode) res.json({ success: true, data: [], pagination: { limit: limitNum, total: 0, previousCursor: null, nextCursor: null } });
-        else sendPaginated(res, [], pageNum, limitNum, 0);
+        if (cursorMode) res.json({ success: true, data: [], capabilities: { priceFiltersAvailable: true }, pagination: { limit: limitNum, total: 0, previousCursor: null, nextCursor: null } });
+        else sendCataloguePage(res, [], pageNum, limitNum, 0);
         return;
       }
     }
@@ -408,8 +419,8 @@ export const getAttractions = async (
     // areas count, so a crafted slug can never widen a listing or reach another site.
     if (typeof pickupFrom === 'string' && pickupFrom) {
       if (!req.tenant || !tenantPickupDestinationSlugs(req.tenant).includes(pickupFrom.trim().toLowerCase())) {
-        if (cursorMode) res.json({ success: true, data: [], pagination: { limit: limitNum, total: 0, previousCursor: null, nextCursor: null } });
-        else sendPaginated(res, [], pageNum, limitNum, 0);
+        if (cursorMode) res.json({ success: true, data: [], capabilities: { priceFiltersAvailable: true }, pagination: { limit: limitNum, total: 0, previousCursor: null, nextCursor: null } });
+        else sendCataloguePage(res, [], pageNum, limitNum, 0);
         return;
       }
       query.hasHotelPickup = true;
@@ -448,6 +459,28 @@ export const getAttractions = async (
     else if (sort === 'sortOrder') sortOption = { sortOrder: 1, featured: -1, rating: -1 };
 
     const isAdminRequest = !locale && !cursorMode && !!req.user && req.user.role !== 'customer';
+    // Shared package priceFrom contains legacy pricing. A seller's saved fee policy
+    // changes that projection, so never filter/sort against a different amount.
+    // Probe the complete non-price candidate scope in Mongo before pagination.
+    let priceFiltersAvailable = true;
+    if (!isAdminRequest && req.tenant && financePolicy(req.tenant).configured && req.query.listingType !== 'tour') {
+      const candidateQuery = { ...query };
+      delete candidateQuery.priceFrom;
+      candidateQuery.$and = [...(candidateQuery.$and || []), { listingType: 'package' }];
+      const candidates = await Attraction.aggregate([
+        { $match: candidateQuery }, ...dealStages,
+        ...(locale ? localizationStages(req.tenant._id, locale, typeof search === 'string' ? search : undefined, !sourceFallback) : []),
+        { $limit: 1 }, { $project: { _id: 1 } },
+      ]);
+      priceFiltersAvailable = candidates.length === 0;
+    }
+    const capabilities = { priceFiltersAvailable };
+    if (!priceFiltersAvailable && (minPrice !== undefined || maxPrice !== undefined || sort === 'price-low' || sort === 'price-high')) {
+      res.setHeader('Cache-Control', 'private, no-store');
+      res.status(409).json({ success: false, code: 'PACKAGE_PRICE_FILTER_UNAVAILABLE',
+        error: 'Price filtering and sorting are unavailable for these packages. Clear the price filters and choose another order to continue.', capabilities });
+      return;
+    }
     if (locale && req.tenant) {
       if (!['-createdAt', 'recommended', 'price-low', 'price-high', 'rating', 'popularity', 'sortOrder'].includes(String(sort))) throw new TranslationError('Select a supported catalogue order');
       const pipeline = [{ $match: query }, ...dealStages, ...localizationStages(req.tenant._id, locale, typeof search === 'string' ? search : undefined, !sourceFallback)];
@@ -459,11 +492,11 @@ export const getAttractions = async (
         const result = plan.page(rows, limitNum, counts[0]?.total || 0);
         const publicRows = await publicAttractionDtos(result.rows, req.tenant._id);
         res.setHeader('Cache-Control', 'private, no-store');
-        res.json({ success: true, data: result.rows.map((row, index) => localizedPresentation({ ...publicRows[index], ...(dealsOnly ? { publicDeal: row.publicDeal } : {}) }, row, locale)), pagination: result.pagination }); return;
+        res.json({ success: true, data: result.rows.map((row, index) => localizedPresentation({ ...publicRows[index], ...(dealsOnly ? { publicDeal: row.publicDeal } : {}) }, row, locale)), capabilities, pagination: result.pagination }); return;
       }
       const [rows, counts] = await Promise.all([Attraction.aggregate([...pipeline, { $sort: { ...sortOption, _id: -1 as const } }, { $skip: (pageNum - 1) * limitNum }, { $limit: limitNum }, { $project: projection }]), Attraction.aggregate([...pipeline, { $count: 'total' }])]);
       const publicRows = await publicAttractionDtos(rows, req.tenant._id);
-      res.setHeader('Cache-Control', 'private, no-store'); sendPaginated(res, rows.map((row, index) => localizedPresentation(publicRows[index], row, locale)), pageNum, limitNum, counts[0]?.total || 0); return;
+      res.setHeader('Cache-Control', 'private, no-store'); sendCataloguePage(res, rows.map((row, index) => localizedPresentation(publicRows[index], row, locale)), pageNum, limitNum, counts[0]?.total || 0, priceFiltersAvailable); return;
     }
     if (cursorMode) {
       if (!['-createdAt', 'recommended', 'price-low', 'price-high', 'rating', 'popularity', 'sortOrder'].includes(String(sort))) {
@@ -483,7 +516,7 @@ export const getAttractions = async (
       const result = plan.page(rows, limitNum, total);
       const publicRows = await publicAttractionDtos(result.rows, req.tenant?._id);
       res.setHeader('Cache-Control', 'private, no-store');
-      res.json({ success: true, data: result.rows.map((row, index) => ({ ...publicRows[index], ...(dealsOnly ? { publicDeal: row.publicDeal } : {}) })), pagination: result.pagination });
+      res.json({ success: true, data: result.rows.map((row, index) => ({ ...publicRows[index], ...(dealsOnly ? { publicDeal: row.publicDeal } : {}) })), capabilities, pagination: result.pagination });
       return;
     }
     const attractionsQuery = Attraction.find(query).select(
@@ -506,7 +539,7 @@ export const getAttractions = async (
 
     const publicAttractions = isAdminRequest ? [] : await publicAttractionDtos(attractions, req.tenant?._id);
 
-    sendPaginated(
+    sendCataloguePage(
       res,
       attractions.map((attraction, index) => {
         if (!isAdminRequest) return publicAttractions[index];
@@ -517,7 +550,8 @@ export const getAttractions = async (
       }),
       pageNum,
       limitNum,
-      total
+      total,
+      priceFiltersAvailable
     );
   } catch (error) {
     next(error);
@@ -1942,7 +1976,7 @@ export const getResellerConfig = async (
     if (scope.length > 0) sellerMatch.sellerTenantId = { $in: scope };
     const sellerAgg = await Booking.aggregate([
       { $match: sellerMatch },
-      { $group: { _id: null, total: { $sum: '$revenueBreakdown.sellerEarnings' } } },
+      { $group: { _id: null, total: { $sum: '$revenueBreakdown.sellerEarnings' }, sellerNetAfterConfiguredFees: { $sum: { $ifNull: ['$revenueBreakdown.sellerNetAfterConfiguredFees', '$revenueBreakdown.sellerEarnings'] } }, configuredBusinessFees: { $sum: '$revenueBreakdown.configuredBusinessFees' } } },
     ]);
 
     const totalEarned = tours.reduce((sum, t) => sum + t.totalEarned, 0);
@@ -1952,6 +1986,8 @@ export const getResellerConfig = async (
       summary: {
         totalEarned: round2(totalEarned),
         totalCommission: round2(sellerAgg[0]?.total || 0),
+        sellerNetAfterConfiguredFees: round2(sellerAgg[0]?.sellerNetAfterConfiguredFees || 0),
+        configuredBusinessFees: round2(sellerAgg[0]?.configuredBusinessFees || 0),
         toursListed: tours.filter((t) => t.enabled).length,
       },
     });

@@ -72,7 +72,7 @@ export const financeMinor = (major: number): number => {
 
 /** Existing booking/payment rails use hundredths. Refuse unsupported precision, never guess FX. */
 export function financeCurrency(currency: string): string {
-  const normalized = currency.trim().toUpperCase();
+  const normalized = typeof currency === 'string' ? currency.trim().toUpperCase() : '';
   if (!/^[A-Z]{3}$/.test(normalized) || new Intl.NumberFormat('en', { style: 'currency', currency: normalized }).resolvedOptions().maximumFractionDigits !== 2) {
     throw new FinanceError('FINANCE_CURRENCY_UNAVAILABLE', 'Fee pricing is unavailable for this booking currency.');
   }
@@ -118,5 +118,5 @@ export function customerFinance(snapshot: FinanceSnapshot) {
 
 /** General tenant editors cannot bypass the versioned Finance endpoint. */
 export const withoutFinanceFields = (body: unknown): Record<string, unknown> => Object.fromEntries(
-  Object.entries(body && typeof body === 'object' && !Array.isArray(body) ? body : {}).filter(([key]) => !['financeSettings', 'financeRevision', 'financeBookingFence'].some(field => key === field || key.startsWith(`${field}.`))),
+  Object.entries(body && typeof body === 'object' && !Array.isArray(body) ? body : {}).filter(([key]) => !['financeSettings', 'financeRevision', 'financeBookingFence', 'attendanceBookingFence'].some(field => key === field || key.startsWith(`${field}.`))),
 );

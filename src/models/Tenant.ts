@@ -136,6 +136,7 @@ const tenantSchema = new Schema<ITenant>(
     },
     financeSettings: { type: Schema.Types.Mixed, default: undefined, validate: (value: unknown) => value === undefined || financeSettingsSchema.safeParse(value).success },
     financeRevision: { type: Number, min: 0, default: undefined, validate: Number.isSafeInteger },
+    attendanceBookingFence: { type: Number, select: false },
     financeBookingFence: { type: Number, select: false },
     defaultLanguage: {
       type: String,

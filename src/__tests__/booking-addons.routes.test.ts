@@ -51,6 +51,7 @@ jest.mock('../services/email.service', () => ({
 jest.mock('../models/Tenant', () => ({
   Tenant: {
     findOne: jest.fn(),
+    updateOne: jest.fn().mockResolvedValue({ matchedCount: 1 }),
     findById: jest.fn().mockReturnValue({ select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(null) }) }),
   },
 }));
@@ -100,7 +101,7 @@ const post = (body: Record<string, unknown>, key = `qa-addons-${Math.random().to
 describe('POST /api/bookings — add-on quantities', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (Tenant.findOne as jest.Mock).mockResolvedValue(null);
+    (Tenant.findOne as jest.Mock).mockImplementation(async (query) => Object.keys(query).length === 1 && typeof query._id === 'string' ? { _id: query._id, slug: 'qa-booking-site', status: 'active' } : null);
     (Attraction.findById as jest.Mock).mockResolvedValue(catalogAttraction());
     (IdempotencyKey.create as jest.Mock).mockResolvedValue({ _id: new Types.ObjectId() });
     (IdempotencyKey.findByIdAndUpdate as jest.Mock).mockResolvedValue({});
@@ -128,7 +129,7 @@ describe('POST /api/bookings — add-on quantities', () => {
   it.each([undefined, 'pay-later', 'cash'])('rejects new hostless offline booking %s without side effects', async (paymentMethod) => {
     (Tenant.findOne as jest.Mock).mockImplementation(async (query) =>
       query['paymentSettings.allowPayAtLocation'] === false && String(query._id) === TENANT_ID
-        ? cardOnlyTenant() : null);
+        ? cardOnlyTenant() : Object.keys(query).length === 1 && typeof query._id === 'string' ? { _id: query._id, slug: 'qa-booking-site', status: 'active' } : null);
     const response = await post({ ...payload([]), paymentMethod, allowPayAtLocation: true,
       paymentSettings: { allowPayAtLocation: true } });
     expect(response.status).toBe(409);
@@ -154,7 +155,7 @@ describe('POST /api/bookings — add-on quantities', () => {
   it('fails closed when the policy read fails', async () => {
     (Tenant.findOne as jest.Mock).mockImplementation(async (query) => {
       if (query['paymentSettings.allowPayAtLocation'] === false) throw new Error('policy lookup failed');
-      return null;
+      return Object.keys(query).length === 1 ? { _id: TENANT_ID, slug: 'qa-booking-site', status: 'active' } : null;
     });
     const response = await post(payload([]));
     expect(response.status).toBe(500);
@@ -174,7 +175,7 @@ describe('POST /api/bookings — add-on quantities', () => {
     (Attraction.findById as jest.Mock).mockResolvedValue({ ...catalogAttraction(), tenantIds: [otherId] });
     (Tenant.findOne as jest.Mock).mockImplementation(async (query) =>
       query['paymentSettings.allowPayAtLocation'] === false && String(query._id) === TENANT_ID
-        ? cardOnlyTenant() : null);
+        ? cardOnlyTenant() : Object.keys(query).length === 1 && typeof query._id === 'string' ? { _id: query._id, slug: 'qa-booking-site', status: 'active' } : null);
     const response = await post({ ...payload([]), paymentMethod: 'cash' });
     expect(response.status).toBe(201);
     expect(response.body.data).toMatchObject({ paymentMethod: 'cash', status: 'confirmed' });
@@ -200,7 +201,7 @@ describe('POST /api/bookings — add-on quantities', () => {
     expect(replay.body.data.reference).toBe(created.body.data.reference);
     expect(Booking.create).toHaveBeenCalledTimes(1);
     expect(Availability.findOneAndUpdate).toHaveBeenCalledTimes(inventoryWrites);
-    expect(Tenant.findOne).toHaveBeenCalledTimes(2); // original closure and payment policy only
+    expect(Tenant.findOne).toHaveBeenCalledTimes(3); // original Finance, closure and payment policy only; replay does not reload them
   });
 
   it('rejects missing pickup before inventory or booking writes when enabled', async () => {

@@ -3,6 +3,7 @@ import mongoose, { Types } from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Booking } from '../models/Booking';
 import { getBookingStats } from '../controllers/bookings.controller';
+import { getPortfolioStats, getTenantStats } from '../controllers/tenants.controller';
 import { AuthRequest } from '../types';
 
 jest.setTimeout(120_000);
@@ -158,5 +159,99 @@ describe('booking statistics preserve the currency of every amount', () => {
     await getBookingStats({ user: superAdmin } as unknown as AuthRequest, res, next);
     expect(next).toHaveBeenCalledWith(error);
     expect(res.json).not.toHaveBeenCalled();
+  });
+});
+
+
+describe('portfolio revenue keeps each currency across all authorized websites', () => {
+  const portfolio = async (user: unknown = superAdmin, tenantId?: Types.ObjectId) => {
+    const res = response(); const next = jest.fn();
+    await getPortfolioStats({ user, ...(tenantId ? { tenant: { _id: tenantId } } : {}) } as AuthRequest, res, next);
+    expect(next).not.toHaveBeenCalled();
+    return { status: res.status.mock.calls[0][0], ...res.json.mock.calls[0][0] };
+  };
+  it('separates currencies across all assigned sites even when one site is selected', async () => {
+    await seed([{ currency: 'USD', total: 105 }, { tenantId: siteB, currency: 'EUR', total: 210 }]);
+    const { data } = await portfolio({ role: 'brand-admin', assignedTenants: [siteA, siteB] }, siteA);
+    expect(data).toMatchObject({ totalBookings: 2, currency: null, totalRevenue: null, bookedRevenue: null, collectedRevenue: null });
+    expect(data.currencyTotals).toEqual([{ currency: 'EUR', bookedRevenue: 210, collectedRevenue: 210 }, { currency: 'USD', bookedRevenue: 105, collectedRevenue: 105 }]);
+    expect((await portfolio(brandAdmin, siteB)).data).toMatchObject({ totalBookings: 1, currency: 'USD', bookedRevenue: 105 });
+  });
+  it('preserves portfolio collection/status rules and the model bundle-child exclusion', async () => {
+    await seed([{ currency: 'EUR', total: 10 }, { currency: 'EUR', total: 20, status: 'cancelled' },
+      { currency: 'EUR', total: 30, status: 'pending' }, { currency: 'EUR', total: 40, bundleOrderId: new Types.ObjectId() },
+      { currency: 'EUR', total: 50, paymentStatus: 'pending' }]);
+    expect((await portfolio()).data).toMatchObject({ totalBookings: 4, currency: 'EUR', bookedRevenue: 60, collectedRevenue: 60 });
+  });
+  it('returns empty zero, known EUR and unknown currency without assuming dollars', async () => {
+    expect((await portfolio()).data).toEqual({ totalBookings: 0, currency: null, currencyTotals: [], totalRevenue: 0, bookedRevenue: 0, collectedRevenue: 0 });
+    await seed([{ currency: ' eur ', total: 0.1 }, { currency: 'EUR', total: 0.2 }]);
+    expect((await portfolio()).data).toMatchObject({ currency: 'EUR', bookedRevenue: 0.3 });
+    await seed([{ total: 12 }]);
+    const mixed = (await portfolio()).data;
+    expect(mixed.totalRevenue).toBeNull(); expect(mixed.currencyTotals[1]).toEqual({ currency: null, bookedRevenue: 12, collectedRevenue: 12 });
+    expect((await portfolio({ role: 'manager', assignedTenants: [] })).data.currencyTotals).toEqual([]);
+  });
+  it.each([null, { role: 'customer' }, { role: 'viewer' }, { role: 'editor' }])('rejects unauthorized portfolio identity %s', async (user) => {
+    const read = jest.spyOn(Booking, 'aggregate'); expect((await portfolio(user)).status).toBe(403); expect(read).not.toHaveBeenCalled();
+  });
+  it('propagates failed reads without returning zero money', async () => {
+    const error = new Error('database unavailable'); jest.spyOn(Booking, 'aggregate').mockRejectedValue(error);
+    const res = response(); const next = jest.fn(); await getPortfolioStats({ user: superAdmin } as unknown as AuthRequest, res, next);
+    expect(next).toHaveBeenCalledWith(error); expect(res.json).not.toHaveBeenCalled();
+  });
+});
+
+
+describe('one website analytics reports native money within its requested period', () => {
+  const analytics = async (user: unknown = brandAdmin, id = String(siteA), period = '30d') => {
+    const res = response(); const next = jest.fn();
+    await getTenantStats({ user, params: { id }, query: { period } } as unknown as AuthRequest, res, next);
+    expect(next).not.toHaveBeenCalled();
+    return { status: res.status.mock.calls[0][0], ...res.json.mock.calls[0][0] };
+  };
+  const ago = (days: number) => new Date(Date.now() - days * 86400000);
+  it('groups overview and each day by currency without adding unlike amounts', async () => {
+    const date = ago(1);
+    await seed([{ currency: 'USD', total: 105, createdAt: date }, { currency: 'EUR', total: 210, createdAt: date },
+      { currency: 'EUR', total: 20, createdAt: ago(2), status: 'cancelled' }, { currency: 'EUR', total: 30, createdAt: ago(2), paymentStatus: 'pending' },
+      { tenantId: siteB, currency: 'GBP', total: 999, createdAt: date }, { currency: 'GBP', total: 888, createdAt: ago(31) }]);
+    const { data } = await analytics();
+    expect(data.overview).toMatchObject({ totalBookings: 4, confirmedBookings: 3, currency: null, totalRevenue: null, bookedRevenue: null, collectedRevenue: null });
+    expect(data.overview.currencyTotals).toEqual([{ currency: 'EUR', bookingCount: 3, bookedRevenue: 240, collectedRevenue: 230 }, { currency: 'USD', bookingCount: 1, bookedRevenue: 105, collectedRevenue: 105 }]);
+    expect(data.dailyData).toHaveLength(2);
+    expect(data.dailyData[0]).toMatchObject({ date: ago(2).toISOString().slice(0,10), bookings: 2, currency: 'EUR', revenue: 30,
+      currencyTotals: [{ currency: 'EUR', bookedRevenue: 30, collectedRevenue: 20 }] });
+    expect(data.dailyData[1]).toMatchObject({ bookings: 2, currency: null, revenue: null });
+    expect(data.dailyData[1].currencyTotals).toHaveLength(2);
+  });
+  it.each([['7d', 1], ['30d', 2], ['90d', 3]])('keeps the %s period boundary', async (period, count) => {
+    await seed([1, 8, 31, 91].map(days => ({ currency: 'EUR', createdAt: ago(days), total: 10 })));
+    expect((await analytics(brandAdmin, String(siteA), period as string)).data.overview).toMatchObject({ totalBookings: count, currency: 'EUR', bookedRevenue: Number(count) * 10 });
+  });
+  it('keeps missing currency explicit and returns a distinct empty state', async () => {
+    const empty = (await analytics()).data;
+    expect(empty.overview).toMatchObject({ currency: null, currencyTotals: [], totalRevenue: 0 }); expect(empty.dailyData).toEqual([]);
+    await seed([{ createdAt: ago(1), total: 5 }, { currency: '$', createdAt: ago(1), total: 7 }]);
+    const { data } = await analytics();
+    expect(data.overview).toMatchObject({ currency: null, totalRevenue: null, currencyTotals: [{ currency: null, bookedRevenue: 12, collectedRevenue: 12 }] });
+    expect(data.dailyData[0]).toMatchObject({ currency: null, revenue: null, currencyTotals: [{ currency: null, bookedRevenue: 12, collectedRevenue: 12 }] });
+  });
+  it.each(['brand-admin', 'manager', 'editor', 'viewer'])('enforces website membership for %s', async role => {
+    const actor = { role, assignedTenants: [siteA] };
+    expect((await analytics(actor)).status).toBe(200);
+    const read = jest.spyOn(Booking, 'aggregate');
+    expect((await analytics(actor, String(siteB))).status).toBe(403); expect(read).not.toHaveBeenCalled();
+  });
+  it('rejects absent/customer/malformed identity before reading money and allows super admin', async () => {
+    expect((await analytics(null)).status).toBe(401);
+    expect((await analytics({ role: 'customer', assignedTenants: [siteA] })).status).toBe(403);
+    expect((await analytics(superAdmin, 'bad-id')).status).toBe(404);
+    expect((await analytics(superAdmin, String(siteB))).status).toBe(200);
+  });
+  it('propagates a database failure without a successful zero response', async () => {
+    const error = new Error('database unavailable'); jest.spyOn(Booking, 'aggregate').mockRejectedValue(error);
+    const res = response(); const next = jest.fn(); await getTenantStats({ user: brandAdmin, params: { id: String(siteA) }, query: {} } as unknown as AuthRequest, res, next);
+    expect(next).toHaveBeenCalledWith(error); expect(res.json).not.toHaveBeenCalled();
   });
 });

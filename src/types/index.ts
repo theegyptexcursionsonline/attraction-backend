@@ -59,6 +59,7 @@ export interface ITenant extends Document {
   financeSettings?: import('../utils/financeSettings').FinanceSettings;
   financeRevision?: number;
   financeBookingFence?: number;
+  attendanceBookingFence?: number;
   enabledSections?: AdminSection[];
   slug: string;
   name: string;
@@ -487,6 +488,8 @@ export interface IBooking extends Document {
     commissionPercent: number;
     // What the reseller (seller) earns = total * commissionPercent / 100.
     sellerEarnings: number;
+    configuredBusinessFees?: number;
+    sellerNetAfterConfiguredFees?: number;
     // Payment processing fee deducted from the supplier's share.
     paymentFee: number;
     // What the supplier (tour owner) nets = total - sellerEarnings - paymentFee.

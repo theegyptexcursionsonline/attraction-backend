@@ -12,18 +12,18 @@ import { AuthRequest } from '../types';
 jest.setTimeout(120_000);
 const site = new Types.ObjectId(), other = new Types.ObjectId(), actor = new Types.ObjectId();
 let mongo: MongoMemoryReplSet;
-const response = () => { const res: any = {}; res.status = jest.fn().mockReturnValue(res); res.json = jest.fn().mockReturnValue(res); return res; };
+const response = () => { const res: any = {}; res.setHeader = jest.fn(); res.status = jest.fn().mockReturnValue(res); res.json = jest.fn().mockReturnValue(res); return res; };
 const seed = async (overrides: Record<string, unknown> = {}) => {
   const _id = new Types.ObjectId();
   await Booking.collection.insertOne({ _id, reference: `ATTENDANCE-${_id}`, tenantId: site, attractionId: new Types.ObjectId(), status: 'confirmed', paymentStatus: 'succeeded',
     items: [{ date: '2020-01-01', time: '09:00', optionId: 'adult', optionName: 'Adult', quantities: { adults: 1 }, unitPrice: 100, totalPrice: 100 }],
     subtotal: 100, discount: 0, fees: 5, total: 105, currency: 'EUR', paymentMethod: 'card', inventoryReserved: true,
-    financeSnapshot: { version: 1, totalMinor: 10500 }, paymentIntentId: 'preserved', refundStatus: 'none', ...overrides });
+    financeSnapshot: { version: 1, totalMinor: 10500, lines: [] }, paymentIntentId: 'preserved', refundStatus: 'none', ...overrides });
   return _id;
 };
 const call = async (id: unknown, body: unknown = { attendanceStatus: 'no-show', expectedRevision: 0 }, user: unknown = { _id: actor, role: 'brand-admin', assignedTenants: [site] }, active?: unknown) => {
   const res = response(), next = jest.fn();
-  await updateBookingAttendance({ params: { id: String(id) }, body, user, ...(active ? { tenant: { _id: active } } : {}) } as AuthRequest, res, next);
+  await updateBookingAttendance({ params: { id: String(id) }, body, user, ...(active ? { tenant: { _id: active } } : {}) } as unknown as AuthRequest, res, next);
   return { status: res.status.mock.calls[0]?.[0], body: res.json.mock.calls[0]?.[0], next };
 };
 beforeAll(async () => {
@@ -91,8 +91,8 @@ it('rolls back a mutation when its immutable audit cannot be saved', async () =>
   expect((await Booking.findById(id).lean())?.attendanceStatus).toBeUndefined();
 });
 it('guards a cancellation begun after attendance was read', async () => {
-  const id = await seed(); const original = Booking.findOneAndUpdate.bind(Booking);
-  jest.spyOn(Booking, 'findOneAndUpdate').mockImplementationOnce((...args: any[]) => {
+  const id = await seed(); const original = Booking.collection.findOneAndUpdate.bind(Booking.collection);
+  jest.spyOn(Booking.collection, 'findOneAndUpdate').mockImplementationOnce((...args: any[]) => {
     return (async () => { await Booking.collection.updateOne({ _id: id }, { $set: { cancellationRequestedAt: new Date() } }); return original(...args as Parameters<typeof original>); })() as any;
   });
   expect((await call(id)).status).toBe(409); expect(await BookingAttendanceRevision.countDocuments()).toBe(0);
@@ -106,9 +106,25 @@ it('counts completed refunds once across lifecycle and payment axes, excluding p
   await seed({ status: 'cancelled', paymentStatus: 'refunded' }); await seed({ status: 'refunded', paymentStatus: 'refunded' });
   await seed({ status: 'confirmed', paymentStatus: 'succeeded', refundedAmount: 20 }); await seed({ status: 'cancelled', paymentStatus: 'succeeded', refundStatus: 'failed' });
   const res = response(), next = jest.fn();
-  await getBookingStats({ user: { role: 'super-admin' } } as AuthRequest, res, next);
+  await getBookingStats({ user: { role: 'super-admin' } } as unknown as AuthRequest, res, next);
   expect(res.json.mock.calls[0][0].data).toMatchObject({ refundedBookings: 2, cancelledBookings: 2 });
   const list = response();
   await getAllBookings({ user: { role: 'super-admin' }, query: { status: 'refunded' } } as unknown as AuthRequest, list, next);
   expect(next).not.toHaveBeenCalled(); expect(list.json.mock.calls[0][0].data).toHaveLength(2);
+});
+
+it('hides selling-site configured expenses and attendance controls from supplier-only readers', async () => {
+  await seed({ tenantId: other, supplierTenantId: site, sellerTenantId: other, isResale: true, attendanceStatus: 'no-show', revenueBreakdown: { sellerEarnings: 20, supplierEarnings: 77.1, paymentFee: 2.9, configuredBusinessFees: 3, sellerNetAfterConfiguredFees: 17 } });
+  const res = response(), next = jest.fn();
+  await getAllBookings({ user: { role: 'brand-admin', assignedTenants: [site] }, query: {} } as unknown as AuthRequest, res, next);
+  expect(next).not.toHaveBeenCalled(); const row = res.json.mock.calls[0][0].data[0];
+  expect(row.attendanceEligibility).toMatchObject({ canMarkNoShow: false, canUndoNoShow: false });
+  expect(row).not.toHaveProperty('financeSnapshot'); expect(row.revenueBreakdown).not.toHaveProperty('configuredBusinessFees'); expect(row.revenueBreakdown).not.toHaveProperty('sellerNetAfterConfiguredFees');
+});
+
+it('accepts a valid Cairo daylight-saving transition day even when local midnight did not exist', () => {
+  const now = new Date('2026-04-25T12:00:00Z');
+  for (const item of [{ date: '2026-04-24', time: '09:00' }, { date: '2026-04-24' }]) {
+    expect(attendanceEligibility({ status: 'completed', items: [item] }, 'Africa/Cairo', now).canMarkNoShow).toBe(true);
+  }
 });

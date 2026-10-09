@@ -1,3 +1,4 @@
+import { resaleFieldsFor } from '../utils/resaleSplit';
 import { attendanceEligibility } from '../utils/bookingAttendance';
 import { escapeRegex } from '../utils/helpers';
 import { customerCursor } from '../utils/customerLists';
@@ -117,6 +118,10 @@ export const bookingResponse = (booking: IBooking): Record<string, unknown> => {
     ? (booking as any).toJSON()
     : { ...(booking as any) };
   const { financeSnapshot, attendanceRecordedBy, attendanceRecordedAt, attendanceRevision, ...customerBooking } = raw;
+  if (customerBooking.revenueBreakdown) {
+    const { configuredBusinessFees, sellerNetAfterConfiguredFees, ...publicBreakdown } = customerBooking.revenueBreakdown;
+    customerBooking.revenueBreakdown = publicBreakdown;
+  }
   return {
     ...customerBooking,
     ...(financeSnapshot ? { finance: customerFinance(financeSnapshot) } : {}),
@@ -151,9 +156,6 @@ const isEarningsEligible = (booking: {
   ['confirmed', 'completed'].includes(booking.status || '') &&
   (booking.paymentMethod !== 'card' || booking.paymentStatus === 'succeeded');
 
-// Payment-processing fee deducted from the supplier's net on a resale booking
-// (configurable). The supplier receives: total − reseller commission − this fee.
-const RESELLER_PAYMENT_FEE_PERCENT = 2.9;
 
 const bookingAccessTokenFromRequest = (req: AuthRequest): string | undefined => {
   const header = req.headers['x-booking-access-token'];
@@ -385,49 +387,9 @@ export const createBooking = async (
     await assertTenantIdsBookingCreationAllowed([tenantId]);
     await assertTenantPaymentMethodAllowed(tenantId, paymentMethod);
 
-    // Reseller revenue split. When this booking is made on a reseller's site
-    // (sellerTenant) for an attraction owned by a different supplier tenant, we
-    // record both sides and split `total` between them. Internal accounting only
-    // — the customer still pays `total`; this does NOT change the charge.
-    const sellerTenant = tenantId;
-    const supplierTenant = attraction.ownerTenantId || attraction.tenantIds[0];
-    const isResale = !!(
-      attraction.reseller?.enabled &&
-      supplierTenant &&
-      sellerTenant &&
-      supplierTenant.toString() !== sellerTenant.toString()
-    );
-
-    let resaleFields: {
-      supplierTenantId: typeof supplierTenant;
-      sellerTenantId: typeof sellerTenant;
-      isResale: true;
-      revenueBreakdown: {
-        commissionPercent: number;
-        sellerEarnings: number;
-        paymentFee: number;
-        supplierEarnings: number;
-      };
-    } | { isResale: false } = { isResale: false };
-
-    if (isResale) {
-      // Commission % only, on the total the customer pays.
-      const commissionPercent = attraction.reseller.value;
-      const sellerEarnings = round2((total * commissionPercent) / 100); // reseller commission
-      const paymentFee = round2((total * RESELLER_PAYMENT_FEE_PERCENT) / 100); // payment processing fee
-      const supplierEarnings = round2(total - sellerEarnings - paymentFee); // supplier (tour owner) net
-      resaleFields = {
-        supplierTenantId: supplierTenant,
-        sellerTenantId: sellerTenant,
-        isResale: true,
-        revenueBreakdown: {
-          commissionPercent,
-          sellerEarnings,
-          paymentFee,
-          supplierEarnings,
-        },
-      };
-    }
+    // Preserve contractual gross commission and processing deductions. Configured
+    // business fees are seller expenses and never reduce the supplier obligation.
+    const resaleFields = resaleFieldsFor(attraction, tenantId, total, pricing.financeSnapshot);
 
     const reference = generateBookingReference();
     const bookingId = new mongoose.Types.ObjectId();
@@ -1052,7 +1014,7 @@ export const getMyBookings = async (
       } },
       { $facet: {
         broken:[{ $match:{ '__tour.0':{ $exists:false } } },{ $limit:1 },{ $project:{_id:1} }],
-        rows:[{ $sort:{createdAt:-1,_id:-1} },{ $skip:(pageNum-1)*limitNum },{ $limit:limitNum },{ $set:{ attractionId:{ $arrayElemAt:['$__tour',0] } } },{ $project:{__tour:0,financeSnapshot:0,attendanceRecordedBy:0,attendanceRecordedAt:0,attendanceRevision:0} }],
+        rows:[{ $sort:{createdAt:-1,_id:-1} },{ $skip:(pageNum-1)*limitNum },{ $limit:limitNum },{ $set:{ attractionId:{ $arrayElemAt:['$__tour',0] } } },{ $project:{__tour:0,financeSnapshot:0,attendanceRecordedBy:0,attendanceRecordedAt:0,attendanceRevision:0,'revenueBreakdown.configuredBusinessFees':0,'revenueBreakdown.sellerNetAfterConfiguredFees':0} }],
         totals:[{ $count:'total' }],
       } },
     ]);
@@ -1130,7 +1092,7 @@ export const cancelBooking = async (
       bookingEventPayload(cancelledBooking)
     );
 
-    sendSuccess(res, cancelledBooking, 'Booking cancelled successfully');
+    sendSuccess(res, bookingResponse(cancelledBooking), 'Booking cancelled successfully');
   } catch (error) {
     if (error instanceof Error && error.message === 'INVENTORY_RELEASE_FAILED') {
       sendError(res, 'Cancellation could not safely restore inventory', 409);
@@ -1335,6 +1297,7 @@ export const getAllBookings = async (
       b.attendanceRevision = b.attendanceRevision || 0;
       b.attendanceEligibility = canManage ? attendanceEligibility(b, b.tenantId?.timezone) : { canMarkNoShow: false, reason: 'Only the selling website can update attendance.' };
 
+      b.attendanceEligibility.canUndoNoShow = canManage && b.attendanceStatus === 'no-show';
       if (!isSuper && b.isResale) {
         const supplierId = b.supplierTenantId ? String(b.supplierTenantId) : null;
         const sellerId = b.sellerTenantId ? String(b.sellerTenantId) : null;
@@ -1345,6 +1308,7 @@ export const getAllBookings = async (
           b.sellerTenantId = undefined;
           delete b.financeSnapshot;
           delete b.attendanceRecordedBy;
+          if (b.revenueBreakdown) { delete b.revenueBreakdown.configuredBusinessFees; delete b.revenueBreakdown.sellerNetAfterConfiguredFees; }
         }
       }
       return b;
@@ -1553,7 +1517,7 @@ export const getResellerEarnings = async (
       ]),
       Booking.aggregate([
         { $match: scope('sellerTenantId') },
-        { $group: { _id: null, total: { $sum: '$revenueBreakdown.sellerEarnings' }, count: { $sum: 1 } } },
+        { $group: { _id: null, total: { $sum: '$revenueBreakdown.sellerEarnings' }, sellerNetAfterConfiguredFees: { $sum: { $ifNull: ['$revenueBreakdown.sellerNetAfterConfiguredFees', '$revenueBreakdown.sellerEarnings'] } }, configuredBusinessFees: { $sum: '$revenueBreakdown.configuredBusinessFees' }, count: { $sum: 1 } } },
       ]),
       Booking.find(recentMatch)
         .populate('attractionId', 'title')
@@ -1573,6 +1537,7 @@ export const getResellerEarnings = async (
         supplierId && myTenantSet.has(supplierId) ? 'supplier'
         : sellerId && myTenantSet.has(sellerId) ? 'seller'
         : 'network';
+      if (role === 'supplier' && b.revenueBreakdown) { delete b.revenueBreakdown.configuredBusinessFees; delete b.revenueBreakdown.sellerNetAfterConfiguredFees; }
       return {
         _id: b._id,
         reference: b.reference,
@@ -1595,6 +1560,8 @@ export const getResellerEarnings = async (
       },
       asSeller: {
         total: round2(asSellerAgg[0]?.total || 0),
+        sellerNetAfterConfiguredFees: round2(asSellerAgg[0]?.sellerNetAfterConfiguredFees || 0),
+        configuredBusinessFees: round2(asSellerAgg[0]?.configuredBusinessFees || 0),
         count: asSellerAgg[0]?.count || 0,
       },
       recent: recentResale,

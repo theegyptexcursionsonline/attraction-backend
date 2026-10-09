@@ -1,3 +1,4 @@
+import { FinanceError, FinanceSnapshot, financeMinor } from './financeSettings';
 /**
  * Reseller revenue split for a booking sold on a reseller's site for a listing another site owns:
  * the reseller's commission on the total the customer pays, a payment-processing fee, and the
@@ -22,10 +23,10 @@ export type ResaleFields =
       isResale: true;
       supplierTenantId: unknown;
       sellerTenantId: unknown;
-      revenueBreakdown: { commissionPercent: number; sellerEarnings: number; paymentFee: number; supplierEarnings: number };
+      revenueBreakdown: { commissionPercent: number; sellerEarnings: number; paymentFee: number; supplierEarnings: number; configuredBusinessFees?: number; sellerNetAfterConfiguredFees?: number };
     };
 
-export function resaleFieldsFor(listing: Listing, sellerTenantId: unknown, total: number): ResaleFields {
+export function resaleFieldsFor(listing: Listing, sellerTenantId: unknown, total: number, financeSnapshot?: FinanceSnapshot): ResaleFields {
   const supplierTenantId = listing.ownerTenantId || listing.tenantIds?.[0];
   if (!listing.reseller?.enabled || !supplierTenantId || !sellerTenantId || String(supplierTenantId) === String(sellerTenantId)) {
     return { isResale: false };
@@ -33,11 +34,18 @@ export function resaleFieldsFor(listing: Listing, sellerTenantId: unknown, total
   const commissionPercent = listing.reseller.value ?? 0;
   const sellerEarnings = round2((total * commissionPercent) / 100);
   const paymentFee = round2((total * RESELLER_PAYMENT_FEE_PERCENT) / 100);
+  const configured = financeSnapshot ? {
+    configuredBusinessFees: financeSnapshot.businessFeesMinor / 100,
+    sellerNetAfterConfiguredFees: (financeMinor(sellerEarnings) - financeSnapshot.businessFeesMinor) / 100,
+  } : {};
+  if (configured.sellerNetAfterConfiguredFees !== undefined && configured.sellerNetAfterConfiguredFees < 0) {
+    throw new FinanceError('FINANCE_MARGIN_INVALID', 'The website fees exceed the selling website commission. Update the fee settings before accepting this booking.');
+  }
   return {
     isResale: true,
     supplierTenantId,
     sellerTenantId,
-    revenueBreakdown: { commissionPercent, sellerEarnings, paymentFee, supplierEarnings: round2(total - sellerEarnings - paymentFee) },
+    revenueBreakdown: { commissionPercent, sellerEarnings, paymentFee, supplierEarnings: round2(total - sellerEarnings - paymentFee), ...configured },
   };
 }
 
@@ -51,5 +59,7 @@ export function sameResaleFields(left: ResaleFields, right: ResaleFields): boole
     && a.commissionPercent === b.commissionPercent
     && a.sellerEarnings === b.sellerEarnings
     && a.paymentFee === b.paymentFee
-    && a.supplierEarnings === b.supplierEarnings;
+    && a.supplierEarnings === b.supplierEarnings
+    && a.configuredBusinessFees === b.configuredBusinessFees
+    && a.sellerNetAfterConfiguredFees === b.sellerNetAfterConfiguredFees;
 }

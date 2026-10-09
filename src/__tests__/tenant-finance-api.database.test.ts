@@ -132,3 +132,12 @@ describe('versioned website Finance settings', () => {
     await expect(fenceFinancePolicy(await loadFinancePolicy(site))).resolves.toBeUndefined();
   });
 });
+
+it.each(['manager', 'editor', 'viewer'])('does not bypass private Finance reads through generic tenant routes for %s', async role => {
+  await put(body()).expect(200);
+  const list = await auth(request(app).get('/tenants'), role).expect(200);
+  const detail = await auth(request(app).get(`/tenants/${site}`), role).expect(200);
+  for (const value of [...list.body.data, detail.body.data]) {
+    expect(value).not.toHaveProperty('financeSettings'); expect(value).not.toHaveProperty('financeRevision');
+  }
+});

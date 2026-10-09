@@ -17,12 +17,12 @@ export function tourFinanceQuote(attractionId: unknown, currency: string, pricin
     customerFeesMinor: financeMinor(pricing.fees), totalMinor: financeMinor(pricing.total),
     lines: [{ kind: 'booking' as const, type: 'percentage' as const, percentage: 5, amountMinor: financeMinor(pricing.fees) }],
   };
-  // Bind the accepted selection and full policy snapshot, including business-paid terms
-  // whose changes may leave the customer's total unchanged. The private terms never leave here.
+  // Bind the immutable policy revision even if a business-paid edit leaves the
+  // customer total unchanged. Never hash low-entropy private terms into a public oracle.
   const quoteHash = createHash('sha256').update(stable({ attractionId: String(attractionId), tenantId: String(pricing.tenantId),
     currency, items: pricing.normalizedItems.map(({ hotelPickup: _pickup, ...item }) => item),
     subtotal: pricing.subtotal, discount: pricing.discount, total: pricing.total,
-    policyRevision: pricing.policy.revision, financeSnapshot: pricing.financeSnapshot ?? null,
+    policyRevision: pricing.policy.revision, finance,
   })).digest('hex');
   const discountSource = pricing.discount <= 0 ? null : pricing.useSpecialOffer ? 'offer' as const : 'promo' as const;
   return { tenantId: String(pricing.tenantId), attractionId: String(attractionId), currency,

@@ -1,3 +1,4 @@
+import { FinanceSnapshot } from '../utils/financeSettings';
 import { ClientSession, Types } from 'mongoose';
 import { z } from 'zod';
 import { Availability } from '../models/Availability';
@@ -42,7 +43,7 @@ export class PackageChangedError extends Error {
  * recorded money would differ, whatever form an older record keeps those settings in.
  */
 export async function fencePackageBooking(
-  input: { attractionId: Types.ObjectId; tenantId: Types.ObjectId; revision: number; currency: string; total: number; resale: ResaleFields },
+  input: { attractionId: Types.ObjectId; tenantId: Types.ObjectId; revision: number; currency: string; total: number; resale: ResaleFields; financeSnapshot?: FinanceSnapshot },
   session?: ClientSession,
 ): Promise<void> {
   const filter = {
@@ -57,7 +58,7 @@ export async function fencePackageBooking(
   };
   const current = await Attraction.findOne(filter).select('ownerTenantId tenantIds reseller').session(session ?? null)
     .lean<Pick<IAttraction, 'ownerTenantId' | 'tenantIds' | 'reseller'>>();
-  if (!current || !sameResaleFields(resaleFieldsFor(current, input.tenantId, input.total), input.resale)) throw new PackageChangedError();
+  if (!current || !sameResaleFields(resaleFieldsFor(current, input.tenantId, input.total, input.financeSnapshot), input.resale)) throw new PackageChangedError();
   const fenced = await Attraction.updateOne(filter, { $inc: { packageBookingFence: 1 } }, { ...(session ? { session } : {}), timestamps: false });
   if (fenced.matchedCount !== 1) throw new PackageChangedError();
 }

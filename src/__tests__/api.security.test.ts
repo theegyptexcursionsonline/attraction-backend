@@ -121,6 +121,7 @@ jest.mock('../services/email.service', () => ({
 jest.mock('../models/Tenant', () => ({
   Tenant: {
     findOne: jest.fn(),
+    updateOne: jest.fn().mockResolvedValue({ matchedCount: 1 }),
     findById: jest.fn().mockReturnValue({
       select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(null) }),
     }),
@@ -155,6 +156,7 @@ jest.mock('../services/pdf.service', () => ({
 describe('API security and pricing guards', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (Tenant.findOne as jest.Mock).mockImplementation(async (query) => Object.keys(query).length === 1 && typeof query._id === 'string' ? { _id: query._id, slug: 'qa-booking-site', status: 'active' } : null);
     (IdempotencyKey.create as jest.Mock).mockResolvedValue({ _id: new Types.ObjectId() });
     (IdempotencyKey.findByIdAndUpdate as jest.Mock).mockResolvedValue({});
     (IdempotencyKey.deleteOne as jest.Mock).mockResolvedValue({ deletedCount: 1 });

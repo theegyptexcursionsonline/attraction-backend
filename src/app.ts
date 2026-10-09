@@ -1,3 +1,5 @@
+import { TenantFinanceRevision } from './models/TenantFinanceRevision';
+import { BookingAttendanceRevision } from './models/BookingAttendanceRevision';
 import dns from 'dns';
 import { randomUUID } from 'crypto';
 // Use Google Public DNS to avoid local resolver issues with MongoDB Atlas SRV records
@@ -156,6 +158,8 @@ export const startServer = async (): Promise<void> => {
     await ensureBookingOperatorNotificationIndexes();
     await ensureBookingPaymentNotificationIndexes();
     await BookingCancellation.createIndexes();
+    await TenantFinanceRevision.createIndexes();
+    await BookingAttendanceRevision.createIndexes();
     let cancellationSweepRunning = false;
     const reconcileCancellations = async (): Promise<void> => {
       if (cancellationSweepRunning) return;

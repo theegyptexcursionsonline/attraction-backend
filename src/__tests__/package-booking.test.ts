@@ -915,3 +915,129 @@ describe('configured package choices and guest details', () => {
     expect(await Booking.countDocuments()).toBe(0);
   });
 });
+
+describe('configured package Finance', () => {
+  const fees = () => ({
+    transaction: { enabled: true, type: 'percentage', payer: 'business', percentage: 1 },
+    tax: { enabled: false, type: 'percentage', payer: 'customer', percentage: 0 },
+    booking: { enabled: true, type: 'fixed', payer: 'customer', fixedAmounts: { USD: 7 } },
+    payout: { enabled: false, type: 'percentage', payer: 'business', percentage: 0 },
+  });
+  const activate = (revision = 1) => Tenant.collection.updateOne({ _id: owner }, { $set: { financeRevision: revision, financeSettings: { version: 1, fees: fees() } } });
+  it('prices one fixed fee for the party and persists the accepted full breakdown without exposing costs', async () => {
+    const id = await publishedPackage(); await activate();
+    const quoted = await quote(id); expect(quoted.quote).toMatchObject({ subtotal: 2540, serviceFee: 7, total: 2547 });
+    expect(quoted.quote.finance.lines).toEqual([{ kind: 'booking', type: 'fixed', fixedAmountMinor: 700, amountMinor: 700 }]);
+    const key = `finance-package-${new Types.ObjectId()}`;
+    const body = { selection: selection(), quoteHash: quoted.quoteHash, guestDetails };
+    const created = await book(id, body, key).expect(201);
+    expect(created.body.data).not.toHaveProperty('financeSnapshot');
+    const saved = await Booking.findById(created.body.data._id).lean();
+    expect(saved).toMatchObject({ subtotal: 2540, fees: 7, total: 2547, financeSnapshot: { policyRevision: 1, customerFeesMinor: 700, businessFeesMinor: 2540 } });
+    await activate(2);
+    const replay = await book(id, body, key).expect(200);
+    expect(replay.body.data._id).toBe(created.body.data._id);
+    expect(replay.body.data.finance.policyRevision).toBe(1);
+    expect(await seatsBooked(id, 10)).toBe(3);
+  });
+  it('rejects a revised policy even if the customer total stays unchanged', async () => {
+    const id = await publishedPackage(); await activate(); const quoted = await quote(id); await activate(2);
+    const refused = await book(id, { selection: selection(), quoteHash: quoted.quoteHash, guestDetails }).expect(409);
+    expect(refused.body.code).toBe('PRICE_CHANGED'); expect(refused.body.quote.total).toBe(quoted.quote.total);
+    expect(refused.body.quoteHash).not.toBe(quoted.quoteHash); expect(await seatsBooked(id, 10)).toBe(0);
+  });
+  it('books configured resale packages with gross commission, additional expense and seller net intact', async () => {
+    const id = await publishedPackage(); await activate();
+    await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $set: { ownerTenantId: other, reseller: { enabled: true, value: 10, allowedTenants: [owner] } } });
+    const quoted = await quote(id);
+    const created = await book(id, { selection: selection(), quoteHash: quoted.quoteHash, guestDetails }).expect(201);
+    const saved = await Booking.findById(created.body.data._id).lean();
+    expect(saved).toMatchObject({ total: 2547, isResale: true, supplierTenantId: other, sellerTenantId: owner,
+      revenueBreakdown: { commissionPercent: 10, sellerEarnings: 254.7, paymentFee: 73.86, supplierEarnings: 2218.44, configuredBusinessFees: 25.4, sellerNetAfterConfiguredFees: 229.3 } });
+    expect(created.body.data.revenueBreakdown).not.toHaveProperty('configuredBusinessFees');
+    expect(created.body.data.revenueBreakdown).not.toHaveProperty('sellerNetAfterConfiguredFees');
+  });
+  it('still rejects a concurrent commission change when the accepted package has Finance terms', async () => {
+    const id = await publishedPackage(); await activate();
+    await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $set: { ownerTenantId: other, reseller: { enabled: true, value: 10, allowedTenants: [owner] } } });
+    const quoted = await quote(id); const original = packageBookingService.fencePackageBooking;
+    jest.spyOn(packageBookingService, 'fencePackageBooking').mockImplementationOnce(async (input, session) => {
+      await Attraction.findById(id).session(session!);
+      await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $set: { 'reseller.value': 20 } });
+      return original(input, session);
+    });
+    const refused = await book(id, { selection: selection(), quoteHash: quoted.quoteHash, guestDetails }).expect(409);
+    expect(refused.body.code).toBe('PACKAGE_CHANGED');
+    expect(await Booking.countDocuments()).toBe(0); expect(await seatsBooked(id, 10)).toBe(0);
+  });
+  it('returns a clear configuration conflict for a negative seller margin without holding seats', async () => {
+    const id = await publishedPackage(); await activate();
+    await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $set: { ownerTenantId: other, reseller: { enabled: true, value: 0, allowedTenants: [owner] } } });
+    const quoted = await quote(id);
+    const refused = await book(id, { selection: selection(), quoteHash: quoted.quoteHash, guestDetails }).expect(409);
+    expect(refused.body.code).toBe('FINANCE_MARGIN_INVALID');
+    expect(await Booking.countDocuments()).toBe(0); expect(await seatsBooked(id, 10)).toBe(0);
+  });
+  it('projects seller-specific listing and calendar prices without modifying the shared attraction', async () => {
+    const id = await publishedPackage(); const stored = (await Attraction.findById(id).lean())!.priceFrom; await activate();
+    const listing = await request(app).get(`/attractions/${id}`).set('x-tenant-id', String(owner)).expect(200);
+    const legacy = await request(app).get(`/attractions/${id}`).set('x-tenant-id', String(other)).expect(200);
+    expect(listing.body.data.priceFrom).not.toBe(legacy.body.data.priceFrom);
+    expect((await Attraction.findById(id).lean())!.priceFrom).toBe(stored);
+    const calendar = await request(app).get(`/packages/${id}/calendar`).set('x-tenant-id', String(owner)).query({ month: addDays(TODAY, 10).slice(0, 7), travellers: 2 }).expect(200);
+    expect(calendar.body.data.days.find((day: any) => day.date === addDays(TODAY, 10)).perPersonFrom).toBe(1003.5);
+  });
+  it('refuses price criteria before a misleading package total can filter the candidate out', async () => {
+    await publishedPackage(); await activate();
+    for (const criteria of [{ sort: 'price-low' }, { sort: 'price-high' }, { minPrice: 999999 }, { maxPrice: 1 }]) {
+      const response = await request(app).get('/attractions').set('x-tenant-id', String(owner))
+        .query({ pagination: 'cursor', listingType: 'package', ...criteria }).expect(409);
+      expect(response.body).toMatchObject({ success: false, code: 'PACKAGE_PRICE_FILTER_UNAVAILABLE', capabilities: { priceFiltersAvailable: false } });
+      expect(response.body).not.toHaveProperty('data');
+    }
+  });
+  it('keeps normal package browsing, numbered pages and quotes usable with an explicit capability', async () => {
+    const id = await publishedPackage(); await activate();
+    for (const mode of [{ pagination: 'cursor' }, { page: 1 }, { pagination: 'cursor', locale: 'en' }]) {
+      const response = await request(app).get('/attractions').set('x-tenant-id', String(owner))
+        .query({ sort: 'recommended', listingType: 'package', ...mode }).expect(200);
+      expect(response.body.capabilities).toEqual({ priceFiltersAvailable: false });
+      expect(response.body.pagination.total).toBe(1);
+      expect(response.body.data[0]._id).toBe(id);
+    }
+    expect((await quote(id)).quote.total).toBe(2547);
+  });
+  it('limits the refusal to actual packages in the non-price candidate scope', async () => {
+    await publishedPackage(); await activate();
+    for (const criteria of [{ destination: 'Luxor' }, { search: 'unmatched' }, { listingType: 'tour' }, { locale: 'ar' }, { deals: 'true' }]) {
+      const response = await request(app).get('/attractions').set('x-tenant-id', String(owner))
+        .query({ pagination: 'cursor', sort: 'price-low', ...criteria }).expect(200);
+      expect(response.body.capabilities).toEqual({ priceFiltersAvailable: true });
+      expect(response.body.data).toEqual([]);
+    }
+    const legacy = await request(app).get('/attractions').set('x-tenant-id', String(other))
+      .query({ pagination: 'cursor', sort: 'price-low' }).expect(200);
+    expect(legacy.body.capabilities.priceFiltersAvailable).toBe(true);
+    expect(legacy.body.data).toHaveLength(1);
+    await Attraction.collection.updateMany({}, { $set: { tenantIds: [other] } });
+    const foreign = await request(app).get('/attractions').set('x-tenant-id', String(owner))
+      .query({ pagination: 'cursor', sort: 'price-low' }).expect(200);
+    expect(foreign.body.capabilities.priceFiltersAvailable).toBe(true);
+  });
+  it('checks package presence beyond the first page and excludes unpublished packages', async () => {
+    const id = await publishedPackage(); await activate();
+    await Attraction.collection.insertOne({ title: 'Recent tour', slug: 'recent-tour', status: 'active', listingType: 'tour',
+      tenantIds: [owner], ownerTenantId: owner, currency: 'USD', priceFrom: 20, createdAt: new Date(Date.now() + 1000) } as any);
+    const first = await request(app).get('/attractions').set('x-tenant-id', String(owner))
+      .query({ pagination: 'cursor', limit: 1 }).expect(200);
+    expect(first.body.data[0].title).toBe('Recent tour');
+    expect(first.body.capabilities.priceFiltersAvailable).toBe(false);
+    expect(first.body.pagination.nextCursor).toEqual(expect.any(String));
+    await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $set: { status: 'draft' } });
+    const filtered = await request(app).get('/attractions').set('x-tenant-id', String(owner))
+      .query({ pagination: 'cursor', sort: 'price-low' }).expect(200);
+    expect(filtered.body.capabilities.priceFiltersAvailable).toBe(true);
+    expect(filtered.body.data).toHaveLength(1);
+  });
+
+});

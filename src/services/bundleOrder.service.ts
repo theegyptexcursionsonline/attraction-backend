@@ -665,3 +665,14 @@ export const supplierBundleOrderDto = (
     })),
   createdAt: order.createdAt,
 });
+
+/** Customer quote serialization never exposes supplier obligations or configured expenses. */
+export const customerBundleQuoteDto = (quote: IBundleQuote) => ({
+  id: String(quote._id), _id: quote._id, reference: quote.reference, storefrontTenantId: quote.storefrontTenantId,
+  checkoutMode: quote.checkoutMode, bundleDefinitionId: quote.bundleDefinitionId, bundleVersion: quote.bundleVersion,
+  quantities: quote.quantities, currency: quote.currency, customerPricesMinor: quote.customerPricesMinor,
+  totalMinor: quote.totalMinor, expiresAt: quote.expiresAt, status: quote.status,
+  selections: quote.selections.map(selection => ({ componentId: selection.componentId, attractionId: selection.attractionId,
+    attractionTitle: selection.attractionTitle, optionId: selection.optionId, optionName: selection.optionName, date: selection.date, time: selection.time })),
+  ...(quote.financeSnapshot ? { finance: customerFinance(quote.financeSnapshot) } : {}),
+});

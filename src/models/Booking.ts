@@ -196,6 +196,8 @@ const bookingSchema = new Schema<IBooking>(
     revenueBreakdown: {
       commissionPercent: { type: Number },
       sellerEarnings: { type: Number },
+      configuredBusinessFees: { type: Number },
+      sellerNetAfterConfiguredFees: { type: Number },
       paymentFee: { type: Number },
       supplierEarnings: { type: Number },
     },

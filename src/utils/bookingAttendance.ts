@@ -1,4 +1,4 @@
-import { bookingEligibility, resolveBookingTimeZone, zonedDeparture } from './bookingCutoff';
+import { bookingEligibility, resolveBookingTimeZone } from './bookingCutoff';
 
 export type AttendanceStatus = 'not-recorded' | 'no-show';
 type Booking = { status?: string; cancellationRequestedAt?: unknown; items?: Array<{ date?: unknown; time?: unknown }> };
@@ -7,7 +7,8 @@ export function attendanceEligibility(booking: Booking, timeZone: unknown, now =
   if (!booking.items?.length) return { canMarkNoShow: false, reason: 'The booking departure could not be confirmed.' };
   const zone = resolveBookingTimeZone(timeZone);
   for (const item of booking.items) {
-    if (typeof item.date !== 'string' || !zonedDeparture(item.date, '00:00', zone) || (item.time !== undefined && typeof item.time !== 'string')) {
+    const calendarDay = typeof item.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(item.date) ? new Date(`${item.date}T00:00:00.000Z`) : null;
+    if (!calendarDay || Number.isNaN(calendarDay.getTime()) || calendarDay.toISOString().slice(0, 10) !== item.date || (item.time !== undefined && typeof item.time !== 'string')) {
       return { canMarkNoShow: false, reason: 'The booking departure could not be confirmed.' };
     }
     const departure = bookingEligibility({ date: item.date, time: item.time as string | undefined, timeZone: zone, now });

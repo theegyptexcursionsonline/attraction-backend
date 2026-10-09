@@ -44,7 +44,7 @@ import {
 } from '../utils/packageDetails';
 import { SERVICE_FEE_BASIS_POINTS } from '../utils/serviceFee';
 import { financePolicy, FinanceError } from '../utils/financeSettings';
-import { applyPackageFinance, packageFinancePerPerson } from '../services/packageFinance.service';
+import { applyPackageFinance, packageFinanceTotal } from '../services/packageFinance.service';
 import { fenceFinancePolicy } from '../services/tenantFinance.service';
 import {
   addDays,
@@ -560,14 +560,14 @@ export const getPackageCalendar = async (req: AuthRequest, res: Response, next: 
     const { record, details } = loaded;
     const monthEnd = addDays(addMonths(`${month}-01`, 1), -1);
     const policy = financePolicy(req.tenant || { _id: '' });
-    const days = packageCalendar({ details, month, today, travellers, rooms, ...(policy.configured ? { feeBasisPoints: 0 } : {}), departures: await departureStates(record._id, `${month}-01`, monthEnd) });
-    if (policy.configured) for (const day of days) if (day.perPersonFrom !== undefined) day.perPersonFrom = packageFinancePerPerson(day.perPersonFrom, travellers, record.currency ?? 'USD', policy);
+    const days = packageCalendar({ details, month, today, travellers, rooms, ...(policy.configured ? { feeBasisPoints: 0, priceTotal: packageFinanceTotal(record.currency ?? 'USD', policy) } : {}), departures: await departureStates(record._id, `${month}-01`, monthEnd) });
     const nextAvailableDate = days.some((day) => day.status === 'available')
       ? null
       : await nextAvailableAfter(record._id, details, monthEnd, today, travellers, rooms);
     res.setHeader('Cache-Control', 'private, no-store');
     sendSuccess(res, { month, currency: record.currency ?? 'USD', travellers, days, nextAvailableDate, priceBasis: rooms ? 'selected-rooms' : 'reference-adults' });
   } catch (error) {
+    if (error instanceof FinanceError) { res.status(409).json({ success: false, code: error.code, error: error.message }); return; }
     next(error);
   }
 };
@@ -873,10 +873,10 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
     const reference = generateBookingReference();
     const packageBooking = packageBookingSnapshot({ details, quote, quoteHash, travellerNames, travellerDetails, arrivalDetails });
     // Computed once from the record read above; the fence refuses unless the transaction's record yields the same split.
-    const resale = resaleFieldsFor(attraction, tenantId, quote.total);
+    const resale = resaleFieldsFor(attraction, tenantId, quote.total, financeSnapshot);
     const booking = await runBookingTransaction<IBooking>(async (session) => {
       await fenceFinancePolicy(policy, session);
-      await fencePackageBooking({ attractionId: attraction._id, tenantId, revision: packageRevision, currency, total: quote.total, resale }, session);
+      await fencePackageBooking({ attractionId: attraction._id, tenantId, revision: packageRevision, currency, total: quote.total, resale, financeSnapshot }, session);
       await reservePackageSeats(attraction._id, details, selection.date, guests, session);
       const packagePromoClaim = promo ? await claimPackagePromo(promo, quote, session) : undefined;
       const payload = {
@@ -889,7 +889,7 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
         attractionId: attraction._id,
         items: [packageBookingItem(details, quote)],
         guestDetails,
-        // Every figure includes the service fee, as quoted; the fee itself is in packageBooking.
+        // Legacy package figures are all-in; configured policies keep customer fees separate.
         subtotal: financeSnapshot ? quote.subtotal : quote.preDiscountTotal ?? quote.total,
         fees: financeSnapshot ? financeSnapshot.customerFeesMinor / 100 : 0,
         ...(financeSnapshot ? { financeSnapshot } : {}),
@@ -931,6 +931,7 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
     if (idempotencyRecordId) {
       await IdempotencyKey.deleteOne({ _id: idempotencyRecordId, status: 'processing' }).catch(() => undefined);
     }
+    if (error instanceof FinanceError) { res.status(409).json({ success: false, code: error.code, error: error.message }); return; }
     if (error instanceof PackageSeatsUnavailableError) {
       res.status(409).json({ success: false, code: 'SEATS_UNAVAILABLE', error: 'Those places were just taken. Choose another date or fewer travellers.' });
       return;

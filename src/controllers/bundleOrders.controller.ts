@@ -1,4 +1,4 @@
-import { FinanceError, customerFinance } from '../utils/financeSettings';
+import { FinanceError } from '../utils/financeSettings';
 import { NextFunction, Response } from 'express';
 import { generateBundleAccessToken, verifyBundleAccessToken } from '../bundles/guestAccess';
 import { BundleOrder, IBundleOrder } from '../models/BundleOrder';

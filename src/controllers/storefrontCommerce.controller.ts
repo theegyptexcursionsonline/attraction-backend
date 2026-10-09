@@ -1,3 +1,4 @@
+import { FinanceError } from '../utils/financeSettings';
 import crypto from 'crypto';
 import { Response, NextFunction } from 'express';
 import { Booking } from '../models/Booking';
@@ -40,6 +41,7 @@ export async function quoteCommerceCheckout(req: AuthRequest, res: Response, nex
     sendSuccess(res, commerceSelection({ tenantId: req.tenant._id, attractionId: attraction._id, items: price.normalizedItems,
       subtotal: price.subtotal, fees: price.fees, discount: price.discount, total: price.total, currency: attraction.currency }, 'begin_checkout'));
   } catch (error) {
+    if (error instanceof FinanceError) { res.status(409).json({ success: false, code: error.code, error: error.message }); return; }
     if (error instanceof Error && /^(INVALID_|PARTICIPANT_LIMIT|MISSING_TENANT|COMMERCE_)/.test(error.message)) { sendError(res, 'Checkout selection is invalid', 400); return; }
     next(error);
   }
