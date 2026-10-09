@@ -1,4 +1,5 @@
 import mongoose, { Schema, Types } from 'mongoose';
+import { AUDIT_SUBJECTS, AUDIT_VERBS, MAX_CHANGED_FIELDS, MAX_CHANGES, type AuditChange } from '../services/auditSubjects';
 
 /**
  * User log: who on the admin team did what, when, from where.
@@ -6,8 +7,9 @@ import mongoose, { Schema, Types } from 'mongoose';
  * Every create / change / delete an admin account makes through the API is written here by
  * `auditTrail` (middleware/audit.middleware), and sign-in events are written by the auth
  * controller. Entries are append-only from the application's point of view and expire after
- * `AUDIT_RETENTION_DAYS`. Request bodies are never stored: an entry names the action and the
- * record, not its content, so passwords, card data and traveller details never land here.
+ * `AUDIT_RETENTION_DAYS`. Request bodies are never stored. An entry names the action, the record
+ * (its name at the time) and, for allow-listed fields only, what changed (services/auditSubjects):
+ * passwords, tokens, 2FA, card data and traveller contact details never land here.
  */
 export const AUDIT_RETENTION_DAYS = 400;
 
@@ -20,6 +22,7 @@ export const AUDIT_ACTIONS = [
   'record.create',
   'record.update',
   'record.delete',
+  'record.export',
 ] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
 
@@ -36,6 +39,14 @@ export interface IAuditLog {
   resource?: string;
   resourceId?: string;
   tenantId?: Types.ObjectId;
+  /** The kind of record and what was done to it (`tour` + `update`), the record's name then, a plain summary. */
+  subject?: string;
+  verb?: string;
+  resourceLabel?: string;
+  summary?: string;
+  /** Before → after for allow-listed fields; `changedFields` names fields whose values are never kept. */
+  changes?: AuditChange[];
+  changedFields?: string[];
   statusCode?: number;
   ip?: string;
   userAgent?: string;
@@ -55,6 +66,24 @@ const auditLogSchema = new Schema<IAuditLog>(
     resource: { type: String, maxlength: 60 },
     resourceId: { type: String, maxlength: 64 },
     tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant' },
+    subject: { type: String, enum: AUDIT_SUBJECTS },
+    verb: { type: String, enum: AUDIT_VERBS },
+    resourceLabel: { type: String, trim: true, maxlength: 160 },
+    summary: { type: String, maxlength: 300 },
+    changes: {
+      type: [new Schema<AuditChange>({
+        field: { type: String, required: true, maxlength: 80 },
+        before: { type: Schema.Types.Mixed },
+        after: { type: Schema.Types.Mixed },
+      }, { _id: false })],
+      default: undefined,
+      validate: (value: unknown[] | undefined) => !value || value.length <= MAX_CHANGES,
+    },
+    changedFields: {
+      type: [{ type: String, maxlength: 80 }],
+      default: undefined,
+      validate: (value: unknown[] | undefined) => !value || value.length <= MAX_CHANGED_FIELDS,
+    },
     statusCode: { type: Number },
     ip: { type: String, maxlength: 64 },
     userAgent: { type: String, maxlength: 300 },
