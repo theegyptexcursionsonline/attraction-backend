@@ -461,7 +461,9 @@ const normalizedCustomDomain = (value?: string): string | null => {
 };
 
 export const getEmailBrand = (tenant?: EmailTenant | null): EmailBrand => {
-  const base = httpsUrl(env.frontendUrl.split(',')[0].trim().replace(/\/+$/, ''));
+  // `httpsUrl` returns URL.toString(), which ends a bare origin with "/"; links append "/path",
+  // so the slash is dropped again. A "//path" link opens the storefront's error page.
+  const base = httpsUrl(env.frontendUrl.split(',')[0].trim().replace(/\/+$/, '')).replace(/\/+$/, '');
   const name = safeDisplayName(tenant?.name?.trim() || 'Foxes Network') || 'Foxes Network';
   // Prefer the brand's own custom domain for links — but only when it's confirmed to
   // serve the Attractions build. Many custom domains still point at the client's OLD
@@ -1551,8 +1553,8 @@ export const sendUserInvitation = async (
 };
 
 /**
- * Sent when a team member's role, status or site access actually changes. Access is a security
- * fact: the person whose permissions moved is told, in plain words, what they can now do.
+ * Sent when a team member's role, status, site access or sections actually change. Access is a
+ * security fact: the person whose permissions moved is told, in plain words, what they can now do.
  */
 export interface AccessChangedDetails {
   userName: string;
@@ -1561,6 +1563,10 @@ export interface AccessChangedDetails {
   /** Names of the sites the user can now reach. Empty means none. */
   siteNames: string[];
   changedBy: string;
+  /** Sections the user can now use; null means every section. Left out, no Sections row. */
+  sectionNames?: string[] | null;
+  /** Whether the change ended their sessions. Older callers always did, so unset means yes. */
+  signedOut?: boolean;
 }
 
 export const renderAccessChanged = (
@@ -1568,17 +1574,24 @@ export const renderAccessChanged = (
   details: AccessChangedDetails
 ): { html: string; text: string } => {
   const sites = details.siteNames.length > 0 ? details.siteNames.join(', ') : 'No sites assigned';
+  const sections = details.sectionNames === undefined
+    ? undefined
+    : details.sectionNames === null
+      ? 'All sections'
+      : details.sectionNames.length > 0 ? details.sectionNames.join(', ') : 'No sections';
   const active = details.status === 'active';
+  const signedOut = details.signedOut !== false;
   return renderActionEmailParts(brand, {
     title: 'Your access was updated',
     preheader: `Your role is now ${details.role}.`,
     badge: { label: 'Access updated', tone: active ? 'info' : 'warning' },
     heading: 'Your access was updated',
-    intro: `Hi ${escapeEmailHtml(firstNameOf(details.userName))}, ${escapeEmailHtml(details.changedBy)} updated your access. You have been signed out and will need to sign in again.`,
+    intro: `Hi ${escapeEmailHtml(firstNameOf(details.userName))}, ${escapeEmailHtml(details.changedBy)} updated your access.${signedOut ? ' You have been signed out and will need to sign in again.' : ''}`,
     details: [
       { label: 'Role', valueHtml: escapeEmailHtml(details.role), valueText: details.role },
       { label: 'Account status', valueHtml: escapeEmailHtml(details.status), valueText: details.status },
       { label: 'Sites', valueHtml: escapeEmailHtml(sites), valueText: sites },
+      ...(sections === undefined ? [] : [{ label: 'Sections', valueHtml: escapeEmailHtml(sections), valueText: sections }]),
     ],
     ctaLabel: 'Sign in',
     ctaUrl: brandedLink(brand, '/login'),

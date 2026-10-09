@@ -27,7 +27,7 @@ import {
 } from '../utils/tenantScope';
 import { revokeUserSessions } from '../utils/session';
 import { accountSections } from '../middleware/section.middleware';
-import { ADMIN_SECTIONS, normalizeSectionList } from '../utils/sectionAccess';
+import { ADMIN_SECTIONS, SECTION_LABELS, normalizeSectionList } from '../utils/sectionAccess';
 import { PUBLIC_USER_PROJECTION, redactUserSecrets } from '../utils/userProjection';
 import { emailFromTravelerKey, travelerDetailKey } from '../utils/travelerKey';
 import { publicAttractionOperators } from '../services/publicAttractionOperator.service';
@@ -301,9 +301,23 @@ export const getUsers = async (
       User.countDocuments(query),
     ]);
 
-    const safeUsers = users.map((user) =>
-      redactUserSecrets(withCallerBrandsOnly(req, user) as unknown as Record<string, unknown>)
-    );
+    // When each pending invitation stops working. Read separately so the reset expiry of a
+    // member who has joined (an outstanding password reset) is never exposed.
+    const pendingIds = users.filter((user) => user.status === 'pending').map((user) => user._id);
+    const inviteExpiry = new Map<string, Date | undefined>();
+    if (pendingIds.length) {
+      const invites = await User.find({ _id: { $in: pendingIds }, status: 'pending' })
+        .select('+passwordResetExpires')
+        .lean();
+      for (const invite of invites) inviteExpiry.set(String(invite._id), invite.passwordResetExpires);
+    }
+
+    const safeUsers = users.map((user) => {
+      const row = redactUserSecrets(withCallerBrandsOnly(req, user) as unknown as Record<string, unknown>);
+      if (!inviteExpiry.has(String(user._id))) return row;
+      const expiresAt = inviteExpiry.get(String(user._id));
+      return { ...row, invitationExpiresAt: expiresAt ? new Date(expiresAt).toISOString() : null };
+    });
     sendPaginated(res, safeUsers, pageNum, limitNum, total);
   } catch (error) {
     next(error);
@@ -801,7 +815,8 @@ const userEmailTenant = async (
   req: AuthRequest,
   assigned: Array<{ toString(): string }> | null | undefined
 ): Promise<EmailTenant | null> => {
-  const ids = (assigned || []).map(String);
+  // Ids or populated brands: String() of a populated brand is its whole document, not its id.
+  const ids = (assigned || []).map((tenant) => String((tenant as { _id?: unknown })?._id ?? tenant));
   const activeTenantId = req.tenant?._id ? String(req.tenant._id) : null;
   const chosen = activeTenantId && ids.includes(activeTenantId) ? activeTenantId : ids[0];
   if (!chosen) return null;
@@ -1038,6 +1053,23 @@ export const setUserPassword = async (
   }
 };
 
+const TEAM_ROLES = ['super-admin', 'brand-admin', 'manager', 'editor', 'viewer'];
+const ACTIVE_SUPER_ADMIN = { role: 'super-admin', status: 'active' };
+const LAST_SUPER_ADMIN = 'Keep at least one active super admin: make someone else a super admin first.';
+
+/** Whether this change leaves `target`, an active super admin now, no longer one. */
+const endsActiveSuperAdmin = (target: { role?: string; status?: string }, role: unknown, status: unknown): boolean =>
+  target.role === 'super-admin' && target.status === 'active' &&
+  ((role !== undefined && role !== 'super-admin') || (status !== undefined && status !== 'active'));
+
+const otherActiveSuperAdmins = (id: unknown) => User.countDocuments({ ...ACTIVE_SUPER_ADMIN, _id: { $ne: id } });
+
+/** Section names for the access email; null when the member can use every section. */
+const accessSectionNames = async (user: { role?: string; sectionAccess?: unknown; assignedTenants?: unknown[] }): Promise<string[] | null> => {
+  const sections = await accountSections(user);
+  return sections.length === ADMIN_SECTIONS.length ? null : sections.map((section) => SECTION_LABELS[section]);
+};
+
 export const updateUser = async (
   req: AuthRequest,
   res: Response,
@@ -1107,6 +1139,14 @@ export const updateUser = async (
       }
     }
 
+    // The platform always keeps one active super admin. Demoting or deactivating the last one,
+    // themselves included, would sign them out with nobody left who can restore the account.
+    const endsSuperAdmin = endsActiveSuperAdmin(target, role, status);
+    if (endsSuperAdmin && (await otherActiveSuperAdmins(target._id)) === 0) {
+      sendError(res, LAST_SUPER_ADMIN, 409);
+      return;
+    }
+
     // Only a real change is checked: re-saving a member's existing access (with a name edit, say)
     // must not need the right to give it.
     const currentSections = Array.isArray(target.sectionAccess) ? normalizeSectionList(target.sectionAccess) : null;
@@ -1134,17 +1174,25 @@ export const updateUser = async (
     if (sectionsChanged) target.sectionAccess = requestedSections ?? undefined;
     if (securityContextChanged) revokeUserSessions(target);
     await target.save();
+
+    // Two super admins removing each other at the same moment both pass the check above; whoever
+    // finds none left afterwards puts their target back.
+    if (endsSuperAdmin && (await User.countDocuments(ACTIVE_SUPER_ADMIN)) === 0) {
+      await User.updateOne({ _id: target._id }, { $set: ACTIVE_SUPER_ADMIN });
+      sendError(res, LAST_SUPER_ADMIN, 409);
+      return;
+    }
     await target.populate('assignedTenants', 'name slug');
 
-    // A role, status or site-access change is a security fact the person is entitled to know —
-    // and they have just been signed out, so they need to know why. A pure name edit does not
-    // qualify, which is what `securityContextChanged` already distinguishes.
-    if (securityContextChanged) {
+    // A change to what the person can do (role, status, sites or sections) is a security fact
+    // they are entitled to know, and the email says whether it signed them out (role, status and
+    // site changes do; sections apply at once without one). A pure name edit does not qualify.
+    if (securityContextChanged || sectionsChanged) {
       const siteNames = (target.assignedTenants as unknown as Array<{ name?: string }> | undefined || [])
         .map((site) => site?.name)
         .filter((name): name is string => !!name);
-      void userEmailTenant(req, target.assignedTenants)
-        .then((tenant) =>
+      void Promise.all([userEmailTenant(req, target.assignedTenants), accessSectionNames(target)])
+        .then(([tenant, sectionNames]) =>
           sendAccessChangedEmail(
             target.email,
             {
@@ -1153,6 +1201,8 @@ export const updateUser = async (
               status: target.status,
               siteNames,
               changedBy: req.user ? `${req.user.firstName} ${req.user.lastName}`.trim() : 'An administrator',
+              sectionNames,
+              signedOut: securityContextChanged,
             },
             tenant
           )
@@ -1199,6 +1249,77 @@ export const revokeUserSessionsById = async (
   }
 };
 
+/**
+ * Withdraws an invitation nobody has accepted yet. A super admin removes the account; a brand admin
+ * removes only their own brands from it, so an invitee shared with another brand stays invited
+ * there (and that brand is never named). Someone who has signed in is a member, not an
+ * invitation: they are deactivated instead, which keeps their history.
+ */
+export const withdrawInvitation = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const target = Types.ObjectId.isValid(String(id)) ? await User.findById(id) : null;
+    if (!target || !TEAM_ROLES.includes(target.role)) {
+      sendError(res, 'User not found', 404);
+      return;
+    }
+
+    const theirs = (target.assignedTenants || []).map(String);
+    const mine = isSuperAdmin(req.user) ? null : callerTenantIds(req.user);
+    if (mine) {
+      if (!sharesAnyTenant(mine, theirs)) {
+        sendError(res, 'User not found', 404);
+        return;
+      }
+      if (!canManageRole(req.user?.role, target.role)) {
+        sendError(res, 'You are not allowed to manage this user', 403);
+        return;
+      }
+    }
+
+    if (target.status !== 'pending' || target.lastLogin) {
+      sendError(res, 'This person has already joined. Deactivate them instead.', 409);
+      return;
+    }
+
+    // Written only while the invitation is still unaccepted, even if it is accepted right now.
+    const unaccepted = { _id: target._id, status: 'pending', lastLogin: null };
+    const changed = 'This invitation has just changed. Refresh and try again.';
+    const othersKeep = mine ? theirs.filter((tenant) => !mine.includes(tenant)) : [];
+    if (mine && othersKeep.length > 0) {
+      const updated = await User.findOneAndUpdate(
+        unaccepted,
+        { $pull: { assignedTenants: { $in: mine.map((tenant) => new Types.ObjectId(tenant)) } } },
+        { new: true }
+      );
+      if (!updated) {
+        sendError(res, changed, 409);
+        return;
+      }
+      // Normally their other brands keep the invitation; if those went meanwhile, nothing does.
+      if ((updated.assignedTenants || []).length > 0) {
+        console.info('[users] invitation withdrawn', { userId: String(target._id), byUserId: String(req.user?._id), accountRemoved: false });
+        sendSuccess(res, { id: String(target._id), accountRemoved: false }, 'Invitation withdrawn for your sites');
+        return;
+      }
+    }
+
+    const removed = await User.findOneAndDelete(unaccepted);
+    if (!removed) {
+      sendError(res, changed, 409);
+      return;
+    }
+    console.info('[users] invitation withdrawn', { userId: String(target._id), byUserId: String(req.user?._id), accountRemoved: true });
+    sendSuccess(res, { id: String(target._id), accountRemoved: true }, 'Invitation withdrawn');
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const deleteUser = async (
   req: AuthRequest,
   res: Response,
@@ -1213,12 +1334,17 @@ export const deleteUser = async (
       return;
     }
 
-    const user = await User.findByIdAndDelete(id);
-
+    const user = Types.ObjectId.isValid(String(id)) ? await User.findById(id) : null;
     if (!user) {
       sendError(res, 'User not found', 404);
       return;
     }
+    // Defensive: the caller is an active super admin, so this holds unless data changed under us.
+    if (user.role === 'super-admin' && user.status === 'active' && (await otherActiveSuperAdmins(user._id)) === 0) {
+      sendError(res, LAST_SUPER_ADMIN, 409);
+      return;
+    }
+    await User.deleteOne({ _id: user._id });
 
     sendSuccess(res, null, 'User deleted successfully');
   } catch (error) {

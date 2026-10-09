@@ -17,6 +17,7 @@ import {
   updateUser,
   deleteUser,
   revokeUserSessionsById,
+  withdrawInvitation,
 } from '../controllers/users.controller';
 import { authenticate, requireRole, requireSuperAdmin } from '../middleware/auth.middleware';
 import { validate, validateQuery } from '../middleware/validate.middleware';
@@ -325,6 +326,38 @@ router.post(
   authenticate,
   requireRole('super-admin', 'brand-admin'),
   createInvitationLink
+);
+
+/**
+ * @swagger
+ * /users/{id}/invitation:
+ *   delete:
+ *     summary: Withdraw an invitation nobody has accepted (Admin)
+ *     description: A super admin removes the invited account. A brand admin removes only their own sites from it; an invitee also invited to another brand's site stays invited there.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Withdrawn; `accountRemoved` says whether the account was removed or only the caller's sites
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       404:
+ *         description: User not found or outside the caller's sites
+ *       409:
+ *         description: The person has already joined (deactivate them instead), or the invitation just changed
+ */
+router.delete(
+  '/:id/invitation',
+  authenticate,
+  requireRole('super-admin', 'brand-admin'),
+  withdrawInvitation
 );
 
 /**
