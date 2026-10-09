@@ -1,4 +1,5 @@
 import { pageSeoSchema } from '../utils/pageSeo';
+import { financeSettingsSchema } from '../utils/financeSettings';
 import { ADMIN_SECTIONS } from '../utils/sectionAccess';
 import { SEARCH_VISIBILITY, dropUnrevisionedSeoWrites } from '../utils/seoSettings';
 import { externalRatingsSchema } from '../utils/externalRatings';
@@ -133,6 +134,9 @@ const tenantSchema = new Schema<ITenant>(
       required: true,
       default: 'USD',
     },
+    financeSettings: { type: Schema.Types.Mixed, default: undefined, validate: (value: unknown) => value === undefined || financeSettingsSchema.safeParse(value).success },
+    financeRevision: { type: Number, min: 0, default: undefined, validate: Number.isSafeInteger },
+    financeBookingFence: { type: Number, select: false },
     defaultLanguage: {
       type: String,
       required: true,

@@ -1,3 +1,4 @@
+import { withoutFinanceFields } from '../utils/financeSettings';
 import { requestedLocale, sourceFallbackAllowed } from '../services/attractionLocalization.service';
 import { TenantPresentationTranslation } from '../models/TenantPresentationTranslation';
 import { localizedPublicSitePresentation, presentationReadScope } from '../services/tenantPresentationLocalization.service';
@@ -667,7 +668,7 @@ export const removeCustomDomain = async (
 
 /** Preserve old clients that echo newly added read fields during ordinary saves. */
 export const stripUnversionedTrackingUpdate = (req: AuthRequest, _res: Response, next: NextFunction): void => {
-  req.body = withoutPageSeoFields(withoutTrackingSettingsFields(req.body));
+  req.body = withoutFinanceFields(withoutPageSeoFields(withoutTrackingSettingsFields(req.body)));
   next();
 };
 
@@ -677,7 +678,7 @@ export const createTenant = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    req.body = withoutPageSeoFields(withoutTrackingSettingsFields(req.body));
+    req.body = withoutFinanceFields(withoutPageSeoFields(withoutTrackingSettingsFields(req.body)));
     if (req.body.contactInfo !== undefined) {
       const contact = tenantContactInfoSchema.safeParse(req.body.contactInfo);
       if (!contact.success) { sendError(res, 'Invalid contact information', 400); return; }
@@ -914,7 +915,7 @@ export const updateTenant = async (
 ): Promise<void> => {
   try {
     if (!req.user || req.user.role !== 'super-admin') { sendError(res, 'Super admin access required', req.user ? 403 : 401); return; }
-    req.body = withoutPageSeoFields(withoutTrackingSettingsFields(req.body));
+    req.body = withoutFinanceFields(withoutPageSeoFields(withoutTrackingSettingsFields(req.body)));
     if (Object.keys(req.body).some(key => key.startsWith('customPages.'))) {
       sendError(res, 'Use the Pages editor to update website pages', 400); return;
     }
@@ -1003,7 +1004,7 @@ export const updateTenantSettings = async (
     if (!req.user || !['super-admin', 'brand-admin'].includes(req.user.role)) {
       sendError(res, 'Site administrator access required', req.user ? 403 : 401); return;
     }
-    req.body = withoutPageSeoFields(withoutTrackingSettingsFields(req.body));
+    req.body = withoutFinanceFields(withoutPageSeoFields(withoutTrackingSettingsFields(req.body)));
     const { id } = req.params;
     if (!Types.ObjectId.isValid(id)) { sendError(res, 'Tenant not found', 404); return; }
 

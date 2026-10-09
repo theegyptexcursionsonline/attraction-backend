@@ -88,6 +88,11 @@ const bookingSchema = new Schema<IBooking>(
       type: Number,
       default: 0,
     },
+    financeSnapshot: { type: Schema.Types.Mixed, default: undefined, immutable: true },
+    attendanceStatus: { type: String, enum: ['not-recorded', 'no-show'], default: undefined },
+    attendanceRevision: { type: Number, min: 0, default: undefined, validate: Number.isSafeInteger },
+    attendanceRecordedAt: Date,
+    attendanceRecordedBy: { type: Schema.Types.ObjectId, ref: 'User' },
     discount: {
       type: Number,
       default: 0,

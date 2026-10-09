@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { getTenantFinance, updateTenantFinance } from '../controllers/tenantFinance.controller';
 import {
   getTenants,
   getPublicTenants,
@@ -35,6 +36,9 @@ import { sendError, sendSuccess } from '../utils/response';
 import { ADMIN_SECTIONS, normalizeSectionList, sectionsOrAll } from '../utils/sectionAccess';
 
 const router = Router();
+
+router.get('/:id/finance', authenticate, requireRole('super-admin', 'brand-admin'), getTenantFinance);
+router.put('/:id/finance', authenticate, requireRole('super-admin', 'brand-admin'), updateTenantFinance);
 
 /**
  * @swagger

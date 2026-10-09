@@ -1,3 +1,5 @@
+import { calculateFinance, FinanceError } from '../utils/financeSettings';
+import { loadFinancePolicy, fenceFinancePolicy } from '../services/tenantFinance.service';
 import { Router, Response, NextFunction } from 'express';
 import { randomUUID } from 'crypto';
 import mongoose, { ClientSession } from 'mongoose';
@@ -201,7 +203,7 @@ function isSameReservation(
     && hold.optionId === expected.optionId
     && hold.availabilityId === expected.availabilityId
     && hold.currency === expected.currency
-    && hold.totalMinor === expected.totalMinor
+    && (hold.financeSnapshot?.serviceSubtotalMinor ?? hold.totalMinor) === expected.totalMinor
     && hold.unitItems.length === expected.unitItems.length
     && hold.unitItems.every((item) => {
       const other = expected.unitItems.find((candidate) => candidate.unitId === item.unitId);
@@ -268,7 +270,7 @@ router.get('/products', requireScope('read'), async (req: AuthRequest, res: Resp
     res.json(list
       .filter((a) => isOctoCompatibleProduct(a as unknown as OctoAttractionLike))
       .map((a) => toOctoProduct(a as unknown as OctoAttractionLike, tenantOf(req))));
-  } catch (err) { next(err); }
+  } catch (err) { if (err instanceof FinanceError) return void octoErr(res, 409, err.code, err.message); next(err); }
 });
 
 router.get('/products/:id', requireScope('read'), async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -276,7 +278,7 @@ router.get('/products/:id', requireScope('read'), async (req: AuthRequest, res: 
     const a = await findProduct(req, req.params.id);
     if (!a) return void octoErr(res, 404, 'INVALID_PRODUCT_ID', 'Product not found');
     res.json(toOctoProduct(a as unknown as OctoAttractionLike, tenantOf(req)));
-  } catch (err) { next(err); }
+  } catch (err) { if (err instanceof FinanceError) return void octoErr(res, 409, err.code, err.message); next(err); }
 });
 
 // ── Availability ────────────────────────────────────────────────────────────
@@ -313,7 +315,7 @@ router.post('/availability', requireScope('read'), async (req: AuthRequest, res:
       }
     }
     res.json(out);
-  } catch (err) { next(err); }
+  } catch (err) { if (err instanceof FinanceError) return void octoErr(res, 409, err.code, err.message); next(err); }
 });
 
 // ── Booking lifecycle ─────────────────────────────────────────────────────
@@ -361,6 +363,9 @@ router.post('/bookings', requireScope('write'), async (req: AuthRequest, res: Re
           }
           const ok = await reserveCapacity(a._id, localDate, startTime, totalQty, session);
           if (!ok) return;
+          const policy = await loadFinancePolicy(req.tenant!._id, session);
+          const financeSnapshot = policy.configured ? calculateFinance({ policy, currency, serviceSubtotalMinor: totalMinor, discountMinor: 0 }) : undefined;
+          await fenceFinancePolicy(policy, session);
           [hold] = await OctoHold.create([{
             uuid: holdUuid,
             status: 'ON_HOLD',
@@ -374,7 +379,8 @@ router.post('/bookings', requireScope('write'), async (req: AuthRequest, res: Re
             startTime,
             unitItems: items,
             currency,
-            totalMinor,
+            totalMinor: financeSnapshot?.totalMinor ?? totalMinor,
+            ...(financeSnapshot ? { financeSnapshot } : {}),
             expiresAt: new Date(Date.now() + HOLD_TTL_MS),
           }], { session });
         });
@@ -410,7 +416,7 @@ router.post('/bookings', requireScope('write'), async (req: AuthRequest, res: Re
         utcHoldExpiration: resolvedHold.expiresAt?.toISOString() ?? null,
       }),
     );
-  } catch (err) { next(err); }
+  } catch (err) { if (err instanceof FinanceError) return void octoErr(res, 409, err.code, err.message); next(err); }
 });
 
 async function expireHold(
@@ -543,7 +549,9 @@ router.post('/bookings/:uuid/confirm', requireScope('write'), async (req: AuthRe
             phone: contact.phoneNumber || 'N/A',
             country: 'N/A',
           },
-          subtotal: total,
+          subtotal: claimed.financeSnapshot ? claimed.financeSnapshot.serviceSubtotalMinor / 100 : total,
+          fees: claimed.financeSnapshot ? claimed.financeSnapshot.customerFeesMinor / 100 : 0,
+          ...(claimed.financeSnapshot ? { financeSnapshot: claimed.financeSnapshot } : {}),
           total,
           currency: claimed.currency,
           paymentMethod: 'pay-later',
@@ -576,7 +584,7 @@ router.post('/bookings/:uuid/confirm', requireScope('write'), async (req: AuthRe
       availabilityId: hold.availabilityId, currency: hold.currency, totalMinor: hold.totalMinor,
       unitItems: hold.unitItems, reference: (booking as InstanceType<typeof Booking>).reference, contact,
     }));
-  } catch (err) { next(err); }
+  } catch (err) { if (err instanceof FinanceError) return void octoErr(res, 409, err.code, err.message); next(err); }
 });
 
 // DELETE /octo/bookings/:uuid — cancel a hold/booking + release capacity.
@@ -610,7 +618,7 @@ router.delete('/bookings/:uuid', requireScope('write'), async (req: AuthRequest,
       availabilityId: hold.availabilityId, currency: hold.currency, totalMinor: hold.totalMinor,
       unitItems: hold.unitItems, contact: hold.contact,
     }));
-  } catch (err) { next(err); }
+  } catch (err) { if (err instanceof FinanceError) return void octoErr(res, 409, err.code, err.message); next(err); }
 });
 
 // GET /octo/bookings/:uuid
@@ -625,7 +633,7 @@ router.get('/bookings/:uuid', requireScope('read'), async (req: AuthRequest, res
       unitItems: hold.unitItems, reference: b?.reference ?? null, contact: hold.contact,
       utcHoldExpiration: hold.expiresAt?.toISOString() ?? null,
     }));
-  } catch (err) { next(err); }
+  } catch (err) { if (err instanceof FinanceError) return void octoErr(res, 409, err.code, err.message); next(err); }
 });
 
 export default router;

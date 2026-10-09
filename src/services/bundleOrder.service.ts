@@ -27,6 +27,8 @@ import {
   runBundleTransaction,
 } from './bundleInventory.service';
 import { assertTenantIdsBookingCreationAllowed } from './tenantBookingPolicy.service';
+import { calculateFinance, customerFinance, FinanceError } from '../utils/financeSettings';
+import { loadFinancePolicy, fenceFinancePolicy } from './tenantFinance.service';
 
 export class BundleOrderError extends Error {
   constructor(readonly code: string, message: string, readonly statusCode = 400) {
@@ -319,7 +321,10 @@ export const createBundleQuote = async (input: {
     offerCapacity: selection.offerCapacity,
   })));
 
-  const totalMinor = priceForGuests(bundle.customerPricesMinor, input.request.quantities);
+  const serviceTotalMinor = priceForGuests(bundle.customerPricesMinor, input.request.quantities);
+  const policy = await loadFinancePolicy(bundle.storefrontTenantId);
+  const financeSnapshot = policy.configured ? calculateFinance({ policy, currency: bundle.currency, serviceSubtotalMinor: serviceTotalMinor, discountMinor: 0 }) : undefined;
+  const totalMinor = financeSnapshot?.totalMinor ?? serviceTotalMinor;
   if (totalMinor <= 0) {
     throw new BundleOrderError(
       'BUNDLE_REQUIRES_PAYING_GUEST',
@@ -328,7 +333,7 @@ export const createBundleQuote = async (input: {
   }
   const supplierTotalMinor = selections.reduce((sum, item) => sum + item.supplierNetTotalMinor, 0);
   const platformAllocationMinor =
-    totalMinor - supplierTotalMinor - bundle.platformFeeReserveMinor - bundle.taxReserveMinor;
+    serviceTotalMinor - supplierTotalMinor - bundle.platformFeeReserveMinor - bundle.taxReserveMinor - (financeSnapshot?.businessFeesMinor ?? 0);
   if (platformAllocationMinor < 0) {
     throw new BundleOrderError('BUNDLE_ECONOMICS_INVALID', 'Bundle pricing no longer covers its obligations', 409);
   }
@@ -356,6 +361,8 @@ export const createBundleQuote = async (input: {
     paymentFeeReserveMinor: bundle.platformFeeReserveMinor,
     taxMinor: bundle.taxReserveMinor,
     totalMinor,
+    financePolicyRevision: policy.revision,
+    ...(financeSnapshot ? { financeSnapshot } : {}),
     expiresAt,
     status: 'active',
   });
@@ -464,6 +471,9 @@ export const createBundleOrder = async (input: {
         checkoutMode: input.checkoutMode,
       }).session(session);
       if (!quote) throw new BundleOrderError('QUOTE_EXPIRED', 'Refresh this bundle before checkout', 409);
+      const policy = await loadFinancePolicy(quote.storefrontTenantId, session);
+      if (policy.revision !== (quote.financePolicyRevision ?? 0)) throw new FinanceError('FINANCE_CHANGED', 'Website fees changed. Refresh the bundle price before checkout.');
+      await fenceFinancePolicy(policy, session);
       const offers = await BundleSupplyOffer.find({
         _id: { $in: quote.selections.map((selection) => selection.supplyOfferId) },
         status: 'active',
@@ -540,6 +550,7 @@ export const createBundleOrder = async (input: {
         paymentFeeReserveMinor: quote.paymentFeeReserveMinor,
         taxMinor: quote.taxMinor,
         totalMinor: quote.totalMinor,
+        ...(quote.financeSnapshot ? { financeSnapshot: quote.financeSnapshot } : {}),
         refundedMinor: 0,
         holdExpiresAt: quote.expiresAt,
         idempotencyFingerprint: claim.record.requestHash,
@@ -604,6 +615,7 @@ export const customerBundleOrderDto = (order: IBundleOrder): Record<string, unkn
   paymentStatus: order.paymentStatus,
   currency: order.currency,
   totalMinor: order.totalMinor,
+  ...(order.financeSnapshot ? { finance: customerFinance(order.financeSnapshot) } : {}),
   refundedMinor: order.refundedMinor,
   holdExpiresAt: order.holdExpiresAt,
   guestDetails: order.guestDetails,

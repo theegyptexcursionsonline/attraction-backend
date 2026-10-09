@@ -293,6 +293,8 @@ export const createBundlePaymentSession = async (
 };
 
 const paidLedgerLines = (order: IBundleOrder): LedgerLine[] => [
+  ...(order.financeSnapshot ? [{ account: 'configured_fee_reserve' as const, direction: 'credit' as const,
+    amountMinor: order.financeSnapshot.customerFeesMinor + order.financeSnapshot.businessFeesMinor }] : []),
   {
     account: 'cash_collected',
     direction: 'debit',
@@ -1127,6 +1129,8 @@ export const refundBundleOrder = async (input: {
     ];
     if (full) {
       const reversalLines: LedgerLine[] = [
+        ...(order.financeSnapshot ? [{ account: 'configured_fee_reserve' as const, direction: 'debit' as const,
+          amountMinor: order.financeSnapshot.customerFeesMinor + order.financeSnapshot.businessFeesMinor }] : []),
         ...order.components.flatMap((component, index) =>
           paidSettlementMinorBeforeRefund[index] > 0
             ? []

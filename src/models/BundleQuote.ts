@@ -33,6 +33,8 @@ export interface IBundleQuote extends Document {
   paymentFeeReserveMinor: number;
   taxMinor: number;
   totalMinor: number;
+  financeSnapshot?: import('../utils/financeSettings').FinanceSnapshot;
+  financePolicyRevision?: number;
   expiresAt: Date;
   status: 'active' | 'consumed' | 'expired';
   consumedByOrderId?: Types.ObjectId;
@@ -88,6 +90,8 @@ const bundleQuoteSchema = new Schema<IBundleQuote>(
     paymentFeeReserveMinor: { type: Number, required: true, min: 0, validate: Number.isSafeInteger },
     taxMinor: { type: Number, required: true, min: 0, validate: Number.isSafeInteger },
     totalMinor: { type: Number, required: true, min: 1, validate: Number.isSafeInteger },
+    financeSnapshot: { type: Schema.Types.Mixed, default: undefined, immutable: true },
+    financePolicyRevision: { type: Number, default: undefined, immutable: true },
     expiresAt: { type: Date, required: true },
     status: { type: String, enum: ['active', 'consumed', 'expired'], default: 'active', index: true },
     consumedByOrderId: { type: Schema.Types.ObjectId, ref: 'BundleOrder' },

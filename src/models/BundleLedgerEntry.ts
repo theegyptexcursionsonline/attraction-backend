@@ -6,6 +6,7 @@ export type BundleLedgerAccount =
   | 'supplier_payable'
   | 'platform_revenue'
   | 'payment_fee_reserve'
+  | 'configured_fee_reserve'
   | 'tax_payable'
   | 'customer_refund'
   | 'supplier_settlement';
@@ -30,7 +31,7 @@ const bundleLedgerEntrySchema = new Schema<IBundleLedgerEntry>(
     operationId: { type: String, required: true },
     account: {
       type: String,
-      enum: ['customer_receivable', 'cash_collected', 'supplier_payable', 'platform_revenue', 'payment_fee_reserve', 'tax_payable', 'customer_refund', 'supplier_settlement'],
+      enum: ['customer_receivable', 'cash_collected', 'supplier_payable', 'platform_revenue', 'payment_fee_reserve', 'configured_fee_reserve', 'tax_payable', 'customer_refund', 'supplier_settlement'],
       required: true,
     },
     direction: { type: String, enum: ['debit', 'credit'], required: true },

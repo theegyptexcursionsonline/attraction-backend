@@ -667,6 +667,7 @@ const quantitiesSchema = z.object({
 );
 
 export const createBookingSchema = z.object({
+  quoteHash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
   pickupSelectionVersion: z.literal(1).optional(),
   attractionId: z.string()
     .trim()

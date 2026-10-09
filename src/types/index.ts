@@ -56,6 +56,9 @@ export type BundleLaunchMode = 'off' | 'discovery' | 'test' | 'live';
 
 export interface ITenant extends Document {
   _id: Types.ObjectId;
+  financeSettings?: import('../utils/financeSettings').FinanceSettings;
+  financeRevision?: number;
+  financeBookingFence?: number;
   enabledSections?: AdminSection[];
   slug: string;
   name: string;
@@ -422,6 +425,11 @@ export interface IBooking extends Document {
   };
   subtotal: number;
   fees: number;
+  financeSnapshot?: import('../utils/financeSettings').FinanceSnapshot;
+  attendanceStatus?: import('../utils/bookingAttendance').AttendanceStatus;
+  attendanceRevision?: number;
+  attendanceRecordedAt?: Date;
+  attendanceRecordedBy?: Types.ObjectId;
   discount: number;
   total: number;
   currency: string;

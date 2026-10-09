@@ -6,6 +6,7 @@ import { applicableOfferClause, evaluatePromo, offerDiscountFor, OFFER_PRIORITY_
 import { normalizeBookingAddons, addonsTotal } from '../utils/bookingAddons';
 import { CreateBookingInput } from '../utils/validators';
 import { serviceFeeOn } from '../utils/serviceFee';
+import { calculateFinance, financeMinor, financePolicy } from '../utils/financeSettings';
 const round2 = (n: number): number => Math.round(n * 100) / 100;
 
 /** Read-only price authority shared by checkout quotes and actual booking creation.
@@ -121,7 +122,7 @@ export async function priceBookingSelection(attraction: IAttraction, bookingTena
       0
     ));
 
-    const fees = serviceFeeOn(subtotal);
+    let fees = serviceFeeOn(subtotal);
     const tenantId = bookingTenant?._id || attraction.tenantIds[0];
     if (!tenantId) {
       throw new Error('MISSING_TENANT');
@@ -174,8 +175,12 @@ export async function priceBookingSelection(attraction: IAttraction, bookingTena
 
     const useSpecialOffer = !!activeOffer && offerDiscount > promoDiscount;
     const discount = round2(Math.min(Math.max(useSpecialOffer ? offerDiscount : promoDiscount, 0), subtotal));
-    const total = round2(Math.max(subtotal + fees - discount, 0));
+    const policy = financePolicy(bookingTenant || { _id: tenantId });
+    const financeSnapshot = policy.configured ? calculateFinance({ policy, currency: attraction.currency,
+      serviceSubtotalMinor: financeMinor(subtotal), discountMinor: financeMinor(discount) }) : undefined;
+    if (financeSnapshot) fees = financeSnapshot.customerFeesMinor / 100;
+    const total = financeSnapshot ? financeSnapshot.totalMinor / 100 : round2(Math.max(subtotal + fees - discount, 0));
 
     return { normalizedItems, temporalChecks, subtotal, fees, tenantId, now, promoCandidate,
-      activeOffer, useSpecialOffer, discount, total };
+      activeOffer, useSpecialOffer, discount, total, policy, financeSnapshot };
 }

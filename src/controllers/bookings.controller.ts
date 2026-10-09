@@ -1,3 +1,4 @@
+import { attendanceEligibility } from '../utils/bookingAttendance';
 import { escapeRegex } from '../utils/helpers';
 import { customerCursor } from '../utils/customerLists';
 import { bookingGuestTotals, bookingLineSummaries, bookingTicketAddons } from '../utils/bookingLineSummary';
@@ -45,6 +46,9 @@ import {
   standaloneBookingClause,
 } from '../services/bookingRecordScope.service';
 import { priceBookingSelection } from '../services/bookingPricing.service';
+import { FinanceError, customerFinance } from '../utils/financeSettings';
+import { fenceFinancePolicy } from '../services/tenantFinance.service';
+import { tourFinanceQuote, TourPriceChangedError } from '../services/tourFinanceQuote.service';
 import { offerClaimFilter, promoClaimFilter, promoCurrencyMessage } from '../utils/discountCurrency';
 import {
   AddonSelectionError,
@@ -112,8 +116,10 @@ export const bookingResponse = (booking: IBooking): Record<string, unknown> => {
   const raw = typeof (booking as any).toJSON === 'function'
     ? (booking as any).toJSON()
     : { ...(booking as any) };
+  const { financeSnapshot, attendanceRecordedBy, attendanceRecordedAt, attendanceRevision, ...customerBooking } = raw;
   return {
-    ...raw,
+    ...customerBooking,
+    ...(financeSnapshot ? { finance: customerFinance(financeSnapshot) } : {}),
     guestAccessToken: generateBookingAccessToken(String(booking._id), booking.reference),
   };
 };
@@ -281,10 +287,8 @@ export const createBooking = async (
       return;
     }
 
-    const pricing = await priceBookingSelection(attraction, bookingTenant, items, promoCode);
-    let { normalizedItems } = pricing;
-    const { temporalChecks, subtotal, fees, tenantId, now, promoCandidate, activeOffer, useSpecialOffer, discount, total } = pricing;
-    const { SpecialOffer } = await import('../models/SpecialOffer');
+    const tenantId = bookingTenant?._id || attraction.tenantIds[0];
+    if (!tenantId) throw new Error('MISSING_TENANT');
 
     const keyHash = hashValue(idempotencyKey);
     // Compatibility metadata must not change the identity of an existing retry.
@@ -339,6 +343,16 @@ export const createBooking = async (
       sendError(res, 'An identical booking request is already processing', 409);
       return;
     }
+
+    // Completed requests replay before reading today's fee configuration or repricing.
+    if (!bookingTenant) bookingTenant = await Tenant.findOne({ _id: tenantId }) || undefined;
+    if (!bookingTenant) throw new FinanceError('FINANCE_UNAVAILABLE', 'Booking site not found.');
+    const pricing = await priceBookingSelection(attraction, bookingTenant, items, promoCode);
+    let { normalizedItems } = pricing;
+    const { temporalChecks, subtotal, fees, now, promoCandidate, activeOffer, useSpecialOffer, discount, total } = pricing;
+    const { SpecialOffer } = await import('../models/SpecialOffer');
+    const quote = tourFinanceQuote(attraction._id, attraction.currency, pricing);
+    if ((pricing.policy.configured || req.body.quoteHash) && req.body.quoteHash !== quote.quoteHash) throw new TourPriceChangedError(quote);
 
     // A completed request must replay its original receipt even if an admin has
     // since changed pickup availability. Validate new requests before inventory,
@@ -427,6 +441,7 @@ export const createBooking = async (
     );
 
     const booking = await runBookingTransaction<IBooking>(async (session) => {
+      await fenceFinancePolicy(pricing.policy, session);
       await reserveInventory(inventoryEntries, session);
 
       // Claim only the exact terms this booking was priced with (amount, type
@@ -463,6 +478,7 @@ export const createBooking = async (
         guestDetails,
         subtotal,
         fees,
+        ...(pricing.financeSnapshot ? { financeSnapshot: pricing.financeSnapshot } : {}),
         discount,
         total,
         currency: attraction.currency,
@@ -680,6 +696,12 @@ export const createBooking = async (
         status: 'processing',
       }).catch(() => undefined);
     }
+    if (error instanceof TourPriceChangedError) {
+      res.status(409).json({ success: false, code: 'PRICE_CHANGED', error: error.message, quote: error.quote }); return;
+    }
+    if (error instanceof FinanceError) {
+      res.status(409).json({ success: false, code: error.code, error: error.message }); return;
+    }
     if (error instanceof Error && error.message.startsWith('INVALID_OPTION:')) {
       sendError(res, 'Invalid pricing option selected', 400);
       return;
@@ -785,6 +807,7 @@ const confirmationSafeBooking = (booking: IBooking): Record<string, unknown> => 
     discount: raw.discount,
     total: raw.total,
     currency: raw.currency,
+    ...(raw.financeSnapshot ? { finance: customerFinance(raw.financeSnapshot) } : {}),
     attraction: attraction
       ? {
           title: attraction.title,
@@ -1029,7 +1052,7 @@ export const getMyBookings = async (
       } },
       { $facet: {
         broken:[{ $match:{ '__tour.0':{ $exists:false } } },{ $limit:1 },{ $project:{_id:1} }],
-        rows:[{ $sort:{createdAt:-1,_id:-1} },{ $skip:(pageNum-1)*limitNum },{ $limit:limitNum },{ $set:{ attractionId:{ $arrayElemAt:['$__tour',0] } } },{ $project:{__tour:0} }],
+        rows:[{ $sort:{createdAt:-1,_id:-1} },{ $skip:(pageNum-1)*limitNum },{ $limit:limitNum },{ $set:{ attractionId:{ $arrayElemAt:['$__tour',0] } } },{ $project:{__tour:0,financeSnapshot:0,attendanceRecordedBy:0,attendanceRecordedAt:0,attendanceRevision:0} }],
         totals:[{ $count:'total' }],
       } },
     ]);
@@ -1261,7 +1284,9 @@ export const getAllBookings = async (
       });
     }
 
-    if (status) {
+    if (status === 'refunded') {
+      andClauses.push({ $or: [{ status: 'refunded' }, { paymentStatus: 'refunded' }] });
+    } else if (status) {
       query.status = status;
     }
 
@@ -1289,7 +1314,7 @@ export const getAllBookings = async (
       Booking.find(query)
         .populate('attractionId', 'title slug images')
         .populate('userId', 'firstName lastName email')
-        .populate('tenantId', 'name slug')
+        .populate('tenantId', 'name slug timezone')
         .sort({ createdAt: -1 })
         .skip((pageNum - 1) * limitNum)
         .limit(limitNum)
@@ -1302,7 +1327,14 @@ export const getAllBookings = async (
     // generic label and drop the seller tenant id. Super-admins see everything.
     const isSuper = req.user?.role === 'super-admin';
     const scopeSet = new Set(scope.map((t) => String(t)));
+    const assignedSet = new Set((req.user?.assignedTenants || []).map(String));
     const sanitized = (bookings as Array<Record<string, any>>).map((b) => {
+      const bookingSite = String(b.tenantId?._id || b.tenantId);
+      const canManage = adminRoles.includes(req.user?.role || '') && (isSuper || assignedSet.has(bookingSite)) && (!req.tenant || String(req.tenant._id) === bookingSite);
+      b.attendanceStatus = b.attendanceStatus || 'not-recorded';
+      b.attendanceRevision = b.attendanceRevision || 0;
+      b.attendanceEligibility = canManage ? attendanceEligibility(b, b.tenantId?.timezone) : { canMarkNoShow: false, reason: 'Only the selling website can update attendance.' };
+
       if (!isSuper && b.isResale) {
         const supplierId = b.supplierTenantId ? String(b.supplierTenantId) : null;
         const sellerId = b.sellerTenantId ? String(b.sellerTenantId) : null;
@@ -1311,6 +1343,8 @@ export const getAllBookings = async (
         if (viewerIsSupplier && !viewerIsSeller) {
           b.tenantId = { name: 'Reseller partner' };
           b.sellerTenantId = undefined;
+          delete b.financeSnapshot;
+          delete b.attendanceRecordedBy;
         }
       }
       return b;
@@ -1382,13 +1416,18 @@ export const getBookingStats = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    if (!req.user || !['super-admin', 'brand-admin', 'manager', 'editor', 'viewer'].includes(req.user.role)) {
+      sendError(res, 'Administrator access required', req.user ? 403 : 401);
+      return;
+    }
     const query: Record<string, unknown> = { ...standaloneBookingClause };
 
     if (req.user?.role === 'super-admin' && req.tenant) {
       query.tenantId = req.tenant._id;
     } else if (req.user?.role !== 'super-admin') {
       if (req.tenant) {
-        query.tenantId = req.tenant._id;
+        // Re-enforce membership here as well as in the route's tenant resolver.
+        query.tenantId = { $eq: req.tenant._id, $in: req.user.assignedTenants || [] };
       } else {
         query.tenantId = { $in: req.user?.assignedTenants || [] };
       }
@@ -1408,12 +1447,20 @@ export const getBookingStats = async (
       Booking.countDocuments({ ...query, status: 'pending' }),
       Booking.countDocuments({ ...query, status: 'completed' }),
       Booking.countDocuments({ ...query, status: 'cancelled' }),
-      Booking.countDocuments({ ...query, status: 'refunded' }),
+      Booking.countDocuments({ ...query, $or: [{ status: 'refunded' }, { paymentStatus: 'refunded' }] }),
       Booking.aggregate([
         { $match: query },
         {
+          $set: {
+            reportingCurrency: {
+              $toUpper: { $trim: { input: { $convert: { input: '$currency', to: 'string', onError: '', onNull: '' } } } },
+            },
+          },
+        },
+        {
           $group: {
-            _id: null,
+            // Never add unlike currencies or infer a missing currency from the site.
+            _id: { $cond: [{ $regexMatch: { input: '$reportingCurrency', regex: /^[A-Z]{3}$/ } }, '$reportingCurrency', null] },
             // Booked = confirmed/completed commitments (includes pay-later, which
             // never reaches paymentStatus 'succeeded'). Collected = money cleared.
             // Headline revenue is "booked" so pre-launch/pay-later bookings aren't
@@ -1438,7 +1485,15 @@ export const getBookingStats = async (
       ]),
     ]);
 
-    const rev = revenueAgg[0] || { bookedRevenue: 0, collectedRevenue: 0 };
+    const currencyTotals = revenueAgg.map((row: { _id: string | null; bookedRevenue: number; collectedRevenue: number }) => ({
+      currency: row._id,
+      bookedRevenue: round2(row.bookedRevenue),
+      collectedRevenue: round2(row.collectedRevenue),
+    })).sort((left, right) => left.currency === null ? 1 : right.currency === null ? -1 : left.currency.localeCompare(right.currency));
+    // Retain scalar fields for compatible clients only when they have one known unit.
+    // Null is deliberate: mixed or unidentified money has no honest scalar total.
+    const rev = currencyTotals.length === 0 ? { bookedRevenue: 0, collectedRevenue: 0 }
+      : currencyTotals.length === 1 && currencyTotals[0].currency ? currencyTotals[0] : null;
     sendSuccess(res, {
       totalBookings,
       confirmedBookings,
@@ -1446,9 +1501,11 @@ export const getBookingStats = async (
       completedBookings,
       cancelledBookings,
       refundedBookings,
-      totalRevenue: rev.bookedRevenue,
-      bookedRevenue: rev.bookedRevenue,
-      collectedRevenue: rev.collectedRevenue,
+      currency: currencyTotals.length === 1 ? currencyTotals[0].currency : null,
+      currencyTotals,
+      totalRevenue: rev?.bookedRevenue ?? null,
+      bookedRevenue: rev?.bookedRevenue ?? null,
+      collectedRevenue: rev?.collectedRevenue ?? null,
     });
   } catch (error) {
     next(error);

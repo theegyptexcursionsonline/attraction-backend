@@ -19,6 +19,7 @@ export interface IOctoHold extends Document {
   unitItems: { unitId: string; quantity: number; unitPriceMinor: number }[];
   currency: string;
   totalMinor: number;
+  financeSnapshot?: import('../utils/financeSettings').FinanceSnapshot;
   expiresAt?: Date;
   bookingId?: mongoose.Types.ObjectId; // set on confirm
   contact?: { firstName?: string; lastName?: string; emailAddress?: string; phoneNumber?: string };
@@ -58,6 +59,7 @@ const octoHoldSchema = new Schema<IOctoHold>(
     },
     currency: { type: String, required: true, default: 'USD' },
     totalMinor: { type: Number, required: true, min: 1 },
+    financeSnapshot: { type: Schema.Types.Mixed, default: undefined, immutable: true },
     expiresAt: { type: Date, required: true },
     bookingId: { type: Schema.Types.ObjectId, ref: 'Booking' },
     contact: {

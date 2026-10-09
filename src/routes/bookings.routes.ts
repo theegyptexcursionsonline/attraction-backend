@@ -23,8 +23,15 @@ import { validate, validateQuery } from '../middleware/validate.middleware';
 import { createBookingSchema, paginationSchema, regexSearchSchema } from '../utils/validators';
 import { bookingLimiter } from '../middleware/rate-limit.middleware';
 import { z } from 'zod';
+import { quoteBooking } from '../controllers/bookingQuote.controller';
+import { updateBookingAttendance } from '../controllers/bookingAttendance.controller';
 
 const router = Router();
+
+router.patch('/admin/:id/attendance', authenticate, optionalTenant, updateBookingAttendance);
+
+router.post('/quote', bookingLimiter, optionalAuth, optionalTenant,
+  validate(createBookingSchema.pick({ attractionId: true, tenantId: true, items: true, promoCode: true }).strict()), quoteBooking);
 
 /**
  * @swagger
@@ -266,6 +273,32 @@ router.get(
  *                       type: integer
  *                     totalRevenue:
  *                       type: number
+ *                       nullable: true
+ *                       description: Booked revenue only when one known currency is present; null for mixed or unidentified currencies.
+ *                     bookedRevenue:
+ *                       type: number
+ *                       nullable: true
+ *                     collectedRevenue:
+ *                       type: number
+ *                       nullable: true
+ *                     currency:
+ *                       type: string
+ *                       nullable: true
+ *                       description: Currency of the scalar amounts, or null when there is no single known currency.
+ *                     currencyTotals:
+ *                       type: array
+ *                       description: Native booking currencies, without conversion, sorted by code with unidentified currency last. Clients must not display an amount whose currency is null.
+ *                       items:
+ *                         type: object
+ *                         required: [currency, bookedRevenue, collectedRevenue]
+ *                         properties:
+ *                           currency:
+ *                             type: string
+ *                             nullable: true
+ *                           bookedRevenue:
+ *                             type: number
+ *                           collectedRevenue:
+ *                             type: number
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */

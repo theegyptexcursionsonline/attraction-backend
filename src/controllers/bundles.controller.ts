@@ -1,3 +1,4 @@
+import { FinanceError, customerFinance } from '../utils/financeSettings';
 import { NextFunction, Response } from 'express';
 import { BundleStatus } from '../bundles/domain';
 import { BundleDefinition } from '../models/BundleDefinition';
@@ -28,6 +29,7 @@ import {
 } from '../services/bundleOutbox.service';
 
 const known = (error: unknown, res: Response, next: NextFunction): void => {
+  if (error instanceof FinanceError) { res.status(409).json({ success: false, code: error.code, error: error.message }); return; }
   if (
     error instanceof BundleCatalogError ||
     error instanceof BundleOrderError ||
@@ -137,7 +139,8 @@ export const createBundleQuoteHandler = async (
       slug: req.params.slug,
       request,
     });
-    sendSuccess(res, quote, 'Bundle price and availability confirmed', 201);
+    const { financeSnapshot, financePolicyRevision: _revision, ...publicQuote } = quote.toObject();
+    sendSuccess(res, { ...publicQuote, ...(financeSnapshot ? { finance: customerFinance(financeSnapshot) } : {}) }, 'Bundle price and availability confirmed', 201);
   } catch (error) {
     known(error, res, next);
   }

@@ -192,6 +192,8 @@ export interface PackageQuoteExtra {
 }
 
 export interface PackageQuote {
+  finance?: ReturnType<typeof import('../utils/financeSettings').customerFinance>;
+  financeHash?: string;
   /** Only present when an actual promo has been verified by the API. */
   preDiscountTotal?: number;
   discount?: number;
@@ -526,7 +528,7 @@ export function pricePackageSelection(input: {
  * Identifies what the customer was shown: the selection and its total. Booking re-prices and
  * compares, so a price that changed in between is refused with the new figure rather than charged.
  */
-export const packageQuoteHash = (attractionId: string, selection: PackageSelection, quote: Pick<PackageQuote, 'currency' | 'total' | 'configurationHash' | 'promotionHash'>): string =>
+export const packageQuoteHash = (attractionId: string, selection: PackageSelection, quote: Pick<PackageQuote, 'currency' | 'total' | 'configurationHash' | 'promotionHash' | 'financeHash'>): string =>
   createHash('sha256').update(JSON.stringify([
     attractionId,
     selection.date,
@@ -538,6 +540,7 @@ export const packageQuoteHash = (attractionId: string, selection: PackageSelecti
     quote.currency,
     cents(quote.total),
     ...(quote.configurationHash ? [quote.configurationHash] : []),
+    ...(quote.financeHash ? [quote.financeHash] : []),
     ...(selection.promoCode ? [selection.promoCode, quote.promotionHash ?? null] : []),
   ])).digest('hex').slice(0, 32);
 

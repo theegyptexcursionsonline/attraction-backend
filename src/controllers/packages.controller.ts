@@ -43,6 +43,9 @@ import {
   packageHasCompletionFeatures,
 } from '../utils/packageDetails';
 import { SERVICE_FEE_BASIS_POINTS } from '../utils/serviceFee';
+import { financePolicy, FinanceError } from '../utils/financeSettings';
+import { applyPackageFinance, packageFinancePerPerson } from '../services/packageFinance.service';
+import { fenceFinancePolicy } from '../services/tenantFinance.service';
 import {
   addDays,
   addMonths,
@@ -556,7 +559,9 @@ export const getPackageCalendar = async (req: AuthRequest, res: Response, next: 
     if (!loaded) return;
     const { record, details } = loaded;
     const monthEnd = addDays(addMonths(`${month}-01`, 1), -1);
-    const days = packageCalendar({ details, month, today, travellers, rooms, departures: await departureStates(record._id, `${month}-01`, monthEnd) });
+    const policy = financePolicy(req.tenant || { _id: '' });
+    const days = packageCalendar({ details, month, today, travellers, rooms, ...(policy.configured ? { feeBasisPoints: 0 } : {}), departures: await departureStates(record._id, `${month}-01`, monthEnd) });
+    if (policy.configured) for (const day of days) if (day.perPersonFrom !== undefined) day.perPersonFrom = packageFinancePerPerson(day.perPersonFrom, travellers, record.currency ?? 'USD', policy);
     const nextAvailableDate = days.some((day) => day.status === 'available')
       ? null
       : await nextAvailableAfter(record._id, details, monthEnd, today, travellers, rooms);
@@ -626,10 +631,12 @@ export const quotePackage = async (req: AuthRequest, res: Response, next: NextFu
     const today = operatorToday(req);
     const currency = record.currency ?? 'USD';
     const chosen: PackageSelection = selection.data;
-    const priced = pricePackageSelection({ details, currency, selection: chosen, today });
+    const policy = financePolicy(req.tenant || { _id: '' });
+    const priced = pricePackageSelection({ details, currency, selection: chosen, today, ...(policy.configured ? { feeBasisPoints: 0 } : {}) });
     if (!priced.ok) { sendRefusal(res, priced); return; }
     priced.quote.packageRevision = record.packageRevision ?? 0;
     await pricePackagePromo(priced.quote, chosen.promoCode, req.tenant?._id);
+    applyPackageFinance(priced.quote, policy);
     const state = (await departureStates(record._id, chosen.date, chosen.date)).get(chosen.date);
     const seatsLeft = seatsLeftOn(details, state);
     const seats = seatRefusal(state, seatsLeft, priced.quote.travellers.adults + priced.quote.travellers.children);
@@ -638,9 +645,9 @@ export const quotePackage = async (req: AuthRequest, res: Response, next: NextFu
     // Each level priced for the same party, date and extras. `tripPerPerson` leaves the extras out,
     // so a level's own price does not move when an extra is added.
     const alternatives = await Promise.all(details.tiers.map(async (tier) => {
-      const other = tier.key === chosen.tierKey ? priced : pricePackageSelection({ details, currency, selection: { ...chosen, tierKey: tier.key }, today });
+      const other = tier.key === chosen.tierKey ? priced : pricePackageSelection({ details, currency, selection: { ...chosen, tierKey: tier.key }, today, ...(policy.configured ? { feeBasisPoints: 0 } : {}) });
       if (other.ok && tier.key !== chosen.tierKey) {
-        try { await pricePackagePromo(other.quote, chosen.promoCode, req.tenant?._id); }
+        try { await pricePackagePromo(other.quote, chosen.promoCode, req.tenant?._id); applyPackageFinance(other.quote, policy); }
         catch (error) {
           if (error instanceof PackagePromoError) return { key: tier.key, name: tier.name, unavailable: error.message };
           throw error;
@@ -673,6 +680,7 @@ export const quotePackage = async (req: AuthRequest, res: Response, next: NextFu
       today,
     });
   } catch (error) {
+    if (error instanceof FinanceError) { res.status(409).json({ success: false, code: error.code, error: error.message }); return; }
     if (error instanceof PackagePromoError) {
       res.status(409).json({ success: false, code: error.code, error: error.message });
       return;
@@ -799,11 +807,13 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
     }
 
     const currency = attraction.currency ?? 'USD';
-    const priced = pricePackageSelection({ details, currency, selection, today: operatorToday(req) });
+    const policy = financePolicy(req.tenant || { _id: '' });
+    const priced = pricePackageSelection({ details, currency, selection, today: operatorToday(req), ...(policy.configured ? { feeBasisPoints: 0 } : {}) });
     if (!priced.ok) { sendRefusal(res, priced); return; }
     const quote = priced.quote;
     quote.packageRevision = packageRevision;
     const promo = await pricePackagePromo(quote, selection.promoCode, tenantId);
+    const financeSnapshot = applyPackageFinance(quote, policy);
     if (!quote.bookingReady) {
       res.status(400).json({ success: false, code: 'OPTIONS_INCOMPLETE', error: quote.selectionProblems[0].message, selectionProblems: quote.selectionProblems });
       return;
@@ -865,6 +875,7 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
     // Computed once from the record read above; the fence refuses unless the transaction's record yields the same split.
     const resale = resaleFieldsFor(attraction, tenantId, quote.total);
     const booking = await runBookingTransaction<IBooking>(async (session) => {
+      await fenceFinancePolicy(policy, session);
       await fencePackageBooking({ attractionId: attraction._id, tenantId, revision: packageRevision, currency, total: quote.total, resale }, session);
       await reservePackageSeats(attraction._id, details, selection.date, guests, session);
       const packagePromoClaim = promo ? await claimPackagePromo(promo, quote, session) : undefined;
@@ -879,8 +890,9 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
         items: [packageBookingItem(details, quote)],
         guestDetails,
         // Every figure includes the service fee, as quoted; the fee itself is in packageBooking.
-        subtotal: quote.preDiscountTotal ?? quote.total,
-        fees: 0,
+        subtotal: financeSnapshot ? quote.subtotal : quote.preDiscountTotal ?? quote.total,
+        fees: financeSnapshot ? financeSnapshot.customerFeesMinor / 100 : 0,
+        ...(financeSnapshot ? { financeSnapshot } : {}),
         discount: quote.discount ?? 0,
         total: quote.total,
         ...(packagePromoClaim ? { packagePromoClaim, promoCode: promo!.code } : {}),

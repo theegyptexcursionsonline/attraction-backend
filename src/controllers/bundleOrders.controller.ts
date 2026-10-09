@@ -1,3 +1,4 @@
+import { FinanceError, customerFinance } from '../utils/financeSettings';
 import { NextFunction, Response } from 'express';
 import { generateBundleAccessToken, verifyBundleAccessToken } from '../bundles/guestAccess';
 import { BundleOrder, IBundleOrder } from '../models/BundleOrder';
@@ -32,6 +33,7 @@ import {
 } from '../services/bundleOperations.service';
 
 const known = (error: unknown, res: Response, next: NextFunction): void => {
+  if (error instanceof FinanceError) { res.status(409).json({ success: false, code: error.code, error: error.message }); return; }
   if (
     error instanceof BundleOrderError ||
     error instanceof BundleInventoryError ||
