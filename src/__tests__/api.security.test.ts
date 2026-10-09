@@ -36,9 +36,9 @@ const validBookingPayload = () => ({
     totalPrice: 50,
   }],
   guestDetails: {
-    firstName: 'RDMI',
+    firstName: 'QA',
     lastName: 'Team',
-    email: 'info@rdmiwebservices.com',
+    email: 'qa.team@example.invalid',
     phone: '+123456789',
     country: 'US',
   },
@@ -169,7 +169,7 @@ describe('API security and pricing guards', () => {
     (SpecialOffer.findOneAndUpdate as jest.Mock).mockResolvedValue(null);
     (SpecialOffer.findByIdAndUpdate as jest.Mock).mockResolvedValue(null);
     (getTenantStripeConfig as jest.Mock).mockResolvedValue(null);
-    (generateTicketPdf as jest.Mock).mockResolvedValue(Buffer.from('%PDF-RDMI'));
+    (generateTicketPdf as jest.Mock).mockResolvedValue(Buffer.from('%PDF-QA'));
   });
 
   const adminUser = {
@@ -181,7 +181,7 @@ describe('API security and pricing guards', () => {
 
   it('allows guest booking and partner API credentials through CORS preflight', async () => {
     const response = await request(app)
-      .options('/api/bookings/reference/ATT-RDMI-CORS')
+      .options('/api/bookings/reference/ATT-QA-CORS')
       .set('Origin', 'https://makadihorseclub.com')
       .set('Access-Control-Request-Method', 'GET')
       .set(
@@ -240,9 +240,9 @@ describe('API security and pricing guards', () => {
           },
         ],
         guestDetails: {
-          firstName: 'RDMI',
+          firstName: 'QA',
           lastName: 'Team',
-          email: 'info@rdmiwebservices.com',
+          email: 'qa.team@example.invalid',
           phone: '+123456789',
           country: 'US',
         },
@@ -265,7 +265,7 @@ describe('API security and pricing guards', () => {
     expect(idempotencyClaim.keyHash).toMatch(/^[a-f0-9]{64}$/);
     expect(idempotencyClaim.requestHash).toMatch(/^[a-f0-9]{64}$/);
     expect(JSON.stringify(idempotencyClaim)).not.toContain('booking-test-key-0001');
-    expect(JSON.stringify(idempotencyClaim)).not.toContain('info@rdmiwebservices.com');
+    expect(JSON.stringify(idempotencyClaim)).not.toContain('qa.team@example.invalid');
   });
 
   it('rejects a direct booking request for an enquiry-only programme', async () => {
@@ -676,9 +676,9 @@ describe('API security and pricing guards', () => {
           },
         ],
         guestDetails: {
-          firstName: 'RDMI',
+          firstName: 'QA',
           lastName: 'Team',
-          email: 'info@rdmiwebservices.com',
+          email: 'qa.team@example.invalid',
           phone: '+123456789',
           country: 'US',
         },
@@ -714,9 +714,9 @@ describe('API security and pricing guards', () => {
           },
         ],
         guestDetails: {
-          firstName: 'RDMI',
+          firstName: 'QA',
           lastName: 'Team',
-          email: 'info@rdmiwebservices.com',
+          email: 'qa.team@example.invalid',
           phone: '+123456789',
           country: 'US',
         },
@@ -885,7 +885,7 @@ describe('API security and pricing guards', () => {
 
   it('requires authenticated ownership/admin access or the HMAC token for ticket download', async () => {
     const bookingId = new Types.ObjectId().toHexString();
-    const reference = 'ATT-RDMI-TICKET';
+    const reference = 'ATT-QA-TICKET';
     const bookingDocument: Record<string, any> = {
       _id: bookingId,
       reference,
@@ -902,9 +902,9 @@ describe('API security and pricing guards', () => {
         quantities: { adults: 1, children: 0, infants: 0 },
       }],
       guestDetails: {
-        firstName: 'RDMI',
+        firstName: 'QA',
         lastName: 'Team',
-        email: 'info@rdmiwebservices.com',
+        email: 'qa.team@example.invalid',
         phone: '+201000000000',
         country: 'EG',
       },
@@ -915,7 +915,7 @@ describe('API security and pricing guards', () => {
       currency: 'USD',
       populate: jest.fn(async function (this: Record<string, any>) {
         this.attractionId = { title: 'Sunrise Ride' };
-        this.tenantId = { name: 'RDMI Adventures', theme: {}, logo: '/logo.png' };
+        this.tenantId = { name: 'QA Adventures', theme: {}, logo: '/logo.png' };
         return this;
       }),
     };
@@ -937,7 +937,7 @@ describe('API security and pricing guards', () => {
 
   it('returns payment details only to the booking capability and only while card payment is eligible', async () => {
     const bookingId = new Types.ObjectId().toHexString();
-    const reference = 'ATT-RDMI-PAY';
+    const reference = 'ATT-QA-PAY';
     const booking = {
       _id: bookingId,
       reference,
@@ -955,7 +955,7 @@ describe('API security and pricing guards', () => {
     };
     (Booking.findOne as jest.Mock).mockResolvedValue(booking);
     (Tenant.findById as jest.Mock).mockReturnValue({
-      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue({ name: 'RDMI Adventures', slug: 'rdmi' }) }),
+      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue({ name: 'QA Adventures', slug: 'qa-adventures' }) }),
     });
     (Attraction.findById as jest.Mock).mockReturnValue({
       select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue({ title: 'Sunrise Ride' }) }),
@@ -992,7 +992,7 @@ describe('API security and pricing guards', () => {
     const bookingId = new Types.ObjectId().toHexString();
     const booking = {
       _id: bookingId,
-      reference: 'ATT-RDMI-SEND-PAY',
+      reference: 'ATT-QA-SEND-PAY',
       tenantId: { toString: () => tenantId },
       status: 'pending',
       paymentStatus: 'pending',
@@ -1006,7 +1006,7 @@ describe('API security and pricing guards', () => {
     (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1' });
     (User.findById as jest.Mock).mockResolvedValue(adminUser);
     (Booking.findById as jest.Mock).mockResolvedValue(booking);
-    const tenant = { name: 'RDMI Adventures', slug: 'rdmi', theme: { primaryColor: '#123456' } };
+    const tenant = { name: 'QA Adventures', slug: 'qa-adventures', theme: { primaryColor: '#123456' } };
     (Tenant.findById as jest.Mock).mockReturnValue({
       select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(tenant) }),
     });
@@ -1018,7 +1018,7 @@ describe('API security and pricing guards', () => {
     expect(sendBookingPaymentLinkEmail).toHaveBeenCalledWith(
       'guest@example.com',
       expect.objectContaining({
-        reference: 'ATT-RDMI-SEND-PAY',
+        reference: 'ATT-QA-SEND-PAY',
         total: 84,
         currency: 'USD',
         guestAccessToken: expect.stringMatching(/^[A-Za-z0-9_-]+$/),
@@ -1060,9 +1060,9 @@ describe('API security and pricing guards', () => {
         quantities: { adults: 1, children: 0, infants: 2 },
       }],
       guestDetails: {
-        firstName: 'RDMI',
+        firstName: 'QA',
         lastName: 'Team',
-        email: 'info@rdmiwebservices.com',
+        email: 'qa.team@example.invalid',
         phone: '+201000000000',
         country: 'EG',
       },
@@ -1087,7 +1087,7 @@ describe('API security and pricing guards', () => {
     });
     const promo = {
       _id: 'promo-1',
-      code: 'RDMI10',
+      code: 'QA10',
       currency: 'USD',
       discountType: 'percentage',
       discountValue: 10,
@@ -1103,16 +1103,16 @@ describe('API security and pricing guards', () => {
       .set('Idempotency-Key', 'booking-test-key-0005')
       .send({
       attractionId: ATTR_ID,
-      promoCode: 'rdmi10',
+      promoCode: 'qa10',
       items: [{
         optionId: 'ride',
         date: '2030-03-10',
         quantities: { adults: 1, children: 0, infants: 0 },
       }],
       guestDetails: {
-        firstName: 'RDMI',
+        firstName: 'QA',
         lastName: 'Team',
-        email: 'info@rdmiwebservices.com',
+        email: 'qa.team@example.invalid',
         phone: '+201000000000',
         country: 'EG',
       },
@@ -1124,7 +1124,7 @@ describe('API security and pricing guards', () => {
     // Found within the booking's site; the code's currency is then checked
     // against the tour's (PLATFORM #1046) and re-asserted when it is claimed.
     expect((PromoCode.findOne as jest.Mock).mock.calls[0][0]).toMatchObject({
-      code: 'RDMI10',
+      code: 'QA10',
       tenantId: TENANT_ID,
     });
     expect(PromoCode.findOneAndUpdate).toHaveBeenCalledTimes(1);
@@ -1143,16 +1143,16 @@ describe('API security and pricing guards', () => {
       .set('Idempotency-Key', 'booking-test-key-0005-egp')
       .send({
       attractionId: ATTR_ID,
-      promoCode: 'rdmi10',
+      promoCode: 'qa10',
       items: [{
         optionId: 'ride',
         date: '2030-03-10',
         quantities: { adults: 1, children: 0, infants: 0 },
       }],
       guestDetails: {
-        firstName: 'RDMI',
+        firstName: 'QA',
         lastName: 'Team',
-        email: 'info@rdmiwebservices.com',
+        email: 'qa.team@example.invalid',
         phone: '+201000000000',
         country: 'EG',
       },
@@ -1177,7 +1177,7 @@ describe('API security and pricing guards', () => {
     });
     const baseBooking = {
       _id: 'booking-1',
-      reference: 'ATT-RDMI-CANCEL',
+      reference: 'ATT-QA-CANCEL',
       userId: { toString: () => 'customer-1' },
       tenantId: TENANT_ID,
       attractionId: ATTR_ID,
@@ -1196,7 +1196,7 @@ describe('API security and pricing guards', () => {
         unitPrice: 50,
         totalPrice: 50,
       }],
-      guestDetails: { firstName: 'RDMI', lastName: 'Team', email: 'info@rdmiwebservices.com' },
+      guestDetails: { firstName: 'QA', lastName: 'Team', email: 'qa.team@example.invalid' },
     };
     const current: Record<string, any> = {
       ...baseBooking,
@@ -1259,7 +1259,7 @@ describe('API security and pricing guards', () => {
       status: 'confirmed',
       paymentStatus: 'succeeded',
       paymentMethod: 'card',
-      stripePaymentIntentId: 'pi_rdmi_paid',
+      stripePaymentIntentId: 'pi_qa_paid',
     });
 
     const response = await request(app)

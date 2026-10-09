@@ -2,10 +2,10 @@
 
 ## Ownership
 
-- Platform operations owner: RDMI Platform Operations
-- Release owner: RDMI Release Management
-- Customer incident owner: RDMI Customer Success
-- Payment reconciliation owner: RDMI Finance Operations
+- Platform operations owner: Platform Operations
+- Release owner: Release Management
+- Customer incident owner: Customer Success
+- Payment reconciliation owner: Finance Operations
 
 Owners use the approved shared secret manager and provider dashboards. Secrets,
 customer records, access tokens, and backup archives must never be committed or

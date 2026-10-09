@@ -69,7 +69,7 @@ const setUser = (role: TestRole, tenantIds = [TENANT_A]) => {
     role,
     status: 'active',
     assignedTenants: tenantIds.map((id) => new Types.ObjectId(id)),
-    firstName: 'RDMI',
+    firstName: 'QA',
     lastName: 'Team',
   };
   // Pin both sides of the auth lookup whenever the role fixture changes. The
@@ -239,7 +239,7 @@ describe('authorization boundaries', () => {
       const publicReview = {
         _id: REVIEW_ID,
         attractionId: { _id: ATTRACTION_ID, title: 'Sea Trip', slug: 'sea-trip' },
-        author: 'RDMI Team',
+        author: 'QA Team',
         rating: 5,
         title: 'Excellent day',
         content: 'A polished public review.',
