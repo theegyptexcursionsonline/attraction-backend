@@ -136,6 +136,19 @@ export function customerFinance(snapshot: FinanceSnapshot) {
     lines: snapshot.lines.filter(line => line.payer === 'customer').map(({ payer: _payer, ...line }) => line) };
 }
 
+const CUSTOMER_FEE_NAMES: Record<FinanceFeeKind, string> = { transaction: 'Transaction fee', tax: 'Tax fee', booking: 'Booking fee', payout: 'Payout fee' };
+/**
+ * The fees the customer paid, one line each, for the receipt email and the ticket (client request, 10 Oct 2026:
+ * the customer's breakdown shows every fee set to "Customer pays"). Business-paid fees never appear here.
+ * Undefined for a booking without a finance snapshot, which keeps its single legacy fee line.
+ */
+export function customerFeeLines(snapshot?: FinanceSnapshot | null): Array<{ label: string; amount: number }> | undefined {
+  if (!snapshot) return undefined;
+  return snapshot.lines
+    .filter(line => line.payer === 'customer')
+    .map(line => ({ label: `${CUSTOMER_FEE_NAMES[line.kind]}${line.type === 'percentage' ? ` (${line.percentage}%)` : ''}`, amount: line.amountMinor / 100 }));
+}
+
 /** General tenant editors cannot bypass the versioned Finance endpoint. */
 export const withoutFinanceFields = (body: unknown): Record<string, unknown> => Object.fromEntries(
   Object.entries(body && typeof body === 'object' && !Array.isArray(body) ? body : {}).filter(([key]) => !['financeSettings', 'financeRevision', 'financeBookingFence', 'attendanceBookingFence'].some(field => key === field || key.startsWith(`${field}.`))),

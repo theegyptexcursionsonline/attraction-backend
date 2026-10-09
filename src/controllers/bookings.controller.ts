@@ -63,6 +63,7 @@ import { bookingEligibility, resolveBookingTimeZone } from '../utils/bookingCuto
 import { bookingNotificationEmail } from '../utils/notificationRecipients';
 import { packageSelfCancellationProblem } from '../services/packageBooking.service';
 import { todayInZone } from '../services/packagePricing.service';
+import { customerFeeLines } from '../utils/financeSettings';
 
 // Compact, tenant-safe booking summary for webhook payloads. Contains only the
 // booking's own fields — never other tenants' data.
@@ -565,6 +566,7 @@ export const createBooking = async (
             addons: bookedLines.some((line) => line.addons.length) ? bookingTicketAddons(bookedLines) : undefined,
             subtotal: booking.subtotal,
             fees: booking.fees,
+            feeLines: customerFeeLines(booking.financeSnapshot),
             discount: booking.discount,
             total: booking.total,
             currency: booking.currency,
@@ -1183,6 +1185,7 @@ export const getBookingTicket = async (
         })(),
         subtotal: booking.subtotal,
         fees: booking.fees,
+        feeLines: customerFeeLines(booking.financeSnapshot),
         discount: booking.discount,
         total: booking.total,
         currency: booking.currency,

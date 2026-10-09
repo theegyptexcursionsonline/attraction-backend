@@ -575,6 +575,8 @@ export interface BookingEmailDetails {
   /** Receipt breakdown. Rendered only when the booking was actually paid online. */
   subtotal?: number;
   fees?: number;
+  /** One line per fee the customer paid (Finance snapshot); replaces the single "Fees" line when present. */
+  feeLines?: Array<{ label: string; amount: number }>;
   discount?: number;
   promoCode?: string;
   hotelPickups?: HotelPickupSelection[];
@@ -767,9 +769,11 @@ export const renderBookingConfirmation = (
         ...(typeof bookingDetails.subtotal === 'number'
           ? [{ label: 'Subtotal', valueHtml: escapeEmailHtml(money(bookingDetails.currency, bookingDetails.subtotal)), valueText: money(bookingDetails.currency, bookingDetails.subtotal) }]
           : []),
-        ...(bookingDetails.fees
-          ? [{ label: 'Fees', valueHtml: escapeEmailHtml(money(bookingDetails.currency, bookingDetails.fees)), valueText: money(bookingDetails.currency, bookingDetails.fees) }]
-          : []),
+        ...(bookingDetails.feeLines
+          ? bookingDetails.feeLines.map((line) => ({ label: line.label, valueHtml: escapeEmailHtml(money(bookingDetails.currency, line.amount)), valueText: money(bookingDetails.currency, line.amount) }))
+          : bookingDetails.fees
+            ? [{ label: 'Fees', valueHtml: escapeEmailHtml(money(bookingDetails.currency, bookingDetails.fees)), valueText: money(bookingDetails.currency, bookingDetails.fees) }]
+            : []),
         ...(bookingDetails.discount
           ? [{
               label: bookingDetails.promoCode ? `Discount (${bookingDetails.promoCode})` : 'Discount',

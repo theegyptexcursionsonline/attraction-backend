@@ -118,6 +118,21 @@ describe('guest confirmation email', () => {
     expect(text.indexOf('Add-ons')).toBeLessThan(text.indexOf('Open your booking'));
   });
 
+  it('lists each fee the customer paid instead of one combined fee line', () => {
+    const { html, text } = renderBookingConfirmation(brand, guest({
+      subtotal: 90, fees: 17.1, feeLines: [{ label: 'Tax fee (14%)', amount: 12.6 }, { label: 'Booking fee (5%)', amount: 4.5 }],
+    }));
+    expect(text).toMatch(/Tax fee \(14%\): EUR 12\.60/);
+    expect(text).toMatch(/Booking fee \(5%\): EUR 4\.50/);
+    expect(text).not.toMatch(/^Fees:/m);
+    expect(html).toContain('Booking fee (5%)');
+  });
+
+  it('keeps the single fee line for bookings made before itemised fees', () => {
+    const { text } = renderBookingConfirmation(brand, guest({ subtotal: 150.48, fees: 7.52 }));
+    expect(text).toMatch(/^Fees: EUR 7\.52/m);
+  });
+
   it('is unchanged for bookings without options or add-ons', () => {
     const plain = renderBookingConfirmation(brand, guest({ lines: [] }));
     expect(plain.text).not.toMatch(/^(Option|Add-ons)/m);

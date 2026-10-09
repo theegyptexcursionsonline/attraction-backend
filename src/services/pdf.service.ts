@@ -22,6 +22,8 @@ interface TicketData {
   addons?: Array<{ name: string; price: number; quantity?: number; totalPrice?: number; lineTotal?: number }>;
   subtotal?: number;
   fees?: number;
+  /** One line per fee the customer paid (Finance snapshot); replaces the single "Service Fee" line when present. */
+  feeLines?: Array<{ label: string; amount: number }>;
   discount?: number;
   total: number;
   currency: string;
@@ -382,7 +384,9 @@ export const generateTicketPdf = async (data: TicketData): Promise<Buffer> => {
       if (data.subtotal !== undefined) {
         drawSummaryRow('Subtotal', fmt(data.subtotal, data.currency));
       }
-      if (data.fees !== undefined && data.fees > 0) {
+      if (data.feeLines) {
+        for (const line of data.feeLines) drawSummaryRow(line.label, fmt(line.amount, data.currency));
+      } else if (data.fees !== undefined && data.fees > 0) {
         drawSummaryRow('Service Fee', fmt(data.fees, data.currency));
       }
       if (data.discount !== undefined && data.discount > 0) {

@@ -1,4 +1,4 @@
-import { calculateFinance, customerFinance, financePolicy, financeSettingsUpdateSchema, initialFinanceFees, withoutFinanceFields } from '../utils/financeSettings';
+import { calculateFinance, customerFeeLines, customerFinance, financePolicy, financeSettingsUpdateSchema, initialFinanceFees, withoutFinanceFields } from '../utils/financeSettings';
 
 const policy = () => ({ tenantId: 'site-a', revision: 2, configured: true, fees: initialFinanceFees() });
 
@@ -79,5 +79,21 @@ describe('website Finance policy and arithmetic', () => {
 
   it('drops Finance fields and dotted paths from general settings updates', () => {
     expect(withoutFinanceFields({ name: 'Site', financeSettings: {}, 'financeSettings.fees.booking.enabled': false, financeRevision: 8, financeBookingFence: 0 })).toEqual({ name: 'Site' });
+  });
+});
+
+describe('the customer\'s fee lines on receipts and tickets', () => {
+  it('lists every customer-paid fee with its rate, and never a business-paid one', () => {
+    const configured = { tenantId: 'site-a', revision: 2, configured: true, fees: initialFinanceFees() };
+    configured.fees.tax = { enabled: true, type: 'percentage', payer: 'customer', percentage: 14 };
+    configured.fees.transaction = { enabled: true, type: 'percentage', payer: 'business', percentage: 2.9 };
+    configured.fees.payout = { enabled: true, type: 'fixed', payer: 'customer', fixedAmounts: { USD: 1 } };
+    const snapshot = calculateFinance({ policy: configured, currency: 'USD', serviceSubtotalMinor: 9000, discountMinor: 0 });
+    expect(customerFeeLines(snapshot)).toEqual([
+      { label: 'Tax fee (14%)', amount: 12.6 },
+      { label: 'Booking fee (5%)', amount: 4.5 },
+      { label: 'Payout fee', amount: 1 },
+    ]);
+    expect(customerFeeLines(undefined)).toBeUndefined();
   });
 });

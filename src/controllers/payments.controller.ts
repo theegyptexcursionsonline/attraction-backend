@@ -54,6 +54,7 @@ import {
   failBundleProviderEvent,
   finalizeBundlePayment,
 } from '../services/bundlePayment.service';
+import { customerFeeLines } from '../utils/financeSettings';
 
 // Compact, tenant-safe booking summary for webhook payloads (the booking's own
 // fields only — never cross-tenant data).
@@ -494,6 +495,7 @@ const finalizePaidBooking = async (
       addons: bookedLines.some((line) => line.addons.length) ? bookingTicketAddons(bookedLines) : undefined,
       subtotal: booking.subtotal,
       fees: booking.fees,
+      feeLines: customerFeeLines(booking.financeSnapshot),
       discount: booking.discount,
       total: booking.total,
       currency: booking.currency,
@@ -526,6 +528,7 @@ const finalizePaidBooking = async (
         // (EMAIL-DESIGN-STANDARD s5) with an itemised breakdown rather than a bare total.
         subtotal: booking.subtotal,
         fees: booking.fees,
+        feeLines: customerFeeLines(booking.financeSnapshot),
         discount: booking.discount,
         promoCode: booking.promoCode,
         guests: bookedGuests.adults + bookedGuests.children + bookedGuests.infants,

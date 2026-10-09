@@ -47,6 +47,21 @@ describe('ticket PDF add-on lines', () => {
 });
 
 
+describe('ticket PDF fee lines', () => {
+  it('prints each fee the customer paid, and no combined service fee', async () => {
+    const text = jest.spyOn(PDFDocument.prototype, 'text');
+    try {
+      const pdf = await generateTicketPdf({ ...ticket(undefined), feeLines: [{ label: 'Tax fee (14%)', amount: 12.6 }, { label: 'Booking fee (5%)', amount: 4.5 }] });
+      expect(pdf.subarray(0, 4).toString()).toBe('%PDF');
+      const drawn = text.mock.calls.map((call) => String(call[0]));
+      expect(drawn).toEqual(expect.arrayContaining(['Tax fee (14%)', 'Booking fee (5%)']));
+      expect(drawn).not.toContain('Service Fee');
+    } finally {
+      text.mockRestore();
+    }
+  }, PDF_TEST_TIMEOUT_MS);
+});
+
 describe('ticket PDF hotel pickup details', () => {
   it('writes every confirmed hotel and deferred choice into the PDF drawing stream', async () => {
     const text = jest.spyOn(PDFDocument.prototype, 'text');
