@@ -213,6 +213,55 @@ const sectionGrantProblem = async (req: AuthRequest, sections: unknown, alreadyH
 };
 
 // Admin User Management
+const TEAM_ROLES = ['super-admin', 'brand-admin', 'manager', 'editor', 'viewer'];
+const TEAM_STATUSES = ['active', 'pending', 'inactive', 'suspended'];
+
+/**
+ * The team roles the caller may see. Platform super-admin identities are not tenant team members
+ * and are never disclosed to delegated tenant operators, even where legacy seed data associates
+ * one with a tenant. Customers and guests are never team members: they are listed by the
+ * tenant-scoped Travelers endpoint instead.
+ */
+const visibleTeamRoles = (req: AuthRequest): string[] =>
+  isSuperAdmin(req.user) ? TEAM_ROLES : TEAM_ROLES.filter((role) => role !== 'super-admin');
+
+type TeamScope =
+  | { state: 'scoped'; query: Record<string, unknown> }
+  | { state: 'none' }
+  | { state: 'refused'; message: string; status: number };
+
+/**
+ * Everyone on the Team the caller may see, as one database filter. The Team list and its totals
+ * both read through this, so a total can never count someone the list would not show. Anyone but
+ * a super admin is confined to members who share at least one of their own brands; with no brand
+ * they see no one.
+ */
+const teamMemberScope = (req: AuthRequest, tenantId: unknown): TeamScope => {
+  const unscoped = isSuperAdmin(req.user);
+  const query: Record<string, unknown> = { role: { $in: visibleTeamRoles(req) } };
+  const requestedTenantId = typeof tenantId === 'string' ? tenantId.trim() : '';
+
+  if (requestedTenantId) {
+    if (!Types.ObjectId.isValid(requestedTenantId)) {
+      return { state: 'refused', message: 'Invalid tenantId', status: 400 };
+    }
+    if (!unscoped && !callerTenantIds(req.user).includes(requestedTenantId)) {
+      return { state: 'refused', message: 'Access denied to this tenant', status: 403 };
+    }
+    // An explicit request is constrained to exactly one assigned site.
+    query.assignedTenants = new Types.ObjectId(requestedTenantId);
+  } else if (!unscoped) {
+    // Cast here: an aggregation's $match, unlike find(), does not cast strings to ObjectIds.
+    const ownBrands = callerTenantIds(req.user)
+      .filter((id) => Types.ObjectId.isValid(id))
+      .map((id) => new Types.ObjectId(id));
+    if (!ownBrands.length) return { state: 'none' };
+    query.assignedTenants = { $in: ownBrands };
+  }
+
+  return { state: 'scoped', query };
+};
+
 export const getUsers = async (
   req: AuthRequest,
   res: Response,
@@ -223,58 +272,24 @@ export const getUsers = async (
     const pageNum = parseInt(page as string, 10);
     const limitNum = parseInt(limit as string, 10);
 
-    const query: Record<string, unknown> = {};
-    const scopedAdmin = Boolean(req.user && req.user.role !== 'super-admin');
-
-    const requestedTenantId = typeof tenantId === 'string' ? tenantId.trim() : '';
-
-    if (requestedTenantId) {
-      if (!Types.ObjectId.isValid(requestedTenantId)) {
-        sendError(res, 'Invalid tenantId', 400);
-        return;
-      }
-
-      if (scopedAdmin && req.user && !callerTenantIds(req.user).includes(requestedTenantId)) {
-        sendError(res, 'Access denied to this tenant', 403);
-        return;
-      }
-
-      query.assignedTenants = new Types.ObjectId(requestedTenantId);
-      // An explicit request is constrained to exactly one assigned site.
-    } else if (scopedAdmin && req.user) {
-      // Without an explicit site, non-super-admins can only see users who share
-      // at least one of their assigned tenants.
-      const userTenantIds = req.user.assignedTenants || [];
-      if (userTenantIds.length > 0) {
-        query.assignedTenants = { $in: userTenantIds };
-      } else {
-        // No assigned tenants — return empty
-        sendPaginated(res, [], pageNum, limitNum, 0);
-        return;
-      }
+    const scope = teamMemberScope(req, tenantId);
+    if (scope.state === 'refused') {
+      sendError(res, scope.message, scope.status);
+      return;
     }
-
-    const teamRoles = ['super-admin', 'brand-admin', 'manager', 'editor', 'viewer'];
+    if (scope.state === 'none') {
+      sendPaginated(res, [], pageNum, limitNum, 0);
+      return;
+    }
+    const query = scope.query;
 
     if (role) {
-      if (!teamRoles.includes(String(role))) {
-        sendPaginated(res, [], pageNum, limitNum, 0);
-        return;
-      }
-      if (scopedAdmin && role === 'super-admin') {
+      // A role the caller may not see (or no team role at all) matches no one.
+      if (!visibleTeamRoles(req).includes(String(role))) {
         sendPaginated(res, [], pageNum, limitNum, 0);
         return;
       }
       query.role = role;
-    } else if (scopedAdmin) {
-      // Platform super-admin identities are not tenant team members and should not
-      // be disclosed to delegated tenant operators even if legacy seed data happens
-      // to associate them with a tenant.
-      query.role = { $in: teamRoles.filter((teamRole) => teamRole !== 'super-admin') };
-    } else {
-      // The Team endpoint is deliberately staff-only. Customer and guest identities
-      // are exposed through the tenant-scoped Travelers endpoint below.
-      query.role = { $in: teamRoles };
     }
 
     if (status) {
@@ -294,7 +309,9 @@ export const getUsers = async (
       User.find(query)
         .select(PUBLIC_USER_PROJECTION)
         .populate('assignedTenants', 'name slug')
-        .sort({ createdAt: -1 })
+        // _id breaks ties: members created in the same instant (an import, a script) otherwise come
+        // back in a different order for each page, so pages overlap and some members are never shown.
+        .sort({ createdAt: -1, _id: -1 })
         .skip((pageNum - 1) * limitNum)
         .limit(limitNum)
         .lean(),
@@ -319,6 +336,48 @@ export const getUsers = async (
       return { ...row, invitationExpiresAt: expiresAt ? new Date(expiresAt).toISOString() : null };
     });
     sendPaginated(res, safeUsers, pageNum, limitNum, total);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Totals for the Team members screen: everyone the caller may see (the list's own scope), by role
+ * and by status, counted by the database in one pass. They do not depend on the page, search or
+ * filter shown below them. Only roles the caller may see are listed, so a brand admin's totals
+ * never mention super admins. Members with a status outside the four known ones count in `total`
+ * only.
+ */
+export const getTeamSummary = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const scope = teamMemberScope(req, req.query.tenantId);
+    if (scope.state === 'refused') {
+      sendError(res, scope.message, scope.status);
+      return;
+    }
+
+    const roles = visibleTeamRoles(req);
+    const byRole: Record<string, number> = Object.fromEntries(roles.map((role) => [role, 0]));
+    const byStatus: Record<string, number> = Object.fromEntries(TEAM_STATUSES.map((status) => [status, 0]));
+    let total = 0;
+
+    if (scope.state === 'scoped') {
+      const groups = await User.aggregate<{ _id: { role?: string; status?: string }; count: number }>([
+        { $match: scope.query },
+        { $group: { _id: { role: '$role', status: '$status' }, count: { $sum: 1 } } },
+      ]);
+      for (const { _id: group, count } of groups) {
+        total += count;
+        if (group.role && roles.includes(group.role)) byRole[group.role] += count;
+        if (group.status && TEAM_STATUSES.includes(group.status)) byStatus[group.status] += count;
+      }
+    }
+
+    sendSuccess(res, { total, byRole, byStatus });
   } catch (error) {
     next(error);
   }
@@ -1053,7 +1112,6 @@ export const setUserPassword = async (
   }
 };
 
-const TEAM_ROLES = ['super-admin', 'brand-admin', 'manager', 'editor', 'viewer'];
 const ACTIVE_SUPER_ADMIN = { role: 'super-admin', status: 'active' };
 const LAST_SUPER_ADMIN = 'Keep at least one active super admin: make someone else a super admin first.';
 

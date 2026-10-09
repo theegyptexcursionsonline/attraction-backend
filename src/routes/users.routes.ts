@@ -8,6 +8,7 @@ import {
   addToWishlist,
   removeFromWishlist,
   getUsers,
+  getTeamSummary,
   getTravelers,
   getTravelerDetail,
   getUserById,
@@ -179,6 +180,38 @@ router.get(
     )
   ),
   getUsers
+);
+
+/**
+ * @swagger
+ * /users/summary:
+ *   get:
+ *     summary: Team member totals by role and status (Admin)
+ *     description: Counted by the database over the same members GET /users would list for the caller, independent of page, search and filters. A brand admin or manager counts only members of their own sites, and super admins are never counted or listed for them.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: tenantId
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: "{ total, byRole, byStatus }"
+ *       400:
+ *         description: Invalid tenantId
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
+router.get(
+  '/summary',
+  authenticate,
+  requireRole('super-admin', 'brand-admin', 'manager'),
+  validateQuery(z.object({ tenantId: z.string().optional() })),
+  getTeamSummary
 );
 
 router.get(
