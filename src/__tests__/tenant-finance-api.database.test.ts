@@ -7,7 +7,7 @@ import tenantRoutes from '../routes/tenants.routes';
 import { Tenant } from '../models/Tenant';
 import { Attraction } from '../models/Attraction';
 import { TenantFinanceRevision } from '../models/TenantFinanceRevision';
-import { initialFinanceFees } from '../utils/financeSettings';
+import { initialFinanceFees, initialFinanceLocks } from '../utils/financeSettings';
 import { updateTenantSettings } from '../controllers/tenants.controller';
 import { fenceFinancePolicy, loadFinancePolicy } from '../services/tenantFinance.service';
 import { AuthRequest } from '../types';
@@ -52,7 +52,7 @@ afterEach(() => jest.restoreAllMocks());
 describe('versioned website Finance settings', () => {
   it('reads effective legacy defaults without activating or changing a site', async () => {
     const result = await get().expect(200);
-    expect(result.body.data).toEqual({ configured: false, revision: 0, fees: initialFinanceFees(), saleCurrencies: ['EUR', 'USD'], basis: 'discounted_service_amount', fixedFeeUnit: 'booking' });
+    expect(result.body.data).toEqual({ configured: false, revision: 0, fees: initialFinanceFees(), locks: initialFinanceLocks(), canLock: false, saleCurrencies: ['EUR', 'USD'], basis: 'discounted_service_amount', fixedFeeUnit: 'booking' });
     expect(result.headers['cache-control']).toBe('private, no-store');
     expect((await Tenant.findById(site).lean())?.financeSettings).toBeUndefined();
   });
@@ -60,9 +60,10 @@ describe('versioned website Finance settings', () => {
   it.each(['brand-admin', 'super-admin'])('saves a complete snapshot and immutable audit revision for %s', async role => {
     const result = await put(body(), site, role).expect(200);
     expect(result.body.data).toMatchObject({ configured: true, revision: 1 });
-    expect((await Tenant.findById(site).lean())?.financeSettings).toEqual({ version: 1, fees: initialFinanceFees() });
+    expect((await Tenant.findById(site).lean())?.financeSettings).toEqual({ version: 1, fees: initialFinanceFees(), locks: initialFinanceLocks() });
     const audit = await TenantFinanceRevision.findOne({ tenantId: site, revision: 1 }).lean();
     expect(audit?.fees).toEqual(initialFinanceFees());
+    expect(audit?.locks).toEqual(initialFinanceLocks());
     expect(String(audit?.actorId)).toBe('000000000000000000000001');
   });
 
@@ -140,4 +141,90 @@ it.each(['manager', 'editor', 'viewer'])('does not bypass private Finance reads 
   for (const value of [...list.body.data, detail.body.data]) {
     expect(value).not.toHaveProperty('financeSettings'); expect(value).not.toHaveProperty('financeRevision');
   }
+});
+
+describe('fees a super admin locks for a website (client request, 10 Oct 2026)', () => {
+  const locked = { transaction: false, booking: true, payout: true };
+  const lockAsSuperAdmin = async () => {
+    const result = await put({ ...body(), locks: locked }, site, 'super-admin').expect(200);
+    expect(result.body.data).toMatchObject({ revision: 1, locks: locked, canLock: true });
+  };
+
+  it('shows the locks to the site admin, who cannot change them', async () => {
+    await lockAsSuperAdmin();
+    const read = await get().expect(200);
+    expect(read.body.data).toMatchObject({ locks: locked, canLock: false });
+    expect((await get(site, 'super-admin').expect(200)).body.data.canLock).toBe(true);
+  });
+
+  it.each([
+    ['its percentage', (fees: ReturnType<typeof initialFinanceFees>) => { fees.booking = { ...fees.booking, percentage: 3 } as typeof fees.booking; }],
+    ['who pays', (fees: ReturnType<typeof initialFinanceFees>) => { fees.booking = { ...fees.booking, payer: 'business' }; }],
+    ['whether it is on', (fees: ReturnType<typeof initialFinanceFees>) => { fees.payout = { ...fees.payout, enabled: true }; }],
+  ])('refuses a site admin who changes a locked fee (%s), changing nothing', async (_label, change) => {
+    await lockAsSuperAdmin();
+    const fees = initialFinanceFees();
+    change(fees);
+    const refused = await put({ expectedRevision: 1, fees }).expect(403);
+    expect(refused.body.code).toBe('FINANCE_FEE_LOCKED');
+    expect((await Tenant.findById(site).lean())?.financeRevision).toBe(1);
+    expect(await TenantFinanceRevision.countDocuments({ tenantId: site })).toBe(1);
+  });
+
+  it('lets the site admin set their own tax, keeping the locked fees and the locks', async () => {
+    await lockAsSuperAdmin();
+    const fees = initialFinanceFees();
+    fees.tax = { enabled: true, type: 'percentage', payer: 'customer', percentage: 14 };
+    const saved = await put({ expectedRevision: 1, fees }).expect(200);
+    expect(saved.body.data).toMatchObject({ revision: 2, locks: locked, fees: { tax: { enabled: true, percentage: 14 }, booking: { percentage: 5 } } });
+    expect((await TenantFinanceRevision.findOne({ tenantId: site, revision: 2 }).lean())?.locks).toEqual(locked);
+  });
+
+  it('refuses any lock change from a site admin, even one that changes nothing', async () => {
+    await lockAsSuperAdmin();
+    const refused = await put({ expectedRevision: 1, fees: initialFinanceFees(), locks: locked }).expect(403);
+    expect(refused.body.code).toBe('FINANCE_LOCKS_SUPER_ADMIN_ONLY');
+    await put({ expectedRevision: 1, fees: initialFinanceFees(), locks: initialFinanceLocks() }).expect(403);
+  });
+
+  it('never lets tax be locked', async () => {
+    await put({ ...body(), locks: { ...locked, tax: true } }, site, 'super-admin').expect(400);
+    expect((await Tenant.findById(site).lean())?.financeSettings).toBeUndefined();
+  });
+
+  it('lets the super admin change a locked fee and unlock it for the site admin', async () => {
+    await lockAsSuperAdmin();
+    const fees = initialFinanceFees();
+    fees.booking = { enabled: true, type: 'percentage', payer: 'customer', percentage: 6 };
+    await put({ expectedRevision: 1, fees, locks: initialFinanceLocks() }, site, 'super-admin').expect(200);
+    fees.booking = { enabled: true, type: 'percentage', payer: 'customer', percentage: 4 };
+    await put({ expectedRevision: 2, fees }).expect(200);
+  });
+
+  it('treats a locked fixed fee resent with its currencies in another order as unchanged', async () => {
+    const fees = initialFinanceFees();
+    fees.booking = { enabled: true, type: 'fixed', payer: 'customer', fixedAmounts: { EUR: 4, USD: 5 } };
+    await put({ expectedRevision: 0, fees, locks: locked }, site, 'super-admin').expect(200);
+    const resent = initialFinanceFees();
+    resent.booking = { enabled: true, type: 'fixed', payer: 'customer', fixedAmounts: { USD: 5, EUR: 4 } };
+    resent.tax = { enabled: true, type: 'percentage', payer: 'customer', percentage: 2 };
+    await put({ expectedRevision: 1, fees: resent }).expect(200);
+  });
+
+  it('reads settings saved before locks existed as nothing locked', async () => {
+    await Tenant.collection.updateOne({ _id: site }, { $set: { financeSettings: { version: 1, fees: initialFinanceFees() }, financeRevision: 1 } });
+    expect((await get().expect(200)).body.data).toMatchObject({ configured: true, revision: 1, locks: initialFinanceLocks() });
+    const fees = initialFinanceFees();
+    fees.booking = { enabled: true, type: 'percentage', payer: 'customer', percentage: 7 };
+    await put({ expectedRevision: 1, fees }).expect(200);
+  });
+
+  it('keeps a lock race safe: a site admin edit against a revision the super admin has since locked is refused', async () => {
+    await put(body(), site, 'super-admin').expect(200);
+    await put({ expectedRevision: 1, fees: initialFinanceFees(), locks: locked }, site, 'super-admin').expect(200);
+    const fees = initialFinanceFees();
+    fees.booking = { enabled: true, type: 'percentage', payer: 'customer', percentage: 1 };
+    await put({ expectedRevision: 1, fees }).expect(409);
+    await put({ expectedRevision: 2, fees }).expect(403);
+  });
 });

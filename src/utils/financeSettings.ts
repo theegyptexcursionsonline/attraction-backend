@@ -9,11 +9,29 @@ export const financeFeeRuleSchema = z.discriminatedUnion('type', [
   z.object({ ...common, type: z.literal('fixed'), fixedAmounts: z.record(z.string().regex(/^[A-Z]{3}$/), amount).refine(value => Object.keys(value).length <= 30, 'At most 30 currencies') }).strict(),
 ]);
 export const financeFeesSchema = z.object({ transaction: financeFeeRuleSchema, tax: financeFeeRuleSchema, booking: financeFeeRuleSchema, payout: financeFeeRuleSchema }).strict();
-export const financeSettingsUpdateSchema = z.object({ expectedRevision: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER - 1), fees: financeFeesSchema }).strict();
+/**
+ * Fees a super admin can fix for a website so its own admins cannot change them (client
+ * request, 10 Oct 2026). Tax is the website's own and can never be locked.
+ */
+export const FINANCE_LOCKABLE_KINDS = ['transaction', 'booking', 'payout'] as const;
+export type FinanceLockableKind = typeof FINANCE_LOCKABLE_KINDS[number];
+export const financeLocksSchema = z.object({ transaction: z.boolean(), booking: z.boolean(), payout: z.boolean() }).strict();
+export type FinanceLocks = z.infer<typeof financeLocksSchema>;
+export const initialFinanceLocks = (): FinanceLocks => ({ transaction: false, booking: false, payout: false });
+export const financeSettingsUpdateSchema = z.object({ expectedRevision: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER - 1), fees: financeFeesSchema, locks: financeLocksSchema.optional() }).strict();
 export type FinanceFeeRule = z.infer<typeof financeFeeRuleSchema>;
 export type FinanceFees = z.infer<typeof financeFeesSchema>;
-export type FinanceSettings = { version: 1; fees: FinanceFees };
-export const financeSettingsSchema = z.object({ version: z.literal(1), fees: financeFeesSchema }).strict();
+/** `locks` is absent on settings saved before locks existed: nothing is locked then. */
+export type FinanceSettings = { version: 1; fees: FinanceFees; locks?: FinanceLocks };
+export const financeSettingsSchema = z.object({ version: z.literal(1), fees: financeFeesSchema, locks: financeLocksSchema.optional() }).strict();
+
+/** Two rules are the same fee when every field that changes a charge is equal (fixed-amount key order aside). */
+export function sameFinanceFeeRule(left: FinanceFeeRule, right: FinanceFeeRule): boolean {
+  const canonical = (rule: FinanceFeeRule) => JSON.stringify(rule.type === 'percentage'
+    ? [rule.enabled, rule.payer, rule.type, rule.percentage]
+    : [rule.enabled, rule.payer, rule.type, Object.entries(rule.fixedAmounts).sort(([a], [b]) => a.localeCompare(b))]);
+  return canonical(left) === canonical(right);
+}
 
 /** Display defaults are not an activation: absent settings preserve each product's legacy contract. */
 export function initialFinanceFees(): FinanceFees {
@@ -29,17 +47,17 @@ export class FinanceError extends Error {
   constructor(public readonly code: 'FINANCE_UNAVAILABLE' | 'FINANCE_CHANGED' | 'FINANCE_CURRENCY_UNAVAILABLE' | 'FINANCE_MARGIN_INVALID', message: string) { super(message); }
 }
 
-export interface FinancePolicy { tenantId: string; revision: number; configured: boolean; fees: FinanceFees }
+export interface FinancePolicy { tenantId: string; revision: number; configured: boolean; fees: FinanceFees; locks: FinanceLocks }
 export function financePolicy(site: { _id: unknown; financeSettings?: unknown; financeRevision?: unknown }): FinancePolicy {
   const revision = site.financeRevision ?? 0;
   if (!Number.isSafeInteger(revision) || Number(revision) < 0) throw new FinanceError('FINANCE_UNAVAILABLE', 'Website fee settings are unavailable.');
   if (site.financeSettings === undefined || site.financeSettings === null) {
     if (revision !== 0) throw new FinanceError('FINANCE_UNAVAILABLE', 'Website fee settings are incomplete.');
-    return { tenantId: String(site._id), revision: 0, configured: false, fees: initialFinanceFees() };
+    return { tenantId: String(site._id), revision: 0, configured: false, fees: initialFinanceFees(), locks: initialFinanceLocks() };
   }
   const parsed = financeSettingsSchema.safeParse(site.financeSettings);
   if (!parsed.success || revision === 0) throw new FinanceError('FINANCE_UNAVAILABLE', 'Website fee settings are invalid.');
-  return { tenantId: String(site._id), revision: Number(revision), configured: true, fees: parsed.data.fees };
+  return { tenantId: String(site._id), revision: Number(revision), configured: true, fees: parsed.data.fees, locks: parsed.data.locks ?? initialFinanceLocks() };
 }
 
 export interface FinanceLine {
@@ -80,7 +98,9 @@ export function financeCurrency(currency: string): string {
 }
 
 /** Fees never compound: every percentage uses the same discounted service amount. */
-export function calculateFinance(input: { policy: FinancePolicy; currency: string; serviceSubtotalMinor: number; discountMinor: number }): FinanceSnapshot {
+/** What a price needs from the policy: who may edit the fees (locks) never changes a charge. */
+export type FinancePricingPolicy = Omit<FinancePolicy, 'locks'>;
+export function calculateFinance(input: { policy: FinancePricingPolicy; currency: string; serviceSubtotalMinor: number; discountMinor: number }): FinanceSnapshot {
   const { policy, serviceSubtotalMinor, discountMinor } = input;
   if (!policy.configured) throw new FinanceError('FINANCE_UNAVAILABLE', 'Finance policy has not been activated.');
   const currency = financeCurrency(input.currency);
