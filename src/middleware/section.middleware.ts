@@ -74,23 +74,80 @@ export const requireSections = (resolve: (req: AuthRequest) => Promise<AdminSect
 
 export const requireSection = (section: AdminSection) => requireSections(() => [section]);
 
+/** The brands named in a body's `tenantIds` that the caller works for (the handler refuses others). */
+const assignedBrandIdsIn = (req: AuthRequest, value: unknown): string[] => {
+  if (!Array.isArray(value)) return [];
+  const assigned = new Set((req.user?.assignedTenants || []).map(String));
+  return [...new Set(value.map(String))].filter((id) => assigned.has(id) && Types.ObjectId.isValid(id));
+};
+
+/**
+ * The first brand that cannot take a listing of these sections, or null. A member who works for
+ * several brands passes the request check on the union of their brands when no single brand is
+ * open (All Assigned Sites), so the brands a listing is being put on are checked one by one.
+ */
+const brandWithSectionOff = async (
+  user: NonNullable<AuthRequest['user']>,
+  brandIds: string[],
+  sections: AdminSection[]
+): Promise<{ name: string; section: AdminSection } | null> => {
+  if (brandIds.length === 0 || sections.length === 0) return null;
+  const wanted = new Set(brandIds);
+  const brands = (await Tenant.find({ _id: { $in: brandIds } }).select('name enabledSections').lean<Array<SectionBrand & { name?: string }>>())
+    .filter((brand) => wanted.has(String(brand._id)));
+  for (const brand of brands) {
+    const allowed = effectiveSections(user, [brand]);
+    const missing = sections.find((section) => !allowed.includes(section));
+    if (missing) return { name: brand.name || 'This site', section: missing };
+  }
+  return null;
+};
+
 /**
  * Catalogue listings: the section follows the listing type. A create uses the requested type
  * (tour by default); a change to an existing listing needs the stored type's section, and the
- * requested type's section when the body names one. An unknown id passes through so the handler
- * answers 404 as before.
+ * requested type's section when the body names one. Every brand the listing is being put on (all
+ * of them on a create, the added ones on a change) must have that section switched on as well.
+ * An unknown id passes through so the handler answers 404 as before.
  */
-export const requireListingSection = requireSections(async (req) => {
-  const body = (req.body && typeof req.body === 'object' ? req.body : {}) as Record<string, unknown>;
-  const requested = body.listingType !== undefined || body.productType !== undefined
-    ? (() => { const copy = { ...body }; normalizeListingTypeInput(copy); return copy.listingType; })()
-    : undefined;
-  const id = req.params?.id;
-  if (!id) return [sectionForListingType(requested)];
-  if (!Types.ObjectId.isValid(id)) return requested !== undefined ? [sectionForListingType(requested)] : [];
-  const stored = await Attraction.findById(id).select('listingType').lean<{ listingType?: string } | null>();
-  const sections = new Set<AdminSection>();
-  if (stored) sections.add(sectionForListingType(stored.listingType));
-  if (requested !== undefined) sections.add(sectionForListingType(requested));
-  return [...sections];
-});
+export const requireListingSection = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if (!req.user) { sendError(res, 'Authentication required', 401); return; }
+    if (req.user.role === 'super-admin') { next(); return; }
+    const body = (req.body && typeof req.body === 'object' ? req.body : {}) as Record<string, unknown>;
+    const requested = body.listingType !== undefined || body.productType !== undefined
+      ? (() => { const copy = { ...body }; normalizeListingTypeInput(copy); return copy.listingType; })()
+      : undefined;
+    const id = req.params?.id;
+    const sections = new Set<AdminSection>();
+    let addedBrandIds: string[] = [];
+    if (!id) {
+      sections.add(sectionForListingType(requested));
+      addedBrandIds = assignedBrandIdsIn(req, body.tenantIds);
+    } else if (!Types.ObjectId.isValid(id)) {
+      if (requested !== undefined) sections.add(sectionForListingType(requested));
+    } else {
+      const stored = await Attraction.findById(id).select('listingType tenantIds')
+        .lean<{ listingType?: string; tenantIds?: unknown[] } | null>();
+      if (stored) {
+        sections.add(sectionForListingType(stored.listingType));
+        const current = new Set((stored.tenantIds || []).map(String));
+        addedBrandIds = assignedBrandIdsIn(req, body.tenantIds).filter((brandId) => !current.has(brandId));
+      }
+      if (requested !== undefined) sections.add(sectionForListingType(requested));
+    }
+    const needed = [...sections];
+    if (needed.length === 0) { next(); return; }
+    const allowed = await requestSections(req);
+    const missing = needed.find((section) => !allowed.includes(section));
+    if (missing) { refuse(res, missing); return; }
+    const closed = await brandWithSectionOff(req.user, addedBrandIds, needed);
+    if (closed) {
+      sendError(res, `${closed.name} has ${SECTION_LABELS[closed.section]} switched off. Ask a super admin to switch it on.`, 403);
+      return;
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
+};

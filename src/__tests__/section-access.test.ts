@@ -121,3 +121,82 @@ describe('requireListingSection', () => {
     expect(next).toHaveBeenCalledWith();
   });
 });
+
+describe('requireListingSection on the brands a listing is put on', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  // A member of two brands, working in All Assigned Sites (no brand named on the request), where
+  // the request check passes on the union of their brands.
+  const member = { role: 'manager', assignedTenants: [brandA, brandB] };
+  const toursOnlyAndFull = () => installBrands([
+    { _id: brandA, slug: 'a', name: 'Tours Only', enabledSections: ['tours'] } as never,
+    { _id: brandB, slug: 'b', name: 'Every Section' } as never,
+  ]);
+  const installStored = (listingType: string, tenantIds: Types.ObjectId[]) => {
+    (Attraction.findById as jest.Mock).mockReturnValue({
+      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue({ listingType, tenantIds }) }),
+    });
+  };
+
+  it('refuses creating a package on a brand that has packages switched off', async () => {
+    toursOnlyAndFull();
+    const req = request(member, { body: { listingType: 'package', tenantIds: [String(brandA)] } });
+    const { res, next } = await run(requireListingSection, req);
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json.mock.calls[0][0].error).toBe('Tours Only has Packages switched off. Ask a super admin to switch it on.');
+  });
+
+  it('refuses when only one of the chosen brands has the section on', async () => {
+    toursOnlyAndFull();
+    const req = request(member, { body: { listingType: 'package', tenantIds: [String(brandB), String(brandA)] } });
+    const { res } = await run(requireListingSection, req);
+    expect(res.status).toHaveBeenCalledWith(403);
+  });
+
+  it('allows creating a package on a brand that has packages on', async () => {
+    toursOnlyAndFull();
+    const req = request(member, { body: { listingType: 'package', tenantIds: [String(brandB)] } });
+    const { next } = await run(requireListingSection, req);
+    expect(next).toHaveBeenCalledWith();
+  });
+
+  it('allows a tour on the tours-only brand', async () => {
+    toursOnlyAndFull();
+    const req = request(member, { body: { tenantIds: [String(brandA)] } });
+    const { next } = await run(requireListingSection, req);
+    expect(next).toHaveBeenCalledWith();
+  });
+
+  it('refuses adding a brand with the section switched off to an existing listing', async () => {
+    toursOnlyAndFull();
+    installStored('package', [brandB]);
+    const req = request(member, { params: { id: String(new Types.ObjectId()) }, body: { tenantIds: [String(brandB), String(brandA)] } });
+    const { res } = await run(requireListingSection, req);
+    expect(res.status).toHaveBeenCalledWith(403);
+  });
+
+  it('lets a change keep the brands a listing is already on', async () => {
+    toursOnlyAndFull();
+    installStored('package', [brandA, brandB]);
+    const req = request(member, { params: { id: String(new Types.ObjectId()) }, body: { title: 'Renamed', tenantIds: [String(brandA), String(brandB)] } });
+    const { next } = await run(requireListingSection, req);
+    expect(next).toHaveBeenCalledWith();
+  });
+
+  it('ignores brands the member does not work for (the handler refuses those)', async () => {
+    toursOnlyAndFull();
+    const stranger = String(new Types.ObjectId());
+    const req = request(member, { body: { listingType: 'package', tenantIds: [String(brandB), stranger] } });
+    const { next } = await run(requireListingSection, req);
+    expect(next).toHaveBeenCalledWith();
+  });
+
+  it('lets a super admin put any listing on any brand', async () => {
+    toursOnlyAndFull();
+    const req = request({ role: 'super-admin' }, { body: { listingType: 'package', tenantIds: [String(brandA)] } });
+    const { next } = await run(requireListingSection, req);
+    expect(next).toHaveBeenCalledWith();
+    expect(Tenant.find).not.toHaveBeenCalled();
+  });
+});
