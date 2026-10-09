@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from 'express';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import { Destination } from '../models/Destination';
 import { Attraction } from '../models/Attraction';
 

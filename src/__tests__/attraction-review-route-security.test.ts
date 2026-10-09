@@ -1,5 +1,5 @@
 import express from 'express';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import { Types } from 'mongoose';
 import attractionsRouter from '../routes/attractions.routes';
 import { Attraction } from '../models/Attraction';

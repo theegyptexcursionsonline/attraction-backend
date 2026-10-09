@@ -1,5 +1,5 @@
 import express from 'express';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 
 let mockRole = 'brand-admin';
 const mockConfigure = jest.fn((_req, res) => res.status(200).json({ success: true }));

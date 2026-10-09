@@ -1,5 +1,5 @@
 import express from 'express';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import mongoose,{Types} from 'mongoose';
 import {spawnSync} from 'child_process';
 import {MongoMemoryReplSet} from 'mongodb-memory-server';

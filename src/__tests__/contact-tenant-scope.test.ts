@@ -1,5 +1,5 @@
 import express from 'express';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import contactRoutes from '../routes/contact.routes';
 import { Tenant } from '../models/Tenant';
 import { ContactMessage } from '../models/ContactMessage';

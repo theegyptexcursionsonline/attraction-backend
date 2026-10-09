@@ -5,7 +5,7 @@ import os from 'os';
 import path from 'path';
 import { ChildProcess, spawn, spawnSync } from 'child_process';
 import mongoose, { Types } from 'mongoose';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import { Attraction } from '../models/Attraction';
 import { Availability } from '../models/Availability';
 import { Booking } from '../models/Booking';

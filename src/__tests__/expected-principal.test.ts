@@ -1,5 +1,5 @@
 import express from 'express';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import {authenticate,optionalAuth} from '../middleware/auth.middleware';
 import {expectedPrincipal} from '../middleware/expected-principal';
 import {refreshToken} from '../controllers/auth.controller';

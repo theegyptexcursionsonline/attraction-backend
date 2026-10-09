@@ -1,5 +1,5 @@
 import express from 'express';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import { env } from '../config';
 import { authenticateContentEngine } from '../middleware/contentEngineAuth';
 

@@ -1,4 +1,4 @@
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import { Types } from 'mongoose';
 
 import { ApiKey } from '../models/ApiKey';

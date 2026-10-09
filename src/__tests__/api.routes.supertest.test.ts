@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import type { Server } from 'http';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 
 function controllerMockFactory() {
   return new Proxy(

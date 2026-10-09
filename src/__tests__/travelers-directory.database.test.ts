@@ -45,6 +45,9 @@ beforeAll(async () => {
   const systemBinary = located.status === 0 ? located.stdout.trim() : undefined;
   mongo = await MongoMemoryServer.create(systemBinary ? { binary: { systemBinary } } : {});
   await mongoose.connect(mongo.getUri('travelers_directory'));
+  // Build the unique indexes before inserting, so a fixture that breaks one fails on every run
+  // instead of only when the insert loses the race with the background index build.
+  await Promise.all([Tenant, Booking, BundleDefinition, BundleOrder, User].map((model) => model.init()));
   await Tenant.collection.insertMany([
     { _id: brandA, slug: 'brand-a', domain: 'a.invalid', name: 'Brand A' },
     { _id: brandB, slug: 'brand-b', domain: 'b.invalid', name: 'Brand B' },
@@ -59,7 +62,7 @@ beforeAll(async () => {
   const definitionId = new Types.ObjectId();
   await BundleDefinition.collection.insertOne({ _id: definitionId, title: 'Nile Combo', slug: 'nile-combo', storefrontTenantId: brandA });
   const bundleOrder = (email: string, mode: 'live' | 'test', createdAt: string) => ({
-    reference: `B-${new Types.ObjectId()}`, storefrontTenantId: brandA, checkoutMode: mode, bundleDefinitionId: definitionId,
+    reference: `B-${new Types.ObjectId()}`, quoteId: new Types.ObjectId(), storefrontTenantId: brandA, checkoutMode: mode, bundleDefinitionId: definitionId,
     status: 'confirmed', paymentStatus: 'succeeded', totalMinor: 25000, currency: 'USD', createdAt: new Date(createdAt),
     guestDetails: { firstName: 'Bundle', lastName: 'Buyer', email, phone: '+20 111', country: 'GB' },
     components: [

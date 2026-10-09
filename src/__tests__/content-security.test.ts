@@ -1,5 +1,5 @@
 import express from 'express';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import blogRouter from '../routes/blog.routes';
 import { BlogPost } from '../models/BlogPost';
 import { Tenant } from '../models/Tenant';
