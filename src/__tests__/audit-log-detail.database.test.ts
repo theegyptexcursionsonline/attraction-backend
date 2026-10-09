@@ -5,7 +5,7 @@
  * under the brand that owns the record, and that the CSV report holds exactly what the list shows.
  */
 import express, { NextFunction, Request, Response } from 'express';
-import request from 'supertest';
+import request from '../test/loopbackRequest';
 import mongoose, { Types } from 'mongoose';
 import { spawnSync } from 'child_process';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
