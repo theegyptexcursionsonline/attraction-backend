@@ -31,9 +31,9 @@ const validBooking = {
     },
   }],
   guestDetails: {
-    firstName: ' Rdmi ',
+    firstName: ' Qa ',
     lastName: ' Team ',
-    email: ' INFO@RDMIWEBSERVICES.COM ',
+    email: ' QA.TEAM@EXAMPLE.INVALID ',
     phone: ' +20 100 000 0000 ',
     country: ' Egypt ',
     specialRequests: ' Window seat ',
@@ -193,9 +193,9 @@ describe('booking input validation', () => {
       },
     });
     expect(req.body.guestDetails).toMatchObject({
-      firstName: 'Rdmi',
+      firstName: 'Qa',
       lastName: 'Team',
-      email: 'info@rdmiwebservices.com',
+      email: 'qa.team@example.invalid',
       phone: '+20 100 000 0000',
       country: 'Egypt',
     });

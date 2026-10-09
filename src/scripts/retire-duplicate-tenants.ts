@@ -1,5 +1,5 @@
 /**
- * Retire duplicate tenants (dedupe). Per Fouad's review + Ranjit's call:
+ * Retire duplicate tenants (dedupe). Per Fouad's review:
  * keep makadi-bay-safari-center (approved), retire makadi-bay-safari.
  *
  * "Retire" = set status to 'inactive' (reversible — not a hard delete), so the

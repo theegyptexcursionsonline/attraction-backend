@@ -165,9 +165,9 @@ const bookingFixture = (overrides: Record<string, unknown> = {}) => ({
     },
   ],
   guestDetails: {
-    firstName: 'Rdmi',
+    firstName: 'QA',
     lastName: 'Team',
-    email: 'info@rdmiwebservices.com',
+    email: 'qa.team@example.invalid',
     phone: '+201000000000',
     country: 'EG',
   },
@@ -512,7 +512,7 @@ describe('Stripe payment hardening', () => {
         { $inc: { totalSpent: 105 } }
       );
       expect(sendBookingConfirmation).toHaveBeenCalledWith(
-        'info@rdmiwebservices.com',
+        'qa.team@example.invalid',
         expect.objectContaining({ guestAccessToken: 'guest-access-token' }),
         expect.any(Buffer),
         expect.anything()
@@ -543,7 +543,7 @@ describe('Stripe payment hardening', () => {
         { optionName: 'Single quad', date: '2030-08-21', time: '09:00', adults: 1, children: 0, infants: 0,
           addons: [{ name: 'Cold drinks', quantity: 1, unitPrice: 4, lineTotal: 4 }] },
       ];
-      expect(sendBookingConfirmation).toHaveBeenCalledWith('info@rdmiwebservices.com',
+      expect(sendBookingConfirmation).toHaveBeenCalledWith('qa.team@example.invalid',
         expect.objectContaining({ guests: 7, lines }), expect.any(Buffer), expect.anything());
       expect(sendAdminBookingNotification).toHaveBeenCalledWith('support@qa-site.invalid',
         expect.objectContaining({ adults: 6, children: 0, infants: 1, lines }), expect.anything());
@@ -983,7 +983,7 @@ describe('Stripe payment hardening', () => {
       const res = await invoke(createPaymentIntent as never, {
         body: {
           bookingId: BOOKING_ID,
-          guestEmail: 'info@rdmiwebservices.com',
+          guestEmail: 'qa.team@example.invalid',
           guestAccessToken: 'guest-access-token',
         },
       });
@@ -1001,7 +1001,7 @@ describe('Stripe payment hardening', () => {
       });
 
       const res = await invoke(createPaymentIntent as never, {
-        body: { bookingId: BOOKING_ID, guestEmail: 'info@rdmiwebservices.com' },
+        body: { bookingId: BOOKING_ID, guestEmail: 'qa.team@example.invalid' },
       });
 
       expect(res.status).toHaveBeenCalledWith(403);
@@ -1020,7 +1020,7 @@ describe('Stripe payment hardening', () => {
       const res = await invoke(createPaymentIntent as never, {
         body: {
           bookingId: BOOKING_ID,
-          guestEmail: 'info@rdmiwebservices.com',
+          guestEmail: 'qa.team@example.invalid',
           guestAccessToken: 'guest-access-token',
         },
       });
@@ -1045,7 +1045,7 @@ describe('Stripe payment hardening', () => {
       const res = await invoke(createPaymentIntent as never, {
         body: {
           bookingId: BOOKING_ID,
-          guestEmail: 'info@rdmiwebservices.com',
+          guestEmail: 'qa.team@example.invalid',
           guestAccessToken: 'guest-access-token',
         },
       });
@@ -1091,7 +1091,7 @@ describe('Stripe payment hardening', () => {
       await invoke(createPaymentIntent as never, {
         body: {
           bookingId: BOOKING_ID,
-          guestEmail: 'info@rdmiwebservices.com',
+          guestEmail: 'qa.team@example.invalid',
           guestAccessToken: 'guest-access-token',
         },
       });
@@ -1128,7 +1128,7 @@ describe('Stripe payment hardening', () => {
       const res = await invoke(confirmPayment as never, {
         body: {
           bookingId: BOOKING_ID,
-          guestEmail: 'info@rdmiwebservices.com',
+          guestEmail: 'qa.team@example.invalid',
           guestAccessToken: 'guest-access-token',
         },
       });
@@ -1152,7 +1152,7 @@ describe('Stripe payment hardening', () => {
       const res = await invoke(confirmPayment as never, {
         body: {
           bookingId: BOOKING_ID,
-          guestEmail: 'info@rdmiwebservices.com',
+          guestEmail: 'qa.team@example.invalid',
           guestAccessToken: 'guest-access-token',
         },
       });
