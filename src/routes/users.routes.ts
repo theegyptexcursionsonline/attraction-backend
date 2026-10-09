@@ -201,7 +201,12 @@ router.get(
   '/travelers/detail',
   authenticate,
   requireRole('super-admin', 'brand-admin', 'manager'),
-  validateQuery(z.object({ email: z.string().email().max(254) })),
+  // `key` (from the directory) keeps the traveller's email out of the URL; `email` is accepted
+  // for screens loaded before the key existed. Exactly one of them.
+  validateQuery(z.object({
+    key: z.string().min(1).max(600).optional(),
+    email: z.string().email().max(254).optional(),
+  }).refine((query) => (query.key === undefined) !== (query.email === undefined), { message: 'Send the traveler key' })),
   getTravelerDetail
 );
 

@@ -29,6 +29,7 @@ import { revokeUserSessions } from '../utils/session';
 import { accountSections } from '../middleware/section.middleware';
 import { ADMIN_SECTIONS, normalizeSectionList } from '../utils/sectionAccess';
 import { PUBLIC_USER_PROJECTION, redactUserSecrets } from '../utils/userProjection';
+import { emailFromTravelerKey, travelerDetailKey } from '../utils/travelerKey';
 import { publicAttractionOperators } from '../services/publicAttractionOperator.service';
 
 // User Profile Endpoints
@@ -555,6 +556,8 @@ export const getTravelers = async (
         accountId: account ? String(account._id) : null,
         hasAccount: Boolean(account),
         email: row._id,
+        // Opens the details without the email in the URL (see utils/travelerKey).
+        detailKey: travelerDetailKey(row._id),
         firstName: account?.firstName || row.guest?.firstName || '',
         lastName: account?.lastName || row.guest?.lastName || '',
         avatar: account?.avatar,
@@ -601,7 +604,14 @@ export const getTravelerDetail = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const email = String(req.query.email || '').trim().toLowerCase();
+    // The admin sends the opaque key from the directory; `email` stays accepted for screens
+    // loaded before the key existed.
+    const fromKey = req.query.key !== undefined ? emailFromTravelerKey(req.query.key) : undefined;
+    if (fromKey === null) {
+      sendError(res, 'Traveler not found', 404);
+      return;
+    }
+    const email = String(fromKey ?? req.query.email ?? '').trim().toLowerCase();
     if (!email || email.length > 254) {
       sendError(res, 'Traveler email is required', 400);
       return;
