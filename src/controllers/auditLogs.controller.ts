@@ -7,9 +7,35 @@ import { sendError, sendSuccess } from '../utils/response';
 import { searchRegexValue } from '../utils/helpers';
 import { callerTenantIds, isSuperAdmin } from '../utils/tenantScope';
 
+const TEAM_ROLES = ['brand-admin', 'manager', 'editor', 'viewer'];
+
 /**
- * The user log. A super admin reads every entry. A brand admin reads the entries of their own
- * brands' team (never a super admin's), which covers their own actions too.
+ * The entries a brand admin may read. Team members can work for several brands, so who did
+ * something does not decide whose it is; the brand it happened on does:
+ * - changes made on one of the caller's brands, except by a super admin (they stay visible after
+ *   the person leaves the brand);
+ * - changes no brand was named for, only when the person works for none but the caller's brands
+ *   (otherwise the change may concern another brand);
+ * - sign-ins and sign-outs of the caller's current team.
+ */
+const brandAdminVisibility = async (brands: string[]): Promise<Record<string, unknown>> => {
+  const brandIds = brands.filter((id) => Types.ObjectId.isValid(id)).map((id) => new Types.ObjectId(id));
+  const team = await User.find({ assignedTenants: { $in: brandIds }, role: { $in: TEAM_ROLES } })
+    .select('_id assignedTenants').lean<Array<{ _id: Types.ObjectId; assignedTenants?: Types.ObjectId[] }>>();
+  const own = new Set(brands);
+  const exclusive = team.filter((member) => (member.assignedTenants || []).every((tenant) => own.has(String(tenant))));
+  return {
+    $or: [
+      { action: { $regex: '^record\\.' }, tenantId: { $in: brandIds }, actorRole: { $ne: 'super-admin' } },
+      { action: { $regex: '^record\\.' }, tenantId: null, actorId: { $in: exclusive.map((member) => member._id) } },
+      { action: { $regex: '^auth\\.' }, actorId: { $in: team.map((member) => member._id) } },
+    ],
+  };
+};
+
+/**
+ * The user log. A super admin reads every entry. A brand admin reads what happened on their own
+ * brands and their own team's sign-ins (never a super admin's), which covers their own actions.
  */
 export const listAuditLogs = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -19,14 +45,11 @@ export const listAuditLogs = async (req: AuthRequest, res: Response, next: NextF
     if (actorId && !Types.ObjectId.isValid(actorId)) { sendError(res, 'Invalid team member', 400); return; }
 
     const query: Record<string, unknown> = {};
-    if (!isSuperAdmin(req.user)) {
-      const brands = callerTenantIds(req.user);
-      if (brands.length === 0) { sendSuccess(res, { data: [], pagination: { limit, hasMore: false, nextCursor: null } }); return; }
-      const team = await User.find({ assignedTenants: { $in: brands }, role: { $in: ['brand-admin', 'manager', 'editor', 'viewer'] } })
-        .select('_id').lean();
-      const teamIds = team.map((member) => String(member._id));
-      if (actorId && !teamIds.includes(actorId)) { sendSuccess(res, { data: [], pagination: { limit, hasMore: false, nextCursor: null } }); return; }
-      query.actorId = { $in: team.map((member) => member._id) };
+    const superAdmin = isSuperAdmin(req.user);
+    const callerBrands = new Set(superAdmin ? [] : callerTenantIds(req.user));
+    if (!superAdmin) {
+      if (callerBrands.size === 0) { sendSuccess(res, { data: [], pagination: { limit, hasMore: false, nextCursor: null } }); return; }
+      query.$and = [await brandAdminVisibility([...callerBrands])];
     }
     if (actorId) query.actorId = new Types.ObjectId(actorId);
     if (action === 'auth.*' || action === 'record.*') query.action = { $regex: action === 'auth.*' ? '^auth\\.' : '^record\\.' };
@@ -46,7 +69,10 @@ export const listAuditLogs = async (req: AuthRequest, res: Response, next: NextF
     const page = hasMore ? rows.slice(0, limit) : rows;
     sendSuccess(res, {
       data: page.map((row) => {
-        const tenant = row.tenantId as unknown as { _id?: unknown; name?: string; slug?: string } | undefined;
+        const populated = row.tenantId as unknown as { _id?: unknown; name?: string; slug?: string } | undefined;
+        // A team sign-in can carry the brand that was open at the time; a brand admin sees only
+        // their own brands named.
+        const tenant = populated && (superAdmin || callerBrands.has(String(populated._id))) ? populated : undefined;
         return {
           id: String(row._id),
           action: row.action,
