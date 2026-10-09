@@ -23,7 +23,8 @@ import {
 } from '../services/auditSubjects';
 import { auditCsvHeader, auditCsvRow, cairoDate, cairoTime, changesText, csvCell, deviceText } from '../utils/auditCsv';
 import { startOfCairoDay } from '../controllers/auditLogs.controller';
-import { generateAccessToken } from '../utils/jwt';
+import { generateAccessToken, generateTwoFactorChallenge } from '../utils/jwt';
+import jwt from 'jsonwebtoken';
 import { AuthRequest, IUser } from '../types';
 
 jest.mock('../models/AuditLog', () => ({ AuditLog: { create: jest.fn().mockResolvedValue({}) } }));
@@ -120,7 +121,14 @@ describe('audit trail', () => {
     const id = String(new Types.ObjectId());
     const tokenFor = (role: string) => generateAccessToken({ _id: new Types.ObjectId(), email: 'qa@brand.test', role, tokenVersion: 0 } as unknown as IUser);
 
-    const variants: Array<Record<string, string>> = [{}, { authorization: 'Bearer not-a-token' }, { authorization: `Bearer ${tokenFor('customer')}` }];
+    const challenge = generateTwoFactorChallenge({ _id: new Types.ObjectId(), email: 'qa@brand.test', role: 'manager', tokenVersion: 0 } as unknown as IUser);
+    const variants: Array<Record<string, string>> = [
+      {},
+      { authorization: 'Bearer not-a-token' },
+      { authorization: `Bearer ${tokenFor('customer')}` },
+      // The password step's challenge is not a session, whatever the role in it.
+      { authorization: `Bearer ${challenge}` },
+    ];
     for (const headers of variants) {
       const next = jest.fn();
       const { req, res } = exchange('PATCH', `/api/attractions/${id}`, undefined, headers);
@@ -135,6 +143,27 @@ describe('audit trail', () => {
     await settle();
     expect(snapshot).toHaveBeenCalledWith('listing', id, { id });
     expect(next).toHaveBeenCalledTimes(1);
+
+    // A typed access token (audience + kind) is a session too.
+    const typed = jwt.sign({ userId: String(new Types.ObjectId()), role: 'brand-admin', sessionVersion: 0, type: 'access' }, process.env.JWT_SECRET as string, { audience: 'attractions-network:access', expiresIn: '5m' });
+    const typedNext = jest.fn();
+    const typedExchange = exchange('PATCH', `/api/attractions/${id}`, undefined, { authorization: `Bearer ${typed}` });
+    auditTrail(typedExchange.req, typedExchange.res as never, typedNext);
+    await settle();
+    expect(snapshot).toHaveBeenCalledTimes(2);
+    expect(typedNext).toHaveBeenCalledTimes(1);
+  });
+
+  it('reads the record a percent-encoded path names, as Express routes it', async () => {
+    const snapshot = jest.spyOn(subjects, 'takeSnapshot').mockResolvedValue(null);
+    const token = generateAccessToken({ _id: new Types.ObjectId(), email: 'qa@brand.test', role: 'manager', tokenVersion: 0 } as unknown as IUser);
+    const { req, res } = exchange('PATCH', '/api/attractions/%36ac892c8f15bfca71034790b', admin, { authorization: `Bearer ${token}` });
+    auditTrail(req, res as never, jest.fn());
+    await settle();
+    expect(snapshot).toHaveBeenCalledWith('listing', '6ac892c8f15bfca71034790b', { id: '6ac892c8f15bfca71034790b' });
+    res.emit('finish');
+    await settle();
+    expect((AuditLog.create as jest.Mock).mock.calls[0][0]).toMatchObject({ resourceId: '6ac892c8f15bfca71034790b', verb: 'update' });
   });
 
   it('files the entry under the brand that owns the record, not the brand open in the admin', async () => {
@@ -287,6 +316,14 @@ describe('privacy allow-list', () => {
     for (const field of spec.identity) expect(field).not.toMatch(NEVER);
   });
 
+  it('keeps booked items (pickup hotel and room) off the booking list', () => {
+    expect(Object.keys(subjectSpec('booking').fields)).not.toContain('items');
+  });
+
+  it('marks only categories and destinations as records no brand owns', () => {
+    expect(AUDIT_SPEC_KEYS.filter((key) => subjectSpec(key).global)).toEqual(['category', 'destination']);
+  });
+
   it('never names a customer account and reports only its role and status', () => {
     const spec = subjectSpec('user');
     const customer = { role: 'customer', firstName: 'Private', lastName: 'Guest', email: 'guest@example.test' };
@@ -322,6 +359,11 @@ describe('brand attribution', () => {
     expect(attributeBrand({ recordBrands: [a, b], actor: { role: 'super-admin' } })).toBe(a);
     expect(attributeBrand({ recordBrands: [], requestTenant: a, actor: manager([a]) })).toBe(a);
     expect(attributeBrand({ recordBrands: [], actor: manager([a]) })).toBeUndefined();
+  });
+
+  it('never files anything under a brand the person does not work for because a header named it', () => {
+    expect(attributeBrand({ recordBrands: [], requestTenant: b, actor: manager([a]) })).toBeUndefined();
+    expect(attributeBrand({ recordBrands: [], requestTenant: b, actor: { role: 'super-admin' } })).toBe(b);
   });
 });
 

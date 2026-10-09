@@ -59,6 +59,8 @@ interface SubjectSpec {
   fieldsFor?: (doc: Doc) => Record<string, FieldMode>;
   /** A second, equally narrow read for records named after their parent (offers, reviews). */
   enrich?: (doc: Doc) => Promise<{ label?: string; brands?: unknown[] }>;
+  /** Records no brand owns (categories, destinations). Any other record is named only when its brand is known. */
+  global?: true;
   /** Records that are not looked up by `_id` alone. */
   find?: (id: string, params: Record<string, string>) => Promise<Doc | null>;
 }
@@ -149,7 +151,8 @@ const SPECS = {
   booking: {
     model: 'Booking',
     subject: 'booking',
-    fields: { status: 'value', items: 'name', settlementStatus: 'name', settledAt: 'name' },
+    // Booked items carry the guest's pickup hotel and room, so they are not on the list.
+    fields: { status: 'value', settlementStatus: 'name', settledAt: 'name' },
     identity: ['reference', 'tenantId', 'sellerTenantId', 'supplierTenantId'],
     label: (doc: Doc) => text(doc.reference),
     brands: (doc: Doc) => [doc.tenantId, doc.sellerTenantId, doc.supplierTenantId],
@@ -230,6 +233,7 @@ const SPECS = {
   category: {
     model: 'Category',
     subject: 'category',
+    global: true,
     fields: { name: 'value', slug: 'value', isActive: 'value', sortOrder: 'value', icon: 'name', description: 'name', parentId: 'name' },
     identity: ['name'],
     label: (doc: Doc) => text(doc.name),
@@ -238,6 +242,7 @@ const SPECS = {
   destination: {
     model: 'Destination',
     subject: 'destination',
+    global: true,
     fields: {
       name: 'value', slug: 'value', country: 'value', continent: 'value', isActive: 'value', sortOrder: 'value',
       timezone: 'value', language: 'value', description: 'name', shortDescription: 'name', images: 'name',
@@ -513,6 +518,14 @@ const ROUTES: RouteRule[] = [
   rule('POST', /^\/upload\/generate$/, undefined, 'generate', { subject: 'image' }),
 ];
 
+/**
+ * The path as Express routes it: each segment percent-decoded, so `/attractions/6%61…` is the same
+ * record as `/attractions/6a…`. A segment that does not decode is kept as sent (Express answers 400).
+ */
+export const decodedPath = (path: string): string => path.split('/').map((segment) => {
+  try { return decodeURIComponent(segment); } catch { return segment; }
+}).join('/');
+
 export interface AuditRouteMatch {
   rule: RouteRule;
   recordId?: string;
@@ -521,7 +534,7 @@ export interface AuditRouteMatch {
 
 /** The record an admin request concerns, from its method and path (`/api/...`, no query). */
 export const matchAuditRoute = (method: string, apiPath: string): AuditRouteMatch | undefined => {
-  const path = apiPath.replace(/^\/api(?=\/)/i, '').replace(/\/+$/, '');
+  const path = decodedPath(apiPath).replace(/^\/api(?=\/)/i, '').replace(/\/+$/, '');
   for (const candidate of ROUTES) {
     if (!candidate.methods.includes(method.toUpperCase())) continue;
     const match = candidate.pattern.exec(path);
@@ -575,12 +588,16 @@ export const takeSnapshot = async (specKey: SpecKey, recordId: string | undefine
     const fields = spec.fieldsFor ? spec.fieldsFor(doc) : spec.fields;
     const values: Record<string, unknown> = {};
     for (const field of Object.keys(fields)) values[field] = get(doc, field);
+    const brands = uniqueIds([...(spec.brands(doc) || []), ...(extra.brands || [])]);
+    // A brand's record whose brand cannot be worked out (an offer whose tour is gone) could belong to
+    // anyone: it keeps no name and no values, so nothing of it can surface under the wrong brand.
+    const owned = spec.global || brands.length > 0;
     return {
       subject: typeof spec.subject === 'function' ? spec.subject(doc) : spec.subject,
-      label: extra.label ?? spec.label?.(doc),
-      brands: uniqueIds([...(spec.brands(doc) || []), ...(extra.brands || [])]),
-      values,
-      fields,
+      label: owned ? extra.label ?? spec.label?.(doc) : undefined,
+      brands,
+      values: owned ? values : {},
+      fields: owned ? fields : {},
     };
   };
   try {
@@ -667,7 +684,8 @@ export const diffSnapshots = (
 /**
  * The brand a change is filed under: the brand that owns the record, never one it does not belong
  * to. The brand open in the admin decides only among the record's own brands the person works for.
- * A record no brand owns (categories, destinations, uploads) stays with the brand that was open.
+ * A record no brand owns (categories, destinations, uploads) stays with the brand that was open, if
+ * the person works for it; otherwise it is filed under no brand.
  */
 export const attributeBrand = (params: {
   recordBrands: string[];
@@ -675,10 +693,11 @@ export const attributeBrand = (params: {
   actor?: { role?: string; assignedTenants?: unknown[] } | null;
 }): string | undefined => {
   const { recordBrands, requestTenant } = params;
-  if (!recordBrands.length) return requestTenant;
   const superAdmin = params.actor?.role === 'super-admin';
   const actorBrands = new Set(uniqueIds(params.actor?.assignedTenants || []));
   const allowed = (brand: string) => superAdmin || actorBrands.has(brand);
+  // The open brand comes from a header anyone can set: it counts only for a person who works for it.
+  if (!recordBrands.length) return requestTenant && allowed(requestTenant) ? requestTenant : undefined;
   if (requestTenant && recordBrands.includes(requestTenant) && allowed(requestTenant)) return requestTenant;
   return recordBrands.find((brand) => !superAdmin && actorBrands.has(brand)) || recordBrands[0];
 };

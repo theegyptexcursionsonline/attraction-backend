@@ -16,10 +16,12 @@ import promoRoutes from '../routes/promo.routes';
 import userRoutes from '../routes/users.routes';
 import auditLogRoutes from '../routes/auditLogs.routes';
 import attractionTranslationRoutes from '../routes/attractionTranslations.routes';
+import specialOfferRoutes from '../routes/specialOffers.routes';
 import { AuditLog } from '../models/AuditLog';
 import { Attraction } from '../models/Attraction';
 import { Booking } from '../models/Booking';
 import { PromoCode } from '../models/PromoCode';
+import { SpecialOffer } from '../models/SpecialOffer';
 import { Tenant } from '../models/Tenant';
 import { User } from '../models/User';
 import { takeSnapshot } from '../services/auditSubjects';
@@ -37,6 +39,7 @@ app.use('/api/promo-codes', promoRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/audit-logs', auditLogRoutes);
 app.use('/api/admin/attraction-translations', attractionTranslationRoutes);
+app.use('/api/special-offers', specialOfferRoutes);
 app.use((error: Error & { statusCode?: number }, _req: Request, res: Response, _next: NextFunction) => {
   res.status(error.statusCode || 500).json({ success: false, error: error.message });
 });
@@ -96,7 +99,7 @@ beforeAll(async () => {
   const version = systemBinary ? spawnSync(systemBinary, ['--version'], { encoding: 'utf8' }).stdout.match(/db version v([\d.]+)/)?.[1] : undefined;
   mongo = await MongoMemoryReplSet.create({ replSet: { count: 1 }, binary: { version: version || '7.0.14', ...(systemBinary ? { systemBinary } : {}) } });
   await mongoose.connect(mongo.getUri('audit_log_detail'));
-  await Promise.all([Tenant.init(), User.init(), Attraction.init(), Booking.init(), PromoCode.init(), AuditLog.init()]);
+  await Promise.all([Tenant.init(), User.init(), Attraction.init(), Booking.init(), PromoCode.init(), SpecialOffer.init(), AuditLog.init()]);
   await Tenant.collection.insertMany([
     { _id: red, slug: 'red-sea-qa', name: 'Red Sea QA Trips', domain: 'red-sea-qa.invalid', status: 'active', defaultCurrency: 'USD', customPages: [] },
     { _id: nile, slug: 'nile-qa', name: 'Nile QA Trips', domain: 'nile-qa.invalid', status: 'active', defaultCurrency: 'USD', customPages: [] },
@@ -173,6 +176,27 @@ describe('user log detail', () => {
     const [entry] = await entries({ subject: 'tour-translation', actorId: ids.redAdmin });
     expect(entry.resourceLabel).toBeUndefined();
     expect(JSON.stringify(entry)).not.toContain('Nile Felucca Sunset');
+  });
+
+  it('files nothing under a brand the person does not work for, whatever brand the request names', async () => {
+    const response = await request(app).post('/api/attractions').set(as('redAdmin', nile)).send({ title: 'Header test' });
+    expect(response.status).toBeGreaterThanOrEqual(400);
+    const [entry] = await entries({ action: 'record.create', actorId: ids.redAdmin, resource: 'attractions' });
+    expect(entry.tenantId).toBeUndefined();
+    expect(JSON.stringify(await list('redAdmin'))).toContain(String(entry._id));
+  });
+
+  it('never names a record whose brand cannot be worked out', async () => {
+    const orphan = new Types.ObjectId();
+    await SpecialOffer.collection.insertOne({
+      _id: orphan, attractionId: new Types.ObjectId(), title: 'Secret Nile Deal', description: '', discountType: 'percentage', discountValue: 10,
+      validFrom: new Date('2026-10-01'), validUntil: new Date('2026-12-31'), usageLimit: 10, usageCount: 0, isActive: true,
+    });
+    await request(app).patch(`/api/special-offers/${orphan}`).set(as('redAdmin', red)).send({ isActive: false });
+    const [entry] = await entries({ resourceId: String(orphan) });
+    expect(entry.resourceLabel).toBeUndefined();
+    expect(entry.changes ?? []).toEqual([]);
+    expect(JSON.stringify(entry)).not.toContain('Secret Nile Deal');
   });
 
   it("records a team member's section change without reading their password, tokens or 2FA", async () => {

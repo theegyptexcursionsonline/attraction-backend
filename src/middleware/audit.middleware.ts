@@ -54,7 +54,12 @@ const looksLikeAdmin = (req: AuthRequest): boolean => {
   try {
     const header = req.headers.authorization;
     const token = header?.startsWith('Bearer ') ? header.slice(7) : (req.cookies as Record<string, string> | undefined)?.accessToken;
-    return Boolean(token) && AUDITED_ROLES.has(String(verifyToken(token as string).role));
+    const payload = verifyToken(token as string) as { role?: unknown; type?: unknown; aud?: unknown };
+    // Only an access token is a signed-in session: a two-factor challenge or a refresh token names
+    // another kind (tokens issued before kinds were named carry neither claim).
+    if (payload.type !== undefined && payload.type !== 'access') return false;
+    if (payload.aud !== undefined && payload.aud !== 'attractions-network:access') return false;
+    return Boolean(token) && AUDITED_ROLES.has(String(payload.role));
   } catch {
     return false;
   }

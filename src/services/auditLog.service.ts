@@ -35,9 +35,10 @@ export const auditResource = (path: string): string | undefined => {
   return (parts[0] === 'admin' && parts[1] ? parts[1] : parts[0])?.slice(0, 60);
 };
 
-/** The last record id named in a path. */
+/** The last record id named in a path (segments decoded, as Express decodes route parameters). */
 export const auditResourceId = (path: string): string | undefined =>
-  path.split('/').reverse().find((part) => Types.ObjectId.isValid(part) && /^[a-f0-9]{24}$/i.test(part));
+  path.split('/').reverse().map((part) => { try { return decodeURIComponent(part); } catch { return part; } })
+    .find((part) => /^[a-f0-9]{24}$/i.test(part));
 
 /** The brand open in the admin for this request (resolved tenant, else the header the admin sent). */
 export const requestTenantId = (req: Request & { tenant?: { _id?: unknown } }): Types.ObjectId | undefined => {

@@ -12,6 +12,8 @@ import { auditSummary, type AuditChange, type AuditSubject, type AuditVerb } fro
 import { auditCsvHeader, auditCsvRow, cairoDate } from '../utils/auditCsv';
 
 const TEAM_ROLES = ['brand-admin', 'manager', 'editor', 'viewer'];
+// 24 hex characters only: Types.ObjectId.isValid also accepts any 12-character string.
+const OBJECT_ID = /^[a-f0-9]{24}$/i;
 // The admin downloads through its own same-origin proxy, which holds the whole reply in memory;
 // 5,000 rows (about 2–3 MB) stays well inside what that hosting returns in one response.
 const DEFAULT_EXPORT_MAX = 5_000;
@@ -139,8 +141,8 @@ export const listAuditLogs = async (req: AuthRequest, res: Response, next: NextF
   try {
     const { cursor, actorId } = req.query as Record<string, string | undefined>;
     const limit = Math.min(Math.max(Number.parseInt(String(req.query.limit ?? '50'), 10) || 50, 1), 100);
-    if (cursor && !Types.ObjectId.isValid(cursor)) { sendError(res, 'Invalid cursor', 400); return; }
-    if (actorId && !Types.ObjectId.isValid(actorId)) { sendError(res, 'Invalid team member', 400); return; }
+    if (cursor && !OBJECT_ID.test(cursor)) { sendError(res, 'Invalid cursor', 400); return; }
+    if (actorId && !OBJECT_ID.test(actorId)) { sendError(res, 'Invalid team member', 400); return; }
 
     const scope = await auditScope(req);
     if (scope.empty) {
@@ -202,7 +204,7 @@ export const exportAuditLogs = async (req: AuthRequest, res: Response, next: Nex
   let count = 0;
   try {
     const { actorId } = req.query as Record<string, string | undefined>;
-    if (actorId && !Types.ObjectId.isValid(actorId)) { sendError(res, 'Invalid team member', 400); return; }
+    if (actorId && !OBJECT_ID.test(actorId)) { sendError(res, 'Invalid team member', 400); return; }
     scope = await auditScope(req);
     const max = auditExportMax();
     count = scope.empty ? 0 : await AuditLog.countDocuments(scope.query);
