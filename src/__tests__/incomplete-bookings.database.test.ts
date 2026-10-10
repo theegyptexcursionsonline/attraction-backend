@@ -5,6 +5,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import request from '../test/loopbackRequest';
 import { Booking } from '../models/Booking';
 import { getAllBookings, getBookingStats } from '../controllers/bookings.controller';
+import { getAdminStats } from '../controllers/stats.controller';
 import { CARD_PAYMENT_WINDOW_MS, incompleteBookingClause, isIncompleteBooking } from '../utils/incompleteBooking';
 import { AuthRequest } from '../types';
 
@@ -125,6 +126,18 @@ describe('In-complete bookings', () => {
     expect(all.data.find((row) => row.reference === 'CHECKOUT-OPEN')?.incomplete).toBe(false);
 
     expect(refs((await list('incomplete', brandAdminA)).data)).toEqual(INCOMPLETE.filter((reference) => reference !== 'OTHER-SITE-EXPIRED'));
+  });
+
+  it('keeps the menu badge equal to the Bookings page total', async () => {
+    await seedAll();
+    await seed('BUNDLE-COMPONENT', { bundleOrderId: new Types.ObjectId() });
+    for (const user of [superAdmin, brandAdminA]) {
+      const res = response();
+      const next = jest.fn();
+      await getAdminStats({ user } as AuthRequest, res, next);
+      expect(next).not.toHaveBeenCalled();
+      expect(res.json.mock.calls[0][0].data.totalBookings).toBe((await stats(user)).totalBookings);
+    }
   });
 
   it('leaves In-complete as soon as a late payment confirms the booking', async () => {

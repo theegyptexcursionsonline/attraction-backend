@@ -5,6 +5,8 @@ import { Review } from '../models/Review';
 import { Booking } from '../models/Booking';
 import { Tenant } from '../models/Tenant';
 import { sendSuccess } from '../utils/response';
+import { standaloneBookingClause } from '../services/bookingRecordScope.service';
+import { incompleteBookingClause } from '../utils/incompleteBooking';
 import { AuthRequest } from '../types';
 
 export const getHomepageStats = async (
@@ -88,8 +90,8 @@ export const getAdminStats = async (
     const assignedTenants = req.user?.assignedTenants ?? [];
 
     // If a specific tenant is selected, scope to that tenant. The sidebar's
-    // "Bookings" badge represents every booking record, matching the Bookings
-    // page total; status breakdowns belong on the dashboard/cards instead.
+    // "Bookings" badge matches the Bookings page total: standalone bookings, without
+    // card checkouts nobody paid (In-complete); status breakdowns belong on the cards.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let attractionFilter: Record<string, any>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -132,7 +134,7 @@ export const getAdminStats = async (
           },
         },
       ]),
-      Booking.countDocuments(bookingFilter),
+      Booking.countDocuments({ ...bookingFilter, ...standaloneBookingClause, $nor: [incompleteBookingClause(new Date())] }),
       Tenant.countDocuments(tenantFilter),
     ]);
 

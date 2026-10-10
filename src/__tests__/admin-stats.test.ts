@@ -39,7 +39,8 @@ describe('admin dashboard statistics', () => {
     expect(Attraction.aggregate).toHaveBeenCalledWith(expect.arrayContaining([
       { $match: { status: 'active', tenantIds: { $in: [tenantId] } } },
     ]));
-    expect(Booking.countDocuments).toHaveBeenCalledWith({ tenantId });
+    // The badge matches the Bookings page total: this site's standalone bookings, no unpaid checkouts.
+    expect(Booking.countDocuments).toHaveBeenCalledWith({ tenantId, bundleOrderId: { $exists: false }, $nor: [expect.objectContaining({ paymentMethod: 'card' })] });
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
       success: true,
       data: {
@@ -61,7 +62,7 @@ describe('admin dashboard statistics', () => {
 
     await getAdminStats({ user: { role: 'brand-admin', assignedTenants: assigned } } as any, response(), jest.fn());
 
-    expect(Booking.countDocuments).toHaveBeenCalledWith({ tenantId: { $in: assigned } });
+    expect(Booking.countDocuments).toHaveBeenCalledWith({ tenantId: { $in: assigned }, bundleOrderId: { $exists: false }, $nor: [expect.objectContaining({ paymentMethod: 'card' })] });
     expect(Tenant.countDocuments).toHaveBeenCalledWith({ _id: { $in: assigned }, status: 'active' });
   });
 });
