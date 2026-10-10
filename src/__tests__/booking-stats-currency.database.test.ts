@@ -91,7 +91,7 @@ describe('booking statistics preserve the currency of every amount', () => {
   it('returns zero counts and no currency when there are no bookings', async () => {
     const { data } = await stats();
     expect(data).toEqual({ totalBookings: 0, confirmedBookings: 0, pendingBookings: 0, completedBookings: 0,
-      cancelledBookings: 0, refundedBookings: 0, currency: null, currencyTotals: [],
+      cancelledBookings: 0, refundedBookings: 0, incompleteBookings: 0, currency: null, currencyTotals: [],
       totalRevenue: 0, bookedRevenue: 0, collectedRevenue: 0 });
   });
 

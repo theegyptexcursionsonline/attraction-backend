@@ -1,5 +1,6 @@
 import { resaleFieldsFor } from '../utils/resaleSplit';
 import { attendanceEligibility } from '../utils/bookingAttendance';
+import { incompleteBookingClause, isIncompleteBooking, realCancellationClause } from '../utils/incompleteBooking';
 import { escapeRegex } from '../utils/helpers';
 import { customerCursor } from '../utils/customerLists';
 import { bookingGuestTotals, bookingLineSummaries, bookingTicketAddons } from '../utils/bookingLineSummary';
@@ -1249,8 +1250,15 @@ export const getAllBookings = async (
       });
     }
 
+    // One reading moment for the filter and the row flags, so a row never changes side mid-request.
+    const now = new Date();
     if (status === 'refunded') {
       andClauses.push({ $or: [{ status: 'refunded' }, { paymentStatus: 'refunded' }] });
+    } else if (status === 'incomplete') {
+      andClauses.push(incompleteBookingClause(now));
+    } else if (status === 'cancelled') {
+      // Real cancellations only: a card checkout nobody paid is In-complete, not cancelled.
+      andClauses.push(realCancellationClause());
     } else if (status) {
       query.status = status;
     }
@@ -1296,6 +1304,7 @@ export const getAllBookings = async (
     const sanitized = (bookings as Array<Record<string, any>>).map((b) => {
       const bookingSite = String(b.tenantId?._id || b.tenantId);
       const canManage = adminRoles.includes(req.user?.role || '') && (isSuper || assignedSet.has(bookingSite)) && (!req.tenant || String(req.tenant._id) === bookingSite);
+      b.incomplete = isIncompleteBooking(b, now);
       b.attendanceStatus = b.attendanceStatus || 'not-recorded';
       b.attendanceRevision = b.attendanceRevision || 0;
       b.attendanceEligibility = canManage ? attendanceEligibility(b, b.tenantId?.timezone) : { canMarkNoShow: false, reason: 'Only the selling website can update attendance.' };
@@ -1400,6 +1409,9 @@ export const getBookingStats = async (
       }
     }
 
+    // A card checkout nobody paid is In-complete: it is counted on its own and never as a booking or
+    // a cancellation (client request, 9 Oct 2026).
+    const incomplete = incompleteBookingClause(new Date());
     const [
       totalBookings,
       confirmedBookings,
@@ -1407,14 +1419,16 @@ export const getBookingStats = async (
       completedBookings,
       cancelledBookings,
       refundedBookings,
+      incompleteBookings,
       revenueAgg,
     ] = await Promise.all([
-      Booking.countDocuments(query),
+      Booking.countDocuments({ ...query, $nor: [incomplete] }),
       Booking.countDocuments({ ...query, status: 'confirmed' }),
-      Booking.countDocuments({ ...query, status: 'pending' }),
+      Booking.countDocuments({ ...query, $nor: [incomplete], status: 'pending' }),
       Booking.countDocuments({ ...query, status: 'completed' }),
-      Booking.countDocuments({ ...query, status: 'cancelled' }),
+      Booking.countDocuments({ ...query, $and: [realCancellationClause()] }),
       Booking.countDocuments({ ...query, $or: [{ status: 'refunded' }, { paymentStatus: 'refunded' }] }),
+      Booking.countDocuments({ ...query, $and: [incomplete] }),
       Booking.aggregate([
         { $match: query },
         {
@@ -1468,6 +1482,7 @@ export const getBookingStats = async (
       completedBookings,
       cancelledBookings,
       refundedBookings,
+      incompleteBookings,
       currency: currencyTotals.length === 1 ? currencyTotals[0].currency : null,
       currencyTotals,
       totalRevenue: rev?.bookedRevenue ?? null,

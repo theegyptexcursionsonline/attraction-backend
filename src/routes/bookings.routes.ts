@@ -201,7 +201,8 @@ router.get('/:id/ticket', optionalAuth, getBookingTicket);
  *         name: status
  *         schema:
  *           type: string
- *           enum: [pending, confirmed, cancelled, completed, refunded]
+ *           enum: [pending, confirmed, cancelled, completed, refunded, incomplete]
+ *         description: "incomplete = card checkouts nobody paid (closed unpaid, or open past the 30-minute payment window); cancelled = real cancellations only."
  *       - in: query
  *         name: startDate
  *         schema:
@@ -232,7 +233,8 @@ router.get(
   validateQuery(
     paginationSchema.merge(
       z.object({
-        status: z.enum(['pending', 'confirmed', 'cancelled', 'completed', 'refunded']).optional(),
+        // incomplete: card checkouts nobody paid; cancelled: real cancellations only.
+        status: z.enum(['pending', 'confirmed', 'cancelled', 'completed', 'refunded', 'incomplete']).optional(),
         startDate: z.string().optional(),
         endDate: z.string().optional(),
         search: regexSearchSchema,
