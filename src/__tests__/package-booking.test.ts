@@ -21,6 +21,7 @@ import { samplePackageInput } from '../test/packageFixture';
 import * as packageBookingService from '../services/packageBooking.service';
 import * as packagePromoService from '../services/packagePromo.service';
 import * as stripeService from '../services/stripe.service';
+import { NOT_SOLD_IN_SITE_CURRENCY } from '../utils/siteCurrency';
 
 // Real routes, middleware, controllers and Mongo transactions; only the signed-in identity is injected.
 jest.mock('../middleware/auth.middleware', () => {
@@ -117,6 +118,37 @@ beforeEach(async () => {
 afterEach(() => { info.mockRestore(); jest.restoreAllMocks(); delete process.env.PACKAGES_PUBLISHING_ENABLED; });
 
 describe('booking a package', () => {
+  it("never quotes or books a package priced in another currency than the site's", async () => {
+    const id = await publishedPackage();
+    // A package left in another currency before one base currency per site.
+    await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $set: { currency: 'EUR' } });
+    const refused = await request(app).post(`/packages/${id}/quote`).set('x-tenant-id', String(owner)).send(selection()).expect(409);
+    expect(refused.body.error).toBe(NOT_SOLD_IN_SITE_CURRENCY);
+    const direct = await book(id, { selection: selection(), quoteHash: 'a'.repeat(32), guestDetails }).expect(409);
+    expect(direct.body.error).toBe(NOT_SOLD_IN_SITE_CURRENCY);
+    expect(await Booking.countDocuments()).toBe(0);
+    expect(await IdempotencyKey.countDocuments()).toBe(0);
+    expect(await seatsBooked(id, 10)).toBe(0);
+  });
+
+  it('publishes a package only on sites that sell in its currency', async () => {
+    const created = await staff(request(app).post('/attractions')).send({
+      title: 'Classic Egypt: Cairo and the Nile', slug: `classic-egypt-${new Types.ObjectId()}`,
+      shortDescription: 'Eight days from the Pyramids to Aswan.', description: 'A complete first trip to Egypt.',
+      category: 'multi-day-tours', destination: { city: 'Cairo', country: 'Egypt', coordinates: { lat: 30.04, lng: 31.23 } },
+      currency: 'USD', status: 'draft', listingType: 'package', tenantIds: [String(owner), String(other)],
+    }).expect(201);
+    const id = created.body.data._id as string;
+    await staff(request(app).put(`/packages/${id}`)).send({ expectedRevision: 0, packageDetails: details() }).expect(200);
+    // The second site sells in another currency (as an older record may).
+    await Tenant.collection.updateOne({ _id: other }, { $set: { defaultCurrency: 'EGP' } });
+    const refused = await staff(request(app).post(`/packages/${id}/publish`)).send({ expectedRevision: 1 }).expect(400);
+    expect(JSON.stringify(refused.body)).toContain('Listing: These sites sell in different currencies (Package site: USD, Enquiry site: EGP).');
+    expect((await Attraction.collection.findOne({ _id: new Types.ObjectId(id) }))?.status).toBe('draft');
+    await Tenant.collection.updateOne({ _id: other }, { $set: { defaultCurrency: 'USD' } });
+    await staff(request(app).post(`/packages/${id}/publish`)).send({ expectedRevision: 1 }).expect(200);
+  });
+
   it('books what was quoted: a pending card booking, seats held, the quote snapshotted', async () => {
     const id = await publishedPackage();
     const quoted = await quote(id);
@@ -388,6 +420,8 @@ describe('package promotion lifecycle', () => {
   it.each([{ currency: 'USD', minimum: 0.5 }, { currency: 'EUR', minimum: 0.5 }, { currency: 'GBP', minimum: 0.3 }])('refuses below the $currency card minimum before a hold, and accepts exactly $minimum', async ({ currency, minimum }) => {
     const id = await publishedPackage({ rates: samplePackageInput().rates!.map(row => ({ ...row, single: 1, double: 1, triple: 1, child: 1, infant: 0 })) });
     await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $set: { currency } });
+    // One base currency per site: the site sells in the package's currency.
+    await Tenant.collection.updateOne({ _id: owner }, { $set: { defaultCurrency: currency } });
     // Three travellers at 1.05 each. The code discounts the operator portion while the fee stays.
     const promotion = await promo({ currency, discountType: 'fixed', discountValue: Math.round((3.15 - minimum + 0.01) * 100) / 100 });
     const selected = selection({ promoCode: 'PACKAGE10', extras: [] });
@@ -412,6 +446,7 @@ describe('package promotion lifecycle', () => {
   it('explains unsupported discount currency without guessing FX or changing bookings without a code', async () => {
     const id = await publishedPackage();
     await Attraction.collection.updateOne({ _id: new Types.ObjectId(id) }, { $set: { currency: 'EGP' } });
+    await Tenant.collection.updateOne({ _id: owner }, { $set: { defaultCurrency: 'EGP' } });
     const promotion = await promo({ currency: 'EGP' });
     const refused = await request(app).post(`/packages/${id}/quote`).set('x-tenant-id', String(owner)).send(chosen()).expect(409);
     expect(refused.body).toMatchObject({ code: 'PROMO_UNAVAILABLE', error: 'Package discount codes are not supported for EGP yet. Remove the code to continue.' });

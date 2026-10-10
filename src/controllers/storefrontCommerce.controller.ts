@@ -13,6 +13,7 @@ import { priceBookingSelection } from '../services/bookingPricing.service';
 import { bookingEligibility, resolveBookingTimeZone } from '../utils/bookingCutoff';
 import { assertTenantIdsBookingCreationAllowed } from '../services/tenantBookingPolicy.service';
 import { minimumTourPrice } from '../utils/attractionPricing';
+import { NOT_SOLD_IN_SITE_CURRENCY } from '../utils/siteCurrency';
 const hash = (value: string) => crypto.createHash('sha256').update(value).digest('hex');
 
 export async function getCommerceItem(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
@@ -42,6 +43,7 @@ export async function quoteCommerceCheckout(req: AuthRequest, res: Response, nex
       subtotal: price.subtotal, fees: price.fees, discount: price.discount, total: price.total, currency: attraction.currency }, 'begin_checkout'));
   } catch (error) {
     if (error instanceof FinanceError) { res.status(409).json({ success: false, code: error.code, error: error.message }); return; }
+    if (error instanceof Error && error.message === 'TOUR_CURRENCY_MISMATCH') { sendError(res, NOT_SOLD_IN_SITE_CURRENCY, 409); return; }
     if (error instanceof Error && /^(INVALID_|PARTICIPANT_LIMIT|MISSING_TENANT|COMMERCE_)/.test(error.message)) { sendError(res, 'Checkout selection is invalid', 400); return; }
     next(error);
   }

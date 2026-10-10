@@ -461,12 +461,18 @@ describe('over HTTP against a real database', () => {
       await patch({ currency: 'usd', duration: '5 hours' }).expect(200);
       expect((await Attraction.findById(tour))?.currency).toBe('USD');
 
+      // One base currency per site: a tour on a site selling in USD stays priced in USD.
+      const offSite = await patch({ currency: 'EUR', ...prices }).expect(400);
+      expect(offSite.body.error).toBe('Red Sea Trips sells in USD, so this tour must be priced in USD.');
+      await book('red-sea-usd', tour).expect(201);
+
+      // An older tour whose site sells in another currency is re-priced under the same rules.
+      await Tenant.collection.updateOne({ _id: usdSite }, { $set: { defaultCurrency: 'EUR' } });
       const bare = await patch({ currency: 'EUR' }).expect(400);
       expect(bare.body.error).toBe('Changing the currency re-prices this tour. Save its prices in EUR in the same change.');
       await patch({ currency: 'EUR', pricingOptions: prices.pricingOptions }).expect(400);
       await patch({ currency: 'Euros', ...prices }).expect(400);
 
-      await book('red-sea-usd', tour).expect(201);
       const waiting = await patch({ currency: 'EUR', ...prices }).expect(400);
       expect(waiting.body.error).toBe('This tour has 1 upcoming booking sold in USD. Change its currency once it is completed or cancelled, or duplicate the tour and price the copy in EUR.');
       expect((await Attraction.findById(tour))?.currency).toBe('USD');
@@ -480,6 +486,8 @@ describe('over HTTP against a real database', () => {
       // An older record priced only by its starting price.
       const tour = await insertTour(usdSite, 'USD', 100, { pricingOptions: [], priceFrom: 60 });
       const patch = (body: Record<string, unknown>) => brandAdmin(request(app).patch(`/attractions/${tour}`), usdSite).send(body);
+      // Its site now sells in EUR (an older tour priced before one base currency per site).
+      await Tenant.collection.updateOne({ _id: usdSite }, { $set: { defaultCurrency: 'EUR' } });
       await patch({ currency: 'EUR' }).expect(400);
       await patch({ currency: 'EUR', pricingOptions: [] }).expect(400);
 

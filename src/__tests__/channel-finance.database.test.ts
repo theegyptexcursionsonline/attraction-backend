@@ -25,6 +25,7 @@ import * as stripeService from '../services/stripe.service';
 import * as tenantPaymentService from '../services/tenantPayment.service';
 import { initialFinanceFees } from '../utils/financeSettings';
 import { hashToken } from '../utils/hash';
+import { NOT_SOLD_IN_SITE_CURRENCY } from '../utils/siteCurrency';
 
 jest.setTimeout(120_000);
 const site = new Types.ObjectId(), supplier = new Types.ObjectId(), attraction = new Types.ObjectId(), offer = new Types.ObjectId(), bundleId = new Types.ObjectId();
@@ -67,6 +68,17 @@ it('snapshots OCTO fees at hold and preserves them across policy edits, confirma
  const booking = await Booking.findOne({ tenantId: site }).lean();
  expect(booking).toMatchObject({ subtotal: 200, fees: 12, total: 212, financeSnapshot: { policyRevision: 1, businessFeesMinor: 600 } });
  expect(await Booking.countDocuments()).toBe(1); expect((await Availability.findOne().lean())?.allDayBooked).toBe(2);
+});
+it("refuses an OCTO hold on a product priced in another currency than the key's site, and holds nothing", async () => {
+ // One base currency per site: the partner key's site sells in EUR.
+ await Attraction.collection.updateOne({ _id: attraction }, { $set: { currency: 'USD' } });
+ const refused = await hold(holdBody('other-currency')).expect(400);
+ expect(refused.body).toEqual({ error: 'UNPROCESSABLE_ENTITY', errorMessage: NOT_SOLD_IN_SITE_CURRENCY });
+ expect(await OctoHold.countDocuments()).toBe(0); expect((await Availability.findOne().lean())?.allDayBooked).toBe(0);
+});
+it("never quotes a bundle priced in another currency than its site's", async () => {
+ await BundleDefinition.collection.updateOne({ _id: bundleId }, { $set: { currency: 'USD' } });
+ await expect(bundleQuote()).rejects.toMatchObject({ code: 'BUNDLE_NOT_SOLD_HERE', statusCode: 409, message: NOT_SOLD_IN_SITE_CURRENCY });
 });
 it('keeps unconfigured OCTO pricing unchanged and rolls back failed configured currency holds', async () => {
  const result = await hold().expect(201); expect(result.body.pricing.retail).toBe(20000);

@@ -156,6 +156,8 @@ jest.mock('../services/pdf.service', () => ({
 describe('API security and pricing guards', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // The booking site sells in USD (no defaultCurrency reads as USD); one base currency per site,
+    // so the tours booked here are priced in USD.
     (Tenant.findOne as jest.Mock).mockImplementation(async (query) => Object.keys(query).length === 1 && typeof query._id === 'string' ? { _id: query._id, slug: 'qa-booking-site', status: 'active' } : null);
     (IdempotencyKey.create as jest.Mock).mockResolvedValue({ _id: new Types.ObjectId() });
     (IdempotencyKey.findByIdAndUpdate as jest.Mock).mockResolvedValue({});
@@ -310,7 +312,7 @@ describe('API security and pricing guards', () => {
     (Attraction.findById as jest.Mock).mockResolvedValue({
       _id: ATTR_ID,
       status: 'active',
-      currency: 'EUR',
+      currency: 'USD',
       tenantIds: [TENANT_ID],
       availability: { type: 'time-slots' },
       pricingOptions: [{ id: 'ride', name: 'Makadi ride', price: 15 }],
@@ -361,7 +363,7 @@ describe('API security and pricing guards', () => {
     (Attraction.findById as jest.Mock).mockResolvedValue({
       _id: ATTR_ID,
       status: 'active',
-      currency: 'EUR',
+      currency: 'USD',
       tenantIds: [TENANT_ID],
       availability: { type: 'time-slots' },
       pricingOptions: [{ id: 'ride', name: 'Makadi ride', price: 15 }],
@@ -391,7 +393,7 @@ describe('API security and pricing guards', () => {
     (Attraction.findById as jest.Mock).mockResolvedValue({
       _id: ATTR_ID,
       status: 'active',
-      currency: 'EUR',
+      currency: 'USD',
       tenantIds: [TENANT_ID],
       pricingOptions: [{
         id: 'buggy-3-4',
@@ -448,7 +450,7 @@ describe('API security and pricing guards', () => {
     (Attraction.findById as jest.Mock).mockResolvedValue({
       _id: ATTR_ID,
       status: 'active',
-      currency: 'EUR',
+      currency: 'USD',
       tenantIds: [TENANT_ID],
       pricingOptions: [{ id: 'adult-option', name: 'Quad ride', price: 15 }],
       addons: [{ id: 'transfer', name: 'El Gouna transfer', price: 10, pricingModel: 'per-person' }],

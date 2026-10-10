@@ -3,6 +3,7 @@ import { PromoCode, IPromoCode } from '../models/PromoCode';
 import { SpecialOffer } from '../models/SpecialOffer';
 import { calculateTourLinePrice } from '../utils/attractionPricing';
 import { applicableOfferClause, evaluatePromo, offerDiscountFor, OFFER_PRIORITY_SORT } from '../utils/discountCurrency';
+import { soldInSiteCurrency } from '../utils/siteCurrency';
 import { normalizeBookingAddons, addonsTotal } from '../utils/bookingAddons';
 import { CreateBookingInput } from '../utils/validators';
 import { serviceFeeOn } from '../utils/serviceFee';
@@ -15,6 +16,9 @@ const round2 = (n: number): number => Math.round(n * 100) / 100;
  */
 export async function priceBookingSelection(attraction: IAttraction, bookingTenant: ITenant | undefined,
   items: CreateBookingInput['items'], promoCode?: string) {
+    // One base currency per site: a site charges, pays out and reports in its own currency, so a tour
+    // priced in another one is never sold there (an older tour must be re-priced first).
+    if (!soldInSiteCurrency(attraction.currency, bookingTenant)) throw new Error('TOUR_CURRENCY_MISMATCH');
     const attractionId = attraction._id;
     // Whether THIS booking's tenant has opted into dual (Foreigner/Resident) pricing.
     // The Resident rate is honoured only when the tenant flag is on AND the option has a residentPrice set.

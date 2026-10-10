@@ -20,6 +20,7 @@ import {
   OctoAttractionLike,
 } from '../octo/mappers';
 import { assertTenantBookingCreationAllowed } from '../services/tenantBookingPolicy.service';
+import { NOT_SOLD_IN_SITE_CURRENCY, soldInSiteCurrency } from '../utils/siteCurrency';
 
 // OCTO (octo.travel) supplier API — the standard channel-manager / OTA contract.
 //   Increment 1: catalogue (supplier + products)
@@ -343,6 +344,7 @@ router.post('/bookings', requireScope('write'), async (req: AuthRequest, res: Re
       // New holds can become bookings, so close this side door too. Existing
       // idempotent hold replays remain readable and return their original state.
       assertTenantBookingCreationAllowed(req.tenant);
+      if (!soldInSiteCurrency(prod.currency || 'USD', tenantOf(req))) return void octoErr(res, 400, 'UNPROCESSABLE_ENTITY', NOT_SOLD_IN_SITE_CURRENCY);
     }
     const expected = {
       productId: String(a._id), optionId, availabilityId, currency, totalMinor, unitItems: items,

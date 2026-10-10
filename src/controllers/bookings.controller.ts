@@ -65,6 +65,7 @@ import { bookingNotificationEmail } from '../utils/notificationRecipients';
 import { packageSelfCancellationProblem } from '../services/packageBooking.service';
 import { todayInZone } from '../services/packagePricing.service';
 import { customerFeeLines } from '../utils/financeSettings';
+import { NOT_SOLD_IN_SITE_CURRENCY } from '../utils/siteCurrency';
 
 // Compact, tenant-safe booking summary for webhook payloads. Contains only the
 // booking's own fields — never other tenants' data.
@@ -669,6 +670,10 @@ export const createBooking = async (
     }
     if (error instanceof Error && error.message.startsWith('INVALID_OPTION:')) {
       sendError(res, 'Invalid pricing option selected', 400);
+      return;
+    }
+    if (error instanceof Error && error.message === 'TOUR_CURRENCY_MISMATCH') {
+      sendError(res, NOT_SOLD_IN_SITE_CURRENCY, 409);
       return;
     }
     if (error instanceof HotelPickupError) {

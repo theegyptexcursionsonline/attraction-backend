@@ -8,6 +8,9 @@ import {
   IBundleDefinition,
 } from '../models/BundleDefinition';
 import { BundleSupplyOffer } from '../models/BundleSupplyOffer';
+import { Tenant } from '../models/Tenant';
+import { normalizeCurrencyCode } from '../utils/discountCurrency';
+import { soldInSiteCurrency } from '../utils/siteCurrency';
 import { appendBundleEvent, BundleActor } from './bundleAudit.service';
 import { runBundleTransaction } from './bundleInventory.service';
 
@@ -112,6 +115,14 @@ const hydrateComponents = async (
   return snapshots.sort((a, b) => a.sortOrder - b.sortOrder);
 };
 
+/** One base currency per site: a bundle is priced in the currency of the site that sells it. */
+const assertSiteCurrency = async (storefrontTenantId: unknown, currency: string, session?: ClientSession): Promise<void> => {
+  const site = await Tenant.findById(storefrontTenantId).select('name defaultCurrency').session(session ?? null).lean();
+  if (!site || soldInSiteCurrency(currency, site)) return;
+  const code = normalizeCurrencyCode(site.defaultCurrency) ?? 'USD';
+  throw new BundleCatalogError('SITE_CURRENCY', `${site.name} sells in ${code}, so this bundle must be priced in ${code}.`);
+};
+
 const validateEconomics = (
   customerPricesMinor: BundleDefinitionInput['customerPricesMinor'],
   components: IBundleComponentSnapshot[],
@@ -129,6 +140,7 @@ export const createBundleDefinition = async (
   input: BundleDefinitionInput,
   actor: BundleActor & { actorId: Types.ObjectId }
 ): Promise<IBundleDefinition> => runBundleTransaction(async (session) => {
+  await assertSiteCurrency(input.storefrontTenantId, input.currency, session);
   const components = await hydrateComponents(input.components, input.currency, session);
   validateEconomics(
     input.customerPricesMinor,
@@ -182,6 +194,7 @@ export const updateDraftBundleDefinition = async (
   if (bundle.get('revision') !== expectedRevision) {
     throw new BundleCatalogError('REVISION_CONFLICT', 'The bundle changed; refresh and try again', 409);
   }
+  if (patch.currency !== undefined) await assertSiteCurrency(bundle.storefrontTenantId, patch.currency, session);
   Object.assign(bundle, patch, { updatedBy: actor.actorId });
   validateEconomics(
     bundle.customerPricesMinor,

@@ -4,6 +4,7 @@ import { Types } from 'mongoose';
 import { verifyToken } from '../utils/jwt';
 import { User } from '../models/User';
 import { Attraction } from '../models/Attraction';
+import { Tenant } from '../models/Tenant';
 import attractionsRouter from '../routes/attractions.routes';
 
 // Section access has its own tests (section-access.test.ts); here every section is allowed.
@@ -63,6 +64,8 @@ describe('POST /attractions — saving a tour draft (ATN rows 109 / 114)', () =>
   beforeEach(() => {
     jest.clearAllMocks();
     authenticateAsBrandAdmin();
+    // One base currency per site: the draft's site sells in USD, the currency the editor sends.
+    jest.spyOn(Tenant, 'find').mockReturnValue({ select: () => ({ lean: async () => [{ _id: tenantId, name: 'Sahara QA', defaultCurrency: 'USD' }] }) } as never);
     (Attraction.exists as jest.Mock).mockResolvedValue(false);
     (Attraction.create as jest.Mock).mockImplementation(async (doc: Record<string, unknown>) => ({
       ...doc,
@@ -105,6 +108,18 @@ describe('POST /attractions — saving a tour draft (ATN rows 109 / 114)', () =>
       });
 
     expect(response.status).toBe(201);
+  });
+
+  it("prices a draft without a currency in its site's currency (one base currency per site)", async () => {
+    jest.spyOn(Tenant, 'find').mockReturnValue({ select: () => ({ lean: async () => [{ _id: tenantId, name: 'Nile Trips', defaultCurrency: 'egp' }] }) } as never);
+    await request(app).post('/attractions').set('Authorization', 'Bearer token')
+      .send({ slug: 'felucca-hour-a1b2', title: 'Felucca hour', status: 'draft', tenantIds: [tenantId.toString()] }).expect(201);
+    expect((Attraction.create as jest.Mock).mock.calls[0][0]).toMatchObject({ currency: 'EGP' });
+
+    const refused = await request(app).post('/attractions').set('Authorization', 'Bearer token')
+      .send({ ...partialDraftBody(), slug: 'felucca-hour-c3d4' }).expect(400);
+    expect(refused.body.error).toBe('Nile Trips sells in EGP, so this tour must be priced in EGP.');
+    expect(Attraction.create).toHaveBeenCalledTimes(1);
   });
 
   it('still refuses a draft with no title', async () => {

@@ -27,6 +27,7 @@ import {
 } from '../utils/tenantScope';
 import { minimumTourPrice } from '../utils/attractionPricing';
 import { normalizeCurrencyCode } from '../utils/discountCurrency';
+import { currencyMatch, siteCurrencies, tourCurrencyProblem } from '../utils/siteCurrency';
 import { SpecialOffer } from '../models/SpecialOffer';
 import { BundleOrder } from '../models/BundleOrder';
 import { runBundleTransaction } from '../services/bundleInventory.service';
@@ -924,6 +925,27 @@ export const createAttraction = async (
       return;
     }
 
+    // One base currency per site: a new tour is priced in its sites' currency. A draft may leave the
+    // currency out and takes the sites' one; a stated currency must match it.
+    const sites = await siteCurrencies(req.body.tenantIds || []);
+    if (req.body.currency === undefined || req.body.currency === '') {
+      const siteCodes = [...new Set(sites.map((site) => site.currency))];
+      if (siteCodes.length === 1) req.body.currency = siteCodes[0];
+      else delete req.body.currency;
+    } else {
+      const currency = normalizeCurrencyCode(req.body.currency);
+      if (!currency) {
+        sendError(res, 'Use a three-letter currency code such as USD', 400);
+        return;
+      }
+      req.body.currency = currency;
+    }
+    const currencyProblem = tourCurrencyProblem(req.body.currency ?? 'USD', sites);
+    if (currencyProblem) {
+      sendError(res, currencyProblem, 400);
+      return;
+    }
+
     // Drafts included: a tour sold by the day never lists departure times nobody can choose.
     if (departureScheduleConflict(req.body)) {
       sendError(res, DEPARTURE_SCHEDULE_CONFLICT_MESSAGE, 400);
@@ -1184,6 +1206,20 @@ export const updateAttraction = async (
           );
           return;
         }
+      }
+    }
+
+    // One base currency per site: a save that sets the currency, changes the sites or publishes must
+    // leave the tour priced in its sites' currency. Other edits stay possible on an older tour that
+    // does not match yet, which checkout refuses to sell until it is re-priced.
+    if (existingAttraction && (req.body.currency !== undefined || Array.isArray(req.body.tenantIds) || req.body.status === 'active')) {
+      const currencyProblem = tourCurrencyProblem(
+        req.body.currency ?? existingAttraction.currency,
+        await siteCurrencies(Array.isArray(req.body.tenantIds) ? req.body.tenantIds : existingAttraction.tenantIds || []),
+      );
+      if (currencyProblem) {
+        sendError(res, currencyProblem, 400);
+        return;
       }
     }
 
@@ -1615,6 +1651,9 @@ const resolveResellerTenantId = (req: AuthRequest): Types.ObjectId | null => {
   return null;
 };
 
+const resellerSiteCurrency = async (siteId: Types.ObjectId): Promise<string> =>
+  (await siteCurrencies([siteId]))[0]?.currency ?? 'USD';
+
 // GET /attractions/resellable
 // Attractions OTHER tenants have opened for resale that the current tenant
 // can pick up: enabled, not owned by us, not already in our catalog, and
@@ -1654,6 +1693,9 @@ export const getResellableAttractions = async (
         { 'reseller.allowedTenants': { $size: 0 } },
         { 'reseller.allowedTenants': currentTenantId },
       ] });
+      // One base currency per site: offer only tours priced in this site's currency. A tour already
+      // on the site stays listed so it can still be removed.
+      conditions.push({ $or: [{ currency: currencyMatch(await resellerSiteCurrency(currentTenantId)) }, { tenantIds: currentTenantId }] });
       if (addedOnly) conditions.push({ tenantIds: currentTenantId });
     } else if (addedOnly) {
       sendError(res, 'Choose a site before filtering marketplace listings', 400);
@@ -1754,6 +1796,8 @@ export const getResellableAttractionDetails = async (
           { 'reseller.allowedTenants': { $size: 0 } },
           { 'reseller.allowedTenants': currentTenantId },
         ],
+      }, {
+        $or: [{ currency: currencyMatch(await resellerSiteCurrency(currentTenantId)) }, { tenantIds: currentTenantId }],
       }];
     }
     const attraction = await Attraction.findOne(query)
@@ -1844,11 +1888,23 @@ export const addReseller = async (
       return;
     }
 
-    const updated = await Attraction.findByIdAndUpdate(
-      id,
+    // One base currency per site: only a tour priced in this site's currency can join it. The write
+    // repeats the check, so a currency change made meanwhile cannot slip through.
+    const siteCurrency = await resellerSiteCurrency(currentTenantId);
+    if (normalizeCurrencyCode(attraction.currency) !== siteCurrency) {
+      sendError(res, `Your site sells in ${siteCurrency}, and this tour is priced in ${attraction.currency}. Only tours priced in ${siteCurrency} can be added.`, 409);
+      return;
+    }
+
+    const updated = await Attraction.findOneAndUpdate(
+      { _id: attraction._id, 'reseller.enabled': true, currency: currencyMatch(siteCurrency) },
       { $addToSet: { tenantIds: currentTenantId } },
       { new: true }
     );
+    if (!updated) {
+      sendError(res, 'This tour changed. Reload the marketplace and try again', 409);
+      return;
+    }
 
     sendSuccess(res, updated, 'Attraction added to your catalog');
   } catch (error) {

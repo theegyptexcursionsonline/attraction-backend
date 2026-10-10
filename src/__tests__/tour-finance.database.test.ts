@@ -47,7 +47,7 @@ beforeAll(async () => {
 afterAll(async () => { await mongoose.disconnect(); await mongo?.stop(); });
 beforeEach(async () => {
  await Promise.all([Tenant, Attraction, Availability, Booking, IdempotencyKey, PromoCode, SpecialOffer, BookingOperatorNotification].map(model => model.collection.deleteMany({})));
- await Tenant.collection.insertMany([{ _id: site, slug: 'finance-tour', name: 'Finance tour', domain: 'finance-tour.invalid', status: 'active', timezone: 'Africa/Cairo' }, { _id: other, slug: 'finance-other', status: 'active' }]);
+ await Tenant.collection.insertMany([{ _id: site, slug: 'finance-tour', name: 'Finance tour', domain: 'finance-tour.invalid', status: 'active', timezone: 'Africa/Cairo', defaultCurrency: 'EUR' }, { _id: other, slug: 'finance-other', status: 'active' }]);
  await Attraction.collection.insertOne({ _id: attraction, title: 'Finance trip', status: 'active', tenantIds: [site], currency: 'EUR', pricingOptions: [{ id: 'adult', name: 'Adult', price: 100 }], availability: { type: 'all-day' } });
 });
 afterEach(() => jest.restoreAllMocks());

@@ -13,7 +13,7 @@ import { AuthRequest } from '../types';
 jest.mock('../models/ApiKey', () => ({
   ApiKey: { create: jest.fn(), findById: jest.fn() },
 }));
-jest.mock('../models/Tenant', () => ({ Tenant: { findById: jest.fn() } }));
+jest.mock('../models/Tenant', () => ({ Tenant: { findById: jest.fn(), find: jest.fn() } }));
 jest.mock('../models/SpecialOffer', () => ({
   SpecialOffer: {
     create: jest.fn(),
@@ -183,8 +183,11 @@ describe('authorization controller defenses', () => {
     (Attraction.findById as jest.Mock).mockResolvedValue({
       _id: attractionId,
       ownerTenantId,
+      currency: 'USD',
       tenantIds: [ownerTenantId, assignedTenantId],
     });
+    // One base currency per site: the sites left on the tour sell in its currency.
+    (Tenant.find as jest.Mock).mockReturnValue({ select: () => ({ lean: async () => [{ _id: ownerTenantId, name: 'Owner site', defaultCurrency: 'USD' }] }) });
     (Attraction.findByIdAndUpdate as jest.Mock).mockResolvedValue({ _id: attractionId });
     const req = authRequest({
       params: { id: attractionId.toString() },

@@ -13,7 +13,9 @@ import { BundleIdempotency } from '../models/BundleIdempotency';
 import { BundleOrder, IBundleOrder, IBundleOrderComponent } from '../models/BundleOrder';
 import { BundleQuote, IBundleQuote } from '../models/BundleQuote';
 import { BundleSupplyOffer } from '../models/BundleSupplyOffer';
+import { Tenant } from '../models/Tenant';
 import { generateBookingReference } from '../utils/hash';
+import { NOT_SOLD_IN_SITE_CURRENCY, soldInSiteCurrency } from '../utils/siteCurrency';
 import { appendBundleEvent, enqueueBundleOutbox } from './bundleAudit.service';
 import {
   BundleIdempotencyError,
@@ -221,6 +223,9 @@ export const createBundleQuote = async (input: {
     status: 'published',
   });
   if (!bundle) throw new BundleOrderError('BUNDLE_NOT_FOUND', 'Bundle not found', 404);
+  // One base currency per site: a bundle left in another currency is never quoted for sale here.
+  const site = await Tenant.findById(input.storefrontTenantId).select('defaultCurrency').lean();
+  if (!soldInSiteCurrency(bundle.currency, site)) throw new BundleOrderError('BUNDLE_NOT_SOLD_HERE', NOT_SOLD_IN_SITE_CURRENCY, 409);
   const selectedByComponent = new Map(
     input.request.selections.map((selection) => [selection.componentId, selection])
   );

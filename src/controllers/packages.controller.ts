@@ -63,6 +63,7 @@ import {
   todayInZone,
 } from '../services/packagePricing.service';
 import { openDepartureDates, packagePublishingEnabled, packageRevisionFilter } from '../services/packageCatalog.service';
+import { NOT_SOLD_IN_SITE_CURRENCY, siteCurrencies, soldInSiteCurrency, tourCurrencyProblem } from '../utils/siteCurrency';
 
 /**
  * Package listings: the package editor (details, publication, departures) and the public
@@ -147,6 +148,13 @@ function listingPublishProblems(record: EditorRecord): string[] {
   return [...new Set(problems)];
 }
 
+/** The listing rules above plus one base currency per site, which needs the sites' currencies. */
+async function listingProblems(record: EditorRecord): Promise<string[]> {
+  const problems = listingPublishProblems(record);
+  const currency = tourCurrencyProblem(record.currency ?? 'USD', await siteCurrencies((record.tenantIds as unknown[]) || []));
+  return currency ? [...problems, `Listing: ${currency}`] : problems;
+}
+
 async function editorView(record: EditorRecord, today: string) {
   const details = readPackageDetails(record.packageDetails) ?? packageDetailsSchema.parse({ version: 1 });
   const departures = details.departureMode === 'fixed' ? await openDepartureDates(record._id, today) : [];
@@ -161,7 +169,7 @@ async function editorView(record: EditorRecord, today: string) {
     checklist.problems.push({ section: 'prices', message: NO_REFERENCE_PRICE });
     checklist.totals.prices = 1;
   }
-  const listing = listingPublishProblems(record);
+  const listing = await listingProblems(record);
   const problems: Array<{ section: PublishSection | 'listing' | 'more'; message: string }> = [
     ...listing.map((message) => ({ section: 'listing' as const, message })),
     ...checklist.problems,
@@ -302,7 +310,7 @@ export const publishPackage = async (req: AuthRequest, res: Response, next: Next
     const departures = details.departureMode === 'fixed' ? await openDepartureDates(record._id, today) : [];
     const problems = packagePublishProblems(details, today);
     if (problems.length === 0 && !firstBookableDate(details, today, departures)) problems.push(NO_BOOKABLE_DATE);
-    problems.unshift(...listingPublishProblems(record));
+    problems.unshift(...await listingProblems(record));
     const fromPrice = packageFromPrice(details, today, departures);
     if (problems.length > 0 || !fromPrice) {
       sendError(res, 'Complete these before publishing', 400,
@@ -630,6 +638,7 @@ export const quotePackage = async (req: AuthRequest, res: Response, next: NextFu
     const { record, details } = loaded;
     const today = operatorToday(req);
     const currency = record.currency ?? 'USD';
+    if (!soldInSiteCurrency(currency, req.tenant)) { sendError(res, NOT_SOLD_IN_SITE_CURRENCY, 409); return; }
     const chosen: PackageSelection = selection.data;
     const policy = financePolicy(req.tenant || { _id: '' });
     const priced = pricePackageSelection({ details, currency, selection: chosen, today, ...(policy.configured ? { feeBasisPoints: 0 } : {}) });
@@ -807,6 +816,8 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
     }
 
     const currency = attraction.currency ?? 'USD';
+    // One base currency per site, checked before the booking claim below is taken.
+    if (!soldInSiteCurrency(currency, req.tenant)) { sendError(res, NOT_SOLD_IN_SITE_CURRENCY, 409); return; }
     const policy = financePolicy(req.tenant || { _id: '' });
     const priced = pricePackageSelection({ details, currency, selection, today: operatorToday(req), ...(policy.configured ? { feeBasisPoints: 0 } : {}) });
     if (!priced.ok) { sendRefusal(res, priced); return; }

@@ -31,6 +31,8 @@ import { withoutTrackingSettingsFields, publicTrackingSettings, trackingRevision
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { searchRegexValue } from '../utils/helpers';
+import { normalizeCurrencyCode } from '../utils/discountCurrency';
+import { siteCurrencyChangeProblem } from '../utils/siteCurrency';
 import { sanitizeCustomPages } from '../utils/sanitizeHtml';
 import { navigationSchema } from '../utils/siteContent';
 import { DomainClaim } from '../models/DomainClaim';
@@ -672,6 +674,28 @@ export const stripUnversionedTrackingUpdate = (req: AuthRequest, _res: Response,
   next();
 };
 
+/**
+ * One base currency per site (client decision, 10 Oct 2026). Every tour on a site is priced in it, so it
+ * is set by the platform, and changes only while every tour on the site is already priced in the new one;
+ * prices are never converted. Admin screens send the current value with every save: an unchanged value
+ * is dropped. Returns the upper-cased code to set with a filter on the value it replaces, nothing to
+ * change, or a refusal.
+ */
+type SiteCurrencyChange = { set?: { code: string; fence: Record<string, unknown> } } | { error: string; status: number };
+async function siteCurrencyChange(siteFilter: Record<string, unknown>, requested: unknown, isSuperAdmin: boolean): Promise<SiteCurrencyChange> {
+  if (requested === undefined) return {};
+  const code = normalizeCurrencyCode(requested);
+  if (!code) return { error: 'Use a three-letter currency code such as USD', status: 400 };
+  const site = await Tenant.findOne(siteFilter).select('defaultCurrency').lean();
+  if (!site) return { error: 'Tenant not found', status: 404 };
+  if (normalizeCurrencyCode(site.defaultCurrency) === code) return {};
+  if (!isSuperAdmin) return { error: "The site's currency is set by Foxes", status: 403 };
+  const problem = await siteCurrencyChangeProblem(site._id, code);
+  if (problem) return { error: problem, status: 409 };
+  // The write repeats the value read here, so two concurrent changes cannot both pass the tour check.
+  return { set: { code, fence: { defaultCurrency: site.defaultCurrency ?? { $exists: false } } } };
+}
+
 export const createTenant = async (
   req: AuthRequest,
   res: Response,
@@ -679,6 +703,11 @@ export const createTenant = async (
 ): Promise<void> => {
   try {
     req.body = withoutFinanceFields(withoutPageSeoFields(withoutTrackingSettingsFields(req.body)));
+    if (req.body.defaultCurrency !== undefined) {
+      const currency = normalizeCurrencyCode(req.body.defaultCurrency);
+      if (!currency) { sendError(res, 'Use a three-letter currency code such as USD', 400); return; }
+      req.body.defaultCurrency = currency;
+    }
     if (req.body.contactInfo !== undefined) {
       const contact = tenantContactInfoSchema.safeParse(req.body.contactInfo);
       if (!contact.success) { sendError(res, 'Invalid contact information', 400); return; }
@@ -949,15 +978,17 @@ export const updateTenant = async (
       if ('error' in pickup) { sendError(res, pickup.error, pickup.status); return; }
       updates.pickupDestinationSlugs = pickup.slugs;
     }
+    delete updates.defaultCurrency;
+    const currency = await siteCurrencyChange({ _id: id }, req.body.defaultCurrency, true);
+    if ('error' in currency) { sendError(res, currency.error, currency.status); return; }
+    if (currency.set) updates.defaultCurrency = currency.set.code;
 
-    const tenant = await Tenant.findByIdAndUpdate(
-      id,
-      { $set: updates },
-      { new: true, runValidators: true }
-    );
+    const tenant = currency.set
+      ? await Tenant.findOneAndUpdate({ _id: id, ...currency.set.fence }, { $set: updates }, { new: true, runValidators: true })
+      : await Tenant.findByIdAndUpdate(id, { $set: updates }, { new: true, runValidators: true });
 
     if (!tenant) {
-      sendError(res, 'Tenant not found', 404);
+      sendError(res, currency.set ? 'This site changed. Reload before saving' : 'Tenant not found', currency.set ? 409 : 404);
       return;
     }
 
@@ -1035,7 +1066,6 @@ export const updateTenantSettings = async (
       'logoDark',
       'favicon',
       'heroImages',
-      'defaultCurrency',
       'defaultLanguage',
       'supportedLanguages',
       'timezone',
@@ -1080,6 +1110,9 @@ export const updateTenantSettings = async (
         updates[field] = req.body[field];
       }
     }
+    const currency = await siteCurrencyChange(siteFilter, req.body.defaultCurrency, isSuperAdmin);
+    if ('error' in currency) { sendError(res, currency.error, currency.status); return; }
+    if (currency.set) updates.defaultCurrency = currency.set.code;
 
     if (Object.keys(updates).length === 0) {
       sendError(res, 'No valid fields to update', 400);
@@ -1093,13 +1126,13 @@ export const updateTenantSettings = async (
     if (typeof updates.name === 'string') updates.name = updates.name.trim();
 
     const tenant = await Tenant.findOneAndUpdate(
-      siteFilter,
+      { ...siteFilter, ...currency.set?.fence },
       { $set: updates },
       { new: true, runValidators: true, lean: true }
     );
 
     if (!tenant) {
-      sendError(res, 'Tenant not found', 404);
+      sendError(res, currency.set ? 'This site changed. Reload before saving' : 'Tenant not found', currency.set ? 409 : 404);
       return;
     }
 

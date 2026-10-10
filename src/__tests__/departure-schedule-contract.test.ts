@@ -152,7 +152,7 @@ describe('writes over HTTP', () => {
   beforeEach(async () => {
     process.env.URL_NAMESPACE_WRITES_READY = 'true';
     await Promise.all([Tenant, Attraction, Availability, Booking].map((model) => (model as typeof Tenant).collection.deleteMany({})));
-    await Tenant.collection.insertOne({ _id: site, slug: 'day-sold-site', name: 'Day sold site', domain: 'day-sold-site.invalid', status: 'active', timezone: 'Africa/Cairo', customPages: [] });
+    await Tenant.collection.insertOne({ _id: site, slug: 'day-sold-site', name: 'Day sold site', domain: 'day-sold-site.invalid', status: 'active', timezone: 'Africa/Cairo', customPages: [], defaultCurrency: 'EUR' });
   });
 
   it('refuses to create the pair, as a draft too, and creates the consistent tour', async () => {
