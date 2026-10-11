@@ -1,0 +1,621 @@
+[
+  {
+    "case": "paid card booking",
+    "items": [
+      {
+        "source": "atn",
+        "externalRef": "ATT-QACON-0001",
+        "sourceBookingId": "672000000000000000000001",
+        "sourceSite": "makadi-horse-club",
+        "status": "confirmed",
+        "paymentStatus": "paid",
+        "tour": {
+          "name": "Sunset Horse Ride",
+          "code": "6720000000000000000000d1",
+          "option": "Sunset ride"
+        },
+        "serviceDate": "2026-10-20",
+        "serviceTime": "17:30",
+        "timezone": "Africa/Cairo",
+        "guests": {
+          "total": 4,
+          "breakdown": [
+            {
+              "label": "Adults",
+              "count": 2
+            },
+            {
+              "label": "Children",
+              "count": 1
+            },
+            {
+              "label": "Infants",
+              "count": 1
+            }
+          ]
+        },
+        "amount": {
+          "value": "150.00",
+          "currency": "USD"
+        },
+        "customer": {
+          "name": "Egypt Excursions Online QA",
+          "email": "theegyptexcursionsonline@gmail.com",
+          "phone": "+201000000000",
+          "locale": null
+        },
+        "pickup": {
+          "hotel": "Steigenberger Aldau",
+          "room": "214",
+          "time": "16:45"
+        },
+        "collect": null,
+        "updatedAt": "2026-10-11T08:00:00.000Z"
+      }
+    ]
+  },
+  {
+    "case": "pay at location, two services",
+    "items": [
+      {
+        "source": "atn",
+        "externalRef": "ATT-QACON-0002/1",
+        "sourceBookingId": "672000000000000000000002",
+        "sourceSite": "makadi-horse-club",
+        "status": "confirmed",
+        "paymentStatus": "unpaid",
+        "tour": {
+          "name": "Sunset Horse Ride",
+          "code": "6720000000000000000000d1",
+          "option": "Sunset ride"
+        },
+        "serviceDate": "2026-10-20",
+        "serviceTime": "17:30",
+        "timezone": "Africa/Cairo",
+        "guests": {
+          "total": 2,
+          "breakdown": [
+            {
+              "label": "Adults",
+              "count": 2
+            }
+          ]
+        },
+        "amount": {
+          "value": "63.00",
+          "currency": "USD"
+        },
+        "customer": {
+          "name": "Egypt Excursions Online QA",
+          "email": "theegyptexcursionsonline@gmail.com",
+          "phone": "+201000000000",
+          "locale": null
+        },
+        "pickup": null,
+        "collect": {
+          "value": "63.00",
+          "currency": "USD"
+        },
+        "updatedAt": "2026-10-11T08:00:00.000Z"
+      },
+      {
+        "source": "atn",
+        "externalRef": "ATT-QACON-0002/2",
+        "sourceBookingId": "672000000000000000000002",
+        "sourceSite": "makadi-horse-club",
+        "status": "confirmed",
+        "paymentStatus": "unpaid",
+        "tour": {
+          "name": "Sunset Horse Ride",
+          "code": "6720000000000000000000d1",
+          "option": "Morning ride"
+        },
+        "serviceDate": "2026-10-21",
+        "serviceTime": "08:00",
+        "timezone": "Africa/Cairo",
+        "guests": {
+          "total": 2,
+          "breakdown": [
+            {
+              "label": "Adults",
+              "count": 2
+            }
+          ]
+        },
+        "amount": {
+          "value": "42.00",
+          "currency": "USD"
+        },
+        "customer": {
+          "name": "Egypt Excursions Online QA",
+          "email": "theegyptexcursionsonline@gmail.com",
+          "phone": "+201000000000",
+          "locale": null
+        },
+        "pickup": null,
+        "collect": {
+          "value": "42.00",
+          "currency": "USD"
+        },
+        "updatedAt": "2026-10-11T08:00:00.000Z"
+      }
+    ]
+  },
+  {
+    "case": "bundle service sold on another site",
+    "items": [
+      {
+        "source": "atn",
+        "externalRef": "ATT-QACON-0003",
+        "sourceBookingId": "672000000000000000000003",
+        "sourceSite": "hurghada-dolphins",
+        "status": "confirmed",
+        "paymentStatus": "paid",
+        "tour": {
+          "name": "Sunset Horse Ride",
+          "code": "6720000000000000000000d1",
+          "option": "Sunset ride"
+        },
+        "serviceDate": "2026-10-20",
+        "serviceTime": "17:30",
+        "timezone": "Africa/Cairo",
+        "guests": {
+          "total": 4,
+          "breakdown": [
+            {
+              "label": "Adults",
+              "count": 2
+            },
+            {
+              "label": "Children",
+              "count": 1
+            },
+            {
+              "label": "Infants",
+              "count": 1
+            }
+          ]
+        },
+        "amount": {
+          "value": "150.00",
+          "currency": "USD"
+        },
+        "customer": {
+          "name": "Egypt Excursions Online QA",
+          "email": "theegyptexcursionsonline@gmail.com",
+          "phone": "+201000000000",
+          "locale": null
+        },
+        "pickup": {
+          "hotel": "Steigenberger Aldau",
+          "room": "214",
+          "time": "16:45"
+        },
+        "collect": null,
+        "updatedAt": "2026-10-11T08:00:00.000Z"
+      }
+    ]
+  },
+  {
+    "case": "cancelled and refunded",
+    "items": [
+      {
+        "source": "atn",
+        "externalRef": "ATT-QACON-0004",
+        "sourceBookingId": "672000000000000000000004",
+        "sourceSite": "makadi-horse-club",
+        "status": "cancelled",
+        "paymentStatus": "refunded",
+        "tour": {
+          "name": "Sunset Horse Ride",
+          "code": "6720000000000000000000d1",
+          "option": "Sunset ride"
+        },
+        "serviceDate": "2026-10-20",
+        "serviceTime": "17:30",
+        "timezone": "Africa/Cairo",
+        "guests": {
+          "total": 4,
+          "breakdown": [
+            {
+              "label": "Adults",
+              "count": 2
+            },
+            {
+              "label": "Children",
+              "count": 1
+            },
+            {
+              "label": "Infants",
+              "count": 1
+            }
+          ]
+        },
+        "amount": {
+          "value": "150.00",
+          "currency": "USD"
+        },
+        "customer": {
+          "name": "Egypt Excursions Online QA",
+          "email": "theegyptexcursionsonline@gmail.com",
+          "phone": "+201000000000",
+          "locale": null
+        },
+        "pickup": {
+          "hotel": "Steigenberger Aldau",
+          "room": "214",
+          "time": "16:45"
+        },
+        "collect": null,
+        "updatedAt": "2026-10-11T08:00:00.000Z"
+      }
+    ]
+  },
+  {
+    "case": "partly refunded",
+    "items": [
+      {
+        "source": "atn",
+        "externalRef": "ATT-QACON-0005",
+        "sourceBookingId": "672000000000000000000005",
+        "sourceSite": "makadi-horse-club",
+        "status": "confirmed",
+        "paymentStatus": "partially_refunded",
+        "tour": {
+          "name": "Sunset Horse Ride",
+          "code": "6720000000000000000000d1",
+          "option": "Sunset ride"
+        },
+        "serviceDate": "2026-10-20",
+        "serviceTime": "17:30",
+        "timezone": "Africa/Cairo",
+        "guests": {
+          "total": 4,
+          "breakdown": [
+            {
+              "label": "Adults",
+              "count": 2
+            },
+            {
+              "label": "Children",
+              "count": 1
+            },
+            {
+              "label": "Infants",
+              "count": 1
+            }
+          ]
+        },
+        "amount": {
+          "value": "150.00",
+          "currency": "USD"
+        },
+        "customer": {
+          "name": "Egypt Excursions Online QA",
+          "email": "theegyptexcursionsonline@gmail.com",
+          "phone": "+201000000000",
+          "locale": null
+        },
+        "pickup": {
+          "hotel": "Steigenberger Aldau",
+          "room": "214",
+          "time": "16:45"
+        },
+        "collect": null,
+        "updatedAt": "2026-10-11T08:00:00.000Z"
+      }
+    ]
+  },
+  {
+    "case": "completed",
+    "items": [
+      {
+        "source": "atn",
+        "externalRef": "ATT-QACON-0006",
+        "sourceBookingId": "672000000000000000000006",
+        "sourceSite": "makadi-horse-club",
+        "status": "completed",
+        "paymentStatus": "paid",
+        "tour": {
+          "name": "Sunset Horse Ride",
+          "code": "6720000000000000000000d1",
+          "option": "Sunset ride"
+        },
+        "serviceDate": "2026-10-20",
+        "serviceTime": "17:30",
+        "timezone": "Africa/Cairo",
+        "guests": {
+          "total": 4,
+          "breakdown": [
+            {
+              "label": "Adults",
+              "count": 2
+            },
+            {
+              "label": "Children",
+              "count": 1
+            },
+            {
+              "label": "Infants",
+              "count": 1
+            }
+          ]
+        },
+        "amount": {
+          "value": "150.00",
+          "currency": "USD"
+        },
+        "customer": {
+          "name": "Egypt Excursions Online QA",
+          "email": "theegyptexcursionsonline@gmail.com",
+          "phone": "+201000000000",
+          "locale": null
+        },
+        "pickup": {
+          "hotel": "Steigenberger Aldau",
+          "room": "214",
+          "time": "16:45"
+        },
+        "collect": null,
+        "updatedAt": "2026-10-11T08:00:00.000Z"
+      }
+    ]
+  },
+  {
+    "case": "no-show",
+    "items": [
+      {
+        "source": "atn",
+        "externalRef": "ATT-QACON-0007",
+        "sourceBookingId": "672000000000000000000007",
+        "sourceSite": "makadi-horse-club",
+        "status": "no_show",
+        "paymentStatus": "paid",
+        "tour": {
+          "name": "Sunset Horse Ride",
+          "code": "6720000000000000000000d1",
+          "option": "Sunset ride"
+        },
+        "serviceDate": "2026-10-20",
+        "serviceTime": "17:30",
+        "timezone": "Africa/Cairo",
+        "guests": {
+          "total": 4,
+          "breakdown": [
+            {
+              "label": "Adults",
+              "count": 2
+            },
+            {
+              "label": "Children",
+              "count": 1
+            },
+            {
+              "label": "Infants",
+              "count": 1
+            }
+          ]
+        },
+        "amount": {
+          "value": "150.00",
+          "currency": "USD"
+        },
+        "customer": {
+          "name": "Egypt Excursions Online QA",
+          "email": "theegyptexcursionsonline@gmail.com",
+          "phone": "+201000000000",
+          "locale": null
+        },
+        "pickup": {
+          "hotel": "Steigenberger Aldau",
+          "room": "214",
+          "time": "16:45"
+        },
+        "collect": null,
+        "updatedAt": "2026-10-11T08:00:00.000Z"
+      }
+    ]
+  },
+  {
+    "case": "yen",
+    "items": [
+      {
+        "source": "atn",
+        "externalRef": "ATT-QACON-0008",
+        "sourceBookingId": "672000000000000000000008",
+        "sourceSite": "makadi-horse-club",
+        "status": "confirmed",
+        "paymentStatus": "paid",
+        "tour": {
+          "name": "Sunset Horse Ride",
+          "code": "6720000000000000000000d1",
+          "option": "Sunset ride"
+        },
+        "serviceDate": "2026-10-20",
+        "serviceTime": "17:30",
+        "timezone": "Africa/Cairo",
+        "guests": {
+          "total": 4,
+          "breakdown": [
+            {
+              "label": "Adults",
+              "count": 2
+            },
+            {
+              "label": "Children",
+              "count": 1
+            },
+            {
+              "label": "Infants",
+              "count": 1
+            }
+          ]
+        },
+        "amount": {
+          "value": "15000",
+          "currency": "JPY"
+        },
+        "customer": {
+          "name": "Egypt Excursions Online QA",
+          "email": "theegyptexcursionsonline@gmail.com",
+          "phone": "+201000000000",
+          "locale": null
+        },
+        "pickup": {
+          "hotel": "Steigenberger Aldau",
+          "room": "214",
+          "time": "16:45"
+        },
+        "collect": null,
+        "updatedAt": "2026-10-11T08:00:00.000Z"
+      }
+    ]
+  },
+  {
+    "case": "dinar",
+    "items": [
+      {
+        "source": "atn",
+        "externalRef": "ATT-QACON-0009",
+        "sourceBookingId": "672000000000000000000009",
+        "sourceSite": "makadi-horse-club",
+        "status": "confirmed",
+        "paymentStatus": "paid",
+        "tour": {
+          "name": "Sunset Horse Ride",
+          "code": "6720000000000000000000d1",
+          "option": "Sunset ride"
+        },
+        "serviceDate": "2026-10-20",
+        "serviceTime": "17:30",
+        "timezone": "Africa/Cairo",
+        "guests": {
+          "total": 4,
+          "breakdown": [
+            {
+              "label": "Adults",
+              "count": 2
+            },
+            {
+              "label": "Children",
+              "count": 1
+            },
+            {
+              "label": "Infants",
+              "count": 1
+            }
+          ]
+        },
+        "amount": {
+          "value": "45.125",
+          "currency": "KWD"
+        },
+        "customer": {
+          "name": "Egypt Excursions Online QA",
+          "email": "theegyptexcursionsonline@gmail.com",
+          "phone": "+201000000000",
+          "locale": null
+        },
+        "pickup": {
+          "hotel": "Steigenberger Aldau",
+          "room": "214",
+          "time": "16:45"
+        },
+        "collect": null,
+        "updatedAt": "2026-10-11T08:00:00.000Z"
+      }
+    ]
+  },
+  {
+    "case": "nothing usable but the identity",
+    "items": [
+      {
+        "source": "atn",
+        "externalRef": "ATT-QACON-0010",
+        "sourceBookingId": "672000000000000000000010",
+        "sourceSite": null,
+        "status": "confirmed",
+        "paymentStatus": "paid",
+        "tour": {
+          "name": "Tour no longer listed",
+          "code": "6720000000000000000000d1",
+          "option": null
+        },
+        "serviceDate": null,
+        "serviceTime": null,
+        "timezone": null,
+        "guests": {
+          "total": 0
+        },
+        "amount": {
+          "value": "150.00",
+          "currency": "USD"
+        },
+        "customer": {
+          "name": null,
+          "email": null,
+          "phone": null,
+          "locale": null
+        },
+        "pickup": null,
+        "collect": null,
+        "updatedAt": "2026-10-11T08:00:00.000Z"
+      }
+    ]
+  },
+  {
+    "case": "status not understood",
+    "items": [
+      {
+        "source": "atn",
+        "externalRef": "ATT-QACON-0011",
+        "sourceBookingId": "672000000000000000000011",
+        "sourceSite": "makadi-horse-club",
+        "status": "on_hold",
+        "paymentStatus": "paid",
+        "tour": {
+          "name": "Sunset Horse Ride",
+          "code": "6720000000000000000000d1",
+          "option": "Sunset ride"
+        },
+        "serviceDate": "2026-10-20",
+        "serviceTime": "17:30",
+        "timezone": "Africa/Cairo",
+        "guests": {
+          "total": 4,
+          "breakdown": [
+            {
+              "label": "Adults",
+              "count": 2
+            },
+            {
+              "label": "Children",
+              "count": 1
+            },
+            {
+              "label": "Infants",
+              "count": 1
+            }
+          ]
+        },
+        "amount": {
+          "value": "150.00",
+          "currency": "USD"
+        },
+        "customer": {
+          "name": "Egypt Excursions Online QA",
+          "email": "theegyptexcursionsonline@gmail.com",
+          "phone": "+201000000000",
+          "locale": null
+        },
+        "pickup": {
+          "hotel": "Steigenberger Aldau",
+          "room": "214",
+          "time": "16:45"
+        },
+        "collect": null,
+        "updatedAt": "2026-10-11T08:00:00.000Z"
+      }
+    ]
+  }
+]

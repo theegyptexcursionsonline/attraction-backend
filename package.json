@@ -24,6 +24,7 @@
     "inspect:content-receiver": "ts-node src/scripts/inspect-content-receiver-migration.ts",
     "ops:verify-backup": "bash scripts/verify-backup-restore.sh",
     "repair:booking-integrity": "ts-node src/scripts/repair-booking-integrity.ts",
+    "migrate:booking-feed-indexes": "ts-node src/scripts/migrate-booking-feed-indexes.ts",
     "rotate:tenant-payment-secrets": "ts-node src/scripts/rotate-tenant-payment-secrets.ts",
     "user:set-password": "ts-node src/scripts/set-user-password.ts",
     "lint": "tsc --noEmit",

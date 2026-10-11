@@ -26,6 +26,7 @@ import swaggerUi from 'swagger-ui-express';
 
 import { env, connectDatabase, corsOptions, swaggerSpec } from './config';
 import routes from './routes';
+import bookingFeedRoutes from './routes/bookingFeed.routes';
 import { auditTrail } from './middleware/audit.middleware';
 import { notFoundHandler, errorHandler, apiLimiter } from './middleware';
 import { expireStaleCardHolds } from './services/bookingInventory.service';
@@ -103,6 +104,10 @@ export const createApp = (): express.Application => {
 
   // Compression
   app.use(compression());
+
+  // The booking API's signed feed read has its own limiter (see routes/bookingFeed.routes.ts),
+  // so it is mounted before the general one.
+  app.use('/api/internal', bookingFeedRoutes);
 
   // Rate limiting
   app.use('/api', apiLimiter);
