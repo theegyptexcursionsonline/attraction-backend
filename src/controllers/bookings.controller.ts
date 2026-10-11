@@ -1,3 +1,4 @@
+import { adminBookingFilterClauses } from '../utils/adminBookingFilters';
 import { resaleFieldsFor } from '../utils/resaleSplit';
 import { attendanceEligibility } from '../utils/bookingAttendance';
 import { incompleteBookingClause, isIncompleteBooking, realCancellationClause } from '../utils/incompleteBooking';
@@ -1255,6 +1256,8 @@ export const getAllBookings = async (
       });
     }
 
+    andClauses.push(...adminBookingFilterClauses(req.query, req.user?.role, scope));
+
     // One reading moment for the filter and the row flags, so a row never changes side mid-request.
     const now = new Date();
     if (status === 'refunded') {
@@ -1293,7 +1296,7 @@ export const getAllBookings = async (
         .populate('attractionId', 'title slug images')
         .populate('userId', 'firstName lastName email')
         .populate('tenantId', 'name slug timezone')
-        .sort({ createdAt: -1 })
+        .sort({ createdAt: -1, _id: -1 })
         .skip((pageNum - 1) * limitNum)
         .limit(limitNum)
         .lean(),

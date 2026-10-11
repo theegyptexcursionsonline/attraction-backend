@@ -71,8 +71,8 @@ beforeEach(async () => {
   process.env.BOOKING_FEED_SECRET = SECRET;
   await Promise.all([Booking.collection.deleteMany({}), Tenant.collection.deleteMany({}), Attraction.collection.deleteMany({})]);
   await Tenant.collection.insertMany([
-    { _id: siteOne, slug: 'makadi-horse-club', name: 'Makadi Horse Club', timezone: 'Africa/Cairo' },
-    { _id: siteTwo, slug: 'hurghada-dolphins', name: 'Hurghada Dolphins', timezone: 'Africa/Cairo' },
+    { _id: siteOne, slug: 'makadi-horse-club', name: 'Makadi Horse Club', domain: 'makadi-feed.example.test', timezone: 'Africa/Cairo' },
+    { _id: siteTwo, slug: 'hurghada-dolphins', name: 'Hurghada Dolphins', domain: 'dolphins-feed.example.test', timezone: 'Africa/Cairo' },
   ]);
   await Attraction.collection.insertOne({ _id: tour, title: 'Sunset Horse Ride', tenantIds: [siteOne, siteTwo] });
   await Booking.collection.insertMany([

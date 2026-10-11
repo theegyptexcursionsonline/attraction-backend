@@ -1,3 +1,4 @@
+import { adminBookingFiltersSchema } from '../utils/adminBookingFilters';
 import { customerListQuery, validateCustomerSiteHint } from '../utils/customerLists';
 import { Router } from 'express';
 import {
@@ -230,17 +231,7 @@ router.get(
   authenticate,
   requireAdmin,
   optionalTenant,
-  validateQuery(
-    paginationSchema.merge(
-      z.object({
-        // incomplete: card checkouts nobody paid; cancelled: real cancellations only.
-        status: z.enum(['pending', 'confirmed', 'cancelled', 'completed', 'refunded', 'incomplete']).optional(),
-        startDate: z.string().optional(),
-        endDate: z.string().optional(),
-        search: regexSearchSchema,
-      })
-    )
-  ),
+  validateQuery(adminBookingFiltersSchema),
   getAllBookings
 );
 
