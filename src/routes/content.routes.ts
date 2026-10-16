@@ -17,6 +17,37 @@ import { sendError } from '../utils/response';
 
 const router = Router();
 
+/**
+ * The Content Engine names its target in three headers (docs/RECEIVER-PUBLISH-CONTRACT.md
+ * in foxes-content-engine). Each must equal the route type and the body's tenant and
+ * language, checked before any tenant lookup or write, so a request built for one site,
+ * type or language can never land on another.
+ */
+const TARGET_BINDING_HEADERS = {
+  type: 'x-content-engine-receiver-type',
+  tenant: 'x-content-engine-tenant',
+  locale: 'x-content-engine-locale',
+} as const;
+
+function assertTargetBinding(
+  req: Request,
+  type: 'blog',
+  tenantId: string,
+  locale: string
+): void {
+  if (
+    req.header(TARGET_BINDING_HEADERS.type) !== type ||
+    req.header(TARGET_BINDING_HEADERS.tenant) !== tenantId ||
+    req.header(TARGET_BINDING_HEADERS.locale) !== locale
+  ) {
+    throw new ContentReceiverError(
+      'CONTENT_RECEIVER_TARGET_BINDING_MISMATCH',
+      'Content receiver target headers do not match the request',
+      400
+    );
+  }
+}
+
 // Every route below this boundary—including capability discovery and explicit
 // unsupported-type failures—requires the dedicated receiver bearer token.
 router.use(authenticateContentEngine);
@@ -93,12 +124,19 @@ router.post('/blog', async (req: Request, res: Response) => {
   }
 
   try {
+    assertTargetBinding(req, 'blog', parsed.data.tenantId, parsed.data.defaultLocale);
     // Allowlist + active tenant lookup precede the publication receipt and blog
     // write, so a wrong tenant cannot leave either an audit or content effect.
     const tenant = await resolveContentTenant(parsed.data.tenantId);
     const published = await publishBlogContent(tenant, parsed.data);
     if (published.replayed) res.setHeader('Idempotency-Replayed', 'true');
-    res.status(published.replayed ? 200 : 201).json(published.result);
+    // An explicit outcome, never a bare record: this receiver always publishes a blog
+    // post immediately, so the engine may record it as live.
+    res.status(published.replayed ? 200 : 201).json({
+      ...published.result,
+      status: 'published',
+      requiresManualPublish: false,
+    });
   } catch (error) {
     receiverError(res, error);
   }

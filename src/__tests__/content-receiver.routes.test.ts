@@ -53,6 +53,14 @@ const buildApp = () => {
 };
 
 const authenticated = () => ({ Authorization: `Bearer ${KEY}` });
+// The Content Engine always names its target; a request built for another site,
+// type or language must not reach the tenant lookup or the write.
+const bound = (overrides: Record<string, string> = {}) => ({
+  'X-Content-Engine-Receiver-Type': 'blog',
+  'X-Content-Engine-Tenant': 'tenant-a',
+  'X-Content-Engine-Locale': 'en',
+  ...overrides,
+});
 
 describe('content receiver routes', () => {
   const originalKey = env.contentEngineApiKey;
@@ -101,7 +109,7 @@ describe('content receiver routes', () => {
     });
     const response = await request(buildApp())
       .post('/api/admin/content/blog')
-      .set({ ...authenticated(), 'Idempotency-Key': IDEMPOTENCY_KEY })
+      .set({ ...authenticated(), ...bound(), 'Idempotency-Key': IDEMPOTENCY_KEY })
       .send({ ...body, idempotencyKey: 'body-cannot-override-header' });
     expect(response.status).toBe(201);
     expect(resolveContentTenant).toHaveBeenCalledWith('tenant-a');
@@ -110,6 +118,29 @@ describe('content receiver routes', () => {
       expect.objectContaining({ idempotencyKey: IDEMPOTENCY_KEY })
     );
     expect(response.body.liveUrl).toMatch(/^https:\/\//);
+    // The engine's contract: an explicit published outcome, never a bare record.
+    expect(response.body).toMatchObject({
+      id: 'post-id',
+      slug: 'valid-editorial-title',
+      status: 'published',
+      requiresManualPublish: false,
+    });
+  });
+
+  it.each([
+    ['a missing type header', { 'X-Content-Engine-Receiver-Type': '' }],
+    ['another content type', { 'X-Content-Engine-Receiver-Type': 'tour' }],
+    ['another site', { 'X-Content-Engine-Tenant': 'tenant-b' }],
+    ['another language', { 'X-Content-Engine-Locale': 'de' }],
+  ])('refuses %s before the tenant lookup or any write', async (_label, override) => {
+    const response = await request(buildApp())
+      .post('/api/admin/content/blog')
+      .set({ ...authenticated(), ...bound(override), 'Idempotency-Key': IDEMPOTENCY_KEY })
+      .send(body);
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe('CONTENT_RECEIVER_TARGET_BINDING_MISMATCH');
+    expect(resolveContentTenant).not.toHaveBeenCalled();
+    expect(publishBlogContent).not.toHaveBeenCalled();
   });
 
   it('returns the original completed result for a replay', async () => {
@@ -123,10 +154,11 @@ describe('content receiver routes', () => {
     });
     const response = await request(buildApp())
       .post('/api/admin/content/blog')
-      .set({ ...authenticated(), 'Idempotency-Key': IDEMPOTENCY_KEY })
+      .set({ ...authenticated(), ...bound(), 'Idempotency-Key': IDEMPOTENCY_KEY })
       .send(body);
     expect(response.status).toBe(200);
     expect(response.headers['idempotency-replayed']).toBe('true');
+    expect(response.body).toMatchObject({ status: 'published', requiresManualPublish: false });
   });
 
   it('fails an unallowlisted tenant before the publication service', async () => {
@@ -139,7 +171,7 @@ describe('content receiver routes', () => {
     );
     const response = await request(buildApp())
       .post('/api/admin/content/blog')
-      .set({ ...authenticated(), 'Idempotency-Key': IDEMPOTENCY_KEY })
+      .set({ ...authenticated(), ...bound(), 'Idempotency-Key': IDEMPOTENCY_KEY })
       .send(body);
     expect(response.status).toBe(404);
     expect(response.body.code).toBe('CONTENT_RECEIVER_TARGET_NOT_FOUND');
@@ -156,7 +188,7 @@ describe('content receiver routes', () => {
     );
     const response = await request(buildApp())
       .post('/api/admin/content/blog')
-      .set({ ...authenticated(), 'Idempotency-Key': IDEMPOTENCY_KEY })
+      .set({ ...authenticated(), ...bound(), 'Idempotency-Key': IDEMPOTENCY_KEY })
       .send(body);
     expect(response.status).toBe(409);
     expect(response.headers['retry-after']).toBe('2');
