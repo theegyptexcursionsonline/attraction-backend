@@ -80,6 +80,15 @@ const uniqueIndexes = () => {
   ]);
 };
 
+// The receiver reads the current article (inside the transaction) before writing it.
+const existingPost = (value: unknown) => {
+  const lean = jest.fn().mockResolvedValue(value);
+  const session = jest.fn(() => ({ lean }));
+  const select = jest.fn(() => ({ session }));
+  (BlogPost.findOne as jest.Mock).mockReturnValue({ select });
+  return { select, session, lean };
+};
+
 describe('content receiver service', () => {
   const originalAllowlist = env.contentEngineAllowedTenants;
   const startSession = jest.spyOn(mongoose, 'startSession');
@@ -108,6 +117,7 @@ describe('content receiver service', () => {
       _id: new Types.ObjectId('64b000000000000000000003'),
       slug: request.payload.slug,
     });
+    existingPost(null);
   });
 
   afterAll(() => {
@@ -249,6 +259,32 @@ describe('content receiver service', () => {
       { session }
     );
     expect(session.endSession).toHaveBeenCalledTimes(1);
+  });
+
+  it('publishes a new article with the publication time', async () => {
+    const read = existingPost(null);
+    await publishBlogContent(tenant, request, NOW);
+    expect(BlogPost.findOne).toHaveBeenCalledWith({
+      tenantId: 'tenant-a',
+      slug: request.payload.slug,
+      $or: [{ tenantRef: TENANT_ID }, { tenantRef: { $exists: false } }],
+    });
+    expect(read.session).toHaveBeenCalledWith(session);
+    expect((BlogPost.findOneAndUpdate as jest.Mock).mock.calls[0][1].$set.publishedAt).toEqual(NOW);
+  });
+
+  it('keeps the first publication date when an article is revised', async () => {
+    // A translation or correction sent later must not move the article to the top of
+    // the journal or change the date readers see.
+    const firstPublished = new Date('2026-08-01T09:30:00.000Z');
+    existingPost({ _id: new Types.ObjectId('64b000000000000000000003'), publishedAt: firstPublished });
+    await publishBlogContent(tenant, request, NOW);
+    const update = (BlogPost.findOneAndUpdate as jest.Mock).mock.calls[0][1].$set;
+    expect(update.publishedAt).toEqual(firstPublished);
+    expect(update.translations.de.title).toBe('Ein gültiger redaktioneller Titel');
+    expect((BlogPost.findOne as jest.Mock).mock.invocationCallOrder[0]).toBeLessThan(
+      (BlogPost.findOneAndUpdate as jest.Mock).mock.invocationCallOrder[0]
+    );
   });
 
   it('replays the exact completed result without starting a transaction or touching content', async () => {

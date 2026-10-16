@@ -340,12 +340,19 @@ export async function publishBlogContent(
     await activeSession.withTransaction(
       async () => {
         const payload = request.payload;
+        const postFilter = {
+          tenantId: tenant.slug,
+          slug: payload.slug,
+          $or: [{ tenantRef: tenant._id }, { tenantRef: { $exists: false } }],
+        };
+        // A revision (same tenant and slug) keeps the article's first publication
+        // date, as the journal editor does; the update time records the change.
+        const existing = await BlogPost.findOne(postFilter)
+          .select('publishedAt')
+          .session(activeSession)
+          .lean();
         const saved = await BlogPost.findOneAndUpdate(
-          {
-            tenantId: tenant.slug,
-            slug: payload.slug,
-            $or: [{ tenantRef: tenant._id }, { tenantRef: { $exists: false } }],
-          },
+          postFilter,
           {
             $set: {
               tenantId: tenant.slug,
@@ -364,7 +371,7 @@ export async function publishBlogContent(
               readTime: payload.readTime,
               status: 'published',
               featured: payload.featured,
-              publishedAt: now,
+              publishedAt: existing?.publishedAt ?? now,
               translations: sanitizeTranslations(request.translations),
               faqs: payload.faqs,
               lastContentPublicationId: claim.record._id,
