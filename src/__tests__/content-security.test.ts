@@ -64,6 +64,20 @@ describe('content isolation and HTML safety', () => {
     expect(translations.de.content).toBe('<p>Gut</p>');
   });
 
+  it('keeps SVG animation URI-list payloads outside the editorial allow-list', () => {
+    const sanitized = sanitizeRichText('<p>Published text</p><svg><a><animate attributeName="href" values="#safe;javascript:alert(1)" dur=".01s"></animate><text>Link</text></a></svg>');
+    expect(sanitized).toContain('<p>Published text</p>');
+    expect(sanitized).not.toMatch(/<svg|<animate|javascript:|attributeName/i);
+  });
+
+  it('does not turn malformed textarea closure into active markup and preserves normal links and tables', () => {
+    const sanitized = sanitizeRichText('<textarea>text</textarea/><img src="https://images.example.com/photo.jpg" onerror="alert(1)"><script>alert(2)</script><a href="https://example.com" target="_blank">Read</a><table><tr><td>Value</td></tr></table>');
+    expect(sanitized).not.toMatch(/<textarea|<script|<img[^>]*onerror|<a[^>]*javascript:/i);
+    const editorial = sanitizeRichText('<a href="https://example.com" target="_blank">Read</a><table><tr><td>Value</td></tr></table>');
+    expect(editorial).toContain('rel="noopener noreferrer"');
+    expect(editorial).toContain('<td>Value</td>');
+  });
+
   it('sanitizes legacy blog HTML on the public read path', async () => {
     (BlogPost.findOne as jest.Mock).mockReturnValue({
       lean: jest.fn().mockResolvedValue({

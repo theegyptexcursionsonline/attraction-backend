@@ -4,11 +4,11 @@ Express + TypeScript REST API for the Attractions Network multi-tenant tours & a
 
 ## Tech stack
 
-- **Runtime:** Node.js 18+ / Express 4 + TypeScript
+- **Runtime:** Node.js 22.12+ (production: Node.js 24) / Express 4 + TypeScript
 - **Database:** MongoDB via Mongoose 8
 - **Auth:** JWT (`jsonwebtoken`) + bcrypt, access/refresh tokens, cookie-parser
 - **Payments:** Stripe
-- **Email:** Mailgun (`mailgun.js`) / Nodemailer
+- **Email:** Mailgun (`mailgun.js`)
 - **Uploads:** Cloudinary + Multer
 - **Docs:** Swagger (`swagger-jsdoc` + `swagger-ui-express`)
 - **Tickets/QR:** PDFKit + qrcode
@@ -30,8 +30,13 @@ Express + TypeScript REST API for the Attractions Network multi-tenant tours & a
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 22.12+ (use Node.js 24 for production parity)
 - A MongoDB instance
+
+The patched HTML sanitizer requires Node.js 22.12 or newer. The unused Nodemailer
+package and its type-only AWS dependency graph have been removed; implemented
+email delivery remains on Mailgun. Keep the committed lockfile when installing
+security-patched dependencies.
 
 ### Install
 

@@ -38,7 +38,7 @@
     "@sentry/node": "^10.67.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.10.0",
-    "compression": "^1.7.4",
+    "compression": "1.8.2",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -50,23 +50,31 @@
     "jsonwebtoken": "^9.0.2",
     "mailgun.js": "^12.7.0",
     "mongoose": "^8.24.1",
-    "morgan": "^1.11.0",
+    "morgan": "1.12.1",
     "multer": "^1.4.5-lts.1",
-    "nodemailer": "^9.0.3",
     "otplib": "^13.4.0",
     "pdfkit": "^0.14.0",
     "qrcode": "^1.5.3",
-    "sanitize-html": "2.17.5",
+    "sanitize-html": "2.18.1",
     "stripe": "^14.0.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "zod": "^3.22.4"
   },
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=22.12.0"
   },
   "overrides": {
-    "postcss": "^8.5.26"
+    "postcss": "^8.5.26",
+    "axios": "1.20.0",
+    "proxy-addr": "2.0.8",
+    "qs": "6.16.1",
+    "js-yaml@^4.0.0": "4.3.2",
+    "js-yaml@^3.0.0": "3.15.2",
+    "nanoid@^3.0.0": "3.3.18",
+    "source-map-js": "1.2.2",
+    "brace-expansion@^1.0.0": "1.1.21",
+    "brace-expansion@^2.0.0": "2.1.7"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -79,7 +87,6 @@
     "@types/morgan": "^1.9.9",
     "@types/multer": "^1.4.11",
     "@types/node": "^20.10.0",
-    "@types/nodemailer": "^6.4.14",
     "@types/pdfkit": "^0.17.4",
     "@types/qrcode": "^1.5.5",
     "@types/sanitize-html": "^2.13.0",
