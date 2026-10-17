@@ -357,6 +357,10 @@ export const emitEvent = async (
 
 export const ensureWebhookDeliveryIndexes = async (): Promise<void> => {
   await WebhookDelivery.createIndexes();
+  // The failure transaction claims this ledger before effects. Await its unique
+  // index before traffic; createIndexes adds missing indexes and rejects conflicts.
+  // Never use syncIndexes here: startup must not drop or rebuild existing indexes.
+  await WebhookEvent.createIndexes();
 };
 
 const DELIVERY_LEASE_MS = 60_000;
