@@ -30,7 +30,8 @@ import {
 import { Tenant } from '../models/Tenant';
 import { IdempotencyKey } from '../models/IdempotencyKey';
 import { searchRegexValue } from '../utils/helpers';
-import { safeEmitEvent } from '../services/webhook.service';
+import { enqueueWebhookEvent } from '../services/webhook.service';
+import { bookingEventPayload } from '../utils/bookingEventPayload';
 import { IBooking } from '../types';
 import { isPlatformHeld, settlementHeldBy } from '../utils/settlement';
 import {
@@ -68,35 +69,7 @@ import { todayInZone } from '../services/packagePricing.service';
 import { customerFeeLines } from '../utils/financeSettings';
 import { NOT_SOLD_IN_SITE_CURRENCY } from '../utils/siteCurrency';
 
-// Compact, tenant-safe booking summary for webhook payloads. Contains only the
-// booking's own fields — never other tenants' data.
-export const bookingEventPayload = (
-  booking: Pick<
-    IBooking,
-    | '_id'
-    | 'reference'
-    | 'tenantId'
-    | 'attractionId'
-    | 'status'
-    | 'paymentStatus'
-    | 'total'
-    | 'currency'
-    | 'guestDetails'
-  >
-): Record<string, unknown> => ({
-  bookingId: String(booking._id),
-  reference: booking.reference,
-  tenantId: String(booking.tenantId),
-  attractionId: String(booking.attractionId),
-  status: booking.status,
-  paymentStatus: booking.paymentStatus,
-  total: booking.total,
-  currency: booking.currency,
-  customer: {
-    name: `${booking.guestDetails?.firstName || ''} ${booking.guestDetails?.lastName || ''}`.trim(),
-    email: booking.guestDetails?.email,
-  },
-});
+export { bookingEventPayload } from '../utils/bookingEventPayload';
 
 const adminRoles = ['super-admin', 'brand-admin', 'manager'];
 
@@ -477,18 +450,17 @@ export const createBooking = async (
           sessionOption(session)
         );
       }
+      // Commit the subscriber snapshot with the booking; a failed enqueue must
+      // roll back the reservation and idempotency result as well.
+      await enqueueWebhookEvent(tenantId, 'booking.created', bookingEventPayload(created), session, `created:${created._id}`);
+      if (created.status === 'confirmed') {
+        await enqueueWebhookEvent(tenantId, 'booking.confirmed', bookingEventPayload(created), session, `confirmed:${created._id}`);
+      }
       return created;
     });
 
     if (legacyPickupCount > 0) {
       console.info('booking.pickup.legacy_missing', { count: legacyPickupCount, paymentMethod: paymentMethod || 'pay-later' });
-    }
-
-    // Outbound webhooks: booking.created always; booking.confirmed when the
-    // booking is immediately confirmed (pay-later). Tenant-scoped emit.
-    safeEmitEvent(tenantId, 'booking.created', bookingEventPayload(booking));
-    if (booking.status === 'confirmed') {
-      safeEmitEvent(tenantId, 'booking.confirmed', bookingEventPayload(booking));
     }
 
     // Send notification to admins
@@ -1094,12 +1066,6 @@ export const cancelBooking = async (
       sendError(res, 'Cancellation is awaiting reconciliation; refresh the booking before taking further action', 409);
       return;
     }
-
-    safeEmitEvent(
-      cancelledBooking.tenantId,
-      'booking.cancelled',
-      bookingEventPayload(cancelledBooking)
-    );
 
     sendSuccess(res, bookingResponse(cancelledBooking), 'Booking cancelled successfully');
   } catch (error) {

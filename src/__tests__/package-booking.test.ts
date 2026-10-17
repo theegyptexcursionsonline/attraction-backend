@@ -11,6 +11,8 @@ import { Attraction } from '../models/Attraction';
 import { Availability } from '../models/Availability';
 import { Booking } from '../models/Booking';
 import { IdempotencyKey } from '../models/IdempotencyKey';
+import { WebhookEndpoint } from '../models/WebhookEndpoint';
+import { WebhookDelivery } from '../models/WebhookDelivery';
 import { PromoCode } from '../models/PromoCode';
 import { encryptSecret } from '../utils/secretCrypto';
 import { addDays, packageQuoteHash, packageSelectionSchema, todayInZone } from '../services/packagePricing.service';
@@ -101,14 +103,14 @@ beforeAll(async () => {
   mongo = await MongoMemoryReplSet.create({ replSet: { count: 1 }, binary: { version: version || '7.0.14', ...(systemBinary ? { systemBinary } : {}) } });
   await mongoose.connect(mongo.getUri('package_booking'));
   // autoIndex is off in production; build the unique indexes these guarantees rely on.
-  await Promise.all([Tenant.init(), Attraction.init(), Availability.init(), Booking.init(), IdempotencyKey.init(), PromoCode.init()]);
+  await Promise.all([Tenant.init(), Attraction.init(), Availability.init(), Booking.init(), IdempotencyKey.init(), PromoCode.init(), WebhookEndpoint.init(), WebhookDelivery.init()]);
 });
 afterAll(async () => { await mongoose.disconnect(); await mongo?.stop(); });
 beforeEach(async () => {
   process.env.URL_NAMESPACE_WRITES_READY = 'true';
   process.env.PACKAGES_PUBLISHING_ENABLED = 'true';
   info = jest.spyOn(console, 'info').mockImplementation(() => undefined);
-  await Promise.all([Tenant, Attraction, Availability, Booking, IdempotencyKey, PromoCode].map(model => model.collection.deleteMany({})));
+  await Promise.all([Tenant, Attraction, Availability, Booking, IdempotencyKey, PromoCode, WebhookEndpoint, WebhookDelivery].map(model => model.collection.deleteMany({})));
   await Tenant.collection.insertMany([
     { _id: owner, slug: 'package-site', name: 'Package site', domain: 'package-site.invalid', status: 'active', timezone: 'Africa/Cairo', customPages: [],
       paymentSettings: { stripe: { enabled: true, publishableKey: 'pk_test_qa', secretKeyEnc: encryptSecret('sk_test_qa') } } },
@@ -172,6 +174,40 @@ describe('booking a package', () => {
     });
     expect(await seatsBooked(id, 10)).toBe(3);
     expect(info).toHaveBeenCalledWith('[packages] booking created', expect.objectContaining({ attractionId: id, guests: 3, total: 2667 }));
+  });
+
+  it('commits its created event once with the package reservation and preserves replay subscribers', async () => {
+    const id = await publishedPackage(); const quoted = await quote(id);
+    const subscriber = await WebhookEndpoint.create({ tenantId: owner, url: 'https://receiver.example.invalid/events', secret: 'qa-secret', events: ['booking.created'] });
+    await WebhookEndpoint.create({ tenantId: other, url: 'https://other.example.invalid/events', secret: 'qa-secret', events: ['*'] });
+    const key = `qa-${new Types.ObjectId()}`;
+    const body = { selection: selection(), quoteHash: quoted.quoteHash, guestDetails };
+    const responses = await Promise.all([book(id, body, key), book(id, body, key)]);
+    expect(responses.some(response => response.status === 201)).toBe(true);
+    expect(responses.every(response => [200, 201, 409].includes(response.status))).toBe(true);
+    const before = await WebhookDelivery.find().lean(); expect(before).toHaveLength(1);
+    expect(before[0]).toMatchObject({ tenantId: owner, endpointId: subscriber._id, eventType: 'booking.created', dispatchVersion: 1,
+      payload: { status: 'pending', paymentStatus: 'pending', attractionId: id, currency: 'USD', total: quoted.quote.total } });
+    await WebhookEndpoint.create({ tenantId: owner, url: 'https://late.example.invalid/events', secret: 'qa-secret', events: ['*'] });
+    await book(id, body, key).expect(200);
+    expect(await WebhookDelivery.find().lean()).toEqual(before);
+    expect(await seatsBooked(id, 10)).toBe(3);
+    expect(await Booking.countDocuments()).toBe(1);
+  });
+
+  it('rolls package seats, booking and idempotency completion back when event persistence fails', async () => {
+    const id = await publishedPackage(); const quoted = await quote(id);
+    await WebhookEndpoint.create({ tenantId: owner, url: 'https://receiver.example.invalid/events', secret: 'qa-secret', events: ['*'] });
+    const write = jest.spyOn(WebhookDelivery, 'updateOne').mockRejectedValueOnce(new Error('queue unavailable'));
+    const key = `qa-${new Types.ObjectId()}`;
+    const body = { selection: selection(), quoteHash: quoted.quoteHash, guestDetails };
+    await book(id, body, key).expect(500);
+    expect(await Booking.countDocuments()).toBe(0); expect(await seatsBooked(id, 10)).toBe(0);
+    expect(await WebhookDelivery.countDocuments()).toBe(0);
+    expect(await IdempotencyKey.countDocuments({ status: 'completed' })).toBe(0);
+    write.mockRestore();
+    await book(id, body, key).expect(201);
+    expect(await WebhookDelivery.countDocuments()).toBe(1); expect(await seatsBooked(id, 10)).toBe(3);
   });
 
   it('refuses a price that changed since the quote, with the new figure, and changes nothing', async () => {

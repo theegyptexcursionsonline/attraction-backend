@@ -10,7 +10,7 @@ import { User } from '../models/User';
 import { PromoCode } from '../models/PromoCode';
 import { SpecialOffer } from '../models/SpecialOffer';
 import { verifyToken } from '../utils/jwt';
-import { safeEmitEvent } from '../services/webhook.service';
+import { enqueueWebhookEvent } from '../services/webhook.service';
 import { generateBookingAccessToken } from '../utils/bookingAccess';
 import { generateTicketPdf } from '../services/pdf.service';
 import { sendAdminBookingNotification, sendBookingConfirmation } from '../services/email.service';
@@ -62,7 +62,7 @@ jest.mock('../models/SpecialOffer', () => ({
     findByIdAndUpdate: jest.fn().mockResolvedValue(null),
   },
 }));
-jest.mock('../services/webhook.service', () => ({ ...jest.requireActual('../services/webhook.service'), safeEmitEvent: jest.fn() }));
+jest.mock('../services/webhook.service', () => ({ ...jest.requireActual('../services/webhook.service'), enqueueWebhookEvent: jest.fn().mockResolvedValue('evt_queued') }));
 jest.mock('../services/tenantPayment.service', () => ({
   ...jest.requireActual('../services/tenantPayment.service'),
   getTenantStripeConfig: jest.fn().mockResolvedValue(null),
@@ -117,7 +117,7 @@ describe('POST /api/bookings — add-on quantities', () => {
     expect(SpecialOffer.findOneAndUpdate).not.toHaveBeenCalled();
     expect(User.findByIdAndUpdate).not.toHaveBeenCalled();
     expect(sendBookingConfirmation).not.toHaveBeenCalled();
-    expect(safeEmitEvent).not.toHaveBeenCalled();
+    expect(enqueueWebhookEvent).not.toHaveBeenCalled();
     expect(IdempotencyKey.deleteOne).toHaveBeenCalledWith(expect.objectContaining({ status: 'processing' }));
   };
 

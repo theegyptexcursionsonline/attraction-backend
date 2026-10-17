@@ -14,10 +14,11 @@ import { bookingDate, runBookingTransaction, sessionOption } from '../services/b
 import { getTenantStripeConfig } from '../services/tenantPayment.service';
 import { claimPackagePromo, PackagePromoError, pricePackagePromo } from '../services/packagePromo.service';
 import { assertTenantIdsBookingCreationAllowed, assertTenantPaymentMethodAllowed } from '../services/tenantBookingPolicy.service';
-import { safeEmitEvent } from '../services/webhook.service';
+import { enqueueWebhookEvent } from '../services/webhook.service';
 import { createAdminNotifications } from '../services/notification.service';
 import { packageArrivalDetailsSchema, packageGuestDetailsProblem, packageTravellerDetailsSchema } from '../services/packageGuestDetails.service';
-import { bookingEventPayload, bookingResponse } from './bookings.controller';
+import { bookingResponse } from './bookings.controller';
+import { bookingEventPayload } from '../utils/bookingEventPayload';
 import {
   cancellationPolicyText,
   packageBookingItem,
@@ -922,10 +923,9 @@ export const bookPackage = async (req: AuthRequest, res: Response, next: NextFun
         $unset: { expiresAt: '' },
       }, sessionOption(session));
       if (req.user) await User.findByIdAndUpdate(req.user._id, { $inc: { totalBookings: 1 } }, sessionOption(session));
+      await enqueueWebhookEvent(tenantId, 'booking.created', bookingEventPayload(created), session, `created:${created._id}`);
       return created as IBooking;
     });
-
-    safeEmitEvent(tenantId, 'booking.created', bookingEventPayload(booking));
     createAdminNotifications({
       type: 'booking',
       title: 'New package booking',

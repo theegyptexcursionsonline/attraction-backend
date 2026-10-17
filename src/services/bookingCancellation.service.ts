@@ -9,6 +9,8 @@ import { getTenantStripeConfig } from './tenantPayment.service';
 import { bookingStripeContextMatches } from './bookingPaymentBinding.service';
 import { createRefund, listPaymentIntentRefunds, ProviderRefund } from './stripe.service';
 import { releaseUnpaidPackagePromo } from './packagePromo.service';
+import { enqueueWebhookEvent } from './webhook.service';
+import { bookingEventPayload } from '../utils/bookingEventPayload';
 
 export const ATN_REFUND_FLOW_KEY = 'atnRefundFlow';
 export const ATN_CANCELLATION_REFUND_FLOW = 'booking-cancellation';
@@ -77,6 +79,9 @@ export const finalizeBookingCancellation = async (
   booking.cancellationRequestedAt = booking.cancellationRequestedAt || new Date();
   booking.status = 'cancelled';
   await booking.save(sessionOption(session));
+  // All completion paths, including refund-webhook and restart recovery, commit
+  // this event once with the terminal state. Already-cancelled rows return above.
+  await enqueueWebhookEvent(booking.tenantId, 'booking.cancelled', bookingEventPayload(booking), session, `cancelled:${booking._id}`);
   await enqueueBookingOperatorNotification(booking, { kind: 'cancelled', eventKey: 'cancelled', refundAmount: paid ? cancellationRefundAmount : undefined, fullRefund: paid }, session);
   await enqueueBookingOperatorNotification(booking, { kind: 'cancelled', eventKey: 'cancelled', audience: 'customer', refundAmount: paid ? cancellationRefundAmount : undefined, fullRefund: paid }, session);
   await BookingCancellation.updateOne(scope, { $set: { status: 'completed' }, $unset: { leaseToken: 1, leaseUntil: 1, lastError: 1 } }, { upsert: true, ...sessionOption(session) });

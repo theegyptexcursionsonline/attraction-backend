@@ -141,7 +141,7 @@ jest.mock('../models/SpecialOffer', () => ({
 
 jest.mock('../services/webhook.service', () => ({
   ...jest.requireActual('../services/webhook.service'),
-  safeEmitEvent: jest.fn(),
+  safeEmitEvent: jest.fn(), enqueueWebhookEvent: jest.fn().mockResolvedValue('evt_queued'),
 }));
 
 jest.mock('../services/tenantPayment.service', () => ({

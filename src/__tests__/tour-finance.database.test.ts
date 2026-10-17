@@ -19,7 +19,7 @@ import { fenceFinancePolicy, loadFinancePolicy } from '../services/tenantFinance
 
 jest.mock('../services/email.service', () => ({ sendBookingConfirmation: jest.fn(), sendAdminBookingNotification: jest.fn(), sendBookingPaymentLinkEmail: jest.fn(), getEmailBrand: jest.fn(() => ({})), brandedLink: jest.fn(() => '') }));
 jest.mock('../services/notification.service', () => ({ createAdminNotifications: jest.fn().mockResolvedValue(undefined) }));
-jest.mock('../services/webhook.service', () => ({ safeEmitEvent: jest.fn() }));
+jest.mock('../services/webhook.service', () => ({ safeEmitEvent: jest.fn(), enqueueWebhookEvent: jest.fn().mockResolvedValue('evt_queued') }));
 jest.mock('../middleware/auth.middleware', () => {
   const actual = jest.requireActual('../middleware/auth.middleware');
   const inject = (req: any) => { if (req.header('x-test-role')) req.user = { _id: new Types.ObjectId('0000000000000000000000aa'), role: req.header('x-test-role'), assignedTenants: (req.header('x-test-assigned') || '').split(',') }; };
