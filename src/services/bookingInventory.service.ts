@@ -319,15 +319,17 @@ export const failCardBookingAndReleaseInventory = async (
 export const markCardPaymentFailed = async (
   bookingId: unknown,
   tenantId: unknown,
-  paymentIntentId: string
-): Promise<BookingWithInventoryMarker | null> =>
-  runBookingTransaction(async (session) => {
+  paymentIntentId: string,
+  transaction?: ClientSession
+): Promise<BookingWithInventoryMarker | null> => {
+  const write = async (session?: ClientSession): Promise<BookingWithInventoryMarker | null> => {
     const booking = await Booking.findOneAndUpdate(
       {
         ...standaloneBookingClause,
         _id: bookingId,
         tenantId,
         stripePaymentIntentId: paymentIntentId,
+        paymentMethod: 'card',
         paymentStatus: { $in: ['pending', 'processing', 'failed'] },
         status: 'pending',
         inventoryReleasedAt: { $exists: false },
@@ -337,7 +339,9 @@ export const markCardPaymentFailed = async (
     ) as BookingWithInventoryMarker | null;
     if (booking) await enqueueBookingPaymentNotifications(booking, { kind: 'payment_failed' }, session);
     return booking;
-  });
+  };
+  return transaction ? write(transaction) : runBookingTransaction(write);
+};
 
 export const expireStaleCardHolds = async (olderThanMinutes = 30): Promise<number> => {
   const staleBefore = new Date(Date.now() - olderThanMinutes * 60 * 1000);

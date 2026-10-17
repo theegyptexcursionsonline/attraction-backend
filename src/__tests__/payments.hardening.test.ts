@@ -39,6 +39,8 @@ import { sendAdminBookingNotification, sendBookingConfirmation, sendBookingStatu
 import { Tenant } from '../models/Tenant';
 import { generateTicketPdf } from '../services/pdf.service';
 import { recordInboundEvent } from '../services/webhook.service';
+import { recordCardPaymentFailure } from '../services/bookingPaymentFailure.service';
+jest.mock('../services/bookingPaymentFailure.service', () => ({ recordCardPaymentFailure: jest.fn().mockResolvedValue({ duplicate: false, transitioned: true }) }));
 
 jest.mock('../services/bookingPaymentBinding.service', () => ({
   bookingStripePaymentRequest: jest.requireActual('../services/bookingPaymentBinding.service').bookingStripePaymentRequest,
@@ -444,32 +446,45 @@ describe('Stripe payment hardening', () => {
       expect(recordInboundEvent).not.toHaveBeenCalled();
     });
 
-    it('marks a declined intent retryable without cancelling the booking hold', async () => {
-      (constructWebhookEvent as jest.Mock).mockReturnValue(
-        webhookEvent('payment_intent.payment_failed', {
-          status: 'requires_payment_method',
-          amount_received: 0,
-        })
-      );
-      const booking = bookingFixture();
-      (Booking.findOne as jest.Mock).mockResolvedValue(booking);
-      (Booking.findOneAndUpdate as jest.Mock).mockResolvedValue(
-        bookingFixture({ paymentStatus: 'failed' })
-      );
-
+    it('hands a currently declined, verified intent to the atomic failure producer', async () => {
+      (constructWebhookEvent as jest.Mock).mockReturnValue(webhookEvent('payment_intent.payment_failed', { status: 'requires_payment_method', amount_received: 0 }));
+      (Booking.findOne as jest.Mock).mockResolvedValue(bookingFixture());
+      (retrievePaymentIntent as jest.Mock).mockResolvedValue(paymentIntent({ status: 'requires_payment_method', amountReceived: 0 }));
       const res = await invoke(handleWebhook as never, webhookRequest());
+      expect(recordCardPaymentFailure).toHaveBeenCalledWith({ bookingId: BOOKING_ID, tenantId: TENANT_ID, paymentIntentId: INTENT_ID,
+        eventId: 'evt_secure_1', currentPaymentStatus: 'requires_payment_method' });
+      expect(recordInboundEvent).not.toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith({ received: true, duplicate: false });
+    });
 
-      expect(Booking.findOneAndUpdate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          _id: BOOKING_ID,
-          stripePaymentIntentId: INTENT_ID,
-          status: 'pending',
-          inventoryReleasedAt: { $exists: false },
-        }),
-        { $set: { paymentStatus: 'failed', paymentFailureReason: 'payment_failed', paymentFailureAt: expect.any(Date) } },
-        { new: true }
-      );
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ received: true }));
+    it.each(['processing', 'requires_action', 'succeeded', 'canceled'])('uses current %s truth for an older failure snapshot', async status => {
+      (constructWebhookEvent as jest.Mock).mockReturnValue(webhookEvent('payment_intent.payment_failed', { status: 'requires_payment_method', amount_received: 0 }));
+      (Booking.findOne as jest.Mock).mockResolvedValue(bookingFixture());
+      (retrievePaymentIntent as jest.Mock).mockResolvedValue(paymentIntent({ status }));
+      await invoke(handleWebhook as never, webhookRequest());
+      expect(recordCardPaymentFailure).toHaveBeenCalledWith(expect.objectContaining({ currentPaymentStatus: status }));
+      expect(Booking.findOneAndUpdate).not.toHaveBeenCalled();
+    });
+
+    it('leaves the receipt unclaimed when current provider truth cannot be retrieved', async () => {
+      (constructWebhookEvent as jest.Mock).mockReturnValue(webhookEvent('payment_intent.payment_failed'));
+      (Booking.findOne as jest.Mock).mockResolvedValue(bookingFixture());
+      (retrievePaymentIntent as jest.Mock).mockResolvedValue(null);
+      const res = await invoke(handleWebhook as never, webhookRequest());
+      expect(res.status).toHaveBeenCalledWith(503);
+      expect(recordCardPaymentFailure).not.toHaveBeenCalled(); expect(recordInboundEvent).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['amount', { amount: 1 }], ['currency', { currency: 'eur' }],
+      ['metadata', { metadata: { bookingId: 'other-booking', tenantId: TENANT_ID } }],
+      ['collected funds', { status: 'requires_payment_method', amountReceived: 1 }],
+    ])('refuses mismatched current %s evidence before the failure producer', async (_label, mismatch) => {
+      (constructWebhookEvent as jest.Mock).mockReturnValue(webhookEvent('payment_intent.payment_failed'));
+      (Booking.findOne as jest.Mock).mockResolvedValue(bookingFixture());
+      (retrievePaymentIntent as jest.Mock).mockResolvedValue(paymentIntent(mismatch));
+      const res = await invoke(handleWebhook as never, webhookRequest());
+      expect(res.status).toHaveBeenCalledWith(409); expect(recordCardPaymentFailure).not.toHaveBeenCalled();
     });
 
     it('uses one atomic transition so concurrent valid events enqueue side effects once', async () => {

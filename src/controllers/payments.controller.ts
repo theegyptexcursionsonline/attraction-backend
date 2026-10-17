@@ -25,7 +25,7 @@ import {
 import { bookingStripePaymentRequest, bookingStripeContextMatches, claimBookingStripePaymentSession, BookingPaymentBindingConflict } from '../services/bookingPaymentBinding.service';
 import { secretHint } from '../utils/secretCrypto';
 import { updatePaymentGatewaySchema } from '../utils/validators';
-import { safeEmitEvent, recordInboundEvent, hasInboundEvent } from '../services/webhook.service';
+import { recordInboundEvent, hasInboundEvent } from '../services/webhook.service';
 import {
   applyBookingRefundTotal,
   notifyBookingRefunded,
@@ -34,7 +34,7 @@ import {
 } from '../services/bookingRefund.service';
 import { env } from '../config/env';
 import { verifyBookingAccessToken } from '../utils/bookingAccess';
-import { markCardPaymentFailed } from '../services/bookingInventory.service';
+import { recordCardPaymentFailure } from '../services/bookingPaymentFailure.service';
 import {
   isBundleComponentBooking,
   standaloneBookingClause,
@@ -52,26 +52,6 @@ import { finalizePaidBooking } from '../services/bookingPaidEffects.service';
 
 // Compact, tenant-safe booking summary for webhook payloads (the booking's own
 // fields only — never cross-tenant data).
-const paymentEventPayload = (booking: {
-  _id: unknown;
-  reference: string;
-  tenantId: unknown;
-  attractionId?: unknown;
-  status: string;
-  paymentStatus: string;
-  total: number;
-  currency: string;
-}): Record<string, unknown> => ({
-  bookingId: String(booking._id),
-  reference: booking.reference,
-  tenantId: String(booking.tenantId),
-  attractionId: booking.attractionId ? String(booking.attractionId) : undefined,
-  status: booking.status,
-  paymentStatus: booking.paymentStatus,
-  total: booking.total,
-  currency: booking.currency,
-});
-
 const adminRoles = ['super-admin', 'brand-admin', 'manager'];
 
 /**
@@ -770,32 +750,37 @@ export const handleWebhook = async (
         res.json({ received: true, ignored: 'payment intent is not bound to this tenant' });
         return;
       }
-      if (booking) {
-        if (
-          obj?.metadata?.bookingId !== String(booking._id) ||
-          obj?.metadata?.tenantId !== String(booking.tenantId)
-        ) {
-          sendError(res, 'Stripe PaymentIntent metadata does not match this booking', 400);
-          return;
-        }
-        const failedBooking = await markCardPaymentFailed(
-          booking._id,
-          booking.tenantId,
-          intentId
-        );
-        if (failedBooking) {
-          safeEmitEvent(
-            failedBooking.tenantId,
-            'payment.failed',
-            paymentEventPayload(failedBooking)
-          );
-
-          // The same transaction that marks this attempt unsuccessful persists
-          // customer/operator follow-up intents. The worker rechecks payment
-          // truth before delivery; webhook acknowledgement never owns email.
-        }
+      if (
+        obj?.metadata?.bookingId !== String(booking._id) ||
+        obj?.metadata?.tenantId !== String(booking.tenantId)
+      ) {
+        sendError(res, 'Stripe PaymentIntent metadata does not match this booking', 400);
+        return;
       }
-      const { duplicate } = await recordInboundEvent('stripe', eventId, { eventType, tenantId });
+      if (!bookingStripeContextMatches(booking, stripeCfg)) {
+        sendError(res, 'This payment belongs to a different Stripe account or mode', 409);
+        return;
+      }
+      // A failed snapshot can arrive after the customer has retried this intent.
+      // Read current provider truth before applying a retryable decline locally.
+      const currentIntent = await retrievePaymentIntent(stripeCfg.secretKey, intentId);
+      if (!currentIntent) {
+        sendError(res, 'The current Stripe payment state could not be retrieved', 503);
+        return;
+      }
+      const bindingError = paymentBindingError(booking, currentIntent, false);
+      if (bindingError) {
+        sendError(res, bindingError, 409);
+        return;
+      }
+      if (currentIntent.status === 'requires_payment_method' && currentIntent.amountReceived > 0) {
+        sendError(res, 'The payment has collected funds and requires reconciliation', 409);
+        return;
+      }
+      const { duplicate } = await recordCardPaymentFailure({
+        bookingId: booking._id, tenantId: booking.tenantId, paymentIntentId: intentId,
+        eventId, currentPaymentStatus: currentIntent.status,
+      });
       res.json({ received: true, duplicate });
       return;
     }
