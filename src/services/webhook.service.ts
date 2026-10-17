@@ -1,7 +1,9 @@
 import crypto from 'crypto';
+import { env } from '../config/env';
 import http from 'http';
 import https from 'https';
-import mongoose from 'mongoose';
+import mongoose, { ClientSession } from 'mongoose';
+import { runBookingTransaction, sessionOption } from './bookingInventory.service';
 import { WebhookEndpoint } from '../models/WebhookEndpoint';
 import { WebhookDelivery } from '../models/WebhookDelivery';
 import { WebhookEvent } from '../models/WebhookEvent';
@@ -311,55 +313,114 @@ export const runDeliveryWithRetry = async (
   return false;
 };
 
-/**
- * Emit an event to all enabled, subscribed endpoints of a SINGLE tenant.
- *
- * Tenant isolation: endpoints are selected strictly by `tenantId`, and every
- * delivery row is stamped with that same `tenantId`. There is no code path that
- * fans an event out across tenants.
- *
- * Returns the generated Foxes event id (or null when there are no subscribers).
- * Delivery runs in the background — callers should NOT await per-endpoint HTTP.
+/** Persist an event and its endpoint fanout in the caller's business transaction.
+ * Stable event keys make transaction retries safe. No HTTP runs inside a transaction.
  */
+export const enqueueWebhookEvent = async (
+  tenantId: string | mongoose.Types.ObjectId,
+  type: WebhookEventType,
+  payload: Record<string, unknown>,
+  session: ClientSession | undefined,
+  eventKey: string,
+): Promise<string | null> => {
+  if (!eventKey || eventKey.length > 200) throw new Error('INVALID_WEBHOOK_EVENT_KEY');
+  const eventId = `evt_${crypto.createHash('sha256').update(JSON.stringify([String(tenantId), type, eventKey])).digest('hex')}`;
+  const createdAt = new Date();
+  let after: mongoose.Types.ObjectId | undefined;
+  let subscribers = 0;
+  while (true) {
+    const endpoints = await WebhookEndpoint.find({ tenantId, enabled: true, events: { $in: [type, '*'] },
+      ...(after ? { _id: { $gt: after } } : {}),
+    }, null, { ...sessionOption(session), sort: { _id: 1 }, limit: 100 });
+    for (const endpoint of endpoints) {
+      await WebhookDelivery.updateOne({ tenantId, endpointId: endpoint._id, eventId, dispatchVersion: 1 }, {
+        $setOnInsert: { eventType: type, payload, eventCreatedAt: createdAt, status: 'pending', attempts: 0, nextRetryAt: createdAt },
+      }, { upsert: true, runValidators: true, ...sessionOption(session) });
+    }
+    subscribers += endpoints.length;
+    if (endpoints.length < 100) break;
+    after = endpoints[endpoints.length - 1]._id;
+  }
+  if (!subscribers) return null;
+  return eventId;
+};
+
+/** The durable worker handles delivery after persistence, including after restart. */
 export const emitEvent = async (
   tenantId: string | mongoose.Types.ObjectId,
   type: WebhookEventType,
   payload: Record<string, unknown>,
-  deps: DeliveryDeps & { runner?: typeof runDeliveryWithRetry } = {}
 ): Promise<string | null> => {
-  const endpoints = await WebhookEndpoint.find({
-    tenantId,
-    enabled: true,
-    events: { $in: [type, '*'] },
-  });
+  const eventKey = crypto.randomUUID();
+  return runBookingTransaction(session => enqueueWebhookEvent(tenantId, type, payload, session, eventKey));
+};
 
-  if (!endpoints.length) return null;
+export const ensureWebhookDeliveryIndexes = async (): Promise<void> => {
+  await WebhookDelivery.createIndexes();
+};
 
-  const eventId = `evt_${crypto.randomBytes(16).toString('hex')}`;
-  const runner = deps.runner ?? runDeliveryWithRetry;
+const DELIVERY_LEASE_MS = 60_000;
 
-  for (const endpoint of endpoints) {
-    const delivery = await WebhookDelivery.create({
-      tenantId,
-      endpointId: endpoint._id,
-      eventId,
-      eventType: type,
-      payload,
-      status: 'pending',
-      attempts: 0,
+/** At-least-once delivery: receiver retries keep the same event ID/body, and receivers
+ * must deduplicate that ID. Unlike mail, an ambiguous webhook response is retryable.
+ * Legacy rows are never swept; their original delivery outcome is unknown.
+ */
+export const processWebhookDeliveries = async (limit = 20, deps: Pick<DeliveryDeps, 'fetchImpl' | 'now'> = {}): Promise<{
+  delivered: number; retried: number; failed: number;
+}> => {
+  const summary = { delivered: 0, retried: 0, failed: 0 };
+  if (!env.webhookDeliveryV1Enabled) return summary;
+  const batch = Number.isFinite(limit) ? Math.min(100, Math.max(0, Math.floor(limit))) : 20;
+  for (let index = 0; index < batch; index++) {
+    const now = new Date(deps.now?.() ?? Date.now());
+    const token = crypto.randomUUID();
+    const delivery = await WebhookDelivery.findOneAndUpdate({ dispatchVersion: 1, $or: [
+      { status: 'pending', nextRetryAt: { $lte: now } },
+      { status: 'processing', leaseUntil: { $lte: now } },
+    ] }, { $set: { status: 'processing', leaseToken: token, leaseUntil: new Date(now.getTime() + DELIVERY_LEASE_MS) }, $inc: { attempts: 1 } },
+    { sort: { nextRetryAt: 1, _id: 1 }, new: true });
+    if (!delivery) break;
+    const fence = { _id: delivery._id, tenantId: delivery.tenantId, dispatchVersion: 1, status: 'processing', leaseToken: token };
+    const endpoint = await WebhookEndpoint.findOne({ _id: delivery.endpointId, tenantId: delivery.tenantId, enabled: true });
+    let result: SingleAttemptResult = { ok: false, error: endpoint ? 'DELIVERY_ATTEMPTS_EXHAUSTED' : 'ENDPOINT_UNAVAILABLE' };
+    if (endpoint && delivery.attempts <= MAX_DELIVERY_ATTEMPTS) {
+      const renewed = await WebhookDelivery.updateOne({ ...fence, leaseUntil: { $gt: new Date(deps.now?.() ?? Date.now()) } },
+        { $set: { leaseUntil: new Date((deps.now?.() ?? Date.now()) + DELIVERY_LEASE_MS) } });
+      if (!renewed.matchedCount) continue;
+      const body = JSON.stringify(buildEnvelope(delivery.eventId, delivery.eventType, String(delivery.tenantId), delivery.payload, delivery.eventCreatedAt || delivery.createdAt));
+      result = await sendWebhookRequest(endpoint.url, endpoint.secret, body,
+        { eventId: delivery.eventId, eventType: delivery.eventType }, deps.fetchImpl, now.getTime());
+    }
+    const retry = !result.ok && !!endpoint && delivery.attempts < MAX_DELIVERY_ATTEMPTS;
+    const status = result.ok ? 'success' : retry ? 'pending' : 'failed';
+    const applied = await runBookingTransaction(async session => {
+      const update = await WebhookDelivery.updateOne(fence, {
+        $set: { status, lastAttemptAt: now, ...(result.status !== undefined ? { responseStatus: result.status } : {}), ...(result.error ? { error: result.error } : {}),
+          ...(result.ok ? { deliveredAt: now } : {}),
+          ...(retry ? { nextRetryAt: new Date(now.getTime() + BACKOFF_MS[Math.min(delivery.attempts, BACKOFF_MS.length - 1)]) } : {}),
+        }, $unset: { leaseToken: 1, leaseUntil: 1, responseBody: 1, ...(!result.error ? { error: 1 } : {}),
+          ...(result.status === undefined ? { responseStatus: 1 } : {}), ...(!retry ? { nextRetryAt: 1 } : {}) },
+      }, sessionOption(session));
+      if (!update.modifiedCount) return false;
+      if (endpoint && (result.ok || !retry)) {
+        if (result.ok) {
+          await WebhookEndpoint.updateOne({ _id: endpoint._id, tenantId: delivery.tenantId }, {
+            $set: { consecutiveFailures: 0, lastDeliveryAt: now },
+          }, sessionOption(session));
+        } else {
+          const failed = await WebhookEndpoint.findOneAndUpdate({ _id: endpoint._id, tenantId: delivery.tenantId },
+            { $inc: { consecutiveFailures: 1 } }, { new: true, ...sessionOption(session) });
+          if (failed && failed.consecutiveFailures >= AUTO_DISABLE_THRESHOLD) {
+            await WebhookEndpoint.updateOne({ _id: failed._id, tenantId: delivery.tenantId },
+              { $set: { enabled: false, disabledAt: now } }, sessionOption(session));
+          }
+        }
+      }
+      return true;
     });
-
-    // Fire-and-forget background delivery. Failures are logged, never thrown.
-    void runner(
-      delivery as unknown as DeliveryDoc,
-      endpoint as unknown as EndpointDoc,
-      deps
-    ).catch((err) => {
-      console.error(`[webhook] delivery ${delivery._id} failed:`, err);
-    });
+    if (applied) { if (result.ok) summary.delivered++; else if (retry) summary.retried++; else summary.failed++; }
   }
-
-  return eventId;
+  return summary;
 };
 
 /**

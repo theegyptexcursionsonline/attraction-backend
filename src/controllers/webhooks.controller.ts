@@ -7,7 +7,6 @@ import { AuthRequest, WebhookEventType } from '../types';
 import { sendSuccess, sendError } from '../utils/response';
 import crypto from 'crypto';
 import { generateWebhookSecret } from '../utils/hash';
-import { runDeliveryWithRetry } from '../services/webhook.service';
 import { validateWebhookDestination } from '../utils/webhookDestination';
 
 const VALID_EVENTS: WebhookEventType[] = [
@@ -281,7 +280,7 @@ export const listWebhookDeliveries = async (
       .limit(limit)
       .lean();
 
-    const sanitized = deliveries.map(({ responseBody: _responseBody, ...delivery }) => delivery);
+    const sanitized = deliveries.map(({ responseBody: _responseBody, leaseToken: _leaseToken, ...delivery }) => delivery);
     sendSuccess(res, sanitized);
   } catch (error) {
     next(error);
@@ -313,15 +312,12 @@ export const pingWebhookEndpoint = async (
       },
       status: 'pending',
       attempts: 0,
+      dispatchVersion: 1,
+      eventCreatedAt: new Date(),
+      nextRetryAt: new Date(),
     });
 
-    // Background delivery; respond immediately with the delivery id to poll.
-    void runDeliveryWithRetry(
-      delivery as never,
-      endpoint as never
-    ).catch((err) => console.error('[webhook] ping delivery failed:', err));
-
-    sendSuccess(res, { eventId, deliveryId: delivery._id }, 'Ping dispatched');
+    sendSuccess(res, { eventId, deliveryId: delivery._id }, 'Ping queued');
   } catch (error) {
     next(error);
   }

@@ -91,6 +91,10 @@ export const env = {
   // Empty or invalid values disable this feature without affecting payment processing.
   bookingPaymentFollowupStartAt: process.env.BOOKING_PAYMENT_FOLLOWUP_START_AT || '',
   
+  // Delivery kill switches pause workers while business intents remain durable.
+  bookingPaidEffectsDeliveryEnabled: envFlag(process.env.BOOKING_PAID_EFFECTS_DELIVERY_ENABLED, true),
+  webhookDeliveryV1Enabled: envFlag(process.env.WEBHOOK_DELIVERY_V1_ENABLED, true),
+
   // Mailgun
   mailgunApiKey: process.env.MAILGUN_API_KEY || '',
   mailgunDomain: process.env.MAILGUN_DOMAIN || '',

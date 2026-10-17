@@ -1,3 +1,5 @@
+import { ensureBookingPaidEffectIndexes, processBookingPaidEffects } from './services/bookingPaidEffects.service';
+import { ensureWebhookDeliveryIndexes, processWebhookDeliveries } from './services/webhook.service';
 import { TenantFinanceRevision } from './models/TenantFinanceRevision';
 import { BookingAttendanceRevision } from './models/BookingAttendanceRevision';
 import dns from 'dns';
@@ -160,11 +162,32 @@ export const startServer = async (): Promise<void> => {
   try {
     // Connect to database
     await connectDatabase();
+    await ensureBookingPaidEffectIndexes();
+    await ensureWebhookDeliveryIndexes();
     await ensureBookingOperatorNotificationIndexes();
     await ensureBookingPaymentNotificationIndexes();
     await BookingCancellation.createIndexes();
     await TenantFinanceRevision.createIndexes();
     await BookingAttendanceRevision.createIndexes();
+    // These workers only claim new, versioned intents; rollback leaves them recoverable.
+    for (const [name, enabled, work] of [
+      ['paid-confirmations-v1', env.bookingPaidEffectsDeliveryEnabled, processBookingPaidEffects],
+      ['webhook-delivery-v1', env.webhookDeliveryV1Enabled, processWebhookDeliveries],
+    ] as const) {
+      if (!enabled) continue;
+      let running = false;
+      const sweep = async () => {
+        if (running) return;
+        running = true;
+        try {
+          const result = await work();
+          if (Object.values(result).some(count => count > 0)) console.info(`[${name}] sweep`, result);
+        } catch { console.error(`[${name}] sweep failed; durable intents retained`); }
+        finally { running = false; }
+      };
+      void sweep();
+      setInterval(sweep, 30_000).unref();
+    }
     let cancellationSweepRunning = false;
     const reconcileCancellations = async (): Promise<void> => {
       if (cancellationSweepRunning) return;

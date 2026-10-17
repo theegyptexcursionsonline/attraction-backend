@@ -34,7 +34,7 @@ const webhookDeliverySchema = new Schema<IWebhookDelivery>(
     },
     status: {
       type: String,
-      enum: ['pending', 'success', 'failed'],
+      enum: ['pending', 'processing', 'success', 'failed'],
       default: 'pending',
       index: true,
     },
@@ -60,6 +60,12 @@ const webhookDeliverySchema = new Schema<IWebhookDelivery>(
     deliveredAt: {
       type: Date,
     },
+    // Only new V1 deliveries are eligible for the durable worker. Historical
+    // pending rows may already have reached a receiver and are never replayed.
+    dispatchVersion: { type: Number, enum: [1] },
+    eventCreatedAt: Date,
+    leaseUntil: Date,
+    leaseToken: String,
   },
   {
     timestamps: true,
@@ -75,6 +81,11 @@ const webhookDeliverySchema = new Schema<IWebhookDelivery>(
 
 webhookDeliverySchema.index({ tenantId: 1, createdAt: -1 });
 webhookDeliverySchema.index({ endpointId: 1, createdAt: -1 });
+webhookDeliverySchema.index({ dispatchVersion: 1, status: 1, nextRetryAt: 1, _id: 1 });
+webhookDeliverySchema.index({ dispatchVersion: 1, status: 1, leaseUntil: 1 });
+webhookDeliverySchema.index({ tenantId: 1, endpointId: 1, eventId: 1 }, {
+  unique: true, partialFilterExpression: { dispatchVersion: 1 },
+});
 
 export const WebhookDelivery = mongoose.model<IWebhookDelivery>(
   'WebhookDelivery',

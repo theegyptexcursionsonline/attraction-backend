@@ -638,7 +638,7 @@ export interface IWebhookEndpoint extends Document {
   updatedAt: Date;
 }
 
-export type WebhookDeliveryStatus = 'pending' | 'success' | 'failed';
+export type WebhookDeliveryStatus = 'pending' | 'processing' | 'success' | 'failed';
 
 export interface IWebhookDelivery extends Document {
   _id: Types.ObjectId;
@@ -656,6 +656,10 @@ export interface IWebhookDelivery extends Document {
   lastAttemptAt?: Date;
   nextRetryAt?: Date;
   deliveredAt?: Date;
+  dispatchVersion?: number;
+  eventCreatedAt?: Date;
+  leaseUntil?: Date;
+  leaseToken?: string;
   createdAt: Date;
   updatedAt: Date;
 }

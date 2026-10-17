@@ -853,7 +853,7 @@ export const sendBookingConfirmation = async (
   bookingDetails: BookingEmailDetails,
   ticketPdf: Buffer | undefined,
   tenant: EmailTenant | null
-): Promise<void> => {
+): Promise<EmailSendResult> => {
   const brand = getEmailBrand(tenant);
   const viewUrl = brandedLink(brand, '/checkout/confirmation', {
     ref: bookingDetails.reference,
@@ -879,7 +879,7 @@ export const sendBookingConfirmation = async (
     !!ticketPdf,
     qrBuffer ? `cid:${qrFilename}` : undefined,
   );
-  await sendEmail({
+  return sendEmail({
     to: email,
     subject: emailSubject('Booking confirmed', bookingDetails.reference),
     html,
@@ -1116,11 +1116,11 @@ export const sendAdminBookingNotification = async (
   recipientEmail: string,
   details: AdminBookingDetails,
   tenant: EmailTenant | null
-): Promise<void> => {
+): Promise<EmailSendResult> => {
   const brand = getEmailBrand(tenant);
   const adminUrl = brandedLink(brand, '/admin/bookings');
   const { html, text } = renderAdminBookingNotification(brand, details, adminUrl);
-  await sendEmail({
+  return sendEmail({
     to: recipientEmail,
     subject: emailSubject('New booking', details.reference, details.attractionTitle || 'Experience'),
     cc: tenant?.notificationSettings?.bookingCcEmails,

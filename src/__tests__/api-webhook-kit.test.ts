@@ -23,7 +23,7 @@ import { AuthRequest } from '../types';
 jest.mock('../models/ApiKey', () => ({ ApiKey: { findOne: jest.fn(), updateOne: jest.fn() } }));
 jest.mock('../models/Tenant', () => ({ Tenant: { findOne: jest.fn(), findById: jest.fn() } }));
 jest.mock('../models/WebhookEndpoint', () => ({ WebhookEndpoint: { find: jest.fn(), findById: jest.fn() } }));
-jest.mock('../models/WebhookDelivery', () => ({ WebhookDelivery: { create: jest.fn() } }));
+jest.mock('../models/WebhookDelivery', () => ({ WebhookDelivery: { create: jest.fn(), updateOne: jest.fn().mockResolvedValue({}) } }));
 jest.mock('../models/WebhookEvent', () => ({ WebhookEvent: { create: jest.fn() } }));
 
 const TENANT_A = new Types.ObjectId().toHexString();
@@ -235,28 +235,27 @@ describe('emitEvent tenant scoping', () => {
       { _id: endpointId, tenantId: TENANT_A, url: 'https://a.test', secret: 's' },
     ]);
     (WebhookDelivery.create as jest.Mock).mockImplementation(async (doc) => ({ _id: new Types.ObjectId(), ...doc }));
-    const runner = jest.fn().mockResolvedValue(true);
 
-    const eventId = await emitEvent(TENANT_A, 'booking.created', { foo: 'bar' }, { runner });
+    const eventId = await emitEvent(TENANT_A, 'booking.created', { foo: 'bar' });
 
-    expect(eventId).toMatch(/^evt_[a-f0-9]{32}$/);
+    expect(eventId).toMatch(/^evt_[a-f0-9]{64}$/);
     // Selection query is tenant-scoped + subscription-aware.
     const findArg = (WebhookEndpoint.find as jest.Mock).mock.calls[0][0];
     expect(String(findArg.tenantId)).toBe(TENANT_A);
     expect(findArg.enabled).toBe(true);
     expect(findArg.events).toEqual({ $in: ['booking.created', '*'] });
     // Delivery stamped with the same tenant.
-    const createArg = (WebhookDelivery.create as jest.Mock).mock.calls[0][0];
+    const createArg = (WebhookDelivery.updateOne as jest.Mock).mock.calls[0][0];
     expect(String(createArg.tenantId)).toBe(TENANT_A);
-    expect(runner).toHaveBeenCalledTimes(1);
+    expect(createArg.dispatchVersion).toBe(1);
+    expect(WebhookDelivery.create).not.toHaveBeenCalled();
   });
 
   it('returns null and never delivers when the tenant has no matching endpoints', async () => {
     (WebhookEndpoint.find as jest.Mock).mockResolvedValue([]);
-    const runner = jest.fn();
-    const eventId = await emitEvent(TENANT_B, 'payment.succeeded', {}, { runner });
+    const eventId = await emitEvent(TENANT_B, 'payment.succeeded', {});
     expect(eventId).toBeNull();
-    expect(runner).not.toHaveBeenCalled();
+    expect(WebhookDelivery.updateOne).not.toHaveBeenCalled();
     expect(WebhookDelivery.create).not.toHaveBeenCalled();
   });
 });

@@ -1,11 +1,7 @@
-import { bookingGuestTotals, bookingLineSummaries, bookingTicketAddons } from '../utils/bookingLineSummary';
 import { Response, NextFunction, Request } from 'express';
 import type Stripe from 'stripe';
 import { Booking } from '../models/Booking';
-import { Attraction } from '../models/Attraction';
 import { Tenant } from '../models/Tenant';
-import { bookingNotificationEmail } from '../utils/notificationRecipients';
-import { User } from '../models/User';
 import { sendSuccess, sendError } from '../utils/response';
 import { AuthRequest } from '../types';
 import {
@@ -29,8 +25,6 @@ import {
 import { bookingStripePaymentRequest, bookingStripeContextMatches, claimBookingStripePaymentSession, BookingPaymentBindingConflict } from '../services/bookingPaymentBinding.service';
 import { secretHint } from '../utils/secretCrypto';
 import { updatePaymentGatewaySchema } from '../utils/validators';
-import { generateTicketPdf } from '../services/pdf.service';
-import { brandedLink, getEmailBrand, sendBookingConfirmation, sendAdminBookingNotification } from '../services/email.service';
 import { safeEmitEvent, recordInboundEvent, hasInboundEvent } from '../services/webhook.service';
 import {
   applyBookingRefundTotal,
@@ -39,7 +33,7 @@ import {
   recordBookingRefundLedger,
 } from '../services/bookingRefund.service';
 import { env } from '../config/env';
-import { generateBookingAccessToken, verifyBookingAccessToken } from '../utils/bookingAccess';
+import { verifyBookingAccessToken } from '../utils/bookingAccess';
 import { markCardPaymentFailed } from '../services/bookingInventory.service';
 import {
   isBundleComponentBooking,
@@ -54,7 +48,7 @@ import {
   failBundleProviderEvent,
   finalizeBundlePayment,
 } from '../services/bundlePayment.service';
-import { customerFeeLines } from '../utils/financeSettings';
+import { finalizePaidBooking } from '../services/bookingPaidEffects.service';
 
 // Compact, tenant-safe booking summary for webhook payloads (the booking's own
 // fields only — never cross-tenant data).
@@ -402,186 +396,6 @@ export const createPaymentIntent = async (
   } catch (error) {
     next(error);
   }
-};
-
-/**
- * Finalize a paid booking (idempotent). Marks it paid + confirmed, then sends the
- * branded customer confirmation (with PDF ticket) + the operator notification and
- * emits outbound webhooks. Safe to call from BOTH the Stripe webhook and the confirm
- * endpoint — the first caller wins; a duplicate call short-circuits so emails never
- * double-send. This is the single place a card booking becomes "paid".
- */
-const finalizePaidBooking = async (
-  bookingId: string,
-  expected: { tenantId: unknown; paymentIntentId: string }
-): Promise<boolean> => {
-  const booking = await Booking.findOneAndUpdate(
-    {
-      _id: bookingId,
-      ...standaloneBookingClause,
-      tenantId: expected.tenantId,
-      stripePaymentIntentId: expected.paymentIntentId,
-      paymentMethod: 'card',
-      status: 'pending',
-      inventoryReleasedAt: { $exists: false },
-      paymentStatus: { $in: ['pending', 'processing', 'failed'] },
-    },
-    {
-      $set: {
-        paymentStatus: 'succeeded',
-        status: 'confirmed',
-        paymentMethod: 'card',
-      },
-    },
-    { new: true }
-  ).populate(
-    'attractionId',
-    'title slug images destination meetingPoint duration cancellationPolicy instantConfirmation'
-  );
-  if (!booking) return false; // another confirm/webhook caller already won
-
-  if (booking.userId) {
-    await User.findByIdAndUpdate(booking.userId, { $inc: { totalSpent: booking.total } });
-  }
-
-  safeEmitEvent(booking.tenantId, 'payment.succeeded', paymentEventPayload(booking));
-  safeEmitEvent(booking.tenantId, 'booking.confirmed', paymentEventPayload(booking));
-
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const attraction = booking.attractionId as any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const firstItem = booking.items[0] as any;
-    const guestName = `${booking.guestDetails.firstName} ${booking.guestDetails.lastName}`.trim();
-    const totalAdults = booking.items.reduce((s: number, i: { quantities?: { adults?: number } }) => s + (i.quantities?.adults || 0), 0);
-    const totalChildren = booking.items.reduce((s: number, i: { quantities?: { children?: number } }) => s + (i.quantities?.children || 0), 0);
-    // Every saved line, with its option and priced add-ons, for the ticket and both notices.
-    const bookedLines = bookingLineSummaries(booking.items);
-    const bookedGuests = bookingGuestTotals(bookedLines);
-    const coords = attraction?.destination?.coordinates;
-    const meetingPoint =
-      coords && typeof coords.lat === 'number' && typeof coords.lng === 'number'
-        ? { lat: coords.lat, lng: coords.lng, label: attraction?.meetingPoint?.address || attraction?.destination?.city || undefined }
-        : undefined;
-    const hotelPickup = firstItem?.hotelPickup;
-
-    const tenantBrand = await Tenant.findById(booking.tenantId)
-      .select('name slug customDomain domainMigrated theme logo contactInfo notificationSettings')
-      .lean();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tb = tenantBrand as any;
-    const emailBrand = getEmailBrand(tenantBrand);
-    const bookingGuestAccessToken = generateBookingAccessToken(String(booking._id), booking.reference);
-    const logoUrl = emailBrand.logo;
-
-    const pdfBuffer = await generateTicketPdf({
-      reference: booking.reference,
-      attractionTitle: attraction?.title || 'Experience',
-      optionName: firstItem?.optionName,
-      date: firstItem?.date || new Date().toISOString().split('T')[0],
-      time: firstItem?.time,
-      duration: attraction?.duration,
-      guestName,
-      guestEmail: booking.guestDetails.email,
-      guestPhone: booking.guestDetails.phone,
-      guestCountry: booking.guestDetails.country,
-      hotelPickups: booking.items.map(item => item.hotelPickup).filter((pickup): pickup is NonNullable<typeof pickup> => Boolean(pickup)),
-      items: booking.items.map((item: { optionName?: string; quantities?: { adults?: number; children?: number; infants?: number } }) => ({
-        name: item.optionName || 'Experience',
-        adults: item.quantities?.adults || 0,
-        children: item.quantities?.children || 0,
-        infants: item.quantities?.infants || 0,
-      })),
-      addons: bookedLines.some((line) => line.addons.length) ? bookingTicketAddons(bookedLines) : undefined,
-      subtotal: booking.subtotal,
-      fees: booking.fees,
-      feeLines: customerFeeLines(booking.financeSnapshot),
-      discount: booking.discount,
-      total: booking.total,
-      currency: booking.currency,
-      paymentStatus: booking.paymentStatus,
-      paymentMethod: booking.paymentMethod,
-      cancellationPolicy: attraction?.cancellationPolicy,
-      instantConfirmation: attraction?.instantConfirmation,
-      // Brand the PDF ticket for the operator (was falling back to "Attractions Network").
-      tenantName: tb?.name,
-      brandColor: tb?.theme?.primaryColor,
-      logoUrl,
-      confirmationUrl: brandedLink(emailBrand, '/checkout/confirmation', {
-        ref: booking.reference,
-        accessToken: bookingGuestAccessToken,
-      }),
-    });
-
-    await sendBookingConfirmation(
-      booking.guestDetails.email,
-      {
-        reference: booking.reference,
-        attractionTitle: attraction?.title || 'Experience',
-        date: firstItem?.date || '',
-        time: firstItem?.time,
-        guestName,
-        total: booking.total,
-        currency: booking.currency,
-        paymentMethod: 'card',
-        // The money was actually taken, so the confirmation doubles as the payment receipt
-        // (EMAIL-DESIGN-STANDARD s5) with an itemised breakdown rather than a bare total.
-        subtotal: booking.subtotal,
-        fees: booking.fees,
-        feeLines: customerFeeLines(booking.financeSnapshot),
-        discount: booking.discount,
-        promoCode: booking.promoCode,
-        guests: bookedGuests.adults + bookedGuests.children + bookedGuests.infants,
-        lines: bookedLines,
-        hotelPickup,
-        hotelPickups: booking.items.map(item => item.hotelPickup).filter((pickup): pickup is NonNullable<typeof pickup> => Boolean(pickup)),
-        meetingPoint,
-        guestAccessToken: bookingGuestAccessToken,
-      },
-      pdfBuffer,
-      tenantBrand
-    );
-
-    const recipient = bookingNotificationEmail(tb);
-    if (recipient) {
-      try {
-        await sendAdminBookingNotification(
-          recipient,
-          {
-            reference: booking.reference,
-            tenantName: tb?.name || 'Attractions Network',
-            attractionTitle: attraction?.title || 'Experience',
-            date: firstItem?.date || '',
-            time: firstItem?.time,
-            guestName,
-            guestEmail: booking.guestDetails.email,
-            guestPhone: booking.guestDetails.phone,
-            adults: totalAdults,
-            children: totalChildren,
-            infants: bookedGuests.infants,
-            lines: bookedLines,
-            total: booking.total,
-            currency: booking.currency,
-            paymentMethod: 'card',
-            hotelPickup,
-            hotelPickups: booking.items.map(item => item.hotelPickup).filter((pickup): pickup is NonNullable<typeof pickup> => Boolean(pickup)),
-            meetingPoint,
-          },
-          tenantBrand
-        );
-      } catch (err) {
-        console.error(`Operator payment email to ${recipient} failed:`, err);
-      }
-    }
-
-    safeEmitEvent(booking.tenantId, 'ticket.issued', {
-      ...paymentEventPayload(booking),
-      attractionTitle: attraction?.title,
-    });
-  } catch (emailError) {
-    console.error('finalizePaidBooking email/PDF failed:', emailError);
-  }
-  return true;
 };
 
 export const confirmPayment = async (

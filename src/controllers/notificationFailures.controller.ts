@@ -1,3 +1,4 @@
+import { BookingPaidEffectV1 } from '../models/BookingPaidEffectV1';
 import { NextFunction, Response } from 'express';
 import { PipelineStage, Types } from 'mongoose';
 import { z } from 'zod';
@@ -21,7 +22,7 @@ const publicReason = (code: unknown): string => {
     'DELIVERY_SKIPPED_PROVIDER_NOT_CONFIGURED', 'DELIVERY_SKIPPED_NON_PRODUCTION_NO_QA_INBOX',
     'PAYMENT_CONTEXT_MISSING', 'PAYMENT_CONTEXT_MISMATCH', 'PAYMENT_CONTEXT_CHANGED', 'PAYMENT_STATUS_UNAVAILABLE',
     'PAYMENT_STATUS_INCOMPATIBLE', 'PAYMENT_FAILURE_TIME_INVALID', 'LEGACY_DELIVERY_UNCERTAIN',
-    'DELIVERY_NOT_STARTED', 'NOTIFICATION_SCOPE_MISSING', 'NOTIFICATION_PREPARATION_FAILED', 'OPERATOR_RECIPIENT_MISSING', 'CUSTOMER_RECIPIENT_MISSING'];
+    'DELIVERY_NOT_STARTED', 'BOOKING_STATE_CHANGED', 'NOTIFICATION_RECIPIENT_UNAVAILABLE', 'NOTIFICATION_RECIPIENT_CHANGED', 'NOTIFICATION_SCOPE_MISSING', 'NOTIFICATION_PREPARATION_FAILED', 'OPERATOR_RECIPIENT_MISSING', 'CUSTOMER_RECIPIENT_MISSING'];
   return typeof code === 'string' && (known.includes(code) || /^PROVIDER_REJECTED_4[0-9]{2}$/.test(code)) ? code : 'DELIVERY_REVIEW_REQUIRED';
 };
 
@@ -56,7 +57,8 @@ export const listNotificationFailures = async (req: AuthRequest, res: Response, 
           { $and: [{ $eq: ['$$audience', 'supplier'] }, { $in: ['$$recipientTenant', '$components.supplierTenantId'] }] },
         ] };
     const pipeline: PipelineStage[] = [ { $match: match },
-      ...(source === 'booking' ? [{ $unionWith: { coll: BookingCustomerNotification.collection.name, pipeline: [{ $match: match }] } } as PipelineStage] : []),
+      ...(source === 'booking' ? [{ $unionWith: { coll: BookingCustomerNotification.collection.name, pipeline: [{ $match: match }] } } as PipelineStage,
+        { $unionWith: { coll: BookingPaidEffectV1.collection.name, pipeline: [{ $match: match }] } } as PipelineStage] : []),
       ...(source === 'booking' ? [{ $unionWith: { coll: BookingPaymentNotification.collection.name, pipeline: [{ $match: match }] } } as PipelineStage] : []),
       { $sort: { _id: -1 } }, { $limit: limit + 1 },
       { $lookup: { from: source === 'booking' ? 'bookings' : 'bundleorders',
@@ -93,7 +95,8 @@ export const reconcileNotificationFailure = async (req: AuthRequest, res: Respon
     const updated = source.data === 'booking'
       ? (await BookingOperatorNotification.findOneAndUpdate(filter, update, { new: true, runValidators: true })
         || await BookingCustomerNotification.findOneAndUpdate(filter, update, { new: true, runValidators: true })
-        || await BookingPaymentNotification.findOneAndUpdate(filter, update, { new: true, runValidators: true }))
+        || await BookingPaymentNotification.findOneAndUpdate(filter, update, { new: true, runValidators: true })
+        || await BookingPaidEffectV1.findOneAndUpdate(filter, update, { new: true, runValidators: true }))
       : await BundleOutboxEvent.findOneAndUpdate(filter, update, { new: true, runValidators: true });
     if (!updated) { sendError(res, 'Delivery item changed or is unavailable; refresh before reconciling', 409); return; }
     sendSuccess(res, { id: String(updated._id), source: source.data, status: updated.status, updatedAt: updated.updatedAt, reconciliation: { decision, note, at: reconciliation.at } });

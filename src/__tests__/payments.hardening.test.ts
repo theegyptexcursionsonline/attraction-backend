@@ -1,3 +1,7 @@
+jest.mock('../models/Attraction', () => ({ Attraction: { findOne: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue({ title: 'QA Tour' }) }) } }));
+import { BookingPaidEffectV1 } from '../models/BookingPaidEffectV1';
+import { preparePaidBookingNotice } from '../services/bookingPaidNotice.service';
+jest.mock('../models/BookingPaidEffectV1', () => ({ BookingPaidEffectV1: { updateOne: jest.fn().mockResolvedValue({}) } }));
 import { enqueueBookingOperatorNotification } from '../services/bookingOperatorNotification.service';
 jest.mock('../services/bookingOperatorNotification.service', () => ({
   enqueueBookingOperatorNotification: jest.fn().mockResolvedValue(undefined),
@@ -118,6 +122,7 @@ jest.mock('../services/email.service', () => ({
 
 jest.mock('../services/webhook.service', () => ({
   safeEmitEvent: jest.fn(),
+  enqueueWebhookEvent: jest.fn().mockResolvedValue('evt_queued'),
   recordInboundEvent: jest.fn().mockResolvedValue({ duplicate: false }),
 }));
 
@@ -467,22 +472,14 @@ describe('Stripe payment hardening', () => {
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ received: true }));
     });
 
-    it('uses one atomic transition so concurrent valid events send side effects once', async () => {
+    it('uses one atomic transition so concurrent valid events enqueue side effects once', async () => {
       (constructWebhookEvent as jest.Mock)
         .mockReturnValueOnce(webhookEvent('payment_intent.succeeded', {}, 'evt_race_1'))
         .mockReturnValueOnce(webhookEvent('payment_intent.succeeded', {}, 'evt_race_2'));
       (Booking.findOne as jest.Mock).mockResolvedValue(bookingFixture());
       (Booking.findOneAndUpdate as jest.Mock)
-        .mockReturnValueOnce({
-          populate: jest.fn().mockResolvedValue(
-            bookingFixture({
-              paymentStatus: 'succeeded',
-              status: 'confirmed',
-              userId: 'customer-1',
-            })
-          ),
-        })
-        .mockReturnValueOnce({ populate: jest.fn().mockResolvedValue(null) });
+        .mockResolvedValueOnce(bookingFixture({ paymentStatus: 'succeeded', status: 'confirmed', userId: 'customer-1' }))
+        .mockResolvedValueOnce(null);
 
       await Promise.all([
         invoke(handleWebhook as never, webhookRequest()),
@@ -505,21 +502,17 @@ describe('Stripe payment hardening', () => {
         }),
         { new: true }
       );
-      expect(sendBookingConfirmation).toHaveBeenCalledTimes(1);
+      expect(sendBookingConfirmation).not.toHaveBeenCalled();
+      expect(BookingPaidEffectV1.updateOne).toHaveBeenCalledTimes(2);
       expect(User.findByIdAndUpdate).toHaveBeenCalledTimes(1);
       expect(User.findByIdAndUpdate).toHaveBeenCalledWith(
         'customer-1',
-        { $inc: { totalSpent: 105 } }
+        { $inc: { totalSpent: 105 } }, {}
       );
-      expect(sendBookingConfirmation).toHaveBeenCalledWith(
-        'qa.team@example.invalid',
-        expect.objectContaining({ guestAccessToken: 'guest-access-token' }),
-        expect.any(Buffer),
-        expect.anything()
-      );
+
     });
 
-    it('confirms a paid booking with every line and add-on quantity in both emails and the ticket', async () => {
+    it('prepares a paid booking with every line and add-on quantity in both emails and the ticket', async () => {
       (constructWebhookEvent as jest.Mock).mockReturnValue(webhookEvent('payment_intent.succeeded', {}, 'evt_addons'));
       const items = [
         { optionId: 'double', optionName: 'Double quad', date: '2030-08-20', time: '15:00', quantities: { adults: 5, children: 0, infants: 1 }, unitPrice: 20, totalPrice: 100,
@@ -527,15 +520,11 @@ describe('Stripe payment hardening', () => {
         { optionId: 'single', optionName: 'Single quad', date: '2030-08-21', time: '09:00', quantities: { adults: 1, children: 0, infants: 0 }, unitPrice: 20, totalPrice: 20,
           addons: [{ id: 'drink', name: 'Cold drinks', price: 4 }] },
       ];
-      (Booking.findOne as jest.Mock).mockResolvedValue(bookingFixture({ items }));
-      (Booking.findOneAndUpdate as jest.Mock).mockReturnValueOnce({
-        populate: jest.fn().mockResolvedValue(bookingFixture({ items, paymentStatus: 'succeeded', status: 'confirmed' })),
-      });
-      (Tenant.findById as jest.Mock).mockReturnValueOnce({ select: jest.fn().mockReturnValue({
-        lean: jest.fn().mockResolvedValue({ name: 'Test Operator', slug: 'test-operator', contactInfo: { email: 'support@qa-site.invalid' } }),
-      }) });
-
-      await invoke(handleWebhook as never, webhookRequest());
+      const booking = bookingFixture({ items, paymentStatus: 'succeeded', status: 'confirmed' });
+      const tenant = { name: 'Test Operator', slug: 'test-operator', contactInfo: { email: 'support@qa-site.invalid' } };
+      const attraction = { title: 'QA Tour', destination: {} };
+      await (await preparePaidBookingNotice(booking as never, attraction as never, tenant as never, 'customer'))();
+      await (await preparePaidBookingNotice(booking as never, attraction as never, tenant as never, 'operator'))();
 
       const lines = [
         { optionName: 'Double quad', date: '2030-08-20', time: '15:00', adults: 5, children: 0, infants: 1,
@@ -558,9 +547,7 @@ describe('Stripe payment hardening', () => {
       (Booking.findOne as jest.Mock).mockResolvedValue(
         bookingFixture({ status: 'cancelled', inventoryReleasedAt: new Date() })
       );
-      (Booking.findOneAndUpdate as jest.Mock).mockReturnValue({
-        populate: jest.fn().mockResolvedValue(null),
-      });
+      (Booking.findOneAndUpdate as jest.Mock).mockResolvedValue(null);
       (Booking.exists as jest.Mock).mockResolvedValue(null);
 
       const res = await invoke(handleWebhook as never, webhookRequest());
@@ -1145,9 +1132,7 @@ describe('Stripe payment hardening', () => {
         .mockReturnValueOnce({ select: jest.fn().mockResolvedValue(retryable) })
         .mockReturnValueOnce({ select: jest.fn().mockResolvedValue(confirmed) });
       (retrievePaymentIntent as jest.Mock).mockResolvedValue(paymentIntent());
-      (Booking.findOneAndUpdate as jest.Mock).mockReturnValue({
-        populate: jest.fn().mockResolvedValue(confirmed),
-      });
+      (Booking.findOneAndUpdate as jest.Mock).mockResolvedValue(confirmed);
 
       const res = await invoke(confirmPayment as never, {
         body: {
