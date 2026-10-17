@@ -3,6 +3,9 @@ import { Category } from '../models/Category';
 import { Attraction } from '../models/Attraction';
 import { sendSuccess, sendError } from '../utils/response';
 import { AuthRequest } from '../types';
+import { publicCursorPlan } from '../utils/publicCursor';
+import { searchRegexValue } from '../utils/helpers';
+import { localizationStages, requestedLocale, sourceFallbackAllowed, TranslationError } from '../services/attractionLocalization.service';
 
 export const getCategories = async (
   req: AuthRequest,
@@ -11,6 +14,11 @@ export const getCategories = async (
 ): Promise<void> => {
   try {
     const forEditor = req.query.forEditor === 'true';
+    const cursorMode = req.query.pagination === 'cursor';
+    const locale = requestedLocale(req.query.locale);
+    if (req.query.cursor && !cursorMode) throw new TranslationError('Select cursor pagination');
+    if (cursorMode && forEditor) throw new TranslationError('Cursor pagination is for public categories');
+    if (locale && !req.tenant) throw new TranslationError('Select one public site for translated categories');
     if (forEditor && (!req.user || !['super-admin', 'brand-admin', 'manager', 'editor', 'viewer'].includes(req.user.role))) {
       sendError(res, 'Staff access is required for editor options', req.user ? 403 : 401);
       return;
@@ -31,9 +39,43 @@ export const getCategories = async (
         matchFilter.tenantIds = { $in: req.user.assignedTenants };
         scopedToTenant = true;
       } else if (adminRoles.includes(req.user.role)) {
-        sendSuccess(res, []);
+        if (cursorMode) res.json({ success: true, data: [], pagination: { limit: Number(req.query.limit || 20), total: 0, previousCursor: null, nextCursor: null } });
+        else sendSuccess(res, []);
         return;
       }
+    }
+
+    if (cursorMode) {
+      const limit = Number(req.query.limit || 20);
+      const literal = searchRegexValue(req.query.search);
+      const query = { isActive: true, ...(literal ? { $or: ['name', 'slug', 'description'].map(field => ({ [field]: { $regex: literal, $options: 'i' } })) } : {}) };
+      const tourScope = { ...matchFilter, archivedAt: { $exists: false }, trashedAt: { $exists: false } };
+      const sourceFallback = sourceFallbackAllowed(req.query.localeFallback, req.tenant);
+      const pipeline = [
+        { $match: query },
+        { $lookup: { from: Attraction.collection.name, let: { category: '$slug' }, pipeline: [
+          { $match: { ...tourScope, $expr: { $eq: ['$category', '$$category'] } } },
+          ...(locale && req.tenant ? localizationStages(req.tenant._id, locale, undefined, !sourceFallback) : []),
+          { $count: 'total' },
+        ], as: '__counts' } },
+        { $set: { count: { $ifNull: [{ $arrayElemAt: ['$__counts.total', 0] }, 0] } } },
+        { $match: { count: { $gt: 0 } } },
+        { $unset: '__counts' },
+      ];
+      const plan = publicCursorPlan({ query, tourScope, locale, sourceFallback }, [
+        { field: 'sortOrder', direction: 1, kind: 'number' }, { field: '_id', direction: 1, kind: 'id' },
+      ], req.query.cursor as string | undefined);
+      const [rows, counts] = await Promise.all([
+        Category.aggregate([...pipeline, { $set: plan.normalized }, ...(plan.seek ? [{ $match: plan.seek }] : []), { $sort: plan.sort }, { $limit: limit + 1 }]),
+        Category.aggregate([...pipeline, { $count: 'total' }]),
+      ]);
+      const result = plan.page(rows, limit, counts[0]?.total || 0);
+      res.setHeader('Cache-Control', 'private, no-store');
+      res.json({ success: true, data: result.rows.map(row => {
+        if (includeCount === 'false') delete row.count;
+        return row;
+      }), pagination: result.pagination });
+      return;
     }
 
     const categories = await Category.find({ isActive: true })

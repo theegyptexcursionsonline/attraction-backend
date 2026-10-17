@@ -129,7 +129,10 @@ router.get(
   '/',
   optionalAuth,
   optionalTenant,
-  validateQuery(paginationSchema.merge(attractionFiltersSchema)),
+  validateQuery(paginationSchema.merge(attractionFiltersSchema).extend({
+    tenantId: z.string().trim().min(1).max(253).optional(),
+    tenant: z.string().trim().min(1).max(253).optional(),
+  })),
   getAttractions
 );
 

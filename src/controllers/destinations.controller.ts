@@ -56,7 +56,7 @@ export const getDestinations = async (
     const cursorMode = req.query.pagination === 'cursor';
     if (cursorMode && req.query.sort && req.query.sort !== 'sortOrder') throw new TranslationError('Select a supported destination order');
     if (req.query.cursor && !cursorMode) throw new TranslationError('Select cursor pagination');
-    if (cursorMode && (!req.tenant || req.query.forEditor === 'true' || req.query.scope === 'admin')) throw new TranslationError('Select one public site for cursor destinations');
+    if (cursorMode && (req.query.forEditor === 'true' || req.query.scope === 'admin')) throw new TranslationError('Cursor pagination is for public destinations');
     const sourceFallback = sourceFallbackAllowed(req.query?.localeFallback, req.tenant);
     const forEditor = req.query.forEditor === 'true';
     if (locale && (!req.tenant || forEditor || req.query.scope === 'admin')) throw new TranslationError('Select one public site for translated destinations');
@@ -90,7 +90,8 @@ export const getDestinations = async (
         attractionFilter.tenantIds = { $in: req.user.assignedTenants };
         scopedToTenant = true;
       } else if (adminRoles.includes(req.user.role)) {
-        sendPaginated(res, [], pageNum, limitNum, 0);
+        if (cursorMode) res.json({ success: true, data: [], pagination: { limit: limitNum, total: 0, previousCursor: null, nextCursor: null } });
+        else sendPaginated(res, [], pageNum, limitNum, 0);
         return;
       }
     }
@@ -112,23 +113,26 @@ export const getDestinations = async (
     // Cursor reads keep eligibility and counts in MongoDB rather than loading all
     // destination names into process memory. Each destination joins only this
     // site's active public tours, including explicitly configured pickup areas.
-    if (cursorMode && req.tenant) {
-      const pickupSlugs = tenantPickupDestinationSlugs(req.tenant);
-      const tourScope = { tenantIds: req.tenant._id, status: 'active', archivedAt: { $exists: false }, trashedAt: { $exists: false } };
+    if (cursorMode) {
+      const pickupSlugs = req.tenant ? tenantPickupDestinationSlugs(req.tenant) : [];
+      const tourScope = { ...attractionFilter, archivedAt: { $exists: false }, trashedAt: { $exists: false } };
       const pipeline = [
         { $match: query },
         { $lookup: { from: Attraction.collection.name, let: { city: '$name', pickup: { $in: ['$slug', pickupSlugs] } }, pipeline: [
           { $match: { ...tourScope, $expr: { $or: [{ $eq: ['$destination.city', '$$city'] }, { $and: ['$$pickup', { $eq: ['$hasHotelPickup', true] }] }] } } },
-          ...(locale ? localizationStages(req.tenant._id, locale, undefined, !sourceFallback) : []),
+          ...(locale && req.tenant ? localizationStages(req.tenant._id, locale, undefined, !sourceFallback) : []),
           { $group: { _id: null, ownCount: { $sum: { $cond: [{ $eq: ['$destination.city', '$$city'] }, 1, 0] } }, pickupCount: { $sum: { $cond: [{ $eq: ['$hasHotelPickup', true] }, 1, 0] } } } },
         ], as: '__tourCounts' } },
         { $set: { __counts: { $ifNull: [{ $arrayElemAt: ['$__tourCounts', 0] }, { ownCount: 0, pickupCount: 0 }] } } },
         { $set: { attractionCount: { $cond: [{ $gt: ['$__counts.ownCount', 0] }, '$__counts.ownCount', '$__counts.pickupCount'] }, servedByPickup: { $and: [{ $eq: ['$__counts.ownCount', 0] }, { $gt: ['$__counts.pickupCount', 0] }] } } },
         { $match: { attractionCount: { $gt: 0 } } },
-        ...(locale ? destinationLocalizationStages(req.tenant._id, locale, typeof search === 'string' ? search.trim() : undefined, !sourceFallback) : []),
+        ...(locale && req.tenant ? destinationLocalizationStages(req.tenant._id, locale, typeof search === 'string' ? search.trim() : undefined, !sourceFallback) : []),
         { $unset: ['__tourCounts', '__counts'] },
       ];
-      const plan = publicCursorPlan({ tenantId: String(req.tenant._id), query, locale, sourceFallback, search, pickupSlugs }, [
+      const binding = req.tenant
+        ? { tenantId: String(req.tenant._id), query, locale, sourceFallback, search, pickupSlugs }
+        : { marketplaceScope: tourScope, query, locale, search };
+      const plan = publicCursorPlan(binding, [
         { field: 'sortOrder', direction: 1, kind: 'number' }, { field: '_id', direction: 1, kind: 'id' },
       ], req.query.cursor as string | undefined);
       const [rows, counts] = await Promise.all([
@@ -186,6 +190,20 @@ export const getDestinations = async (
   } catch (error) {
     next(error);
   }
+};
+
+/** Destinations are shared taxonomy. Only the same global administrator who may
+ * edit them may read the unfiltered editor entity, including inactive records. */
+export const getDestinationById = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  if (!req.user) { sendError(res, 'Authentication required', 401); return; }
+  if (req.user.role !== 'super-admin') { sendError(res, 'Insufficient permissions', 403); return; }
+  if (!/^[a-f0-9]{24}$/i.test(req.params.id)) { sendError(res, 'Destination not found', 404); return; }
+  try {
+    const destination = await Destination.findOne({ _id: new Types.ObjectId(req.params.id) }).lean();
+    if (!destination) { sendError(res, 'Destination not found', 404); return; }
+    res.setHeader('Cache-Control', 'private, no-store');
+    sendSuccess(res, destination);
+  } catch (error) { next(error); }
 };
 
 export const getDestinationBySlug = async (

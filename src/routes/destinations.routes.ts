@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   getDestinations,
   getDestinationBySlug,
+  getDestinationById,
   getFeaturedDestinations,
   createDestination,
   updateDestination,
@@ -72,6 +73,8 @@ router.get(
   validateQuery(
     paginationSchema.merge(
       z.object({
+        tenantId: z.string().trim().min(1).max(253).optional(),
+        tenant: z.string().trim().min(1).max(253).optional(),
         locale: z.enum(['en', 'ar', 'de', 'ru', 'fr']).optional(),
         localeFallback: z.literal('source').optional(),
         pagination: z.literal('cursor').optional(),
@@ -116,6 +119,9 @@ router.get(
  *                     $ref: '#/components/schemas/Destination'
  */
 router.get('/featured', optionalAuth, optionalTenant, getFeaturedDestinations);
+
+// Keep this exact authenticated editor read before the public slug route.
+router.get('/admin/:id', authenticate, requireSuperAdmin, getDestinationById);
 
 /**
  * @swagger

@@ -8,8 +8,9 @@ import {
 } from '../controllers/categories.controller';
 import { authenticate, optionalAuth, requireSuperAdmin } from '../middleware/auth.middleware';
 import { optionalTenant } from '../middleware/tenant.middleware';
-import { validate } from '../middleware/validate.middleware';
-import { createCategorySchema, updateCategorySchema } from '../utils/validators';
+import { validate, validateQuery } from '../middleware/validate.middleware';
+import { createCategorySchema, updateCategorySchema, paginationSchema, regexSearchSchema } from '../utils/validators';
+import { z } from 'zod';
 
 const router = Router();
 
@@ -41,7 +42,17 @@ const router = Router();
  *                   items:
  *                     $ref: '#/components/schemas/Category'
  */
-router.get('/', optionalAuth, optionalTenant, getCategories);
+router.get('/', optionalAuth, optionalTenant, validateQuery(paginationSchema.merge(z.object({
+  tenantId: z.string().trim().min(1).max(253).optional(),
+  tenant: z.string().trim().min(1).max(253).optional(),
+  pagination: z.literal('cursor').optional(),
+  cursor: z.string().regex(/^[A-Za-z0-9_-]{1,2048}$/).optional(),
+  search: regexSearchSchema,
+  includeCount: z.enum(['true', 'false']).optional(),
+  forEditor: z.enum(['true', 'false']).optional(),
+  locale: z.enum(['en', 'ar', 'de', 'ru', 'fr']).optional(),
+  localeFallback: z.literal('source').optional(),
+}))), getCategories);
 
 /**
  * @swagger
