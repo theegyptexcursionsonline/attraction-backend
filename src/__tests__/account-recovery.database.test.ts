@@ -132,9 +132,9 @@ it('supports a legacy account with absent epoch and membership fields', async ()
 
 it('uses atomic deltas for stale security documents and never revives an intermediate session', async () => {
   const first = (await User.findById(user._id))!, stale = (await User.findById(user._id))!;
-  revokeUserSessions(first); expect(first.getChanges()).toHaveProperty('$inc.tokenVersion', 1); await first.save();
+  await revokeUserSessions(first); expect(first.getChanges()).toHaveProperty('$inc.tokenVersion', 1); await first.save();
   const intermediate = generateAccessToken((await User.findById(user._id))!); expect(await statusOf(intermediate)).toBe(200);
-  revokeUserSessions(stale); expect(stale.getChanges()).toHaveProperty('$inc.tokenVersion', 1); await stale.save();
+  await revokeUserSessions(stale); expect(stale.getChanges()).toHaveProperty('$inc.tokenVersion', 1); await stale.save();
   expect((await current())!.tokenVersion).toBe(4); expect(stale.tokenVersion).toBe(3);
   expect(await statusOf(intermediate)).toBe(401);
   expect((await current())!.refreshToken).toBeUndefined(); expect((await current())!.passwordResetToken).toBeUndefined();
@@ -152,7 +152,7 @@ it('keeps password save-hook increments atomic for two stale password changes', 
 it('invalidates an invitation when its established security context is reassigned', async () => {
   await User.updateOne({ _id: user._id }, { $set: { status: 'pending', role: 'brand-admin' } });
   const changed = (await User.findById(user._id))!; changed.role = 'manager'; changed.assignedTenants = [tenantB];
-  revokeUserSessions(changed); await changed.save();
+  await revokeUserSessions(changed); await changed.save();
   const salt = jest.spyOn(bcrypt, 'genSalt'); expect((await invoke('invitation')).status).toBe(400); expect(salt).not.toHaveBeenCalled();
   expect((await current())!.status).toBe('pending');
 });
@@ -195,7 +195,89 @@ it.each(['context', 'revoke'])('existing admin %s mutation invalidates old recov
 it('persists a revocation delta for legacy documents with no stored epoch', async () => {
   await User.collection.updateOne({ _id: user._id }, { $unset: { tokenVersion: 1 } });
   const legacy = (await User.findById(user._id))!;
-  revokeUserSessions(legacy); await legacy.save();
+  await revokeUserSessions(legacy); await legacy.save();
   expect((await current())!.tokenVersion).toBe(1);
   expect((await current())!.passwordResetToken).toBeUndefined();
+});
+
+const nullEpoch = () => mongoose.connection.collection('users').updateOne({ _id: user._id }, { $set: { tokenVersion: null } });
+
+it.each(['reset', 'invitation'] as const)('consumes one legacy-null %s capability and increments once', async mode => {
+  await nullEpoch();
+  if (mode === 'invitation') await User.updateOne({ _id: user._id }, { $set: { status: 'pending', role: 'brand-admin' } });
+  const oldAccess = generateAccessToken((await User.findById(user._id))!);
+  const results = await Promise.all([invoke(mode, NEXT + 'first'), invoke(mode, NEXT + 'second')]);
+  expect(results.map(row => row.status).sort()).toEqual([200, 400]);
+  expect((await current())!.tokenVersion).toBe(1); expect((await current())!.passwordResetToken).toBeUndefined();
+  expect(sendPasswordChangedEmail).toHaveBeenCalledTimes(1); expect(await statusOf(oldAccess)).toBe(401);
+  expect(results.every(row => row.res.cookie.mock.calls.length === 0)).toBe(true);
+});
+
+it('does not normalize or hash for invalid, expired or disabled legacy-null recovery', async () => {
+  await nullEpoch(); const write = jest.spyOn(User, 'updateOne'), salt = jest.spyOn(bcrypt, 'genSalt');
+  expect(await consumeAccountRecovery('invalid-local-token', NEXT, 'reset')).toEqual({ kind: 'invalid' });
+  await User.collection.updateOne({ _id: user._id }, { $set: { passwordResetExpires: new Date(0) } });
+  expect(await consumeAccountRecovery(TOKEN, NEXT, 'reset')).toEqual({ kind: 'invalid' });
+  await User.collection.updateOne({ _id: user._id }, { $set: { status: 'suspended', passwordResetExpires: new Date(Date.now() + 60000) } });
+  expect(await consumeAccountRecovery(TOKEN, NEXT, 'reset')).toEqual({ kind: 'invalid' });
+  expect(write).not.toHaveBeenCalled(); expect(salt).not.toHaveBeenCalled(); expect((await current())!.tokenVersion).toBeNull();
+});
+
+it('keeps a failed null normalization fail-closed and permits a fresh recovery retry', async () => {
+  await nullEpoch(); const salt = jest.spyOn(bcrypt, 'genSalt');
+  jest.spyOn(User, 'updateOne').mockRejectedValueOnce(new Error('local normalization unavailable'));
+  await expect(consumeAccountRecovery(TOKEN, NEXT, 'reset')).rejects.toThrow('local normalization unavailable');
+  expect(salt).not.toHaveBeenCalled(); expect((await current())!.tokenVersion).toBeNull(); expect((await current())!.passwordResetToken).toBe(hashToken(TOKEN));
+  expect(await (await current())!.comparePassword(OLD)).toBe(true); expect(sendPasswordChangedEmail).not.toHaveBeenCalled();
+  expect((await invoke('reset')).status).toBe(200); expect((await current())!.tokenVersion).toBe(1);
+});
+
+it('rechecks expiry if the capability expires while its null encoding is normalized', async () => {
+  await nullEpoch(); const original = User.updateOne;
+  jest.spyOn(User, 'updateOne').mockImplementationOnce((...args) => (async () => {
+    await User.collection.updateOne({ _id: user._id }, { $set: { passwordResetExpires: new Date(0) } });
+    return Reflect.apply(original, User, args);
+  })() as never);
+  expect((await invoke('reset')).status).toBe(400);
+  expect((await current())!.tokenVersion).toBe(0); expect((await current())!.passwordResetToken).toBe(hashToken(TOKEN));
+  expect(await (await current())!.comparePassword(OLD)).toBe(true); expect(sendPasswordChangedEmail).not.toHaveBeenCalled();
+});
+
+it('never lowers an advanced numeric epoch while normalizing a stale null document', async () => {
+  await nullEpoch(); const stale = (await User.findById(user._id))!;
+  await User.collection.updateOne({ _id: user._id }, { $set: { tokenVersion: 4 } });
+  const intermediate = generateAccessToken((await User.findById(user._id))!); expect(await statusOf(intermediate)).toBe(200);
+  const writes = jest.spyOn(User, 'updateOne'); await revokeUserSessions(stale); await stale.save();
+  expect(writes).toHaveBeenCalledWith({ _id: user._id, tokenVersion: { $type: 10 } }, { $set: { tokenVersion: 0 } });
+  expect((await current())!.tokenVersion).toBe(5); expect(stale.tokenVersion).toBe(1); expect(await statusOf(intermediate)).toBe(401);
+});
+
+it('preserves two independent increments from stale null documents', async () => {
+  await nullEpoch(); const first = (await User.findById(user._id))!, stale = (await User.findById(user._id))!;
+  await Promise.all([revokeUserSessions(first), revokeUserSessions(stale)]); await first.save();
+  const intermediate = generateAccessToken((await User.findById(user._id))!); expect(await statusOf(intermediate)).toBe(200);
+  await stale.save(); expect((await current())!.tokenVersion).toBe(2); expect(await statusOf(intermediate)).toBe(401);
+  expect((await current())!.passwordResetToken).toBeUndefined(); expect((await current())!.refreshToken).toBeUndefined();
+});
+
+it.each(['password', 'context', 'revoke'] as const)('awaits null normalization in the existing %s caller before committing security effects', async kind => {
+  await nullEpoch(); await User.collection.updateOne({ _id: user._id }, { $set: { role: 'brand-admin' } });
+  let release!: () => void, entered!: () => void;
+  const blocked = new Promise<void>(resolve => { release = resolve; });
+  const started = new Promise<void>(resolve => { entered = resolve; });
+  const original = User.updateOne;
+  jest.spyOn(User, 'updateOne').mockImplementationOnce((...args) => (async () => { entered(); await blocked; return Reflect.apply(original, User, args); })() as never);
+  const salt = jest.spyOn(bcrypt, 'genSalt'), save = jest.spyOn(User.prototype, 'save');
+  const res = response(), next = jest.fn();
+  const req = { params: { id: String(user._id) }, body: kind === 'password' ? { password: NEXT } : { role: 'viewer' },
+    user: { _id: new Types.ObjectId(), role: 'super-admin', assignedTenants: [] }, headers: {}, query: {} };
+  const pending = (kind === 'password' ? setUserPassword : kind === 'context' ? updateUser : revokeUserSessionsById)(req as never, res as never, next);
+  try {
+    await started; await new Promise(resolve => setImmediate(resolve));
+    expect(res.json).not.toHaveBeenCalled(); expect((await current())!.tokenVersion).toBeNull();
+    expect(salt).not.toHaveBeenCalled(); if (kind !== 'password') expect(save).not.toHaveBeenCalled();
+  } finally { release(); await pending; }
+  expect(next).not.toHaveBeenCalled(); expect(res.status).toHaveBeenCalledWith(200); expect(res.cookie).not.toHaveBeenCalled();
+  expect((await current())!.tokenVersion).toBe(1); expect((await current())!.passwordResetToken).toBeUndefined(); expect((await current())!.refreshToken).toBeUndefined();
+  if (kind === 'password') { expect(salt).toHaveBeenCalledTimes(1); expect(await (await current())!.comparePassword(NEXT)).toBe(true); }
 });

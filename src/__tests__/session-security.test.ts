@@ -213,11 +213,11 @@ describe('session revocation', () => {
     expect(User.findById).not.toHaveBeenCalled();
   });
 
-  it('requests an atomic epoch increment and clears existing account capabilities', () => {
+  it('requests an atomic epoch increment and clears existing account capabilities', async () => {
     const increment = jest.fn(), markModified = jest.fn();
     const user = { tokenVersion: 4, refreshToken: 'hashed-refresh', passwordResetToken: 'hashed-recovery', passwordResetExpires: new Date(), $inc: increment, markModified } as unknown as IUser;
 
-    revokeUserSessions(user);
+    await revokeUserSessions(user);
 
     expect(increment).toHaveBeenCalledWith('tokenVersion', 1);
     expect(user.refreshToken).toBeUndefined();

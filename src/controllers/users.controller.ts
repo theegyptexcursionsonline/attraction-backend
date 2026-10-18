@@ -1229,7 +1229,7 @@ export const updateUser = async (
     // Mongoose casts the ids (and rejects a malformed one) exactly as it did for the raw body.
     if (tenantsAfter !== undefined) target.assignedTenants = tenantsAfter as unknown as Types.ObjectId[];
     if (sectionsChanged) target.sectionAccess = requestedSections ?? undefined;
-    if (securityContextChanged) revokeUserSessions(target);
+    if (securityContextChanged) await revokeUserSessions(target);
     await target.save();
 
     // Two super admins removing each other at the same moment both pass the check above; whoever
@@ -1298,7 +1298,7 @@ export const revokeUserSessionsById = async (
         return;
       }
     }
-    revokeUserSessions(target);
+    await revokeUserSessions(target);
     await target.save();
     sendSuccess(res, { id: String(target._id) }, 'All sessions signed out');
   } catch (error) {

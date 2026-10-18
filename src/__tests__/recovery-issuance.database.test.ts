@@ -50,7 +50,7 @@ it.each([true, false])('revocation unsets capabilities issued since an initially
   const query = User.findById(user._id); if (selected) query.select('+passwordResetToken +passwordResetExpires +refreshToken');
   const stale = (await query)!;
   await User.collection.updateOne({ _id: user._id }, { $set: { passwordResetToken: oldHash, passwordResetExpires: new Date(Date.now() + 60000), refreshToken: hashToken('local-new-refresh') } });
-  revokeUserSessions(stale);
+  await revokeUserSessions(stale);
   expect(stale.getChanges()).toMatchObject({ $unset: { refreshToken: 1, passwordResetToken: 1, passwordResetExpires: 1 }, $inc: { tokenVersion: 1 } });
   await stale.save();
   const stored = (await User.collection.findOne({ _id: user._id }))!;
@@ -61,7 +61,7 @@ it.each(['reset', 'invitation'] as const)('late %s issuance cannot recreate auth
   if (mode === 'invitation') await User.collection.updateOne({ _id: user._id }, { $set: { status: 'pending' } });
   const original = User.updateOne;
   jest.spyOn(User, 'updateOne').mockImplementationOnce((...args) => (async () => {
-    const fresh = (await User.findById(user._id))!; revokeUserSessions(fresh); await fresh.save();
+    const fresh = (await User.findById(user._id))!; await revokeUserSessions(fresh); await fresh.save();
     return Reflect.apply(original, User, args);
   })() as never);
   const { res, next, body } = await callIssuer(mode);

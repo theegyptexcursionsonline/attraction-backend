@@ -1,6 +1,16 @@
 import { IUser } from '../types';
+import type { Model, Types } from 'mongoose';
 
-export const revokeUserSessions = (user: IUser): void => {
+/** Existing readers interpret a legacy null epoch as zero. Normalize only that
+ * representation; the exact type guard cannot overwrite any numeric epoch.
+ * Revocation itself remains the later atomic increment with its owning write.
+ */
+export const normalizeLegacySessionEpoch = async (model: Model<IUser>, userId: Types.ObjectId): Promise<void> => {
+  await model.updateOne({ _id: userId, tokenVersion: { $type: 10 } }, { $set: { tokenVersion: 0 } });
+};
+
+export const revokeUserSessions = async (user: IUser): Promise<void> => {
+  if (user.tokenVersion === null) await normalizeLegacySessionEpoch(user.constructor as Model<IUser>, user._id);
   user.refreshToken = undefined;
   user.passwordResetToken = undefined;
   user.passwordResetExpires = undefined;

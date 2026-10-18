@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import { User } from '../models/User';
 import { IUser } from '../types';
 import { generateRandomToken, hashToken } from '../utils/hash';
+import { normalizeLegacySessionEpoch } from '../utils/session';
 
 export type AccountRecoveryMode = 'reset' | 'invitation';
 export type AccountRecoveryResult = { kind: 'updated'; user: IUser } | { kind: 'invalid' | 'not_pending' };
@@ -45,10 +46,11 @@ export const consumeAccountRecovery = async (
     !['reset', 'invitation'].includes(mode)) return { kind: 'invalid' };
   const tokenHash = hashToken(token);
   const user = await User.findOne({ passwordResetToken: tokenHash, passwordResetExpires: { $gt: new Date() } })
-    .select('_id email role status assignedTenants').lean();
+    .select('_id email role status assignedTenants tokenVersion').lean();
   if (!user) return { kind: 'invalid' };
   if (mode === 'invitation' && user.status !== 'pending') return { kind: 'not_pending' };
   if (mode === 'reset' && user.status !== 'active') return { kind: 'invalid' };
+  if (user.tokenVersion === null) await normalizeLegacySessionEpoch(User, user._id);
 
   const salt = await bcrypt.genSalt(12);
   const passwordHash = await bcrypt.hash(password, salt);
