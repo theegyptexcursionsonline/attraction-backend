@@ -41,12 +41,14 @@ const offers = [
 const authenticateAs = (role: 'super-admin' | 'brand-admin'): void => {
   (verifyToken as jest.Mock).mockReturnValue({
     userId: userId.toString(),
+    mfaVerified: true,
     sessionVersion: 0,
   });
   (User.findById as jest.Mock).mockResolvedValue({
     _id: userId,
     role,
     status: 'active',
+    twoFactorEnabled: true,
     tokenVersion: 0,
     assignedTenants: role === 'brand-admin' ? [selectedTenantId] : [],
   });

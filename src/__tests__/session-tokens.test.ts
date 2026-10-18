@@ -2,7 +2,7 @@
  * The three sign-in token kinds (utils/jwt.ts) share one signing secret, so each verifier must
  * accept exactly its own kind: an access token for API requests, a refresh token for
  * /auth/refresh-token only, a two-factor challenge for /auth/2fa/* only. Refresh tokens issued
- * before tokens were typed stay exchangeable for a bounded window so a release signs nobody out.
+ * before tokens were typed stay exchangeable for non-factor customers during a bounded window.
  * The clock is pinned in every test, so nothing here changes meaning on a later date.
  */
 import fs from 'fs';
@@ -24,7 +24,7 @@ import { User } from '../models/User';
 import { hashToken } from '../utils/hash';
 import { AuthRequest, IUser } from '../types';
 
-jest.mock('../models/User', () => ({ User: { findById: jest.fn() } }));
+jest.mock('../models/User', () => ({ User: { findById: jest.fn(), findOneAndUpdate: jest.fn(), hydrate: jest.requireActual('../models/User').User.hydrate.bind(jest.requireActual('../models/User').User) } }));
 jest.mock('../models/Tenant', () => ({ Tenant: { findById: jest.fn() } }));
 jest.mock('../services/email.service', () => ({
   sendPasswordChangedEmail: jest.fn(),
@@ -36,7 +36,7 @@ jest.mock('../services/notification.service', () => ({ createAdminNotifications:
 const DAY = 24 * 60 * 60 * 1000;
 const INSIDE_WINDOW = LEGACY_REFRESH_ACCEPTED_UNTIL - 20 * DAY;
 
-const account = { _id: new Types.ObjectId(), email: 'qa-tokens@example.invalid', role: 'brand-admin', tokenVersion: 2 } as unknown as IUser;
+const account = { _id: new Types.ObjectId(), email: 'qa-tokens@example.invalid', role: 'customer', status: 'active', tokenVersion: 2 } as unknown as IUser;
 const claims = { userId: String(account._id), email: account.email, role: account.role, sessionVersion: 2 };
 const legacy = (expiresIn: jwt.SignOptions['expiresIn'] = '7d') => jwt.sign(claims, env.jwtSecret, { expiresIn });
 const accepts = (verify: (token: string) => unknown, token: string): boolean => {
@@ -85,7 +85,7 @@ describe('sign-in token kinds', () => {
     expect(jwt.decode(generateAccessToken(account))).toMatchObject({ ...claims, aud: 'attractions-network:access', type: 'access' });
     expect(jwt.decode(generateRefreshToken(account))).toMatchObject({ ...claims, aud: 'attractions-network:refresh', type: 'refresh' });
     expect(jwt.decode(generateTwoFactorChallenge(account, true))).toMatchObject({
-      ...claims, aud: 'attractions-network:two-factor', type: 'two-factor-challenge', rememberMe: true,
+      ...claims, aud: 'attractions-network:two-factor:v2', type: 'two-factor-challenge-v2', rememberMe: true,
     });
 
     const signed = (extra: Record<string, unknown>, audience?: string) =>
@@ -209,11 +209,12 @@ describe('POST /auth/refresh-token', () => {
     ...account,
     _id: account._id,
     refreshToken: hashToken(presented),
-    save: jest.fn().mockResolvedValue(undefined),
+    admitted: jest.fn(),
   });
   const exchange = async (presented: string) => {
     const stored = storedAccount(presented);
-    (User.findById as jest.Mock).mockReturnValue({ select: jest.fn().mockResolvedValue(stored) });
+    (User.findById as jest.Mock).mockReturnValue({ select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(stored) }) });
+    (User.findOneAndUpdate as jest.Mock).mockImplementation(async (_filter, update) => { stored.admitted(); Object.assign(stored, update.$set); return User.hydrate(stored); });
     const res = response();
     const next = jest.fn();
     await refreshSession(
@@ -233,7 +234,7 @@ describe('POST /auth/refresh-token', () => {
     expect(accepts(verifyToken, cookies.accessToken)).toBe(true);
     expect(jwt.decode(cookies.refreshToken)).toMatchObject({ aud: 'attractions-network:refresh', type: 'refresh' });
     expect(stored.refreshToken).toBe(hashToken(cookies.refreshToken));
-    expect(stored.save).toHaveBeenCalledTimes(1);
+    expect(stored.admitted).toHaveBeenCalledTimes(1);
   });
 
   it('renews a pre-release session into typed tokens inside the window, and signs it out after', async () => {
@@ -249,7 +250,7 @@ describe('POST /auth/refresh-token', () => {
     expect(closed.status).toBe(401);
     expect(closed.body).toMatchObject({ success: false, error: 'Invalid refresh token' });
     expect(closed.cookies).toEqual({});
-    expect(closed.stored.save).not.toHaveBeenCalled();
+    expect(closed.stored.admitted).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -260,6 +261,36 @@ describe('POST /auth/refresh-token', () => {
     const { status, cookies, stored } = await exchange(mint());
     expect(status).toBe(401);
     expect(cookies).toEqual({});
-    expect(stored.save).not.toHaveBeenCalled();
+    expect(stored.admitted).not.toHaveBeenCalled();
+  });
+});
+
+describe('factor proof and versioned challenge receipts', () => {
+  it('never infers factor proof from enrollment and strips legacy claims pretending to prove it', () => {
+    at(INSIDE_WINDOW);
+    const enrolled = { ...account, role: 'manager', twoFactorEnabled: true } as IUser;
+    expect(verifyToken(generateAccessToken(enrolled)).mfaVerified).toBe(false);
+    expect(verifyRefreshToken(generateRefreshToken(enrolled)).mfaVerified).toBe(false);
+    expect(verifyToken(generateAccessToken(enrolled, { mfaVerified: true })).mfaVerified).toBe(true);
+    expect(verifyRefreshToken(generateRefreshToken(enrolled, { mfaVerified: true })).mfaVerified).toBe(true);
+    const forgedLegacyProof = jwt.sign({ ...claims, mfaVerified: true }, env.jwtSecret, { expiresIn: '1h' });
+    expect(verifyRefreshToken(forgedLegacyProof).mfaVerified).toBe(false);
+  });
+
+  it('requires a new one-use challenge kind with a nonce, authority and bounded expiry', () => {
+    at(INSIDE_WINDOW);
+    const first = generateTwoFactorChallenge(account), second = generateTwoFactorChallenge(account);
+    expect(first).not.toBe(second);
+    const payload = verifyTwoFactorChallenge(first);
+    expect(payload.jti).toBeTruthy(); expect(payload.authContext).toMatch(/^[a-f0-9]{64}$/);
+    const sign = (extra: Record<string, unknown>, audience = 'attractions-network:two-factor:v2') =>
+      jwt.sign(Object.fromEntries(Object.entries({ ...payload, ...extra, aud: audience }).filter(([, value]) => value !== undefined)),
+        env.jwtSecret, Object.prototype.hasOwnProperty.call(extra, 'iat') && extra.iat === undefined ? { noTimestamp: true } : {});
+    for (const invalid of [
+      sign({ type: 'two-factor-challenge' }, 'attractions-network:two-factor'),
+      sign({ jti: undefined }), sign({ authContext: undefined }), sign({ authContext: 'wrong' }),
+      sign({ exp: payload.iat! + 601 }), sign({ exp: payload.iat }), sign({ iat: undefined }),
+    ]) expect(accepts(verifyTwoFactorChallenge, invalid)).toBe(false);
+    expect(accepts(verifyToken, first)).toBe(false); expect(accepts(verifyRefreshToken, first)).toBe(false);
   });
 });

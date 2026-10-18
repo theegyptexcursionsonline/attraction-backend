@@ -4,6 +4,13 @@ const SENSITIVE_USER_FIELDS = [
   'passwordResetToken',
   'passwordResetExpires',
   'tokenVersion',
+  'twoFactorSecretEnc',
+  'twoFactorPendingSecretEnc',
+  'twoFactorSetupExpires',
+  'twoFactorChallengeHash',
+  'twoFactorChallengeExpires',
+  'twoFactorLastUsedStep',
+  'twoFactorRecoveryCodeHashes',
   '__v',
 ] as const;
 

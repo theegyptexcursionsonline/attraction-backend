@@ -36,13 +36,14 @@ app.use('/special-offers', specialOffersRoutes);
 describe('authorization route guards', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (verifyToken as jest.Mock).mockReturnValue({ userId: 'user-1' });
+    (verifyToken as jest.Mock).mockReturnValue({ userId: 'user-1', mfaVerified: true });
   });
 
   test.each(['viewer', 'editor'])('%s cannot create or revoke API keys', async (role) => {
     (User.findById as jest.Mock).mockResolvedValue({
       role,
       status: 'active',
+      twoFactorEnabled: true,
       assignedTenants: [],
     });
 
@@ -66,6 +67,7 @@ describe('authorization route guards', () => {
     (User.findById as jest.Mock).mockResolvedValue({
       role,
       status: 'active',
+      twoFactorEnabled: true,
       assignedTenants: [],
     });
 

@@ -6,6 +6,7 @@ import { User } from '../models/User';
 import '../models/Attraction';
 import '../models/Tenant';
 import authRoutes from '../routes/auth.routes';
+import { encryptSecret } from '../utils/secretCrypto';
 import { generateAccessToken } from '../utils/jwt';
 import { INTERFACE_LOCALES, IUser } from '../types';
 import { updateProfileSchema } from '../utils/validators';
@@ -31,7 +32,7 @@ beforeAll(async () => {
 });
 afterAll(async () => { await mongoose.disconnect(); if(mongo) await mongo.stop(); });
 beforeEach(async () => {
-  await User.collection.updateOne({_id:owner._id},{$set:{interfaceLocale:'en',status:'active',tokenVersion:0,role:'customer',language:'de',currency:'EUR'}});
+  await User.collection.updateOne({_id:owner._id},{$set:{interfaceLocale:'en',status:'active',tokenVersion:0,role:'customer',twoFactorEnabled:false,language:'de',currency:'EUR'}});
   await User.collection.updateOne({_id:other._id},{$set:{interfaceLocale:'en'}});
 });
 const save = (body: unknown, bearer = token) => request(app).patch('/auth/profile').set('Authorization',`Bearer ${bearer}`).set('Content-Type','application/json').send(JSON.stringify(body));
@@ -110,9 +111,9 @@ it('database/provider failures do not report success or overwrite a preference',
 });
 
 it.each(['super-admin','brand-admin','manager','editor','viewer','customer'] as const)('%s can change only their own interface preference',async role=> {
-  await User.collection.updateOne({_id:owner._id},{$set:{role}});
+  await User.collection.updateOne({_id:owner._id},{$set:{role,twoFactorEnabled:role!=='customer',twoFactorSecretEnc:encryptSecret('JBSWY3DPEHPK3PXP')}});
   const principal=(await User.findById(owner._id))!;
-  const response=await save({interfaceLocale:'de'},generateAccessToken(principal)).expect(200);
+  const response=await save({interfaceLocale:'de'},generateAccessToken(principal,{mfaVerified:role!=='customer'})).expect(200);
   expect(response.body.data).toMatchObject({role,interfaceLocale:'de'});
   expect((await User.findById(other._id))!.interfaceLocale).toBe('en');
 });

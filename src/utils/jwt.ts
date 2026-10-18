@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto';
 import jwt, { SignOptions, JwtPayload } from 'jsonwebtoken';
 import { env } from '../config/env';
 import { IUser } from '../types';
+import { accountAuthorityHash, sessionEpoch } from './session';
 
 /**
  * Every token here is signed with the same secret, so each names its kind twice — an audience and
@@ -11,12 +12,12 @@ import { IUser } from '../types';
  * admin API with no second factor, and a refresh token would be a week-long bearer credential.
  * Signing and verifying both go through the kind, so the two claims cannot drift apart.
  */
-type TokenKind = 'access' | 'refresh' | 'two-factor-challenge';
+type TokenKind = 'access' | 'refresh' | 'two-factor-challenge-v2';
 
 const AUDIENCE: Record<TokenKind, string> = {
   access: 'attractions-network:access',
   refresh: 'attractions-network:refresh',
-  'two-factor-challenge': 'attractions-network:two-factor',
+  'two-factor-challenge-v2': 'attractions-network:two-factor:v2',
 };
 
 const ALGORITHM: jwt.Algorithm = 'HS256';
@@ -26,17 +27,21 @@ export interface TokenPayload extends JwtPayload {
   email: string;
   role: string;
   sessionVersion: number;
+  mfaVerified?: boolean;
 }
 
 export interface TwoFactorChallengePayload extends TokenPayload {
-  type: 'two-factor-challenge';
+  type: 'two-factor-challenge-v2';
   rememberMe: boolean;
+  authContext: string;
+  jti: string;
 }
 
 /**
  * Tokens issued before tokens were typed carry neither an audience nor a type. They are never
  * access tokens: an old access token gets a 401 and the client refreshes. Until this date the
- * refresh endpoint still exchanges an old refresh token, so a release signs nobody out. Such a
+ * refresh endpoint still exchanges an old refresh token for non-factor customer accounts. Accounts
+ * requiring a local factor must sign in again because legacy grants do not prove that factor. Such a
  * token is honoured only where it matches the hash stored on the account. An old access token
  * never matches: the two old kinds carried the same claims and differed only in lifetime
  * (JWT_ACCESS_EXPIRY vs JWT_REFRESH_EXPIRY, 4h vs 7d by default), so they never signed to the same
@@ -45,11 +50,13 @@ export interface TwoFactorChallengePayload extends TokenPayload {
  */
 export const LEGACY_REFRESH_ACCEPTED_UNTIL = Date.parse('2026-11-09T00:00:00.000Z');
 
-const sessionClaims = (user: IUser) => ({
+export interface NativeSessionProof { mfaVerified?: boolean }
+const sessionClaims = (user: IUser, proof: NativeSessionProof = {}) => ({
   userId: user._id.toString(),
   email: user.email,
   role: user.role,
-  sessionVersion: user.tokenVersion || 0,
+  sessionVersion: sessionEpoch(user.tokenVersion),
+  mfaVerified: proof.mfaVerified === true,
 });
 
 const signKind = (kind: TokenKind, claims: object, options: SignOptions): string =>
@@ -65,19 +72,19 @@ const verifyKind = <T extends TokenPayload>(token: string, kind: TokenKind, now 
   return payload as T;
 };
 
-export const generateAccessToken = (user: IUser): string =>
-  signKind('access', sessionClaims(user), { expiresIn: env.jwtAccessExpiry as SignOptions['expiresIn'] });
+export const generateAccessToken = (user: IUser, proof: NativeSessionProof = {}): string =>
+  signKind('access', sessionClaims(user, proof), { expiresIn: env.jwtAccessExpiry as SignOptions['expiresIn'] });
 
 // A unique id per refresh token: rotation must always store a new hash, or a token rotated
 // within the same second would come back byte-identical and the spent one would still match.
-export const generateRefreshToken = (user: IUser): string =>
-  signKind('refresh', sessionClaims(user), {
+export const generateRefreshToken = (user: IUser, proof: NativeSessionProof = {}): string =>
+  signKind('refresh', sessionClaims(user, proof), {
     expiresIn: env.jwtRefreshExpiry as SignOptions['expiresIn'],
     jwtid: randomUUID(),
   });
 
 export const generateTwoFactorChallenge = (user: IUser, rememberMe = false): string =>
-  signKind('two-factor-challenge', { ...sessionClaims(user), rememberMe }, { expiresIn: '10m' });
+  signKind('two-factor-challenge-v2', { ...sessionClaims(user), rememberMe, authContext: accountAuthorityHash(user) }, { expiresIn: '10m', jwtid: randomUUID() });
 
 /** An access token: the only kind that authenticates an API request. */
 export const verifyToken = (token: string): TokenPayload => {
@@ -102,7 +109,7 @@ export const verifyRefreshToken = (token: string, now = Date.now()): TokenPayloa
         clockTimestamp: Math.floor(now / 1000),
       });
       if (typeof payload !== 'string' && payload.aud === undefined && payload.type === undefined) {
-        return payload as TokenPayload;
+        return { ...payload, mfaVerified: false } as TokenPayload;
       }
     } catch {
       // Refused below.
@@ -111,5 +118,11 @@ export const verifyRefreshToken = (token: string, now = Date.now()): TokenPayloa
   throw new Error('Invalid or expired refresh token');
 };
 
-export const verifyTwoFactorChallenge = (token: string): TwoFactorChallengePayload =>
-  verifyKind<TwoFactorChallengePayload>(token, 'two-factor-challenge');
+export const verifyTwoFactorChallenge = (token: string): TwoFactorChallengePayload => {
+  const payload = verifyKind<TwoFactorChallengePayload>(token, 'two-factor-challenge-v2');
+  if (typeof payload.authContext !== 'string' || !/^[a-f0-9]{64}$/.test(payload.authContext) || typeof payload.jti !== 'string' || !payload.jti ||
+    !Number.isSafeInteger(payload.iat) || !Number.isSafeInteger(payload.exp) || payload.exp! <= payload.iat! || payload.exp! - payload.iat! > 600) {
+    throw new Error('Invalid two-factor challenge');
+  }
+  return payload;
+};

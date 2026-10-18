@@ -30,11 +30,12 @@ const userId = new Types.ObjectId();
 const tenantId = new Types.ObjectId();
 
 const authenticateAsBrandAdmin = (): void => {
-  (verifyToken as jest.Mock).mockReturnValue({ userId: userId.toString(), sessionVersion: 0 });
+  (verifyToken as jest.Mock).mockReturnValue({ userId: userId.toString(), sessionVersion: 0, mfaVerified: true });
   (User.findById as jest.Mock).mockResolvedValue({
     _id: userId,
     role: 'brand-admin',
     status: 'active',
+    twoFactorEnabled: true,
     tokenVersion: 0,
     assignedTenants: [tenantId],
   });

@@ -40,6 +40,8 @@ export interface IUser extends Document {
   twoFactorSecretEnc?: string;
   twoFactorPendingSecretEnc?: string;
   twoFactorSetupExpires?: Date;
+  twoFactorChallengeHash?: string;
+  twoFactorChallengeExpires?: Date;
   twoFactorLastUsedStep?: number;
   twoFactorRecoveryCodeHashes?: string[];
   passwordResetToken?: string;

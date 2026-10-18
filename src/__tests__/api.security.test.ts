@@ -179,6 +179,7 @@ describe('API security and pricing guards', () => {
   const adminUser = {
     _id: { toString: () => 'admin-1' },
     role: 'brand-admin',
+    twoFactorEnabled: true,
     status: 'active',
     assignedTenants: ['tenant-1'],
   };
@@ -508,7 +509,7 @@ describe('API security and pricing guards', () => {
     const requestedTenantId = new Types.ObjectId().toHexString();
     const scopedAdmin = { ...adminUser, assignedTenants: [requestedTenantId] };
     const tenant = { _id: new Types.ObjectId(requestedTenantId), pricingSettings: {} };
-    (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1' });
+    (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1', mfaVerified: true });
     (User.findById as jest.Mock).mockResolvedValue(scopedAdmin);
     (Tenant.findOne as jest.Mock).mockResolvedValue(tenant);
     (Attraction.findOne as jest.Mock).mockResolvedValue({
@@ -534,7 +535,7 @@ describe('API security and pricing guards', () => {
   });
 
   it('fails closed when an aggregate-scope admin omits the booking site', async () => {
-    (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1' });
+    (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1', mfaVerified: true });
     (User.findById as jest.Mock).mockResolvedValue(adminUser);
 
     const response = await request(app)
@@ -732,7 +733,7 @@ describe('API security and pricing guards', () => {
   });
 
   it('blocks tenant admins from cancelling bookings outside assigned tenants', async () => {
-    (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1' });
+    (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1', mfaVerified: true });
     (User.findById as jest.Mock).mockResolvedValue(adminUser);
     (Booking.findById as jest.Mock).mockResolvedValue({
       _id: 'booking-1',
@@ -752,7 +753,7 @@ describe('API security and pricing guards', () => {
   });
 
   it('blocks tenant admins from reading payment status outside assigned tenants', async () => {
-    (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1' });
+    (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1', mfaVerified: true });
     (User.findById as jest.Mock).mockResolvedValue(adminUser);
 
     const selectMock = jest.fn().mockResolvedValue({
@@ -778,7 +779,7 @@ describe('API security and pricing guards', () => {
   });
 
   it('scopes admin booking stats to assigned tenants when tenant context is absent', async () => {
-    (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1' });
+    (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1', mfaVerified: true });
     (User.findById as jest.Mock).mockResolvedValue({
       ...adminUser,
       role: 'manager',
@@ -1007,7 +1008,7 @@ describe('API security and pricing guards', () => {
         firstName: 'QA', lastName: 'Guest', email: 'guest@example.com', phone: '+201000000000',
       },
     };
-    (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1' });
+    (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1', mfaVerified: true });
     (User.findById as jest.Mock).mockResolvedValue(adminUser);
     (Booking.findById as jest.Mock).mockResolvedValue(booking);
     const tenant = { name: 'QA Adventures', slug: 'qa-adventures', theme: { primaryColor: '#123456' } };
@@ -1277,7 +1278,7 @@ describe('API security and pricing guards', () => {
   });
 
   it('rejects ordinary admin attempts to write payment status', async () => {
-    (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1' });
+    (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1', mfaVerified: true });
     (User.findById as jest.Mock).mockResolvedValue(adminUser);
 
     const response = await request(app)
@@ -1291,7 +1292,7 @@ describe('API security and pricing guards', () => {
   });
 
   it('prevents admins from confirming an unpaid card booking', async () => {
-    (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1' });
+    (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1', mfaVerified: true });
     (User.findById as jest.Mock).mockResolvedValue(adminUser);
     (Booking.findById as jest.Mock).mockResolvedValue({
       _id: 'booking-1',
@@ -1313,7 +1314,7 @@ describe('API security and pricing guards', () => {
   });
 
   it('refuses to settle cancelled, refunded, or unpaid-card resale bookings', async () => {
-    (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1' });
+    (verifyToken as jest.Mock).mockReturnValue({ userId: 'admin-1', mfaVerified: true });
     (User.findById as jest.Mock).mockResolvedValue(adminUser);
     (Booking.findById as jest.Mock).mockResolvedValue({
       _id: 'booking-1',

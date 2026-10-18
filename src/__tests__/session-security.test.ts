@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import bcrypt from 'bcryptjs';
 import { authenticate, optionalAuth } from '../middleware/auth.middleware';
 import { login, logout, refreshToken as refreshSession } from '../controllers/auth.controller';
 import { User } from '../models/User';
@@ -18,6 +19,9 @@ jest.mock('../utils/jwt', () => ({
 
 jest.mock('../models/User', () => ({
   User: {
+    hydrate: jest.requireActual('../models/User').User.hydrate.bind(jest.requireActual('../models/User').User),
+    updateOne: jest.fn().mockResolvedValue({ matchedCount: 0 }),
+    findOneAndUpdate: jest.fn(),
     findOne: jest.fn(),
     findById: jest.fn(),
     findByIdAndUpdate: jest.fn(),
@@ -100,7 +104,7 @@ describe('session revocation', () => {
     await logout(req, res, jest.fn());
 
     expect(User.findByIdAndUpdate).toHaveBeenCalledWith(userId, {
-      $unset: { refreshToken: 1 },
+      $unset: { refreshToken: 1, twoFactorChallengeHash: 1, twoFactorChallengeExpires: 1, twoFactorPendingSecretEnc: 1, twoFactorSetupExpires: 1 },
       $inc: { tokenVersion: 1 },
     });
     expect(res.clearCookie).toHaveBeenCalledTimes(2);
@@ -110,13 +114,14 @@ describe('session revocation', () => {
     const user = {
       _id: new Types.ObjectId(),
       status: 'active',
-      comparePassword: jest.fn().mockResolvedValue(true),
+      password: bcrypt.hashSync('valid-password', 4),
       save: jest.fn().mockResolvedValue(undefined),
       toJSON: jest.fn().mockReturnValue({ email: 'operator@example.com' }),
     };
     (User.findOne as jest.Mock).mockReturnValue({
-      select: jest.fn().mockResolvedValue(user),
+      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(user) }),
     });
+    (User.findOneAndUpdate as jest.Mock).mockResolvedValue(user);
     (generateAccessToken as jest.Mock).mockReturnValue('access-secret');
     (generateRefreshToken as jest.Mock).mockReturnValue('refresh-secret');
     const res = response();
@@ -150,12 +155,15 @@ describe('session revocation', () => {
       status: 'active',
       tokenVersion: 0,
       twoFactorEnabled: true,
-      comparePassword: jest.fn().mockResolvedValue(true),
+      password: bcrypt.hashSync('valid-password', 4),
     };
-    (User.findOne as jest.Mock).mockReturnValue({ select: jest.fn().mockResolvedValue(user) });
+    (User.findOne as jest.Mock).mockReturnValue({ select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(user) }) });
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { generateTwoFactorChallenge } = require('../utils/jwt');
     generateTwoFactorChallenge.mockReturnValue('two-factor-challenge');
+    const { verifyTwoFactorChallenge } = jest.requireMock('../utils/jwt');
+    verifyTwoFactorChallenge.mockReturnValue({ exp: Math.floor(Date.now() / 1000) + 600 });
+    (User.updateOne as jest.Mock).mockResolvedValueOnce({ matchedCount: 1 });
     const res = response();
 
     await login({ body: { email: user.email, password: 'valid-password' } } as AuthRequest, res, jest.fn());
@@ -171,13 +179,15 @@ describe('session revocation', () => {
 
   it('rotates a cookie refresh token without returning either token in JSON', async () => {
     const user = {
+      _id: new Types.ObjectId(), status: 'active', role: 'customer',
       tokenVersion: 2,
       refreshToken: hashToken('current-refresh'),
       save: jest.fn().mockResolvedValue(undefined),
     };
-    (verifyRefreshToken as jest.Mock).mockReturnValue({ userId: 'user-id', sessionVersion: 2 });
+    (verifyRefreshToken as jest.Mock).mockReturnValue({ userId: 'user-id', sessionVersion: 2, type: 'refresh', exp: Math.floor(Date.now() / 1000) + 600 });
+    (User.findOneAndUpdate as jest.Mock).mockResolvedValue(user);
     (User.findById as jest.Mock).mockReturnValue({
-      select: jest.fn().mockResolvedValue(user),
+      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(user) }),
     });
     (generateAccessToken as jest.Mock).mockReturnValue('rotated-access');
     (generateRefreshToken as jest.Mock).mockReturnValue('rotated-refresh');
@@ -223,6 +233,6 @@ describe('session revocation', () => {
     expect(user.refreshToken).toBeUndefined();
     expect(user.passwordResetToken).toBeUndefined();
     expect(user.passwordResetExpires).toBeUndefined();
-    expect(markModified.mock.calls).toEqual([['refreshToken'], ['passwordResetToken'], ['passwordResetExpires']]);
+    expect(markModified.mock.calls).toEqual([['refreshToken'], ['passwordResetToken'], ['passwordResetExpires'], ['twoFactorChallengeHash'], ['twoFactorChallengeExpires'], ['twoFactorPendingSecretEnc'], ['twoFactorSetupExpires']]);
   });
 });

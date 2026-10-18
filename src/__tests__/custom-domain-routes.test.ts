@@ -5,13 +5,14 @@ let mockRole = 'brand-admin';
 const mockConfigure = jest.fn((_req, res) => res.status(200).json({ success: true }));
 const mockResolve = jest.fn((_req, res) => res.status(200).json({ success: true }));
 
-jest.mock('../utils/jwt', () => ({ verifyToken: jest.fn(() => ({ userId: 'user-1' })) }));
+jest.mock('../utils/jwt', () => ({ verifyToken: jest.fn(() => ({ userId: 'user-1', mfaVerified: !['customer', 'guest'].includes(mockRole) })) }));
 jest.mock('../models/User', () => ({
   User: {
     findById: jest.fn(() => Promise.resolve({
       _id: 'user-1',
       role: mockRole,
       status: 'active',
+      twoFactorEnabled: !['customer', 'guest'].includes(mockRole),
       tokenVersion: 0,
       assignedTenants: [],
     })),

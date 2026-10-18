@@ -3,6 +3,8 @@ import { recordAudit } from '../services/auditLog.service';
 import { accountSections } from '../middleware/section.middleware';
 import {expectedPrincipal,principalMatches} from '../middleware/expected-principal';
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+import type { FilterQuery, UpdateQuery } from 'mongoose';
 import { Request, Response, NextFunction } from 'express';
 import { User } from '../models/User';
 import { Tenant } from '../models/Tenant';
@@ -12,6 +14,7 @@ import {
   generateTwoFactorChallenge,
   verifyRefreshToken,
   verifyTwoFactorChallenge,
+  LEGACY_REFRESH_ACCEPTED_UNTIL,
 } from '../utils/jwt';
 import { hashToken } from '../utils/hash';
 import { verifyPassportAssertion } from '../utils/passport';
@@ -25,7 +28,10 @@ import {
   sendWelcomeEmail,
 } from '../services/email.service';
 import { createAdminNotifications } from '../services/notification.service';
-import { createTwoFactorSetup, generateTwoFactorRecoveryCodes, verifyTwoFactorCode } from '../utils/twoFactor';
+import { createTwoFactorSetup, generateTwoFactorRecoveryCodes, verifyTwoFactorCode, twoFactorProofDeadline } from '../utils/twoFactor';
+import { AppError } from '../middleware/error.middleware';
+import { accountAuthorityFilter, accountAuthorityHash, exactStoredValue, factorProofAllows,
+  normalizeLegacySessionEpoch, requiresLocalFactor, sessionEpoch } from '../utils/session';
 
 const ADMIN_ROLES = new Set(['super-admin', 'brand-admin', 'manager', 'editor', 'viewer']);
 
@@ -53,16 +59,81 @@ const withEffectiveSections = async (user: IUser): Promise<Record<string, unknow
   return json;
 };
 
-const issueSession = async (user: IUser, res: Response, rememberMe = false, req?: AuthRequest) => {
-  const accessToken = generateAccessToken(user);
-  const refreshToken = generateRefreshToken(user);
-  user.refreshToken = hashToken(refreshToken);
-  user.lastLogin = new Date();
-  await user.save();
+type AuthSnapshot = Pick<IUser, '_id' | 'email' | 'password' | 'firstName' | 'lastName' | 'role' | 'status' |
+  'assignedTenants' | 'sectionAccess' | 'tokenVersion' | 'refreshToken' | 'twoFactorEnabled' | 'twoFactorSecretEnc' |
+  'twoFactorPendingSecretEnc' | 'twoFactorSetupExpires' | 'twoFactorLastUsedStep' | 'twoFactorRecoveryCodeHashes' |
+  'twoFactorChallengeHash' | 'twoFactorChallengeExpires'>;
+const AUTH_FIELDS = '+password +refreshToken +twoFactorSecretEnc +twoFactorPendingSecretEnc +twoFactorSetupExpires ' +
+  '+twoFactorLastUsedStep +twoFactorRecoveryCodeHashes +twoFactorChallengeHash +twoFactorChallengeExpires';
+const CHALLENGE_FIELDS = ['twoFactorChallengeHash', 'twoFactorChallengeExpires', 'twoFactorPendingSecretEnc', 'twoFactorSetupExpires'];
+const readAuthById = (id: unknown) => User.findById(id).select(AUTH_FIELDS).lean<AuthSnapshot>();
+const effectiveAccount = (user: AuthSnapshot): IUser => User.hydrate(user);
+
+interface SessionAdmission {
+  mfaVerified?: boolean;
+  filter?: (now: Date) => FilterQuery<IUser>;
+  set?: Record<string, unknown>;
+  unset?: string[];
+  recoveryCodeHash?: string;
+  advanceEpoch?: boolean;
+  recordLogin?: boolean;
+  includeUser?: boolean;
+  deadline?: number;
+}
+
+/** Commit factor consumption and the native refresh grant together. The signed
+ * proof is supplied only by a successful factor verifier (or a valid refresh).
+ * No hydrated document is saved and no cookie escapes a lost admission race.
+ */
+const issueSession = async (snapshot: AuthSnapshot, res: Response, rememberMe = false, req?: AuthRequest, admission: SessionAdmission = {}) => {
+  const proofAlive = () => admission.deadline === undefined || (Number.isFinite(admission.deadline) && Date.now() < admission.deadline);
+  if (!proofAlive()) return null;
+  let current = snapshot;
+  if (admission.advanceEpoch && current.tokenVersion === null) {
+    await normalizeLegacySessionEpoch(User, current._id);
+    current = { ...current, tokenVersion: 0 };
+  }
+  if (!proofAlive()) return null;
+  const proof = { mfaVerified: admission.mfaVerified === true };
+  const target = effectiveAccount({ ...current, ...admission.set,
+    tokenVersion: sessionEpoch(current.tokenVersion) + (admission.advanceEpoch ? 1 : 0) } as AuthSnapshot);
+  if (target.status !== 'active' || !factorProofAllows(target, proof)) return null;
+  const refreshToken = generateRefreshToken(target, proof);
+  const update: UpdateQuery<IUser> = {
+    $set: { ...admission.set, refreshToken: hashToken(refreshToken), ...(admission.recordLogin === false ? {} : { lastLogin: new Date() }) },
+    ...(admission.unset?.length ? { $unset: Object.fromEntries(admission.unset.map(field => [field, 1])) } : {}),
+    ...(admission.advanceEpoch ? { $inc: { tokenVersion: 1 } } : {}),
+    ...(admission.recoveryCodeHash ? { $pull: { twoFactorRecoveryCodeHashes: admission.recoveryCodeHash } } : {}),
+  };
+  const user = await User.findOneAndUpdate({ $and: [accountAuthorityFilter(current), admission.filter?.(new Date(Date.now())) || {},
+    ...(admission.deadline === undefined ? [] : [{ $expr: { $gt: [new Date(admission.deadline), '$$NOW'] } }]),
+  ] }, update, { new: true, runValidators: true });
+  if (!user) return null;
+  if (!proofAlive()) return null;
+  const response = admission.includeUser === false ? {} : await withEffectiveSections(user);
+  if (!proofAlive()) return null;
+  const accessToken = generateAccessToken(user, proof);
+  if (!proofAlive()) return null;
   res.cookie('accessToken', accessToken, ACCESS_COOKIE_OPTIONS);
   res.cookie('refreshToken', refreshToken, refreshCookieOptions(rememberMe));
   if (req && ADMIN_ROLES.has(user.role)) recordAudit(req, { action: 'auth.login', outcome: 'success', actor: user, statusCode: 200 });
-  return withEffectiveSections(user);
+  return response;
+};
+
+const activeChallenge = (hash: string, now: Date, expires?: Date): FilterQuery<IUser> => ({
+  twoFactorChallengeHash: hash,
+  twoFactorChallengeExpires: { $gt: now, ...(expires ? { $eq: expires } : {}) },
+  $expr: { $gt: ['$twoFactorChallengeExpires', '$$NOW'] },
+});
+const pendingSetup = (user: AuthSnapshot, now: Date): FilterQuery<IUser> => ({
+  twoFactorPendingSecretEnc: exactStoredValue(user.twoFactorPendingSecretEnc),
+  twoFactorSetupExpires: { $eq: user.twoFactorSetupExpires, $gt: now },
+  $expr: { $gt: ['$twoFactorSetupExpires', '$$NOW'] },
+});
+const changedSession = (res: Response) => sendError(res, 'Sign-in session changed. Please sign in again.', 409);
+const factorError = (error: unknown, res: Response) => {
+  if (error instanceof AppError) sendError(res, error.message, error.statusCode);
+  else sendError(res, 'Two-factor verification is temporarily unavailable', 503);
 };
 
 const TENANT_EMAIL_FIELDS =
@@ -141,18 +212,8 @@ export const register = async (
       status: 'active',
     });
 
-    // Generate tokens
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
-
-    // Save refresh token
-    user.refreshToken = hashToken(refreshToken);
-    user.lastLogin = new Date();
-    await user.save();
-
-    // Set cookies
-    res.cookie('accessToken', accessToken, ACCESS_COOKIE_OPTIONS);
-    res.cookie('refreshToken', refreshToken, refreshCookieOptions());
+    const userResponse = await issueSession(user.toObject() as AuthSnapshot, res, false, req);
+    if (!userResponse) { changedSession(res); return; }
 
     // Notify admins about new user
     createAdminNotifications({
@@ -169,7 +230,7 @@ export const register = async (
       .then((tenant) => sendWelcomeEmail(user.email, `${firstName} ${lastName}`.trim(), tenant))
       .catch((error) => console.error('[email] welcome send failed', { error: error?.message }));
 
-    sendSuccess(res, { user }, 'Registration successful', 201);
+    sendSuccess(res, { user: userResponse }, 'Registration successful', 201);
   } catch (error) {
     next(error);
   }
@@ -184,7 +245,7 @@ export const login = async (
     const { email, password, rememberMe } = req.body;
 
     // Find user with password
-    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    const user = await User.findOne({ email: email.toLowerCase() }).select(AUTH_FIELDS).lean<AuthSnapshot>();
 
     if (!user) {
       sendError(res, 'Invalid email or password', 401);
@@ -192,7 +253,7 @@ export const login = async (
     }
 
     // Check password
-    const isPasswordValid = await user.comparePassword(password);
+    const isPasswordValid = typeof password === 'string' && typeof user.password === 'string' && await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       if (ADMIN_ROLES.has(user.role)) recordAudit(req, { action: 'auth.login_failed', outcome: 'failure', actor: user, statusCode: 401 });
       sendError(res, 'Invalid email or password', 401);
@@ -200,26 +261,37 @@ export const login = async (
     }
 
     // Check status
-    if (user.status !== 'active') {
+    const account = effectiveAccount(user);
+    if (account.status !== 'active') {
       if (ADMIN_ROLES.has(user.role)) recordAudit(req, { action: 'auth.login_failed', outcome: 'failure', actor: user, statusCode: 403 });
       sendError(res, 'Account is not active. Please contact support.', 403);
       return;
     }
 
-    if (ADMIN_ROLES.has(user.role)) {
-      const challengeToken = generateTwoFactorChallenge(user, rememberMe === true);
+    if (requiresLocalFactor(account)) {
+      const challengeToken = generateTwoFactorChallenge(account, rememberMe === true);
+      const challenge = verifyTwoFactorChallenge(challengeToken);
+      const issued = await User.updateOne({ $and: [accountAuthorityFilter(user), {
+        twoFactorChallengeHash: exactStoredValue(user.twoFactorChallengeHash),
+        twoFactorChallengeExpires: exactStoredValue(user.twoFactorChallengeExpires),
+      }] }, {
+        $set: { twoFactorChallengeHash: hashToken(challengeToken), twoFactorChallengeExpires: new Date(challenge.exp! * 1000) },
+        $unset: { twoFactorPendingSecretEnc: 1, twoFactorSetupExpires: 1 },
+      });
+      if (issued.matchedCount !== 1) { changedSession(res); return; }
       sendSuccess(
         res,
-        user.twoFactorEnabled
+        account.twoFactorEnabled
           ? { requiresTwoFactor: true, challengeToken }
           : { requiresTwoFactorSetup: true, challengeToken },
-        user.twoFactorEnabled ? 'Two-factor verification required' : 'Two-factor setup required',
+        account.twoFactorEnabled ? 'Two-factor verification required' : 'Two-factor setup required',
         202
       );
       return;
     }
 
     const userResponse = await issueSession(user, res, rememberMe === true, req);
+    if (!userResponse) { changedSession(res); return; }
 
     sendSuccess(res, { user: userResponse }, 'Login successful');
   } catch (error) {
@@ -227,164 +299,127 @@ export const login = async (
   }
 };
 
-const challengeUser = async (challengeToken: string, extraSelection = '') => {
-  const challenge = verifyTwoFactorChallenge(challengeToken);
-  const user = await User.findById(challenge.userId).select(extraSelection);
-  if (
-    !user ||
-    user.status !== 'active' ||
-    !ADMIN_ROLES.has(user.role) ||
-    (user.tokenVersion || 0) !== (challenge.sessionVersion || 0)
-  ) {
-    throw new Error('Invalid two-factor challenge');
+const challengeUser = async (challengeToken: string) => {
+  let challenge;
+  try { challenge = verifyTwoFactorChallenge(challengeToken); }
+  catch { throw new AppError('Invalid or expired two-factor challenge', 401); }
+  const user = await readAuthById(challenge.userId);
+  const tokenHash = hashToken(challengeToken);
+  if (!user) throw new AppError('Invalid or expired two-factor challenge', 401);
+  const account = effectiveAccount(user);
+  if (account.status !== 'active' || !requiresLocalFactor(account) ||
+    sessionEpoch(user.tokenVersion) !== challenge.sessionVersion || account.email !== challenge.email || account.role !== challenge.role ||
+    accountAuthorityHash(user) !== challenge.authContext || user.twoFactorChallengeHash !== tokenHash ||
+    !(user.twoFactorChallengeExpires instanceof Date) || user.twoFactorChallengeExpires.getTime() !== challenge.exp! * 1000 ||
+    user.twoFactorChallengeExpires.getTime() <= Date.now()) {
+    throw new AppError('Invalid or expired two-factor challenge', 401);
   }
-  return { challenge, user };
+  return { challenge, user, tokenHash };
+};
+
+const prepareTwoFactorSetup = async (challengeToken: string, recovered = false): Promise<Awaited<ReturnType<typeof createTwoFactorSetup>>> => {
+  const { user, tokenHash } = await challengeUser(challengeToken);
+  if (user.twoFactorEnabled === true) throw new AppError('Two-factor authentication is already enabled', 409);
+  if (user.twoFactorPendingSecretEnc) {
+    if (!(user.twoFactorSetupExpires instanceof Date) || user.twoFactorSetupExpires.getTime() <= Date.now()) {
+      throw new AppError('Two-factor setup has expired. Sign in again.', 401);
+    }
+    const setup = await createTwoFactorSetup(user.email, { encryptedSecret: user.twoFactorPendingSecretEnc, expiresAt: user.twoFactorSetupExpires });
+    const now = new Date(Date.now());
+    const stillCurrent = await User.findOne({ $and: [accountAuthorityFilter(user),
+      activeChallenge(tokenHash, now, user.twoFactorChallengeExpires), pendingSetup(user, now)] }).select('_id').lean();
+    if (!stillCurrent) throw new AppError('Two-factor setup changed. Sign in again.', 409);
+    if (Date.now() >= Math.min(user.twoFactorChallengeExpires!.getTime(), setup.expiresAt.getTime())) {
+      throw new AppError('Two-factor setup has expired. Sign in again.', 401);
+    }
+    return setup;
+  }
+  const setup = await createTwoFactorSetup(user.email);
+  setup.expiresAt = new Date(Math.min(setup.expiresAt.getTime(), user.twoFactorChallengeExpires!.getTime()));
+  const now = new Date(Date.now());
+  const written = await User.updateOne({ $and: [accountAuthorityFilter(user), activeChallenge(tokenHash, now, user.twoFactorChallengeExpires), {
+    twoFactorPendingSecretEnc: exactStoredValue(user.twoFactorPendingSecretEnc),
+    twoFactorSetupExpires: exactStoredValue(user.twoFactorSetupExpires),
+  }] }, { $set: { twoFactorPendingSecretEnc: setup.encryptedSecret, twoFactorSetupExpires: setup.expiresAt } }, { runValidators: true });
+  if (written.matchedCount === 1) {
+    if (Date.now() >= user.twoFactorChallengeExpires!.getTime()) throw new AppError('Invalid or expired two-factor challenge', 401);
+    return setup;
+  }
+  // Another request may have prepared this same challenge. Reuse its committed
+  // secret once; a revoked/superseded challenge must never receive that secret.
+  if (!recovered) return prepareTwoFactorSetup(challengeToken, true);
+  throw new AppError('Two-factor setup changed. Sign in again.', 409);
 };
 
 export const setupTwoFactor = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { challengeToken } = req.body as { challengeToken: string };
-    const { user } = await challengeUser(challengeToken, '+twoFactorPendingSecretEnc +twoFactorSetupExpires');
-    if (user.twoFactorEnabled) {
-      sendError(res, 'Two-factor authentication is already enabled', 409);
-      return;
-    }
-    const setup = await createTwoFactorSetup(user.email);
-    user.twoFactorPendingSecretEnc = setup.encryptedSecret;
-    user.twoFactorSetupExpires = setup.expiresAt;
-    await user.save();
-    sendSuccess(res, {
-      qrCodeDataUrl: setup.qrCodeDataUrl,
-      manualSecret: setup.manualSecret,
-      expiresAt: setup.expiresAt,
-    }, 'Scan the code and confirm one current authenticator code');
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '';
-    if (message.includes('ENCRYPTION_KEY')) {
-      sendError(res, 'Two-factor setup is temporarily unavailable', 503);
-      return;
-    }
-    sendError(res, 'Invalid or expired two-factor challenge', 401);
-  }
+    const setup = await prepareTwoFactorSetup(req.body.challengeToken);
+    sendSuccess(res, { qrCodeDataUrl: setup.qrCodeDataUrl, manualSecret: setup.manualSecret, expiresAt: setup.expiresAt },
+      'Scan the code and confirm one current authenticator code');
+  } catch (error) { factorError(error, res); }
 };
 
 export const confirmTwoFactorSetup = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { challengeToken, code } = req.body as { challengeToken: string; code: string };
-    const { challenge, user } = await challengeUser(
-      challengeToken,
-      '+twoFactorPendingSecretEnc +twoFactorSetupExpires'
-    );
-    if (
-      !user.twoFactorPendingSecretEnc ||
-      !user.twoFactorSetupExpires ||
-      user.twoFactorSetupExpires.getTime() <= Date.now()
-    ) {
-      sendError(res, 'Two-factor setup has expired. Start again.', 401);
-      return;
+    const { challenge, user, tokenHash } = await challengeUser(challengeToken);
+    if (user.twoFactorEnabled === true) throw new AppError('Two-factor setup was already completed', 409);
+    if (!user.twoFactorPendingSecretEnc || !(user.twoFactorSetupExpires instanceof Date) || user.twoFactorSetupExpires.getTime() <= Date.now()) {
+      throw new AppError('Two-factor setup has expired. Start again.', 401);
     }
-    const result = await verifyTwoFactorCode({ encryptedSecret: user.twoFactorPendingSecretEnc, token: code });
-    if (!result.valid || result.timeStep === undefined) {
-      sendError(res, 'Invalid authenticator code', 401);
-      return;
-    }
+    const verified = await verifyTwoFactorCode({ encryptedSecret: user.twoFactorPendingSecretEnc, token: code });
+    if (!verified.valid || !Number.isSafeInteger(verified.timeStep)) throw new AppError('Invalid authenticator code', 401);
     const recoveryCodes = generateTwoFactorRecoveryCodes();
-    const recoveryCodeHashes = recoveryCodes.map(hashToken);
-    const enabledUser = await User.findOneAndUpdate(
-      {
-        _id: user._id,
-        tokenVersion: challenge.sessionVersion || 0,
-        twoFactorEnabled: false,
-      },
-      {
-        $set: {
-          twoFactorEnabled: true,
-          twoFactorSecretEnc: user.twoFactorPendingSecretEnc,
-          twoFactorLastUsedStep: result.timeStep,
-          twoFactorRecoveryCodeHashes: recoveryCodeHashes,
-        },
-        $unset: { twoFactorPendingSecretEnc: 1, twoFactorSetupExpires: 1 },
-      },
-      { new: true }
-    );
-    if (!enabledUser) {
-      sendError(res, 'Two-factor setup was already completed or the session changed', 409);
-      return;
-    }
-    const userResponse = await issueSession(enabledUser, res, challenge.rememberMe, req);
-    sendSuccess(res, { user: userResponse, recoveryCodes }, 'Two-factor authentication enabled');
-  } catch {
-    sendError(res, 'Invalid or expired two-factor challenge', 401);
-  }
+    const response = await issueSession(user, res, challenge.rememberMe, req, {
+      mfaVerified: true, advanceEpoch: true, deadline: Math.min(challenge.exp! * 1000, twoFactorProofDeadline(verified.timeStep!)),
+      set: { twoFactorEnabled: true, twoFactorSecretEnc: user.twoFactorPendingSecretEnc,
+        twoFactorLastUsedStep: verified.timeStep, twoFactorRecoveryCodeHashes: recoveryCodes.map(hashToken) },
+      unset: [...CHALLENGE_FIELDS, 'passwordResetToken', 'passwordResetExpires'],
+      filter: now => ({ $and: [activeChallenge(tokenHash, now, user.twoFactorChallengeExpires), pendingSetup(user, now)] }),
+    });
+    if (!response) { changedSession(res); return; }
+    sendSuccess(res, { user: response, recoveryCodes }, 'Two-factor authentication enabled');
+  } catch (error) { factorError(error, res); }
 };
 
 export const verifyTwoFactorLogin = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { challengeToken, code } = req.body as { challengeToken: string; code: string };
-    const { challenge, user } = await challengeUser(
-      challengeToken,
-      '+twoFactorSecretEnc +twoFactorLastUsedStep +twoFactorRecoveryCodeHashes'
-    );
-    if (!user.twoFactorEnabled || !user.twoFactorSecretEnc) {
-      sendError(res, 'Two-factor setup is required', 409);
-      return;
-    }
-    const isTotp = /^\d{6}$/.test(code);
-    if (!isTotp) {
-      const normalizedRecoveryCode = code.trim().toUpperCase();
-      const recoveryHash = hashToken(normalizedRecoveryCode);
-      const recoveredUser = await User.findOneAndUpdate(
-        {
-          _id: user._id,
-          tokenVersion: challenge.sessionVersion || 0,
-          twoFactorEnabled: true,
-          twoFactorRecoveryCodeHashes: recoveryHash,
-        },
-        { $pull: { twoFactorRecoveryCodeHashes: recoveryHash } },
-        { new: true }
-      );
-      if (!recoveredUser) {
+    const { challenge, user, tokenHash } = await challengeUser(challengeToken);
+    if (user.twoFactorEnabled !== true || !user.twoFactorSecretEnc) throw new AppError('Two-factor setup is required', 409);
+    if (typeof code !== 'string') throw new AppError('Invalid authenticator code', 401);
+    if (!/^\d{6}$/.test(code)) {
+      const recoveryHash = hashToken(code.trim().toUpperCase());
+      if (!user.twoFactorRecoveryCodeHashes?.includes(recoveryHash)) {
         recordAudit(req, { action: 'auth.two_factor_failed', outcome: 'failure', actor: user, statusCode: 401 });
-        sendError(res, 'Invalid or already-used recovery code', 401);
-        return;
+        throw new AppError('Invalid or already-used recovery code', 401);
       }
-      const userResponse = await issueSession(recoveredUser, res, challenge.rememberMe, req);
-      sendSuccess(res, { user: userResponse }, 'Login successful');
+      const response = await issueSession(user, res, challenge.rememberMe, req, {
+        mfaVerified: true, recoveryCodeHash: recoveryHash, unset: CHALLENGE_FIELDS, deadline: challenge.exp! * 1000,
+        filter: now => ({ $and: [activeChallenge(tokenHash, now, user.twoFactorChallengeExpires), { twoFactorRecoveryCodeHashes: recoveryHash }] }),
+      });
+      if (!response) { changedSession(res); return; }
+      sendSuccess(res, { user: response }, 'Login successful');
       return;
     }
-
-    const result = await verifyTwoFactorCode({
-      encryptedSecret: user.twoFactorSecretEnc,
-      token: code,
-      afterTimeStep: user.twoFactorLastUsedStep,
-    });
-    if (!result.valid || result.timeStep === undefined) {
+    const lastStep = user.twoFactorLastUsedStep;
+    if (lastStep !== undefined && lastStep !== null && !Number.isSafeInteger(lastStep)) throw new AppError('Two-factor state is invalid', 401);
+    const verified = await verifyTwoFactorCode({ encryptedSecret: user.twoFactorSecretEnc, token: code,
+      ...(lastStep === undefined || lastStep === null ? {} : { afterTimeStep: lastStep }) });
+    if (!verified.valid || !Number.isSafeInteger(verified.timeStep) ||
+      (typeof lastStep === 'number' && verified.timeStep! <= lastStep)) {
       recordAudit(req, { action: 'auth.two_factor_failed', outcome: 'failure', actor: user, statusCode: 401 });
-      sendError(res, 'Invalid or already-used authenticator code', 401);
-      return;
+      throw new AppError('Invalid or already-used authenticator code', 401);
     }
-    const verifiedUser = await User.findOneAndUpdate(
-      {
-        _id: user._id,
-        tokenVersion: challenge.sessionVersion || 0,
-        twoFactorEnabled: true,
-        $or: [
-          { twoFactorLastUsedStep: { $lt: result.timeStep } },
-          { twoFactorLastUsedStep: { $exists: false } },
-        ],
-      },
-      { $set: { twoFactorLastUsedStep: result.timeStep } },
-      { new: true }
-    );
-    if (!verifiedUser) {
-      sendError(res, 'Authenticator code was already used', 409);
-      return;
-    }
-    const userResponse = await issueSession(verifiedUser, res, challenge.rememberMe, req);
-    sendSuccess(res, { user: userResponse }, 'Login successful');
-  } catch {
-    sendError(res, 'Invalid or expired two-factor challenge', 401);
-  }
+    const response = await issueSession(user, res, challenge.rememberMe, req, {
+      mfaVerified: true, set: { twoFactorLastUsedStep: verified.timeStep }, unset: CHALLENGE_FIELDS,
+      deadline: Math.min(challenge.exp! * 1000, twoFactorProofDeadline(verified.timeStep!)),
+      filter: now => ({ $and: [activeChallenge(tokenHash, now, user.twoFactorChallengeExpires),
+        { twoFactorLastUsedStep: exactStoredValue(lastStep) }] }),
+    });
+    if (!response) { changedSession(res); return; }
+    sendSuccess(res, { user: response }, 'Login successful');
+  } catch (error) { factorError(error, res); }
 };
 
 // Foxes Passport SSO: a client clicks "Open Attractions Network" in the Foxes portal
@@ -417,14 +452,14 @@ export const passportLogin = async (
     if (!claims) return fail('invalid_or_expired_link');
 
     const email = claims.email.toLowerCase().trim();
-    let user = await User.findOne({ email }).select('+refreshToken');
+    let user = await User.findOne({ email }).select(AUTH_FIELDS).lean<AuthSnapshot>();
 
-    if (user && user.status !== 'active') return fail('account_inactive');
+    if (user && effectiveAccount(user).status !== 'active') return fail('account_inactive');
 
     // The assertion proves an email at the portal, not this platform's second factor. A team
     // account therefore never rides it: every admin role signs in here with its password and
     // two-factor code, whatever the portal itself verified.
-    if (user && ADMIN_ROLES.has(user.role)) {
+    if (user && requiresLocalFactor(effectiveAccount(user))) {
       recordAudit(req, { action: 'auth.login_failed', outcome: 'failure', actor: user, statusCode: 403 });
       return fail('use_password_sign_in');
     }
@@ -434,7 +469,7 @@ export const passportLogin = async (
       // hashes it; no password login is possible) and the LOWEST role. We NEVER grant
       // admin/brand-admin/super-admin from the assertion, regardless of claims.role.
       const generatedPassword = crypto.randomBytes(32).toString('hex');
-      user = await User.create({
+      const created = await User.create({
         email,
         password: generatedPassword,
         firstName: email.split('@')[0] || 'Customer',
@@ -444,6 +479,7 @@ export const passportLogin = async (
         role: 'customer',
         status: 'active',
       });
+      user = created.toObject() as AuthSnapshot;
 
       createAdminNotifications({
         type: 'user',
@@ -460,18 +496,9 @@ export const passportLogin = async (
         .catch((error) => console.error('[email] welcome send failed', { error: error?.message }));
     }
 
-    // Mint THIS platform's own tokens (signed with env.jwtSecret via utils/jwt).
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
-
-    user.refreshToken = hashToken(refreshToken);
-    user.lastLogin = new Date();
-    await user.save();
-
-    res.cookie('accessToken', accessToken, ACCESS_COOKIE_OPTIONS);
-    res.cookie('refreshToken', refreshToken, refreshCookieOptions());
-
-    sendSuccess(res, { user: user.toJSON() }, 'Passport sign-in successful');
+    const userResponse = await issueSession(user, res, false, undefined, { deadline: claims.exp * 1000 });
+    if (!userResponse) return fail('account_changed');
+    sendSuccess(res, { user: userResponse }, 'Passport sign-in successful');
   } catch (error) {
     next(error);
   }
@@ -482,18 +509,19 @@ export const logout = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
+  // Always end this browser's session, including when server-side revocation
+  // fails. A database error still propagates; it is never reported as success.
+  res.clearCookie('accessToken');
+  res.clearCookie('refreshToken', { path: '/api/auth/refresh-token' });
   try {
     if (req.user) {
-      if (ADMIN_ROLES.has(req.user.role)) recordAudit(req, { action: 'auth.logout', outcome: 'success', actor: req.user, statusCode: 200 });
+      await normalizeLegacySessionEpoch(User, req.user._id);
       await User.findByIdAndUpdate(req.user._id, {
-        $unset: { refreshToken: 1 },
+        $unset: { refreshToken: 1, ...Object.fromEntries(CHALLENGE_FIELDS.map(field => [field, 1])) },
         $inc: { tokenVersion: 1 },
       });
+      if (ADMIN_ROLES.has(req.user.role)) recordAudit(req, { action: 'auth.logout', outcome: 'success', actor: req.user, statusCode: 200 });
     }
-
-    // Clear cookies
-    res.clearCookie('accessToken');
-    res.clearCookie('refreshToken', { path: '/api/auth/refresh-token' });
 
     sendSuccess(res, null, 'Logout successful');
   } catch (error) {
@@ -527,15 +555,21 @@ export const refreshToken = async (
     }
 
     // Find user with refresh token
-    const user = await User.findById(decoded.userId).select('+refreshToken');
+    const user = await readAuthById(decoded.userId);
 
     if (!user || !user.refreshToken) {
       sendError(res, 'Invalid refresh token', 401);
       return;
     }
 
-    if ((decoded.sessionVersion || 0) !== (user.tokenVersion || 0)) {
+    if (sessionEpoch(decoded.sessionVersion) !== sessionEpoch(user.tokenVersion)) {
       sendError(res, 'Session has been revoked', 401);
+      return;
+    }
+    const account = effectiveAccount(user);
+    const mfaVerified = decoded.type === 'refresh' && decoded.mfaVerified === true;
+    if (account.status !== 'active' || !factorProofAllows(account, { mfaVerified })) {
+      sendError(res, 'Sign in again to verify this account', 401);
       return;
     }
 
@@ -548,18 +582,11 @@ export const refreshToken = async (
 
     if(!principalMatches(assertion.expected,String(user._id))){sendError(res,'Sign-in session changed',409);return;}
 
-    // Generate new tokens
-    const accessToken = generateAccessToken(user);
-    const newRefreshToken = generateRefreshToken(user);
-
-    // Update refresh token
-    user.refreshToken = hashToken(newRefreshToken);
-    await user.save();
-
-    // Set cookies
-    res.cookie('accessToken', accessToken, ACCESS_COOKIE_OPTIONS);
-    res.cookie('refreshToken', newRefreshToken, refreshCookieOptions());
-
+    const admitted = await issueSession(user, res, false, undefined, {
+      mfaVerified, recordLogin: false, includeUser: false, filter: () => ({ refreshToken: hashedToken }),
+      deadline: typeof decoded.exp === 'number' ? Math.min(decoded.exp * 1000, decoded.type === 'refresh' ? Infinity : LEGACY_REFRESH_ACCEPTED_UNTIL) : 0,
+    });
+    if (!admitted) { sendError(res, 'Invalid or already-used refresh token', 401); return; }
     sendSuccess(res, null, 'Token refreshed');
   } catch (error) {
     next(error);
@@ -705,7 +732,7 @@ export const changePassword = async (
 
     const { currentPassword, newPassword } = req.body;
 
-    const user = await User.findById(req.user._id).select('+password');
+    let user = await readAuthById(req.user._id);
 
     if (!user) {
       sendError(res, 'User not found', 404);
@@ -713,17 +740,27 @@ export const changePassword = async (
     }
 
     // Verify current password
-    const isPasswordValid = await user.comparePassword(currentPassword);
+    if (effectiveAccount(user).status !== 'active' || sessionEpoch(req.user.tokenVersion) !== sessionEpoch(user.tokenVersion)) {
+      changedSession(res); return;
+    }
+    const isPasswordValid = typeof currentPassword === 'string' && typeof user.password === 'string' && await bcrypt.compare(currentPassword, user.password);
     if (!isPasswordValid) {
       sendError(res, 'Current password is incorrect', 400);
       return;
     }
 
-    // Update password
-    user.password = newPassword;
-    await user.save();
-
-    void notifyPasswordChanged(req, user);
+    if (typeof newPassword !== 'string' || newPassword.length < 8) { sendError(res, 'Password must be at least 8 characters', 400); return; }
+    const passwordHash = await bcrypt.hash(newPassword, await bcrypt.genSalt(12));
+    if (user.tokenVersion === null) {
+      await normalizeLegacySessionEpoch(User, user._id);
+      user = { ...user, tokenVersion: 0 };
+    }
+    const updated = await User.findOneAndUpdate(accountAuthorityFilter(user), {
+      $set: { password: passwordHash }, $inc: { tokenVersion: 1 },
+      $unset: Object.fromEntries([...CHALLENGE_FIELDS, 'refreshToken', 'passwordResetToken', 'passwordResetExpires'].map(field => [field, 1])),
+    }, { new: true, runValidators: true });
+    if (!updated) { changedSession(res); return; }
+    void notifyPasswordChanged(req, updated);
 
     if (req.user && ADMIN_ROLES.has(req.user.role)) recordAudit(req, { action: 'auth.password_changed', outcome: 'success', actor: req.user, statusCode: 200 });
     sendSuccess(res, null, 'Password changed successfully');

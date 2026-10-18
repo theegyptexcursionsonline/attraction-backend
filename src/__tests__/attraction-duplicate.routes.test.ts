@@ -83,8 +83,8 @@ const sourceAttraction = () => ({
 });
 
 const authenticateAs = (role: string, assignedTenants: Types.ObjectId[]): void => {
-  (verifyToken as jest.Mock).mockReturnValue({ userId: userId.toString(), sessionVersion: 0 });
-  (User.findById as jest.Mock).mockResolvedValue({ _id: userId, role, status: 'active', tokenVersion: 0, assignedTenants });
+  (verifyToken as jest.Mock).mockReturnValue({ userId: userId.toString(), sessionVersion: 0, mfaVerified: !['customer', 'guest'].includes(role) });
+  (User.findById as jest.Mock).mockResolvedValue({ _id: userId, role, status: 'active', twoFactorEnabled: !['customer', 'guest'].includes(role), tokenVersion: 0, assignedTenants });
 };
 
 /** In-memory stand-in for the owner-scoped lookup: honours the `$or` scope IN the query. */

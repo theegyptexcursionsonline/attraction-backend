@@ -6,7 +6,7 @@ import { composePublicRoute } from '../services/publicRouteComposition.service';
 import { InvalidPublicCursor } from '../utils/publicCursor';
 
 let mockUser: Record<string, unknown> | null = null;
-jest.mock('../utils/jwt', () => ({ verifyToken: jest.fn(() => ({ userId: 'user-1' })) }));
+jest.mock('../utils/jwt', () => ({ verifyToken: jest.fn(() => ({ userId: 'user-1', mfaVerified: mockUser?.twoFactorEnabled === true })) }));
 jest.mock('../models/User', () => ({ User: { findById: jest.fn(() => Promise.resolve(mockUser)) } }));
 jest.mock('../models/Tenant', () => ({ Tenant: { findOne: jest.fn() } }));
 jest.mock('../services/publicRouteComposition.service', () => ({ composePublicRoute: jest.fn() }));
@@ -65,7 +65,7 @@ describe('public route composition owner and snapshot boundary', () => {
   });
 
   test('an administrator of another website cannot read through this route', async () => {
-    mockUser = { _id: 'user-1', status: 'active', role: 'viewer', tokenVersion: 0, assignedTenants: [new Types.ObjectId()] };
+    mockUser = { _id: 'user-1', status: 'active', role: 'viewer', twoFactorEnabled: true, tokenVersion: 0, assignedTenants: [new Types.ObjectId()] };
     const response = await get().set('Authorization', 'Bearer scoped-token');
     expect(response.status).toBe(403);
     expect(composePublicRoute).not.toHaveBeenCalled();

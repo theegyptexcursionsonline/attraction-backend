@@ -29,8 +29,8 @@ app.use(express.json());
 app.use('/users', usersRoutes);
 
 const signedInAs = (role: string) => {
-  (verifyToken as jest.Mock).mockReturnValue({ userId: 'caller' });
-  (User.findById as jest.Mock).mockResolvedValue({ _id: 'caller', role, status: 'active', assignedTenants: [] });
+  (verifyToken as jest.Mock).mockReturnValue({ userId: 'caller', mfaVerified: !['customer', 'guest'].includes(role) });
+  (User.findById as jest.Mock).mockResolvedValue({ _id: 'caller', role, status: 'active', twoFactorEnabled: !['customer', 'guest'].includes(role), assignedTenants: [] });
 };
 
 describe('GET /users/summary route guard', () => {

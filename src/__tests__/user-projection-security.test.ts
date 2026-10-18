@@ -10,6 +10,9 @@ describe('public user projections', () => {
       refreshToken: 'hashed-refresh-token',
       passwordResetToken: 'hashed-invitation-token',
       passwordResetExpires: new Date(),
+      twoFactorChallengeHash: 'hashed-challenge', twoFactorChallengeExpires: new Date(),
+      twoFactorPendingSecretEnc: 'encrypted-pending', twoFactorSetupExpires: new Date(),
+      twoFactorSecretEnc: 'encrypted-active', twoFactorLastUsedStep: 12, twoFactorRecoveryCodeHashes: ['hashed-recovery'],
       tokenVersion: 4,
       __v: 0,
     });
@@ -28,7 +31,8 @@ describe('public user projections', () => {
         '-refreshToken',
         '-passwordResetToken',
         '-passwordResetExpires',
-        '-tokenVersion',
+        '-tokenVersion', '-twoFactorChallengeHash', '-twoFactorChallengeExpires', '-twoFactorSecretEnc',
+        '-twoFactorPendingSecretEnc', '-twoFactorSetupExpires', '-twoFactorLastUsedStep', '-twoFactorRecoveryCodeHashes',
         '-__v',
       ])
     );

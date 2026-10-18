@@ -11,6 +11,7 @@ import { Destination } from '../models/Destination';
 import { Category } from '../models/Category';
 import { Tenant } from '../models/Tenant';
 import { User } from '../models/User';
+import { encryptSecret } from '../utils/secretCrypto';
 import { generateAccessToken } from '../utils/jwt';
 
 jest.setTimeout(120_000);
@@ -90,9 +91,9 @@ it('reads a specific inactive destination beyond the old list window only as a g
   await request(app).get(url).expect(401);
   for (const role of ['customer', 'viewer', 'editor', 'manager', 'brand-admin', 'super-admin']) {
     const _id = new Types.ObjectId();
-    await User.collection.insertOne({ _id, email: 'theegyptexcursionsonline@gmail.com', role, status: 'active', assignedTenants: [site], tokenVersion: 0 });
+    await User.collection.insertOne({ _id, email: 'theegyptexcursionsonline@gmail.com', role, status: 'active', assignedTenants: [site], tokenVersion: 0, twoFactorEnabled: role !== 'customer', ...(role !== 'customer' ? { twoFactorSecretEnc: encryptSecret('JBSWY3DPEHPK3PXP') } : {}) });
     const user = await User.findById(_id);
-    const token = generateAccessToken(user!);
+    const token = generateAccessToken(user!, { mfaVerified: role !== 'customer' });
     const response = await request(app).get(url).set('Authorization', `Bearer ${token}`).expect(role === 'super-admin' ? 200 : 403);
     if (role === 'super-admin') {
       expect(response.body.data._id).toBe(String(destination!._id)); expect(response.body.data.isActive).toBe(false);

@@ -58,6 +58,7 @@ let currentUser: {
   _id: Types.ObjectId;
   role: TestRole;
   status: 'active';
+  twoFactorEnabled: true;
   assignedTenants: Types.ObjectId[];
   firstName: string;
   lastName: string;
@@ -68,6 +69,7 @@ const setUser = (role: TestRole, tenantIds = [TENANT_A]) => {
     _id: new Types.ObjectId(),
     role,
     status: 'active',
+    twoFactorEnabled: true,
     assignedTenants: tenantIds.map((id) => new Types.ObjectId(id)),
     firstName: 'QA',
     lastName: 'Team',
@@ -75,7 +77,7 @@ const setUser = (role: TestRole, tenantIds = [TENANT_A]) => {
   // Pin both sides of the auth lookup whenever the role fixture changes. The
   // old mutable closure could briefly authenticate the next table row with the
   // previous role when the complete suite reused this worker.
-  (verifyToken as jest.Mock).mockReturnValue({ userId: currentUser._id.toString() });
+  (verifyToken as jest.Mock).mockReturnValue({ userId: currentUser._id.toString(), mfaVerified: true });
   (User.findById as jest.Mock).mockResolvedValue(currentUser);
 };
 

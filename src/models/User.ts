@@ -114,6 +114,8 @@ const userSchema = new Schema<IUser>(
       type: Date,
       select: false,
     },
+    twoFactorChallengeHash: { type: String, select: false },
+    twoFactorChallengeExpires: { type: Date, select: false },
     twoFactorLastUsedStep: {
       type: Number,
       select: false,
@@ -147,6 +149,8 @@ const userSchema = new Schema<IUser>(
         delete obj.twoFactorSecretEnc;
         delete obj.twoFactorPendingSecretEnc;
         delete obj.twoFactorSetupExpires;
+        delete obj.twoFactorChallengeHash;
+        delete obj.twoFactorChallengeExpires;
         delete obj.twoFactorLastUsedStep;
         delete obj.twoFactorRecoveryCodeHashes;
         delete obj.__v;
@@ -158,6 +162,16 @@ const userSchema = new Schema<IUser>(
     },
   }
 );
+
+// Hydration defaults describe old records for readers; they are not writes.
+// Preserve explicit assignments and atomic changes, including assigning a
+// default value intentionally. New accounts still persist their defaults.
+userSchema.pre('save', function (next) {
+  if (!this.isNew) userSchema.eachPath(path => {
+    if (this.$isDefault(path) && !this.isDirectModified(path)) this.unmarkModified(path);
+  });
+  next();
+});
 
 // Hash password before saving
 userSchema.pre('save', async function (next) {

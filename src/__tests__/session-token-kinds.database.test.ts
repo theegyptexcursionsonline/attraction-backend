@@ -84,7 +84,7 @@ beforeAll(async () => {
     account('qa-unenrolled-admin@example.invalid', 'brand-admin'),
     account('qa-customer@example.invalid', 'customer'),
     account('qa-suspended-admin@example.invalid', 'super-admin', { status: 'suspended' }),
-    account('qa-active-admin@example.invalid', 'super-admin'),
+    account('qa-active-admin@example.invalid', 'super-admin', { twoFactorEnabled: true, twoFactorSecretEnc: encryptSecret('JBSWY3DPEHPK3PXP') }),
   ]);
   // Bound to 127.0.0.1 (see src/test/loopbackRequest.ts): a wildcard listener can lose its requests to
   // another process's bind on the same port.
@@ -377,8 +377,8 @@ describe('every authenticated route', () => {
       for (const [name, value] of Object.entries(headers)) pending = pending.set(name, value);
       return (await pending.expect(200)).body.user;
     };
-    expect(await ask({ Authorization: `Bearer ${generateAccessToken(account)}` })).toBe(String(account._id));
-    expect(await ask({ Cookie: `accessToken=${generateAccessToken(account)}` })).toBe(String(account._id));
+    expect(await ask({ Authorization: `Bearer ${generateAccessToken(account, { mfaVerified: true })}` })).toBe(String(account._id));
+    expect(await ask({ Cookie: `accessToken=${generateAccessToken(account, { mfaVerified: true })}` })).toBe(String(account._id));
     for (const token of [generateTwoFactorChallenge(account), generateRefreshToken(account), legacyToken(account, '4h'), legacyToken(account, '7d'), 'not-a-token']) {
       expect(await ask({ Authorization: `Bearer ${token}` })).toBeNull();
       expect(await ask({ Cookie: `accessToken=${token}` })).toBeNull();
@@ -392,7 +392,7 @@ describe('every authenticated route', () => {
     await request(server).post('/api/auth/logout').set('Authorization', `Bearer ${challengeToken}`).expect(200);
     expect((await fresh(enrolledAdmin)).tokenVersion || 0).toBe(before);
 
-    await request(server).post('/api/auth/logout').set('Authorization', `Bearer ${generateAccessToken(await fresh(enrolledAdmin))}`).expect(200);
+    await request(server).post('/api/auth/logout').set('Authorization', `Bearer ${generateAccessToken(await fresh(enrolledAdmin), { mfaVerified: true })}`).expect(200);
     expect((await fresh(enrolledAdmin)).tokenVersion || 0).toBe(before + 1);
   });
 });

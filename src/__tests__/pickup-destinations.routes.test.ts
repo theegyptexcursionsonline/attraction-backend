@@ -10,7 +10,7 @@ const royalCruiseId = new Types.ObjectId();
 const otherSiteId = new Types.ObjectId();
 let mockUser: Record<string, unknown> | null = null;
 
-jest.mock('../utils/jwt', () => ({ verifyToken: jest.fn(() => ({ userId: 'user-1' })) }));
+jest.mock('../utils/jwt', () => ({ verifyToken: jest.fn(() => ({ userId: 'user-1', mfaVerified: mockUser?.twoFactorEnabled === true })) }));
 jest.mock('../models/User', () => ({ User: { findById: jest.fn(() => Promise.resolve(mockUser)) } }));
 jest.mock('../models/Tenant', () => ({ Tenant: { findOne: jest.fn(), findById: jest.fn(), findByIdAndUpdate: jest.fn(), findOneAndUpdate: jest.fn() } }));
 jest.mock('../models/Attraction', () => ({ Attraction: { find: jest.fn(), countDocuments: jest.fn(), distinct: jest.fn(), aggregate: jest.fn() } }));
@@ -29,7 +29,7 @@ app.use('/tenants', tenantRoutes);
 app.use('/destinations', destinationsRouter);
 
 const royalCruise = { _id: royalCruiseId, slug: 'royal-cruise-hurghada', status: 'active', designMode: 'nautical', pickupDestinationSlugs: ['makadi-bay', 'sahl-hasheesh'] };
-const superAdmin = { _id: 'user-1', role: 'super-admin', status: 'active', tokenVersion: 0, assignedTenants: [] };
+const superAdmin = { _id: 'user-1', role: 'super-admin', status: 'active', twoFactorEnabled: true, tokenVersion: 0, assignedTenants: [] };
 
 const listChain = () => {
   const chain: Record<string, jest.Mock> = {};
@@ -86,7 +86,7 @@ describe('saving pickup areas through the tenant routes', () => {
   });
 
   it('lets an assigned site admin save them from site settings', async () => {
-    mockUser = { _id: 'user-1', role: 'brand-admin', status: 'active', tokenVersion: 0, assignedTenants: [royalCruiseId] };
+    mockUser = { _id: 'user-1', role: 'brand-admin', status: 'active', twoFactorEnabled: true, tokenVersion: 0, assignedTenants: [royalCruiseId] };
 
     const response = await request(app)
       .patch(`/tenants/${royalCruiseId}/settings`)
@@ -102,7 +102,7 @@ describe('saving pickup areas through the tenant routes', () => {
   });
 
   it('answers a site admin of another site like a missing site', async () => {
-    mockUser = { _id: 'user-1', role: 'brand-admin', status: 'active', tokenVersion: 0, assignedTenants: [otherSiteId] };
+    mockUser = { _id: 'user-1', role: 'brand-admin', status: 'active', twoFactorEnabled: true, tokenVersion: 0, assignedTenants: [otherSiteId] };
     (Tenant.findOne as jest.Mock).mockImplementation(() => ({ select: () => ({ lean: jest.fn().mockResolvedValue(null) }) }));
 
     const response = await request(app)
@@ -115,7 +115,7 @@ describe('saving pickup areas through the tenant routes', () => {
   });
 
   it('keeps them on the super-admin site update', async () => {
-    mockUser = { _id: 'user-1', role: 'super-admin', status: 'active', tokenVersion: 0, assignedTenants: [] };
+    mockUser = { _id: 'user-1', role: 'super-admin', status: 'active', twoFactorEnabled: true, tokenVersion: 0, assignedTenants: [] };
 
     const response = await request(app)
       .patch(`/tenants/${royalCruiseId}`)
@@ -154,7 +154,7 @@ describe('saving pickup areas through the tenant routes', () => {
   });
 
   it('never lets a site admin rename the site', async () => {
-    mockUser = { _id: 'user-1', role: 'brand-admin', status: 'active', tokenVersion: 0, assignedTenants: [royalCruiseId] };
+    mockUser = { _id: 'user-1', role: 'brand-admin', status: 'active', twoFactorEnabled: true, tokenVersion: 0, assignedTenants: [royalCruiseId] };
 
     const response = await request(app)
       .patch(`/tenants/${royalCruiseId}/settings`)
@@ -188,7 +188,7 @@ describe('saving pickup areas through the tenant routes', () => {
   });
 
   it('rejects an invalid list on either route', async () => {
-    mockUser = { _id: 'user-1', role: 'super-admin', status: 'active', tokenVersion: 0, assignedTenants: [] };
+    mockUser = { _id: 'user-1', role: 'super-admin', status: 'active', twoFactorEnabled: true, tokenVersion: 0, assignedTenants: [] };
 
     for (const path of [`/tenants/${royalCruiseId}`, `/tenants/${royalCruiseId}/settings`]) {
       const response = await request(app)

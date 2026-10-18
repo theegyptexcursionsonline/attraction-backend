@@ -35,11 +35,12 @@ const eventId = new Types.ObjectId().toString();
 const operationId = 'outbox-redrive:route-operation-0001';
 
 const authenticateAs = (role: string): void => {
-  (verifyToken as jest.Mock).mockReturnValue({ userId: userId.toString(), sessionVersion: 0 });
+  (verifyToken as jest.Mock).mockReturnValue({ userId: userId.toString(), sessionVersion: 0, mfaVerified: !['customer', 'guest'].includes(role) });
   (User.findById as jest.Mock).mockResolvedValue({
     _id: userId,
     role,
     status: 'active',
+    twoFactorEnabled: !['customer', 'guest'].includes(role),
     tokenVersion: 0,
     assignedTenants: [],
   });

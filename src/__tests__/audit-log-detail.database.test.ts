@@ -119,7 +119,7 @@ beforeAll(async () => {
     member(ids.nileDesk, 'manager', [nile], 'Nile', 'Desk'),
   ]);
   for (const key of Object.keys(ids) as Array<keyof typeof ids>) {
-    tokens[key] = generateAccessToken((await User.findById(ids[key]))! as unknown as IUser);
+    tokens[key] = generateAccessToken((await User.findById(ids[key]))! as unknown as IUser, { mfaVerified: true });
   }
   await Attraction.collection.insertMany([
     tour(giftun, 'giftun-reef-qa', 'Giftun Reef Snorkel Day', red, 45),

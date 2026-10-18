@@ -139,8 +139,8 @@ describe('POST /api/bookings — add-on quantities', () => {
   });
 
   it.each(['customer', 'brand-admin', 'manager', 'super-admin'])('enforces the same policy for authenticated %s bookings', async (role) => {
-    (verifyToken as jest.Mock).mockReturnValue({ userId: 'qa-user' });
-    (User.findById as jest.Mock).mockResolvedValue({ _id: 'qa-user', role, status: 'active', assignedTenants: [TENANT_ID] });
+    (verifyToken as jest.Mock).mockReturnValue({ userId: 'qa-user', mfaVerified: role !== 'customer' });
+    (User.findById as jest.Mock).mockResolvedValue({ _id: 'qa-user', role, status: 'active', twoFactorEnabled: role !== 'customer', assignedTenants: [TENANT_ID] });
     (Attraction.findOne as jest.Mock).mockResolvedValue(catalogAttraction());
     (Tenant.findOne as jest.Mock).mockResolvedValue(cardOnlyTenant());
     const body = { ...payload([]), paymentMethod: 'cash', ...(role === 'customer' ? {} : { tenantId: TENANT_ID }) };

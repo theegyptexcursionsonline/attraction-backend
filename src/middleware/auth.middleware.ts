@@ -3,6 +3,7 @@ import { Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwt';
 import { User } from '../models/User';
 import { AuthRequest, AdminRole } from '../types';
+import { factorProofAllows, sessionEpoch } from '../utils/session';
 import { sendError } from '../utils/response';
 
 export const authenticate = async (
@@ -43,8 +44,12 @@ export const authenticate = async (
       return;
     }
 
-    if ((decoded.sessionVersion || 0) !== (user.tokenVersion || 0)) {
+    if (sessionEpoch(decoded.sessionVersion) !== sessionEpoch(user.tokenVersion)) {
       sendError(res, 'Session has been revoked', 401);
+      return;
+    }
+    if (!factorProofAllows(user, decoded)) {
+      sendError(res, 'Two-factor sign-in is required', 401);
       return;
     }
 
@@ -78,7 +83,7 @@ export const optionalAuth = async (
       if (
         user &&
         user.status === 'active' &&
-        (decoded.sessionVersion || 0) === (user.tokenVersion || 0)
+        sessionEpoch(decoded.sessionVersion) === sessionEpoch(user.tokenVersion) && factorProofAllows(user, decoded)
       ) {
         req.user = user;
       }
