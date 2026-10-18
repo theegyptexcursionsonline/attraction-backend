@@ -213,12 +213,15 @@ describe('session revocation', () => {
     expect(User.findById).not.toHaveBeenCalled();
   });
 
-  it('advances the version and clears refresh state for credential changes', () => {
-    const user = { tokenVersion: 4, refreshToken: 'hashed-refresh' } as IUser;
+  it('requests an atomic epoch increment and clears existing account capabilities', () => {
+    const increment = jest.fn();
+    const user = { tokenVersion: 4, refreshToken: 'hashed-refresh', passwordResetToken: 'hashed-recovery', passwordResetExpires: new Date(), $inc: increment } as unknown as IUser;
 
     revokeUserSessions(user);
 
-    expect(user.tokenVersion).toBe(5);
+    expect(increment).toHaveBeenCalledWith('tokenVersion', 1);
     expect(user.refreshToken).toBeUndefined();
+    expect(user.passwordResetToken).toBeUndefined();
+    expect(user.passwordResetExpires).toBeUndefined();
   });
 });

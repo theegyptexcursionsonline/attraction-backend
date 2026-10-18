@@ -1086,7 +1086,7 @@ export const setUserPassword = async (
     target.passwordResetToken = undefined;
     target.passwordResetExpires = undefined;
     if (activated) target.status = 'active';
-    revokeUserSessions(target);
+    // The password save hook hashes and revokes once.
     await target.save();
 
     console.info('[users] password set by super admin', {

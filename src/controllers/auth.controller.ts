@@ -1,3 +1,4 @@
+import { consumeAccountRecovery } from '../services/accountRecovery.service';
 import { recordAudit } from '../services/auditLog.service';
 import { accountSections } from '../middleware/section.middleware';
 import {expectedPrincipal,principalMatches} from '../middleware/expected-principal';
@@ -647,23 +648,12 @@ export const resetPassword = async (
   try {
     const { token, password } = req.body;
 
-    const hashedToken = hashToken(token);
-
-    const user = await User.findOne({
-      passwordResetToken: hashedToken,
-      passwordResetExpires: { $gt: new Date() },
-    }).select('+passwordResetToken +passwordResetExpires');
-
-    if (!user) {
+    const result = await consumeAccountRecovery(token, password, 'reset');
+    if (result.kind !== 'updated') {
       sendError(res, 'Invalid or expired reset token', 400);
       return;
     }
-
-    // Update password
-    user.password = password;
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
-    await user.save();
+    const user = result.user;
 
     // Tell the account holder their password moved. This is the message that lets someone
     // notice a compromised account, so it is sent on every change.
@@ -683,29 +673,16 @@ export const acceptInvitation = async (
   try {
     const { token, password } = req.body;
 
-    const hashedToken = hashToken(token);
-
-    const user = await User.findOne({
-      passwordResetToken: hashedToken,
-      passwordResetExpires: { $gt: new Date() },
-    }).select('+passwordResetToken +passwordResetExpires');
-
-    if (!user) {
-      sendError(res, 'Invalid or expired invitation token', 400);
-      return;
-    }
-
-    if (user.status !== 'pending') {
+    const result = await consumeAccountRecovery(token, password, 'invitation');
+    if (result.kind === 'not_pending') {
       sendError(res, 'Invitation already accepted or account is not in pending state', 400);
       return;
     }
-
-    // Set password and activate account
-    user.password = password;
-    user.status = 'active';
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
-    await user.save();
+    if (result.kind !== 'updated') {
+      sendError(res, 'Invalid or expired invitation token', 400);
+      return;
+    }
+    const user = result.user;
 
     void notifyPasswordChanged(req, user);
 

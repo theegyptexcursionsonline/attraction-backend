@@ -42,7 +42,7 @@ const app = () => {
 describe('super admin sets a team member password', () => {
   beforeEach(() => { jest.clearAllMocks(); caller = superAdmin(); loadTarget(); });
 
-  it('sets the password, activates a pending member, voids invitation links and signs out sessions', async () => {
+  it('sets the password, activates a pending member and delegates exactly one save hook', async () => {
     const res = await request(app()).post(`/api/users/${target._id}/password`).send({ password: GOOD });
     expect(res.status).toBe(200);
     expect(res.body.data).toEqual({ id: String(target._id), status: 'active', activated: true });
@@ -50,8 +50,9 @@ describe('super admin sets a team member password', () => {
     expect(target.status).toBe('active');
     expect(target.passwordResetToken).toBeUndefined();
     expect(target.passwordResetExpires).toBeUndefined();
-    expect(target.refreshToken).toBeUndefined();
-    expect(target.tokenVersion).toBe(4);
+    // The mocked save does not run model hooks. Real hashing, capability clearing
+    // and exactly one persisted epoch increment are covered in account-recovery.database.test.
+    expect(target.tokenVersion).toBe(3);
     expect(target.save).toHaveBeenCalledTimes(1);
     expect(JSON.stringify(res.body)).not.toContain(GOOD);
   });
