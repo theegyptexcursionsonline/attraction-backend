@@ -1,8 +1,18 @@
+# Retain the existing builder; only replace the runtime with verified official
+# bytes. Dependency installation and compilation use the same Node as production.
+[phases.setup]
+aptPkgs = ['...', 'curl', 'ca-certificates', 'xz-utils']
+
+[phases.runtime]
+dependsOn = ['setup']
+cmds = ['bash scripts/install-node-runtime.sh']
+
 [phases.install]
-cmds = ["npm ci --include=dev"]
+dependsOn = ['runtime']
+cmds = ['PATH=/app/.runtime/node/bin:$PATH npm ci --include=dev']
 
 [phases.build]
-cmds = ["npm run build"]
+cmds = ['PATH=/app/.runtime/node/bin:$PATH npm run build']
 
 [start]
-cmd = "npm start"
+cmd = 'bash scripts/start-production.sh'
