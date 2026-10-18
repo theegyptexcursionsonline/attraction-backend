@@ -6,7 +6,7 @@ import { hashToken } from '../utils/hash';
 import { sendUserInvitation } from '../services/email.service';
 import { AuthRequest } from '../types';
 
-jest.mock('../models/User', () => ({ User: { findById: jest.fn() } }));
+jest.mock('../models/User', () => ({ User: { findById: jest.fn(), updateOne: jest.fn() } }));
 jest.mock('../models/Tenant', () => ({ Tenant: { findById: jest.fn() } }));
 jest.mock('../models/Booking', () => ({ Booking: { collection: { name: 'bookings' } } }));
 jest.mock('../models/Attraction', () => ({ Attraction: {} }));
@@ -28,8 +28,9 @@ const response = () => {
 
 let target: any;
 const loadTarget = (overrides: Record<string, unknown> = {}) => {
-  target = { _id: new Types.ObjectId(), role: 'brand-admin', status: 'pending', assignedTenants: [royal], passwordResetToken: 'old-hash', passwordResetExpires: new Date(0), save: jest.fn().mockResolvedValue(undefined), ...overrides };
-  (User.findById as jest.Mock).mockReturnValue({ select: jest.fn().mockResolvedValue(target) });
+  target = { _id: new Types.ObjectId(), email: 'qa-invite@example.invalid', role: 'brand-admin', status: 'pending', assignedTenants: [royal], tokenVersion: 2, passwordResetToken: 'old-hash', passwordResetExpires: new Date(0), ...overrides };
+  (User.findById as jest.Mock).mockReturnValue({ select: () => ({ lean: () => Promise.resolve({ ...target }) }) });
+  (User.updateOne as jest.Mock).mockImplementation(async (_filter, update) => { Object.assign(target, update.$set); return { matchedCount: 1 }; });
 };
 const siteLookup = (slug = 'royal-cruise-hurghada') => (Tenant.findById as jest.Mock).mockReturnValue({ select: () => ({ lean: () => Promise.resolve({ slug }) }) });
 
@@ -57,7 +58,11 @@ describe('invitation link for a pending user', () => {
     const expires = new Date(body.data.expiresAt).getTime();
     expect(expires - before).toBeGreaterThanOrEqual(7 * 24 * 3600 * 1000 - 1000);
     expect(expires - before).toBeLessThanOrEqual(7 * 24 * 3600 * 1000 + 5000);
-    expect(target.save).toHaveBeenCalledTimes(1);
+    expect(User.updateOne).toHaveBeenCalledTimes(1);
+    expect(User.updateOne).toHaveBeenCalledWith(expect.objectContaining({ _id: target._id, email: target.email, role: target.role, status: 'pending',
+      assignedTenants: { $exists: true, $eq: [royal] }, tokenVersion: { $exists: true, $eq: 2 },
+      passwordResetToken: { $exists: true, $eq: 'old-hash' }, passwordResetExpires: { $exists: true, $eq: new Date(0) },
+    }), { $set: { passwordResetToken: hashToken(token), passwordResetExpires: new Date(body.data.expiresAt) } }, { runValidators: true });
     expect(sendUserInvitation).not.toHaveBeenCalled();
     expect(res.setHeader).toHaveBeenCalledWith('Cache-Control', 'no-store');
     expect(JSON.stringify(body)).not.toContain('old-hash');
@@ -75,12 +80,12 @@ describe('invitation link for a pending user', () => {
     loadTarget({ status: 'active' });
     const { res } = await call({ role: 'super-admin' });
     expect(res.status).toHaveBeenCalledWith(409);
-    expect(target.save).not.toHaveBeenCalled();
+    expect(User.updateOne).not.toHaveBeenCalled();
   });
 
   it('answers 404 for a missing user', async () => {
     loadTarget();
-    (User.findById as jest.Mock).mockReturnValue({ select: jest.fn().mockResolvedValue(null) });
+    (User.findById as jest.Mock).mockReturnValue({ select: () => ({ lean: () => Promise.resolve(null) }) });
     const { res } = await call({ role: 'super-admin' });
     expect(res.status).toHaveBeenCalledWith(404);
   });
@@ -90,15 +95,16 @@ describe('invitation link for a pending user', () => {
     const own = await call({ role: 'brand-admin', assignedTenants: [royal] });
     expect(own.res.status).toHaveBeenCalledWith(200);
 
+    (User.updateOne as jest.Mock).mockClear();
     loadTarget({ role: 'editor', assignedTenants: [other] });
     const foreign = await call({ role: 'brand-admin', assignedTenants: [royal] });
     expect(foreign.res.status).toHaveBeenCalledWith(404);
-    expect(target.save).not.toHaveBeenCalled();
+    expect(User.updateOne).not.toHaveBeenCalled();
 
     loadTarget({ role: 'brand-admin' });
     const peer = await call({ role: 'brand-admin', assignedTenants: [royal] });
     expect(peer.res.status).toHaveBeenCalledWith(403);
-    expect(target.save).not.toHaveBeenCalled();
+    expect(User.updateOne).not.toHaveBeenCalled();
   });
 
   it('brands the link for the site the admin shares with the invitee', async () => {
@@ -109,9 +115,16 @@ describe('invitation link for a pending user', () => {
 
   it('passes a database failure to the error handler without saving', async () => {
     loadTarget();
-    target.save.mockRejectedValue(new Error('db down'));
+    (User.updateOne as jest.Mock).mockRejectedValue(new Error('db down'));
     const { next, res } = await call({ role: 'super-admin' });
     expect(next).toHaveBeenCalledWith(expect.any(Error));
     expect(res.json).not.toHaveBeenCalled();
+  });
+
+  it('returns conflict without a credential when the authorized account snapshot no longer matches', async () => {
+    loadTarget(); (User.updateOne as jest.Mock).mockResolvedValue({ matchedCount: 0 });
+    const { res, body } = await call({ role: 'super-admin' });
+    expect(res.status).toHaveBeenCalledWith(409); expect(body.data?.inviteUrl).toBeUndefined();
+    expect(sendUserInvitation).not.toHaveBeenCalled();
   });
 });

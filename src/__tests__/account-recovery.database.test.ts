@@ -157,7 +157,7 @@ it('invalidates an invitation when its established security context is reassigne
   expect((await current())!.status).toBe('pending');
 });
 
-it('allows ordinary forgot-password save to set a fresh capability without revoking or hashing', async () => {
+it('allows ordinary forgot-password issuance to set a fresh capability without revoking or hashing', async () => {
   const salt = jest.spyOn(bcrypt, 'genSalt'); const res = response(), next = jest.fn();
   await forgotPassword({ body: { email: user.email } } as never, res as never, next);
   expect(next).not.toHaveBeenCalled(); expect(res.status).toHaveBeenCalledWith(200); expect(salt).not.toHaveBeenCalled();

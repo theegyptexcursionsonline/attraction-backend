@@ -26,6 +26,7 @@ import {
   canManageRole,
 } from '../utils/tenantScope';
 import { revokeUserSessions } from '../utils/session';
+import { issueAccountRecovery, RECOVERY_ISSUER_FIELDS } from '../services/accountRecovery.service';
 import { accountSections } from '../middleware/section.middleware';
 import { ADMIN_SECTIONS, SECTION_LABELS, normalizeSectionList } from '../utils/sectionAccess';
 import { PUBLIC_USER_PROJECTION, redactUserSecrets } from '../utils/userProjection';
@@ -978,8 +979,6 @@ export const inviteUser = async (
   }
 };
 
-const INVITATION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-
 /**
  * A fresh accept-invitation link for a user who has not joined yet, for sharing directly
  * (for example when the invitee's mailbox is not receiving mail). No email is sent. The new
@@ -991,7 +990,7 @@ export const createInvitationLink = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const target = await User.findById(req.params.id).select('+passwordResetToken +passwordResetExpires');
+    const target = await User.findById(req.params.id).select(RECOVERY_ISSUER_FIELDS).lean();
     if (!target) {
       sendError(res, 'User not found', 404);
       return;
@@ -1025,11 +1024,11 @@ export const createInvitationLink = async (
         .lean()
       : null;
 
-    const token = generateRandomToken();
-    const expiresAt = new Date(Date.now() + INVITATION_TTL_MS);
-    target.passwordResetToken = hashToken(token);
-    target.passwordResetExpires = expiresAt;
-    await target.save();
+    const issued = await issueAccountRecovery(target, 'invitation');
+    if (!issued) {
+      sendError(res, 'This account or invitation changed. Refresh and try again', 409);
+      return;
+    }
 
     console.info('[users] invitation link issued', {
       userId: String(target._id),
@@ -1038,7 +1037,7 @@ export const createInvitationLink = async (
     });
     // The link is a sign-up credential: never cache it.
     res.setHeader('Cache-Control', 'no-store');
-    sendSuccess(res, { inviteUrl: invitationLink(token, site), expiresAt: expiresAt.toISOString() }, 'Invitation link created');
+    sendSuccess(res, { inviteUrl: invitationLink(issued.token, site), expiresAt: issued.expiresAt.toISOString() }, 'Invitation link created');
   } catch (error) {
     next(error);
   }

@@ -1,4 +1,4 @@
-import { consumeAccountRecovery } from '../services/accountRecovery.service';
+import { consumeAccountRecovery, issueAccountRecovery, RECOVERY_ISSUER_FIELDS } from '../services/accountRecovery.service';
 import { recordAudit } from '../services/auditLog.service';
 import { accountSections } from '../middleware/section.middleware';
 import {expectedPrincipal,principalMatches} from '../middleware/expected-principal';
@@ -13,7 +13,7 @@ import {
   verifyRefreshToken,
   verifyTwoFactorChallenge,
 } from '../utils/jwt';
-import { generateRandomToken, hashToken } from '../utils/hash';
+import { hashToken } from '../utils/hash';
 import { verifyPassportAssertion } from '../utils/passport';
 import { sendSuccess, sendError } from '../utils/response';
 import { AuthRequest, IUser } from '../types';
@@ -600,7 +600,7 @@ export const forgotPassword = async (
   try {
     const { email } = req.body;
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await User.findOne({ email: email.toLowerCase() }).select(RECOVERY_ISSUER_FIELDS).lean();
 
     // Always return success to prevent email enumeration
     if (!user) {
@@ -608,11 +608,11 @@ export const forgotPassword = async (
       return;
     }
 
-    // Generate reset token
-    const resetToken = generateRandomToken();
-    user.passwordResetToken = hashToken(resetToken);
-    user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
-    await user.save();
+    const issued = await issueAccountRecovery(user, 'reset');
+    if (!issued) {
+      sendSuccess(res, null, 'If the email exists, a password reset link will be sent');
+      return;
+    }
 
     // Resolve the site whose brand + reset-link domain this email should use.
     const tenantBrand = await accountEmailTenant(req, user);
@@ -623,7 +623,7 @@ export const forgotPassword = async (
     try {
       await sendPasswordResetEmail(
         user.email,
-        resetToken,
+        issued.token,
         `${user.firstName} ${user.lastName}`.trim(),
         tenantBrand
       );
