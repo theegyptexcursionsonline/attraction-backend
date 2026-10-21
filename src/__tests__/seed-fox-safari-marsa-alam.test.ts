@@ -76,6 +76,65 @@ const PROGRAMMES: Record<string, Record<string, any>> = {
     addons: [{ _id: 'a1', id: 'henna', name: 'Henna Painting', description: 'Traditional hand henna design', price: 5 }],
     entryWindows: [{ _id: 'w1', label: 'Afternoon', startTime: '15:30', endTime: '16:00' }],
   },
+  'hurghada-jeep-safari-redsea': {
+    slug: 'hurghada-jeep-safari-redsea',
+    currency: 'USD',
+    pricingOptions: [{ _id: 'o1', id: 'adult', name: 'Adult', price: 35 }, { _id: 'o2', id: 'child', name: 'Child', price: 24 }],
+    addons: [
+      { _id: 'a1', id: 'addon-photo', name: 'Photography Package', description: 'Professional photos of your experience', price: 15 },
+      { _id: 'a2', id: 'addon-drinks', name: 'Cold Drinks Package', description: 'Unlimited cold drinks during trip', price: 8 },
+      { _id: 'a3', id: 'addon-dinner', name: 'Traditional Bedouin Dinner', description: 'Authentic BBQ dinner under the stars', price: 20 },
+      { _id: 'a4', id: 'addon-camel', name: 'Camel Ride Add-on', description: '30-minute camel ride experience', price: 15 },
+    ],
+    entryWindows: [
+      { _id: 'w1', label: 'Morning Session', startTime: '08:00', endTime: '08:30' },
+      { _id: 'w2', label: 'Late Afternoon Session', startTime: '15:00', endTime: '15:30' },
+    ],
+  },
+  'desert-sea-horse-ride-optional-swimming': {
+    slug: 'desert-sea-horse-ride-optional-swimming',
+    currency: 'USD',
+    pricingOptions: [{ _id: 'o1', id: '0d1d0b54', name: 'Standard', description: 'Per person', price: 29 }],
+    addons: [
+      { _id: 'a1', id: '26bca453', name: 'Professional Photos', description: 'Photos of your ride', price: 15 },
+      { _id: 'a2', id: '4b618211', name: 'Extended Beach Time', description: 'Extra hour at the beach', price: 10 },
+    ],
+    entryWindows: [
+      { _id: 'w1', label: 'Morning', startTime: '07:00', endTime: '08:00' },
+      { _id: 'w2', label: 'Afternoon', startTime: '15:00', endTime: '16:00' },
+      { _id: 'w3', label: 'Sunset', startTime: '17:00', endTime: '18:00' },
+    ],
+  },
+  'luxor-day-trip-valley-kings': {
+    slug: 'luxor-day-trip-valley-kings',
+    currency: 'USD',
+    pricingOptions: [
+      { _id: 'o1', id: 'adult', name: 'Adult', description: 'Full tour', price: 55 },
+      { _id: 'o2', id: 'child', name: 'Child (6-12)', description: 'Full tour', price: 35 },
+    ],
+    addons: [
+      { _id: 'a1', id: 'tut-tomb', name: 'Tutankhamun Tomb Entry', description: 'Enter the tomb of Tutankhamun', price: 20 },
+      { _id: 'a2', id: 'balloon', name: 'Hot Air Balloon at Sunrise', description: 'Early morning balloon ride over West Bank', price: 45 },
+    ],
+    entryWindows: [
+      { _id: 'w1', label: 'Morning', startTime: '07:00', endTime: '08:00' },
+      { _id: 'w2', label: 'Afternoon', startTime: '13:00', endTime: '14:00' },
+    ],
+  },
+  'fts-hurghada-city-tour-bazaar-sand-museum': {
+    slug: 'fts-hurghada-city-tour-bazaar-sand-museum',
+    currency: 'USD',
+    pricingOptions: [
+      { _id: 'o1', id: 'adult', name: 'Adult', description: 'City tour with Sand Museum', price: 18 },
+      { _id: 'o2', id: 'child', name: 'Child (6-12)', description: 'City tour with Sand Museum', price: 12 },
+      { _id: 'o3', id: 'no-museum', name: 'Adult (without Sand Museum)', description: 'City tour only', price: 12 },
+    ],
+    addons: [{ _id: 'a1', id: 'aquarium', name: 'Add Grand Aquarium', description: 'Visit Hurghada Grand Aquarium', price: 15 }],
+    entryWindows: [
+      { _id: 'w1', label: 'Morning Departure', startTime: '03:00', endTime: '04:00' },
+      { _id: 'w2', label: 'Standard Departure', startTime: '07:00', endTime: '08:00' },
+    ],
+  },
 };
 const programmeFor = (tour: FoxTour) => {
   const spec = FOX_PROGRAMME_PRICES[tour.pathSlug];
@@ -142,7 +201,13 @@ describe('Fox Marsa Alam seed contract', () => {
   });
 
   it('sells a desert trip only at the prices of the Desert Fox programme with the same activities, never an invented one', () => {
-    expect(Object.keys(FOX_PROGRAMME_PRICES).sort()).toEqual(['buggy-spider', 'camel-ride', 'desert-atv-adventure', 'quad-sunset-bbq', 'super-safari']);
+    expect(Object.keys(FOX_PROGRAMME_PRICES).sort()).toEqual([
+      'buggy-spider', 'camel-ride', 'desert-atv-adventure', 'el-quseir-city-tour', 'horse-ride', 'jeep-safari', 'luxor-day-trip', 'quad-sunset-bbq', 'super-safari',
+    ]);
+    // Desert Fox's own programmes unless another site is named, and no source in another currency.
+    expect(Object.entries(FOX_PROGRAMME_PRICES).filter(([, spec]) => spec?.tenant).map(([path, spec]) => `${path}<${spec!.tenant}`).sort()).toEqual([
+      'el-quseir-city-tour<future-travel-service', 'horse-ride<sea-horse-sahl-hashesh', 'luxor-day-trip<luxor-tour-from-hurghada',
+    ]);
     const built = Object.fromEntries(FOX_MARSA_ALAM_TOURS.map((tour, index) => [tour.pathSlug, buildTourDocument(tour, index, ['https://res.cloudinary.com/demo/image/upload/a.jpg'], 'tenant-id', programmeFor(tour))]));
     for (const doc of Object.values(built)) {
       expect(doc.rating).toBe(0);
@@ -153,7 +218,7 @@ describe('Fox Marsa Alam seed contract', () => {
       expect(doc.reseller).toEqual({ enabled: false, value: 0, allowedTenants: [] });
     }
     // Trips with no programme of the same activities stay enquiries with no price.
-    for (const path of ['jeep-safari', 'horse-ride', 'el-quseir-city-tour', 'luxor-day-trip', 'airport-transfers']) {
+    for (const path of ['airport-transfers']) {
       expect(built[path]).toEqual(expect.objectContaining({ enquiryOnly: true, pricingOptions: [], addons: [], entryWindows: [] }));
       expect(built[path]).not.toHaveProperty('priceFrom');
       expect((built[path].availability as { type: string }).type).toBe('date-only');
@@ -185,6 +250,37 @@ describe('Fox Marsa Alam seed contract', () => {
     expect(built['camel-ride'].languages).toEqual(['English', 'German', 'Russian', 'Italian', 'Czech', 'Polish']);
     expect(built['camel-ride'].duration).toBe('About 1 hour of riding');
     for (const tour of FOX_MARSA_ALAM_TOURS) expect(tour.openDecisions.some((item) => /price/i.test(item))).toBe(true);
+
+    // The jeep safari includes its dinner and camel ride, so those extras of the source are not sold again.
+    expect(built['jeep-safari']).toEqual(expect.objectContaining({ enquiryOnly: false, priceFrom: 35 }));
+    expect(built['jeep-safari'].pricingOptions).toEqual([
+      { id: 'adult', name: 'Jeep safari', description: 'Jeep, Bedouin village, camel ride, sunset and BBQ dinner with a show', price: 35, childPrice: 24 },
+    ]);
+    expect((built['jeep-safari'].addons as Array<{ id: string }>).map((addon) => addon.id)).toEqual(['addon-photo', 'addon-drinks']);
+    expect(built['jeep-safari'].entryWindows).toEqual([{ label: 'Late Afternoon Session', startTime: '15:00', endTime: '15:30' }]);
+    expect(built['jeep-safari'].needToKnow).toEqual(expect.arrayContaining([expect.stringMatching(/team confirms which ages count as children/)]));
+    // The horse ride sells the two-hour ride under its own name and says how to ask for one hour.
+    expect(built['horse-ride']).toEqual(expect.objectContaining({ priceFrom: 29 }));
+    expect(built['horse-ride'].pricingOptions).toEqual([{ id: '0d1d0b54', name: 'Horse ride (2 hours)', description: 'Beach and desert ride with a guide', price: 29 }]);
+    expect((built['horse-ride'].entryWindows as Array<{ label: string }>).map((window) => window.label)).toEqual(['Morning', 'Afternoon', 'Sunset']);
+    expect((built['horse-ride'].addons as Array<{ id: string }>).map((addon) => addon.id)).toEqual(['26bca453']);
+    expect(built['horse-ride'].needToKnow).toEqual(expect.arrayContaining([expect.stringMatching(/For a one-hour ride, say so when you book/)]));
+    // The Luxor day is sold by the day: the source's departures cannot fit a 16-hour day from Marsa Alam.
+    expect(built['luxor-day-trip']).toEqual(expect.objectContaining({ priceFrom: 55, entryWindows: [] }));
+    expect(built['luxor-day-trip'].availability).toEqual({ type: 'date-only', advanceBooking: 365 });
+    expect(built['luxor-day-trip'].pricingOptions).toEqual([
+      { id: 'adult', name: 'Luxor day trip', description: 'Karnak, the Valley of the Kings and the Temple of Hatshepsut, with lunch', price: 55, childPrice: 35 },
+    ]);
+    expect((built['luxor-day-trip'].addons as Array<{ id: string }>).map((addon) => addon.id)).toEqual(['tut-tomb']);
+    // The town tour keeps its morning departure and leaves out another town's aquarium.
+    expect(built['el-quseir-city-tour']).toEqual(expect.objectContaining({ priceFrom: 18, addons: [] }));
+    expect(built['el-quseir-city-tour'].pricingOptions).toEqual([
+      { id: 'adult', name: 'City tour', description: 'Guided tour with the entrance to the Ottoman fort', price: 18, childPrice: 12 },
+    ]);
+    expect(built['el-quseir-city-tour'].entryWindows).toEqual([{ label: 'Standard Departure', startTime: '07:00', endTime: '08:00' }]);
+    // Nothing copied from another site names that site's town or sights.
+    const copied = Object.values(built).map((doc) => [doc.pricingOptions, doc.addons, doc.entryWindows]);
+    expect(JSON.stringify(copied)).not.toMatch(/Hurghada|Sand Museum|Aquarium/);
   });
 
   it('stops before any write when a programme cannot price a trip faithfully', () => {
@@ -205,6 +301,10 @@ describe('Fox Marsa Alam seed contract', () => {
       pricingOptions: [...PROGRAMMES['wild-desert-jeep-quad-buggy-camel-dinner-show'].pricingOptions, { id: 'kid', name: 'Child (6-12)', price: 15 }],
     })).toThrow(/separate child rate/);
     expect(() => foxProgrammeFacts(camel, FOX_PROGRAMME_PRICES['camel-ride']!, { ...PROGRAMMES['desert-fox-camel-trek-sunset'], pricingOptions: [{ id: 'adult', name: 'Adult', price: 25 }] })).toThrow(/option "child" is missing/);
+    // Renaming an option the trip does not sell.
+    const horse = FOX_MARSA_ALAM_TOURS.find((tour) => tour.pathSlug === 'horse-ride')!;
+    expect(() => foxProgrammeFacts(horse, { ...FOX_PROGRAMME_PRICES['horse-ride']!, rename: { other: { name: 'Ride', description: 'Ride' } } }, PROGRAMMES['desert-sea-horse-ride-optional-swimming']))
+      .toThrow(/option "other" to rename is not sold/);
     // Copied text naming another place, brand or claim.
     expect(() => foxProgrammeFacts(superSafari, spec, {
       ...PROGRAMMES['wild-desert-jeep-quad-buggy-camel-dinner-show'],
@@ -225,8 +325,8 @@ describe('Fox Marsa Alam seed contract', () => {
     });
     const superSafari = buildTourDocument(FOX_MARSA_ALAM_TOURS[0], 0, [], 'tenant-id', programmeFor(FOX_MARSA_ALAM_TOURS[0]));
     expect(superSafari).not.toHaveProperty('duration');
-    const horseRide = FOX_MARSA_ALAM_TOURS.find((tour) => tour.pathSlug === 'horse-ride')!;
-    expect((buildTourDocument(horseRide, 6, [], 'tenant-id').availability as { type: string }).type).toBe('date-only');
+    const transfers = FOX_MARSA_ALAM_TOURS.find((tour) => tour.pathSlug === 'airport-transfers')!;
+    expect((buildTourDocument(transfers, 9, [], 'tenant-id').availability as { type: string }).type).toBe('date-only');
   });
 
   it('says how a shared quad or the buggy dinner is booked, now that the trips are bookable', () => {

@@ -77,10 +77,9 @@ const DESERT_SUITABILITY = [
   'Off-road driving can be bumpy: not recommended during pregnancy or for anyone with back problems.',
 ];
 const TIP_AND_PERSONAL = ['Personal expenses and shopping', 'Tips for the guides and drivers'];
-const PRICE_DECISION = 'Confirm the price list for this trip (adult, child and infant, and per vehicle where a quad or buggy is shared). No price is published, so the trip launches as enquiry-only.';
-const TIME_DECISION = 'Confirm the departure times (morning and sunset slots). None is published, so no time is shown.';
 const PROGRAMME_PRICE_DECISION = 'Confirm the price list for this trip (adult, child and infant, and per vehicle where a quad or buggy is shared). Until the operator sends it, the trip sells at the published prices of the Desert Fox Safari programme with the same activities.';
 const PROGRAMME_TIME_DECISION = 'Confirm the departure times (morning and sunset slots). Until then the trip offers the departures of the matching Desert Fox Safari programme.';
+const NETWORK_PRICE_DECISION = 'Confirm the price list for this trip (adult, child and infant). Until the operator sends it, the trip sells at the published price of the trip with the same content and inclusions on another site of the network, the lowest-priced where several match.';
 const PHOTO_DECISION = 'Send the original photo files: the published copies are 640 px and too small for sharp pages.';
 
 export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
@@ -240,7 +239,7 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
         '4x4 jeep safari from Marsa Alam: Bedouin village, camel ride, acacia tree, desert sunset, BBQ dinner and a Tanura or fire show, with hotel pickup.',
       keywords: ['Marsa Alam jeep safari', 'Bedouin village Marsa Alam', 'Marsa Alam camel ride', 'Marsa Alam desert dinner'],
     },
-    openDecisions: [PRICE_DECISION, TIME_DECISION, 'Confirm the trip length.', PHOTO_DECISION],
+    openDecisions: [PROGRAMME_PRICE_DECISION, PROGRAMME_TIME_DECISION, 'Confirm the trip length.', PHOTO_DECISION],
   },
   {
     slug: 'fox-marsa-alam-buggy-spider',
@@ -627,7 +626,7 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
         'Guided horse riding on the beach and in the desert in Marsa Alam, one or two hours, for beginners and experienced riders, with hotel pickup.',
       keywords: ['Marsa Alam horse riding', 'horse ride on the beach', 'sunset horse ride Marsa Alam', 'Arabian horses Red Sea'],
     },
-    openDecisions: [PRICE_DECISION, 'Confirm the ride times, including the sunset slot.', 'Confirm the minimum age for riders.', PHOTO_DECISION],
+    openDecisions: [NETWORK_PRICE_DECISION, "Confirm the ride times, including the sunset slot, and the one-hour ride's price. Until then the borrowed two-hour ride's times are shown.", 'Confirm the minimum age for riders.', PHOTO_DECISION],
   },
   {
     slug: 'fox-marsa-alam-el-quseir-city-tour',
@@ -703,7 +702,7 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
         'Guided El Quseir tour from Marsa Alam: the Ottoman Fort of Sultan Selim, old town, Sheikh Al-Farran mosque, Coptic church, harbour and souk.',
       keywords: ['El Quseir city tour', 'El Quseir fort', 'Marsa Alam culture trip', 'El Quseir old town'],
     },
-    openDecisions: [PRICE_DECISION, 'Confirm the departure time.', PHOTO_DECISION],
+    openDecisions: [NETWORK_PRICE_DECISION, "Confirm the departure time. Until then the borrowed tour's 07:00 departure is shown.", PHOTO_DECISION],
   },
   {
     slug: 'fox-marsa-alam-luxor-day-trip',
@@ -787,8 +786,8 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
       keywords: ['Luxor day trip from Marsa Alam', 'Marsa Alam to Luxor', 'Valley of the Kings tour', 'Karnak Temple day trip'],
     },
     openDecisions: [
-      PRICE_DECISION,
-      'Confirm the exact pickup time by hotel area.',
+      NETWORK_PRICE_DECISION,
+      'Confirm the exact pickup time by hotel area. The trip is sold by the day until then.',
       'Confirm that the Luxor photos are the operator’s own: several published images on this page were stock and were left out.',
       PHOTO_DECISION,
     ],

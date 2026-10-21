@@ -134,20 +134,30 @@ const DESERT_FOX_SLUG = 'desert-fox-safari';
 const COPIED_FOREIGN = /Hurghada|Makadi|Sharm|Giza|pyramid|El Gouna|Safaga|Desert Fox|Wild Desert/i;
 
 /**
- * Which Desert Fox Safari programme a desert trip borrows its prices from, and which of its options,
- * extras and departures. Only the named ones are copied, so nothing the trip already includes is
- * sold again (its camel ride) and no departure contradicts the trip (a sunset trip has no morning
- * start). Trips with no programme of the same activities are left out and stay enquiries: the jeep
- * safari (Desert Fox's jeep trips add quad and buggy driving, leave out the camel and the dinner, or
- * carry contradictory data), the horse rides, the El Quseir tour, the Luxor day and the transfers.
+ * Which published trip each Fox Marsa Alam trip borrows its prices from, and which of its options,
+ * extras and departures. The desert trips use Desert Fox Safari's own programmes; the jeep safari,
+ * horse ride, Luxor day and El Quseir tour use the trip on the network with the same content and
+ * inclusions, the lowest-priced where several match (owner, 22 October 2026: "Use best price &
+ * choose"). Only the named parts are copied, so nothing the trip already includes is sold again (a
+ * camel ride, a dinner) and no departure contradicts the trip (a sunset trip has no morning start);
+ * a trip with no fitting departure is sold by the day and the team confirms the pickup time. The
+ * airport transfers stay enquiries: no fare for Marsa Alam, Port Ghalib or El Quseir exists on the
+ * network or in the airport-transfer product, and a fare depends on the airport and the group.
  */
 export interface FoxProgrammePrice {
+  /** The site that publishes the trip; Desert Fox Safari when not named. */
+  tenant?: string;
   source: string;
   options: string[];
   /** The programme sells children as a separate option: one option with a child price, and the age band. */
   child?: { adult: string; child: string; name: string; description: string; note: string };
+  /** The site's own name for an option whose source name describes another trip. */
+  rename?: Record<string, { name: string; description: string }>;
   addons: string[];
+  /** Departures by label; none means the trip is sold by the day. */
   departures: string[];
+  /** A "Need to know" line the copied options make necessary. */
+  note?: string;
 }
 
 export const FOX_PROGRAMME_PRICES: Partial<Record<string, FoxProgrammePrice>> = {
@@ -187,6 +197,62 @@ export const FOX_PROGRAMME_PRICES: Partial<Record<string, FoxProgrammePrice>> = 
     },
     addons: [],
     departures: ['Afternoon'],
+  },
+  // Desert Fox's jeep safari: drive, Bedouin village, sunset and BBQ dinner; its dinner and camel
+  // extras are left out because this trip includes both.
+  'jeep-safari': {
+    source: 'hurghada-jeep-safari-redsea',
+    options: ['adult'],
+    child: {
+      adult: 'adult',
+      child: 'child',
+      name: 'Jeep safari',
+      description: 'Jeep, Bedouin village, camel ride, sunset and BBQ dinner with a show',
+      note: 'Children pay the child price. The team confirms which ages count as children when it confirms your booking.',
+    },
+    addons: ['addon-photo', 'addon-drinks'],
+    departures: ['Late Afternoon Session'],
+  },
+  // A two-hour desert and sea ride with hotel pickup, the lowest-priced ride that includes the pickup.
+  'horse-ride': {
+    tenant: 'sea-horse-sahl-hashesh',
+    source: 'desert-sea-horse-ride-optional-swimming',
+    options: ['0d1d0b54'],
+    rename: { '0d1d0b54': { name: 'Horse ride (2 hours)', description: 'Beach and desert ride with a guide' } },
+    addons: ['26bca453'],
+    departures: ['Morning', 'Afternoon', 'Sunset'],
+    note: 'The two-hour ride books online. For a one-hour ride, say so when you book and the team arranges it.',
+  },
+  // Private transport, an Egyptologist, the entrances and lunch, with the Tutankhamun tomb as the
+  // extra it is here too. Its 07:00 and 13:00 departures cannot fit a 16-hour day from Marsa Alam.
+  'luxor-day-trip': {
+    tenant: 'luxor-tour-from-hurghada',
+    source: 'luxor-day-trip-valley-kings',
+    options: ['adult'],
+    child: {
+      adult: 'adult',
+      child: 'child',
+      name: 'Luxor day trip',
+      description: 'Karnak, the Valley of the Kings and the Temple of Hatshepsut, with lunch',
+      note: 'Children aged 6 to 12 pay the child price.',
+    },
+    addons: ['tut-tomb'],
+    departures: [],
+  },
+  // A guided four-hour town tour with an entrance and hotel pickup; its aquarium extra is another town's.
+  'el-quseir-city-tour': {
+    tenant: 'future-travel-service',
+    source: 'fts-hurghada-city-tour-bazaar-sand-museum',
+    options: ['adult'],
+    child: {
+      adult: 'adult',
+      child: 'child',
+      name: 'City tour',
+      description: 'Guided tour with the entrance to the Ottoman fort',
+      note: 'Children aged 6 to 12 pay the child price.',
+    },
+    addons: [],
+    departures: ['Standard Departure'],
   },
 };
 
@@ -232,6 +298,11 @@ export function foxProgrammeFacts(tour: FoxTour, spec: FoxProgrammePrice, progra
       : option));
     notes.push(terms.note);
   }
+  for (const [id, words] of Object.entries(spec.rename || {})) {
+    if (!pricingOptions.some((option) => option.id === id)) throw new Error(`${where}: option "${id}" to rename is not sold.`);
+    pricingOptions = pricingOptions.map((option) => (option.id === id ? { ...option, ...words } : option));
+  }
+  if (spec.note) notes.push(spec.note);
   const addons = pick(programme.addons, spec.addons, 'id', 'extra').map(priced('extra'));
   const entryWindows = pick(programme.entryWindows, spec.departures, 'label', 'departure');
 
@@ -318,12 +389,20 @@ export function validateFoxMarsaAlamPlan(): string[] {
     if (!spec) continue;
     if (!paths.has(pathSlug)) errors.push(`Programme prices for a trip the catalogue does not carry: ${pathSlug}`);
     if (!spec.options.length || new Set(spec.options).size !== spec.options.length) errors.push(`${pathSlug}: options must name distinct programme options.`);
-    if (!spec.departures.length || new Set(spec.departures).size !== spec.departures.length) errors.push(`${pathSlug}: departures must name distinct programme departures.`);
+    if (new Set(spec.departures).size !== spec.departures.length || spec.departures.some((label) => !label.trim())) errors.push(`${pathSlug}: departures must name distinct programme departures.`);
     if (new Set(spec.addons).size !== spec.addons.length) errors.push(`${pathSlug}: extras must be distinct.`);
+    if (spec.tenant !== undefined && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(spec.tenant)) errors.push(`${pathSlug}: invalid source site.`);
     if (spec.child) {
       if (!spec.options.includes(spec.child.adult) || spec.options.includes(spec.child.child)) errors.push(`${pathSlug}: the child price rides on the adult option.`);
-      const terms = [spec.child.name, spec.child.description, spec.child.note].join('\n');
-      if (UNBACKED_CLAIMS.test(terms) || EMOJI.test(terms) || PROCESS_MARKERS.test(terms)) errors.push(`${pathSlug}: child terms carry a claim, an emoji or a process marker.`);
+    }
+    for (const id of Object.keys(spec.rename || {})) {
+      if (!spec.options.includes(id)) errors.push(`${pathSlug}: renames an option it does not sell: ${id}`);
+    }
+    // Words this site writes over the source's: the same rules as the trip's own copy.
+    const words = [spec.child?.name, spec.child?.description, spec.child?.note, spec.note, ...Object.values(spec.rename || {}).flatMap((entry) => [entry.name, entry.description])]
+      .filter((text): text is string => typeof text === 'string').join('\n');
+    if (UNBACKED_CLAIMS.test(words) || EMOJI.test(words) || PROCESS_MARKERS.test(words) || COPIED_FOREIGN.test(words)) {
+      errors.push(`${pathSlug}: option words carry a claim, an emoji, a process marker or another place.`);
     }
   }
   const tenantCopy = JSON.stringify([FOX_TENANT.tagline, FOX_TENANT.description, FOX_TENANT.seoSettings]);
@@ -463,14 +542,20 @@ async function loadExisting() {
     listedByOtherTenant: (record.tenantIds || []).some((id: unknown) => !existingTenant || String(id) !== String(existingTenant._id)),
   })));
 
-  // The Desert Fox programmes the desert trips are priced from: the main company's own, active records.
-  const desertFox = await Tenant.findOne({ slug: DESERT_FOX_SLUG }).select('_id');
-  const sourceSlugs = [...new Set(Object.values(FOX_PROGRAMME_PRICES).map((spec) => spec!.source))];
-  const found = desertFox
-    ? await Attraction.find({ slug: { $in: sourceSlugs }, ownerTenantId: desertFox._id, status: 'active' }).lean()
-    : [];
-  const programmes = new Map(found.map((programme) => [programme.slug as string, programme as ProgrammeDoc]));
-  const missingProgrammes = sourceSlugs.filter((slug) => !programmes.has(slug));
+  // The trips prices are borrowed from: each one active and owned by the active site named for it.
+  const specs = Object.values(FOX_PROGRAMME_PRICES).filter((spec): spec is FoxProgrammePrice => Boolean(spec));
+  const owners = await Tenant.find({ slug: { $in: [...new Set(specs.map((spec) => spec.tenant ?? DESERT_FOX_SLUG))] }, status: 'active' }).select('_id slug').lean();
+  const ownerIds = new Map(owners.map((owner) => [owner.slug as string, owner._id]));
+  const programmes = new Map<string, ProgrammeDoc>();
+  const missingProgrammes: string[] = [];
+  for (const spec of specs) {
+    const site = spec.tenant ?? DESERT_FOX_SLUG;
+    if (programmes.has(spec.source)) continue;
+    const ownerId = ownerIds.get(site);
+    const programme = ownerId ? await Attraction.findOne({ slug: spec.source, ownerTenantId: ownerId, status: 'active' }).lean() : null;
+    if (programme) programmes.set(spec.source, programme as ProgrammeDoc);
+    else missingProgrammes.push(`${site}/${spec.source}`);
+  }
 
   // A site sells in one currency, so every other tour on it (any status) must already be in the new one.
   const otherTours = existingTenant
