@@ -14,6 +14,7 @@
     "seed:cave-divers": "ts-node src/scripts/seed-cave-divers.ts",
     "seed:paradise-island": "ts-node src/scripts/seed-paradise-island.ts",
     "seed:hula-hula-island": "ts-node src/scripts/seed-hula-hula-island.ts",
+    "seed:fox-safari-marsa-alam": "ts-node src/scripts/seed-fox-safari-marsa-alam.ts",
     "images:queen-magi-islands": "ts-node src/scripts/generate-queen-magi-island-images.ts",
     "images:cave-divers": "ts-node src/scripts/generate-cave-divers-images.ts",
     "images:cave-divers:import": "ts-node src/scripts/import-cave-divers-images.ts",
