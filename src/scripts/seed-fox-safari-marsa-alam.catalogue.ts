@@ -2,9 +2,9 @@
  * Fox Marsa Alam catalogue: the ten trips the operator publishes on foxmarsaalam.com.
  *
  * Wording follows the operator's own trip pages, trimmed of superlatives; nothing the
- * operator has not published is added. The operator publishes no prices, durations for
- * most trips, departure times or group sizes, so none is set here and each gap is an
- * open decision. Photos are the operator's own, as embedded on its trip pages (hosted on
+ * operator has not published is added. The operator publishes no prices, departure times
+ * or group sizes, so none is set here and each gap is an open decision; a duration appears
+ * only on the trips whose page states one. Photos are the operator's own, as embedded on its trip pages (hosted on
  * the operator's image host at 640 px); stock and marketplace images on those pages were
  * left out on review.
  */
@@ -334,6 +334,7 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
     ].join('\n\n'),
     category: 'desert-safari',
     city: 'Marsa Alam',
+    duration: 'About 4–5 hours',
     entryWindows: [],
     hasHotelPickup: true,
     pickupNote: PICKUP_AREAS_NOTE,
@@ -398,7 +399,7 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
         'Afternoon quad bike ride from Marsa Alam to a Bedouin village, desert sunset, BBQ dinner and a Tanura or fire show, with hotel pickup and transfers.',
       keywords: ['Marsa Alam sunset quad', 'quad safari Marsa Alam', 'quad and BBQ dinner', 'Marsa Alam desert sunset'],
     },
-    openDecisions: [PRICE_DECISION, 'Confirm the afternoon pickup time. None is published.', 'Confirm the trip length.', PHOTO_DECISION],
+    openDecisions: [PRICE_DECISION, 'Confirm the afternoon pickup time. None is published.', PHOTO_DECISION],
   },
   {
     slug: 'fox-marsa-alam-desert-atv-adventure',
@@ -413,6 +414,7 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
     ].join('\n\n'),
     category: 'desert-safari',
     city: 'Marsa Alam',
+    duration: 'About 3 hours',
     entryWindows: [],
     hasHotelPickup: true,
     pickupNote: PICKUP_AREAS_NOTE,
@@ -478,7 +480,7 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
         'Ride your own quad bike in the Marsa Alam desert to the acacia tree and a Bedouin village, with bread-making, Bedouin tea, a camel ride and hotel pickup.',
       keywords: ['Marsa Alam quad bike', 'ATV Marsa Alam', 'quad safari Bedouin village', 'Marsa Alam desert tour'],
     },
-    openDecisions: [PRICE_DECISION, TIME_DECISION, 'Confirm the trip length and the rental price of goggles and headscarves.', PHOTO_DECISION],
+    openDecisions: [PRICE_DECISION, TIME_DECISION, 'Confirm the rental price of goggles and headscarves.', PHOTO_DECISION],
   },
   {
     slug: 'fox-marsa-alam-camel-ride',
@@ -636,6 +638,7 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
     ].join('\n\n'),
     category: 'cultural-tours',
     city: 'El Quseir',
+    duration: 'About 4 hours',
     entryWindows: [],
     hasHotelPickup: true,
     pickupNote: 'Pickup and drop-off at your hotel in Marsa Alam; the drive up the coast to El Quseir is included.',
@@ -696,7 +699,7 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
         'Guided El Quseir tour from Marsa Alam: the Ottoman Fort of Sultan Selim, old town, Sheikh Al-Farran mosque, Coptic church, harbour and souk.',
       keywords: ['El Quseir city tour', 'El Quseir fort', 'Marsa Alam culture trip', 'El Quseir old town'],
     },
-    openDecisions: [PRICE_DECISION, 'Confirm the departure time and trip length.', PHOTO_DECISION],
+    openDecisions: [PRICE_DECISION, 'Confirm the departure time.', PHOTO_DECISION],
   },
   {
     slug: 'fox-marsa-alam-luxor-day-trip',
@@ -711,7 +714,7 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
     ].join('\n\n'),
     category: 'day-trips',
     city: 'Luxor',
-    duration: 'Full day',
+    duration: 'Full day (about 16 hours)',
     entryWindows: [],
     hasHotelPickup: true,
     pickupNote: 'Pickup from your hotel in Marsa Alam very early in the morning (around 4–5 am); the drive to Luxor takes about 4–5 hours each way.',

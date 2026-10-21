@@ -36,8 +36,9 @@ describe('Fox Marsa Alam seed contract', () => {
       email: 'info@foxmarsaalam.com',
       phone: '+20 103 968 8089',
       whatsapp: '+201039688089',
-      supportHours: 'Daily 08:00–21:00',
     }));
+    // The operator publishes two contradicting sets of hours, so none is claimed.
+    expect(FOX_TENANT.contactInfo).not.toHaveProperty('supportHours');
     expect(FOX_TENANT.theme).toEqual({ primaryColor: '#D9612A', secondaryColor: '#2D1810', accentColor: '#F1E5C9' });
     expect(FOX_TENANT.navigation.map((item) => item.href)).toEqual(['/', '/safaris', '/about', '/faq', '/contact']);
     expect(FOX_TENANT.pickupDestinationSlugs).toEqual(['marsa-alam']);
@@ -81,7 +82,14 @@ describe('Fox Marsa Alam seed contract', () => {
   it('publishes a departure time or a duration only where the operator states one', () => {
     expect(FOX_MARSA_ALAM_TOURS.every((tour) => tour.entryWindows.length === 0)).toBe(true);
     const withDuration = Object.fromEntries(FOX_MARSA_ALAM_TOURS.filter((tour) => tour.duration).map((tour) => [tour.pathSlug, tour.duration]));
-    expect(withDuration).toEqual({ 'camel-ride': 'About 1 hour of riding', 'horse-ride': '1 or 2 hours', 'luxor-day-trip': 'Full day' });
+    expect(withDuration).toEqual({
+      'quad-sunset-bbq': 'About 4–5 hours',
+      'desert-atv-adventure': 'About 3 hours',
+      'camel-ride': 'About 1 hour of riding',
+      'horse-ride': '1 or 2 hours',
+      'el-quseir-city-tour': 'About 4 hours',
+      'luxor-day-trip': 'Full day (about 16 hours)',
+    });
     const superSafari = buildTourDocument(FOX_MARSA_ALAM_TOURS[0], 0, [], 'tenant-id');
     expect(superSafari).not.toHaveProperty('duration');
     expect((superSafari.availability as { type: string }).type).not.toBe('time-slots');

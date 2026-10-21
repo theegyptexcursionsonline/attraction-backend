@@ -83,7 +83,7 @@ export const FOX_TENANT = {
     phone: '+20 103 968 8089',
     whatsapp: '+201039688089',
     address: 'Marsa Alam & El Quseir, Red Sea, Egypt',
-    supportHours: 'Daily 08:00–21:00',
+    // The operator's site states two different sets of opening hours; none is shown until it confirms one.
   },
   socialLinks: {},
   notificationSettings: { bookingEmail: LAUNCH_BOOKING_INBOX },
