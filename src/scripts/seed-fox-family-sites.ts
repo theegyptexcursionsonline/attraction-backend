@@ -264,7 +264,7 @@ export function familyTripDocument(site: SiteSpec, trip: FamilySiteTrip, source:
     category: source.category || 'adventure',
     ...(source.subcategory ? { subcategory: source.subcategory } : {}),
     destination: { city: site.city, country: 'Egypt', coordinates: site.coordinates },
-    ...(source.duration ? { duration: source.duration } : {}),
+    ...(trip.duration || source.duration ? { duration: trip.duration || source.duration } : {}),
     languages: priced ? cleanList(source.languages) : [],
     rating: 0,
     reviewCount: 0,

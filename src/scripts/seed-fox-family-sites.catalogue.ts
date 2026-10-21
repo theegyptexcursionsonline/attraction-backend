@@ -15,6 +15,8 @@ export interface FamilySiteTrip {
   /** Public address on the site (flat URL). */
   path: string;
   title: string;
+  /** Overrides the programme's own length where it contradicts its options (e.g. "4 hours" sold as 3- or 5-hour rides). */
+  duration?: string;
   short: string;
   description: string;
   highlights: string[];
@@ -314,6 +316,7 @@ export const FAMILY_SITE_TRIPS: Record<FamilySiteSlug, FamilySiteTrip[]> = {
       "source": "wild-desert-quad-atv-private-experience",
       "path": "private-quad",
       "title": "Private Quad Bike Ride with a Camel Ride (3 or 5 Hours)",
+      "duration": "3 or 5 hours",
       "short": "A private quad ride with your own guide, who sets the route to your experience, plus a camel ride.",
       "description": "A private trip for your group with your own guide, who plans the route around your riding experience. Ride your quad over the dunes and finish with a camel ride.\n\nChoose three hours (quad and camel) or five hours, which adds more of the desert and dinner. Tea, safety gear and hotel pickup are included.",
       "highlights": [
@@ -560,6 +563,7 @@ export const FAMILY_SITE_TRIPS: Record<FamilySiteSlug, FamilySiteTrip[]> = {
       "source": "wild-desert-quad-atv-private-experience",
       "path": "private-quad",
       "title": "Private Quad Bike Trip with Camel Ride",
+      "duration": "3 or 5 hours",
       "short": "A private quad trip with your own guide and a camel ride, three or five hours.",
       "description": "A private trip for your group, with a guide who sets the route to your riding experience. Ride your quad over the dunes, then take a camel ride.\n\nChoose three hours, or five hours with more desert and dinner. Tea, safety gear and pickup from your Makadi Bay hotel are included.",
       "highlights": [

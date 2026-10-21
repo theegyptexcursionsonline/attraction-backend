@@ -132,6 +132,13 @@ describe('Fox family sites seed contract', () => {
       .toEqual({ options: [{ id: '3hr', name: '3-Hour Private', price: 30 }], notes: [] });
   });
 
+  it("states a trip's own length where the programme's contradicts its options", () => {
+    const privateQuad = FAMILY_SITE_TRIPS['fox-safari-hurghada'].find((item) => item.path === 'private-quad')!;
+    const document = familyTripDocument(site('fox-safari-hurghada'), privateQuad, { ...SOURCE, duration: '4 hours' }, 0, 'tenant-1');
+    expect(document.duration).toBe('3 or 5 hours');
+    expect(familyTripDocument(site('fox-safari-hurghada'), trip('fox-safari-hurghada'), SOURCE, 0, 'tenant-1').duration).toBe('5 hours');
+  });
+
   it('recognises the claims the network cannot back', () => {
     for (const claim of ['Our #1 bestseller', '1,800+ five-star reviews', 'Rated 4.6★', 'Small group (max 8 buggies)', 'Skip-the-line', 'Free cancellation up to 24 hours']) {
       expect(UNBACKED_CLAIMS.test(claim)).toBe(true);
