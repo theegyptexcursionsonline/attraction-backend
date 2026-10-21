@@ -5,13 +5,15 @@
  *   company". They sell Desert Fox's own programmes at Desert Fox's published prices (USD), pay
  *   later, with the main company's phone and email until each city sends its own.
  * - Power Safari Marsa Alam: "another client but still operate the same tours as Desert Fox
- *   Safari". Same programmes, enquiry-only until Power Safari confirms its own prices, with no guide
- *   languages, departure times or extras claimed on its behalf.
+ *   Safari". Same programmes, sold at Desert Fox's published prices, departures and extras (owner
+ *   decision, 22 October 2026) until Power Safari sends its own; `priced: false` turns it back into
+ *   enquiries with no languages, times or extras claimed on its behalf.
  *
  * Every trip copies the structured facts of a named Desert Fox programme at apply time (options,
  * prices, departures, extras, inclusions, schedule) and carries words written per site. Nothing
  * copies Desert Fox's ratings (seeded at random: `seed-desert-fox-wild-tours.ts`), review counts,
- * rankings, cancellation promise or instant confirmation.
+ * rankings, cancellation promise or instant confirmation, and the run stops before its first write
+ * if any copied text names a place or brand the site does not carry.
  *
  * The backend's designMode list cannot take new names until its next release, so the tenants keep
  * `desertfox` and the storefront picks each site's own design by slug.
@@ -99,12 +101,12 @@ export const FAMILY_SITES: SiteSpec[] = [
     slugPrefix: 'power-safari-',
     city: 'Marsa Alam',
     coordinates: { lat: 25.0676, lng: 34.879 },
-    priced: false,
+    priced: true,
     foreignPlaces: /Hurghada|Makadi|Sharm|Giza|pyramid|Desert Fox/i,
     tagline: 'Quad, buggy and jeep rides from Marsa Alam',
     description: [
       'Power Safari Marsa Alam runs desert trips from Marsa Alam: quad and buggy rides, 4x4 jeep safaris, camel rides and a Super Safari with a Bedouin BBQ dinner.',
-      'Every trip includes pickup from your hotel in Marsa Alam. Send us your dates and the trip you want, and the team replies with prices and times; nothing is paid online.',
+      'Every trip includes pickup from your hotel in Marsa Alam. Book online and pay later, or send the team a question first.',
     ].join('\n\n'),
     contactInfo: { address: 'Marsa Alam, Red Sea, Egypt' },
     seo: {
@@ -155,6 +157,9 @@ export function validateFamilySitesPlan(): string[] {
       if (site.foreignPlaces.test(copy)) errors.push(`${slug}: copy names a place this site does not serve.`);
       if (!trip.seo.metaTitle || trip.seo.metaTitle.length > 70) errors.push(`${slug}: SEO title missing or too long.`);
       if (!trip.seo.metaDescription || trip.seo.metaDescription.length > 165) errors.push(`${slug}: SEO description missing or too long.`);
+      if (trip.departures && (!trip.departures.length || new Set(trip.departures).size !== trip.departures.length || trip.departures.some((label) => !label.trim()))) {
+        errors.push(`${slug}: departures must name distinct programme departures.`);
+      }
     }
   }
   const pricedSources = new Set(FAMILY_SITES.filter((site) => site.priced).flatMap((site) => FAMILY_SITE_TRIPS[site.slug].map((trip) => trip.source)));
@@ -229,6 +234,36 @@ export function familyPricing(sourceSlug: string, options: SourceDoc[] | undefin
   }
   return { options: list, notes };
 }
+
+/** The programme's departures a trip sells: all of them, or the named ones. A named departure the programme lacks stops the run. */
+export function familyDepartures(slug: string, windows: SourceDoc[] | undefined, labels: string[] | undefined): Record<string, unknown>[] {
+  const all = withoutIds(windows);
+  if (!labels) return all;
+  return labels.map((label) => {
+    const hit = all.find((window) => window.label === label);
+    if (!hit) throw new Error(`${slug}: departure "${label}" is missing from the programme.`);
+    return hit;
+  });
+}
+
+/**
+ * Text a trip copies from its programme, checked before the first write: the programme is another
+ * company's live record, so a place, a brand or a claim added to it later must not reach this site.
+ */
+export function copiedFactProblems(site: SiteSpec, document: Record<string, unknown>): string[] {
+  const texts = (items: unknown, ...keys: string[]): string[] => (Array.isArray(items) ? items : [])
+    .flatMap((item) => (typeof item === 'string' ? [item] : keys.map((key) => (item as Record<string, unknown> | null)?.[key])))
+    .filter((text): text is string => typeof text === 'string');
+  return [
+    ...texts(document.pricingOptions, 'name', 'description'),
+    ...texts(document.addons, 'name', 'description'),
+    ...texts(document.entryWindows, 'label'),
+    ...texts(document.itinerary, 'title', 'description'),
+    ...['inclusions', 'exclusions', 'whatToBring', 'needToKnow', 'participantRequirements', 'accessibility', 'languages'].flatMap((field) => texts(document[field])),
+  ]
+    .filter((text) => site.foreignPlaces.test(text) || FOREIGN_BRANDS.test(text) || UNBACKED_CLAIMS.test(text) || EMOJI.test(text))
+    .map((text) => `${String(document.slug)}: copied text names another place or brand, or makes a claim: "${text}"`);
+}
 const cleanList = (items: unknown, extra?: (item: string) => string | null): string[] =>
   (Array.isArray(items) ? items : [])
     .filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
@@ -249,7 +284,7 @@ export function familyTripDocument(site: SiteSpec, trip: FamilySiteTrip, source:
   const valid = pricingOptions.filter((option) => Number.isFinite(priceOf(option)) && priceOf(option) > 0);
   const adult = valid.filter((option) => !/\b(?:child|children|kids?|infants?|baby|babies|toddlers?)\b/i.test(String(option.name || '')));
   const prices = (adult.length ? adult : valid).map(priceOf);
-  const entryWindows = priced ? withoutIds(source.entryWindows) : [];
+  const entryWindows = priced ? familyDepartures(`${site.slugPrefix}${trip.path}`, source.entryWindows, trip.departures) : [];
   const inclusions = cleanList(source.inclusions, neutral);
   const pickup = source.hasHotelPickup === true || inclusions.some((item) => /hotel pickup/i.test(item));
   return {
@@ -381,21 +416,53 @@ async function loadState() {
   return { sources: new Map(sources.map((source) => [source.slug as string, source as SourceDoc])), missing, sites };
 }
 
+/** Every trip document of one site, built before anything is written, with the copied-text problems. */
+function planSiteTrips(site: SiteSpec, sources: Map<string, SourceDoc>, tenantId: unknown) {
+  const problems: string[] = [];
+  const documents = FAMILY_SITE_TRIPS[site.slug].flatMap((trip, index) => {
+    const source = sources.get(trip.source);
+    if (!source) return [];
+    try {
+      const document = familyTripDocument(site, trip, source, index, tenantId);
+      problems.push(...copiedFactProblems(site, document));
+      return [document];
+    } catch (error) {
+      problems.push(error instanceof Error ? error.message : String(error));
+      return [];
+    }
+  });
+  return { documents, problems };
+}
+
+const tripSummary = (document: Record<string, unknown>) => ({
+  slug: document.slug,
+  enquiryOnly: document.enquiryOnly,
+  from: document.priceFrom ?? null,
+  options: (document.pricingOptions as Array<{ name: string; price: number; childPrice?: number }>).map((option) => `${option.name}: ${option.price}${option.childPrice !== undefined ? ` (child ${option.childPrice})` : ''}`),
+  departures: (document.entryWindows as Array<{ label: string; startTime: string }>).map((window) => `${window.label} ${window.startTime}`),
+  extras: (document.addons as Array<{ name: string; price: number }>).map((addon) => `${addon.name}: ${addon.price}`),
+});
+
 async function checkPlan(): Promise<void> {
   const { connectDatabase, disconnectDatabase } = await import('../config/database');
   await connectDatabase();
   try {
-    const { missing, sites } = await loadState();
+    const { sources, missing, sites } = await loadState();
     console.log(JSON.stringify({
       mode: 'check',
       missingSourceProgrammes: missing,
-      sites: sites.map(({ site, existing, namespaceConflict, existingSlugs, collision }) => ({
-        slug: site.slug,
-        tenant: existing ? { action: 'update', status: existing.status } : { action: 'create' },
-        namespaceConflict: namespaceConflict?.slug ?? null,
-        existingTripSlugs: existingSlugs,
-        collision,
-      })),
+      sites: sites.map(({ site, existing, namespaceConflict, existingSlugs, collision }) => {
+        const plan = planSiteTrips(site, sources, existing?._id ?? null);
+        return {
+          slug: site.slug,
+          tenant: existing ? { action: 'update', status: existing.status } : { action: 'create' },
+          namespaceConflict: namespaceConflict?.slug ?? null,
+          existingTripSlugs: existingSlugs,
+          collision,
+          copyProblems: plan.problems,
+          trips: plan.documents.map(tripSummary),
+        };
+      }),
       writes: 'none',
     }, null, 2));
   } finally {
@@ -426,6 +493,8 @@ async function applyPlan(): Promise<void> {
       if (existing?.domainMigrated) throw new Error(`${site.slug}: already serves its own domain.`);
       if (namespaceConflict) throw new Error(`${site.slug}: namespace owned by ${namespaceConflict.slug}.`);
       if (collision) throw new Error(`${site.slug}: ${collision}`);
+      const { problems } = planSiteTrips(site, sources, existing?._id ?? null);
+      if (problems.length) throw new Error(`${site.slug}: nothing was written.\n- ${problems.join('\n- ')}`);
     }
 
     const report = [];

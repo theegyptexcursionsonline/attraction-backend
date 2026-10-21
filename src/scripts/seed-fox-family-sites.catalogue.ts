@@ -17,6 +17,8 @@ export interface FamilySiteTrip {
   title: string;
   /** Overrides the programme's own length where it contradicts its options (e.g. "4 hours" sold as 3- or 5-hour rides). */
   duration?: string;
+  /** The programme's departures to sell, by label, where one fits none of its options (a morning start for a dinner show). */
+  departures?: string[];
   short: string;
   description: string;
   highlights: string[];
@@ -100,6 +102,7 @@ export const FAMILY_SITE_TRIPS: Record<FamilySiteSlug, FamilySiteTrip[]> = {
     {
       "source": "wild-desert-jeep-quad-buggy-camel-dinner-show",
       "path": "jeep-safari",
+      "departures": ["Afternoon"],
       "title": "Jeep Safari with Quad, Buggy, Camel Ride and Dinner Show",
       "short": "A 4x4 jeep ride into the desert, then a quad bike, a buggy and a camel ride, with dinner and a show at the camp.",
       "description": "The trip that tries everything. A 4x4 jeep takes you into the desert, where you ride a quad bike, drive a buggy and finish with a camel ride to the camp.\n\nAt the camp there is tea, dinner and a show with belly dancing and a fire show. Choose the standard trip, or the longer one that stays on for stargazing.",
@@ -473,6 +476,7 @@ export const FAMILY_SITE_TRIPS: Record<FamilySiteSlug, FamilySiteTrip[]> = {
     {
       "source": "wild-desert-jeep-quad-buggy-camel-dinner-show",
       "path": "desert-combo",
+      "departures": ["Afternoon"],
       "title": "Desert Combo: Jeep, Quad, Buggy, Camel and Dinner Show",
       "short": "Jeep, quad bike, buggy and camel in one trip, with dinner and a fire show at the camp.",
       "description": "Four ways to cross the desert in one trip. A 4x4 jeep takes you out from Makadi Bay, then you ride a quad bike, drive a buggy and finish on a camel.\n\nAt the camp there is tea, dinner and a show with belly dancing and fire. A longer option stays on for stargazing.",
@@ -598,7 +602,7 @@ export const FAMILY_SITE_TRIPS: Record<FamilySiteSlug, FamilySiteTrip[]> = {
       "path": "super-safari",
       "title": "Super Safari: Quad, Camel and Bedouin BBQ",
       "short": "Quad bikes, a camel ride to a Bedouin camp and a BBQ dinner with music, with pickup from your hotel in Marsa Alam.",
-      "description": "Pickup from your hotel in Marsa Alam and out to the desert. Safety briefing, then quad bikes across the dunes before you switch to a camel for the ride into camp.\n\nTea, a BBQ dinner with soft drinks and Bedouin music and dancing, then back to your hotel. Ask us for dates and prices.",
+      "description": "Pickup from your hotel in Marsa Alam and out to the desert. Safety briefing, then quad bikes across the dunes before you switch to a camel for the ride into camp.\n\nTea, a BBQ dinner with soft drinks and Bedouin music and dancing, then back to your hotel.",
       "highlights": [
         "Quad bike and camel ride",
         "BBQ dinner at a Bedouin camp",
@@ -621,7 +625,7 @@ export const FAMILY_SITE_TRIPS: Record<FamilySiteSlug, FamilySiteTrip[]> = {
       "path": "quad-camel",
       "title": "Quad and Camel Ride, Optional BBQ",
       "short": "Ride a quad bike over the dunes and a camel through the desert; stay for a BBQ dinner if you like.",
-      "description": "Quad first: ride across the dunes with your guide. Then a camel for the slower part of the desert, with tea and water.\n\nAsk for the short ride or the evening version with a BBQ dinner and a show. Pickup from your Marsa Alam hotel is included.",
+      "description": "Quad first: ride across the dunes with your guide. Then a camel for the slower part of the desert, with tea and water.\n\nChoose the short ride, or the evening version with a BBQ dinner and a show. Pickup from your Marsa Alam hotel is included.",
       "highlights": [
         "Quad bike and camel ride",
         "Evening version with a BBQ dinner",
@@ -642,9 +646,10 @@ export const FAMILY_SITE_TRIPS: Record<FamilySiteSlug, FamilySiteTrip[]> = {
     {
       "source": "wild-desert-jeep-quad-buggy-camel-dinner-show",
       "path": "jeep-combo",
+      "departures": ["Afternoon"],
       "title": "Jeep, Quad, Buggy and Camel with Dinner Show",
       "short": "Every way to cross the desert in one trip, then dinner and a fire show at camp.",
-      "description": "A 4x4 jeep takes you in, then you ride a quad, drive a buggy and finish on a camel.\n\nAt camp: tea, dinner and a show with belly dancing and fire. Pickup from your Marsa Alam hotel is included; ask about staying on for stargazing.",
+      "description": "A 4x4 jeep takes you in, then you ride a quad, drive a buggy and finish on a camel.\n\nAt camp: tea, dinner and a show with belly dancing and fire. Pickup from your Marsa Alam hotel is included, and a longer option stays on for stargazing.",
       "highlights": [
         "Jeep, quad, buggy and camel",
         "Dinner with a fire show",
@@ -690,7 +695,7 @@ export const FAMILY_SITE_TRIPS: Record<FamilySiteSlug, FamilySiteTrip[]> = {
       "path": "buggy-bbq",
       "title": "Dune Buggy Drive, Optional BBQ",
       "short": "Drive a dune buggy through dunes, plains and rocky valleys; add a BBQ dinner to stay for the evening.",
-      "description": "You drive, your co-pilot rides beside you. Dunes, open plains and rocky valleys, after a safety briefing and with full safety gear.\n\nAsk for the short drive or the longer evening with a Bedouin BBQ dinner. Tea, water and pickup from your Marsa Alam hotel are included.",
+      "description": "You drive, your co-pilot rides beside you. Dunes, open plains and rocky valleys, after a safety briefing and with full safety gear.\n\nChoose the short drive or the longer evening with a Bedouin BBQ dinner. Tea, water and pickup from your Marsa Alam hotel are included.",
       "highlights": [
         "Drive the buggy yourself",
         "Dunes, plains and rocky valleys",
@@ -736,7 +741,7 @@ export const FAMILY_SITE_TRIPS: Record<FamilySiteSlug, FamilySiteTrip[]> = {
       "path": "camel-sunset",
       "title": "Sunset Camel Ride",
       "short": "A slow camel ride over the dunes to a Bedouin camp for tea and the sunset.",
-      "description": "Swap the engine for a camel. Ride over the dunes to a Bedouin camp for fresh tea and the sunset over the mountains.\n\nPickup from your Marsa Alam hotel is included. Ask us for dates and prices.",
+      "description": "Swap the engine for a camel. Ride over the dunes to a Bedouin camp for fresh tea and the sunset over the mountains.\n\nPickup from your Marsa Alam hotel is included, and children share a camel with an adult.",
       "highlights": [
         "Camel ride over the dunes",
         "Tea at a Bedouin camp",

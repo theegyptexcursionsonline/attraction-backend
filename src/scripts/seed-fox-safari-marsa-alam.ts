@@ -8,11 +8,12 @@
  *
  * Every fact comes from the operator's own published site (trip descriptions,
  * itineraries, inclusions, notes, contact points, service area). The operator
- * publishes no prices: today every trip is booked as a request with no payment
- * taken. The catalogue therefore launches enquiry-only — each trip shows its full
- * detail and a designed enquiry route, never an invented price — and becomes
- * bookable when the operator confirms a price list. Every unconfirmed point is
- * recorded in `openDecisions` (internal only).
+ * publishes no prices. Until it sends its price list (owner decision, 22 October
+ * 2026), each desert trip with a Desert Fox Safari programme of the same activities
+ * sells at that programme's published prices, departures and extras, in US dollars
+ * as the programme publishes them (`FOX_PROGRAMME_PRICES`); a price is never
+ * invented or converted. The other trips stay enquiries with a designed enquiry
+ * route. Every unconfirmed point is recorded in `openDecisions` (internal only).
  *
  * Trip slugs carry the `fox-marsa-alam-` prefix so they can never collide on the
  * global slug index; each trip's public address is its short `pathSlug`.
@@ -73,7 +74,8 @@ export const FOX_TENANT = {
   theme: { primaryColor: '#D9612A', secondaryColor: '#2D1810', accentColor: '#F1E5C9' },
   fonts: { heading: 'Cinzel', body: 'Inter' },
   designMode: 'desertfox',
-  defaultCurrency: 'EUR',
+  // A site sells in one currency: the Desert Fox programme prices its trips carry are in US dollars.
+  defaultCurrency: 'USD',
   defaultLanguage: 'en',
   supportedLanguages: ['en'],
   timezone: 'Africa/Cairo',
@@ -125,6 +127,123 @@ function customerCopy(tour: FoxTour): string {
     tour.inclusions, tour.exclusions, tour.whatToBring, tour.needToKnow, tour.accessibility,
     tour.participantRequirements, tour.seo, tour.pickupNote,
   ]);
+}
+
+const DESERT_FOX_SLUG = 'desert-fox-safari';
+/** Places and brands a copied programme option, extra or departure must never name on this site. */
+const COPIED_FOREIGN = /Hurghada|Makadi|Sharm|Giza|pyramid|El Gouna|Safaga|Desert Fox|Wild Desert/i;
+
+/**
+ * Which Desert Fox Safari programme a desert trip borrows its prices from, and which of its options,
+ * extras and departures. Only the named ones are copied, so nothing the trip already includes is
+ * sold again (its camel ride) and no departure contradicts the trip (a sunset trip has no morning
+ * start). Trips with no programme of the same activities are left out and stay enquiries: the jeep
+ * safari (Desert Fox's jeep trips add quad and buggy driving, leave out the camel and the dinner, or
+ * carry contradictory data), the horse rides, the El Quseir tour, the Luxor day and the transfers.
+ */
+export interface FoxProgrammePrice {
+  source: string;
+  options: string[];
+  /** The programme sells children as a separate option: one option with a child price, and the age band. */
+  child?: { adult: string; child: string; name: string; description: string; note: string };
+  addons: string[];
+  departures: string[];
+}
+
+export const FOX_PROGRAMME_PRICES: Partial<Record<string, FoxProgrammePrice>> = {
+  'super-safari': {
+    source: 'wild-desert-jeep-quad-buggy-camel-dinner-show',
+    options: ['standard', 'extended'],
+    addons: ['private', 'sandboard'],
+    departures: ['Afternoon'],
+  },
+  'buggy-spider': {
+    source: 'wild-desert-dune-buggy-optional-bbq',
+    options: ['short', 'bbq'],
+    addons: ['gopro'],
+    departures: ['Morning', 'Afternoon'],
+  },
+  'quad-sunset-bbq': {
+    source: 'wild-desert-quad-atv-camel-bbq',
+    options: ['bbq'],
+    addons: ['buggy-upgrade', 'photos', 'shisha'],
+    departures: ['Afternoon'],
+  },
+  'desert-atv-adventure': {
+    source: 'wild-desert-quad-atv-camel-bbq',
+    options: ['standard'],
+    addons: ['buggy-upgrade', 'photos', 'shisha'],
+    departures: ['Morning', 'Afternoon'],
+  },
+  'camel-ride': {
+    source: 'desert-fox-camel-trek-sunset',
+    options: ['adult'],
+    child: {
+      adult: 'adult',
+      child: 'child',
+      name: 'Camel ride',
+      description: 'Adults ride their own camel',
+      note: 'Children aged 4 to 11 pay the child price and share a camel with an adult.',
+    },
+    addons: [],
+    departures: ['Afternoon'],
+  },
+};
+
+type ProgrammeDoc = Record<string, any>;
+const CHILD_RATE = /\b(?:child|children|kids?)\b/i;
+
+/**
+ * A trip's options, extras and departures from its programme. Fails closed: a programme in another
+ * currency, a named option, extra or departure it no longer has, a missing price, a child rate with
+ * no terms, or copied text naming another place, brand or claim stops the run before any write.
+ */
+export function foxProgrammeFacts(tour: FoxTour, spec: FoxProgrammePrice, programme: ProgrammeDoc) {
+  const where = `${tour.slug} (${spec.source})`;
+  const currency = String(programme.currency || '').trim().toUpperCase();
+  if (currency !== FOX_TENANT.defaultCurrency) {
+    throw new Error(`${where}: the programme is priced in ${currency || 'no currency'} and the site sells in ${FOX_TENANT.defaultCurrency}. Prices are never converted.`);
+  }
+  const pick = (list: unknown, keys: string[], field: 'id' | 'label', kind: string): Record<string, unknown>[] => keys.map((key) => {
+    const hit = (Array.isArray(list) ? list : []).find((item) => item?.[field] === key);
+    if (!hit) throw new Error(`${where}: ${kind} "${key}" is missing from the programme.`);
+    const { _id, ...rest } = hit as Record<string, unknown>;
+    void _id;
+    return rest;
+  });
+  const priced = (kind: string) => (item: Record<string, unknown>) => {
+    if (!Number.isFinite(Number(item.price)) || Number(item.price) <= 0) throw new Error(`${where}: ${kind} "${String(item.id)}" has no valid price.`);
+    return item;
+  };
+
+  const childRates = (Array.isArray(programme.pricingOptions) ? programme.pricingOptions : [])
+    .filter((option: Record<string, unknown>) => CHILD_RATE.test(String(option?.name || '')));
+  if (childRates.length && (!spec.child || childRates.length !== 1 || childRates[0].id !== spec.child.child)) {
+    throw new Error(`${where}: the programme sells a separate child rate, which needs its terms here.`);
+  }
+  let pricingOptions = pick(programme.pricingOptions, spec.options, 'id', 'option').map(priced('option'));
+  const notes: string[] = [];
+  if (spec.child) {
+    const terms = spec.child;
+    const [child] = pick(programme.pricingOptions, [terms.child], 'id', 'option').map(priced('option'));
+    if (!pricingOptions.some((option) => option.id === terms.adult)) throw new Error(`${where}: the child price needs the adult option "${terms.adult}".`);
+    pricingOptions = pricingOptions.map((option) => (option.id === terms.adult
+      ? { ...option, name: terms.name, description: terms.description, childPrice: Number(child.price) }
+      : option));
+    notes.push(terms.note);
+  }
+  const addons = pick(programme.addons, spec.addons, 'id', 'extra').map(priced('extra'));
+  const entryWindows = pick(programme.entryWindows, spec.departures, 'label', 'departure');
+
+  const copied = [
+    ...pricingOptions.flatMap((option) => [option.name, option.description]),
+    ...addons.flatMap((addon) => [addon.name, addon.description]),
+    ...entryWindows.map((window) => window.label),
+  ].filter((text): text is string => typeof text === 'string');
+  const refused = copied.filter((text) => COPIED_FOREIGN.test(text) || FOREIGN_BRANDS.test(text) || UNBACKED_CLAIMS.test(text) || EMOJI.test(text));
+  if (refused.length) throw new Error(`${where}: copied text names another place or brand, or makes a claim: "${refused.join('", "')}"`);
+
+  return { pricingOptions, addons, entryWindows, notes, priceFrom: Math.min(...pricingOptions.map((option) => Number(option.price))) };
 }
 
 /**
@@ -195,6 +314,18 @@ export function validateFoxMarsaAlamPlan(): string[] {
     if (!tour.seo.metaTitle || tour.seo.metaTitle.length > 70) errors.push(`SEO title missing or too long: ${id}`);
     if (!tour.seo.metaDescription || tour.seo.metaDescription.length > 165) errors.push(`SEO description missing or too long: ${id}`);
   }
+  for (const [pathSlug, spec] of Object.entries(FOX_PROGRAMME_PRICES)) {
+    if (!spec) continue;
+    if (!paths.has(pathSlug)) errors.push(`Programme prices for a trip the catalogue does not carry: ${pathSlug}`);
+    if (!spec.options.length || new Set(spec.options).size !== spec.options.length) errors.push(`${pathSlug}: options must name distinct programme options.`);
+    if (!spec.departures.length || new Set(spec.departures).size !== spec.departures.length) errors.push(`${pathSlug}: departures must name distinct programme departures.`);
+    if (new Set(spec.addons).size !== spec.addons.length) errors.push(`${pathSlug}: extras must be distinct.`);
+    if (spec.child) {
+      if (!spec.options.includes(spec.child.adult) || spec.options.includes(spec.child.child)) errors.push(`${pathSlug}: the child price rides on the adult option.`);
+      const terms = [spec.child.name, spec.child.description, spec.child.note].join('\n');
+      if (UNBACKED_CLAIMS.test(terms) || EMOJI.test(terms) || PROCESS_MARKERS.test(terms)) errors.push(`${pathSlug}: child terms carry a claim, an emoji or a process marker.`);
+    }
+  }
   const tenantCopy = JSON.stringify([FOX_TENANT.tagline, FOX_TENANT.description, FOX_TENANT.seoSettings]);
   if (UNBACKED_CLAIMS.test(tenantCopy) || EMOJI.test(tenantCopy)) errors.push('The tenant copy carries an unbacked claim or an emoji.');
   return errors;
@@ -211,7 +342,12 @@ export function buildTourDocument(
   index: number,
   images: string[],
   tenantId: unknown,
+  programme?: ProgrammeDoc,
 ): Record<string, unknown> {
+  const spec = FOX_PROGRAMME_PRICES[tour.pathSlug];
+  if (spec && !programme) throw new Error(`${tour.slug}: sells at the prices of ${spec.source}, which was not loaded.`);
+  const facts = spec && programme ? foxProgrammeFacts(tour, spec, programme) : null;
+  const entryWindows = facts ? facts.entryWindows : tour.entryWindows;
   return {
     slug: tour.slug,
     pathSlug: tour.pathSlug,
@@ -228,18 +364,19 @@ export function buildTourDocument(
     rating: 0,
     reviewCount: 0,
     currency: FOX_TENANT.defaultCurrency,
-    // No published price: the trip is visible and enquirable, never sold at an invented price.
-    enquiryOnly: true,
-    pricingOptions: [],
-    addons: [],
-    entryWindows: tour.entryWindows,
+    // Without a programme of the same activities the trip is visible and enquirable, never sold at an invented price.
+    enquiryOnly: !facts,
+    pricingOptions: facts?.pricingOptions ?? [],
+    ...(facts ? { priceFrom: facts.priceFrom } : {}),
+    addons: facts?.addons ?? [],
+    entryWindows,
     itinerary: tour.itinerary,
     participantRequirements: tour.participantRequirements,
     highlights: tour.highlights,
     inclusions: tour.inclusions,
     exclusions: tour.exclusions,
     whatToBring: tour.whatToBring,
-    needToKnow: tour.needToKnow,
+    needToKnow: [...tour.needToKnow, ...(facts?.notes ?? [])],
     accessibility: tour.accessibility,
     gettingThere: [{ mode: tour.hasHotelPickup ? 'Hotel pickup' : 'How you join', description: tour.pickupNote }],
     meetingPoint: {
@@ -250,7 +387,7 @@ export function buildTourDocument(
     instantConfirmation: false,
     mobileTicket: true,
     hasHotelPickup: tour.hasHotelPickup,
-    availability: { type: departureAvailabilityType(tour.entryWindows), advanceBooking: 365 },
+    availability: { type: departureAvailabilityType(entryWindows), advanceBooking: 365 },
     seo: tour.seo,
     tenantIds: [tenantId],
     ownerTenantId: tenantId,
@@ -325,22 +462,68 @@ async function loadExisting() {
     hasOwner: Boolean(record.ownerTenantId),
     listedByOtherTenant: (record.tenantIds || []).some((id: unknown) => !existingTenant || String(id) !== String(existingTenant._id)),
   })));
-  return { existingTenant, namespaceConflict, existingTours, collision };
+
+  // The Desert Fox programmes the desert trips are priced from: the main company's own, active records.
+  const desertFox = await Tenant.findOne({ slug: DESERT_FOX_SLUG }).select('_id');
+  const sourceSlugs = [...new Set(Object.values(FOX_PROGRAMME_PRICES).map((spec) => spec!.source))];
+  const found = desertFox
+    ? await Attraction.find({ slug: { $in: sourceSlugs }, ownerTenantId: desertFox._id, status: 'active' }).lean()
+    : [];
+  const programmes = new Map(found.map((programme) => [programme.slug as string, programme as ProgrammeDoc]));
+  const missingProgrammes = sourceSlugs.filter((slug) => !programmes.has(slug));
+
+  // A site sells in one currency, so every other tour on it (any status) must already be in the new one.
+  const otherTours = existingTenant
+    ? (await Attraction.find({ tenantIds: existingTenant._id, slug: { $nin: FOX_MARSA_ALAM_TOURS.map((tour) => tour.slug) } })
+      .select('slug currency status').lean())
+      .filter((record) => String(record.currency || '').trim().toUpperCase() !== FOX_TENANT.defaultCurrency)
+      .map((record) => `${record.slug} (${record.currency}, ${record.status})`)
+    : [];
+  return { existingTenant, namespaceConflict, existingTours, collision, programmes, missingProgrammes, otherTours };
 }
+
+/** Every trip document built before anything is uploaded or written, with what would stop the run. */
+function planTours(programmes: Map<string, ProgrammeDoc>, tenantId: unknown) {
+  const problems: string[] = [];
+  const documents = FOX_MARSA_ALAM_TOURS.flatMap((tour, index) => {
+    const spec = FOX_PROGRAMME_PRICES[tour.pathSlug];
+    try {
+      return [buildTourDocument(tour, index, [], tenantId, spec ? programmes.get(spec.source) : undefined)];
+    } catch (error) {
+      problems.push(error instanceof Error ? error.message : String(error));
+      return [];
+    }
+  });
+  return { documents, problems };
+}
+
+const tourSummary = (document: Record<string, unknown>) => ({
+  path: `/${String(document.pathSlug)}`,
+  enquiryOnly: document.enquiryOnly,
+  from: document.priceFrom ?? null,
+  options: (document.pricingOptions as Array<{ name: string; price: number; childPrice?: number }>).map((option) => `${option.name}: ${option.price}${option.childPrice !== undefined ? ` (child ${option.childPrice})` : ''}`),
+  departures: (document.entryWindows as Array<{ label: string; startTime: string }>).map((window) => `${window.label} ${window.startTime}`),
+  extras: (document.addons as Array<{ name: string; price: number }>).map((addon) => `${addon.name}: ${addon.price}`),
+});
 
 async function checkPlan(): Promise<void> {
   const { connectDatabase, disconnectDatabase } = await import('../config/database');
   await connectDatabase();
   try {
-    const { existingTenant, namespaceConflict, existingTours, collision } = await loadExisting();
+    const { existingTenant, namespaceConflict, existingTours, collision, programmes, missingProgrammes, otherTours } = await loadExisting();
+    const plan = planTours(programmes, existingTenant?._id ?? null);
     console.log(JSON.stringify({
       mode: 'check',
       tenant: existingTenant
-        ? { action: 'update', status: existingTenant.status, designMode: existingTenant.designMode }
+        ? { action: 'update', status: existingTenant.status, designMode: existingTenant.designMode, currency: `${existingTenant.defaultCurrency} -> ${FOX_TENANT.defaultCurrency}` }
         : { action: 'create', slug: TENANT_SLUG },
       namespaceConflict: namespaceConflict ? namespaceConflict.slug : null,
       existingTourSlugs: existingTours.map((record) => record.slug),
       collision,
+      missingProgrammes,
+      otherToursInAnotherCurrency: otherTours,
+      problems: plan.problems,
+      catalogue: plan.documents.map(tourSummary),
       writes: 'none',
     }, null, 2));
   } finally {
@@ -369,24 +552,29 @@ async function applyPlan(): Promise<void> {
 
   await connectDatabase();
   try {
-    const { existingTenant, namespaceConflict, existingTours, collision } = await loadExisting();
+    const { existingTenant, namespaceConflict, existingTours, collision, programmes, missingProgrammes, otherTours } = await loadExisting();
     if (existingTenant && !['active', 'coming_soon', 'pending'].includes(existingTenant.status)) {
       throw new Error(`Refusing to change a tenant in protected status: ${existingTenant.status}.`);
     }
     if (existingTenant?.domainMigrated) throw new Error('Tenant already serves its own domain. Refusing a launch-package rewrite.');
     if (namespaceConflict) throw new Error(`The namespace is already owned by another tenant: ${namespaceConflict.slug}.`);
     if (collision) throw new Error(collision);
+    if (missingProgrammes.length) throw new Error(`Desert Fox programmes missing or inactive: ${missingProgrammes.join(', ')}. Nothing was written.`);
+    if (otherTours.length) {
+      throw new Error(`The site sells in ${FOX_TENANT.defaultCurrency}, but other tours on it are priced in another currency: ${otherTours.join(', ')}. Nothing was written.`);
+    }
+    const plan = planTours(programmes, existingTenant?._id ?? null);
+    if (plan.problems.length) throw new Error(`Nothing was written.\n- ${plan.problems.join('\n- ')}`);
 
     console.log(JSON.stringify({
       mode: 'pre-apply-report',
-      tenant: existingTenant ? { action: 'update', status: existingTenant.status } : { action: 'create', slug: TENANT_SLUG },
+      tenant: existingTenant
+        ? { action: 'update', status: existingTenant.status, currency: `${existingTenant.defaultCurrency} -> ${FOX_TENANT.defaultCurrency}` }
+        : { action: 'create', slug: TENANT_SLUG },
       customDomain: { value: null, reason: 'attached after DNS, in its own step' },
-      catalogue: FOX_MARSA_ALAM_TOURS.map((tour) => ({
-        slug: tour.slug,
-        path: `/${tour.pathSlug}`,
-        action: existingTours.some((record) => record.slug === tour.slug) ? 'update' : 'create',
-        enquiryOnly: true,
-        images: tour.sourceImages.length,
+      catalogue: plan.documents.map((document) => ({
+        ...tourSummary(document),
+        action: existingTours.some((record) => record.slug === document.slug) ? 'update' : 'create',
       })),
     }, null, 2));
 
@@ -438,12 +626,14 @@ async function applyPlan(): Promise<void> {
     fs.writeFileSync(codeOut, `${previewAccessCode}\n`, { mode: 0o600 });
 
     for (const [index, tour] of FOX_MARSA_ALAM_TOURS.entries()) {
+      const spec = FOX_PROGRAMME_PRICES[tour.pathSlug];
+      const document = buildTourDocument(tour, index, tourImages.get(tour.slug) || [], tenant._id, spec ? programmes.get(spec.source) : undefined);
       await Attraction.findOneAndUpdate(
         { slug: tour.slug },
         {
-          $set: buildTourDocument(tour, index, tourImages.get(tour.slug) || [], tenant._id),
-          // The operator publishes no cancellation policy and no rating; none is carried.
-          $unset: { cancellationPolicy: 1, badges: 1, priceFrom: 1 },
+          $set: document,
+          // The operator publishes no cancellation policy and no rating; none is carried, and an enquiry has no price.
+          $unset: { cancellationPolicy: 1, badges: 1, ...(document.enquiryOnly ? { priceFrom: 1 } : {}) },
         },
         { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true },
       );
@@ -455,8 +645,11 @@ async function applyPlan(): Promise<void> {
       slug: { $in: FOX_MARSA_ALAM_TOURS.map((tour) => tour.slug) },
     });
     const foreignListed = await Attraction.countDocuments({ tenantIds: tenant._id, ownerTenantId: { $ne: tenant._id } });
-    if (owned !== FOX_MARSA_ALAM_TOURS.length || foreignListed !== 0) {
-      throw new Error(`Post-apply check failed (owned=${owned}, foreignListed=${foreignListed}).`);
+    const otherCurrency = await Attraction.countDocuments({ tenantIds: tenant._id, currency: { $ne: FOX_TENANT.defaultCurrency } });
+    const sold = await Attraction.countDocuments({ ownerTenantId: tenant._id, status: 'active', enquiryOnly: false, priceFrom: { $gt: 0 } });
+    const expectedSold = FOX_MARSA_ALAM_TOURS.filter((tour) => FOX_PROGRAMME_PRICES[tour.pathSlug]).length;
+    if (owned !== FOX_MARSA_ALAM_TOURS.length || foreignListed !== 0 || otherCurrency !== 0 || sold !== expectedSold) {
+      throw new Error(`Post-apply check failed (owned=${owned}, foreignListed=${foreignListed}, otherCurrency=${otherCurrency}, sold=${sold}/${expectedSold}).`);
     }
 
     console.log(JSON.stringify({
@@ -468,7 +661,7 @@ async function applyPlan(): Promise<void> {
         domainMigrated: tenant.domainMigrated,
         customDomain: tenant.customDomain ?? null,
       },
-      catalogue: { active: owned, foreignListed, enquiryOnly: FOX_MARSA_ALAM_TOURS.length },
+      catalogue: { active: owned, foreignListed, sold, enquiryOnly: owned - sold, currency: FOX_TENANT.defaultCurrency },
       safeguards: [
         'access code written to the requested file only, never printed',
         'booking alerts routed to the platform inbox',
@@ -502,8 +695,9 @@ export async function main(): Promise<void> {
     catalogue: FOX_MARSA_ALAM_TOURS.map((tour) => ({
       path: `/${tour.pathSlug}`,
       title: tour.title,
-      booking: 'enquiry only (no published price)',
-      departures: tour.entryWindows.map((window) => window.startTime),
+      booking: FOX_PROGRAMME_PRICES[tour.pathSlug]
+        ? `prices, departures and extras of ${FOX_PROGRAMME_PRICES[tour.pathSlug]!.source}, read at apply`
+        : 'enquiry only (no published price)',
       hotelPickup: tour.hasHotelPickup,
       images: tour.sourceImages.length,
       openDecisions: tour.openDecisions.length,

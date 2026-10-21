@@ -1,6 +1,8 @@
 import {
   FAMILY_SITES,
   UNBACKED_CLAIMS,
+  copiedFactProblems,
+  familyDepartures,
   familyPricing,
   familyTenantRecord,
   familyTripDocument,
@@ -89,15 +91,72 @@ describe('Fox family sites seed contract', () => {
     expect(document.destination).toEqual(expect.objectContaining({ city: 'Hurghada' }));
   });
 
-  it("asks instead of selling on Power Safari, and claims nothing about another company's guides, times or extras", () => {
+  it('sells Power Safari trips at the programme prices, departures and extras, in Marsa Alam', () => {
+    expect(FAMILY_SITES.every((item) => item.priced)).toBe(true);
     const document = familyTripDocument(site('power-safari-marsa-alam'), trip('power-safari-marsa-alam'), SOURCE, 0, 'tenant-2');
+    expect(document).toEqual(expect.objectContaining({ slug: 'power-safari-super-safari', enquiryOnly: false, currency: 'USD', priceFrom: 55 }));
+    expect(document.pricingOptions).toEqual([
+      { id: 'adult', name: 'Full combo', description: 'Quad biking, camel ride and BBQ dinner', price: 55, childPrice: 35 },
+    ]);
+    expect(document.addons).toEqual([{ id: 'shisha', name: 'Shisha at Camp', description: 'At the camp', price: 8 }]);
+    expect(document.entryWindows).toEqual([{ label: 'Afternoon Departure', startTime: '14:00', endTime: '14:30' }]);
+    expect(document.availability).toEqual({ type: 'time-slots', advanceBooking: 30 });
+    expect(document.destination).toEqual(expect.objectContaining({ city: 'Marsa Alam' }));
+    expect(document.meetingPoint).toEqual(expect.objectContaining({ address: 'Your hotel in Marsa Alam' }));
+    expect(copiedFactProblems(site('power-safari-marsa-alam'), document)).toEqual([]);
+    // Its tenant copy invites a booking, not a request for prices.
+    expect(familyTenantRecord(site('power-safari-marsa-alam')).description).toMatch(/Book online and pay later/);
+    expect(familyTenantRecord(site('power-safari-marsa-alam')).description).not.toMatch(/replies with prices|nothing is paid online/);
+  });
+
+  it("turns a site back into enquiries with nothing claimed about another company's guides, times or extras", () => {
+    const enquiries = { ...site('power-safari-marsa-alam'), priced: false };
+    const document = familyTripDocument(enquiries, trip('power-safari-marsa-alam'), SOURCE, 0, 'tenant-2');
     expect(document).toEqual(expect.objectContaining({ slug: 'power-safari-super-safari', enquiryOnly: true, pricingOptions: [], addons: [], entryWindows: [], languages: [] }));
     expect(document).not.toHaveProperty('priceFrom');
     expect(document.inclusions).toEqual(['Quad bike with fuel', 'Hotel pickup and drop-off', 'Guide']);
     expect((document.itinerary as Array<{ time: string }>).every((step) => step.time === '')).toBe(true);
     expect(document.availability).toEqual({ type: 'date-only', advanceBooking: 30 });
     expect(document.needToKnow).toEqual([]);
-    expect(document.destination).toEqual(expect.objectContaining({ city: 'Marsa Alam' }));
+  });
+
+  it('sells only the departures a trip names, and stops when the programme no longer has one', () => {
+    // Every option of the dinner show ends with dinner, so its morning start is never sold.
+    for (const item of FAMILY_SITES) {
+      const dinnerShows = FAMILY_SITE_TRIPS[item.slug].filter((entry) => entry.source === 'wild-desert-jeep-quad-buggy-camel-dinner-show');
+      expect(dinnerShows).toHaveLength(1);
+      expect(dinnerShows[0].departures).toEqual(['Afternoon']);
+    }
+    const dinnerShow = FAMILY_SITE_TRIPS['power-safari-marsa-alam'].find((entry) => entry.path === 'jeep-combo')!;
+    const programme = {
+      ...SOURCE,
+      slug: 'wild-desert-jeep-quad-buggy-camel-dinner-show',
+      pricingOptions: [{ id: 'standard', name: 'All Activities + Dinner (5 hrs)', price: 22 }],
+      entryWindows: [
+        { _id: 'w1', label: 'Morning', startTime: '08:00', endTime: '09:00' },
+        { _id: 'w2', label: 'Afternoon', startTime: '14:00', endTime: '15:00' },
+      ],
+    };
+    const document = familyTripDocument(site('power-safari-marsa-alam'), dinnerShow, programme, 2, 'tenant-2');
+    expect(document.entryWindows).toEqual([{ label: 'Afternoon', startTime: '14:00', endTime: '15:00' }]);
+    expect(familyDepartures('x', programme.entryWindows, undefined)).toHaveLength(2);
+    expect(() => familyTripDocument(site('power-safari-marsa-alam'), dinnerShow, { ...programme, entryWindows: [programme.entryWindows[0]] }, 2, 'tenant-2'))
+      .toThrow('power-safari-jeep-combo: departure "Afternoon" is missing from the programme.');
+  });
+
+  it("refuses copied programme text that names a place or brand the site does not carry", () => {
+    const named = { ...SOURCE, addons: [{ id: 'vip', name: 'Desert Fox VIP table', description: 'Dinner by the dunes of Hurghada', price: 20 }] };
+    const power = familyTripDocument(site('power-safari-marsa-alam'), trip('power-safari-marsa-alam'), named, 0, 'tenant-2');
+    expect(copiedFactProblems(site('power-safari-marsa-alam'), power)).toEqual([
+      'power-safari-super-safari: copied text names another place or brand, or makes a claim: "Desert Fox VIP table"',
+      'power-safari-super-safari: copied text names another place or brand, or makes a claim: "Dinner by the dunes of Hurghada"',
+    ]);
+    // Hurghada is the Hurghada site's own city and Desert Fox its own family.
+    const hurghada = familyTripDocument(site('fox-safari-hurghada'), trip('fox-safari-hurghada'), named, 0, 'tenant-1');
+    expect(copiedFactProblems(site('fox-safari-hurghada'), hurghada)).toEqual([]);
+    const claimed = { ...SOURCE, pricingOptions: [{ id: 'standard', name: 'Our best seller', price: 30 }] };
+    expect(copiedFactProblems(site('fox-safari-hurghada'), familyTripDocument(site('fox-safari-hurghada'), FAMILY_SITE_TRIPS['fox-safari-hurghada'][1], { ...claimed, slug: 'wild-desert-quad-atv-camel-bbq' }, 1, 'tenant-1')))
+      .toEqual(['fox-hurghada-quad-camel: copied text names another place or brand, or makes a claim: "Our best seller"']);
   });
 
   it('prices a whole jeep or a double quad once, not per rider', () => {

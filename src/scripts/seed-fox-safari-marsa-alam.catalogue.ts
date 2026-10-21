@@ -4,7 +4,9 @@
  * Wording follows the operator's own trip pages, trimmed of superlatives; nothing the
  * operator has not published is added. The operator publishes no prices, departure times
  * or group sizes, so none is set here and each gap is an open decision; a duration appears
- * only on the trips whose page states one. Photos are the operator's own, as embedded on its trip pages (hosted on
+ * only on the trips whose page states one. The desert trips borrow their prices, departures
+ * and extras from a Desert Fox Safari programme at apply time (`FOX_PROGRAMME_PRICES` in the
+ * seed), never from this file. Photos are the operator's own, as embedded on its trip pages (hosted on
  * the operator's image host at 640 px); stock and marketplace images on those pages were
  * left out on review.
  */
@@ -77,6 +79,8 @@ const DESERT_SUITABILITY = [
 const TIP_AND_PERSONAL = ['Personal expenses and shopping', 'Tips for the guides and drivers'];
 const PRICE_DECISION = 'Confirm the price list for this trip (adult, child and infant, and per vehicle where a quad or buggy is shared). No price is published, so the trip launches as enquiry-only.';
 const TIME_DECISION = 'Confirm the departure times (morning and sunset slots). None is published, so no time is shown.';
+const PROGRAMME_PRICE_DECISION = 'Confirm the price list for this trip (adult, child and infant, and per vehicle where a quad or buggy is shared). Until the operator sends it, the trip sells at the published prices of the Desert Fox Safari programme with the same activities.';
+const PROGRAMME_TIME_DECISION = 'Confirm the departure times (morning and sunset slots). Until then the trip offers the departures of the matching Desert Fox Safari programme.';
 const PHOTO_DECISION = 'Send the original photo files: the published copies are 640 px and too small for sharp pages.';
 
 export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
@@ -126,7 +130,7 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
     exclusions: TIP_AND_PERSONAL,
     whatToBring: DESERT_WEAR,
     needToKnow: [
-      'Can two people share a quad? Yes. Book a single quad for one rider or a double quad for two people to share.',
+      'Can two people share a quad? Yes. Say so when you book and the team gives you a double quad to share.',
       'Which show will we see? A Tanura dance or a fire show, depending on the evening.',
       'Is there a safety briefing? Yes. You get a briefing and all the equipment you need before the ride.',
       'Which language is the guide? Ask for your language when you book.',
@@ -160,7 +164,7 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
         'Jeep, quad and spider car ride, Bedouin village and camel ride, sunset, BBQ dinner and a Tanura or fire show, with hotel pickup in Marsa Alam.',
       keywords: ['Marsa Alam super safari', 'Marsa Alam quad and jeep', 'Bedouin dinner Marsa Alam', 'Marsa Alam desert safari'],
     },
-    openDecisions: [PRICE_DECISION, TIME_DECISION, 'Confirm the trip length.', PHOTO_DECISION],
+    openDecisions: [PROGRAMME_PRICE_DECISION, PROGRAMME_TIME_DECISION, 'Confirm the trip length.', PHOTO_DECISION],
   },
   {
     slug: 'fox-marsa-alam-jeep-safari',
@@ -247,7 +251,7 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
     description: [
       'After hotel pickup you reach the buggy station for tea, water and a safety briefing. Then you drive a spider car across the sand to an acacia tree, where you rest in a Bedouin tent and take photos.',
       'The ride continues to a Bedouin village. You see how the Bedouin live, taste their bread and tea, and take a short camel ride, then drive back to the station by a different desert route for a last cup of tea before your transfer home.',
-      'Choose a morning ride or a sunset ride. On the sunset ride you can add a BBQ dinner and a Tanura or fire show on request.',
+      'Choose a morning ride or a sunset ride. The longer sunset ride adds a BBQ dinner and a Tanura or fire show.',
     ].join('\n\n'),
     category: 'desert-safari',
     city: 'Marsa Alam',
@@ -260,7 +264,7 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
       'Rest and photos at the acacia tree and a Bedouin tent',
       'A Bedouin village with bread, hibiscus and tea',
       'A short camel ride',
-      'Morning or sunset rides, with dinner and a show on request at sunset',
+      'Morning or sunset rides, with dinner and a show on the longer ride',
       'Double buggies for two or family buggies for up to four',
     ],
     itinerary: [
@@ -279,11 +283,11 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
       'Short camel ride',
       'Service charges and taxes',
     ],
-    exclusions: [...TIP_AND_PERSONAL, 'BBQ dinner and show, unless added to a sunset ride'],
+    exclusions: [...TIP_AND_PERSONAL, 'BBQ dinner and show, unless you choose the ride with dinner'],
     whatToBring: ['Comfortable clothing and closed-toe shoes', 'A hat and sunglasses', 'A scarf or face covering for the dust'],
     needToKnow: [
       'How many people fit in a buggy? The double buggy takes 2 people and the family buggy up to 4.',
-      'Morning or sunset? Both run. On a sunset ride you can ask to add the BBQ dinner and show.',
+      'Morning or sunset? Both run. Choose the ride with the BBQ dinner and show to stay for the evening.',
       'Is the trip insured? The operator states that all its excursions are fully insured.',
     ],
     accessibility: DESERT_SUITABILITY,
@@ -314,10 +318,10 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
       keywords: ['Marsa Alam buggy', 'spider car Marsa Alam', 'Marsa Alam dune buggy', 'family buggy safari'],
     },
     openDecisions: [
-      PRICE_DECISION,
-      TIME_DECISION,
+      PROGRAMME_PRICE_DECISION,
+      PROGRAMME_TIME_DECISION,
       'Confirm the minimum driver age for the buggy. None is published.',
-      'Confirm the price of the BBQ dinner and show add-on on sunset rides.',
+      'Confirm the price of the sunset ride with the BBQ dinner and show.',
       PHOTO_DECISION,
     ],
   },
@@ -368,7 +372,7 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
     exclusions: [...TIP_AND_PERSONAL, 'Anything not listed as included'],
     whatToBring: DESERT_WEAR,
     needToKnow: [
-      'Can two people share a quad? Yes. Book a single quad for one rider or a double quad for two people to share.',
+      'Can two people share a quad? Yes. Say so when you book and the team gives you a double quad to share.',
       'Which show will we see? A Tanura dance or a fire show, depending on the evening.',
       'Is there a safety briefing? Yes. You get a briefing and all the equipment you need before the ride.',
     ],
@@ -399,7 +403,7 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
         'Afternoon quad bike ride from Marsa Alam to a Bedouin village, desert sunset, BBQ dinner and a Tanura or fire show, with hotel pickup and transfers.',
       keywords: ['Marsa Alam sunset quad', 'quad safari Marsa Alam', 'quad and BBQ dinner', 'Marsa Alam desert sunset'],
     },
-    openDecisions: [PRICE_DECISION, 'Confirm the afternoon pickup time. None is published.', PHOTO_DECISION],
+    openDecisions: [PROGRAMME_PRICE_DECISION, "Confirm the afternoon pickup time. Until then the matching programme's afternoon departure is shown.", PHOTO_DECISION],
   },
   {
     slug: 'fox-marsa-alam-desert-atv-adventure',
@@ -480,7 +484,7 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
         'Ride your own quad bike in the Marsa Alam desert to the acacia tree and a Bedouin village, with bread-making, Bedouin tea, a camel ride and hotel pickup.',
       keywords: ['Marsa Alam quad bike', 'ATV Marsa Alam', 'quad safari Bedouin village', 'Marsa Alam desert tour'],
     },
-    openDecisions: [PRICE_DECISION, TIME_DECISION, 'Confirm the rental price of goggles and headscarves.', PHOTO_DECISION],
+    openDecisions: [PROGRAMME_PRICE_DECISION, PROGRAMME_TIME_DECISION, 'Confirm the rental price of goggles and headscarves.', PHOTO_DECISION],
   },
   {
     slug: 'fox-marsa-alam-camel-ride',
@@ -550,7 +554,7 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
         'A sunset camel ride of about an hour in the Marsa Alam desert with a Bedouin guide, photo stops and hotel pickup. Morning rides on request.',
       keywords: ['Marsa Alam camel ride', 'sunset camel ride', 'camel trekking Marsa Alam', 'Bedouin camel guide'],
     },
-    openDecisions: [PRICE_DECISION, 'Confirm the pickup time for sunset and morning rides.', PHOTO_DECISION],
+    openDecisions: [PROGRAMME_PRICE_DECISION, "Confirm the pickup time for sunset and morning rides. Until then the matching programme's afternoon departure is shown.", PHOTO_DECISION],
   },
   {
     slug: 'fox-marsa-alam-horse-ride',
