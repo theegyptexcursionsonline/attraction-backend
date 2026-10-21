@@ -66,7 +66,8 @@ describe('Fox family sites seed contract', () => {
       pathSlug: 'super-safari',
       enquiryOnly: false,
       currency: 'USD',
-      priceFrom: 35,
+      // The adult rate leads; the child rate (35) never becomes the trip's "from" price.
+      priceFrom: 55,
       rating: 0,
       reviewCount: 0,
       instantConfirmation: false,

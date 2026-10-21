@@ -177,7 +177,11 @@ export function familyTripDocument(site: SiteSpec, trip: FamilySiteTrip, source:
   // A separate company's guides, times and extras are unknown: say nothing about them.
   const neutral = (item: string) => (priced ? item : item.replace(/^English(?:-speaking)? guide$/i, 'Guide'));
   const pricingOptions = priced ? withoutIds(source.pricingOptions) : [];
-  const prices = pricingOptions.map((option) => Number((option as { price?: unknown }).price)).filter((price) => Number.isFinite(price) && price > 0);
+  // The stored "from" price is what an adult pays; child and infant rates never lead.
+  const priceOf = (option: Record<string, unknown>) => Number(option.price);
+  const valid = pricingOptions.filter((option) => Number.isFinite(priceOf(option)) && priceOf(option) > 0);
+  const adult = valid.filter((option) => !/\b(?:child|children|kids?|infants?|baby|babies|toddlers?)\b/i.test(String(option.name || '')));
+  const prices = (adult.length ? adult : valid).map(priceOf);
   const entryWindows = priced ? withoutIds(source.entryWindows) : [];
   const inclusions = cleanList(source.inclusions, neutral);
   const pickup = source.hasHotelPickup === true || inclusions.some((item) => /hotel pickup/i.test(item));
