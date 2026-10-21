@@ -788,6 +788,7 @@ export const FOX_MARSA_ALAM_TOURS: FoxTour[] = [
     openDecisions: [
       NETWORK_PRICE_DECISION,
       'Confirm the exact pickup time by hotel area. The trip is sold by the day until then.',
+      'Confirm the Tutankhamun tomb ticket price. Until then it sells at the borrowed trip’s price, per guest who enters.',
       'Confirm that the Luxor photos are the operator’s own: several published images on this page were stock and were left out.',
       PHOTO_DECISION,
     ],

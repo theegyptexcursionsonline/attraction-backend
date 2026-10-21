@@ -154,6 +154,11 @@ export interface FoxProgrammePrice {
   /** The site's own name for an option whose source name describes another trip. */
   rename?: Record<string, { name: string; description: string }>;
   addons: string[];
+  /**
+   * Extras charged per guest, each guest choosing at booking. An entrance ticket is bought per person,
+   * so it is sold that way here even where the source leaves it at the platform's once-per-booking default.
+   */
+  perPerson?: string[];
   /** Departures by label; none means the trip is sold by the day. */
   departures: string[];
   /** A "Need to know" line the copied options make necessary. */
@@ -224,7 +229,8 @@ export const FOX_PROGRAMME_PRICES: Partial<Record<string, FoxProgrammePrice>> = 
     note: 'The two-hour ride books online. For a one-hour ride, say so when you book and the team arranges it.',
   },
   // Private transport, an Egyptologist, the entrances and lunch, with the Tutankhamun tomb as the
-  // extra it is here too. Its 07:00 and 13:00 departures cannot fit a 16-hour day from Marsa Alam.
+  // extra it is here too, charged per guest who enters. Its 07:00 and 13:00 departures cannot fit a
+  // 16-hour day from Marsa Alam.
   'luxor-day-trip': {
     tenant: 'luxor-tour-from-hurghada',
     source: 'luxor-day-trip-valley-kings',
@@ -237,6 +243,7 @@ export const FOX_PROGRAMME_PRICES: Partial<Record<string, FoxProgrammePrice>> = 
       note: 'Children aged 6 to 12 pay the child price.',
     },
     addons: ['tut-tomb'],
+    perPerson: ['tut-tomb'],
     departures: [],
   },
   // A guided four-hour town tour with an entrance and hotel pickup; its aquarium extra is another town's.
@@ -303,7 +310,11 @@ export function foxProgrammeFacts(tour: FoxTour, spec: FoxProgrammePrice, progra
     pricingOptions = pricingOptions.map((option) => (option.id === id ? { ...option, ...words } : option));
   }
   if (spec.note) notes.push(spec.note);
-  const addons = pick(programme.addons, spec.addons, 'id', 'extra').map(priced('extra'));
+  for (const id of spec.perPerson || []) {
+    if (!spec.addons.includes(id)) throw new Error(`${where}: extra "${id}" to charge per guest is not sold.`);
+  }
+  const addons = pick(programme.addons, spec.addons, 'id', 'extra').map(priced('extra'))
+    .map((addon) => (spec.perPerson?.includes(String(addon.id)) ? { ...addon, pricingModel: 'per-person', pricingType: 'per_person' } : addon));
   const entryWindows = pick(programme.entryWindows, spec.departures, 'label', 'departure');
 
   const copied = [
@@ -391,6 +402,7 @@ export function validateFoxMarsaAlamPlan(): string[] {
     if (!spec.options.length || new Set(spec.options).size !== spec.options.length) errors.push(`${pathSlug}: options must name distinct programme options.`);
     if (new Set(spec.departures).size !== spec.departures.length || spec.departures.some((label) => !label.trim())) errors.push(`${pathSlug}: departures must name distinct programme departures.`);
     if (new Set(spec.addons).size !== spec.addons.length) errors.push(`${pathSlug}: extras must be distinct.`);
+    if ((spec.perPerson || []).some((id) => !spec.addons.includes(id))) errors.push(`${pathSlug}: charges per guest an extra it does not sell.`);
     if (spec.tenant !== undefined && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(spec.tenant)) errors.push(`${pathSlug}: invalid source site.`);
     if (spec.child) {
       if (!spec.options.includes(spec.child.adult) || spec.options.includes(spec.child.child)) errors.push(`${pathSlug}: the child price rides on the adult option.`);

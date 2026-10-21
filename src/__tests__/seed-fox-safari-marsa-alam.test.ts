@@ -271,7 +271,17 @@ describe('Fox Marsa Alam seed contract', () => {
     expect(built['luxor-day-trip'].pricingOptions).toEqual([
       { id: 'adult', name: 'Luxor day trip', description: 'Karnak, the Valley of the Kings and the Temple of Hatshepsut, with lunch', price: 55, childPrice: 35 },
     ]);
-    expect((built['luxor-day-trip'].addons as Array<{ id: string }>).map((addon) => addon.id)).toEqual(['tut-tomb']);
+    // The tomb is an entrance ticket: each guest who enters pays for one, chosen at booking.
+    expect(built['luxor-day-trip'].addons).toEqual([
+      { id: 'tut-tomb', name: 'Tutankhamun Tomb Entry', description: 'Enter the tomb of Tutankhamun', price: 20, pricingModel: 'per-person', pricingType: 'per_person' },
+    ]);
+    // Every other copied extra keeps the source's once-per-booking charge.
+    for (const pathSlug of ['jeep-safari', 'horse-ride']) {
+      for (const addon of built[pathSlug].addons as Array<Record<string, unknown>>) {
+        expect(addon).not.toHaveProperty('pricingModel');
+        expect(addon).not.toHaveProperty('pricingType');
+      }
+    }
     // The town tour keeps its morning departure and leaves out another town's aquarium.
     expect(built['el-quseir-city-tour']).toEqual(expect.objectContaining({ priceFrom: 18, addons: [] }));
     expect(built['el-quseir-city-tour'].pricingOptions).toEqual([
@@ -305,11 +315,26 @@ describe('Fox Marsa Alam seed contract', () => {
     const horse = FOX_MARSA_ALAM_TOURS.find((tour) => tour.pathSlug === 'horse-ride')!;
     expect(() => foxProgrammeFacts(horse, { ...FOX_PROGRAMME_PRICES['horse-ride']!, rename: { other: { name: 'Ride', description: 'Ride' } } }, PROGRAMMES['desert-sea-horse-ride-optional-swimming']))
       .toThrow(/option "other" to rename is not sold/);
+    // Charging per guest for an extra the trip does not sell.
+    const luxor = FOX_MARSA_ALAM_TOURS.find((tour) => tour.pathSlug === 'luxor-day-trip')!;
+    expect(() => foxProgrammeFacts(luxor, { ...FOX_PROGRAMME_PRICES['luxor-day-trip']!, perPerson: ['balloon'] }, PROGRAMMES['luxor-day-trip-valley-kings']))
+      .toThrow(/extra "balloon" to charge per guest is not sold/);
     // Copied text naming another place, brand or claim.
     expect(() => foxProgrammeFacts(superSafari, spec, {
       ...PROGRAMMES['wild-desert-jeep-quad-buggy-camel-dinner-show'],
       addons: [{ id: 'private', name: 'Private Guide', description: 'Back to Hurghada by 9pm', price: 20 }, { id: 'sandboard', name: 'Our best sandboarding', price: 8 }],
     })).toThrow(/"Back to Hurghada by 9pm", "Our best sandboarding"/);
+  });
+
+  it('refuses a plan that charges per guest for an extra the trip does not sell', () => {
+    const spec = FOX_PROGRAMME_PRICES['luxor-day-trip']!;
+    const original = spec.perPerson;
+    spec.perPerson = ['balloon'];
+    try {
+      expect(validateFoxMarsaAlamPlan()).toEqual(['luxor-day-trip: charges per guest an extra it does not sell.']);
+    } finally {
+      spec.perPerson = original;
+    }
   });
 
   it('publishes a departure time or a duration only where the operator or the matching programme states one', () => {
