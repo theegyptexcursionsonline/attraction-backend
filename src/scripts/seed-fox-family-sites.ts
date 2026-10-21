@@ -157,12 +157,78 @@ export function validateFamilySitesPlan(): string[] {
       if (!trip.seo.metaDescription || trip.seo.metaDescription.length > 165) errors.push(`${slug}: SEO description missing or too long.`);
     }
   }
+  const pricedSources = new Set(FAMILY_SITES.filter((site) => site.priced).flatMap((site) => FAMILY_SITE_TRIPS[site.slug].map((trip) => trip.source)));
+  const pricingCopy = [
+    ...Object.entries(FAMILY_CHILD_TERMS).map(([source, terms]) => [source, [terms.option, terms.description, terms.note].join('\n')] as const),
+    ...Object.entries(FAMILY_PER_VEHICLE).flatMap(([source, vehicles]) => Object.values(vehicles).map((vehicle) => [source, vehicle.note] as const)),
+  ];
+  for (const [source, copy] of pricingCopy) {
+    if (!pricedSources.has(source)) errors.push(`${source}: pricing terms for a programme no priced site sells.`);
+    if (UNBACKED_CLAIMS.test(copy) || EMOJI.test(copy) || PROCESS_MARKERS.test(copy)) errors.push(`${source}: pricing terms carry a claim, an emoji or a process marker.`);
+  }
   return errors;
 }
+
+/**
+ * Desert Fox sells some programmes with the adult and the child rate as two separate options, so a
+ * family that chose "Adult" paid the adult rate for its children and "Child" sold adults the child
+ * rate. Here the pair becomes one option with a child price, which is how the booking API prices a
+ * mixed group (adults x price + children x childPrice); the age band moves to "Need to know".
+ */
+export const FAMILY_CHILD_TERMS: Record<string, { option: string; description: string; note: string }> = {
+  'desert-fox-super-safari-combo': {
+    option: 'Full combo',
+    description: 'Quad biking, camel ride and BBQ dinner',
+    note: 'Children aged 6 to 12 pay the child price. They share a quad and ride their own camel.',
+  },
+  'desert-fox-camel-trek-sunset': {
+    option: 'Camel trek',
+    description: 'Adults ride their own camel',
+    note: 'Children aged 4 to 11 pay the child price and share a camel with an adult.',
+  },
+  'desert-fox-full-day-sahara-expedition': {
+    option: 'Full day',
+    description: 'All activities included',
+    note: 'Children aged 6 to 12 pay the child price and take part in adapted activities.',
+  },
+};
+
+/** Options priced for the whole vehicle, not per rider ("Entire vehicle for your group", "Two riders per quad bike"). */
+export const FAMILY_PER_VEHICLE: Record<string, Record<string, { riders: number; note: string }>> = {
+  'desert-fox-private-jeep-safari': { vehicle: { riders: 4, note: 'The price is for the whole jeep, for up to 4 people.' } },
+  'desert-fox-sunset-quad-safari': { double: { riders: 2, note: 'A double quad is one price for the quad, with up to 2 riders.' } },
+};
 
 type SourceDoc = Record<string, any>;
 const withoutIds = <T extends Record<string, unknown>>(items: T[] | undefined): Omit<T, '_id'>[] =>
   (items || []).map(({ _id, ...rest }) => { void _id; return rest; });
+const perPerson = (option: Record<string, unknown>) => (option.pricingModel ?? 'per-person') === 'per-person';
+
+/**
+ * A priced site's options and the "Need to know" lines they add. Fails closed: a separate child
+ * rate without written terms, or a configured vehicle option the programme no longer has, stops
+ * the run instead of selling a family the wrong price.
+ */
+export function familyPricing(sourceSlug: string, options: SourceDoc[] | undefined): { options: Record<string, unknown>[]; notes: string[] } {
+  let list: Record<string, unknown>[] = withoutIds(options);
+  const notes: string[] = [];
+  const children = list.filter((option) => perPerson(option) && /\b(?:child|children|kids?)\b/i.test(String(option.name || '')));
+  if (children.length) {
+    const adult = list.find((option) => perPerson(option) && /^adult$/i.test(String(option.name || '').trim()));
+    const terms = FAMILY_CHILD_TERMS[sourceSlug];
+    if (children.length !== 1 || !adult || !terms) throw new Error(`${sourceSlug}: a separate child rate needs one adult option and FAMILY_CHILD_TERMS.`);
+    list = list
+      .filter((option) => option !== children[0])
+      .map((option) => (option === adult ? { ...option, name: terms.option, description: terms.description, childPrice: Number(children[0].price) } : option));
+    notes.push(terms.note);
+  }
+  for (const [id, vehicle] of Object.entries(FAMILY_PER_VEHICLE[sourceSlug] || {})) {
+    if (!list.some((option) => option.id === id)) throw new Error(`${sourceSlug}: vehicle option ${id} is missing.`);
+    list = list.map((option) => (option.id === id ? { ...option, pricingModel: 'per-booking', minParticipants: 1, maxParticipants: vehicle.riders } : option));
+    notes.push(vehicle.note);
+  }
+  return { options: list, notes };
+}
 const cleanList = (items: unknown, extra?: (item: string) => string | null): string[] =>
   (Array.isArray(items) ? items : [])
     .filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
@@ -176,7 +242,8 @@ export function familyTripDocument(site: SiteSpec, trip: FamilySiteTrip, source:
   const priced = site.priced;
   // A separate company's guides, times and extras are unknown: say nothing about them.
   const neutral = (item: string) => (priced ? item : item.replace(/^English(?:-speaking)? guide$/i, 'Guide'));
-  const pricingOptions = priced ? withoutIds(source.pricingOptions) : [];
+  const pricing = priced ? familyPricing(String(source.slug), source.pricingOptions) : { options: [], notes: [] };
+  const pricingOptions = pricing.options;
   // The stored "from" price is what an adult pays; child and infant rates never lead.
   const priceOf = (option: Record<string, unknown>) => Number(option.price);
   const valid = pricingOptions.filter((option) => Number.isFinite(priceOf(option)) && priceOf(option) > 0);
@@ -214,7 +281,7 @@ export function familyTripDocument(site: SiteSpec, trip: FamilySiteTrip, source:
     inclusions,
     exclusions: cleanList(source.exclusions),
     whatToBring: cleanList(source.whatToBring),
-    needToKnow: cleanList(source.needToKnow),
+    needToKnow: [...cleanList(source.needToKnow), ...pricing.notes],
     participantRequirements: cleanList(source.participantRequirements),
     accessibility: cleanList(source.accessibility),
     gettingThere: pickup ? [{ mode: 'Hotel pickup', description: `Pickup and drop-off at your hotel in ${site.city}.` }] : [],

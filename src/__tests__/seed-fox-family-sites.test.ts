@@ -1,6 +1,7 @@
 import {
   FAMILY_SITES,
   UNBACKED_CLAIMS,
+  familyPricing,
   familyTenantRecord,
   familyTripDocument,
   validateFamilySitesPlan,
@@ -77,10 +78,11 @@ describe('Fox family sites seed contract', () => {
     }));
     expect(document).not.toHaveProperty('badges');
     expect(document).not.toHaveProperty('cancellationPolicy');
+    // One option prices the whole family: adults at 55, children at 35, never adults at the child rate.
     expect(document.pricingOptions).toEqual([
-      { id: 'adult', name: 'Adult', description: 'Full combo experience', price: 55 },
-      { id: 'child', name: 'Child (6-12)', description: 'Shared quad, own camel', price: 35 },
+      { id: 'adult', name: 'Full combo', description: 'Quad biking, camel ride and BBQ dinner', price: 55, childPrice: 35 },
     ]);
+    expect(document.needToKnow).toEqual(['Children aged 6 to 12 pay the child price. They share a quad and ride their own camel.']);
     expect(document.languages).toEqual(['English', 'Arabic', 'German']);
     expect(document.inclusions).toEqual(['Quad bike with fuel', 'Hotel pickup and drop-off', 'English guide']);
     expect((document.itinerary as Array<{ title: string }>).map((step) => step.title)).toEqual(['Hotel Pickup']);
@@ -94,7 +96,40 @@ describe('Fox family sites seed contract', () => {
     expect(document.inclusions).toEqual(['Quad bike with fuel', 'Hotel pickup and drop-off', 'Guide']);
     expect((document.itinerary as Array<{ time: string }>).every((step) => step.time === '')).toBe(true);
     expect(document.availability).toEqual({ type: 'date-only', advanceBooking: 30 });
+    expect(document.needToKnow).toEqual([]);
     expect(document.destination).toEqual(expect.objectContaining({ city: 'Marsa Alam' }));
+  });
+
+  it('prices a whole jeep or a double quad once, not per rider', () => {
+    const jeep = familyPricing('desert-fox-private-jeep-safari', [
+      { _id: 'o1', id: 'vehicle', name: 'Private Jeep (up to 4)', description: 'Entire vehicle for your group', price: 65 },
+    ]);
+    expect(jeep.options).toEqual([
+      { id: 'vehicle', name: 'Private Jeep (up to 4)', description: 'Entire vehicle for your group', price: 65, pricingModel: 'per-booking', minParticipants: 1, maxParticipants: 4 },
+    ]);
+    expect(jeep.notes).toEqual(['The price is for the whole jeep, for up to 4 people.']);
+
+    const quad = familyPricing('desert-fox-sunset-quad-safari', [
+      { _id: 'o1', id: 'adult', name: 'Adult (Single Quad)', description: 'One rider per quad bike', price: 35 },
+      { _id: 'o2', id: 'double', name: 'Double Quad', description: 'Two riders per quad bike', price: 50 },
+    ]);
+    expect(quad.options).toEqual([
+      { id: 'adult', name: 'Adult (Single Quad)', description: 'One rider per quad bike', price: 35 },
+      { id: 'double', name: 'Double Quad', description: 'Two riders per quad bike', price: 50, pricingModel: 'per-booking', minParticipants: 1, maxParticipants: 2 },
+    ]);
+  });
+
+  it('stops instead of selling a family the wrong price', () => {
+    // A separate child rate with no written terms for this programme.
+    expect(() => familyPricing('desert-fox-sandboarding-adventure', [
+      { id: 'adult', name: 'Adult', price: 30 },
+      { id: 'child', name: 'Child (8-14)', price: 20 },
+    ])).toThrow(/FAMILY_CHILD_TERMS/);
+    // The programme no longer has the vehicle option its terms describe.
+    expect(() => familyPricing('desert-fox-private-jeep-safari', [{ id: 'group', name: 'Group', price: 65 }])).toThrow(/vehicle option/);
+    // Options with no child rate and no vehicle terms pass through unchanged.
+    expect(familyPricing('wild-desert-quad-atv-private-experience', [{ _id: 'x', id: '3hr', name: '3-Hour Private', price: 30 }]))
+      .toEqual({ options: [{ id: '3hr', name: '3-Hour Private', price: 30 }], notes: [] });
   });
 
   it('recognises the claims the network cannot back', () => {
