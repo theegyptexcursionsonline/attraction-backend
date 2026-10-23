@@ -86,6 +86,7 @@ const site = (overrides: Partial<NetworkSite> = {}): NetworkSite => ({
   domain: 'safaritesttown.com',
   city: 'El Gouna',
   area: 'El Gouna',
+  pickupDestination: 'el-gouna',
   coordinates: { lat: 27.39, lng: 33.67 },
   currency: 'USD',
   slugPrefix: 'stt-',
@@ -244,6 +245,8 @@ describe('network sites seed: the tenant record', () => {
     expect(record).not.toHaveProperty('customDomain');
     // No phone or email is published for the site until its operator confirms its own.
     expect(record.contactInfo).toEqual({ address: 'El Gouna, Red Sea, Egypt' });
+    // The pickup area the storefront names is the network destination the site collects from.
+    expect(record.pickupDestinationSlugs).toEqual(['el-gouna']);
     expect(Object.values(record.aiSettings as Record<string, { enabled: boolean }>).every((setting) => !setting.enabled)).toBe(true);
   });
 });

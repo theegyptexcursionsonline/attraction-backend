@@ -94,6 +94,8 @@ export interface NetworkSite {
   city: string;
   /** Where the trips collect guests, as a guest would say it ("Marsa Alam, Port Ghalib and El Quseir"). */
   area: string;
+  /** The network destination the site collects from (its slug), shown as the site's pickup area. */
+  pickupDestination: string;
   coordinates: { lat: number; lng: number };
   currency: 'USD' | 'EUR';
   slugPrefix: string;
@@ -133,6 +135,7 @@ export function validateBatch(batch: NetworkBatch): string[] {
   const tripSlugs = new Set<string>();
   for (const site of batch.sites) {
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(site.slug)) errors.push(`${site.slug}: invalid site slug.`);
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(site.pickupDestination || '')) errors.push(`${site.slug}: invalid pickup destination.`);
     if (slugs.has(site.slug)) errors.push(`${site.slug}: duplicate site.`);
     slugs.add(site.slug);
     if (!['USD', 'EUR'].includes(site.currency)) errors.push(`${site.slug}: unsupported currency ${site.currency}.`);
@@ -369,6 +372,7 @@ export function tenantRecord(site: NetworkSite): Record<string, unknown> {
     timezone: 'Africa/Cairo',
     // No phone or email is published until the site's operator confirms its own (recorded as an open question).
     contactInfo: { address: `${site.city}, Red Sea, Egypt` },
+    pickupDestinationSlugs: [site.pickupDestination],
     socialLinks: {},
     notificationSettings: { bookingEmail: LAUNCH_BOOKING_INBOX },
     flatUrls: true,
@@ -548,7 +552,7 @@ async function applyPlan(batch: NetworkBatch): Promise<void> {
           // catalogue are live, and a rerun must never switch it back off.
           $setOnInsert: { supportedLanguages },
           // The domain is attached in its own step, after DNS.
-          $unset: { customDomain: 1, pickupDestinationSlugs: 1 },
+          $unset: { customDomain: 1 },
         },
         { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true },
       );

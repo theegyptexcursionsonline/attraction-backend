@@ -1083,6 +1083,7 @@ export const B01_SAFARI: NetworkBatch = {
       domain: "safarielgouna.com",
       city: "El Gouna",
       area: "El Gouna",
+      pickupDestination: "el-gouna",
       coordinates: {
         "lat": 27.3942,
         "lng": 33.6782
@@ -1284,6 +1285,7 @@ export const B01_SAFARI: NetworkBatch = {
       domain: "hurghadadesertsafari.com",
       city: "Hurghada",
       area: "Hurghada",
+      pickupDestination: "hurghada",
       coordinates: {
         "lat": 27.2579,
         "lng": 33.8116
@@ -1484,6 +1486,7 @@ export const B01_SAFARI: NetworkBatch = {
       domain: "hurghadahorseclub.com",
       city: "Hurghada",
       area: "Hurghada",
+      pickupDestination: "hurghada",
       coordinates: {
         "lat": 27.2579,
         "lng": 33.8116
@@ -1653,6 +1656,7 @@ export const B01_SAFARI: NetworkBatch = {
       domain: "hurghadaquadbikesafaris.com",
       city: "Hurghada",
       area: "Hurghada",
+      pickupDestination: "hurghada",
       coordinates: {
         "lat": 27.2579,
         "lng": 33.8116
@@ -1829,6 +1833,7 @@ export const B01_SAFARI: NetworkBatch = {
       domain: "safarisahlhashesh.com",
       city: "Sahl Hasheesh",
       area: "Sahl Hasheesh",
+      pickupDestination: "sahl-hasheesh",
       coordinates: {
         "lat": 27.0397,
         "lng": 33.8814
@@ -2007,6 +2012,7 @@ export const B01_SAFARI: NetworkBatch = {
       domain: "saharahurghada.com",
       city: "Hurghada",
       area: "Hurghada",
+      pickupDestination: "hurghada",
       coordinates: {
         "lat": 27.2579,
         "lng": 33.8116
@@ -2183,6 +2189,7 @@ export const B01_SAFARI: NetworkBatch = {
       domain: "saharaparkhurghada.com",
       city: "Hurghada",
       area: "Hurghada",
+      pickupDestination: "hurghada",
       coordinates: {
         "lat": 27.2579,
         "lng": 33.8116
@@ -2315,6 +2322,7 @@ export const B01_SAFARI: NetworkBatch = {
       domain: "makadibayhorseride.com",
       city: "Makadi Bay",
       area: "Makadi Bay",
+      pickupDestination: "makadi-bay",
       coordinates: {
         "lat": 26.9889,
         "lng": 33.8934
@@ -2463,6 +2471,7 @@ export const B01_SAFARI: NetworkBatch = {
       domain: "safarimakadibay.com",
       city: "Makadi Bay",
       area: "Makadi Bay",
+      pickupDestination: "makadi-bay",
       coordinates: {
         "lat": 26.9889,
         "lng": 33.8934
@@ -2639,6 +2648,7 @@ export const B01_SAFARI: NetworkBatch = {
       domain: "marsaalamdesertsafaris.com",
       city: "Marsa Alam",
       area: "Marsa Alam, Port Ghalib and El Quseir",
+      pickupDestination: "marsa-alam",
       coordinates: {
         "lat": 25.0676,
         "lng": 34.879
