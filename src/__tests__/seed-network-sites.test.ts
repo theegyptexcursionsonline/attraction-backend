@@ -196,6 +196,22 @@ describe('network sites seed: the trip document', () => {
     expect(() => tripDocument(site(), trip({ price: spec({ omit: { exclusions: ['Dinner on request'] } }) }), withDinner, 0, 'tenant-1')).toThrow(/"Dinner on request" is not in the programme's exclusions/);
   });
 
+  it('adds the exclusions and notes the sold option makes true, and writes every line once', () => {
+    // B01's Marsa Alam jeep trip added a child-price line its programme already carried (live 24 Oct).
+    const programme = { ...PROGRAMME, needToKnow: ['Drivers must be 16.', 'Children aged 6 to 12 pay the child price.'], exclusions: ['Gratuities', 'Gratuities'] };
+    const doc = tripDocument(site({ pickupNote: undefined }), trip({ price: spec({ add: { exclusions: ['Snorkelling gear, unless you add it when you book', 'Gratuities'], needToKnow: ['The marina fee is paid on the day.'] } }) }), programme, 0, 'tenant-1');
+    expect(doc.exclusions).toEqual(['Gratuities', 'Snorkelling gear, unless you add it when you book']);
+    expect(doc.needToKnow).toEqual(['Drivers must be 16.', 'Children aged 6 to 12 pay the child price.', 'The marina fee is paid on the day.']);
+  });
+
+  it('names an extra in the site\'s own words, keeping its price and how it is charged', () => {
+    const facts = programmeFacts(site(), trip({ price: spec({ extras: { photos: { name: 'Photographs of the trip', description: 'Taken by the guide' } } }) }), PROGRAMME);
+    expect(facts.addons).toEqual([
+      expect.objectContaining({ id: 'dinner', name: 'VIP Dinner Upgrade', price: 20, pricingModel: 'per-person' }),
+      expect.objectContaining({ id: 'photos', name: 'Photographs of the trip', description: 'Taken by the guide', price: 15, pricingModel: 'per-booking' }),
+    ]);
+  });
+
   it('drops the clock times from a copied schedule whose times contradict the departures sold', () => {
     const untimed = tripDocument(site(), trip({ price: spec({ untimedItinerary: true }) }), PROGRAMME, 0, 'tenant-1');
     expect(untimed.itinerary).toEqual([{ time: '', duration: '30 min', title: 'Hotel pickup', description: 'Transfer to the desert camp.' }]);
@@ -283,6 +299,22 @@ describe('network sites seed: what the batch check refuses', () => {
       'stt-super-safari: extra "shisha" to charge per guest is not sold.',
       'stt-super-safari: vehicle option "double" is not sold.',
     ]));
+  });
+
+  it('refuses words for an extra that is not sold, and claims or other places in added lines', () => {
+    const errors = validateBatch(batch([site({ trips: [trip({ price: spec({ extras: { shisha: { name: 'Shisha', description: '' } }, add: { needToKnow: ['The best view from Hurghada.'] } }) })] })]));
+    expect(errors).toEqual(expect.arrayContaining([
+      'stt-super-safari: extra "shisha" to rename is not sold.',
+      'stt-super-safari: option, extra or schedule words carry a claim, a brand, a process word or another place.',
+    ]));
+  });
+
+  it('takes one home photo where the trips publish fewer than three, only when the shortfall is declared', () => {
+    const one = [`${CLOUD}/h1.jpg`];
+    expect(validateBatch(batch([site({ heroImages: one })]))).toEqual(['safari-test-town: three distinct hero images are required.']);
+    expect(validateBatch(batch([site({ heroImages: one, photoShortfall: 'The one trip publishes a single photo.' })]))).toEqual([]);
+    expect(validateBatch(batch([site({ heroImages: [], photoShortfall: 'No photo.' })]))).toEqual(['safari-test-town: one hero image is required.']);
+    expect(validateBatch(batch([site({ heroImages: [one[0], one[0]], photoShortfall: 'Short.' })]))).toEqual(['safari-test-town: hero images must be distinct.']);
   });
 
   it('knows the brands and claims it refuses', () => {

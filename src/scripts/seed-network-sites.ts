@@ -58,6 +58,8 @@ export interface PriceSpec {
   /** Extra ids to sell; `perPerson` ones are charged per guest who takes them, each guest choosing at booking. */
   addons: string[];
   perPerson?: string[];
+  /** The site's own words for an extra whose programme name reads badly ("OTHERS: Wetsuit for Snorkeling"). */
+  extras?: Record<string, { name: string; description: string }>;
   /** Departures by label; none means the trip is sold by the day and the team confirms the time. */
   departures: string[];
   /** A clearer label for a departure whose programme label is a bare clock time. */
@@ -76,8 +78,11 @@ export interface PriceSpec {
    * programme no longer has stops the run, so a changed programme is read again before it is sold.
    */
   omit?: { inclusions?: string[]; exclusions?: string[]; needToKnow?: string[] };
-  /** Lines the options sold make true (the dinner a dinner option includes). */
-  add?: { inclusions?: string[] };
+  /**
+   * Lines the options sold make true (the dinner a dinner option includes), and what they leave out where the
+   * programme only says it conditionally ("Snorkeling gear (if selected from add-ons)").
+   */
+  add?: { inclusions?: string[]; exclusions?: string[]; needToKnow?: string[] };
 }
 
 export interface NetworkTrip {
@@ -121,6 +126,11 @@ export interface NetworkSite {
   /** The admin palette; the storefront design carries the site's real colours. */
   theme: { primaryColor: string; secondaryColor: string; accentColor: string };
   heroImages: string[];
+  /**
+   * Why the site has fewer than three photos of its own for the home page: the trips it sells publish fewer.
+   * One distinct photo is then enough, and the photos are an open question for the client.
+   */
+  photoShortfall?: string;
   logo: string;
   trips: NetworkTrip[];
 }
@@ -151,7 +161,10 @@ export function validateBatch(batch: NetworkBatch): string[] {
     if (slugs.has(site.slug)) errors.push(`${site.slug}: duplicate site.`);
     slugs.add(site.slug);
     if (!['USD', 'EUR'].includes(site.currency)) errors.push(`${site.slug}: unsupported currency ${site.currency}.`);
-    if (site.heroImages.length < 3 || new Set(site.heroImages).size !== site.heroImages.length) errors.push(`${site.slug}: three distinct hero images are required.`);
+    if (new Set(site.heroImages).size !== site.heroImages.length) errors.push(`${site.slug}: hero images must be distinct.`);
+    if (site.photoShortfall?.trim() ? site.heroImages.length < 1 : site.heroImages.length < 3) {
+      errors.push(`${site.slug}: ${site.photoShortfall?.trim() ? 'one hero image is required' : 'three distinct hero images are required'}.`);
+    }
     for (const url of [...site.heroImages, site.logo]) if (!CLOUDINARY.test(url || '')) errors.push(`${site.slug}: image must already be on the network's Cloudinary: ${url}`);
     const siteCopy = [site.tagline, site.description, site.seo.metaTitle, site.seo.metaDescription, ...site.seo.keywords, site.pickupNote || ''].join('\n');
     if (UNBACKED_CLAIMS.test(siteCopy) || EMOJI.test(siteCopy) || FOREIGN_BRANDS.test(siteCopy) || PROCESS_MARKERS.test(siteCopy) || site.foreignPlaces.test(siteCopy)) {
@@ -183,9 +196,11 @@ export function validateBatch(batch: NetworkBatch): string[] {
       for (const id of spec.perPerson || []) if (!spec.addons.includes(id)) errors.push(`${slug}: extra "${id}" to charge per guest is not sold.`);
       for (const id of Object.keys(spec.vehicle || {})) if (!spec.options.includes(id)) errors.push(`${slug}: vehicle option "${id}" is not sold.`);
       for (const id of Object.keys(spec.rename || {})) if (!spec.options.includes(id)) errors.push(`${slug}: option "${id}" to rename is not sold.`);
+      for (const id of Object.keys(spec.extras || {})) if (!spec.addons.includes(id)) errors.push(`${slug}: extra "${id}" to rename is not sold.`);
       if (spec.child && !spec.options.includes(spec.child.adult)) errors.push(`${slug}: the child price needs the adult option "${spec.child.adult}".`);
       const specCopy = [
         ...Object.values(spec.rename || {}).flatMap((words) => [words.name, words.description]),
+        ...Object.values(spec.extras || {}).flatMap((words) => [words.name, words.description]),
         ...Object.values(spec.vehicle || {}).map((vehicle) => vehicle.note),
         ...(spec.child ? [spec.child.name, spec.child.description, spec.child.note] : []),
         spec.childNote || '',
@@ -193,6 +208,8 @@ export function validateBatch(batch: NetworkBatch): string[] {
         spec.duration || '',
         ...(spec.itinerary || []).flatMap((step) => [step.title, step.description]),
         ...(spec.add?.inclusions || []),
+        ...(spec.add?.exclusions || []),
+        ...(spec.add?.needToKnow || []),
       ].join('\n');
       if (UNBACKED_CLAIMS.test(specCopy) || EMOJI.test(specCopy) || FOREIGN_BRANDS.test(specCopy) || PROCESS_MARKERS.test(specCopy) || site.foreignPlaces.test(specCopy)) {
         errors.push(`${slug}: option, extra or schedule words carry a claim, a brand, a process word or another place.`);
@@ -283,7 +300,11 @@ export function programmeFacts(site: NetworkSite, trip: NetworkTrip, programme: 
   const addons: Record<string, unknown>[] = pick(programme.addons, spec.addons, 'id', 'extra').map(priced('extra'))
     .map((addon) => (spec.perPerson?.includes(String(addon.id))
       ? { ...addon, pricingModel: 'per-person', pricingType: 'per_person' }
-      : { ...addon, pricingModel: 'per-booking', pricingType: 'per_unit' }));
+      : { ...addon, pricingModel: 'per-booking', pricingType: 'per_unit' }))
+    .map((addon: Record<string, unknown>) => {
+      const words = spec.extras?.[String(addon.id)];
+      return words ? { ...addon, name: words.name, description: words.description } : addon;
+    });
   const entryWindows: Record<string, unknown>[] = pick(programme.entryWindows, spec.departures, 'label', 'departure')
     .map((window) => ({ ...window, label: spec.departureLabels?.[String(window.label)] ?? window.label }));
   // The "from" price is what an adult pays alone: a child rate, a pair or a vehicle never leads.
@@ -317,6 +338,12 @@ const cleanList = (items: unknown): string[] =>
     .map((item) => (/^hotel (?:transfers?|pickup\s*(?:\/|&|and)\s*drop-?off)(?: from .*)?$/i.test(item) ? 'Hotel pickup and drop-off' : item))
     .filter((item) => !UNBACKED_CLAIMS.test(item));
 
+/**
+ * Each line once: a line the trip adds that the programme already carries (B01's Marsa Alam jeep trip listed its
+ * child-price line twice, 24 October) is written a single time.
+ */
+const once = (items: string[]): string[] => [...new Set(items)];
+
 /** A programme list without the exact lines the trip leaves out; a line that is not there stops the run. */
 function withoutLines(site: NetworkSite, trip: NetworkTrip, field: 'inclusions' | 'exclusions' | 'needToKnow', items: unknown): unknown[] {
   const list = Array.isArray(items) ? items : [];
@@ -330,7 +357,7 @@ function withoutLines(site: NetworkSite, trip: NetworkTrip, field: 'inclusions' 
 /** The trip document for one site, from its written copy and the named programme. */
 export function tripDocument(site: NetworkSite, trip: NetworkTrip, programme: SourceDoc, index: number, tenantId: unknown): Record<string, unknown> {
   const facts = programmeFacts(site, trip, programme);
-  const inclusions = [...cleanList(withoutLines(site, trip, 'inclusions', programme.inclusions)), ...cleanList(trip.price.add?.inclusions)];
+  const inclusions = once([...cleanList(withoutLines(site, trip, 'inclusions', programme.inclusions)), ...cleanList(trip.price.add?.inclusions)]);
   const pickup = programme.hasHotelPickup === true || inclusions.some((item) => /hotel pickup|pickup and drop-off at your hotel/i.test(item));
   if (!pickup) throw new Error(`${site.slugPrefix}${trip.path}: the programme does not include hotel pickup, which every network trip promises.`);
   const itinerary = (trip.price.itinerary
@@ -362,11 +389,16 @@ export function tripDocument(site: NetworkSite, trip: NetworkTrip, programme: So
     itinerary,
     highlights: trip.highlights,
     inclusions,
-    exclusions: cleanList(withoutLines(site, trip, 'exclusions', programme.exclusions)),
-    whatToBring: cleanList(programme.whatToBring),
-    needToKnow: [...cleanList(withoutLines(site, trip, 'needToKnow', programme.needToKnow)), ...facts.notes, ...(site.pickupNote && !trip.pickupIncluded ? [site.pickupNote] : [])],
-    participantRequirements: cleanList(programme.participantRequirements),
-    accessibility: cleanList(programme.accessibility),
+    exclusions: once([...cleanList(withoutLines(site, trip, 'exclusions', programme.exclusions)), ...cleanList(trip.price.add?.exclusions)]),
+    whatToBring: once(cleanList(programme.whatToBring)),
+    needToKnow: once([
+      ...cleanList(withoutLines(site, trip, 'needToKnow', programme.needToKnow)),
+      ...cleanList(trip.price.add?.needToKnow),
+      ...facts.notes,
+      ...(site.pickupNote && !trip.pickupIncluded ? [site.pickupNote] : []),
+    ]),
+    participantRequirements: once(cleanList(programme.participantRequirements)),
+    accessibility: once(cleanList(programme.accessibility)),
     gettingThere: [{ mode: 'Hotel pickup', description: `Pickup and drop-off at your hotel in ${site.area}.` }],
     meetingPoint: {
       address: `Your hotel in ${site.area}`,
@@ -445,6 +477,7 @@ function argValue(name: string): string | null {
 async function loadBatch(id: string | null): Promise<NetworkBatch> {
   const batches: Record<string, () => Promise<NetworkBatch>> = {
     b01: async () => (await import('./network-sites/b01-safari')).B01_SAFARI,
+    b02: async () => (await import('./network-sites/b02')).B02,
   };
   if (!id || !batches[id]) throw new Error(`Pass --batch=<${Object.keys(batches).join('|')}>.`);
   return batches[id]();
