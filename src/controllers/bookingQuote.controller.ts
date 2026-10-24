@@ -9,6 +9,7 @@ import { tourFinanceQuote } from '../services/tourFinanceQuote.service';
 import { assertTenantIdsBookingCreationAllowed } from '../services/tenantBookingPolicy.service';
 import { bookingEligibility, resolveBookingTimeZone } from '../utils/bookingCutoff';
 import { NOT_SOLD_IN_SITE_CURRENCY } from '../utils/siteCurrency';
+import { AddonSelectionError } from '../utils/bookingAddons';
 
 export async function quoteBooking(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -33,6 +34,8 @@ export async function quoteBooking(req: AuthRequest, res: Response, next: NextFu
   } catch (error) {
     if (error instanceof FinanceError) { res.status(409).json({ success: false, code: error.code, error: error.message }); return; }
     if (error instanceof Error && error.message === 'TOUR_CURRENCY_MISMATCH') { sendError(res, NOT_SOLD_IN_SITE_CURRENCY, 409); return; }
+    // The same refusal booking creation gives: the catalogue decides which add-ons and how many.
+    if (error instanceof AddonSelectionError) { sendError(res, error.message, 400); return; }
     if (error instanceof Error && /^(INVALID_|PARTICIPANT_LIMIT|MISSING_TENANT)/.test(error.message)) { sendError(res, 'Booking selection is invalid', 400); return; }
     next(error);
   }

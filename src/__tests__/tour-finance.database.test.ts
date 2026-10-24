@@ -80,6 +80,22 @@ it('uses discounted service as every percentage basis and reports the selected p
  const quoted = (await quote({ attractionId: String(attraction), items, promoCode: 'HALF' }).expect(200)).body.data;
  expect(quoted).toMatchObject({ subtotal: 200, discount: 100, fees: 7, total: 107, discountSource: 'promo', appliedPromoCode: 'HALF' });
 });
+it('prices per-guest add-ons and refuses a selection the catalogue does not allow with 400, never 500', async () => {
+ await Attraction.collection.updateOne({ _id: attraction }, { $set: { addons: [
+   { id: 'lunch', name: 'Lunch', price: 15 },
+   { id: 'tomb', name: 'Tomb entry', price: 20, pricingModel: 'per-person', pricingType: 'per_person' },
+ ] } });
+ const line = (addons: object[]) => ({ attractionId: String(attraction), items: [{ ...items[0], addons }] });
+ expect((await quote(line([{ id: 'tomb', quantity: 2 }])).expect(200)).body.data).toMatchObject({ subtotal: 240, fees: 12, total: 252 });
+ for (const [addons, error] of [
+   [[{ id: 'tomb', quantity: 3 }], 'Add-on "Tomb entry" can be added for at most 2 participants'],
+   [[{ id: 'lunch', quantity: 2 }], 'Add-on "Lunch" can only be added once'],
+   [[{ id: 'retired', quantity: 1 }], 'A selected add-on is no longer available'],
+ ] as const) {
+   expect((await quote(line([...addons])).expect(400)).body).toMatchObject({ success: false, error });
+ }
+ expect(await Booking.countDocuments()).toBe(0); expect(await Availability.countDocuments()).toBe(0);
+});
 it('isolates the quote tenant, rejects caller prices and permits only assigned staff tenant overrides', async () => {
  await quote(undefined, other).expect(404); await quote({ attractionId: String(attraction), items, total: 1 }).expect(400);
  await quote({ attractionId: String(attraction), items, tenantId: String(site) }).expect(403);

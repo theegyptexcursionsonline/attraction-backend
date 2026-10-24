@@ -86,4 +86,4 @@ src/
 
 ## Deployment
 
-Deploys to Railway via `railway.json` (Nixpacks, `npm run build` → `npm start`). Railway gates deployment on `/api/ready`; `/api/health` remains the lightweight liveness endpoint.
+Deploys to Railway via `railway.json` and the `Dockerfile` (one pinned Node.js release from the official image: `npm ci --include=dev` → `npm run build` → `npm start`). Railway gates deployment on `/api/ready`; `/api/health` remains the lightweight liveness endpoint.
