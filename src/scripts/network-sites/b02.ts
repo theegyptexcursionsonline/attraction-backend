@@ -2385,7 +2385,7 @@ export const B02: NetworkBatch = {
       tagline: "Boat trips into Ras Mohamed from Sharm el-Sheikh",
       description: "Shark Reef and Yolanda Reef lie at the southern tip of Ras Mohamed National Park, south of Sharm el-Sheikh. This site sells the boat trips that run from Sharm el-Sheikh into the park: a snorkelling day with White Island, a shorter boat trip, a yacht day, a VIP cruise with a seafood and barbecue buffet, and a day with an introductory dive.\n\nEach trip lists the stops it makes, and none of them promises Shark Reef; if a stop there matters to you, ask the team before you book. Every trip includes pickup from your hotel in Sharm el-Sheikh, and the national park and marina fees are shown on each trip where they are not included.",
       seo: {
-        "metaTitle": "Ras Mohamed Boat Trips from Sharm el-Sheikh",
+        "metaTitle": "Shark Reef Sharm El Sheikh: Ras Mohamed Boat Trips",
         "metaDescription": "Snorkelling, yacht and diving days from Sharm el-Sheikh into Ras Mohamed National Park, where Shark Reef and Yolanda Reef lie, with hotel pickup.",
         "keywords": [
           "shark reef sharm el sheikh",

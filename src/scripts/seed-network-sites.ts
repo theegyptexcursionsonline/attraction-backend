@@ -168,11 +168,18 @@ export function validateBatch(batch: NetworkBatch): string[] {
   const errors: string[] = [];
   const slugs = new Set<string>();
   const tripSlugs = new Set<string>();
+  // Each site is its own brand in search results too: two sites under one title split the same searches
+  // (Shark Reef carried Ras Mohamed's word for word, 24 Oct).
+  const titles = new Map<string, string>();
   for (const site of batch.sites) {
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(site.slug)) errors.push(`${site.slug}: invalid site slug.`);
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(site.pickupDestination || '')) errors.push(`${site.slug}: invalid pickup destination.`);
     if (slugs.has(site.slug)) errors.push(`${site.slug}: duplicate site.`);
     slugs.add(site.slug);
+    const title = site.seo.metaTitle.trim().toLowerCase();
+    const sharedWith = titles.get(title);
+    if (sharedWith) errors.push(`${site.slug}: site title repeats ${sharedWith}'s; every site needs its own.`);
+    else titles.set(title, site.slug);
     if (!['USD', 'EUR'].includes(site.currency)) errors.push(`${site.slug}: unsupported currency ${site.currency}.`);
     if (new Set(site.heroImages).size !== site.heroImages.length) errors.push(`${site.slug}: hero images must be distinct.`);
     if (site.photoShortfall?.trim() ? site.heroImages.length < 1 : site.heroImages.length < 3) {

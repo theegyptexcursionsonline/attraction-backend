@@ -330,6 +330,13 @@ describe('network sites seed: what the batch check refuses', () => {
     expect(sells(2, 'Two options are on sale: a cruise and a dive. Both leave early.')).toEqual([]);
   });
 
+  it('refuses two sites under one title, whatever its case or spacing', () => {
+    // Shark Reef carried Ras Mohamed's title word for word (24 Oct): each site is its own brand in search too.
+    const other = (metaTitle: string) => site({ slug: 'safari-other-town', name: 'Safari Other Town', domain: 'safariothertown.com', slugPrefix: 'sot-', seo: { metaTitle, metaDescription: 'Desert trips from El Gouna.', keywords: ['El Gouna desert'] } });
+    expect(validateBatch(batch([site(), other('  SAFARI test town ')]))).toEqual(["safari-other-town: site title repeats safari-test-town's; every site needs its own."]);
+    expect(validateBatch(batch([site(), other('Safari Other Town')]))).toEqual([]);
+  });
+
   it('knows the brands and claims it refuses', () => {
     for (const brand of ['Desert Fox', 'Gamila', 'Safari Sahara', 'Polaris RZR', 'Viator']) expect(FOREIGN_BRANDS.test(brand)).toBe(true);
     for (const claim of ['the best trip', 'Rated 4.8', '1,800 reviews', 'Skip the queue', 'Full refund', 'Instant confirmation']) expect(UNBACKED_CLAIMS.test(claim)).toBe(true);
