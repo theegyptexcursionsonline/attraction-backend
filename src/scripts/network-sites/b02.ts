@@ -1220,8 +1220,8 @@ const PROGRAMMES: Record<string, PriceSpec> = {
         "description": "Pickup at seven from your hotel in Cairo or Giza."
       },
       {
-        "title": "The drive to Fayoum",
-        "description": "About two hours in a private air-conditioned vehicle.",
+        "title": "Fayoum",
+        "description": "About two hours from Cairo in a private air-conditioned vehicle.",
         "duration": "2 hours"
       },
       {
@@ -1435,7 +1435,7 @@ export const B02: NetworkBatch = {
       slugPrefix: "tvf-",
       foreignPlaces: /Hurghada|Sharm|Dahab|Tiran|Ras Mohamed|Marsa Alam|Quseir|Ghalib|Safaga|Soma Bay|Makadi|Gouna|Sahl|Luxor|Aswan|Alexandria|Siwa|Bahariya|pyramid/i,
       tagline: "A day in the Fayoum, leaving from Cairo and Giza",
-      description: "Tunis Village Fayoum sells one trip: a full day in the Fayoum, leaving early and taking the whole day. Tunis Village, the pottery village above Lake Qarun, is one of its stops, along with the lake, the waterfalls at Wadi El Rayan, the Magic Lake and Wadi Al Hitan, the Valley of the Whales. Part of the day is driven by jeep across the sand.\n\nPickup and drop-off is from Cairo and Giza, with six points to choose between, among them Kafr Nassar, Al Haram and 6th of October City. Hold a place online and pay later, or ask the team first to confirm which pickup point suits you.",
+      description: "Tunis Village Fayoum sells one trip: a full day in the Fayoum, leaving early and taking the whole day. Tunis Village, the pottery village above Lake Qarun, is one of its stops, along with the lake, the waterfalls at Wadi El Rayan, the Magic Lake and Wadi Al Hitan, the Valley of the Whales. Part of the day is driven by jeep across the sand.\n\nPickup and drop-off are at your hotel in Cairo or Giza. Hold a place online and pay later, or ask the team first about the pickup time.",
       seo: {
         "metaTitle": "Fayoum Day Trip from Cairo and Giza",
         "metaDescription": "A full day in the Fayoum with Tunis Village, Lake Qarun, the Wadi El Rayan waterfalls, the Magic Lake and Wadi Al Hitan, from Cairo and Giza.",
@@ -1825,7 +1825,7 @@ export const B02: NetworkBatch = {
       slugPrefix: "wis-",
       foreignPlaces: /Hurghada|Giftun|Dahab|Marsa Alam|Quseir|Ghalib|Safaga|Soma Bay|Makadi|Gouna|Sahl|Cairo|Giza|Luxor|Fayoum|pyramid|Tiran/i,
       tagline: "Boat days to White Island and the Ras Mohamed reefs",
-      description: "White Island Sharm El Sheikh sells the boat days that sail from Sharm el-Sheikh out to the sandbar at White Island and the reefs of Ras Mohamed National Park. Four are on offer: a small-group cruise that reaches the island early, a yacht day built around snorkelling, the same yacht day with one introductory dive, and a longer boat trip sold without the park fee.\n\nAll four leave from Sharm el-Sheikh with hotel pickup and a return transfer. Snorkelling equipment, park fees and dives are bundled differently from one to the next, so each page states what its own option covers. Places can be held online now and paid for later, and if something is unclear the team will answer before you book.",
+      description: "White Island Sharm El Sheikh sells the boat days that sail from Sharm el-Sheikh out to the sandbar at White Island and the reefs of Ras Mohamed National Park. Three are on offer: a small-group cruise that reaches the island early, a yacht day built around snorkelling, and the same yacht day with one introductory dive.\n\nAll three leave from Sharm el-Sheikh with hotel pickup and a return transfer. Snorkelling equipment, park fees and dives are bundled differently from one to the next, so each page states what its own option covers. Places can be held online now and paid for later, and if something is unclear the team will answer before you book.",
       seo: {
         "metaTitle": "White Island and Ras Mohamed Boat Trips",
         "metaDescription": "Boat days from Sharm el-Sheikh to the White Island sandbar and the reefs of Ras Mohamed National Park, with snorkelling stops, lunch and hotel pickup.",

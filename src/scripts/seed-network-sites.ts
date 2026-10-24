@@ -148,6 +148,19 @@ const PROCESS_MARKERS = /\b(seed|preview|placeholder|TODO|lorem|QA|staging|inter
 export const UNBACKED_CLAIMS = /#1|bestseller|★|\brated\b|\breviews?\b|\bmax\b|skip-the-line|skip the queue|100%|\bexpert\b|zero-light|\bultimate\b|\bepic\b|unforgettable|stunning|breathtaking|spectacular|\bauthentic\b|\bbest\b|budget-friendly|perfect for|polaris|free cancellation|full refund|guaranteed|award|since \d{4}|years of experience|instant confirmation/i;
 const CHILD_RATE = /\b(?:child|children|kids?)\b/i;
 
+const COUNT_WORDS: Readonly<Record<string, number>> = { one: 1, two: 2, both: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
+const STATED_TRIP_COUNT = /\b(one|two|three|four|five|six|seven|eight|nine|ten) (?:trips?|options?)\b|\b(one|two|three|four|five|six|seven|eight|nine|ten) (?:are|is) on (?:offer|sale)\b|(?:^|[.:!?]\s+)(?:All (two|three|four|five|six|seven|eight|nine|ten)|(Both))\b/gim;
+
+/**
+ * Every place a site's own copy counts the trips it sells: "sells one trip", "Six trips:", "Three are on
+ * offer", "Two options are on sale", a sentence opening "Both …" or "All four …". Holding a trip back
+ * leaves such a sentence wrong (White Island said four for the three it sells, 24 Oct), so the batch
+ * check holds each count to the trips the site actually sells.
+ */
+export function statedTripCounts(copy: string): number[] {
+  return [...copy.matchAll(STATED_TRIP_COUNT)].map((match) => COUNT_WORDS[(match[1] || match[2] || match[3] || match[4]).toLowerCase()]);
+}
+
 const copyOf = (trip: NetworkTrip) => [trip.title, trip.short, trip.description, ...trip.highlights, trip.seo.metaTitle, trip.seo.metaDescription, ...trip.imageAlts].join('\n');
 
 /** Every rule that can be checked without the database. An empty list is a valid batch. */
@@ -171,6 +184,9 @@ export function validateBatch(batch: NetworkBatch): string[] {
       errors.push(`${site.slug}: site copy carries a claim, an emoji, a brand, a process word or another place.`);
     }
     if (!site.trips.length) errors.push(`${site.slug}: no trips.`);
+    for (const count of new Set(statedTripCounts(siteCopy))) {
+      if (count !== site.trips.length) errors.push(`${site.slug}: site copy counts ${count} trip${count === 1 ? '' : 's'}, but the site sells ${site.trips.length}.`);
+    }
     const paths = new Set<string>();
     for (const trip of site.trips) {
       const slug = `${site.slugPrefix}${trip.path}`;

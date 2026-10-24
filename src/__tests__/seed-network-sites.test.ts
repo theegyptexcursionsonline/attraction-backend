@@ -3,6 +3,7 @@ import {
   UNBACKED_CLAIMS,
   copiedFactProblems,
   programmeFacts,
+  statedTripCounts,
   tenantRecord,
   tripDocument,
   validateBatch,
@@ -315,6 +316,18 @@ describe('network sites seed: what the batch check refuses', () => {
     expect(validateBatch(batch([site({ heroImages: one, photoShortfall: 'The one trip publishes a single photo.' })]))).toEqual([]);
     expect(validateBatch(batch([site({ heroImages: [], photoShortfall: 'No photo.' })]))).toEqual(['safari-test-town: one hero image is required.']);
     expect(validateBatch(batch([site({ heroImages: [one[0], one[0]], photoShortfall: 'Short.' })]))).toEqual(['safari-test-town: hero images must be distinct.']);
+  });
+
+  it('holds every count of trips in the site copy to the trips the site sells', () => {
+    expect(statedTripCounts('It sells one trip: a full day.')).toEqual([1]);
+    expect(statedTripCounts('Six trips: a sunset ride and more.\n\nFour trips run out to the park.')).toEqual([6, 4]);
+    expect(statedTripCounts('Three are on offer: a cruise. Two options are on sale: one dive. Both leave early. All four leave at eight.')).toEqual([3, 2, 2, 4]);
+    // A number of hours, stops or dives is not a count of trips, and "both" inside a sentence is not either.
+    expect(statedTripCounts('A three-hour ride with two snorkelling stops, one introductory dive and quads in both directions.')).toEqual([]);
+    const sells = (count: number, description: string) => validateBatch(batch([site({ description, trips: Array.from({ length: count }, (_, index) => trip({ path: `trip-${index}` })) })]));
+    expect(sells(3, 'Boat days from El Gouna. Four are on offer: a cruise, a yacht day, a dive day and a long day. All four leave early.')).toEqual(['safari-test-town: site copy counts 4 trips, but the site sells 3.']);
+    expect(sells(1, 'Safari Test Town sells two trips: a ride and a drive.')).toEqual(['safari-test-town: site copy counts 2 trips, but the site sells 1.']);
+    expect(sells(2, 'Two options are on sale: a cruise and a dive. Both leave early.')).toEqual([]);
   });
 
   it('knows the brands and claims it refuses', () => {
