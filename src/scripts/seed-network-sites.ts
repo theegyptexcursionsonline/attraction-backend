@@ -25,6 +25,8 @@
 import fs from 'fs';
 import path from 'path';
 import { departureAvailabilityType } from '../utils/departureAvailability';
+import { EEO_SOURCE, eeoAddonBasisProblems, eeoLiveDrift, eeoProgramme, type EeoSnapshot } from './network-sites/eeo-source';
+import EEO_SNAPSHOT from './network-sites/eeo-snapshot.json';
 
 export const LISTING_PATH = '/safaris';
 export const LAUNCH_BOOKING_INBOX = 'theegyptexcursionsonline@gmail.com';
@@ -32,9 +34,17 @@ const CLOUDINARY = /^https:\/\/res\.cloudinary\.com\/dm3sxllch\/image\/upload\//
 
 /** Which published programme a trip is built on, and exactly what of it the trip sells. */
 export interface PriceSpec {
+  /**
+   * Where the programme is published: a site on the network (the default), or the client's own main site for a
+   * place the network has no programme for (`network-sites/eeo-source.ts`; `tenant` is then EEO_SOURCE and
+   * `source` the trip's address there, and `options` name its booking options by their pricing keys).
+   */
+  provider?: 'network' | 'eeo';
   /** The site that publishes the programme. */
   tenant: string;
   source: string;
+  /** The trip category for a programme read from the client's main site, which files trips by its own menu. */
+  category?: string;
   /** Option ids to sell. */
   options: string[];
   /** The programme sells children as a separate option: one option with a child price, and the age band. */
@@ -88,6 +98,8 @@ export interface NetworkTrip {
 export interface NetworkSite {
   slug: string;
   name: string;
+  /** The site's trip list (its "Trips" menu item and every trip's parent page); safari sites use /safaris. */
+  listingPath?: string;
   /** The domain from Fouad's list; attached only after its DNS points at the network. */
   domain: string;
   /** The network destination its trips are filed under. */
@@ -166,6 +178,7 @@ export function validateBatch(batch: NetworkBatch): string[] {
       if (!trip.seo.metaDescription || trip.seo.metaDescription.length > 165) errors.push(`${slug}: SEO description missing or too long.`);
       const spec = trip.price;
       if (!spec.options.length) errors.push(`${slug}: sells no option.`);
+      if (spec.provider === 'eeo' && spec.tenant !== EEO_SOURCE) errors.push(`${slug}: a programme from the client's main site must name ${EEO_SOURCE}.`);
       if (new Set(spec.departures).size !== spec.departures.length || spec.departures.some((label) => !label.trim())) errors.push(`${slug}: departures must name distinct programme departures.`);
       for (const id of spec.perPerson || []) if (!spec.addons.includes(id)) errors.push(`${slug}: extra "${id}" to charge per guest is not sold.`);
       for (const id of Object.keys(spec.vehicle || {})) if (!spec.options.includes(id)) errors.push(`${slug}: vehicle option "${id}" is not sold.`);
@@ -190,6 +203,29 @@ export function validateBatch(batch: NetworkBatch): string[] {
 }
 
 type SourceDoc = Record<string, any>;
+
+/**
+ * The programme a trip is built on. Two trips may sell different booking options of one trip on the client's
+ * main site, so that programme is told apart by the options it sells.
+ */
+export const sourceKey = (spec: PriceSpec): string => (spec.provider === 'eeo'
+  ? `${spec.tenant}/${spec.source}#${spec.options.join('+')}`
+  : `${spec.tenant}/${spec.source}`);
+
+/**
+ * A programme from the client's main site, read from the dated snapshot (`network-sites/eeo-snapshot.json`).
+ * The extras' charging basis must match the trip's, and the copied extras carry no snapshot-only field.
+ */
+export function eeoSourceProgramme(spec: PriceSpec, snapshot: EeoSnapshot = EEO_SNAPSHOT as EeoSnapshot): SourceDoc {
+  if (spec.tenant !== EEO_SOURCE) throw new Error(`${spec.source}: a programme from the client's main site names ${EEO_SOURCE} as its publisher.`);
+  const tour = snapshot.tours.find((item) => item.slug === spec.source);
+  if (!tour) throw new Error(`${EEO_SOURCE}/${spec.source}: not in the snapshot read ${snapshot.readAt}.`);
+  const programme = eeoProgramme(tour, spec.options, spec.category || 'water');
+  const basis = eeoAddonBasisProblems(programme, spec.addons, spec.perPerson);
+  if (basis.length) throw new Error(basis.join('\n'));
+  return { ...programme, addons: (programme.addons as Array<Record<string, unknown>>).map(({ perGuest, ...addon }) => { void perGuest; return addon; }) };
+}
+
 const withoutIds = <T extends Record<string, unknown>>(items: T[] | undefined): Omit<T, '_id'>[] =>
   (items || []).map(({ _id, ...rest }) => { void _id; return rest; });
 
@@ -304,7 +340,7 @@ export function tripDocument(site: NetworkSite, trip: NetworkTrip, programme: So
   return {
     slug: `${site.slugPrefix}${trip.path}`,
     pathSlug: trip.path,
-    parentPage: { label: 'Trips', path: LISTING_PATH },
+    parentPage: { label: 'Trips', path: site.listingPath || LISTING_PATH },
     title: trip.title,
     shortDescription: trip.short,
     description: trip.description,
@@ -379,7 +415,7 @@ export function tenantRecord(site: NetworkSite): Record<string, unknown> {
     status: 'active',
     navigation: [
       { label: 'Home', href: '/' },
-      { label: 'Trips', href: LISTING_PATH },
+      { label: 'Trips', href: site.listingPath || LISTING_PATH },
       { label: 'About', href: '/about' },
       { label: 'FAQ', href: '/faq' },
       { label: 'Contact', href: '/contact' },
@@ -425,17 +461,28 @@ async function loadState(batch: NetworkBatch) {
     return error ? Object.values(error.errors).map((item) => item.message) : [];
   };
   const specs = batch.sites.flatMap((site) => site.trips.map((trip) => trip.price));
-  const owners = [...new Set(specs.map((spec) => spec.tenant))];
+  const networkSpecs = specs.filter((spec) => spec.provider !== 'eeo');
+  const owners = [...new Set(networkSpecs.map((spec) => spec.tenant))];
   const ownerDocs = await Tenant.find({ slug: { $in: owners } }).select('_id slug status').lean();
   const ownerIds = new Map(ownerDocs.map((owner) => [owner.slug as string, owner._id]));
   const sources = new Map<string, SourceDoc>();
   const missing: string[] = [];
-  for (const key of [...new Set(specs.map((spec) => `${spec.tenant}/${spec.source}`))]) {
+  for (const key of [...new Set(networkSpecs.map(sourceKey))]) {
     const [tenant, source] = key.split('/');
     const ownerId = ownerIds.get(tenant);
     const programme = ownerId ? await Attraction.findOne({ slug: source, ownerTenantId: ownerId, status: 'active' }).lean() : null;
     if (programme) sources.set(key, programme as SourceDoc);
     else missing.push(key);
+  }
+  // The client's main site: the snapshot, and only while its live booking options still match it.
+  const snapshot = EEO_SNAPSHOT as EeoSnapshot;
+  for (const spec of specs.filter((item) => item.provider === 'eeo')) {
+    const key = sourceKey(spec);
+    if (sources.has(key)) continue;
+    const tour = snapshot.tours.find((item) => item.slug === spec.source);
+    const drift = tour ? await eeoLiveDrift(tour, spec.options, spec.addons).catch((error: unknown) => [`${key}: live check failed: ${error instanceof Error ? error.message : String(error)}`]) : [`${key}: not in the snapshot.`];
+    if (drift.length) { missing.push(`${key} (${drift.join('; ')})`); continue; }
+    try { sources.set(key, eeoSourceProgramme(spec, snapshot)); } catch (error) { missing.push(`${key} (${error instanceof Error ? error.message : String(error)})`); }
   }
   const sites = [];
   for (const site of batch.sites) {
@@ -462,7 +509,7 @@ type SchemaCheck = (document: Record<string, unknown>) => string[];
 function planSiteTrips(site: NetworkSite, sources: Map<string, SourceDoc>, tenantId: unknown, schemaCheck: SchemaCheck) {
   const problems: string[] = [];
   const documents = site.trips.flatMap((trip, index) => {
-    const source = sources.get(`${trip.price.tenant}/${trip.price.source}`);
+    const source = sources.get(sourceKey(trip.price));
     if (!source) return [];
     try {
       const document = tripDocument(site, trip, source, index, tenantId);
@@ -558,7 +605,7 @@ async function applyPlan(batch: NetworkBatch): Promise<void> {
       );
       fs.writeFileSync(path.join(codeDir, `${site.slug}.txt`), `${previewAccessCode}\n`, { mode: 0o600 });
       for (const [index, trip] of site.trips.entries()) {
-        const source = sources.get(`${trip.price.tenant}/${trip.price.source}`);
+        const source = sources.get(sourceKey(trip.price));
         if (!source) throw new Error(`${site.slug}: source ${trip.price.source} vanished mid-run.`);
         const document = tripDocument(site, trip, source, index, tenant._id);
         await Attraction.findOneAndUpdate(
@@ -606,7 +653,7 @@ export async function main(): Promise<void> {
       slug: site.slug,
       name: site.name,
       currency: site.currency,
-      trips: site.trips.map((trip) => ({ path: `/${trip.path}`, title: trip.title, from: `${trip.price.tenant}/${trip.price.source}`, photos: trip.images.length })),
+      trips: site.trips.map((trip) => ({ path: `/${trip.path}`, title: trip.title, from: sourceKey(trip.price), photos: trip.images.length })),
     })),
     safeguards: ['no database connection', 'no upload', 'no DNS or deployment', 'no notification'],
   }, null, 2));

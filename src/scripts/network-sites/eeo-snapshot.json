@@ -1,0 +1,3048 @@
+{
+ "readAt": "2026-10-24T06:03:34Z",
+ "source": "https://egypt-excursionsonline.com",
+ "tours": [
+  {
+   "slug": "sharm-ras-mohamed-white-island-snorkeling-adventure-with-lunch",
+   "id": "fa8eb9c36834cbf0e3ae830a",
+   "detail": {
+    "title": "Sharm: Ras Mohamed & White Island Snorkeling Adventure with Lunch",
+    "duration": "9 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Pickup and drop-off from your hotel",
+     "Transportation in an air-conditioned vehicle",
+     "Life jackets for all participants",
+     "Full-day cruise on a comfortable yacht",
+     "Two snorkeling stops at Ras Mohamed",
+     "Visit to the pristine White Island",
+     "Guidance from a professional snorkeling instructor",
+     "Buffet-style lunch served on board",
+     "Hot and cold beverages during the trip",
+     "Unlimited soft drinks and bottled water",
+     "Onboard facilities including 2 bathrooms and showers",
+     "10-minute introductory dive (if the Intro Dive option is selected)",
+     "Snorkeling equipment (available in all options except Explorer Package)",
+     "National Park entry fees (10 USD; available in all options except Explorer Package)"
+    ],
+    "whatsNotIncluded": [
+     "Underwater photographs and videos are not included"
+    ],
+    "whatToBring": [
+     "Sunglasses",
+     "Sun hat",
+     "Towel",
+     "Camera",
+     "Sunscreen",
+     "Passport or ID card, copy accepted"
+    ],
+    "itinerary": [
+     {
+      "title": "Pickup location",
+      "description": "Sharm El-Sheikh"
+     },
+     {
+      "title": "van",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Ras Muhammad National Park",
+      "description": "Boat cruise",
+      "duration": "2 hours"
+     },
+     {
+      "title": "Ras Muhammad National Park",
+      "description": "Photo stop, Snorkeling, Scenic drive, Scenic views on the way, Scuba diving",
+      "duration": "1.5 hours"
+     },
+     {
+      "title": "Ras Muhammad National Park",
+      "description": "Photo stop, Lunch, Snorkeling, Scuba diving"
+     },
+     {
+      "title": "White Island, Sharm El Shiekh",
+      "description": "Photo stop, Free time, Snorkeling",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Sharm el-Sheikh",
+      "description": "Boat cruise",
+      "duration": "2 hours"
+     },
+     {
+      "title": "van",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Arrive back at",
+      "description": "Sharm El-Sheikh"
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 31.53,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "ras-mohamed-white-island-snorkel-explorer-pac-bdc33fa9e100",
+     "title": "Ras Mohamed, White Island Snorkel Explorer Package w/Lunch",
+     "type": "Per Person",
+     "description": "Enjoy a scenic Red Sea cruise with snorkeling stops, lunch, hotel transfers, and onboard refreshments. National Park access and snorkeling equipment are not included in this option.",
+     "duration": "9 hours",
+     "guestPrices": {
+      "adult": 31.53,
+      "child": 16.35,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:30",
+       "guestPrices": {
+        "adult": 31.53,
+        "child": 16.35,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "ras-mohamed-white-island-snorkel-complete-pac-04f7239a5777",
+     "title": "Ras Mohamed, White Island Snorkel Complete Package w/Lunch",
+     "type": "Per Person",
+     "description": "Enjoy the complete Ras Mohamed experience with National Park access included, snorkeling equipment provided, hotel transfers, lunch, and onboard refreshments for a seamless day on the Red Sea.",
+     "duration": "9 hours",
+     "guestPrices": {
+      "adult": 58.4,
+      "child": 29.2,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:30",
+       "guestPrices": {
+        "adult": 58.4,
+        "child": 29.2,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "1-intro-dive-with-a-professional-instructor-b25f300e9d7c",
+     "title": "1 Intro Dive with a Professional Instructor",
+     "type": "Per Person",
+     "description": "Includes 1 intro dive with a professional instructor, full diving and snorkeling equipment, National Park access, and snorkeling stops at Ras Mohamed’s coral reefs.",
+     "duration": "9 hours",
+     "guestPrices": {
+      "adult": 68.91,
+      "child": 35.04,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:30",
+       "guestPrices": {
+        "adult": 68.91,
+        "child": 35.04,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-3",
+     "pricingKey": "luxury-boat-experience-vip-snorkeling-include-4733d5831ddd",
+     "title": "Luxury Boat Experience (VIP Snorkeling Included)",
+     "type": "Per Person",
+     "description": "Upgrade your trip with our Luxury Boat Experience, designed for guests seeking extra comfort and a VIP atmosphere. Enjoy snorkeling from a premium luxury boat with spacious sun decks, comfortable seating, and high-quality service on board.",
+     "duration": "9 hours",
+     "guestPrices": {
+      "adult": 105.12,
+      "child": 58.4,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:30",
+       "guestPrices": {
+        "adult": 105.12,
+        "child": 58.4,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8b34bf597ba7a8386f1587",
+     "title": "Private Transfer Round Trip",
+     "description": "",
+     "price": 52.56,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohamed-white-island-snorkel-explorer-pac-bdc33fa9e100"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8b34bf597ba7a8386f1588",
+     "title": "Snorkeling Mask",
+     "description": "",
+     "price": 11.68,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohamed-white-island-snorkel-explorer-pac-bdc33fa9e100"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8b34bf597ba7a8386f1589",
+     "title": "Snorkeling fins",
+     "description": "",
+     "price": 11.68,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohamed-white-island-snorkel-explorer-pac-bdc33fa9e100"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8b34bf597ba7a8386f158a",
+     "title": "Diving Suit Rental",
+     "description": "",
+     "price": 11.68,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohamed-white-island-snorkel-explorer-pac-bdc33fa9e100"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8b34bf597ba7a8386f158b",
+     "title": "1 intro dive(short)",
+     "description": "",
+     "price": 29.2,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohamed-white-island-snorkel-explorer-pac-bdc33fa9e100"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8b34bf597ba7a8386f158c",
+     "title": "1 intro dive(long)",
+     "description": "",
+     "price": 58.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohamed-white-island-snorkel-explorer-pac-bdc33fa9e100"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8b34bf597ba7a8386f158d",
+     "title": "1 intro dive(short)",
+     "description": "",
+     "price": 29.2,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohamed-white-island-snorkel-complete-pac-04f7239a5777"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8b34bf597ba7a8386f158e",
+     "title": "1 intro dive(long)",
+     "description": "",
+     "price": 58.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohamed-white-island-snorkel-complete-pac-04f7239a5777"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8b34bf597ba7a8386f158f",
+     "title": "Private Transfer Round Trip",
+     "description": "",
+     "price": 52.56,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohamed-white-island-snorkel-complete-pac-04f7239a5777"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8b34bf597ba7a8386f1590",
+     "title": "Diving Suit Rental",
+     "description": "",
+     "price": 11.68,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohamed-white-island-snorkel-complete-pac-04f7239a5777"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8b34bf597ba7a8386f1591",
+     "title": "1 intro dive(short)",
+     "description": "",
+     "price": 29.2,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "1-intro-dive-with-a-professional-instructor-b25f300e9d7c",
+      "luxury-boat-experience-vip-snorkeling-include-4733d5831ddd"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8b34bf597ba7a8386f1592",
+     "title": "1 intro dive(long)",
+     "description": "",
+     "price": 58.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "1-intro-dive-with-a-professional-instructor-b25f300e9d7c",
+      "luxury-boat-experience-vip-snorkeling-include-4733d5831ddd"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8b34bf597ba7a8386f1593",
+     "title": "Private Transfer Round Trip",
+     "description": "",
+     "price": 52.56,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "1-intro-dive-with-a-professional-instructor-b25f300e9d7c",
+      "luxury-boat-experience-vip-snorkeling-include-4733d5831ddd"
+     ],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "sharm-el-sheikh-white-island-ras-mohammed-small-group-cruise",
+   "id": "f3f2b66ccfabb1e6644b5170",
+   "detail": {
+    "title": "Sharm El Sheikh: White Island & Ras Mohammed Small Group Cruise",
+    "duration": "8 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Early access to White Island",
+     "50% free capacity on-board",
+     "Snorkeling gear (if option selected)",
+     "National park fees",
+     "Gourmet lunch",
+     "Two snorkeling stops"
+    ],
+    "whatsNotIncluded": [
+     "Extra fresh beverages on board"
+    ],
+    "whatToBring": [
+     "Sunglasses",
+     "Hat",
+     "Swimwear",
+     "Towel",
+     "Camera",
+     "Sunscreen"
+    ],
+    "itinerary": [
+     {
+      "title": "Starting/pickup location",
+      "description": "Depends on the selected option"
+     },
+     {
+      "title": "Bus/coach",
+      "description": "(45 minutes)"
+     },
+     {
+      "title": "Ras Muhammad National Park",
+      "description": "Sailing (2.5 hours)"
+     },
+     {
+      "title": "White Island, Sharm El Shiekh",
+      "description": "Visit, Sightseeing, Swimming, Snorkeling (1 hour)"
+     },
+     {
+      "title": "Ras Muhammad National Park",
+      "description": "Snorkeling, Sailing (2 hours)"
+     },
+     {
+      "title": "Ras Muhammad National Park",
+      "description": "Lunch (45 minutes)"
+     },
+     {
+      "title": "Ras Muhammad National Park",
+      "description": "Scuba diving (12 minutes)\n- Optional, Extra fee"
+     },
+     {
+      "title": "Sharm el-Sheikh",
+      "description": "Sailing (2 hours)"
+     },
+     {
+      "title": "2 drop-off locations",
+      "description": "Watanya marina, Sharm El-Sheikh"
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 35,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "small-group-white-island-without-transfers-an-6e5d672ca89c",
+     "title": "Small group White Island without Transfers and Snorkel Gear",
+     "type": "Per Person",
+     "description": "This is only the boat trip ticket including the national park entry fees $5. This option doesn't include two-way transfers or snorkel gear (can be chosen from add-ons)",
+     "duration": "8 hours",
+     "guestPrices": {
+      "adult": 35,
+      "child": 20,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 35,
+        "child": 20,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "small-group-white-island-transfer-without-sno-f7995d139597",
+     "title": "Small Group White Island & Transfer, without Snorkel Gear",
+     "type": "Per Person",
+     "description": "This option includes the national park entry fees and transfers. Only snorkel gear is excluded and can be added from add-ons",
+     "duration": "8 hours",
+     "guestPrices": {
+      "adult": 50,
+      "child": 30,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 50,
+        "child": 30,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8dcc1994c30fd1862c5997",
+     "title": "1 introduction dive",
+     "description": "",
+     "price": 20,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "small-group-white-island-without-transfers-an-6e5d672ca89c"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8dcc1994c30fd1862c5998",
+     "title": "1 beginner dive",
+     "description": "",
+     "price": 20,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "small-group-white-island-transfer-without-sno-f7995d139597"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8dcc1994c30fd1862c5999",
+     "title": "private car up to 4",
+     "description": "",
+     "price": 35,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "small-group-white-island-without-transfers-an-6e5d672ca89c"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8dcc1994c30fd1862c599a",
+     "title": "private bus up to 8",
+     "description": "",
+     "price": 40,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "small-group-white-island-without-transfers-an-6e5d672ca89c"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8dcc1994c30fd1862c599b",
+     "title": "Transfer per person",
+     "description": "",
+     "price": 5,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "small-group-white-island-without-transfers-an-6e5d672ca89c"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8dcc1994c30fd1862c599c",
+     "title": "Snorkeling Gear Rent",
+     "description": "",
+     "price": 10,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "small-group-white-island-without-transfers-an-6e5d672ca89c"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8dcc1994c30fd1862c599d",
+     "title": "private car up to 4",
+     "description": "",
+     "price": 37,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "small-group-white-island-transfer-without-sno-f7995d139597"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8dcc1994c30fd1862c599e",
+     "title": "private bus up to 8",
+     "description": "",
+     "price": 45,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "small-group-white-island-transfer-without-sno-f7995d139597"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8dcc1994c30fd1862c599f",
+     "title": "Snorkeling Gear Rent",
+     "description": "",
+     "price": 10,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "small-group-white-island-transfer-without-sno-f7995d139597"
+     ],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "sharm-el-sheikh-luxury-ras-mohammed-white-island-boat-trip",
+   "id": "1159b1ce1dd1458843a32fae",
+   "detail": {
+    "title": "Sharm El Sheikh: Luxury Ras Mohammed & White Island Boat Trip",
+    "duration": "6 - 7 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Boat cruise",
+     "Hotel pickup and drop-off (if option selected)",
+     "Visit to White Island",
+     "Open buffet lunch",
+     "National park entry fees",
+     "Snorkeling gear (if selected from add-ons)",
+     "Mandatory Marina Entrance fees (if selected from add-ons)"
+    ],
+    "whatsNotIncluded": [],
+    "whatToBring": [
+     "Swimwear",
+     "Towel",
+     "Sunscreen",
+     "Passport, copy accepted"
+    ],
+    "itinerary": [],
+    "pricingSummary": {
+     "fromPrice": 37,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "boat-trip-with-national-park-fees-without-hot-d3aa8061d55e",
+     "title": "Boat Trip with National Park Fees without Hotel Transfers",
+     "type": "Per Person",
+     "description": "This is only the boat trip ticket, including the $5 national park entry fee. This option doesn't include two-way transfers.",
+     "duration": "7 hours",
+     "guestPrices": {
+      "adult": 37,
+      "child": 19,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 37,
+        "child": 19,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "boat-trip-with-national-park-entry-and-transf-688d43363256",
+     "title": "Boat Trip with National Park Entry and Transfers",
+     "type": "Per Person",
+     "description": "This option includes transfer and the national park entry fees \"mandatory to pay\" (included). Please note the national park entry fees are for Ras Mohammed since we do snorkeling there.",
+     "duration": "6 hours",
+     "guestPrices": {
+      "adult": 49,
+      "child": 26,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 49,
+        "child": 26,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8ddf3292953dada031d635",
+     "title": "1 Extra Dive (per person)",
+     "description": "",
+     "price": 20,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "boat-trip-with-national-park-fees-without-hot-d3aa8061d55e"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8ddf3292953dada031d636",
+     "title": "2 Extra Dives (per person)",
+     "description": "",
+     "price": 35,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "boat-trip-with-national-park-fees-without-hot-d3aa8061d55e"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8ddf3292953dada031d637",
+     "title": "Private transfer up to 4 people",
+     "description": "",
+     "price": 35,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "boat-trip-with-national-park-fees-without-hot-d3aa8061d55e"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8ddf3292953dada031d638",
+     "title": "Private Van with driver up to 8 people",
+     "description": "",
+     "price": 45,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "boat-trip-with-national-park-fees-without-hot-d3aa8061d55e"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8ddf3292953dada031d639",
+     "title": "private bus up to 14",
+     "description": "",
+     "price": 55,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "boat-trip-with-national-park-fees-without-hot-d3aa8061d55e"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8ddf3292953dada031d63a",
+     "title": "Snorkeling Gear Rent",
+     "description": "",
+     "price": 10,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "boat-trip-with-national-park-fees-without-hot-d3aa8061d55e"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8ddf3292953dada031d63b",
+     "title": "transfer 1 pax",
+     "description": "",
+     "price": 5,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "boat-trip-with-national-park-fees-without-hot-d3aa8061d55e"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8ddf3292953dada031d63c",
+     "title": "Marina Entrance Fee",
+     "description": "",
+     "price": 9,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "boat-trip-with-national-park-fees-without-hot-d3aa8061d55e"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8ddf3292953dada031d63d",
+     "title": "1 introduction dive",
+     "description": "",
+     "price": 20,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "boat-trip-with-national-park-entry-and-transf-688d43363256"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8ddf3292953dada031d63e",
+     "title": "private car up to 4",
+     "description": "",
+     "price": 35,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "boat-trip-with-national-park-entry-and-transf-688d43363256"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8ddf3292953dada031d63f",
+     "title": "private bus up to 8",
+     "description": "",
+     "price": 40,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "boat-trip-with-national-park-entry-and-transf-688d43363256"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8ddf3292953dada031d640",
+     "title": "New Snorkeling Gears",
+     "description": "",
+     "price": 5,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "boat-trip-with-national-park-entry-and-transf-688d43363256"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8ddf3292953dada031d641",
+     "title": "Marina Entrance Fee",
+     "description": "",
+     "price": 9,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "boat-trip-with-national-park-entry-and-transf-688d43363256"
+     ],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "from-sharm-el-sheikh-ras-mohammed-white-island-yacht-cruise",
+   "id": "d0bab8e10ec4fd635e8be132",
+   "detail": {
+    "title": "From Sharm El Sheikh: Ras Mohammed & White Island Yacht Cruise",
+    "duration": "6 - 7 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Boat cruise",
+     "Hotel pickup and drop-off (if option selected)",
+     "Visit to White Island (subject to tide conditions)",
+     "Open buffet lunch",
+     "National park entry fees",
+     "Snorkeling gear (if selected from add-ons)",
+     "Mandatory marina entrance fee (if selected from add-ons)"
+    ],
+    "whatsNotIncluded": [],
+    "whatToBring": [
+     "Cash",
+     "Towel",
+     "Swimwear",
+     "Passport copy",
+     "Sunscreen"
+    ],
+    "itinerary": [],
+    "pricingSummary": {
+     "fromPrice": 30,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "ras-mohammed-boat-trip-with-park-entry-no-tra-1cc8b8d21ae2",
+     "title": "Ras Mohammed Boat Trip with Park Entry, No Transfers",
+     "type": "Per Person",
+     "description": "This is only the boat trip ticket, including the $5 national park entry fee. This option doesn't include two-way transfers.",
+     "duration": "6 hours",
+     "guestPrices": {
+      "adult": 30,
+      "child": 15,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 30,
+        "child": 15,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "ras-mohammed-yacht-cruise-with-park-fees-hote-6a1f21e2c7d5",
+     "title": "Ras Mohammed Yacht Cruise with Park Fees & Hotel Transfers",
+     "type": "Per Person",
+     "description": "This option includes the mandatory Ras Mohammed National Park entry fee, so you do not need to pay it upon arrival. The fee covers snorkeling in Ras Mohammed, and the tour includes live guidance in German, Russian, and English.",
+     "duration": "7 hours",
+     "guestPrices": {
+      "adult": 38,
+      "child": 23,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 38,
+        "child": 23,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8df606e2c7e73e07b79ecf",
+     "title": "private bus up to 8",
+     "description": "",
+     "price": 35,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohammed-boat-trip-with-park-entry-no-tra-1cc8b8d21ae2"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8df606e2c7e73e07b79ed0",
+     "title": "private bus up to 12",
+     "description": "",
+     "price": 40,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohammed-boat-trip-with-park-entry-no-tra-1cc8b8d21ae2"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8df606e2c7e73e07b79ed1",
+     "title": "private car up to 4",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohammed-boat-trip-with-park-entry-no-tra-1cc8b8d21ae2"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8df606e2c7e73e07b79ed2",
+     "title": "1 introduction dive",
+     "description": "",
+     "price": 20,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohammed-boat-trip-with-park-entry-no-tra-1cc8b8d21ae2"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8df606e2c7e73e07b79ed3",
+     "title": "2 introduction dives",
+     "description": "",
+     "price": 30,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohammed-boat-trip-with-park-entry-no-tra-1cc8b8d21ae2"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8df606e2c7e73e07b79ed4",
+     "title": "Snorkeling Gear Rent",
+     "description": "",
+     "price": 10,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohammed-boat-trip-with-park-entry-no-tra-1cc8b8d21ae2"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8df606e2c7e73e07b79ed5",
+     "title": "transfer 1 pax",
+     "description": "",
+     "price": 5,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohammed-boat-trip-with-park-entry-no-tra-1cc8b8d21ae2"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8df606e2c7e73e07b79ed6",
+     "title": "Marina Entrance Fee",
+     "description": "",
+     "price": 9,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohammed-boat-trip-with-park-entry-no-tra-1cc8b8d21ae2"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8df606e2c7e73e07b79ed7",
+     "title": "1 Introductory Dive",
+     "description": "",
+     "price": 20,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohammed-yacht-cruise-with-park-fees-hote-6a1f21e2c7d5"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8df606e2c7e73e07b79ed8",
+     "title": "private car up to 4",
+     "description": "",
+     "price": 35,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohammed-yacht-cruise-with-park-fees-hote-6a1f21e2c7d5"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8df606e2c7e73e07b79ed9",
+     "title": "private car up to 8",
+     "description": "",
+     "price": 40,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohammed-yacht-cruise-with-park-fees-hote-6a1f21e2c7d5"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8df606e2c7e73e07b79eda",
+     "title": "Snorkeling Gear Rent",
+     "description": "",
+     "price": 10,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohammed-yacht-cruise-with-park-fees-hote-6a1f21e2c7d5"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8df606e2c7e73e07b79edb",
+     "title": "Marina Entrance Fee",
+     "description": "",
+     "price": 9,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "ras-mohammed-yacht-cruise-with-park-fees-hote-6a1f21e2c7d5"
+     ],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "sharm-el-sheikh-ras-mohamed-white-island-snorkeling-diving-lunch",
+   "id": "6951ce606bf385a87f7e829e",
+   "detail": {
+    "title": "Sharm El Sheikh: Ras Mohamed & White Island Snorkeling, Diving & Lunch",
+    "duration": "8 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Hotel pickup and return transfer",
+     "Air-conditioned transportation",
+     "Safety life jackets for all guests",
+     "Full-day Red Sea yacht excursion",
+     "Two snorkeling stops at Ras Mohammed National Park",
+     "Stop at the famous White Island",
+     "Professional guide assistance",
+     "Fresh buffet lunch on the yacht",
+     "Selection of hot and cold drinks",
+     "Unlimited soft drinks and bottled water",
+     "Snorkeling gear (if option is selected)",
+     "Yacht facilities including bathrooms and freshwater showers",
+     "Fee to Ras Mohammed National Park"
+    ],
+    "whatsNotIncluded": [
+     "Pictures and videos for snorkeling and diving"
+    ],
+    "whatToBring": [
+     "Sunglasses",
+     "Sun hat",
+     "Swimwear",
+     "Towel",
+     "Sunscreen",
+     "Passport or ID card, copy accepted"
+    ],
+    "itinerary": [
+     {
+      "title": "Pickup location",
+      "description": "Sharm El-Sheikh"
+     },
+     {
+      "title": "Bus/coach",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Ras Muhammad National Park",
+      "description": "Boat cruise",
+      "duration": "2 hours"
+     },
+     {
+      "title": "Ras Muhammad National Park",
+      "description": "Photo stop, Snorkeling, Scuba diving",
+      "duration": "1.5 hours"
+     },
+     {
+      "title": "White Island, Sharm El Shiekh",
+      "description": "Photo stop, Lunch, Boat cruise, Snorkeling",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Ras Muhammad National Park",
+      "description": "Photo stop, Boat cruise, Snorkeling, Scuba diving",
+      "duration": "1.5 hours"
+     },
+     {
+      "title": "Landmark marine Sharm El-sheikh",
+      "description": "Boat cruise",
+      "duration": "2 hours"
+     },
+     {
+      "title": "Bus/coach",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Arrive back",
+      "description": "Sharm El-Sheikh"
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 42.03,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "without-snorkeling-equipment-0eebc3a8e840",
+     "title": "Without Snorkeling Equipment",
+     "type": "Per Person",
+     "description": "Enjoy a full-day yacht trip to Ras Mohammed National Park with snorkeling stops and a visit to White Island. This option does not include snorkeling gear, so guests should bring their own equipment.",
+     "duration": "8 hours",
+     "guestPrices": {
+      "adult": 42.03,
+      "child": 30.94,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:45",
+       "guestPrices": {
+        "adult": 42.03,
+        "child": 30.94,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "with-snorkeling-equipment-88f1916da440",
+     "title": "With Snorkeling Equipment",
+     "type": "Per Person",
+     "description": "Start your day with a hotel pickup and sail to Ras Mohammed. Enjoy snorkeling among vibrant coral reefs and swimming in crystal-clear waters. Visit the stunning White Island, relax on the yacht with lunch and drinks, then return to the marina.",
+     "duration": "8 hours",
+     "guestPrices": {
+      "adult": 44.36,
+      "child": 32.1,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:45",
+       "guestPrices": {
+        "adult": 44.36,
+        "child": 32.1,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "snorkeling-with-1-dive-eedd0fbe9f74",
+     "title": "Snorkeling with 1 Dive",
+     "type": "Per Person",
+     "description": "Enjoy one introductory scuba dive with a certified instructor and extra time for swimming and snorkeling. Please note that snorkeling equipment is not included in this option, so guests should bring their own gear if needed.",
+     "duration": "8 hours",
+     "guestPrices": {
+      "adult": 56.04,
+      "child": 35.02,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:45",
+       "guestPrices": {
+        "adult": 56.04,
+        "child": 35.02,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-3",
+     "pricingKey": "snorkeling-with-2-dives-700a8b61e41c",
+     "title": "Snorkeling with 2 Dives",
+     "type": "Per Person",
+     "description": "Enjoy two introductory scuba dives with a certified instructor and extra time for swimming and snorkeling between dives. Please note that snorkeling equipment is not included in this option, so guests should bring their own gear if needed.",
+     "duration": "8 hours",
+     "guestPrices": {
+      "adult": 68.88,
+      "child": 38.53,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:45",
+       "guestPrices": {
+        "adult": 68.88,
+        "child": 38.53,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8ed36419286da0cbefe6d9",
+     "title": "1 intro Dive",
+     "description": "",
+     "price": 17.51,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "without-snorkeling-equipment-0eebc3a8e840"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8ed36419286da0cbefe6da",
+     "title": "Snorkeling equipment",
+     "description": "",
+     "price": 11.67,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "without-snorkeling-equipment-0eebc3a8e840"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8ed36419286da0cbefe6db",
+     "title": "Private Transfer Round Trip",
+     "description": "",
+     "price": 52.53,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "without-snorkeling-equipment-0eebc3a8e840"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8f0d1a2666a76cfd7270de",
+     "title": "1 intro Dive",
+     "description": "",
+     "price": 17.51,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "with-snorkeling-equipment-88f1916da440"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8f0d1a2666a76cfd7270df",
+     "title": "Snorkeling equipment",
+     "description": "",
+     "price": 11.67,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "with-snorkeling-equipment-88f1916da440"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8f0d1a2666a76cfd7270e0",
+     "title": "Private Transfer Round Trip",
+     "description": "",
+     "price": 46.7,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "with-snorkeling-equipment-88f1916da440"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8f0d1a2666a76cfd7270e1",
+     "title": "1 intro Dive",
+     "description": "",
+     "price": 17.51,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "snorkeling-with-1-dive-eedd0fbe9f74",
+      "snorkeling-with-2-dives-700a8b61e41c"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8f0d1a2666a76cfd7270e2",
+     "title": "Snorkeling equipment",
+     "description": "",
+     "price": 11.67,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "snorkeling-with-1-dive-eedd0fbe9f74",
+      "snorkeling-with-2-dives-700a8b61e41c"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8f0d1a2666a76cfd7270e3",
+     "title": "Private Transfer Round Trip",
+     "description": "",
+     "price": 40.86,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "snorkeling-with-1-dive-eedd0fbe9f74",
+      "snorkeling-with-2-dives-700a8b61e41c"
+     ],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "harm-el-sheikh-discover-ras-mohamed-white-island-underwater",
+   "id": "61d5b303ce999745ab15df4e",
+   "detail": {
+    "title": "Sharm El Sheikh: Discover Ras Mohamed & White Island Underwater",
+    "duration": "9 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Pick-up and drop-off from your hotel",
+     "Full-day, 7-hour VIP boat trip",
+     "Visit to White Island",
+     "Two snorkeling stops in Ras Mohamed National Park",
+     "Buffet lunch on board (pasta, rice, bread, salad, chicken, meatballs)",
+     "Unlimited soft drinks, tea, coffee, and water",
+     "Entrance ticket to Ras Mohamed National Park (if selected)",
+     "Marina entrance fees (if selected)",
+     "Introductory scuba diving ages 10â50 (if selected)",
+     "Snorkeling equipment rental (if selected)",
+     "Professional deep diving for certified divers (if selected)"
+    ],
+    "whatsNotIncluded": [
+     "Professional photography and videography"
+    ],
+    "whatToBring": [
+     "Passport or ID card",
+     "Swimwear",
+     "Towel",
+     "Sunscreen"
+    ],
+    "itinerary": [
+     {
+      "title": "Pickup location",
+      "description": "Sharm El Sheikh"
+     },
+     {
+      "title": "Bus/coach",
+      "description": "Transfer to the marina"
+     },
+     {
+      "title": "Ras Mohamed National Park",
+      "description": "Boat cruise and introductory scuba diving"
+     },
+     {
+      "title": "White Island",
+      "description": "Photo stop, swimming, and beach time"
+     },
+     {
+      "title": "Ras Mohamed National Park",
+      "description": "Guided snorkeling stop"
+     },
+     {
+      "title": "Red Sea",
+      "description": "Buffet lunch and refreshments on board"
+     },
+     {
+      "title": "Red Sea",
+      "description": "Boat cruise back to shore"
+     },
+     {
+      "title": "Arrive back",
+      "description": "Sharm El Sheikh"
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 40,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "white-island-ras-mohamed-boat-trip-park-fees--19739ee7d656",
+     "title": "White Island & Ras Mohamed Boat Trip: Park Fees Not Included",
+     "type": "Per Person",
+     "description": "Enjoy a Red Sea cruise with guided snorkeling, buffet lunch, hotel transfers, and onboard drinks. National Park entry fee and snorkeling equipment are not included.",
+     "duration": "9 hours",
+     "guestPrices": {
+      "adult": 40,
+      "child": 25,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 40,
+        "child": 40,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "white-island-ras-mohamed-snorkel-fees-gear-in-698c1a9087e8",
+     "title": "White Island & Ras Mohamed Snorkel | Fees & Gear Included",
+     "type": "Per Person",
+     "description": "Enjoy the complete Ras Mohamed experience with National Park entry, snorkeling gear, hotel transfers, lunch, and onboard drinks included.",
+     "duration": "9 hours",
+     "guestPrices": {
+      "adult": 65,
+      "child": 65,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 65,
+        "child": 65,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "white-island-ras-mohamed-diving-snorkeling-al-15134d8d20f7",
+     "title": "White Island & Ras Mohamed Diving & Snorkeling All Inclusive",
+     "type": "Per Person",
+     "description": "Enjoy an unforgettable Red Sea boat trip with one introductory dive, full diving and snorkeling equipment, National Park access, and snorkeling at Ras Mohamed's vibrant reefs.",
+     "duration": "9 hours",
+     "guestPrices": {
+      "adult": 70,
+      "child": 45,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 70,
+        "child": 45,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-3",
+     "pricingKey": "pro-diving-for-certified-divers-all-equipment-66a4df2b374a",
+     "title": "Pro diving for certified divers | all equipment included",
+     "type": "Per Person",
+     "description": "Includes transfer, boat, 2 dives, standard air tanks, full diving gear (except computer), entrance fees, lunch, and drinks. This program is exclusively for certified divers holding a valid diving license.",
+     "duration": "9 hours",
+     "guestPrices": {
+      "adult": 165,
+      "child": 165,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 165,
+        "child": 165,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8edd66185a1dd22687c848",
+     "title": "2 intro dives",
+     "description": "",
+     "price": 40,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "white-island-ras-mohamed-boat-trip-park-fees--19739ee7d656",
+      "white-island-ras-mohamed-snorkel-fees-gear-in-698c1a9087e8",
+      "white-island-ras-mohamed-diving-snorkeling-al-15134d8d20f7"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8edd66185a1dd22687c849",
+     "title": "Introductory Dive",
+     "description": "",
+     "price": 20,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "white-island-ras-mohamed-boat-trip-park-fees--19739ee7d656",
+      "white-island-ras-mohamed-snorkel-fees-gear-in-698c1a9087e8",
+      "white-island-ras-mohamed-diving-snorkeling-al-15134d8d20f7"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8edd66185a1dd22687c84a",
+     "title": "Private Transfer Round Trip",
+     "description": "",
+     "price": 44,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "white-island-ras-mohamed-boat-trip-park-fees--19739ee7d656",
+      "white-island-ras-mohamed-snorkel-fees-gear-in-698c1a9087e8",
+      "white-island-ras-mohamed-diving-snorkeling-al-15134d8d20f7"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8edd66185a1dd22687c84b",
+     "title": "Private Transfer Round Trip",
+     "description": "",
+     "price": 44,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pro-diving-for-certified-divers-all-equipment-66a4df2b374a"
+     ],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "sharm-el-sheikh-elite-vip-ras-mohammed-cruise-bbq-lunch",
+   "id": "bacc2b26c760b3b9ec148be8",
+   "detail": {
+    "title": "Sharm El-Sheikh: Elite VIP Ras Mohammed Cruise & BBQ Lunch",
+    "duration": "7 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Hotel pickup and drop-off",
+     "Boat cruise",
+     "Buffet lunch",
+     "Crew",
+     "Snorkeling gear (if selected as an add-on)",
+     "Mandatory Marina Entrance fees (if selected from add-ons)"
+    ],
+    "whatsNotIncluded": [],
+    "whatToBring": [
+     "Swimwear",
+     "Towel",
+     "Sunscreen"
+    ],
+    "itinerary": [
+     {
+      "title": "Pickup location",
+      "description": "Sharm El-Sheikh"
+     },
+     {
+      "title": "Bus/coach",
+      "description": "",
+      "duration": "25 minutes"
+     },
+     {
+      "title": "Ras Muhammad National Park",
+      "description": "Sailing",
+      "duration": "2.5 hours"
+     },
+     {
+      "title": "Ras Muhammad National Park",
+      "description": "Swimming, Snorkeling, Marine life viewing",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "White Island, Sharm El Shiekh",
+      "description": "Visit (Optional)",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "Ras Muhammad National Park",
+      "description": "Lunch",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Sharm el-Sheikh",
+      "description": "Boat cruise, Swimming, Snorkeling, Marine life viewing, Sailing",
+      "duration": "2 hours"
+     },
+     {
+      "title": "Arrive back",
+      "description": "Sharm El-Sheikh"
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 100,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "sharm-el-sheikh-ras-mohammed-elite-vip-cruise-6c6cb39d2efa",
+     "title": "Sharm el-Sheikh: Ras Mohammed Elite VIP Cruise and BBQ Lunch",
+     "type": "Per Person",
+     "description": "Set sail from Sharm El Sheikh for a relaxing Red Sea escape aboard an elegant VIP cruise. Enjoy plenty of space across four floors and two air-conditioned salons as you cruise toward a spectacular snorkeling stop.",
+     "duration": "7 hours",
+     "guestPrices": {
+      "adult": 100,
+      "child": 50,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 100,
+        "child": 50,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8ef82c346d79698efe39eb",
+     "title": "Snorkeling Gear Rent",
+     "description": "",
+     "price": 5,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8ef82c346d79698efe39ec",
+     "title": "private car upto 4",
+     "description": "",
+     "price": 35,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8ef82c346d79698efe39ed",
+     "title": "private car upto 6",
+     "description": "",
+     "price": 39,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8ef82c346d79698efe39ee",
+     "title": "Marina Entrance Fee",
+     "description": "",
+     "price": 9,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "sharm-el-sheikh-tiran-island-cruise-with-snorkeling-diving-lunch",
+   "id": "dfafbb72bc273145e29fed2b",
+   "detail": {
+    "title": "Sharm El-Sheikh: Tiran Island Cruise with Snorkeling, Diving & Lunch",
+    "duration": "6 - 8 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Hotel pickup and drop-off",
+     "Transportation in air-conditioned vehicles",
+     "Yacht trip to Tiran Island",
+     "2 snorkeling and dive stops",
+     "10 minutes introduction diving (if option selected)",
+     "Snorkeling instructor/guide",
+     "Life jackets",
+     "Buffet lunch onboard",
+     "Hot & cold drinks",
+     "Unlimited soft drinks and water",
+     "Onboard bathroom and shower facilities",
+     "Ras Nasrani entrance fees",
+     "1 dive (if option selected)"
+    ],
+    "whatsNotIncluded": [],
+    "whatToBring": [
+     "Sunglasses",
+     "Swimwear",
+     "Towel",
+     "Sunscreen"
+    ],
+    "itinerary": [
+     {
+      "title": "Pickup location",
+      "description": "Sharm El-Sheikh"
+     },
+     {
+      "title": "Van",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Sharm el-Sheikh",
+      "description": "Photo stop, Visit, Scenic views on the way",
+      "duration": "2 hours"
+     },
+     {
+      "title": "Sightseeing cruise",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Tiran Island",
+      "description": "Visit, Snorkeling",
+      "duration": "1.5 hours"
+     },
+     {
+      "title": "Sightseeing cruise",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Red Sea",
+      "description": "Photo stop, Scenic views on the way, Scuba diving",
+      "duration": "1.5 hours"
+     },
+     {
+      "title": "Sightseeing cruise",
+      "description": "",
+      "duration": "2.5 hours"
+     },
+     {
+      "title": "Arrive back",
+      "description": "Sharm El-Sheikh"
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 54.88,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "snorkeling-trip-snorkeling-equipment-included-37946e08a57e",
+     "title": "Snorkeling Trip (Snorkeling Equipment Included)",
+     "type": "Per Person",
+     "description": "Snorkeling trip to Tiran Island: Enjoy a relaxing boat cruise, vibrant coral reefs, and crystal-clear waters. Explore top snorkeling spots, swim with colorful marine life, and enjoy lunch onboard. Perfect for all ages.",
+     "duration": "6 hours",
+     "guestPrices": {
+      "adult": 54.88,
+      "child": 26.27,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 54.88,
+        "child": 26.27,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "snorkeling-trip-snorkeling-equipment-excluded-71c1e97eaf42",
+     "title": "Snorkeling Trip (Snorkeling Equipment Excluded)",
+     "type": "Per Person",
+     "description": "Snorkeling trip to Tiran Island: Enjoy a relaxing boat cruise, vibrant coral reefs, and crystal-clear waters. Explore top snorkeling spots, swim with colorful marine life, and enjoy lunch onboard. Perfect for all ages.",
+     "duration": "8 hours",
+     "guestPrices": {
+      "adult": 54.88,
+      "child": 29.19,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 54.88,
+        "child": 29.19,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:30",
+       "guestPrices": {
+        "adult": 54.88,
+        "child": 29.19,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "diving-for-beginners-and-professional-divers--c99b482d518a",
+     "title": "Diving for Beginners and Professional Divers (1 Introductory Dive)",
+     "type": "Per Person",
+     "description": "This option is for beginners and professional divers. Note: Beginner divers can dive to a maximum depth of 5 or 6 meters.",
+     "duration": "7 hours",
+     "guestPrices": {
+      "adult": 75.9,
+      "child": 38.53,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 75.9,
+        "child": 38.53,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8c6f4359e3f8c1c2579767",
+     "title": "Diving Suit Rental",
+     "description": "",
+     "price": 14.01,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "snorkeling-trip-snorkeling-equipment-included-37946e08a57e"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8c6f4359e3f8c1c2579768",
+     "title": "Private Transfer Round Trip",
+     "description": "",
+     "price": 40.87,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "snorkeling-trip-snorkeling-equipment-included-37946e08a57e"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8c6f4359e3f8c1c2579769",
+     "title": "1 intro Dive",
+     "description": "",
+     "price": 17.51,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "snorkeling-trip-snorkeling-equipment-included-37946e08a57e"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8c6f4359e3f8c1c257976a",
+     "title": "Fins",
+     "description": "",
+     "price": 8.17,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "snorkeling-trip-snorkeling-equipment-included-37946e08a57e"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8c6f4359e3f8c1c257976b",
+     "title": "Mask",
+     "description": "",
+     "price": 8.17,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "snorkeling-trip-snorkeling-equipment-included-37946e08a57e"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8c6f4359e3f8c1c257976c",
+     "title": "Private round trip transfer",
+     "description": "",
+     "price": 52.54,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "snorkeling-trip-snorkeling-equipment-excluded-71c1e97eaf42",
+      "diving-for-beginners-and-professional-divers--c99b482d518a"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8c6f4359e3f8c1c257976d",
+     "title": "1 intro Dive",
+     "description": "",
+     "price": 17.51,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "snorkeling-trip-snorkeling-equipment-excluded-71c1e97eaf42",
+      "diving-for-beginners-and-professional-divers--c99b482d518a"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8c6f4359e3f8c1c257976e",
+     "title": "Diving Suit Rental",
+     "description": "",
+     "price": 11.68,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "snorkeling-trip-snorkeling-equipment-excluded-71c1e97eaf42",
+      "diving-for-beginners-and-professional-divers--c99b482d518a"
+     ],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "cairo-fayoum-oasis-waterfalls-valley-of-the-whales-adventure",
+   "id": "a79ea9a59fde74ce123f4113",
+   "detail": {
+    "title": "Cairo: Fayoum Oasis, Waterfalls & Valley of the Whales Adventure",
+    "duration": "8 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "All transfers by private air-conditioned vehicle",
+     "Private transport",
+     "Entry fees",
+     "Jeep safari",
+     "Lunch",
+     "Bottled water"
+    ],
+    "whatsNotIncluded": [
+     "Tips"
+    ],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "6 pickup location options Cairo, Kafr Nassar, Al Giza, Al Haram, Giza, 6th of October City",
+      "description": ""
+     },
+     {
+      "title": "Car",
+      "description": "",
+      "duration": "2 hours"
+     },
+     {
+      "title": "Magic Lake, Fayoum",
+      "description": ""
+     },
+     {
+      "title": "Wadi El Rayan",
+      "description": ""
+     },
+     {
+      "title": "Qarun Lake",
+      "description": ""
+     },
+     {
+      "title": "Car",
+      "description": "",
+      "duration": "2 hours"
+     },
+     {
+      "title": "6 drop-off locations 6th of October City, Cairo, Kafr Nassar, Al Giza, Al Haram, Giza",
+      "description": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 190,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "from-cairo-full-day-tour-to-el-fayoum-4f4d4d6cbb1f",
+     "title": "From Cairo: Full-Day Tour to El Fayoum",
+     "type": "Per Person",
+     "description": "Escape Cairo for a full-day Fayoum adventure featuring Tunis Village, Lake Qarun, Wadi El Rayan waterfalls, Valley of the Whales, sandboarding and a thrilling 4x4 desert safari.",
+     "duration": "8 hours",
+     "guestPrices": {
+      "adult": 190,
+      "child": 60,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "07:00",
+       "guestPrices": {
+        "adult": 190,
+        "child": 60,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": []
+  },
+  {
+   "slug": "from-cairo-fayoum-desert-safari-magic-lake-waterfalls-adventure",
+   "id": "e4bbcd85c9333cad603216da",
+   "detail": {
+    "title": "From Cairo: Fayoum Desert Safari, Magic Lake & Waterfalls Adventure",
+    "duration": "10 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Hotel pickup and drop-off from Cairo or Giza",
+     "Transportation in an air-conditioned vehicle",
+     "Professional representative",
+     "4x4 desert safari",
+     "Experienced desert driver",
+     "Entrance fees to Wadi El Rayan Protected Area",
+     "Visit to Wadi El Rayan Waterfalls",
+     "Visit to Magic Lake",
+     "Stop at Mudawara Mountain",
+     "Sandboarding equipment and experience",
+     "Authentic Egyptian countryside lunch",
+     "Choice of slow-cooked chicken or slow-cooked duck (seafood meal upgrade if option is selected)",
+     "Horse-riding experience (if option is selected)",
+     "Quad experience (if option is selected)",
+     "Egyptian rice, seasonal vegetables, salads, and baladi bread",
+     "Bottled water during the tour"
+    ],
+    "whatsNotIncluded": [
+     "Personal expenses",
+     "Tips (optional)"
+    ],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "Pickup location from your Hotel in Cairo",
+      "description": ""
+     },
+     {
+      "title": "Van",
+      "description": "",
+      "duration": "2 hours"
+     },
+     {
+      "title": "Faiyum Oasis",
+      "description": ""
+     },
+     {
+      "title": "Qarun Lake",
+      "description": ""
+     },
+     {
+      "title": "Wadi El Rayan",
+      "description": "",
+      "duration": "2.5 hours"
+     },
+     {
+      "title": "Jabal El Medawara",
+      "description": "",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Magic Lake, Fayoum",
+      "description": "Lunch, BBQ",
+      "duration": "1.25 hours"
+     },
+     {
+      "title": "Van",
+      "description": "",
+      "duration": "2 hours"
+     },
+     {
+      "title": "Arrive Back at Cairo",
+      "description": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 135,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "shared-tour-wadi-el-rayan-magic-lake-lake-qar-4bceca781521",
+     "title": "Shared Tour: Wadi El Rayan, Magic Lake & Lake Qarun, Jeep",
+     "type": "Per Person",
+     "description": "Includes hotel pickup and drop-off from Cairo or Giza in a comfortable air-conditioned vehicle, a thrilling 4x4 desert safari through Fayoum featuring Lake Qarun, Wadi El Rayan, Mudawara Mountain, and Magic Lake, plus a sandboarding experience. Entrance fees to the protected area and a delicious Egyptian lunch are included.",
+     "duration": "10 hours",
+     "guestPrices": {
+      "adult": 135,
+      "child": 60,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "07:00",
+       "guestPrices": {
+        "adult": 135,
+        "child": 60,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": []
+  },
+  {
+   "slug": "hurghada-yacht-cruise-to-orange-bay-giftun-magawish-with-dolphins",
+   "id": "582a2b6e203fa4ef3f199e4f",
+   "detail": {
+    "title": "Hurghada: Yacht Cruise to Orange Bay, Giftun & Magawish with Dolphins",
+    "duration": "Duration 8 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Pick-up and drop-off from Hurghada (see Know Before You Go for details)",
+     "Boat cruise with a shaded seating area and stereo sound system",
+     "Snorkeling equipment and life vest provided",
+     "Professional snorkeling guide",
+     "Two snorkeling stops at different sites",
+     "Orange Island entrance fees included (1h)",
+     "Giftun Island Nature Reserve fees included (40min)",
+     "Magawish Island entrance fees included (1h)",
+     "Breakfast served onboard (eggs, cheese, butter, honey, and bread)",
+     "Seafood lunch",
+     "Unlimited soft drinks, hot drinks, and water",
+     "Seasonal fruits",
+     "Professional guide throughout the trip"
+    ],
+    "whatsNotIncluded": [
+     "Long-range pickup from Makadi, Safaga, El Gouna, Sahl Hasheesh, and the Soma Bay (available as an add-on)"
+    ],
+    "whatToBring": [
+     "Towel",
+     "Sunscreen",
+     "Jacket",
+     "Cash",
+     "Passport, copy accepted"
+    ],
+    "itinerary": [
+     {
+      "title": "Starting/pickup location",
+      "description": "Depends on the selected option"
+     },
+     {
+      "title": "Orange Bay",
+      "description": "Visit, Swimming",
+      "duration": "(1 hour)"
+     },
+     {
+      "title": "Giftun Island",
+      "description": "Swimming, Snorkeling",
+      "duration": "(40 minutes)"
+     },
+     {
+      "title": "Magawish Island",
+      "description": "Visit, Swimming, Snorkeling",
+      "duration": "(1 hour)"
+     },
+     {
+      "title": "2 drop-off locations",
+      "description": "Hurghada, Aden beach private villa jewel"
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 69.17,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "no-transfer-included-e756cc35414b",
+     "title": "No Transfer Included",
+     "type": "Per Person",
+     "description": "Book this option if you prefer to arrange your own transportation to the departure point and do not require hotel transfer.",
+     "duration": "Duration 8 hours",
+     "guestPrices": {
+      "adult": 69.17,
+      "child": 34.59,
+      "infant": 5.76
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:30",
+       "guestPrices": {
+        "adult": 69.17,
+        "child": 34.59,
+        "infant": 5.76
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "hurghada-3-island-yacht-adventure-with-dolphi-324f544a94cc",
+     "title": "Hurghada: 3 Island Yacht Adventure with Dolphin Watching & Seafood Lunch",
+     "type": "Per Person",
+     "description": "Enjoy a yacht trip from Hurghada with dolphin watching, visits to three islands, snorkeling in the Red Sea, and a delicious seafood lunch served on board.",
+     "duration": "Duration 8 hours",
+     "guestPrices": {
+      "adult": 69.17,
+      "child": 34.59,
+      "infant": 11.53
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:30",
+       "guestPrices": {
+        "adult": 69.17,
+        "child": 34.59,
+        "infant": 11.53
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "hurghada-private-yacht-experience-with-dolphi-4a3e3ab41544",
+     "title": "Hurghada: Private Yacht Experience with Dolphin Watching & 1 Island",
+     "type": "Per Family",
+     "description": "Enjoy a private yacht trip from Hurghada for your group and crew only. Visit one island, search for dolphins, and enjoy breakfast and a normal lunch on board, including fish, calamari, rice, pasta, potatoes, salad, eggs, oriental breakfast items, falafel, foul, white cheese, honey, butter, and bread.",
+     "duration": "Duration 8 hours",
+     "guestPrices": {
+      "adult": 172.94,
+      "child": 86.47,
+      "infant": 0
+     },
+     "maxCapacity": 4,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 69.17,
+        "child": 34.59,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 172.94,
+        "child": 86.47,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 222.89,
+        "child": 111.45,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-3",
+     "pricingKey": "hurghada-private-yacht-experience-with-dolphi-9bf40431b5f2",
+     "title": "Hurghada: Private Yacht Experience with Dolphin Watching & 1 Island",
+     "type": "Per Family",
+     "description": "Book this private yacht option for an exclusive trip with only your group and the crew on board, allowing you to enjoy the experience in a more private setting.",
+     "duration": "Duration 8 hours",
+     "guestPrices": {
+      "adult": 222.89,
+      "child": 111.45,
+      "infant": 0
+     },
+     "maxCapacity": 4,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 172.94,
+        "child": 86.47,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 222.89,
+        "child": 111.45,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-4",
+     "pricingKey": "3-island-pickup-from-makadi-bay-el-gouna-and--64708e614f68",
+     "title": "3 Island Pickup from Makadi Bay, El Gouna and Sahl Hasheesh",
+     "type": "Per Person",
+     "description": "Dolphin & 3 Island w SeaFood with Pickup from Makadi Bay, El Gouna & Sahl Hasheesh in Yacht Cruise",
+     "duration": "Duration 8 hours",
+     "guestPrices": {
+      "adult": 81.03,
+      "child": 46.3,
+      "infant": 11.58
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:30",
+       "guestPrices": {
+        "adult": 81.03,
+        "child": 46.3,
+        "infant": 11.58
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-5",
+     "pricingKey": "yacht-cruise-dolphin-and-3-island-from-safaga-6a6b2a771987",
+     "title": "Yacht Cruise Dolphin and 3 Island from Safaga and Soma Bay",
+     "type": "Per Person",
+     "description": "Yacht Cruise Dolphin & 3 Island w SeaFood with Pickup from Safaga & Soma Bay",
+     "duration": "Duration 8 hours",
+     "guestPrices": {
+      "adult": 86.82,
+      "child": 52.09,
+      "infant": 11.58
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:30",
+       "guestPrices": {
+        "adult": 86.82,
+        "child": 52.09,
+        "infant": 11.58
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a85f5cffdf6c85c2a941747",
+     "title": "OTHERS: Wetsuit for Snorkeling",
+     "description": "",
+     "price": 115.76,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "no-transfer-included-e756cc35414b"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a941748",
+     "title": "Photo & Go-pro Video",
+     "description": "",
+     "price": 115.76,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "no-transfer-included-e756cc35414b"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a941749",
+     "title": "Go pro video",
+     "description": "",
+     "price": 57.88,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "no-transfer-included-e756cc35414b"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a94174a",
+     "title": "TRANSPORT: Pickup from Makadi, Elgouna, Sahl Hasheesh",
+     "description": "",
+     "price": 11.58,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "hurghada-3-island-yacht-adventure-with-dolphi-324f544a94cc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a94174b",
+     "title": "TRANSPORT: Pickup from Safaga or Soma Bay",
+     "description": "",
+     "price": 17.36,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "hurghada-3-island-yacht-adventure-with-dolphi-324f544a94cc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a94174c",
+     "title": "OTHERS: Wetsuit for Snorkeling",
+     "description": "",
+     "price": 11.58,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "hurghada-3-island-yacht-adventure-with-dolphi-324f544a94cc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a94174d",
+     "title": "Private Transfer (1-3 people)",
+     "description": "",
+     "price": 34.73,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "hurghada-3-island-yacht-adventure-with-dolphi-324f544a94cc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a94174e",
+     "title": "Private Transfer (4-8 people)",
+     "description": "",
+     "price": 57.88,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "hurghada-3-island-yacht-adventure-with-dolphi-324f544a94cc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a94174f",
+     "title": "Private Transfer (9 - 16 people)",
+     "description": "",
+     "price": 86.82,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "hurghada-3-island-yacht-adventure-with-dolphi-324f544a94cc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a941750",
+     "title": "Photo & Go-pro Video",
+     "description": "",
+     "price": 57.88,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "hurghada-3-island-yacht-adventure-with-dolphi-324f544a94cc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a941751",
+     "title": "Printed Photo & Go-Pro Video",
+     "description": "",
+     "price": 115.76,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "hurghada-3-island-yacht-adventure-with-dolphi-324f544a94cc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a941752",
+     "title": "Go pro video",
+     "description": "",
+     "price": 34.73,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "hurghada-3-island-yacht-adventure-with-dolphi-324f544a94cc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a941753",
+     "title": "Banana & Sofa 10 min",
+     "description": "",
+     "price": 11.58,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "hurghada-3-island-yacht-adventure-with-dolphi-324f544a94cc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a941754",
+     "title": "Twister Aqua 5 mins",
+     "description": "",
+     "price": 11.58,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "hurghada-3-island-yacht-adventure-with-dolphi-324f544a94cc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a941755",
+     "title": "Banana Boat (1 Pax)",
+     "description": "",
+     "price": 5.79,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "hurghada-3-island-yacht-adventure-with-dolphi-324f544a94cc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a941756",
+     "title": "1 Extra Dive (per person)",
+     "description": "",
+     "price": 23.15,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "hurghada-3-island-yacht-adventure-with-dolphi-324f544a94cc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a941757",
+     "title": "OTHERS: Wetsuit for Snorkeling",
+     "description": "",
+     "price": 11.58,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "hurghada-private-yacht-experience-with-dolphi-4a3e3ab41544"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a941758",
+     "title": "TRANSPORT: Pickup from Safaga or Soma Bay",
+     "description": "",
+     "price": 17.36,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "hurghada-private-yacht-experience-with-dolphi-4a3e3ab41544"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a941759",
+     "title": "TRANSPORT: Pickup from Makadi, Elgouna, Sahl Hasheesh",
+     "description": "",
+     "price": 11.58,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "hurghada-private-yacht-experience-with-dolphi-4a3e3ab41544"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a94175a",
+     "title": "Private Transfer (1-3 people)",
+     "description": "",
+     "price": 34.73,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "hurghada-private-yacht-experience-with-dolphi-4a3e3ab41544"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a94175b",
+     "title": "Private Transfer (4-8 people)",
+     "description": "",
+     "price": 57.88,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "hurghada-private-yacht-experience-with-dolphi-4a3e3ab41544"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a94175c",
+     "title": "Private Transfer (9 - 16 people)",
+     "description": "",
+     "price": 86.82,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "hurghada-private-yacht-experience-with-dolphi-4a3e3ab41544"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a94175d",
+     "title": "Go pro video",
+     "description": "",
+     "price": 46.3,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "hurghada-private-yacht-experience-with-dolphi-4a3e3ab41544"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a94175e",
+     "title": "tour photo & video",
+     "description": "",
+     "price": 86.82,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "hurghada-private-yacht-experience-with-dolphi-4a3e3ab41544"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a94175f",
+     "title": "1 Extra Dive (per person)",
+     "description": "",
+     "price": 57.88,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "hurghada-private-yacht-experience-with-dolphi-4a3e3ab41544"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a941760",
+     "title": "TRANSPORT: Pickup from Safaga or Soma Bay",
+     "description": "",
+     "price": 17.36,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "hurghada-private-yacht-experience-with-dolphi-9bf40431b5f2"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a941761",
+     "title": "TRANSPORT: Pickup from Makadi, Elgouna, Sahl Hasheesh",
+     "description": "",
+     "price": 11.58,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "hurghada-private-yacht-experience-with-dolphi-9bf40431b5f2"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a941762",
+     "title": "OTHERS: Wetsuit for Snorkeling",
+     "description": "",
+     "price": 11.58,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "hurghada-private-yacht-experience-with-dolphi-9bf40431b5f2"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a941763",
+     "title": "tour photo & video",
+     "description": "",
+     "price": 92.61,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "hurghada-private-yacht-experience-with-dolphi-9bf40431b5f2"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a941764",
+     "title": "Private Transfer (1-3 people)",
+     "description": "",
+     "price": 34.73,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "hurghada-private-yacht-experience-with-dolphi-9bf40431b5f2"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a941765",
+     "title": "Private Transfer (4-8 people)",
+     "description": "",
+     "price": 57.88,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "hurghada-private-yacht-experience-with-dolphi-9bf40431b5f2"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a941766",
+     "title": "Private Transfer (9 - 16 people)",
+     "description": "",
+     "price": 86.82,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "hurghada-private-yacht-experience-with-dolphi-9bf40431b5f2"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a85f5cffdf6c85c2a941767",
+     "title": "1 Extra Dive (per person)",
+     "description": "",
+     "price": 57.88,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "hurghada-private-yacht-experience-with-dolphi-9bf40431b5f2"
+     ],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "hurghada-speedboat-trip-to-6-islands-with-dolphin-watching-snorkeling",
+   "id": "f4fc7c4dfb264198f6b7f66e",
+   "detail": {
+    "title": "Hurghada: Speedboat Trip to 6 Islands with Dolphin Watching & Snorkeling",
+    "duration": "8 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Pick-up and drop-off from Hurghada (see Know Before You Go for details)",
+     "Pickup from Makadi, Safaga, El Gouna, Sahl Hasheesh, and Soma Bay (if add-on selected)",
+     "Speedboat tour",
+     "Three snorkeling stops",
+     "Snorkeling gear provided",
+     "Professional guide",
+     "Visit to the Giftun National Park area",
+     "Orange Bay Island entrance fees included",
+     "White Island entrance fees included",
+     "Magawish Island entrance fees included",
+     "Juzur Abu Monqar Island entry included",
+     "Visit to a Sandbank island",
+     "Wreck snorkeling stop",
+     "Soft drinks and water",
+     "Seasonal fruits",
+     "Shaded area (tenda) on the board",
+     "Life jacket",
+     "Experienced captain",
+     "5-minute parasailing (if add-on selected)",
+     "Lunch on the island (if add-on selected)"
+    ],
+    "whatsNotIncluded": [
+     "The long-range pickup service from Makadi, Safaga, El Gouna, Sahl Hasheesh, and the Soma bay areaâs is available to book in the checkout process as \"Add on\"",
+     "and it cost 10 euro per person."
+    ],
+    "whatToBring": [
+     "Towel",
+     "Sunscreen",
+     "Cash"
+    ],
+    "itinerary": [
+     {
+      "title": "3 pickup location options",
+      "description": "Hurghada 1, Hurghada, Hurghada 2"
+     },
+     {
+      "title": "Car",
+      "description": "(20 minutes)"
+     },
+     {
+      "title": "Giftun Island",
+      "description": "Snorkeling, Dolphin watching (2 hours)"
+     },
+     {
+      "title": "Nemo Bay island",
+      "description": "Visit (1 hour)"
+     },
+     {
+      "title": "Orange Bay",
+      "description": "Visit (1 hour)"
+     },
+     {
+      "title": "Magawish Island",
+      "description": "Visit, Swimming, Snorkeling (1 hour)"
+     },
+     {
+      "title": "Hurghada",
+      "description": "Snorkeling (30 minutes)"
+     },
+     {
+      "title": "Juzur AbÅ« MinqÄr",
+      "description": "Visit (30 minutes)"
+     },
+     {
+      "title": "Giftun Island",
+      "description": "Visit (30 minutes)"
+     },
+     {
+      "title": "Van",
+      "description": "(25 minutes)"
+     },
+     {
+      "title": "3 drop-off locations",
+      "description": "Hurghada 2, Hurghada, Hurghada 1"
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 63.41,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "6-island-small-group-tour-with-dolphin-watchi-277b7487db82",
+     "title": "6 Island Small Group Tour with Dolphin Watching, Snorkeling & Fruit",
+     "type": "Per Person",
+     "description": "Join a small group tour with a maximum of 12 people and enjoy a 6 island adventure featuring dolphin watching and snorkeling.",
+     "duration": "8 hours",
+     "guestPrices": {
+      "adult": 63.41,
+      "child": 40.35,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:30",
+       "guestPrices": {
+        "adult": 63.41,
+        "child": 40.35,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "private-6-island-tour-with-dolphin-watching-s-518511256754",
+     "title": "Private 6 Island Tour with Dolphin Watching & Snorkeling",
+     "type": "Per Family",
+     "description": "Choose a private tour to explore 6 islands with dolphin watching and snorkeling.",
+     "duration": "8 hours",
+     "guestPrices": {
+      "adult": 130.66,
+      "child": 65.33,
+      "infant": 0
+     },
+     "maxCapacity": 4,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 130.66,
+        "child": 65.33,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 130.66,
+        "child": 65.33,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 130.66,
+        "child": 65.33,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 130.66,
+        "child": 65.33,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a81e5ded05cb7fa4630a2eb",
+     "title": "OTHERS: Wetsuit for Snorkeling",
+     "description": "",
+     "price": 11.57,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "6-island-small-group-tour-with-dolphin-watchi-277b7487db82",
+      "private-6-island-tour-with-dolphin-watching-s-518511256754"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a81e5ded05cb7fa4630a2ec",
+     "title": "Private Transfer (1-3 people)",
+     "description": "",
+     "price": 34.71,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "6-island-small-group-tour-with-dolphin-watchi-277b7487db82",
+      "private-6-island-tour-with-dolphin-watching-s-518511256754"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a81e5ded05cb7fa4630a2ed",
+     "title": "Private Transfer (4-8 people)",
+     "description": "",
+     "price": 57.85,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "6-island-small-group-tour-with-dolphin-watchi-277b7487db82",
+      "private-6-island-tour-with-dolphin-watching-s-518511256754"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a81e5ded05cb7fa4630a2ee",
+     "title": "Private Transfer (9 - 16 people)",
+     "description": "",
+     "price": 86.77,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "6-island-small-group-tour-with-dolphin-watchi-277b7487db82",
+      "private-6-island-tour-with-dolphin-watching-s-518511256754"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a81e5ded05cb7fa4630a2ef",
+     "title": "TRANSPORT: Pickup from Makadi, Elgouna, Sahl Hasheesh",
+     "description": "",
+     "price": 11.57,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "6-island-small-group-tour-with-dolphin-watchi-277b7487db82",
+      "private-6-island-tour-with-dolphin-watching-s-518511256754"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a81e5ded05cb7fa4630a2f0",
+     "title": "TRANSPORT: Pickup from Safaga or Soma Bay",
+     "description": "",
+     "price": 17.35,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "6-island-small-group-tour-with-dolphin-watchi-277b7487db82",
+      "private-6-island-tour-with-dolphin-watching-s-518511256754"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a81e5ded05cb7fa4630a2f1",
+     "title": "FOOD: Lunch on Island",
+     "description": "",
+     "price": 23.14,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "6-island-small-group-tour-with-dolphin-watchi-277b7487db82",
+      "private-6-island-tour-with-dolphin-watching-s-518511256754"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a81e5ded05cb7fa4630a2f2",
+     "title": "FOOD: Seafood Lunch on Island",
+     "description": "",
+     "price": 34.71,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "6-island-small-group-tour-with-dolphin-watchi-277b7487db82",
+      "private-6-island-tour-with-dolphin-watching-s-518511256754"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a81e5ded05cb7fa4630a2f3",
+     "title": "Tour Video & Photos",
+     "description": "",
+     "price": 57.85,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "6-island-small-group-tour-with-dolphin-watchi-277b7487db82",
+      "private-6-island-tour-with-dolphin-watching-s-518511256754"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a81e5ded05cb7fa4630a2f4",
+     "title": "Go pro video",
+     "description": "",
+     "price": 34.71,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "6-island-small-group-tour-with-dolphin-watchi-277b7487db82",
+      "private-6-island-tour-with-dolphin-watching-s-518511256754"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a81e5ded05cb7fa4630a2f5",
+     "title": "Banana & Sofa 10 min",
+     "description": "",
+     "price": 11.57,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "6-island-small-group-tour-with-dolphin-watchi-277b7487db82",
+      "private-6-island-tour-with-dolphin-watching-s-518511256754"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a81e5ded05cb7fa4630a2f6",
+     "title": "Twister Aqua 5 mins",
+     "description": "",
+     "price": 17.35,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "6-island-small-group-tour-with-dolphin-watchi-277b7487db82",
+      "private-6-island-tour-with-dolphin-watching-s-518511256754"
+     ],
+     "required": false
+    }
+   ]
+  }
+ ]
+}
