@@ -4,16 +4,17 @@ import { copiedFactProblems, eeoSourceProgramme, tripDocument, validateBatch } f
 import { B01_SAFARI } from '../scripts/network-sites/b01-safari';
 import { B02 } from '../scripts/network-sites/b02';
 
-describe('batch B02: the next ten HIGH domains, seven with a programme to sell today', () => {
+describe('batch B02: the next ten HIGH domains, nine built (Nabq waits for a trip)', () => {
   it('is a valid batch: claim-free copy, places each site serves, network-hosted photos', () => {
     expect(validateBatch(B02)).toEqual([]);
   });
 
-  it('builds the seven sites that can sell today, none of them a site already built', () => {
+  it('builds nine sites, none of them a site already built', () => {
     expect(B02.sites.map((item) => item.domain)).toEqual([
       'tunisvillagefayoum.com', 'giftunbeach.com', 'rasmohamednaturereserve.com', 'whiteislandsharmelsheikh.com',
-      'tiranislandsharmelsheikh.com', 'safarimarsaalam.com', 'sunsetsafarimarsaalam.com',
+      'tiranislandsharmelsheikh.com', 'safarimarsaalam.com', 'sunsetsafarimarsaalam.com', 'sharkreefsharmelsheikh.com', 'ummgamarhurghada.com',
     ]);
+    expect(B02.sites.map((item) => item.domain)).not.toContain('nabqnationalpark.com');
     const built = new Set([...B01_SAFARI.sites.flatMap((item) => [item.slug, item.domain, item.slugPrefix]),
       'fox-safari-marsa-alam', 'fox-safari-makadi-bay', 'fox-safari-hurghada', 'power-safari-marsa-alam']);
     for (const item of B02.sites) {
@@ -29,6 +30,7 @@ describe('batch B02: the next ten HIGH domains, seven with a programme to sell t
     expect(Object.fromEntries(B02.sites.map((item) => [item.slug, item.listingPath ?? '/safaris']))).toEqual({
       'tunis-village-fayoum': '/trips', 'giftun-beach': '/trips', 'ras-mohamed-nature-reserve': '/trips', 'white-island-sharm': '/trips',
       'tiran-island-sharm': '/trips', 'safari-marsa-alam': '/safaris', 'sunset-safari-marsa-alam': '/safaris',
+      'shark-reef-sharm': '/trips', 'umm-gamar-hurghada': '/trips',
     });
   });
 
@@ -66,7 +68,22 @@ describe('batch B02: the next ten HIGH domains, seven with a programme to sell t
         expect(document.departures ?? document.entryWindows).toEqual([expect.objectContaining({ label: 'Morning' })]);
       });
     }
-    expect(built).toBe(13);
+    expect(built).toBe(20);
+  });
+
+  it('never promises a stop at the reef a site is named after when no published trip goes there', () => {
+    // Owner, 24 Oct: the nearest trips, with wording that places the reef in the area and never promises a stop.
+    for (const [slug, place] of [['shark-reef-sharm', 'Shark Reef'], ['umm-gamar-hurghada', 'Umm Gamar']] as const) {
+      const item = B02.sites.find((one) => one.slug === slug)!;
+      expect(item.description).toMatch(new RegExp(`${place}[^.]*(not one of them|none of them promises)|(none of them promises|not one of them)[^.]*${place}`));
+      for (const one of item.trips) {
+        // A title, summary, highlight or search line never names the reef: only the sentence that says it is not a stop.
+        expect([one.title, one.short, ...one.highlights, one.seo.metaTitle, one.seo.metaDescription].join(' ')).not.toContain(place);
+        const mentions = one.description.split(/(?<=\.)\s+/).filter((sentence) => sentence.includes(place));
+        expect(mentions.length).toBeGreaterThan(0);
+        for (const sentence of mentions) expect(sentence).toMatch(/not one of|does not|is not|also lie|not include/);
+      }
+    }
   });
 
   it('sells the two Marsa Alam sites only from the published desert programmes, the sunset site only after noon', () => {
