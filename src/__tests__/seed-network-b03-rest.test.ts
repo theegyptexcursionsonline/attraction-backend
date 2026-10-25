@@ -119,7 +119,7 @@ describe('batch B03 groups 2 to 4: the seven remaining domains', () => {
         }
       });
     }
-    expect(built).toBe(34);
+    expect(built).toBe(35);
   });
 
   it('puts the trips of each release group on their own site, and never one trip twice on one site', () => {
@@ -127,14 +127,17 @@ describe('batch B03 groups 2 to 4: the seven remaining domains', () => {
       const keys = site.trips.map((trip) => `${trip.price.source}#${[...trip.price.options].sort().join('+')}`);
       expect(new Set(keys).size).toBe(keys.length);
     }
-    // The Karnak site and the Nobles site share no programme: the owner's rule for this pair.
+    // The Karnak site and the Nobles site share one programme and no more: the day on both banks is the only
+    // published one that walks the West Bank monuments the Tombs of the Nobles were cut beside (owner, 25 Oct).
     const karnak = new Set(siteOf('temple-of-karnak').trips.map((trip) => trip.price.source));
     const nobles = siteOf('valley-of-the-nobles').trips.map((trip) => trip.price.source);
-    expect(nobles.filter((source) => karnak.has(source))).toEqual([]);
+    expect(nobles.filter((source) => karnak.has(source))).toEqual([
+      'luxor-east-west-bank-private-tour-with-traditional-felucca-nile-cruise',
+    ]);
     // Each site sells the number of trips its brief asks for.
     expect(SITES.map((site) => [site.slug, site.trips.length])).toEqual([
       ['temple-of-karnak', 2],
-      ['valley-of-the-nobles', 2],
+      ['valley-of-the-nobles', 3],
       ['whale-valley-wadi-al-hitan', 1],
       ['pyramids-camel-tour', 3],
       ['sharm-tour-guide', 13],
@@ -173,7 +176,7 @@ describe('batch B03 groups 2 to 4: the seven remaining domains', () => {
   it('blocks the places each site does not serve, in its own copy and in what it copies', () => {
     const blockedEverywhere: Record<string, string[]> = {
       'temple-of-karnak': ['Hurghada', 'Sharm el-Sheikh', 'Cairo', 'Aswan'],
-      'valley-of-the-nobles': ['Hurghada', 'Sharm el-Sheikh', 'Cairo', 'Karnak'],
+      'valley-of-the-nobles': ['Hurghada', 'Sharm el-Sheikh', 'Cairo', 'Aswan'],
       'whale-valley-wadi-al-hitan': ['Hurghada', 'Sharm el-Sheikh', 'Luxor', 'Sakkara'],
       'pyramids-camel-tour': ['Hurghada', 'Sharm el-Sheikh', 'Luxor', 'the Fayoum'],
       'sharm-tour-guide': ['Hurghada', 'Marsa Alam', 'Luxor', 'El Gouna'],
@@ -187,7 +190,8 @@ describe('batch B03 groups 2 to 4: the seven remaining domains', () => {
     // What each site does serve is never blocked.
     const served: Record<string, string[]> = {
       'temple-of-karnak': ['Luxor', 'Karnak', 'the Valley of the Kings', 'the Nile'],
-      'valley-of-the-nobles': ['Luxor', 'the West Bank', 'Wadi Ziad'],
+      // The day on both banks ends at Karnak, so Karnak is served here as well as on its own site.
+      'valley-of-the-nobles': ['Luxor', 'the West Bank', 'Wadi Ziad', 'Karnak', 'the Valley of the Kings'],
       'whale-valley-wadi-al-hitan': ['Cairo', 'the Fayoum', 'Wadi Al Hitan', 'Lake Qarun'],
       'pyramids-camel-tour': ['Cairo', 'Giza', 'the Giza plateau'],
       'sharm-tour-guide': ['Sharm el-Sheikh', 'Ras Mohamed', 'Dahab', 'Tiran Island', 'Cairo'],
@@ -211,7 +215,7 @@ describe('batch B03 groups 2 to 4: the seven remaining domains', () => {
       for (const trip of site.trips) expect(trip.imageAlts.filter((alt) => alt.trim().length > 20)).toHaveLength(trip.images.length);
     }
     expect(SITES.filter((site) => site.photoShortfall).map((site) => site.slug)).toEqual([
-      'temple-of-karnak', 'valley-of-the-nobles', 'whale-valley-wadi-al-hitan', 'pyramids-camel-tour',
+      'temple-of-karnak', 'whale-valley-wadi-al-hitan', 'pyramids-camel-tour',
     ]);
   });
 });

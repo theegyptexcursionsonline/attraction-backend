@@ -109,6 +109,53 @@ const PROGRAMMES: Record<string, PriceSpec> = {
   },
 
   // ---- Valley of the Nobles --------------------------------------------------------------------------------
+  /**
+   * The same published day the Karnak site sells, which is also the only published day that walks the West Bank
+   * monuments beside the Tombs of the Nobles (owner, 25 October; the Tunis Village precedent, batch B02). The two
+   * sites share the programme and nothing else: every word below is this site's own.
+   */
+  VON_BOTH_BANKS: {
+    provider: 'eeo',
+    tenant: EEO,
+    source: 'luxor-east-west-bank-private-tour-with-traditional-felucca-nile-cruise',
+    category: DAY_TRIPS,
+    options: ['luxor-all-inclusive-east-and-west-banks-tour--4bfa1a490c53'],
+    addons: [],
+    departures: ['07:00', '08:00'],
+    rename: {
+      'luxor-all-inclusive-east-and-west-banks-tour--4bfa1a490c53': {
+        name: 'West Bank morning, East Bank afternoon',
+        description: 'A car and guide for your group, the temple entry fees and lunch.',
+      },
+    },
+    childNote: CHILD_NOTE,
+    omit: {
+      inclusions: ['Hotel pickup and drop-off From East Bank Hotels'],
+      exclusions: [
+        'Hotel pickup and drop-off in the West Bank (5$ per person)',
+        'Spanish, German, or French-speaking guide (available as an add-on)',
+      ],
+    },
+    add: {
+      inclusions: ['Pickup and drop-off at your hotel on the East Bank of Luxor'],
+      exclusions: ['Pickup from a hotel on the West Bank', 'A guide speaking Spanish, German or French'],
+      needToKnow: [
+        NOT_THE_NOBLES,
+        'The included pickup is from East Bank hotels. A West Bank hotel is published at an extra cost that this site does not sell, so tell the team where you are staying before you book.',
+        'The day is guided in English. The published record offers Spanish, German and French guides at an extra cost, which this site does not sell.',
+      ],
+    },
+    // Written West Bank first, which is the order the day runs and the reason this site sells it.
+    itinerary: [
+      { title: 'Hotel pickup', description: 'A car collects you from your hotel on the East Bank and crosses the river.' },
+      { title: 'Valley of the Kings', description: 'The royal tombs cut into the rock of the West Bank, walked with your guide, the entry fees covered.' },
+      { title: 'Temple of Hatshepsut', description: 'The terraces below the cliffs, a short way north of the hillside where the Tombs of the Nobles were cut.' },
+      { title: 'Colossi of Memnon', description: 'The two seated statues that stand on the flat ground on the way back, and then lunch.' },
+      { title: 'On the Nile', description: 'A felucca sail on the river with a drink, between the two banks of the day.' },
+      { title: 'The East Bank temples', description: 'Karnak and Luxor Temple with your guide to close the afternoon.' },
+      { title: 'Back to your hotel', description: 'The drive back across town to where the day began.' },
+    ],
+  },
   VON_BALLOON: {
     provider: 'eeo',
     tenant: EEO,
@@ -1292,6 +1339,7 @@ const PROGRAMMES: Record<string, PriceSpec> = {
 const PHOTO = {
   luxorNileFelucca: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1792936145/attractions-network/network-b03/temple-of-karnak/bmqezftsbjtqygdtskec.jpg',
   tembleColonnadeAtNight: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1792936147/attractions-network/network-b03/temple-of-karnak/bsqcfguowy889djhoxqd.jpg',
+  feluccaFromTheWestBankDay: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1792938256/attractions-network/network-b03/valley-of-the-nobles/bmqezftsbjtqygdtskec.jpg',
   balloonOverTheWestBank: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1792936149/attractions-network/network-b03/valley-of-the-nobles/cfhd24sdurwnp7rxgfkw.jpg',
   quadByTheRiver: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1792936151/attractions-network/network-b03/valley-of-the-nobles/mtitccl14pu9pgvlnz7b.jpg',
   whaleFossil: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1792936152/attractions-network/network-b03/whale-valley-wadi-al-hitan/gjhaizw6ruucxxdirzdq.jpg',
@@ -1328,6 +1376,7 @@ const PHOTO = {
 const ALT = {
   luxorNileFelucca: 'A felucca under a tall white sail on the Nile at low sun, with small motorboats carrying passengers and a town along the far bank',
   tembleColonnadeAtNight: 'Lit stone columns and standing pharaoh statues of a temple colonnade at night, against a dark blue sky',
+  feluccaFromTheWestBankDay: 'The Nile in late afternoon light, a felucca under sail on the near side and small passenger boats mid-river, with the East Bank waterfront and palms along the far side',
   balloonOverTheWestBank: 'A yellow and red hot-air balloon seen from above over the Luxor West Bank, with the two seated Colossi of Memnon on their open ground beside a road, houses and green fields',
   quadByTheRiver: 'A quad bike on sand throwing up a cloud of dust beside the river, with a long colonnaded temple on the far bank',
   whaleFossil: 'The ribs and backbone of a fossil whale lying in pale desert sand, with eroded sandstone rock behind it',
@@ -1427,7 +1476,7 @@ export const B03B: NetworkBatch = {
           short: 'An evening of about five hours: an hour on the Nile aboard a wooden felucca as the sun goes down, then the lit temple complex and the show after dark.',
           description: 'A private car takes you from your hotel in Luxor down to the corniche, where a wooden felucca is waiting. The sail runs about an hour, past farmland and the waterfront, with the light going gold on the water.\n\nFrom the river the evening moves to Karnak for the sound and light show. The monuments are lit as you walk through the complex, and the story told is that of ancient Thebes and of Amun, Mut and Khonsu. The private transfers, the guide, the entry fees and bottled water are in the price; lunch is not. Start times are published through the day, and the team confirms your pickup when it confirms the booking. Children have their own price.',
           highlights: [
-            'An hour on the Nile under sail',
+            'An hour aboard a felucca at sunset',
             'The sound and light show inside Karnak',
             'A private car each way from your hotel',
             'Entry fees and a guide included',
@@ -1451,27 +1500,46 @@ export const B03B: NetworkBatch = {
       pickupDestination: 'luxor',
       coordinates: LUXOR,
       currency: 'USD',
-      // Karnak is on the other bank and belongs to the Karnak site; nothing this site sells goes there.
-      foreignPlaces: /Hurghada|Sharm|Dahab|Tiran|Ras Mohamed|Marsa Alam|Quseir|Ghalib|Safaga|Soma Bay|Makadi|Gouna|Sahl|Cairo|Giza|pyramid|Aswan|Alexandria|Fayoum|Siwa|Bahariya|Dendera|Edfu|Kom Ombo|Abydos|Abu Simbel|Karnak/i,
+      // The day this site leads with ends at Karnak, on the far bank, so Karnak is not a foreign place here.
+      foreignPlaces: /Hurghada|Sharm|Dahab|Tiran|Ras Mohamed|Marsa Alam|Quseir|Ghalib|Safaga|Soma Bay|Makadi|Gouna|Sahl|Cairo|Giza|pyramid|Aswan|Alexandria|Fayoum|Siwa|Bahariya|Dendera|Edfu|Kom Ombo|Abydos|Abu Simbel/i,
       slugPrefix: 'von-',
-      tagline: 'Mornings on the Luxor West Bank',
-      description: 'The Tombs of the Nobles lie on the Luxor West Bank, cut into the hillside at Sheikh Abd el-Qurna above the village, among the valleys that hold the royal tombs and the mortuary temples.\n\nNo trip published for Luxor at the moment goes inside them, and this site does not pretend otherwise: it sells the two published ways of seeing the West Bank itself, and each page says plainly that the day does not include the tombs. One is a balloon flight at sunrise over the burial valleys, the temples and the farmland. The other is a quad ride through the desert behind them. If the tombs themselves are what you want, write to the team before you book and they will tell you what can be arranged.',
+      tagline: 'The Luxor West Bank, where the Tombs of the Nobles lie',
+      description: 'The Tombs of the Nobles were cut into the hillside at Sheikh Abd el-Qurna, on the Luxor West Bank, among the valleys that hold the royal tombs and below the terraces of the mortuary temples.\n\nNo trip published for Luxor at the moment goes inside them, and this site does not pretend otherwise. What it sells is the ground they stand in: a private day that walks the royal tombs, the Temple of Hatshepsut and the Colossi of Memnon before crossing to the East Bank; a balloon flight at first light over the same valleys; and a quad ride through the desert behind them. Three trips in all, and each page says plainly that the day does not include the tombs. If the tombs themselves are what you want, write to the team before you book and they will tell you what can be arranged.',
       seo: {
         metaTitle: 'Luxor West Bank Trips Near the Valley of the Nobles',
-        metaDescription: 'Two published ways to see the Luxor West Bank where the Tombs of the Nobles lie: a sunrise balloon flight over the burial valleys, or a desert quad ride.',
+        metaDescription: 'The Luxor West Bank where the Tombs of the Nobles lie: a private day at the royal tombs and Hatshepsut, a sunrise balloon flight, or a desert quad ride.',
         keywords: [
           'valley of the nobles luxor',
           'luxor west bank trips',
           'luxor sunrise balloon flight',
           'west bank quad safari luxor',
           'tombs of the nobles qurna',
+          'valley of the kings and hatshepsut day',
         ],
       },
       theme: { primaryColor: '#2F5D50', secondaryColor: '#F2EDE1', accentColor: '#C2873B' },
-      heroImages: [PHOTO.balloonOverTheWestBank, PHOTO.quadByTheRiver],
-      photoShortfall: 'The two programmes the site sells publish one photo each.',
+      heroImages: [PHOTO.feluccaFromTheWestBankDay, PHOTO.balloonOverTheWestBank, PHOTO.quadByTheRiver],
       logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1792936270/attractions-network/tenant-logos/valley-of-the-nobles/monogram.png',
       trips: [
+        {
+          path: 'royal-tombs-hatshepsut-and-the-east-bank',
+          price: PROGRAMMES.VON_BOTH_BANKS,
+          title: 'The Royal Tombs, Hatshepsut and the Colossi, with the East Bank After Lunch',
+          short: 'The published day that walks the West Bank: the Valley of the Kings, the Temple of Hatshepsut and the Colossi of Memnon, then a sail and the East Bank temples.',
+          description: 'This is the one published Luxor day that spends its morning among the monuments the Tombs of the Nobles were cut beside. A car collects you from your East Bank hotel at seven or at eight, crosses the river, and gives the first half of the day to the West Bank: the royal tombs in the Valley of the Kings, the terraces of the Temple of Hatshepsut below the cliffs, and the two seated Colossi of Memnon out on the flat. Lunch follows.\n\nThe afternoon crosses back. A felucca takes you out on the Nile with a drink, and the day closes in the East Bank temples, Karnak and Luxor Temple, with the guide. The entrance fees, the guide, the private driver, the felucca and lunch are in the price, and the published day runs eight hours. It does not include the Tombs of the Nobles themselves; ask the team before you book if that is what you are after. Children have their own price.',
+          highlights: [
+            'The Valley of the Kings with a guide',
+            'The Temple of Hatshepsut below the cliffs',
+            'The Colossi of Memnon, and lunch',
+            'A sail on the Nile and the East Bank temples',
+          ],
+          seo: {
+            metaTitle: 'Luxor West Bank Day: Royal Tombs, Hatshepsut, Memnon',
+            metaDescription: 'A private Luxor day on the West Bank where the Tombs of the Nobles lie: the royal tombs, Hatshepsut and the Colossi of Memnon, then a felucca and the East Bank.',
+          },
+          images: [PHOTO.feluccaFromTheWestBankDay],
+          imageAlts: [ALT.feluccaFromTheWestBankDay],
+        },
         {
           path: 'sunrise-balloon-over-the-west-bank',
           price: PROGRAMMES.VON_BALLOON,
