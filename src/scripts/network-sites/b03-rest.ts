@@ -73,10 +73,22 @@ const PROGRAMMES: Record<string, PriceSpec> = {
       inclusions: ['Pickup and drop-off at your hotel on the East Bank of Luxor'],
       exclusions: ['Pickup from a hotel on the West Bank', 'A guide speaking Spanish, German or French'],
       needToKnow: [
-        'Pickup is from hotels on the East Bank of Luxor. The published record offers West Bank pickup at an extra cost, which this site does not sell; ask the team before you book if your hotel is on the West Bank.',
-        'The guide on this day speaks English. A Spanish, German or French-speaking guide is published at an extra cost, which this site does not sell.',
+        'Pickup is from hotels on the East Bank of Luxor. West Bank pickup costs extra and cannot be booked on this site; ask the team before you book if your hotel is on the West Bank.',
+        'The guide on this day speaks English. A Spanish, German or French-speaking guide costs extra and cannot be booked on this site.',
       ],
     },
+    // The programme's own schedule is written as instructions to the driver ("Pickup to visit Valley of the
+    // Kings and Hatshepsut Temple"), so the day is set out here in the site's own words instead.
+    itinerary: [
+      { title: 'Hotel pickup', description: 'A car collects you from your hotel on the East Bank and crosses to the West Bank.' },
+      { title: 'Valley of the Kings', description: 'A guided walk through the royal tombs, with the entry fees covered.' },
+      { title: 'Temple of Hatshepsut', description: 'The terraced temple built against the cliffs above the plain.' },
+      { title: 'Colossi of Memnon', description: 'The two seated statues out on the open ground, and lunch after them.' },
+      { title: 'On the Nile', description: 'A felucca sail with a drink as the day crosses back to the East Bank.' },
+      { title: 'Karnak', description: 'The temple complex with your guide: its halls, its obelisks and its statues.' },
+      { title: 'Luxor Temple', description: 'The second of the East Bank temples, to close the day.' },
+      { title: 'Back to your hotel', description: 'The car drops you where it collected you that morning.' },
+    ],
   },
   TOK_SOUND_AND_LIGHT: {
     provider: 'eeo',
@@ -141,8 +153,8 @@ const PROGRAMMES: Record<string, PriceSpec> = {
       exclusions: ['Pickup from a hotel on the West Bank', 'A guide speaking Spanish, German or French'],
       needToKnow: [
         NOT_THE_NOBLES,
-        'The included pickup is from East Bank hotels. A West Bank hotel is published at an extra cost that this site does not sell, so tell the team where you are staying before you book.',
-        'The day is guided in English. The published record offers Spanish, German and French guides at an extra cost, which this site does not sell.',
+        'The included pickup is from East Bank hotels. Pickup from a West Bank hotel costs extra and cannot be booked on this site, so tell the team where you are staying before you book.',
+        'The day is guided in English. Spanish, German and French guides cost extra and cannot be booked on this site.',
       ],
     },
     // Written West Bank first, which is the order the day runs and the reason this site sells it.
@@ -178,7 +190,7 @@ const PROGRAMMES: Record<string, PriceSpec> = {
         NOT_THE_NOBLES,
         'Balloon flights run only in weather the operator judges safe.',
         'Children must be at least six years old and with a responsible adult.',
-        'The published record puts the time in the air at about 45 minutes, and between 40 and 90 minutes depending on the weather.',
+        'The time in the air averages about 45 minutes, and runs between 40 and 90 minutes depending on the weather.',
         'A scanned copy of your passport is needed to confirm the flight.',
       ],
     },
@@ -212,7 +224,7 @@ const PROGRAMMES: Record<string, PriceSpec> = {
       inclusions: ['Pickup and drop-off at your hotel or Nile cruise in Luxor'],
       needToKnow: [
         NOT_THE_NOBLES,
-        'Pickup and drop-off at your hotel or Nile cruise are included. The published record also offers paid transfers from Luxor Airport and from the East Bank, which this site does not sell; ask the team before you book if you are not sure which applies to you.',
+        'Pickup and drop-off at your hotel or Nile cruise are included. Paid transfers from Luxor Airport and from the East Bank exist too, but cannot be booked on this site; ask the team before you book if you are not sure which applies to you.',
         'A copy of your passport is needed at least two days before the ride.',
       ],
     },
@@ -338,7 +350,7 @@ const PROGRAMMES: Record<string, PriceSpec> = {
     },
     add: {
       inclusions: ['Entrance fees for the Giza pyramids complex'],
-      needToKnow: ['Pickup from outside the city centre is published as a paid extra, which this site does not sell. Ask the team before you book if your hotel is further out.'],
+      needToKnow: ['Pickup from outside the city centre is a paid extra and cannot be booked on this site. Ask the team before you book if your hotel is further out.'],
     },
     itinerary: [
       { title: 'Hotel pickup', description: 'A private vehicle collects you from your hotel in Cairo or Giza.' },
@@ -453,7 +465,7 @@ const PROGRAMMES: Record<string, PriceSpec> = {
     },
     add: {
       exclusions: ['Snorkelling gear', 'The marina entrance fee'],
-      needToKnow: ['The published record charges a marina entrance fee of five euros a person on arrival. The team confirms how it is paid when it confirms your booking.'],
+      needToKnow: ['A marina entrance fee of five euros a person is charged on arrival. The team confirms how it is paid when it confirms your booking.'],
     },
     itinerary: [
       { title: 'Hotel pickup', duration: '25 minutes', description: 'A coach collects you from your hotel in Sharm el-Sheikh for the drive to the marina.' },
@@ -558,7 +570,7 @@ const PROGRAMMES: Record<string, PriceSpec> = {
       inclusions: ['A quad bike or a buggy, whichever option you book'],
       needToKnow: [
         SAME_PRICE_NOTE,
-        'The published record also sells this afternoon for two, three or four riders sharing one vehicle, which this site does not sell. Ask the team before you book if you want to share.',
+        'This afternoon is also sold for two, three or four riders sharing one vehicle, which cannot be booked on this site. Ask the team before you book if you want to share.',
       ],
     },
     itinerary: [
@@ -759,7 +771,7 @@ const PROGRAMMES: Record<string, PriceSpec> = {
     childNote: CHILD_NOTE,
     add: {
       needToKnow: [
-        'The drive runs in convoy, as the published record says.',
+        'The drive runs in convoy.',
         'Sleeveless shirts are not allowed inside the monastery, and photography inside it is not allowed.',
       ],
     },
@@ -794,17 +806,17 @@ const PROGRAMMES: Record<string, PriceSpec> = {
     // The published record names both museums in one line; each option carries the ticket for its own.
     omit: { inclusions: ['Entrance fees for the Giza Pyramids, the Sphinx, and the GEM or the Old Egyptian Museum (depending on the option you choose)'] },
     add: {
-      inclusions: [PICKUP_SHARM, 'Entrance fees for the Giza pyramids, the Sphinx and the museum the option names'],
+      inclusions: [PICKUP_SHARM, 'Entrance fees for the Giza pyramids, the Sphinx and whichever museum your option includes'],
       needToKnow: [
-        'The published record puts the road to Cairo at between seven and nine hours each way, because the coaches travel in convoy with a police escort.',
-        'A visa is needed to enter Cairo. The published record prices it at 38 US dollars a person, bought at Sharm el-Sheikh airport or arranged on the day.',
-        'The published record sets a minimum of six guests for a guide in French, Italian, Spanish, Russian or German, and a minimum of six for the visit to the Egyptian Museum of Antiquities.',
+        'The road to Cairo takes between seven and nine hours each way, because the coaches travel in convoy with a police escort.',
+        'A visa is needed to enter Cairo. It costs 38 US dollars a person, bought at Sharm el-Sheikh airport or arranged on the day.',
+        'A guide in French, Italian, Spanish, Russian or German needs a minimum of six guests, and so does the visit to the Egyptian Museum of Antiquities.',
       ],
     },
     // The programme's own schedule lists both museums; each option sold goes to one of them.
     itinerary: [
       { title: 'Hotel pickup', description: 'The coach collects you from your hotel in Sharm el-Sheikh in the middle of the night.' },
-      { title: 'The road to Cairo', description: 'The drive in convoy with a police escort, which the published record puts at between seven and nine hours.' },
+      { title: 'The road to Cairo', description: 'The drive in convoy with a police escort, which takes between seven and nine hours.' },
       { title: 'The Giza plateau', description: 'The pyramids and the Great Sphinx with an Egyptologist guide, the entrance fees covered.' },
       { title: 'Lunch', description: 'Lunch at a restaurant looking out at the pyramids.' },
       { title: 'The museum', description: 'The Grand Egyptian Museum, or the Egyptian Museum of Antiquities on Tahrir Square, whichever your option names, with its entry ticket.' },
@@ -912,8 +924,8 @@ const PROGRAMMES: Record<string, PriceSpec> = {
       inclusions: ['Transport in an air-conditioned vehicle', PICKUP_HURGHADA, 'A two-hour quad bike ride'],
       needToKnow: [
         SAME_PRICE_NOTE,
-        'The published record offers an Oriental breakfast only with its five o’clock sunrise ride, which is not one of the departures this trip sells.',
-        'The published record offers pickup from Al Ahyaa, El Gouna, Safaga and Soma Bay on a separate option, which this site does not sell.',
+        'An Oriental breakfast comes only with the five o’clock sunrise ride, which is not one of the start times on this trip.',
+        'Pickup from Al Ahyaa, El Gouna, Safaga and Soma Bay belongs to a separate option, which cannot be booked on this site.',
         'Drivers must be at least sixteen and pass a short driving test before the ride.',
       ],
     },
@@ -963,7 +975,7 @@ const PROGRAMMES: Record<string, PriceSpec> = {
       exclusions: ['Camera footage of your ride'],
       needToKnow: [
         SAME_PRICE_NOTE,
-        'The published record puts the camel ride at thirty minutes on this option, where its shorter rides carry five.',
+        'The camel ride runs thirty minutes on this evening, where the shorter rides carry five.',
         'Drivers must be at least sixteen and pass a short driving test before the ride.',
       ],
     },
@@ -1008,10 +1020,10 @@ const PROGRAMMES: Record<string, PriceSpec> = {
       inclusions: ['Pickup and drop-off at your hotel in Hurghada, in an air-conditioned vehicle'],
       exclusions: ['A government fee of one euro per person', 'Goggles and a scarf', 'Transfers from outside Hurghada'],
       needToKnow: [
-        'The published record charges a government fee of one euro per person separately. The team confirms how it is paid when it confirms your booking.',
-        'Transfers are included from hotels in Hurghada. The published record charges for transfers from Makadi Bay, Sahl Hasheesh, El Gouna, Safaga and Soma Bay, which this site does not sell.',
+        'A government fee of one euro per person is charged separately. The team confirms how it is paid when it confirms your booking.',
+        'Transfers are included from hotels in Hurghada. Transfers from Makadi Bay, Sahl Hasheesh, El Gouna, Safaga and Soma Bay cost extra and cannot be booked on this site.',
         'Children aged six to fifteen may ride as passengers but not drive.',
-        'A barbecue dinner is part of another option the published record sells, not of this one.',
+        'A barbecue dinner belongs to another option, not to this one.',
       ],
     },
     itinerary: [
@@ -1044,7 +1056,7 @@ const PROGRAMMES: Record<string, PriceSpec> = {
     add: {
       inclusions: ['Pickup and drop-off at your hotel in Hurghada, there and back'],
       needToKnow: [
-        'Transfers from El Gouna, Safaga, Sahl Hasheesh and Makadi Bay are published as a paid extra, which this site does not sell.',
+        'Transfers from El Gouna, Safaga, Sahl Hasheesh and Makadi Bay are a paid extra and cannot be booked on this site.',
         'The day is not suitable for guests who are pregnant or who have back, neck or serious medical conditions.',
         'Helmets are provided and must be worn for the quad and spider car rides.',
       ],
@@ -1103,12 +1115,14 @@ const PROGRAMMES: Record<string, PriceSpec> = {
       'one-person-single-buggy-fabe3b22d34d': { name: 'One rider, one buggy', description: 'A buggy of your own for the ride.' },
     },
     childNote: CHILD_NOTE,
-    omit: { inclusions: ['Camel ride (if selected as an add-on option)'] },
+    // The second line is a note about when the ride runs, not something a guest is given on the day.
+    omit: { inclusions: ['Camel ride (if selected as an add-on option)', 'Available as both sunset and sunrise safari options'] },
     add: {
-      exclusions: ['A camel ride, which the published record sells as a paid extra'],
+      exclusions: ['A camel ride, which is sold as a paid extra'],
       needToKnow: [
-        'The published record also sells this ride for two, three or four riders sharing one vehicle, which this site does not sell. Ask the team before you book if you want to share.',
-        'A camel ride is published as a paid extra, which this site does not sell.',
+        'The same ride runs as a sunrise safari and as a sunset safari; pick the start time that suits you when you book.',
+        'This ride is also sold for two, three or four riders sharing one vehicle, which cannot be booked on this site. Ask the team before you book if you want to share.',
+        'A camel ride is a paid extra and cannot be booked on this site.',
       ],
     },
     // The programme's own schedule names a camel ride, which belongs to a paid extra this site does not sell.
@@ -1146,7 +1160,7 @@ const PROGRAMMES: Record<string, PriceSpec> = {
       inclusions: ['A quad bike or a buggy, whichever option you book'],
       needToKnow: [
         SAME_PRICE_NOTE,
-        'The published record also sells this afternoon for two, three or four riders sharing one vehicle, which this site does not sell.',
+        'This afternoon is also sold for two, three or four riders sharing one vehicle, which cannot be booked on this site.',
       ],
     },
     itinerary: [
@@ -1181,7 +1195,7 @@ const PROGRAMMES: Record<string, PriceSpec> = {
     childNote: MIXED_CHILD_NOTE,
     add: {
       needToKnow: [
-        'The published record charges a desert conservation fee of one US dollar per person, paid in cash on the day.',
+        'A desert conservation fee of one US dollar per person is paid in cash on the day.',
         'Children under sixteen may ride as passengers with an adult but may not drive.',
         'No driving licence is needed for the quad.',
         'Vegetarian meals are available.',
@@ -1224,7 +1238,7 @@ const PROGRAMMES: Record<string, PriceSpec> = {
       needToKnow: [
         'The day starts before dawn.',
         'Snorkelling gear is not included, so bring your own if you want to snorkel.',
-        'The published record also sells this day for two, three or four riders sharing one vehicle, which this site does not sell.',
+        'This day is also sold for two, three or four riders sharing one vehicle, which cannot be booked on this site.',
       ],
     },
     itinerary: [
@@ -1274,7 +1288,7 @@ const PROGRAMMES: Record<string, PriceSpec> = {
     add: {
       inclusions: ['Hotel pickup and drop-off in an air-conditioned vehicle'],
       needToKnow: [
-        'The Blue Hole and Abu Galum are included on the option that names them. On the other two the published record prices the Blue Hole entry at twenty euros a person, paid on site.',
+        'The Blue Hole and Abu Galum are included on the option that names them. On the other two the Blue Hole entry costs twenty euros a person, paid on site.',
         'The quad ride along the shore is part of the two options that name it.',
         'Guests who are not going into the Blue Hole wait at the Bedouin camp after lunch until the group comes back.',
         'Original passports are needed for everyone on the day.',
@@ -1545,7 +1559,7 @@ export const B03B: NetworkBatch = {
           price: PROGRAMMES.VON_BALLOON,
           title: 'Sunrise Balloon Flight Over the Luxor West Bank',
           short: 'A flight at first light over the burial valleys, the cliffside temples, the villages and the river, with transfers from your hotel or cruise boat.',
-          description: 'The transfer leaves before dawn for the launch site, where you meet the crew and watch the balloon fill. The basket lifts as the first light reaches the West Bank, and the flight drifts over the burial valleys and the terraced temples below the cliffs, over farmland, villages and the Nile with its boats.\n\nThe published record puts the time in the air at about 45 minutes, and between 40 and 90 minutes depending on the weather. The flight and the transfers both ways are in the price; food and drinks are not. Flights run only in weather the operator judges safe, children must be at least six and with a responsible adult, and a scanned copy of your passport is needed to confirm the booking. The published day does not include the Tombs of the Nobles.',
+          description: 'The transfer leaves before dawn for the launch site, where you meet the crew and watch the balloon fill. The basket lifts as the first light reaches the West Bank, and the flight drifts over the burial valleys and the terraced temples below the cliffs, over farmland, villages and the Nile with its boats.\n\nThe time in the air averages about 45 minutes, and runs between 40 and 90 minutes depending on the weather. The flight and the transfers both ways are in the price; food and drinks are not. Flights run only in weather the operator judges safe, children must be at least six and with a responsible adult, and a scanned copy of your passport is needed to confirm the booking. The published day does not include the Tombs of the Nobles.',
           highlights: [
             'The burial valleys and temples seen from the air',
             'A start before dawn, for the first light',
@@ -1710,7 +1724,7 @@ export const B03C: NetworkBatch = {
           price: PROGRAMMES.PCT_CAMEL_LUNCH,
           title: 'Private Pyramids Day with a Camel Ride Around the Plateau and Lunch',
           short: 'Four hours with your own guide and car: the pyramids and the Sphinx, a camel ride around the plateau, lunch at a local restaurant and the entrance fees.',
-          description: 'The camel ride on this day is around the plateau itself, and it is in the price. The rest of it is private: your own English-speaking guide, your own vehicle, and a start you pick from a quarter-hourly list running from eight in the morning to a quarter to one. The published day is four hours.\n\nThe guided walk takes in the pyramids and the Sphinx with the entrance fees covered, the camel ride goes round the plateau, and lunch is at a local restaurant. Pickup and drop-off are at your hotel in Cairo or Giza. Pickup from further out is published as a paid extra, which this site does not sell, so ask the team before you book if your hotel is outside the city centre. Children have their own price.',
+          description: 'The camel ride on this day is around the plateau itself, and it is in the price. The rest of it is private: your own English-speaking guide, your own vehicle, and a start you pick from a quarter-hourly list running from eight in the morning to a quarter to one. The published day is four hours.\n\nThe guided walk takes in the pyramids and the Sphinx with the entrance fees covered, the camel ride goes round the plateau, and lunch is at a local restaurant. Pickup and drop-off are at your hotel in Cairo or Giza. Pickup from further out is a paid extra and cannot be booked on this site, so ask the team before you book if your hotel is outside the city centre. Children have their own price.',
           highlights: [
             'A camel ride around the Giza plateau',
             'Your own guide and vehicle',
@@ -1800,7 +1814,7 @@ export const B03C: NetworkBatch = {
           price: PROGRAMMES.STG_ELITE_CRUISE,
           title: 'Ras Mohamed Cruise on a Four-Deck Boat with a Barbecue Lunch',
           short: 'Seven hours aboard a boat with four floors and two air-conditioned salons: the sail into the park, a snorkelling stop and a barbecue buffet.',
-          description: 'A coach takes you from your hotel to the marina, about twenty-five minutes, and the boat sails around two and a half hours into Ras Mohamed National Park. It has four floors, two air-conditioned salons and plenty of deck.\n\nThe day makes a stop for swimming and snorkelling in the park, calls at White Island when the water allows, and serves a barbecue buffet on board. One departure leaves at nine. Snorkelling gear and the marina entrance fee are not included: the published record puts the marina fee at five euros a person, paid on arrival, and the team confirms how it is paid when it confirms your booking. Children have their own price. Bring swimwear, a towel and sunscreen.',
+          description: 'A coach takes you from your hotel to the marina, about twenty-five minutes, and the boat sails around two and a half hours into Ras Mohamed National Park. It has four floors, two air-conditioned salons and plenty of deck.\n\nThe day makes a stop for swimming and snorkelling in the park, calls at White Island when the water allows, and serves a barbecue buffet on board. One departure leaves at nine. Snorkelling gear and the marina entrance fee are not included: the marina fee is five euros a person, paid on arrival, and the team confirms how it is paid when it confirms your booking. Children have their own price. Bring swimwear, a towel and sunscreen.',
           highlights: [
             'A boat with four floors and two salons',
             'The sail into Ras Mohamed National Park',
@@ -1857,7 +1871,7 @@ export const B03C: NetworkBatch = {
           price: PROGRAMMES.STG_SUPER_SAFARI,
           title: 'Desert Afternoon with a Camel Ride, a Barbecue and Stargazing',
           short: 'An afternoon and evening in the Sinai: a quad or buggy of your own, a camel ride at the Bedouin camp, a barbecue buffet and a telescope after dark.',
-          description: 'The pickup is in the afternoon, in an air-conditioned vehicle, and the day begins at the safari centre with a welcome drink, a safety briefing and the driving instructions. The desert ride runs about twenty-five minutes out, with a stop at a Bedouin tent for tea and bread and a stop in the open desert, then back to the centre.\n\nFrom there the evening moves to the Bedouin camp for a camel ride, a barbecue buffet with water and soft drinks, and the entertainment the camp puts on. It finishes with the camp lights off and a telescope out, with an astronomer to point things out. You choose a quad or a buggy of your own; the published record also sells the afternoon for two, three or four riders sharing a vehicle, which this site does not sell. The published price is the same for adults and children.',
+          description: 'The pickup is in the afternoon, in an air-conditioned vehicle, and the day begins at the safari centre with a welcome drink, a safety briefing and the driving instructions. The desert ride runs about twenty-five minutes out, with a stop at a Bedouin tent for tea and bread and a stop in the open desert, then back to the centre.\n\nFrom there the evening moves to the Bedouin camp for a camel ride, a barbecue buffet with water and soft drinks, and the entertainment the camp puts on. It finishes with the camp lights off and a telescope out, with an astronomer to point things out. You choose a quad or a buggy of your own; the afternoon is also sold for two, three or four riders sharing a vehicle, which cannot be booked on this site. The published price is the same for adults and children.',
           highlights: [
             'A quad or a buggy of your own',
             'A camel ride at the Bedouin camp',
@@ -1971,7 +1985,7 @@ export const B03C: NetworkBatch = {
           price: PROGRAMMES.STG_ST_CATHERINE,
           title: 'Private Day at Saint Catherine’s Monastery',
           short: 'Ten hours with your own vehicle and guide: the drive across Sinai, two hours at the monastery and lunch on the beach at Dahab on the way back.',
-          description: 'A private air-conditioned vehicle collects you at six and the road across Sinai takes about three hours. The drive runs in convoy, as the published record says.\n\nTwo hours are spent at the monastery with a guide, among its shrines and holy places, and the protectorate entry fee is in the price. Lunch is taken on the beach at Dahab on the way back. The monastery library fee and drinks with lunch are not included. Sleeveless shirts are not allowed inside, and photography inside is not permitted. Children have their own price, and the booking applies it.',
+          description: 'A private air-conditioned vehicle collects you at six and the road across Sinai takes about three hours. The drive runs in convoy.\n\nTwo hours are spent at the monastery with a guide, among its shrines and holy places, and the protectorate entry fee is in the price. Lunch is taken on the beach at Dahab on the way back. The monastery library fee and drinks with lunch are not included. Sleeveless shirts are not allowed inside, and photography inside is not permitted. Children have their own price, and the booking applies it.',
           highlights: [
             'Your own vehicle and guide for the day',
             'Two hours at the monastery',
@@ -1990,7 +2004,7 @@ export const B03C: NetworkBatch = {
           price: PROGRAMMES.STG_CAIRO,
           title: 'Cairo and the Pyramids in a Day, by Road',
           short: 'A day trip by coach with an Egyptologist guide: the Giza pyramids and the Sphinx, a museum of your choosing and lunch with the pyramids in view.',
-          description: 'The coach leaves Sharm el-Sheikh in the middle of the night and travels in convoy with a police escort, which is why the published record puts the road at between seven and nine hours each way. An Egyptologist guide is with the group for the day in Cairo.\n\nThe day itself is the Giza plateau, the Great Sphinx, and a museum: one option takes the Egyptian Museum of Antiquities on Tahrir Square, the other the Grand Egyptian Museum, and the entry tickets for whichever you choose are in the price along with the pyramids and the Sphinx. Lunch is at a restaurant looking out at the pyramids. A visa is needed to enter Cairo, published at 38 US dollars a person. Camel riding at the pyramids, drinks at the restaurant and the burial chambers inside the pyramids are not included. Children have their own price. Bring your passport.',
+          description: 'The coach leaves Sharm el-Sheikh in the middle of the night and travels in convoy with a police escort, which is why the road takes between seven and nine hours each way. An Egyptologist guide is with the group for the day in Cairo.\n\nThe day itself is the Giza plateau, the Great Sphinx, and a museum: one option takes the Egyptian Museum of Antiquities on Tahrir Square, the other the Grand Egyptian Museum, and the entry tickets for whichever you choose are in the price along with the pyramids and the Sphinx. Lunch is at a restaurant looking out at the pyramids. A visa is needed to enter Cairo, published at 38 US dollars a person. Camel riding at the pyramids, drinks at the restaurant and the burial chambers inside the pyramids are not included. Children have their own price. Bring your passport.',
           highlights: [
             'The Giza pyramids and the Great Sphinx',
             'The Grand Egyptian Museum, or the one on Tahrir Square',
@@ -2118,7 +2132,7 @@ export const B03C: NetworkBatch = {
           price: PROGRAMMES.QSH_PRIVATE_QUAD,
           title: 'Private Quad Ride, Morning or Late Afternoon',
           short: 'Forty kilometres of desert at your own pace with your own guide, a Bedouin village, a camel ride and Bedouin tea, from Hurghada hotels.',
-          description: 'A private ride with a guide of your own, so the pace and the stops are yours. Four starts are published: eight or nine in the morning, or one or two in the afternoon for the light at the end of the day.\n\nThe ride covers about forty kilometres of desert, with the instruction and the practice session first and a helmet provided. It calls at a Bedouin village, where there is a camel ride, Bedouin tea and time with the people who live there, and bottled water is carried for the group. Round-trip transfers are included from hotels inside Hurghada; the published record charges for transfers from the resorts further along the coast, which this site does not sell. A government fee of one euro a person is charged separately, and goggles and a scarf are not included. Children have their own price, and children aged six to fifteen may ride as passengers but not drive.',
+          description: 'A private ride with a guide of your own, so the pace and the stops are yours. Four starts are published: eight or nine in the morning, or one or two in the afternoon for the light at the end of the day.\n\nThe ride covers about forty kilometres of desert, with the instruction and the practice session first and a helmet provided. It calls at a Bedouin village, where there is a camel ride, Bedouin tea and time with the people who live there, and bottled water is carried for the group. Round-trip transfers are included from hotels inside Hurghada; transfers from the resorts further along the coast cost extra and cannot be booked on this site. A government fee of one euro a person is charged separately, and goggles and a scarf are not included. Children have their own price, and children aged six to fifteen may ride as passengers but not drive.',
           highlights: [
             'Forty kilometres of desert with your own guide',
             'A Bedouin village, with tea and a camel ride',
@@ -2212,7 +2226,7 @@ export const B03D: NetworkBatch = {
           price: PROGRAMMES.SSS_SUNRISE_SUNSET,
           title: 'Sunrise or Sunset Ride, by Quad or by Buggy',
           short: 'Three hours timed for the low light at either end of the day, with a driving lesson first, an echo point stop and Bedouin tea at a desert tent.',
-          description: 'Two departures are published: half past four in the morning for the sunrise, and four in the afternoon for the sunset. Either way the published trip runs about three hours, including the transfers both ways in an air-conditioned vehicle.\n\nProfessional desert guides run the safety briefing and a training session for anyone who has not driven one before, and helmets and goggles are provided. The ride takes in the desert around Sharm el-Sheikh, with a stop at the echo point and free time for photographs, and tea at a traditional desert tent. You choose a quad or a buggy of your own; the published record also sells the ride for two, three or four riders sharing a vehicle, and a camel ride as a paid extra, neither of which this site sells. Children have their own price.',
+          description: 'Two departures are published: half past four in the morning for the sunrise, and four in the afternoon for the sunset. Either way the published trip runs about three hours, including the transfers both ways in an air-conditioned vehicle.\n\nProfessional desert guides run the safety briefing and a training session for anyone who has not driven one before, and helmets and goggles are provided. The ride takes in the desert around Sharm el-Sheikh, with a stop at the echo point and free time for photographs, and tea at a traditional desert tent. You choose a quad or a buggy of your own; the ride is also sold for two, three or four riders sharing a vehicle, and a camel ride as a paid extra, and neither can be booked on this site. Children have their own price.',
           highlights: [
             'A start timed for the sunrise or the sunset',
             'A quad or a buggy of your own',
@@ -2231,7 +2245,7 @@ export const B03D: NetworkBatch = {
           price: PROGRAMMES.SSS_SUPER_SAFARI,
           title: 'Afternoon Safari with a Barbecue, a Show and a Telescope',
           short: 'A quad or buggy of your own, a Bedouin tent for tea and bread, a camel ride at the camp, a barbecue buffet and an astronomer with a telescope.',
-          description: 'The pickup is in the afternoon. The safari centre comes first, with a welcome drink, the safety briefing and the driving instructions, and then the desert ride: about twenty-five minutes out, a stop at a Bedouin tent for tea and traditional bread, an open stretch for the echo, and the ride back.\n\nThe evening moves to the Bedouin camp. There is a camel ride, an open-buffet barbecue dinner with water and soft drinks, and oriental entertainment. At the end the camp lights go off and a telescope comes out, with an astronomer to show you what is up there. One departure is published, at half past three. The published price is the same for adults and children, and the record also sells the afternoon for riders sharing a vehicle, which this site does not sell.',
+          description: 'The pickup is in the afternoon. The safari centre comes first, with a welcome drink, the safety briefing and the driving instructions, and then the desert ride: about twenty-five minutes out, a stop at a Bedouin tent for tea and traditional bread, an open stretch for the echo, and the ride back.\n\nThe evening moves to the Bedouin camp. There is a camel ride, an open-buffet barbecue dinner with water and soft drinks, and oriental entertainment. At the end the camp lights go off and a telescope comes out, with an astronomer to show you what is up there. One departure is published, at half past three. The published price is the same for adults and children, and the afternoon is also sold for riders sharing a vehicle, which cannot be booked on this site.',
           highlights: [
             'A quad or a buggy of your own',
             'Bedouin tea and bread at a desert tent',
