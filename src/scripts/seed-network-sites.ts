@@ -528,6 +528,9 @@ async function loadBatch(id: string | null): Promise<NetworkBatch> {
     b01: async () => (await import('./network-sites/b01-safari')).B01_SAFARI,
     b02: async () => (await import('./network-sites/b02')).B02,
     b03a: async () => (await import('./network-sites/b03')).B03A,
+    b03b: async () => (await import('./network-sites/b03-rest')).B03B,
+    b03c: async () => (await import('./network-sites/b03-rest')).B03C,
+    b03d: async () => (await import('./network-sites/b03-rest')).B03D,
   };
   if (!id || !batches[id]) throw new Error(`Pass --batch=<${Object.keys(batches).join('|')}>.`);
   return batches[id]();

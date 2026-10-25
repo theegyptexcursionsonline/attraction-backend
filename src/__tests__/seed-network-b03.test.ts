@@ -36,7 +36,8 @@ describe('batch B03 group 1: the three Giza domains', () => {
 
   it('adds the nine programmes it sells to the snapshot and leaves the twelve of B02 where they were', () => {
     const slugs = SNAPSHOT.tours.map((tour) => tour.slug);
-    expect(slugs).toHaveLength(21);
+    // Every batch appends; the twenty-one read by B02 and this one stay at the front, in their order.
+    expect(slugs.length).toBeGreaterThanOrEqual(21);
     // B02 read its twelve first; they keep their place and their order.
     expect(slugs.slice(0, 12)).toEqual([
       'sharm-ras-mohamed-white-island-snorkeling-adventure-with-lunch',
@@ -54,9 +55,9 @@ describe('batch B03 group 1: the three Giza domains', () => {
     ]);
     const sold = new Set(B03A.sites.flatMap((site) => site.trips.map((trip) => trip.price.source)));
     expect(sold.size).toBe(9);
-    for (const source of sold) expect(slugs.slice(12)).toContain(source);
+    expect([...sold].sort()).toEqual([...slugs.slice(12, 21)].sort());
     // A programme added later carries the date it was read, so the batch date is never implied for it.
-    for (const tour of SNAPSHOT.tours.slice(12)) expect(tour.readAt).toMatch(/^2026-10-25T/);
+    for (const tour of SNAPSHOT.tours.slice(12, 21)) expect(tour.readAt).toMatch(/^2026-10-25T/);
   });
 
   it('builds every trip from the dated snapshot into a complete trip', () => {
