@@ -34,14 +34,14 @@ const CHILD_NOTE = 'Children have their own price, and the booking applies it. T
 /** Said where some options sold price children separately and others do not. */
 const MIXED_CHILD_NOTE = 'Children have their own price on the options that publish one; on the others they pay the adult price. The team confirms which ages count as children when it confirms your booking.';
 /** Said where the published price is one price for everyone. */
-const SAME_PRICE_NOTE = 'The published price is the same for adults and for children.';
+const SAME_PRICE_NOTE = 'Children pay the same price as adults.';
 
 const PICKUP_CAIRO = 'Hotel pickup and drop-off in Cairo or Giza';
 const PICKUP_SHARM = 'Pickup and drop-off at your hotel in Sharm el-Sheikh';
 const PICKUP_HURGHADA = 'Pickup and drop-off at your hotel in Hurghada';
 
 /** The line every Valley of the Nobles trip carries, because no published day walks through those tombs. */
-const NOT_THE_NOBLES = 'The published day does not include the Tombs of the Nobles. If you want to walk through those tombs, ask the team before you book.';
+const NOT_THE_NOBLES = 'This day does not include the Tombs of the Nobles. If you want to walk through those tombs, ask the team before you book.';
 
 const PROGRAMMES: Record<string, PriceSpec> = {
   // ---- Temple of Karnak ------------------------------------------------------------------------------------
@@ -109,7 +109,7 @@ const PROGRAMMES: Record<string, PriceSpec> = {
     },
     childNote: CHILD_NOTE,
     add: {
-      needToKnow: ['Start times are published through the day. The sail is timed for sunset and the show runs after dark, so the team confirms your pickup time when it confirms your booking.'],
+      needToKnow: ['Start times run through the day. The sail is timed for sunset and the show runs after dark, so the team confirms your pickup time when it confirms your booking.'],
     },
     // The programme's own schedule is four lines of transport ("Car: transport", "Luxor: Sightseeing").
     itinerary: [
@@ -502,7 +502,7 @@ const PROGRAMMES: Record<string, PriceSpec> = {
     add: {
       exclusions: ['The national park entry fee', 'Snorkelling gear'],
       needToKnow: [
-        'The national park entry fee is published at ten euros a person and is paid on arrival. The team confirms how it is paid when it confirms your booking.',
+        'The national park entry fee is ten euros a person, paid on arrival. The team confirms how it is paid when it confirms your booking.',
         'Pickup is by shared bus from your hotel reception.',
       ],
     },
@@ -1488,7 +1488,7 @@ export const B03B: NetworkBatch = {
           price: PROGRAMMES.TOK_SOUND_AND_LIGHT,
           title: 'Sunset Felucca Sail and the Sound and Light Show at Karnak',
           short: 'An evening of about five hours: an hour on the Nile aboard a wooden felucca as the sun goes down, then the lit temple complex and the show after dark.',
-          description: 'A private car takes you from your hotel in Luxor down to the corniche, where a wooden felucca is waiting. The sail runs about an hour, past farmland and the waterfront, with the light going gold on the water.\n\nFrom the river the evening moves to Karnak for the sound and light show. The monuments are lit as you walk through the complex, and the story told is that of ancient Thebes and of Amun, Mut and Khonsu. The private transfers, the guide, the entry fees and bottled water are in the price; lunch is not. Start times are published through the day, and the team confirms your pickup when it confirms the booking. Children have their own price.',
+          description: 'A private car takes you from your hotel in Luxor down to the corniche, where a wooden felucca is waiting. The sail runs about an hour, past farmland and the waterfront, with the light going gold on the water.\n\nFrom the river the evening moves to Karnak for the sound and light show. The monuments are lit as you walk through the complex, and the story told is that of ancient Thebes and of Amun, Mut and Khonsu. The private transfers, the guide, the entry fees and bottled water are in the price; lunch is not. Start times run through the day, and the team confirms your pickup when it confirms the booking. Children have their own price.',
           highlights: [
             'An hour aboard a felucca at sunset',
             'The sound and light show inside Karnak',
@@ -1518,7 +1518,7 @@ export const B03B: NetworkBatch = {
       foreignPlaces: /Hurghada|Sharm|Dahab|Tiran|Ras Mohamed|Marsa Alam|Quseir|Ghalib|Safaga|Soma Bay|Makadi|Gouna|Sahl|Cairo|Giza|pyramid|Aswan|Alexandria|Fayoum|Siwa|Bahariya|Dendera|Edfu|Kom Ombo|Abydos|Abu Simbel/i,
       slugPrefix: 'von-',
       tagline: 'The Luxor West Bank, where the Tombs of the Nobles lie',
-      description: 'The Tombs of the Nobles were cut into the hillside at Sheikh Abd el-Qurna, on the Luxor West Bank, among the valleys that hold the royal tombs and below the terraces of the mortuary temples.\n\nNo trip published for Luxor at the moment goes inside them, and this site does not pretend otherwise. What it sells is the ground they stand in: a private day that walks the royal tombs, the Temple of Hatshepsut and the Colossi of Memnon before crossing to the East Bank; a balloon flight at first light over the same valleys; and a quad ride through the desert behind them. Three trips in all, and each page says plainly that the day does not include the tombs. If the tombs themselves are what you want, write to the team before you book and they will tell you what can be arranged.',
+      description: 'The Tombs of the Nobles were cut into the hillside at Sheikh Abd el-Qurna, on the Luxor West Bank, among the valleys that hold the royal tombs and below the terraces of the mortuary temples.\n\nNone of the Luxor trips on this site goes inside them at the moment. What it sells is the ground they stand in: a private day that walks the royal tombs, the Temple of Hatshepsut and the Colossi of Memnon before crossing to the East Bank; a balloon flight at first light over the same valleys; and a quad ride through the desert behind them. Three trips in all, and each page says plainly that the day does not include the tombs. If the tombs themselves are what you want, write to the team before you book and they will tell you what can be arranged.',
       seo: {
         metaTitle: 'Luxor West Bank Trips Near the Valley of the Nobles',
         metaDescription: 'The Luxor West Bank where the Tombs of the Nobles lie: a private day at the royal tombs and Hatshepsut, a sunrise balloon flight, or a desert quad ride.',
@@ -1539,8 +1539,8 @@ export const B03B: NetworkBatch = {
           path: 'royal-tombs-hatshepsut-and-the-east-bank',
           price: PROGRAMMES.VON_BOTH_BANKS,
           title: 'The Royal Tombs, Hatshepsut and the Colossi, with the East Bank After Lunch',
-          short: 'The published day that walks the West Bank: the Valley of the Kings, the Temple of Hatshepsut and the Colossi of Memnon, then a sail and the East Bank temples.',
-          description: 'This is the one published Luxor day that spends its morning among the monuments the Tombs of the Nobles were cut beside. A car collects you from your East Bank hotel at seven or at eight, crosses the river, and gives the first half of the day to the West Bank: the royal tombs in the Valley of the Kings, the terraces of the Temple of Hatshepsut below the cliffs, and the two seated Colossi of Memnon out on the flat. Lunch follows.\n\nThe afternoon crosses back. A felucca takes you out on the Nile with a drink, and the day closes in the East Bank temples, Karnak and Luxor Temple, with the guide. The entrance fees, the guide, the private driver, the felucca and lunch are in the price, and the published day runs eight hours. It does not include the Tombs of the Nobles themselves; ask the team before you book if that is what you are after. Children have their own price.',
+          short: 'A private day on the West Bank: the Valley of the Kings, the Temple of Hatshepsut and the Colossi of Memnon, then a sail and the East Bank temples.',
+          description: 'This is the Luxor day that spends its morning among the monuments the Tombs of the Nobles were cut beside. A car collects you from your East Bank hotel at seven or at eight, crosses the river, and gives the first half of the day to the West Bank: the royal tombs in the Valley of the Kings, the terraces of the Temple of Hatshepsut below the cliffs, and the two seated Colossi of Memnon out on the flat. Lunch follows.\n\nThe afternoon crosses back. A felucca takes you out on the Nile with a drink, and the day closes in the East Bank temples, Karnak and Luxor Temple, with the guide. The entrance fees, the guide, the private driver, the felucca and lunch are in the price, and the day runs eight hours. It does not include the Tombs of the Nobles themselves; ask the team before you book if that is what you are after. Children have their own price.',
           highlights: [
             'The Valley of the Kings with a guide',
             'The Temple of Hatshepsut below the cliffs',
@@ -1559,7 +1559,7 @@ export const B03B: NetworkBatch = {
           price: PROGRAMMES.VON_BALLOON,
           title: 'Sunrise Balloon Flight Over the Luxor West Bank',
           short: 'A flight at first light over the burial valleys, the cliffside temples, the villages and the river, with transfers from your hotel or cruise boat.',
-          description: 'The transfer leaves before dawn for the launch site, where you meet the crew and watch the balloon fill. The basket lifts as the first light reaches the West Bank, and the flight drifts over the burial valleys and the terraced temples below the cliffs, over farmland, villages and the Nile with its boats.\n\nThe time in the air averages about 45 minutes, and runs between 40 and 90 minutes depending on the weather. The flight and the transfers both ways are in the price; food and drinks are not. Flights run only in weather the operator judges safe, children must be at least six and with a responsible adult, and a scanned copy of your passport is needed to confirm the booking. The published day does not include the Tombs of the Nobles.',
+          description: 'The transfer leaves before dawn for the launch site, where you meet the crew and watch the balloon fill. The basket lifts as the first light reaches the West Bank, and the flight drifts over the burial valleys and the terraced temples below the cliffs, over farmland, villages and the Nile with its boats.\n\nThe time in the air averages about 45 minutes, and runs between 40 and 90 minutes depending on the weather. The flight and the transfers both ways are in the price; food and drinks are not. Flights run only in weather the operator judges safe, children must be at least six and with a responsible adult, and a scanned copy of your passport is needed to confirm the booking. This trip does not include the Tombs of the Nobles.',
           highlights: [
             'The burial valleys and temples seen from the air',
             'A start before dawn, for the first light',
@@ -1578,7 +1578,7 @@ export const B03B: NetworkBatch = {
           price: PROGRAMMES.VON_QUAD,
           title: 'Quad Ride in the Desert Behind the Luxor West Bank',
           short: 'Two hours with an hour of riding: the crossing by motorboat, the drive past villages and fields, then Wadi Ziad and the foot of the West Bank mountains.',
-          description: 'A minivan collects you from your hotel or Nile cruise and the river is crossed by motorboat, with the drive on the far side running past villages and farmland to the quad base. The briefing and the equipment check come first, and a local English-speaking guide stays with the group.\n\nThe riding is about an hour, across the open ground of Wadi Ziad and along the foot of the mountain range that stands behind the West Bank. Water, the shared transfers, the minivan and the crossing are in the price. The published day does not include the Tombs of the Nobles, which lie in the hillside on the other side of that range; ask the team before you book if you want to see them. A copy of your passport is needed two days ahead.',
+          description: 'A minivan collects you from your hotel or Nile cruise and the river is crossed by motorboat, with the drive on the far side running past villages and farmland to the quad base. The briefing and the equipment check come first, and a local English-speaking guide stays with the group.\n\nThe riding is about an hour, across the open ground of Wadi Ziad and along the foot of the mountain range that stands behind the West Bank. Water, the shared transfers, the minivan and the crossing are in the price. This trip does not include the Tombs of the Nobles, which lie in the hillside on the other side of that range; ask the team before you book if you want to see them. A copy of your passport is needed two days ahead.',
           highlights: [
             'An hour of riding in the West Bank desert',
             'Wadi Ziad and the mountain range behind it',
@@ -1629,7 +1629,7 @@ export const B03B: NetworkBatch = {
           price: PROGRAMMES.WWH_DAY,
           title: 'Wadi Al Hitan, the Valley of the Whales, in a Day',
           short: 'A full day from Cairo or Giza to the whale fossils, with the Wadi El Rayan waterfalls, a 4x4 drive over the sand, the Magic Lake, Lake Qarun and Tunis Village.',
-          description: 'Pickup is at seven from your hotel in Cairo or Giza, and the drive out takes about two hours in a private air-conditioned vehicle. Wadi Al Hitan is the reason for the day: fossil whale skeletons lying in the sand where they were found, at a site on the UNESCO World Heritage list.\n\nThe rest of the day is the desert and the lakes around it. The waterfalls at Wadi El Rayan fall between the two lakes; a 4x4 takes you across the sand, with sandboarding on the dunes and a stop at the Magic Lake; and Lake Qarun and the pottery village of Tunis sit above the water. Entry fees, the jeep safari, lunch, bottled water and all the transfers are in the price; tips are not. The published day is about eight hours, and children have their own price.',
+          description: 'Pickup is at seven from your hotel in Cairo or Giza, and the drive out takes about two hours in a private air-conditioned vehicle. Wadi Al Hitan is the reason for the day: fossil whale skeletons lying in the sand where they were found, at a site on the UNESCO World Heritage list.\n\nThe rest of the day is the desert and the lakes around it. The waterfalls at Wadi El Rayan fall between the two lakes; a 4x4 takes you across the sand, with sandboarding on the dunes and a stop at the Magic Lake; and Lake Qarun and the pottery village of Tunis sit above the water. Entry fees, the jeep safari, lunch, bottled water and all the transfers are in the price; tips are not. The day is about eight hours, and children have their own price.',
           highlights: [
             'Fossil whale skeletons in the open desert',
             'The waterfalls of Wadi El Rayan',
@@ -1664,10 +1664,10 @@ export const B03C: NetworkBatch = {
       slugPrefix: 'pct-',
       foreignPlaces: /Hurghada|Sharm|Dahab|Tiran|Ras Mohamed|Marsa Alam|Quseir|Ghalib|Safaga|Soma Bay|Makadi|Gouna|Sahl|Luxor|Aswan|Alexandria|Siwa|Bahariya|Fayoum|Saqqara|Sakkara|Memphis|Dahshur|Citadel|Khan el-Khalili/i,
       tagline: 'Giza days with the camel ride in the price',
-      description: 'Plenty of trips to the Giza plateau offer a camel ride at the gate for extra money. This site sells only the days where the ride is part of the published price, so nothing has to be paid for at the sand.\n\nThree are on offer. Two are the same sunrise or morning programme, one shared and one private, with an hour on a camel or a horse, breakfast and two guided hours among the pyramids. The third is a private day with its own camel ride around the plateau, the entrance fees and lunch at a local restaurant. Every one is collected from your hotel in Cairo or Giza and carries the entry ticket for the pyramids complex. Hold a place online and pay later.',
+      description: 'Plenty of trips to the Giza plateau offer a camel ride at the gate for extra money. This site sells only the days where the ride is already in the price, so there is nothing more to pay at the sand.\n\nThree are on offer. Two are the same sunrise or morning programme, one shared and one private, with an hour on a camel or a horse, breakfast and two guided hours among the pyramids. The third is a private day with its own camel ride around the plateau, the entrance fees and lunch at a local restaurant. Every one is collected from your hotel in Cairo or Giza and carries the entry ticket for the pyramids complex. Hold a place online and pay later.',
       seo: {
         metaTitle: 'Giza Pyramids Tours with the Camel Ride Included',
-        metaDescription: 'Giza day trips where the camel ride is in the published price: a sunrise or morning ride with breakfast, shared or private, and a private day with lunch.',
+        metaDescription: 'Giza day trips with the camel ride already in the price: a sunrise or morning ride with breakfast, shared or private, and a private day with lunch.',
         keywords: [
           'pyramids camel tour',
           'giza camel ride included',
@@ -1686,7 +1686,7 @@ export const B03C: NetworkBatch = {
           price: PROGRAMMES.PCT_SHARED_SUNRISE,
           title: 'Shared Camel Ride at the Pyramids with Breakfast',
           short: 'Five hours in a shared group: an hour on a camel or a horse beside the plateau, an Egyptian breakfast and two guided hours among the pyramids.',
-          description: 'Two starts are published, half past four in the morning for the hour when the sun comes up behind the plateau, and eight o’clock for a later morning. Either way the published day runs five hours.\n\nThe hour in the saddle opens it, on a camel or a horse on the sand beside the plateau, and a traditional Egyptian breakfast follows. A guide then takes the group through the pyramids complex and the Sphinx for two hours, with the entry ticket in the price. The air-conditioned transport and the pickup from your hotel in Cairo or Giza are included. The vehicle and the guide are shared with other guests, and the published price is the same for adults and children.',
+          description: 'There are two starts, half past four in the morning for the hour when the sun comes up behind the plateau, and eight o’clock for a later morning. Either way the day runs five hours.\n\nThe hour in the saddle opens it, on a camel or a horse on the sand beside the plateau, and a traditional Egyptian breakfast follows. A guide then takes the group through the pyramids complex and the Sphinx for two hours, with the entry ticket in the price. The air-conditioned transport and the pickup from your hotel in Cairo or Giza are included. The vehicle and the guide are shared with other guests, and children pay the same price as adults.',
           highlights: [
             'An hour on a camel or a horse',
             'A start at sunrise or later in the morning',
@@ -1705,7 +1705,7 @@ export const B03C: NetworkBatch = {
           price: PROGRAMMES.PCT_PRIVATE_SUNRISE,
           title: 'Private Camel Ride at the Pyramids with Breakfast',
           short: 'The same five hours with the vehicle and the guide for your group alone, and an afternoon start as well as the sunrise and morning ones.',
-          description: 'This is the private way to take the same programme: an hour on a camel or a horse on the sand beside the plateau, a traditional Egyptian breakfast, and two guided hours in the pyramids complex and at the Sphinx. The entry ticket for the complex is in the price.\n\nThree starts are published, half past four, eight o’clock and one in the afternoon. The vehicle is air-conditioned and yours alone, the guide is an English-speaking Egyptologist, and pickup and drop-off are at your hotel in Cairo or Giza. Children have their own price, and the booking applies it.',
+          description: 'This is the private way to take the same programme: an hour on a camel or a horse on the sand beside the plateau, a traditional Egyptian breakfast, and two guided hours in the pyramids complex and at the Sphinx. The entry ticket for the complex is in the price.\n\nThere are three starts: half past four, eight o’clock and one in the afternoon. The vehicle is air-conditioned and yours alone, the guide is an English-speaking Egyptologist, and pickup and drop-off are at your hotel in Cairo or Giza. Children have their own price, and the booking applies it.',
           highlights: [
             'The vehicle and the guide for your group alone',
             'An hour on a camel or a horse',
@@ -1724,7 +1724,7 @@ export const B03C: NetworkBatch = {
           price: PROGRAMMES.PCT_CAMEL_LUNCH,
           title: 'Private Pyramids Day with a Camel Ride Around the Plateau and Lunch',
           short: 'Four hours with your own guide and car: the pyramids and the Sphinx, a camel ride around the plateau, lunch at a local restaurant and the entrance fees.',
-          description: 'The camel ride on this day is around the plateau itself, and it is in the price. The rest of it is private: your own English-speaking guide, your own vehicle, and a start you pick from a quarter-hourly list running from eight in the morning to a quarter to one. The published day is four hours.\n\nThe guided walk takes in the pyramids and the Sphinx with the entrance fees covered, the camel ride goes round the plateau, and lunch is at a local restaurant. Pickup and drop-off are at your hotel in Cairo or Giza. Pickup from further out is a paid extra and cannot be booked on this site, so ask the team before you book if your hotel is outside the city centre. Children have their own price.',
+          description: 'The camel ride on this day is around the plateau itself, and it is in the price. The rest of it is private: your own English-speaking guide, your own vehicle, and a start you pick from a quarter-hourly list running from eight in the morning to a quarter to one. The day is four hours.\n\nThe guided walk takes in the pyramids and the Sphinx with the entrance fees covered, the camel ride goes round the plateau, and lunch is at a local restaurant. Pickup and drop-off are at your hotel in Cairo or Giza. Pickup from further out is a paid extra and cannot be booked on this site, so ask the team before you book if your hotel is outside the city centre. Children have their own price.',
           highlights: [
             'A camel ride around the Giza plateau',
             'Your own guide and vehicle',
@@ -1852,7 +1852,7 @@ export const B03C: NetworkBatch = {
           price: PROGRAMMES.STG_SINAI_QUAD,
           title: 'Sinai Desert Quad Ride with Bedouin Tea',
           short: 'Two hours with an hour on a quad of your own, a guide riding with the group and a stop in a Bedouin village for tea.',
-          description: 'A private air-conditioned bus takes you out of Sharm el-Sheikh to the quad base, where the bikes are handed over and the briefing is given. A professional guide rides with the group the whole way.\n\nThe riding is about an hour across open desert, with the Sinai mountains on every side, and it breaks for tea at a Bedouin village, where the hosts talk about living out here. Four start times are published, from four in the morning to a quarter past two. The transfers, the quad ticket, the guide and the tea are in the price; tips are not. A copy of your passport is needed two days ahead. Children have their own price.',
+          description: 'A private air-conditioned bus takes you out of Sharm el-Sheikh to the quad base, where the bikes are handed over and the briefing is given. A professional guide rides with the group the whole way.\n\nThe riding is about an hour across open desert, with the Sinai mountains on every side, and it breaks for tea at a Bedouin village, where the hosts talk about living out here. There are four start times, from four in the morning to a quarter past two. The transfers, the quad ticket, the guide and the tea are in the price; tips are not. A copy of your passport is needed two days ahead. Children have their own price.',
           highlights: [
             'An hour on a quad of your own',
             'A guide riding with the group',
@@ -1871,7 +1871,7 @@ export const B03C: NetworkBatch = {
           price: PROGRAMMES.STG_SUPER_SAFARI,
           title: 'Desert Afternoon with a Camel Ride, a Barbecue and Stargazing',
           short: 'An afternoon and evening in the Sinai: a quad or buggy of your own, a camel ride at the Bedouin camp, a barbecue buffet and a telescope after dark.',
-          description: 'The pickup is in the afternoon, in an air-conditioned vehicle, and the day begins at the safari centre with a welcome drink, a safety briefing and the driving instructions. The desert ride runs about twenty-five minutes out, with a stop at a Bedouin tent for tea and bread and a stop in the open desert, then back to the centre.\n\nFrom there the evening moves to the Bedouin camp for a camel ride, a barbecue buffet with water and soft drinks, and the entertainment the camp puts on. It finishes with the camp lights off and a telescope out, with an astronomer to point things out. You choose a quad or a buggy of your own; the afternoon is also sold for two, three or four riders sharing a vehicle, which cannot be booked on this site. The published price is the same for adults and children.',
+          description: 'The pickup is in the afternoon, in an air-conditioned vehicle, and the day begins at the safari centre with a welcome drink, a safety briefing and the driving instructions. The desert ride runs about twenty-five minutes out, with a stop at a Bedouin tent for tea and bread and a stop in the open desert, then back to the centre.\n\nFrom there the evening moves to the Bedouin camp for a camel ride, a barbecue buffet with water and soft drinks, and the entertainment the camp puts on. It finishes with the camp lights off and a telescope out, with an astronomer to point things out. You choose a quad or a buggy of your own; the afternoon is also sold for two, three or four riders sharing a vehicle, which cannot be booked on this site. Children pay the same price as adults.',
           highlights: [
             'A quad or a buggy of your own',
             'A camel ride at the Bedouin camp',
@@ -1890,7 +1890,7 @@ export const B03C: NetworkBatch = {
           price: PROGRAMMES.STG_HORSE,
           title: 'Horse Ride on the Desert and into the Red Sea',
           short: 'Two hours in the saddle with an instructor: out across the desert behind the town, then along the beach, with the chance to ride into the water.',
-          description: 'A transfer takes you from your hotel to the stables, and an experienced instructor stays with you for the whole ride. The route goes out across the open ground behind Sharm el-Sheikh and then down to the shore.\n\nThe last part is along the beach, and you can take the horse into the Red Sea itself. The horse, the instructor, the helmet and the transfers both ways are in the price; food and drinks are not. Three starts are published: five in the morning, a quarter past eight and a quarter past three. Children have their own price. Bring shoes or boots you do not mind getting wet.',
+          description: 'A transfer takes you from your hotel to the stables, and an experienced instructor stays with you for the whole ride. The route goes out across the open ground behind Sharm el-Sheikh and then down to the shore.\n\nThe last part is along the beach, and you can take the horse into the Red Sea itself. The horse, the instructor, the helmet and the transfers both ways are in the price; food and drinks are not. There are three starts: five in the morning, a quarter past eight and a quarter past three. Children have their own price. Bring shoes or boots you do not mind getting wet.',
           highlights: [
             'Two hours in the saddle with an instructor',
             'The desert behind the town, then the beach',
@@ -1909,7 +1909,7 @@ export const B03C: NetworkBatch = {
           price: PROGRAMMES.STG_DAHAB_BLUE_HOLE,
           title: 'Dahab and the Blue Hole, with Snorkelling and Lunch',
           short: 'A nine-hour day up the coast: snorkelling at the Blue Hole or along the shore, a camel ride, a canyon stop, time in Dahab and lunch at a local restaurant.',
-          description: 'An air-conditioned vehicle collects you from your hotel at eight for the drive north, about an hour each way, with a guide and a snorkelling guide for the day.\n\nTwo ways to take it are published. One includes the entry to the Blue Hole and a snorkelling stop there; the other stays on the shore and snorkels from the beach. Both take in a camel ride, a canyon stop, time in the town of Dahab and lunch at a local restaurant, with bottled water through the day. Snorkelling equipment is not included. Life jackets are available on request, and the trip is not suitable for pregnant women. Children have their own price, and the booking applies it.',
+          description: 'An air-conditioned vehicle collects you from your hotel at eight for the drive north, about an hour each way, with a guide and a snorkelling guide for the day.\n\nThere are two ways to take it. One includes the entry to the Blue Hole and a snorkelling stop there; the other stays on the shore and snorkels from the beach. Both take in a camel ride, a canyon stop, time in the town of Dahab and lunch at a local restaurant, with bottled water through the day. Snorkelling equipment is not included. Life jackets are available on request, and the trip is not suitable for pregnant women. Children have their own price, and the booking applies it.',
           highlights: [
             'Snorkelling at the Blue Hole or along the shore',
             'A camel ride and a canyon stop',
@@ -1966,7 +1966,7 @@ export const B03C: NetworkBatch = {
           price: PROGRAMMES.STG_MOUNT_SINAI,
           title: 'Mount Sinai at Sunrise, with Saint Catherine’s Monastery',
           short: 'An overnight climb with a Bedouin guide to be on the summit for the sunrise, then the monastery below it before the drive back.',
-          description: 'The bus leaves Sharm el-Sheikh in the evening and the drive across Sinai takes about two and a half hours. The climb starts in the small hours, on foot and in the dark, with a Bedouin guide; the walk up is around two hours and the summit is reached in time for the sun.\n\nThe descent begins once it is up, and the morning finishes at Saint Catherine’s Monastery, one of the oldest Christian monasteries in the world, with time to look around it. The transfers, the Bedouin guide and the entry to the Saint Catherine protected area are in the price; tips, extras and personal spending are not. A copy of your passport is needed two days ahead. The published day is about fifteen hours, and children have their own price.',
+          description: 'The bus leaves Sharm el-Sheikh in the evening and the drive across Sinai takes about two and a half hours. The climb starts in the small hours, on foot and in the dark, with a Bedouin guide; the walk up is around two hours and the summit is reached in time for the sun.\n\nThe descent begins once it is up, and the morning finishes at Saint Catherine’s Monastery, one of the oldest Christian monasteries in the world, with time to look around it. The transfers, the Bedouin guide and the entry to the Saint Catherine protected area are in the price; tips, extras and personal spending are not. A copy of your passport is needed two days ahead. The day is about fifteen hours, and children have their own price.',
           highlights: [
             'The summit in time for the sunrise',
             'A Bedouin guide on the mountain',
@@ -2004,7 +2004,7 @@ export const B03C: NetworkBatch = {
           price: PROGRAMMES.STG_CAIRO,
           title: 'Cairo and the Pyramids in a Day, by Road',
           short: 'A day trip by coach with an Egyptologist guide: the Giza pyramids and the Sphinx, a museum of your choosing and lunch with the pyramids in view.',
-          description: 'The coach leaves Sharm el-Sheikh in the middle of the night and travels in convoy with a police escort, which is why the road takes between seven and nine hours each way. An Egyptologist guide is with the group for the day in Cairo.\n\nThe day itself is the Giza plateau, the Great Sphinx, and a museum: one option takes the Egyptian Museum of Antiquities on Tahrir Square, the other the Grand Egyptian Museum, and the entry tickets for whichever you choose are in the price along with the pyramids and the Sphinx. Lunch is at a restaurant looking out at the pyramids. A visa is needed to enter Cairo, published at 38 US dollars a person. Camel riding at the pyramids, drinks at the restaurant and the burial chambers inside the pyramids are not included. Children have their own price. Bring your passport.',
+          description: 'The coach leaves Sharm el-Sheikh in the middle of the night and travels in convoy with a police escort, which is why the road takes between seven and nine hours each way. An Egyptologist guide is with the group for the day in Cairo.\n\nThe day itself is the Giza plateau, the Great Sphinx, and a museum: one option takes the Egyptian Museum of Antiquities on Tahrir Square, the other the Grand Egyptian Museum, and the entry tickets for whichever you choose are in the price along with the pyramids and the Sphinx. Lunch is at a restaurant looking out at the pyramids. A visa is needed to enter Cairo, at 38 US dollars a person. Camel riding at the pyramids, drinks at the restaurant and the burial chambers inside the pyramids are not included. Children have their own price. Bring your passport.',
           highlights: [
             'The Giza pyramids and the Great Sphinx',
             'The Grand Egyptian Museum, or the one on Tahrir Square',
@@ -2056,7 +2056,7 @@ export const B03C: NetworkBatch = {
           price: PROGRAMMES.QSH_BUGGY_DAY,
           title: 'Two Hours by Dune Buggy, with a Camel Ride',
           short: 'A guided ride over the dunes in a small group, with a short camel ride after it, and a swim at the Blue Lagoon or a private vehicle if you want them.',
-          description: 'A transfer takes you from your hotel out to the desert, where the buggy is handed over and the guide takes the group through the safety instructions. The ride is about two hours across the golden sand, with the guide leading.\n\nAfterwards there is a short camel ride, long enough for photographs. Three ways to take the day are published: the ride as it stands, the same ride with a stop to swim at the Blue Lagoon and time on the shore, or a private version with the guide and the pickup for your group alone. Four starts are published, from six in the morning to midday. Hotel pickup and drop-off are in every one. Children have their own price.',
+          description: 'A transfer takes you from your hotel out to the desert, where the buggy is handed over and the guide takes the group through the safety instructions. The ride is about two hours across the golden sand, with the guide leading.\n\nAfterwards there is a short camel ride, long enough for photographs. There are three ways to take the day: the ride as it stands, the same ride with a stop to swim at the Blue Lagoon and time on the shore, or a private version with the guide and the pickup for your group alone. There are four starts, from six in the morning to midday. Hotel pickup and drop-off are in every one. Children have their own price.',
           highlights: [
             'Two hours over the dunes by buggy',
             'A short camel ride afterwards',
@@ -2075,7 +2075,7 @@ export const B03C: NetworkBatch = {
           price: PROGRAMMES.QSH_BUGGY_SUNSET,
           title: 'Sunset Buggy Ride with a Desert Barbecue and Stargazing',
           short: 'The same dunes in the late afternoon, with a short camel ride, dinner cooked out on the sand and time under the stars afterwards.',
-          description: 'The transfer leaves your hotel in the late afternoon and the ride runs about two hours, with the light dropping over the sand as you go. A guide rides with the group throughout.\n\nA short camel ride follows, and then the evening settles: a barbecue out in the desert, and time under the sky once the light has gone. Hotel pickup and drop-off are included. One departure is published, at four in the afternoon. Children have their own price, and the booking applies it.',
+          description: 'The transfer leaves your hotel in the late afternoon and the ride runs about two hours, with the light dropping over the sand as you go. A guide rides with the group throughout.\n\nA short camel ride follows, and then the evening settles: a barbecue out in the desert, and time under the sky once the light has gone. Hotel pickup and drop-off are included. There is one departure, at four in the afternoon. Children have their own price, and the booking applies it.',
           highlights: [
             'Two hours over the dunes as the light drops',
             'A short camel ride',
@@ -2094,7 +2094,7 @@ export const B03C: NetworkBatch = {
           price: PROGRAMMES.QSH_TWO_HOUR_QUAD,
           title: 'Two-Hour Quad Ride Across the Dunes',
           short: 'A shared ride over open plains and sandy dunes with a guide, stops for photographs, a short camel ride, and pickup from Hurghada, Sahl Hasheesh or Makadi Bay.',
-          description: 'The transfer collects you in an air-conditioned vehicle and runs out to the quad base, where the helmet is handed over, the safety instructions are given and a short driving test is taken before the ride.\n\nThe ride itself is two hours, crossing open plains and sandy dunes with a guide, with stops for photographs and for the views towards the Red Sea. A five-minute camel ride is part of it. Five starts are published, from four in the morning to two in the afternoon. The published price is the same for adults and children. Drivers must be at least sixteen. A scarf and goggles are not included.',
+          description: 'The transfer collects you in an air-conditioned vehicle and runs out to the quad base, where the helmet is handed over, the safety instructions are given and a short driving test is taken before the ride.\n\nThe ride itself is two hours, crossing open plains and sandy dunes with a guide, with stops for photographs and for the views towards the Red Sea. A five-minute camel ride is part of it. There are five starts, from four in the morning to two in the afternoon. Children pay the same price as adults. Drivers must be at least sixteen. A scarf and goggles are not included.',
           highlights: [
             'Two hours across plains and dunes',
             'An Egyptologist guide with the group',
@@ -2113,7 +2113,7 @@ export const B03C: NetworkBatch = {
           price: PROGRAMMES.QSH_EVENING_QUAD,
           title: 'Evening Quad Ride with Dinner, a Show and Stargazing',
           short: 'Ninety minutes on the quad with a desert escort, half an hour on a camel around sunset, then an Oriental dinner, live entertainment and the night sky.',
-          description: 'The transfer leaves in the late afternoon in an air-conditioned vehicle. At the base there is a safety briefing, a short driving test and the helmet, and a professional guide and a desert escort ride with the group.\n\nThe quad leg is ninety minutes across the sand, with stops for photographs. Half an hour on a camel follows, timed for the sun going down, and the evening ends at the camp with an Oriental dinner, a live show and stargazing. One departure is published, at four in the afternoon. The published price is the same for adults and children, drivers must be at least sixteen, and camera footage of your ride is not included.',
+          description: 'The transfer leaves in the late afternoon in an air-conditioned vehicle. At the base there is a safety briefing, a short driving test and the helmet, and a professional guide and a desert escort ride with the group.\n\nThe quad leg is ninety minutes across the sand, with stops for photographs. Half an hour on a camel follows, timed for the sun going down, and the evening ends at the camp with an Oriental dinner, a live show and stargazing. There is one departure, at four in the afternoon. Children pay the same price as adults, drivers must be at least sixteen, and camera footage of your ride is not included.',
           highlights: [
             'Ninety minutes on a quad with an escort',
             'Half an hour on a camel at sunset',
@@ -2132,7 +2132,7 @@ export const B03C: NetworkBatch = {
           price: PROGRAMMES.QSH_PRIVATE_QUAD,
           title: 'Private Quad Ride, Morning or Late Afternoon',
           short: 'Forty kilometres of desert at your own pace with your own guide, a Bedouin village, a camel ride and Bedouin tea, from Hurghada hotels.',
-          description: 'A private ride with a guide of your own, so the pace and the stops are yours. Four starts are published: eight or nine in the morning, or one or two in the afternoon for the light at the end of the day.\n\nThe ride covers about forty kilometres of desert, with the instruction and the practice session first and a helmet provided. It calls at a Bedouin village, where there is a camel ride, Bedouin tea and time with the people who live there, and bottled water is carried for the group. Round-trip transfers are included from hotels inside Hurghada; transfers from the resorts further along the coast cost extra and cannot be booked on this site. A government fee of one euro a person is charged separately, and goggles and a scarf are not included. Children have their own price, and children aged six to fifteen may ride as passengers but not drive.',
+          description: 'A private ride with a guide of your own, so the pace and the stops are yours. There are four starts: eight or nine in the morning, or one or two in the afternoon for the light at the end of the day.\n\nThe ride covers about forty kilometres of desert, with the instruction and the practice session first and a helmet provided. It calls at a Bedouin village, where there is a camel ride, Bedouin tea and time with the people who live there, and bottled water is carried for the group. Round-trip transfers are included from hotels inside Hurghada; transfers from the resorts further along the coast cost extra and cannot be booked on this site. A government fee of one euro a person is charged separately, and goggles and a scarf are not included. Children have their own price, and children aged six to fifteen may ride as passengers but not drive.',
           highlights: [
             'Forty kilometres of desert with your own guide',
             'A Bedouin village, with tea and a camel ride',
@@ -2207,7 +2207,7 @@ export const B03D: NetworkBatch = {
           price: PROGRAMMES.SSS_QUAD_TEA,
           title: 'Two-Hour Quad Safari with a Bedouin Tea Stop',
           short: 'A quad of your own for an hour of riding in the open Sinai, a guide with the group and tea at a Bedouin village in the middle of it.',
-          description: 'A private air-conditioned bus takes you out of Sharm el-Sheikh to the quad base, where the bike is handed over and the briefing given. The riding is about an hour across open ground, with the Sinai mountains on every side.\n\nHalf way through, the ride stops at a Bedouin village for tea and for what the hosts tell you about living in the desert. Four start times are published, from four in the morning to a quarter past two, so the ride can be taken in the cool of the morning or late in the day. The transfers, the quad ticket and the guide are in the price; tips are not. A copy of your passport is needed two days ahead, and children have their own price.',
+          description: 'A private air-conditioned bus takes you out of Sharm el-Sheikh to the quad base, where the bike is handed over and the briefing given. The riding is about an hour across open ground, with the Sinai mountains on every side.\n\nHalf way through, the ride stops at a Bedouin village for tea and for what the hosts tell you about living in the desert. There are four start times, from four in the morning to a quarter past two, so the ride can be taken in the cool of the morning or late in the day. The transfers, the quad ticket and the guide are in the price; tips are not. A copy of your passport is needed two days ahead, and children have their own price.',
           highlights: [
             'An hour riding a quad of your own',
             'A professional guide with the group',
@@ -2226,7 +2226,7 @@ export const B03D: NetworkBatch = {
           price: PROGRAMMES.SSS_SUNRISE_SUNSET,
           title: 'Sunrise or Sunset Ride, by Quad or by Buggy',
           short: 'Three hours timed for the low light at either end of the day, with a driving lesson first, an echo point stop and Bedouin tea at a desert tent.',
-          description: 'Two departures are published: half past four in the morning for the sunrise, and four in the afternoon for the sunset. Either way the published trip runs about three hours, including the transfers both ways in an air-conditioned vehicle.\n\nProfessional desert guides run the safety briefing and a training session for anyone who has not driven one before, and helmets and goggles are provided. The ride takes in the desert around Sharm el-Sheikh, with a stop at the echo point and free time for photographs, and tea at a traditional desert tent. You choose a quad or a buggy of your own; the ride is also sold for two, three or four riders sharing a vehicle, and a camel ride as a paid extra, and neither can be booked on this site. Children have their own price.',
+          description: 'There are two departures: half past four in the morning for the sunrise, and four in the afternoon for the sunset. Either way the trip runs about three hours, including the transfers both ways in an air-conditioned vehicle.\n\nProfessional desert guides run the safety briefing and a training session for anyone who has not driven one before, and helmets and goggles are provided. The ride takes in the desert around Sharm el-Sheikh, with a stop at the echo point and free time for photographs, and tea at a traditional desert tent. You choose a quad or a buggy of your own; the ride is also sold for two, three or four riders sharing a vehicle, and a camel ride as a paid extra, and neither can be booked on this site. Children have their own price.',
           highlights: [
             'A start timed for the sunrise or the sunset',
             'A quad or a buggy of your own',
@@ -2245,7 +2245,7 @@ export const B03D: NetworkBatch = {
           price: PROGRAMMES.SSS_SUPER_SAFARI,
           title: 'Afternoon Safari with a Barbecue, a Show and a Telescope',
           short: 'A quad or buggy of your own, a Bedouin tent for tea and bread, a camel ride at the camp, a barbecue buffet and an astronomer with a telescope.',
-          description: 'The pickup is in the afternoon. The safari centre comes first, with a welcome drink, the safety briefing and the driving instructions, and then the desert ride: about twenty-five minutes out, a stop at a Bedouin tent for tea and traditional bread, an open stretch for the echo, and the ride back.\n\nThe evening moves to the Bedouin camp. There is a camel ride, an open-buffet barbecue dinner with water and soft drinks, and oriental entertainment. At the end the camp lights go off and a telescope comes out, with an astronomer to show you what is up there. One departure is published, at half past three. The published price is the same for adults and children, and the afternoon is also sold for riders sharing a vehicle, which cannot be booked on this site.',
+          description: 'The pickup is in the afternoon. The safari centre comes first, with a welcome drink, the safety briefing and the driving instructions, and then the desert ride: about twenty-five minutes out, a stop at a Bedouin tent for tea and traditional bread, an open stretch for the echo, and the ride back.\n\nThe evening moves to the Bedouin camp. There is a camel ride, an open-buffet barbecue dinner with water and soft drinks, and oriental entertainment. At the end the camp lights go off and a telescope comes out, with an astronomer to show you what is up there. There is one departure, at half past three. Children pay the same price as adults, and the afternoon is also sold for riders sharing a vehicle, which cannot be booked on this site.',
           highlights: [
             'A quad or a buggy of your own',
             'Bedouin tea and bread at a desert tent',
@@ -2264,7 +2264,7 @@ export const B03D: NetworkBatch = {
           price: PROGRAMMES.SSS_FIVE_IN_ONE,
           title: 'Quad, Camel and a Bedouin Dinner Under the Stars',
           short: 'Five hours that ride in stages: quad, a camel and tea, dinner and a show at the camp, then the sky through a telescope with an astronomy guide.',
-          description: 'The van leaves your hotel for the safari centre, where the briefing takes about half an hour. The riding is broken into legs with stops between them: a first stretch on the quad, then tea and a camel ride, another stretch, then the camp.\n\nDinner is a buffet with an oriental entertainment programme, and after it the telescopes come out with an experienced astronomy guide. A last short ride takes you back. Two starts are published, a quarter to five in the afternoon and ten at night. You can take a quad of your own or share one with another rider, one driving and one behind, swapping during the ride. A desert conservation fee of one US dollar a person is paid in cash on the day. Children under sixteen may ride as passengers but not drive, and vegetarian meals are available.',
+          description: 'The van leaves your hotel for the safari centre, where the briefing takes about half an hour. The riding is broken into legs with stops between them: a first stretch on the quad, then tea and a camel ride, another stretch, then the camp.\n\nDinner is a buffet with an oriental entertainment programme, and after it the telescopes come out with an experienced astronomy guide. A last short ride takes you back. There are two starts, a quarter to five in the afternoon and ten at night. You can take a quad of your own or share one with another rider, one driving and one behind, swapping during the ride. A desert conservation fee of one US dollar a person is paid in cash on the day. Children under sixteen may ride as passengers but not drive, and vegetarian meals are available.',
           highlights: [
             'Quad riding in stages through the evening',
             'A camel ride and Bedouin tea',
@@ -2302,7 +2302,7 @@ export const B03D: NetworkBatch = {
           price: PROGRAMMES.SSS_COLOURED_CANYON,
           title: 'The Coloured Canyon by Jeep, with Lunch in a Bedouin Tent',
           short: 'A ten-hour day inland: a 4x4 safari, two hours walking the Coloured Canyon with a guide, a camel ride by the sea and lunch on the beach at Dahab.',
-          description: 'An air-conditioned vehicle collects you at eight for the hour north, and from there a jeep takes the group into the hills. Two hours are spent in the Coloured Canyon itself, walking it with a guide who explains how it was formed.\n\nThe rest of the day is the coast: a camel ride along the sea, lunch in a Bedouin tent on the beach at Dahab and a stop in the town. Three ways to take it are published. One walks the canyon and snorkels from the shore; one adds a quad ride along the sea and into the mountains; one adds the entry fees for the Blue Hole and Abu Galum as well. Snorkelling equipment, gratuities and drinks at the restaurant are not included. Original passports are needed on the day. Children have their own price.',
+          description: 'An air-conditioned vehicle collects you at eight for the hour north, and from there a jeep takes the group into the hills. Two hours are spent in the Coloured Canyon itself, walking it with a guide who explains how it was formed.\n\nThe rest of the day is the coast: a camel ride along the sea, lunch in a Bedouin tent on the beach at Dahab and a stop in the town. There are three ways to take it. One walks the canyon and snorkels from the shore; one adds a quad ride along the sea and into the mountains; one adds the entry fees for the Blue Hole and Abu Galum as well. Snorkelling equipment, gratuities and drinks at the restaurant are not included. Original passports are needed on the day. Children have their own price.',
           highlights: [
             'Two hours walking the Coloured Canyon',
             'A jeep safari into the hills',

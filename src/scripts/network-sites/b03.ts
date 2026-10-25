@@ -82,7 +82,7 @@ const PROGRAMMES: Record<string, PriceSpec> = {
       inclusions: ['Entrance fees for the Giza pyramids complex'],
       needToKnow: [
         'The vehicle and the guide are shared with other guests.',
-        'The published price is the same for adults and for children.',
+        'Children pay the same price as adults.',
       ],
     },
     itinerary: [
@@ -119,7 +119,7 @@ const PROGRAMMES: Record<string, PriceSpec> = {
     },
     add: {
       inclusions: ['Entrance fees for the Giza pyramids complex'],
-      needToKnow: ['Pickup from outside the city centre is published as a paid extra, which this site does not sell. Ask the team before you book if your hotel is further out.'],
+      needToKnow: ['Pickup from outside the city centre costs extra and cannot be booked on this site. Ask the team before you book if your hotel is further out.'],
     },
     // The programme publishes no schedule of its own.
     itinerary: [
@@ -184,7 +184,7 @@ const PROGRAMMES: Record<string, PriceSpec> = {
     add: {
       inclusions: [HOTEL_PICKUP],
       exclusions: ['Lunch'],
-      needToKnow: ['Long-range pickup from outside Cairo or Giza is published as a paid extra, which this site does not sell.'],
+      needToKnow: ['Pickup from outside Cairo or Giza costs extra and cannot be booked on this site.'],
     },
     itinerary: [
       { title: 'Hotel pickup', description: 'Pickup from your hotel in Cairo or Giza in an air-conditioned vehicle.' },
@@ -281,7 +281,7 @@ const PROGRAMMES: Record<string, PriceSpec> = {
     add: {
       inclusions: ['A shared tour with an English-speaking guide', HOTEL_PICKUP],
       exclusions: ['Lunch'],
-      needToKnow: ['The published price is the same for adults and for children.'],
+      needToKnow: ['Children pay the same price as adults.'],
     },
     itinerary: [
       { title: 'Hotel pickup', duration: '1 hour', description: 'Pickup from your hotel in Cairo or Giza in an air-conditioned vehicle.' },
@@ -311,7 +311,7 @@ const PROGRAMMES: Record<string, PriceSpec> = {
     add: {
       inclusions: ['A private English-speaking guide', HOTEL_PICKUP],
       exclusions: ['Lunch'],
-      needToKnow: ['The published record offers lunch on this option only as an extra at checkout, which this site does not sell.'],
+      needToKnow: ['Lunch is not included on this option and cannot be added on this site.'],
     },
     itinerary: [
       { title: 'Hotel pickup', duration: '1 hour', description: 'Pickup from your hotel in Cairo or Giza in a private vehicle.' },
@@ -471,7 +471,7 @@ export const B03A: NetworkBatch = {
           price: PROGRAMMES.GPP_HALF_DAY,
           title: 'Private Half Day at the Pyramids and the Great Sphinx',
           short: 'Four hours on the plateau with a private guide and car: the three pyramids, the Valley Temple and the Sphinx, with the entry fees.',
-          description: 'The car collects you from your hotel in Cairo or Giza and drives straight to the plateau, where a private guide walks you through the pyramids of Khufu, Khafre and Menkaure. The published day is four hours, with a choice of an eight or a nine o’clock start.\n\nFrom the pyramids the walk goes on to the Valley Temple of Khafre and to the Great Sphinx beside it. The guide, the private vehicle, the entry fees and a bottle of water are in the price, and the car is yours alone. Children have their own price.',
+          description: 'The car collects you from your hotel in Cairo or Giza and drives straight to the plateau, where a private guide walks you through the pyramids of Khufu, Khafre and Menkaure. The day is four hours, with a choice of an eight or a nine o’clock start.\n\nFrom the pyramids the walk goes on to the Valley Temple of Khafre and to the Great Sphinx beside it. The guide, the private vehicle, the entry fees and a bottle of water are in the price, and the car is yours alone. Children have their own price.',
           highlights: [
             'Khufu, Khafre and Menkaure with a guide',
             'The Valley Temple and the Great Sphinx',
@@ -490,7 +490,7 @@ export const B03A: NetworkBatch = {
           price: PROGRAMMES.GPP_SUNRISE,
           title: 'Sunrise or Morning at the Pyramids with a Camel Ride and Breakfast',
           short: 'A shared five-hour trip: an hour on a camel or a horse beside the plateau, an Egyptian breakfast and two guided hours among the pyramids.',
-          description: 'Two starts are published for this trip: half past four in the morning, for the hour when the sun comes up behind the plateau, and eight o’clock for a later morning. Either way the published day runs five hours.\n\nAn hour on a camel or a horse opens it, with the pyramids in view, and a traditional Egyptian breakfast follows. A guide then takes you through the pyramids complex and the Sphinx for two hours. The entry ticket for the Giza pyramids complex is in the price, along with the air-conditioned transport and the pickup from your hotel. The vehicle and the guide are shared with other guests, and the published price is the same for adults and children.',
+          description: 'There are two starts: half past four in the morning, for the hour when the sun comes up behind the plateau, and eight o’clock for a later morning. Either way the day runs five hours.\n\nAn hour on a camel or a horse opens it, with the pyramids in view, and a traditional Egyptian breakfast follows. A guide then takes you through the pyramids complex and the Sphinx for two hours. The entry ticket for the Giza pyramids complex is in the price, along with the air-conditioned transport and the pickup from your hotel. The vehicle and the guide are shared with other guests, and children pay the same price as adults.',
           highlights: [
             'A half past four or an eight o’clock start',
             'An hour on a camel or a horse',
@@ -509,7 +509,7 @@ export const B03A: NetworkBatch = {
           price: PROGRAMMES.GPP_CAMEL_LUNCH,
           title: 'Private Pyramids Day with a Camel Ride and Lunch',
           short: 'Four hours with a private guide and car: the Giza plateau, a camel ride around it, lunch at a local restaurant and the entrance fees.',
-          description: 'A private day on the plateau with your own English-speaking guide and vehicle, and a start you pick from a quarter-hourly list that runs from eight in the morning to a quarter to one. The published day is four hours.\n\nA camel ride around the Giza plateau is part of it, and lunch is taken at a local restaurant. The entrance fees are in the price, as is the pickup from your hotel in Cairo or Giza. Children have their own price. Pickup from further out is published as a paid extra, which this site does not sell; ask the team before you book if your hotel is outside the city centre.',
+          description: 'A private day on the plateau with your own English-speaking guide and vehicle, and a start you pick from a quarter-hourly list that runs from eight in the morning to a quarter to one. The day is four hours.\n\nA camel ride around the Giza plateau is part of it, and lunch is taken at a local restaurant. The entrance fees are in the price, as is the pickup from your hotel in Cairo or Giza. Children have their own price. Pickup from further out costs extra and cannot be booked on this site; ask the team before you book if your hotel is outside the city centre.',
           highlights: [
             'Your own guide and vehicle',
             'A camel ride around the plateau',
@@ -528,7 +528,7 @@ export const B03A: NetworkBatch = {
           price: PROGRAMMES.GPP_FELUCCA,
           title: 'Giza Pyramids and an Hour Under Sail on the Nile',
           short: 'Five hours with a private vehicle: three hours on the plateau with the Great Pyramid, Khafre, Menkaure and the Sphinx, then an hour on a felucca.',
-          description: 'The car collects you from your hotel in Cairo or Giza for a start at eight, nine, ten or eleven o’clock. Three hours on the plateau follow, with half an hour each at the Great Pyramid, the pyramid of Khafre, the pyramid of Menkaure and the Sphinx.\n\nThe day finishes with an hour on the Nile aboard a felucca, a wooden sailing boat. Private air-conditioned transfers, the guide on site, the entry fees and bottled water are in the price. The published day is five hours, and children have their own price.',
+          description: 'The car collects you from your hotel in Cairo or Giza for a start at eight, nine, ten or eleven o’clock. Three hours on the plateau follow, with half an hour each at the Great Pyramid, the pyramid of Khafre, the pyramid of Menkaure and the Sphinx.\n\nThe day finishes with an hour on the Nile aboard a felucca, a wooden sailing boat. Private air-conditioned transfers, the guide on site, the entry fees and bottled water are in the price. The day is five hours, and children have their own price.',
           highlights: [
             'Three hours on the Giza plateau',
             'The Great Pyramid, Khafre, Menkaure and the Sphinx',
@@ -578,7 +578,7 @@ export const B03A: NetworkBatch = {
           price: PROGRAMMES.PGE_GEM,
           title: 'The Pyramids, the Sphinx and the Grand Egyptian Museum',
           short: 'A private day from your hotel: three hours on the plateau, an hour at the Sphinx and three hours in the Grand Egyptian Museum, tickets included.',
-          description: 'Your own guide and car take the day at your pace, starting at nine. Three hours go to the pyramids of Giza and an hour to the Great Sphinx, with a break in between.\n\nThe rest of the day is given to the Grand Egyptian Museum: three hours with the guide and time of your own among the galleries. The entry tickets for the pyramids, the Sphinx and the museum are in the price, as published. Lunch is not, so the break in the middle of the day is the hour to buy your own. Children have their own price.',
+          description: 'Your own guide and car take the day at your pace, starting at nine. Three hours go to the pyramids of Giza and an hour to the Great Sphinx, with a break in between.\n\nThe rest of the day is given to the Grand Egyptian Museum: three hours with the guide and time of your own among the galleries. The entry tickets for the pyramids, the Sphinx and the museum are in the price. Lunch is not, so the break in the middle of the day is the hour to buy your own. Children have their own price.',
           highlights: [
             'Three hours at the pyramids, an hour at the Sphinx',
             'Three hours in the Grand Egyptian Museum',
@@ -597,7 +597,7 @@ export const B03A: NetworkBatch = {
           price: PROGRAMMES.PGE_BAZAAR,
           title: 'The Pyramids, the Egyptian Museum and Khan el-Khalili',
           short: 'Eight hours with a private guide and car: the Giza plateau, the Egyptian Museum of Antiquities, the Khan el-Khalili bazaar and lunch.',
-          description: 'The published day runs eight hours from an eight o’clock pickup at your hotel in Cairo or Giza, with about an hour in the car at each end.\n\nIt takes in the pyramids of Giza with a guide, the Egyptian Museum of Antiquities and the lanes of the Khan el-Khalili bazaar. The entry fees, the guide on site, lunch, a private air-conditioned vehicle and a bottle of water are in the price. Children have their own price.',
+          description: 'The day runs eight hours from an eight o’clock pickup at your hotel in Cairo or Giza, with about an hour in the car at each end.\n\nIt takes in the pyramids of Giza with a guide, the Egyptian Museum of Antiquities and the lanes of the Khan el-Khalili bazaar. The entry fees, the guide on site, lunch, a private air-conditioned vehicle and a bottle of water are in the price. Children have their own price.',
           highlights: [
             'The Giza pyramids with a guide',
             'The Egyptian Museum of Antiquities',
@@ -616,7 +616,7 @@ export const B03A: NetworkBatch = {
           price: PROGRAMMES.PGE_NMEC,
           title: 'The Pyramids, the Civilization Museum and Old Cairo',
           short: 'A private day with the National Museum of Egyptian Civilization, the Giza plateau and Old Cairo, or a longer one with the Citadel and a Nile sail.',
-          description: 'Two private days are published under this trip, both leaving at eight. The shorter gives two hours to the National Museum of Egyptian Civilization, then the Giza plateau and the churches of Old Cairo, with the entry tickets included and lunch left out.\n\nThe longer one adds the Citadel and finishes with a sail on the Nile, and its price includes lunch. Both are private, with an English-speaking guide and an air-conditioned vehicle, collected from your hotel in Cairo or Giza. The published record also offers a stop at a papyrus gallery, an oils factory, a bazaar, a cotton store or a carpet school on request.',
+          description: 'This trip comes as two private days, both leaving at eight. The shorter gives two hours to the National Museum of Egyptian Civilization, then the Giza plateau and the churches of Old Cairo, with the entry tickets included and lunch left out.\n\nThe longer one adds the Citadel and finishes with a sail on the Nile, and its price includes lunch. Both are private, with an English-speaking guide and an air-conditioned vehicle, collected from your hotel in Cairo or Giza. A stop at a papyrus gallery, an oils factory, a bazaar, a cotton store or a carpet school can be added on request.',
           highlights: [
             'The Museum of Egyptian Civilization and the plateau',
             'The churches of Old Cairo',
@@ -667,7 +667,7 @@ export const B03A: NetworkBatch = {
           price: PROGRAMMES.MAS_SHARED,
           title: 'Memphis, Sakkara and Dahshur in One Day',
           short: 'A shared late-morning day to the Bent and Red Pyramids at Dahshur, the Step Pyramid at Sakkara and the ruins of Memphis, tickets included.',
-          description: 'A shared group leaves at eleven for the three sites south of Giza. Dahshur comes first, an hour among the Bent and the Red Pyramids, then an hour and a half at Sakkara for the Step Pyramid of Djoser and the tombs around it, and an hour at Memphis.\n\nThe guide is English-speaking, the vehicle is air-conditioned, and the entry tickets for the sites are in the price. Lunch is not included. Pickup and drop-off are at your hotel in Cairo or Giza, and the published price is the same for adults and children.',
+          description: 'A shared group leaves at eleven for the three sites south of Giza. Dahshur comes first, an hour among the Bent and the Red Pyramids, then an hour and a half at Sakkara for the Step Pyramid of Djoser and the tombs around it, and an hour at Memphis.\n\nThe guide is English-speaking, the vehicle is air-conditioned, and the entry tickets for the sites are in the price. Lunch is not included. Pickup and drop-off are at your hotel in Cairo or Giza, and children pay the same price as adults.',
           highlights: [
             'The Bent and Red Pyramids at Dahshur',
             'The Step Pyramid of Djoser at Sakkara',
@@ -686,7 +686,7 @@ export const B03A: NetworkBatch = {
           price: PROGRAMMES.MAS_PRIVATE,
           title: 'Private Day at Sakkara, Memphis and Dahshur',
           short: 'The same three sites with your own guide and vehicle, leaving at eight: Dahshur, the Step Pyramid at Sakkara and the ruins of Memphis.',
-          description: 'An eight o’clock start, with a vehicle and a guide for your group alone. The route runs to Dahshur for the Bent and the Red Pyramids, to Sakkara for the Step Pyramid of Djoser and its tombs, and to Memphis for the ruins of the old capital and the colossal statue of Ramses II.\n\nThe entry tickets are in the price; lunch is not, and the published record offers it on this option only as an extra at checkout, which this site does not sell. Pickup and drop-off are at your hotel in Cairo or Giza, and children have their own price.',
+          description: 'An eight o’clock start, with a vehicle and a guide for your group alone. The route runs to Dahshur for the Bent and the Red Pyramids, to Sakkara for the Step Pyramid of Djoser and its tombs, and to Memphis for the ruins of the old capital and the colossal statue of Ramses II.\n\nThe entry tickets are in the price; lunch is not included and cannot be added on this site. Pickup and drop-off are at your hotel in Cairo or Giza, and children have their own price.',
           highlights: [
             'A private guide and vehicle for your group',
             'The Bent and Red Pyramids at Dahshur',
@@ -705,7 +705,7 @@ export const B03A: NetworkBatch = {
           price: PROGRAMMES.MAS_WITH_GIZA,
           title: 'The Giza Pyramids, Sakkara and Memphis in One Day',
           short: 'Two hours on the Giza plateau, an hour at Sakkara and an hour at Memphis, shared or private, with the entry tickets included.',
-          description: 'An eight o’clock start, half an hour in the car, then two hours on the Giza plateau with a guide. Sakkara follows for an hour, with the Step Pyramid of Djoser, and Memphis for an hour among the ruins of the old capital.\n\nThree ways to take the day are published: a shared group in English, a private tour in English, and a private tour in Italian or Spanish. All three carry the entry tickets for the sites. Lunch is not included. Pickup and drop-off are at your hotel in Cairo or Giza, and the two private ways have their own child price.',
+          description: 'An eight o’clock start, half an hour in the car, then two hours on the Giza plateau with a guide. Sakkara follows for an hour, with the Step Pyramid of Djoser, and Memphis for an hour among the ruins of the old capital.\n\nThe day comes three ways: a shared group in English, a private tour in English, and a private tour in Italian or Spanish. All three carry the entry tickets for the sites. Lunch is not included. Pickup and drop-off are at your hotel in Cairo or Giza, and the two private ways have their own child price.',
           highlights: [
             'Two hours on the Giza plateau',
             'The Step Pyramid of Djoser at Sakkara',

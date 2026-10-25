@@ -170,7 +170,28 @@ describe('batch B03 groups 2 to 4: the seven remaining domains', () => {
         expect.arrayContaining([expect.stringMatching(/does not include the Tombs of the Nobles/)]),
       );
     }
-    expect(siteOf('valley-of-the-nobles').description).toMatch(/No trip published for Luxor at the moment goes inside them/);
+    expect(siteOf('valley-of-the-nobles').description).toMatch(/None of the Luxor trips on this site goes inside them/);
+  });
+
+  it('speaks to guests in plain words, never in the catalogue talk the trips were copied from', () => {
+    // Ids, addresses, colours, source option lists and the strings the seed removes are not guest copy.
+    const notGuestCopy = new Set([
+      'slug', 'listingPath', 'domain', 'pickupDestination', 'currency', 'slugPrefix', 'theme', 'heroImages', 'logo',
+      'images', 'path', 'provider', 'tenant', 'source', 'category', 'options', 'departures', 'omit', 'photoShortfall',
+    ]);
+    const internal = /\bpublished\b|does not sell|\b(?:the|on|in the) record\b|snapshot|pretend/i;
+    const leaks: string[] = [];
+    const walk = (value: unknown, at: string): void => {
+      if (typeof value === 'string') {
+        if (internal.test(value)) leaks.push(`${at}: ${value.slice(0, 90)}`);
+      } else if (Array.isArray(value)) {
+        value.forEach((item, i) => walk(item, `${at}[${i}]`));
+      } else if (value && typeof value === 'object') {
+        for (const [key, item] of Object.entries(value)) if (!notGuestCopy.has(key)) walk(item, `${at}.${key}`);
+      }
+    };
+    for (const site of [...B03A.sites, ...SITES]) walk(site, site.slug);
+    expect(leaks).toEqual([]);
   });
 
   it('blocks the places each site does not serve, in its own copy and in what it copies', () => {
