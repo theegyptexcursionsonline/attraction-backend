@@ -181,6 +181,7 @@ export function validateBatch(batch: NetworkBatch): string[] {
     if (sharedWith) errors.push(`${site.slug}: site title repeats ${sharedWith}'s; every site needs its own.`);
     else titles.set(title, site.slug);
     if (!['USD', 'EUR'].includes(site.currency)) errors.push(`${site.slug}: unsupported currency ${site.currency}.`);
+    if (!Object.prototype.hasOwnProperty.call(TOWN_REGIONS, site.city)) errors.push(`${site.slug}: no region on record for ${site.city}; add the town to TOWN_REGIONS.`);
     if (new Set(site.heroImages).size !== site.heroImages.length) errors.push(`${site.slug}: hero images must be distinct.`);
     if (site.photoShortfall?.trim() ? site.heroImages.length < 1 : site.heroImages.length < 3) {
       errors.push(`${site.slug}: ${site.photoShortfall?.trim() ? 'one hero image is required' : 'three distinct hero images are required'}.`);
@@ -445,6 +446,31 @@ export function tripDocument(site: NetworkSite, trip: NetworkTrip, programme: So
   };
 }
 
+/**
+ * The region each town's sites name in their public address. The Red Sea towns sit in the Red Sea governorate, Sharm
+ * El Sheikh in South Sinai; Cairo, Luxor and Fayoum are named alone. A town missing here stops the batch check, so a
+ * site is never published under another region's name (the B02 Sharm and Fayoum sites and the B03 Giza sites read
+ * "Red Sea" until 25 Oct).
+ */
+const TOWN_REGIONS: Readonly<Record<string, string | null>> = {
+  'El Gouna': 'Red Sea',
+  Hurghada: 'Red Sea',
+  'Sahl Hasheesh': 'Red Sea',
+  'Makadi Bay': 'Red Sea',
+  'Marsa Alam': 'Red Sea',
+  'Sharm El Sheikh': 'South Sinai',
+  Cairo: null,
+  Luxor: null,
+  Fayoum: null,
+};
+
+/** A site's public address: its town, the town's region where it has one, and Egypt. */
+export function siteAddress(city: string): string {
+  if (!Object.prototype.hasOwnProperty.call(TOWN_REGIONS, city)) throw new Error(`${city}: no region on record for this town.`);
+  const region = TOWN_REGIONS[city];
+  return region ? `${city}, ${region}, Egypt` : `${city}, Egypt`;
+}
+
 export function tenantRecord(site: NetworkSite): Record<string, unknown> {
   return {
     slug: site.slug,
@@ -462,7 +488,7 @@ export function tenantRecord(site: NetworkSite): Record<string, unknown> {
     supportedLanguages: ['en'],
     timezone: 'Africa/Cairo',
     // No phone or email is published until the site's operator confirms its own (recorded as an open question).
-    contactInfo: { address: `${site.city}, Red Sea, Egypt` },
+    contactInfo: { address: siteAddress(site.city) },
     pickupDestinationSlugs: [site.pickupDestination],
     socialLinks: {},
     notificationSettings: { bookingEmail: LAUNCH_BOOKING_INBOX },

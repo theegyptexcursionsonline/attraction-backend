@@ -1,8 +1,10 @@
 /**
- * Batch B03, group 1 "Giza" (25 October 2026): the three Giza-and-Saqqara domains from Fouad's list. No network
- * operator publishes a Giza programme, so all eleven trips are built on the ones the client publishes on its own
- * main site (`network-sites/eeo-source.ts`); prices, child rates, departures and inclusions are copied from that
- * record at apply time and never typed here.
+ * Batch B03, group 1 "Giza" (25 October 2026): the three Giza-and-Saqqara domains from Fouad's list. No live
+ * operator on the network publishes a programme that starts in Cairo or Giza: the live operator's Giza trips are day
+ * trips from Hurghada, and the other Giza catalogues on the network were written by earlier build sessions, which
+ * batch B02's sourcing rule excludes. So all eleven trips are built on the ones the client publishes on its own main
+ * site (`network-sites/eeo-source.ts`); prices, child rates, departures and inclusions are copied from that record at
+ * apply time and never typed here.
  *
  * The three sites are kept apart by what they sell, not by their words: Giza Plateau Pyramids sells days that stay
  * on the plateau, Pyramids of Giza Egypt sells full days that carry on into Cairo's museums and the bazaar, and

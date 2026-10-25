@@ -73,7 +73,7 @@ const times = (option: EeoOption) => (option.timeSlots || []).map((slot) => slot
 /**
  * What the published page shows under "What's included". The record keeps that list in `whatsIncluded` or,
  * when that is empty, in `includes`, and the client's own page reads whichever is filled; every Giza trip of
- * batch B03 fills only the second. Never both: the fuller field wins, so nothing is listed twice.
+ * batch B03 fills only the second. Never both: `whatsIncluded` wins whenever it has a line, so nothing is listed twice.
  */
 const publishedInclusions = (detail: EeoTour['detail']): string[] => {
   const named = strings(detail.whatsIncluded);

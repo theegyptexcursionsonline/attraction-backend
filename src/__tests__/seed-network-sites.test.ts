@@ -262,6 +262,9 @@ describe('network sites seed: the tenant record', () => {
     expect(record).not.toHaveProperty('customDomain');
     // No phone or email is published for the site until its operator confirms its own.
     expect(record.contactInfo).toEqual({ address: 'El Gouna, Red Sea, Egypt' });
+    // The region follows the town: Sharm El Sheikh is in South Sinai, and Cairo is named alone.
+    expect(tenantRecord(site({ city: 'Sharm El Sheikh' })).contactInfo).toEqual({ address: 'Sharm El Sheikh, South Sinai, Egypt' });
+    expect(tenantRecord(site({ city: 'Cairo' })).contactInfo).toEqual({ address: 'Cairo, Egypt' });
     // The pickup area the storefront names is the network destination the site collects from.
     expect(record.pickupDestinationSlugs).toEqual(['el-gouna']);
     expect(Object.values(record.aiSettings as Record<string, { enabled: boolean }>).every((setting) => !setting.enabled)).toBe(true);
@@ -273,6 +276,10 @@ describe('network sites seed: what the batch check refuses', () => {
 
   it('accepts a clean site', () => {
     expect(validateBatch(batch([site()]))).toEqual([]);
+  });
+
+  it('refuses a town with no region on record', () => {
+    expect(validateBatch(batch([site({ city: 'Dahab' })]))).toContain('safari-test-town: no region on record for Dahab; add the town to TOWN_REGIONS.');
   });
 
   it('refuses claims, brands, other places, missing photos and paths it cannot serve', () => {
