@@ -71,6 +71,18 @@ describe('a network trip built on a trip the client publishes on its main site',
     expect(() => eeoProgramme(slotPrice, ['snorkel-included'], 'water')).toThrow(/prices its 08:00 departure apart/);
   });
 
+  // The record keeps its inclusions in one field or the other, and the client's own page reads whichever is
+  // filled; every Giza trip of batch B03 fills only `includes`, every Red Sea trip of B02 only `whatsIncluded`.
+  it('takes the inclusions the published page shows, from whichever field carries them', () => {
+    const named = { ...TOUR, detail: { ...TOUR.detail, includes: ['Never shown while whatsIncluded is filled'] } };
+    expect(eeoProgramme(named, ['snorkel-included'], 'water').inclusions)
+      .toEqual(['Hotel pickup and drop-off', 'Yacht trip to Tiran Island', 'Buffet lunch onboard']);
+    const fallback = { ...TOUR, detail: { ...TOUR.detail, whatsIncluded: [], includes: ['Hotel pickup and drop-off', 'Entry fees', '  '] } };
+    expect(eeoProgramme(fallback, ['snorkel-included'], 'water').inclusions).toEqual(['Hotel pickup and drop-off', 'Entry fees']);
+    const neither = { ...TOUR, detail: { ...TOUR.detail, whatsIncluded: [] } };
+    expect(eeoProgramme(neither, ['snorkel-included'], 'water').inclusions).toEqual([]);
+  });
+
   it('keeps a per-guest extra per guest', () => {
     const programme = eeoProgramme(TOUR, ['snorkel-included'], 'water');
     expect(eeoAddonBasisProblems(programme, ['suit', 'transfer'], ['suit', 'transfer'])).toEqual([]);

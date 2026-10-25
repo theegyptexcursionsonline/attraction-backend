@@ -501,6 +501,7 @@ async function loadBatch(id: string | null): Promise<NetworkBatch> {
   const batches: Record<string, () => Promise<NetworkBatch>> = {
     b01: async () => (await import('./network-sites/b01-safari')).B01_SAFARI,
     b02: async () => (await import('./network-sites/b02')).B02,
+    b03a: async () => (await import('./network-sites/b03')).B03A,
   };
   if (!id || !batches[id]) throw new Error(`Pass --batch=<${Object.keys(batches).join('|')}>.`);
   return batches[id]();

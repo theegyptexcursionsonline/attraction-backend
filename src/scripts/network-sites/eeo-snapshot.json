@@ -3043,6 +3043,3335 @@
      "required": false
     }
    ]
+  },
+  {
+   "slug": "giza-pyramids-great-sphinx-half-day-private-tour",
+   "id": "fbec9bfe28ac6af6a32b8505",
+   "readAt": "2026-10-25T11:16:19Z",
+   "detail": {
+    "title": "Giza Pyramids & Great Sphinx Half-Day Private Tour",
+    "duration": "4 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "All transfers by a private air-conditioned vehicle",
+     "Private transportation",
+     "Entry fees",
+     "Tour Guide",
+     "Bottle of water"
+    ],
+    "whatsNotIncluded": [],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "5 pickup location options",
+      "description": "New Cairo City, Giza, Cairo, 6th of October City, Giza District",
+      "duration": ""
+     },
+     {
+      "title": "Pyramids of Giza",
+      "description": "Guided tour",
+      "duration": "4 hours"
+     },
+     {
+      "title": "5 drop-off locations",
+      "description": "Giza District, Giza, New Cairo City, 6th of October City, Cairo",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 72,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "a-half-day-expedition-to-giza-pyramids-and-sp-ab664a328c4d",
+     "title": "A Half-Day Expedition to Giza Pyramids and Sphinx",
+     "type": "Per Person",
+     "description": "Step back in time with a private, half-day journey through the Giza Plateau. Led by an expert guide, you will explore Egypt’s most iconic ancient wonders, from the majestic Great Pyramids to the enigmatic Great Sphinx.",
+     "duration": "4 hours",
+     "guestPrices": {
+      "adult": 72,
+      "child": 32,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 72,
+        "child": 32,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 72,
+        "child": 32,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": []
+  },
+  {
+   "slug": "giza-pyramids-sunrise-morning-guided-tour-with-camel-ride-breakfast",
+   "id": "94a5e6ef286526d58e08894a",
+   "readAt": "2026-10-25T11:16:19Z",
+   "detail": {
+    "title": "Giza Pyramids Sunrise & Morning Guided Tour with Camel Ride & Breakfast",
+    "duration": "5 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Air-conditioned transportation",
+     "Hotel pickup and drop-off",
+     "English-speaking Egyptologist guide",
+     "Entrance fees for Pyramids of Giza complex (if option selected)",
+     "1-hour camel or horse ride",
+     "2-hour guided tour of the pyramids complex",
+     "Breakfast"
+    ],
+    "whatsNotIncluded": [],
+    "whatToBring": [
+     "Comfortable shoes",
+     "Sunglasses",
+     "Sun hat",
+     "Sunscreen",
+     "Comfortable clothes"
+    ],
+    "itinerary": [
+     {
+      "title": "2 pickup location options",
+      "description": "Cairo, Giza",
+      "duration": ""
+     },
+     {
+      "title": "Pyramids Gardens",
+      "description": "Camel ride, Horse riding",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Pyramids of Giza",
+      "description": "Guided tour",
+      "duration": "2 hours"
+     },
+     {
+      "title": "car",
+      "description": "Giza",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Giza",
+      "description": "Break time, Breakfast",
+      "duration": ""
+     },
+     {
+      "title": "2 drop-off locations",
+      "description": "Giza, Cairo",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 67.5,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "shared-tour-with-giza-pyramids-entry-ticket-4fb577804443",
+     "title": "Shared Tour With Giza Pyramids Entry Ticket",
+     "type": "Per Person",
+     "description": "Catch the magic of dawn over the world’s most iconic wonders. Enjoy a sunrise camel or horse ride across the desert, savor an authentic local breakfast, and explore the ancient Giza Pyramids and Sphinx alongside an expert tour guide.",
+     "duration": "5 hours",
+     "guestPrices": {
+      "adult": 67.5,
+      "child": 67.5,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "04:30",
+       "guestPrices": {
+        "adult": 67.5,
+        "child": 67.5,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 67.5,
+        "child": 67.5,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "private-tour-with-giza-pyramids-entry-ticket-be38defacb48",
+     "title": "Private Tour with Giza Pyramids Entry Ticket",
+     "type": "Per Person",
+     "description": "Catch the magic of dawn over the world’s most iconic wonders. Enjoy a sunrise camel or horse ride across the desert, savor an authentic local breakfast, and explore the ancient Giza Pyramids and Sphinx alongside an expert tour guide.",
+     "duration": "5 hours",
+     "guestPrices": {
+      "adult": 175.5,
+      "child": 108,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "04:30",
+       "guestPrices": {
+        "adult": 175.5,
+        "child": 108,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "04:30",
+       "guestPrices": {
+        "adult": 175.5,
+        "child": 108,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 175.5,
+        "child": 108,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 175.5,
+        "child": 108,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a811f1aaecd7a3c607d0c95",
+     "title": "Private Transfer (1-3 people)",
+     "description": "",
+     "price": 33.77,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a811f1aaecd7a3c607d0c96",
+     "title": "Private Transfer (4-8 people)",
+     "description": "",
+     "price": 47.28,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a811f1aaecd7a3c607d0c97",
+     "title": "Private Tour",
+     "description": "",
+     "price": 33.77,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671858",
+     "title": "1 hour Felucca Ride",
+     "description": "",
+     "price": 60.69,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671859",
+     "title": "Egyptian Museum Tour",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a67185a",
+     "title": "Civilization Museum",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a67185b",
+     "title": "Salah Al-Din Citadel",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a67185c",
+     "title": "Private Tour Photographer",
+     "description": "",
+     "price": 202.29,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a67185d",
+     "title": "Entry to the Great Pyramids",
+     "description": "",
+     "price": 87.66,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a67185e",
+     "title": "Ibn Tulun Mosque",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a67185f",
+     "title": "Al-Azhar Mosque",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671860",
+     "title": "Gayer-Anderson House",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671861",
+     "title": "Amr ibn Al-Aas Masjd",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671862",
+     "title": "Al-Rifa'i Mosque",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671863",
+     "title": "Muizz Street",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671864",
+     "title": "Abu al-Abbas Mosque",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671865",
+     "title": "Khan el-Khalili Tour",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671866",
+     "title": "Qalawun Complex",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671867",
+     "title": "Mohamed Ali Palace",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671868",
+     "title": "City of the Dead",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671869",
+     "title": "Bayt al-Suhaymi",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a67186a",
+     "title": "Islamic, Coptic Tour",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a67186b",
+     "title": "The Cave Church Tour",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a67186c",
+     "title": "Polish Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a67186d",
+     "title": "Czech Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a67186e",
+     "title": "Hungarian Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a67186f",
+     "title": "Greek Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671870",
+     "title": "Turkish Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671871",
+     "title": "Ukrainian Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671872",
+     "title": "Portuguese Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671873",
+     "title": "Dutch guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671874",
+     "title": "Japanese Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671875",
+     "title": "Korean Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671876",
+     "title": "Chinese guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671877",
+     "title": "Indonesian Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671878",
+     "title": "Hindi Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a671879",
+     "title": "Romanian Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812391be3ee9779a67187a",
+     "title": "Sultan Hassan Mosque",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "vip-giza-pyramids-experience-private-tour-camel-ride-lunch",
+   "id": "b6aa758a87a5535125e38c85",
+   "readAt": "2026-10-25T11:16:19Z",
+   "detail": {
+    "title": "VIP Giza Pyramids Experience: Private Tour, Camel Ride & Lunch",
+    "duration": "4 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Private English-speaking guide",
+     "Entrance Fees (If the Option Is Selected)",
+     "Private transportation",
+     "Camel ride around the Giza Plateau",
+     "Lunch at a local restaurant",
+     "Hotel pickup and drop-off in Cairo or Giza",
+     "Pickup from outside the city center (if add-on selected)"
+    ],
+    "whatsNotIncluded": [],
+    "whatToBring": [],
+    "itinerary": [],
+    "pricingSummary": {
+     "fromPrice": 108,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "private-tour-entrance-fees-guide-camel-ride-l-21bb4aa76e2d",
+     "title": "Private Tour + Entrance Fees + Guide + Camel Ride + Lunch",
+     "type": "Per Person",
+     "description": "Experience the magic of Ancient Egypt on a private tour of the Giza Plateau. Walk alongside an expert Egyptologist, ride a camel across the desert sands, gaze upon the Great Sphinx, and savor a delicious local lunch with pyramid views.",
+     "duration": "4 hours",
+     "guestPrices": {
+      "adult": 108,
+      "child": 58,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 108,
+        "child": 58,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:15",
+       "guestPrices": {
+        "adult": 108,
+        "child": 58,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "08:30",
+       "guestPrices": {
+        "adult": 108,
+        "child": 58,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "08:45",
+       "guestPrices": {
+        "adult": 108,
+        "child": 58,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 108,
+        "child": 58,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "09:15",
+       "guestPrices": {
+        "adult": 108,
+        "child": 58,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-7",
+       "time": "09:30",
+       "guestPrices": {
+        "adult": 108,
+        "child": 58,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-8",
+       "time": "09:45",
+       "guestPrices": {
+        "adult": 108,
+        "child": 58,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-9",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 108,
+        "child": 58,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-10",
+       "time": "10:15",
+       "guestPrices": {
+        "adult": 108,
+        "child": 58,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-11",
+       "time": "10:30",
+       "guestPrices": {
+        "adult": 108,
+        "child": 58,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-12",
+       "time": "10:45",
+       "guestPrices": {
+        "adult": 108,
+        "child": 58,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-13",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 108,
+        "child": 58,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-14",
+       "time": "11:15",
+       "guestPrices": {
+        "adult": 108,
+        "child": 58,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-15",
+       "time": "11:30",
+       "guestPrices": {
+        "adult": 108,
+        "child": 58,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-16",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 108,
+        "child": 58,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-17",
+       "time": "12:15",
+       "guestPrices": {
+        "adult": 108,
+        "child": 58,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-18",
+       "time": "12:30",
+       "guestPrices": {
+        "adult": 108,
+        "child": 58,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-19",
+       "time": "12:45",
+       "guestPrices": {
+        "adult": 108,
+        "child": 58,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8136f8ede4c60c862493f8",
+     "title": "Pickup outside spots",
+     "description": "",
+     "price": 14,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8136f8ede4c60c862493f9",
+     "title": "English Speaking Tour Guide",
+     "description": "",
+     "price": 0,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8136f8ede4c60c862493fa",
+     "title": "German, Spanish, French guide",
+     "description": "",
+     "price": 100,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "giza-pyramids-tour-with-1-hour-nile-felucca-sail",
+   "id": "d0752006353fbf7d59f13d03",
+   "readAt": "2026-10-25T11:16:19Z",
+   "detail": {
+    "title": "Giza Pyramids Tour with 1-Hour Nile Felucca Sail",
+    "duration": "5 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "All Transfers by Private A/C latest Model Vehicle",
+     "Entry Fees",
+     "guide on site",
+     "1-Hour Felucca Ride On The Nile",
+     "Bottled water"
+    ],
+    "whatsNotIncluded": [],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "6 pickup location options",
+      "description": "Al Giza, Al Haram, Giza, Cairo, 6th of October City, New Cairo City",
+      "duration": ""
+     },
+     {
+      "title": "Pyramids of Giza",
+      "description": "Guided tour, Sightseeing",
+      "duration": "3 hours"
+     },
+     {
+      "title": "Great Pyramid of Giza",
+      "description": "Guided tour, Sightseeing",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Pyramid of Khafre",
+      "description": "Guided tour, Sightseeing",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Pyramid of Menkaure",
+      "description": "Guided tour, Sightseeing",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Sphinx",
+      "description": "Guided tour, Sightseeing",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "The Nile",
+      "description": "Boat cruise, Sunset, Sailing",
+      "duration": "1 hour"
+     },
+     {
+      "title": "6 drop-off locations",
+      "description": "Giza, Al Giza, 6th of October City, New Cairo City, Cairo, Al Haram",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 65,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "half-day-tour-to-giza-pyramids-1-hour-felucca-5dfa4b0fe4a1",
+     "title": "Half Day Tour to Giza Pyramids & 1-Hour Felucca Ride",
+     "type": "Per Person",
+     "description": "Uncover the ancient mysteries of the Giza Pyramids and relax on the waters of the Nile! Experience Cairo’s top ancient wonders before setting sail on a traditional wooden Felucca boat for an unforgettable half-day adventure.",
+     "duration": "5 hours",
+     "guestPrices": {
+      "adult": 65,
+      "child": 30,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 65,
+        "child": 30,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 65,
+        "child": 30,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 65,
+        "child": 30,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 65,
+        "child": 30,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a81ce845806632956057ae4",
+     "title": "Lunch",
+     "description": "",
+     "price": 15,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81ce845806632956057ae5",
+     "title": "Ticket of inside the Great Pyramid",
+     "description": "",
+     "price": 30,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81ce845806632956057ae6",
+     "title": "30 Minute Camel Ride",
+     "description": "",
+     "price": 10,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "giza-pyramids-sphinx-grand-egyptian-museum-private",
+   "id": "3330f39d257ef4bbfee8c892",
+   "readAt": "2026-10-25T11:16:19Z",
+   "detail": {
+    "title": "Giza Pyramids, Sphinx & Grand Egyptian Museum Private",
+    "duration": "1 day",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Pickup and drop-off in Cairo or Giza (long-range pickup also available as an add-on)",
+     "Transportation in an air-conditioned vehicle",
+     "Egyptologist tour guide",
+     "Entry ticket to the Pyramids, sphinx, Grand Egyptian Museum",
+     "Lunch at a restaurant"
+    ],
+    "whatsNotIncluded": [],
+    "whatToBring": [
+     "Comfortable shoes",
+     "Sun hat"
+    ],
+    "itinerary": [
+     {
+      "title": "Pickup location:",
+      "description": "Al Giza",
+      "duration": ""
+     },
+     {
+      "title": "Pyramids of Giza",
+      "description": "Photo stop, Visit, Guided tour, Sightseeing, Walk",
+      "duration": "3 hours"
+     },
+     {
+      "title": "Sphinx",
+      "description": "Photo stop, Visit, Guided tour, Sightseeing",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Giza",
+      "description": "Break time, Lunch",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Grand Egyptian Museum",
+      "description": "Photo stop, Visit, Guided tour, Free time, Sightseeing",
+      "duration": "3 hours"
+     },
+     {
+      "title": "Arrive back at:",
+      "description": "Al Giza",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 65,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "sharing-lunch-check-option-description-not-in-43b1491a351f",
+     "title": "Sharing + Lunch (Check Option description) not include TKT",
+     "type": "Per Person",
+     "description": "This option Is Sharing Group With English Guide Enter Tickets not included we visit The same program Grand Egyptian Museum (GEM) Pyramids of Giza Sphinx Local Bazars Lunch Included in local restaurant",
+     "duration": "1 day",
+     "guestPrices": {
+      "adult": 65,
+      "child": 65,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 65,
+        "child": 65,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "private-pyramids-of-giza-sphinx-gem-included--5a45eefa5360",
+     "title": "Private Pyramids of Giza Sphinx & GEM Included Tickets",
+     "type": "Per Person",
+     "description": "Its private with your own Guide to Visit the Grate Pyramids of Giza & Sphinx & the New Grand Egyptian Museum Tickets Included Lunch not included",
+     "duration": "1 day",
+     "guestPrices": {
+      "adult": 235,
+      "child": 150,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 235,
+        "child": 150,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": []
+  },
+  {
+   "slug": "private-pyramids-egyptian-museum-khan-el-khalili-tour",
+   "id": "dea3437e0b0323bb4da57aff",
+   "readAt": "2026-10-25T11:16:19Z",
+   "detail": {
+    "title": "Private Pyramids, Egyptian Museum & Khan El Khalili Tour",
+    "duration": "8 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "All transfers by a private air-conditioned vehicle",
+     "Private transportation",
+     "Entry fees",
+     "guide on site",
+     "Lunch",
+     "Bottle of water"
+    ],
+    "whatsNotIncluded": [],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "5 pickup location options",
+      "description": "Giza, Cairo, Al Giza, Al Haram, 6th of October City",
+      "duration": ""
+     },
+     {
+      "title": "Car",
+      "description": "Giza",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Pyramids of Giza",
+      "description": "Guided tour",
+      "duration": ""
+     },
+     {
+      "title": "Egyptian Museum of Antiquities",
+      "description": "Guided tour",
+      "duration": ""
+     },
+     {
+      "title": "Khan el-Khalili",
+      "description": "Guided tour",
+      "duration": ""
+     },
+     {
+      "title": "Car",
+      "description": "Giza",
+      "duration": "1 hour"
+     },
+     {
+      "title": "5 drop-off locations",
+      "description": "6th of October City, Giza, Cairo, Al Giza, Al Haram",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 90,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "cairo-private-pyramids-museum-bazaar-tour-wit-c7719f571208",
+     "title": "Cairo: Private Pyramids, Museum & Bazaar Tour with Lunch",
+     "type": "Per Person",
+     "description": "Discover Cairo’s top highlights on a private day tour. Marvel at the Giza Pyramids and Sphinx, explore thousands of pharaonic treasures at the Egyptian Museum, and hunt for unique souvenirs in the vibrant Khan El Khalili Bazaar with lunch included.",
+     "duration": "8 hours",
+     "guestPrices": {
+      "adult": 90,
+      "child": 25,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 90,
+        "child": 25,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": []
+  },
+  {
+   "slug": "giza-pyramids-sphinx-nmec-museum-historic-citadel",
+   "id": "22b82f912ed0ca7d1d35ad41",
+   "readAt": "2026-10-25T11:16:19Z",
+   "detail": {
+    "title": "Giza Pyramids, Sphinx, NMEC Museum & Historic Citadel",
+    "duration": "3 - 8 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Transportation by air-conditioned vehicle",
+     "Professional licensed guide",
+     "Shared Tour: Professional English-speaking guide only",
+     "Private Tour: Professional guide available in all languages",
+     "Entry tickets to selected landmarks",
+     "Hotel pick-up and drop-off from Cairo or Giza",
+     "Visits: Papyrus Gallery, Oils Factory, Bazaar, Cotton Store, Carpet School (upon request)",
+     "Bottled water"
+    ],
+    "whatsNotIncluded": [],
+    "whatToBring": [
+     "Comfortable shoes",
+     "Sunglasses",
+     "Sun hat",
+     "Hat",
+     "Camera",
+     "Sunscreen",
+     "Comfortable clothes"
+    ],
+    "itinerary": [
+     {
+      "title": "2 pickup location options",
+      "description": "Giza, Cairo",
+      "duration": ""
+     },
+     {
+      "title": "Car",
+      "description": "Giza",
+      "duration": "20 minutes"
+     },
+     {
+      "title": "National Museum of Egyptian Civilization",
+      "description": "Photo stop, Visit, Guided tour, Free time, Sightseeing, Walk",
+      "duration": "2 hours"
+     },
+     {
+      "title": "Car",
+      "description": "Giza",
+      "duration": "20 minutes"
+     },
+     {
+      "title": "Pyramids of Giza",
+      "description": "Pyramids of Giza",
+      "duration": ""
+     },
+     {
+      "title": "Car",
+      "description": "Giza",
+      "duration": "20 minutes"
+     },
+     {
+      "title": "2 drop-off locations",
+      "description": "Cairo, Giza",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 55,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "pyramids-only-shared-with-ticket-b0966fdc8593",
+     "title": "Pyramids Only — Shared With Ticket",
+     "type": "Per Person",
+     "description": "Shared English tour of the Giza Pyramids with tickets included. Lunch not included. Visit the Great Pyramid, explore the plateau, and see the Sphinx with a guide. Ideal for travelers on a budget or with limited time.",
+     "duration": "3 - 8 hours",
+     "guestPrices": {
+      "adult": 55,
+      "child": 55,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 55,
+        "child": 55,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "museum-old-cairo-khan-khalili-shared-with-tic-95088f2154b7",
+     "title": "Museum, Old Cairo, Khan Khalili — Shared With Ticket",
+     "type": "Per Person",
+     "description": "Step into the wonders of ancient and historic Egypt! Marvel at the Pyramids of Giza and the Sphinx, then uncover thousands of years of history at the National Museum of Egyptian Civilization. Customize your adventure with flexible add-ons—including Old Cairo, the Citadel, the vibrant Khan el-Khalili Bazaar, or an upgrade to our VIP experience with a scenic Nile Felucca ride.",
+     "duration": "3 - 8 hours",
+     "guestPrices": {
+      "adult": 78,
+      "child": 78,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 78,
+        "child": 78,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "pyramids-civilization-museum-old-cairo-privat-45b02ab180ef",
+     "title": "Pyramids, Civilization Museum, Old Cairo—Private With Ticket",
+     "type": "Per Person",
+     "description": "Private English tour of the Pyramids, Civilization Museum, and Old Cairo with tickets included. Lunch not included, but can be added at checkout. Discover pyramids, treasures, and Old Cairo churches.",
+     "duration": "3 - 8 hours",
+     "guestPrices": {
+      "adult": 115,
+      "child": 115,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 115,
+        "child": 115,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 115,
+        "child": 115,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 115,
+        "child": 115,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 115,
+        "child": 115,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-3",
+     "pricingKey": "vip-private-pyramid-museum-citadel-old-cairo--25ae2eb89dd2",
+     "title": "Pyramids, Civilisation Museum, Old Cairo – Private With Ticket",
+     "type": "Per Person",
+     "description": "Private English tour of the Pyramids, the Civilisation Museum and Old Cairo with tickets included. Lunch not included, but can be added at checkout. Discover pyramids, treasures and Old Cairo churches.",
+     "duration": "3 - 8 hours",
+     "guestPrices": {
+      "adult": 273,
+      "child": 120,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 273,
+        "child": 120,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 273,
+        "child": 120,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 273,
+        "child": 120,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 273,
+        "child": 120,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-4",
+     "pricingKey": "vip-private-pyramid-museum-citadel-old-cairo--12513719cfc9",
+     "title": "{VIP} Private: Pyramid, Museum, Citadel, Old Cairo & Felucca",
+     "type": "Per Person",
+     "description": "VIP English private tour of the Giza Pyramids, Museum of Egyptian Civilization, Citadel, and Old Cairo with lunch included, ending with a Nile felucca ride. A luxury full-day cultural and scenic journey with expert guidance.",
+     "duration": "3 - 8 hours",
+     "guestPrices": {
+      "adult": 435,
+      "child": 203,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 435,
+        "child": 203,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 435,
+        "child": 203,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 435,
+        "child": 203,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 435,
+        "child": 203,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a81383d94325a98750016c1",
+     "title": "Sultan Hassan Mosque",
+     "description": "",
+     "price": 107.96,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81383d94325a98750016c2",
+     "title": "Romanian Guide",
+     "description": "",
+     "price": 269.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81383d94325a98750016c3",
+     "title": "Hindi Guide",
+     "description": "",
+     "price": 269.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81383d94325a98750016c4",
+     "title": "Indonesian Guide",
+     "description": "",
+     "price": 269.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81383d94325a98750016c5",
+     "title": "Chinese guide",
+     "description": "",
+     "price": 269.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81383d94325a98750016c6",
+     "title": "Korean Guide",
+     "description": "",
+     "price": 269.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81383d94325a98750016c7",
+     "title": "Japanese Guide",
+     "description": "",
+     "price": 269.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81383d94325a98750016c8",
+     "title": "Dutch guide",
+     "description": "",
+     "price": 269.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81383d94325a98750016c9",
+     "title": "Portuguese Guide",
+     "description": "",
+     "price": 269.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81383d94325a98750016ca",
+     "title": "Lunch per person",
+     "description": "",
+     "price": 33.74,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81383d94325a98750016cb",
+     "title": "01 hour Felucca ride",
+     "description": "",
+     "price": 67.47,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81383d94325a98750016cc",
+     "title": "AlHakim bi-Amr Allah",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81383d94325a98750016cd",
+     "title": "Bab Zuweila",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81383d94325a98750016ce",
+     "title": "Sultan Al-Ghuri",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81383d94325a98750016cf",
+     "title": "Al-Salih Tala’i",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81383d94325a98750016d0",
+     "title": "Aqsunqur",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81383d94325a98750016d1",
+     "title": "Beit Zeinab Khatun",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81383d94325a98750016d2",
+     "title": "Darb al-Ahmar",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81383d94325a98750016d3",
+     "title": "Islamic Art Museum",
+     "description": "",
+     "price": 107.96,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81383d94325a98750016d4",
+     "title": "Cairo Opera House",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a813cf7bf5af9b3fbd5962d",
+     "title": "Al-Fishawi Café",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a813cf7bf5af9b3fbd5962e",
+     "title": "Cairo Tower Tour",
+     "description": "",
+     "price": 107.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a813cf7bf5af9b3fbd5962f",
+     "title": "Labor Tombs",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a813cf7bf5af9b3fbd59630",
+     "title": "Menkaure Pyramid",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a813cf7bf5af9b3fbd59631",
+     "title": "Entrance To Khufu Pyramids",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a813cf7bf5af9b3fbd59632",
+     "title": "Abdeen Palace",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a813cf7bf5af9b3fbd59633",
+     "title": "Saqqara",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a813cf7bf5af9b3fbd59634",
+     "title": "Memphis",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a813cf7bf5af9b3fbd59635",
+     "title": "Dahshur",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a813cf7bf5af9b3fbd59636",
+     "title": "Lunch per person",
+     "description": "",
+     "price": 33.72,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a813cf7bf5af9b3fbd59637",
+     "title": "30 Min Camel Ride",
+     "description": "",
+     "price": 67.43,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a813cf7bf5af9b3fbd59638",
+     "title": "30 Min Quad Bike",
+     "description": "",
+     "price": 67.43,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a813cf7bf5af9b3fbd59639",
+     "title": "Airport Pickup Fees",
+     "description": "",
+     "price": 67.43,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a813cf7bf5af9b3fbd5963a",
+     "title": "Dinner Cruise Nile",
+     "description": "",
+     "price": 47.2,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "sakkara-memphis-dahshur-giza-pyramids-day-tour",
+   "id": "a95ec0c8795bcf21d056352b",
+   "readAt": "2026-10-25T11:16:19Z",
+   "detail": {
+    "title": "Sakkara, Memphis, Dahshur & Giza Pyramids Day Tour",
+    "duration": "3 - 8 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Transportation by air-conditioned vehicle",
+     "Professional licensed guide",
+     "Shared Tour: Professional English-speaking guide only",
+     "Private Tour: Professional guide available in all languages",
+     "Entry tickets to selected landmarks",
+     "Hotel pick-up and drop-off from Cairo or Giza",
+     "Visits: Papyrus Gallery, Oils Factory, Bazaar, Cotton Store, Carpet School (upon request)",
+     "Bottled water"
+    ],
+    "whatsNotIncluded": [],
+    "whatToBring": [
+     "Comfortable shoes",
+     "Sunglasses",
+     "Sun hat",
+     "Hat",
+     "Sunscreen",
+     "Comfortable clothes"
+    ],
+    "itinerary": [
+     {
+      "title": "Pickup location:",
+      "description": "Giza",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Car",
+      "description": "Giza",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Dahshur",
+      "description": "Photo stop, Visit, Guided tour",
+      "duration": "1 hours"
+     },
+     {
+      "title": "Car",
+      "description": "Giza",
+      "duration": "20 minutes"
+     },
+     {
+      "title": "Sakkara",
+      "description": "Photo stop, Visit, Guided tour",
+      "duration": "1.5 hours"
+     },
+     {
+      "title": "Car",
+      "description": "Giza",
+      "duration": "20 minutes"
+     },
+     {
+      "title": "Memphis, Egypt",
+      "description": "Photo stop, Visit, Guided tour",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Car",
+      "description": "Giza",
+      "duration": "20 minutes"
+     },
+     {
+      "title": "Arrive back at:",
+      "description": "Giza",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 55,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "pyramids-only-shared-with-ticket-f78cb6b39be2",
+     "title": "Pyramids Only — Shared With Ticket",
+     "type": "Per Person",
+     "description": "Shared English tour of the Giza Pyramids with tickets included. Lunch not included. Visit the Great Pyramid, see the Sphinx, and explore the plateau with a guide. Perfect for travelers looking for an affordable and time-efficient experience.",
+     "duration": "3 - 8 hours",
+     "guestPrices": {
+      "adult": 55,
+      "child": 55,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 55,
+        "child": 55,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "memphis-sakkara-dahshur-shared-with-ticket-d1e880becd96",
+     "title": "Memphis, Sakkara, Dahshur — Shared With Ticket",
+     "type": "Per Person",
+     "description": "Shared English tour of Memphis, Sakkara, and Dahshur with tickets included. Lunch not included. Explore Egypt’s first capital, the Step Pyramid, and Dahshur’s Red and Bent Pyramids with a knowledgeable guide.",
+     "duration": "3 - 8 hours",
+     "guestPrices": {
+      "adult": 104,
+      "child": 104,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 104,
+        "child": 104,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "pyramids-memphis-sakkara-shared-with-ticket-f121ee983d8c",
+     "title": "Pyramids, Memphis, Sakkara — Shared With Ticket",
+     "type": "Per Person",
+     "description": "Shared English tour of the Pyramids, Memphis, and Sakkara with tickets included. Lunch not included. Discover the Great Pyramid, the ruins of Memphis, and the Step Pyramid of Djoser in one cultural journey.",
+     "duration": "3 - 8 hours",
+     "guestPrices": {
+      "adult": 131,
+      "child": 131,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 131,
+        "child": 131,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 131,
+        "child": 131,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 131,
+        "child": 131,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 131,
+        "child": 131,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-3",
+     "pricingKey": "sakkara-memphis-dahshur-private-with-ticket-5c570d8fdea6",
+     "title": "Sakkara, Memphis, Dahshur — Private With Ticket",
+     "type": "Per Person",
+     "description": "Private English tour of Sakkara, Memphis, and Dahshur with tickets included. Lunch not included, but can be added at checkout. Visit Egypt’s first capital, the Step Pyramid, and Dahshur’s Red and Bent Pyramids.",
+     "duration": "3 - 8 hours",
+     "guestPrices": {
+      "adult": 230,
+      "child": 95,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 230,
+        "child": 95,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 230,
+        "child": 95,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 230,
+        "child": 95,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 230,
+        "child": 95,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-4",
+     "pricingKey": "vip-private-pyramids-memphis-sakkara-dahshur--e1cd8286d0bf",
+     "title": "{VIP} Private: Pyramids, Memphis, Sakkara, Dahshur & Felucca",
+     "type": "Per Person",
+     "description": "VIP English private tour of the Pyramids, Memphis, Sakkara, and Dahshur with lunch included, ending with a scenic Nile felucca ride. A luxury full-day experience combining Egypt’s most iconic pyramids with relaxing river sailing.",
+     "duration": "3 - 8 hours",
+     "guestPrices": {
+      "adult": 440,
+      "child": 208,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 440,
+        "child": 208,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 440,
+        "child": 208,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 440,
+        "child": 208,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 440,
+        "child": 208,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a812ae8038e3a1a665a97c4",
+     "title": "Sultan Hassan Mosque",
+     "description": "",
+     "price": 107.96,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812ae8038e3a1a665a97c5",
+     "title": "Romanian Guide",
+     "description": "",
+     "price": 269.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812ae8038e3a1a665a97c6",
+     "title": "Hindi Guide",
+     "description": "",
+     "price": 269.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812ae8038e3a1a665a97c7",
+     "title": "Indonesian Guide",
+     "description": "",
+     "price": 269.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812ae8038e3a1a665a97c8",
+     "title": "Chinese guide",
+     "description": "",
+     "price": 269.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812ae8038e3a1a665a97c9",
+     "title": "Korean Guide",
+     "description": "",
+     "price": 269.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812ae8038e3a1a665a97ca",
+     "title": "Japanese Guide",
+     "description": "",
+     "price": 269.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812ae8038e3a1a665a97cb",
+     "title": "Dutch guide",
+     "description": "",
+     "price": 269.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812ae8038e3a1a665a97cc",
+     "title": "Portuguese Guide",
+     "description": "",
+     "price": 269.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afb5",
+     "title": "Ukrainian Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afb6",
+     "title": "Turkish Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afb7",
+     "title": "Greek Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afb8",
+     "title": "Hungarian Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afb9",
+     "title": "Czech Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afba",
+     "title": "Polish Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afbb",
+     "title": "The Cave Church Tour",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afbc",
+     "title": "Islamic, Coptic Tour",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afbd",
+     "title": "Bayt al-Suhaymi",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afbe",
+     "title": "City of the Dead",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afbf",
+     "title": "Mohamed Ali Palace",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afc0",
+     "title": "Qalawun Complex",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afc1",
+     "title": "Khan el-Khalili Tour",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afc2",
+     "title": "Abu al-Abbas Mosque",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afc3",
+     "title": "Muizz Street",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afc4",
+     "title": "Aqmar Mosque",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afc5",
+     "title": "Al-Rifa'i Mosque",
+     "description": "",
+     "price": 953.48,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afc6",
+     "title": "Amr ibn Al-Aas Masjd",
+     "description": "",
+     "price": 953.48,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afc7",
+     "title": "Gayer-Anderson House",
+     "description": "",
+     "price": 953.48,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afc8",
+     "title": "Al-Azhar Mosque",
+     "description": "",
+     "price": 953.48,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afc9",
+     "title": "Ibn Tulun Mosque",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afca",
+     "title": "Entry to the Great Pyramids",
+     "description": "",
+     "price": 87.66,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afcb",
+     "title": "Private Tour Photographer",
+     "description": "",
+     "price": 202.29,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afcc",
+     "title": "Salah Al-Din Citadel",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afcd",
+     "title": "Egyptian Museum Tour",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afce",
+     "title": "Civilization Museum",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afcf",
+     "title": "AlHakim bi-Amr Allah",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afd0",
+     "title": "Bab Zuweila",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afd1",
+     "title": "Sultan Al-Ghuri",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afd2",
+     "title": "Al-Salih Tala’i",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afd3",
+     "title": "Aqsunqur",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afd4",
+     "title": "Islamic Art Museum",
+     "description": "",
+     "price": 107.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afd5",
+     "title": "Cairo Opera House",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afd6",
+     "title": "Al-Fishawi Café",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afd7",
+     "title": "Old Cairo Tour",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afd8",
+     "title": "Cairo Tower Tour",
+     "description": "",
+     "price": 107.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afd9",
+     "title": "Labor Tombs",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afda",
+     "title": "Menkaure Pyramid",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afdb",
+     "title": "Entrance To Khufu Pyramids",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afdc",
+     "title": "Abdeen Palace",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afdd",
+     "title": "30 Min Quad Bike",
+     "description": "",
+     "price": 67.43,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afde",
+     "title": "30 Min Camel Ride",
+     "description": "",
+     "price": 67.43,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afdf",
+     "title": "Airport Pickup Fees",
+     "description": "",
+     "price": 67.43,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8130dd5b2cc064f4f2afe0",
+     "title": "Dinner Cruise Nile",
+     "description": "",
+     "price": 47.2,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "giza-pyramids-sakkara-memphis-day-tour-with-nile-sail",
+   "id": "96bf27f1a86235aef12bb4c1",
+   "readAt": "2026-10-25T11:16:19Z",
+   "detail": {
+    "title": "Giza Pyramids, Sakkara & Memphis Day Tour with Nile Sail",
+    "duration": "3 - 8 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Transportation by air-conditioned vehicle",
+     "Professional licensed guide",
+     "Shared Tour: Professional English-speaking guide only",
+     "Private Tour: Professional guide available in all languages",
+     "Entry tickets to selected landmarks",
+     "Hotel pick-up and drop-off from Cairo or Giza",
+     "Visits: Papyrus Gallery, Oils Factory, Bazaar, Cotton Store, Carpet School (upon request)",
+     "Bottled water",
+     "Lunch — included in VIP Private Tour only, or available as an add-on for Private Tours"
+    ],
+    "whatsNotIncluded": [],
+    "whatToBring": [
+     "Comfortable shoes",
+     "Sunglasses",
+     "Sun hat",
+     "Hat",
+     "Camera",
+     "Sunscreen",
+     "Comfortable clothes"
+    ],
+    "itinerary": [
+     {
+      "title": "3 pickup location options",
+      "description": "Cairo, Giza District, Giza",
+      "duration": ""
+     },
+     {
+      "title": "Car",
+      "description": "Giza",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Giza Plateau",
+      "description": "Guided tour",
+      "duration": "2 hour"
+     },
+     {
+      "title": "Sakkara",
+      "description": "Guided tour",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Memphis, Egypt",
+      "description": "Guided tour",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Car",
+      "description": "Giza",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "3 drop-off locations",
+      "description": "Giza, Cairo, Giza District",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 55,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "pyramids-only-shared-with-ticket-dc6d2b9e0b33",
+     "title": "Pyramids Only — Shared With Ticket",
+     "type": "Per Person",
+     "description": "Shared English tour of the Giza Pyramids with tickets included. Lunch not included. Visit the Great Pyramid, see the Sphinx, and walk the plateau with your guide. Ideal for travelers looking for an affordable and time-efficient option.",
+     "duration": "3 - 8 hours",
+     "guestPrices": {
+      "adult": 55,
+      "child": 55,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 55,
+        "child": 55,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "memphis-sakkara-dahshur-shared-with-ticket-844b69a67e0a",
+     "title": "Memphis, Sakkara, Dahshur — Shared With Ticket",
+     "type": "Per Person",
+     "description": "Shared English tour of Memphis, Sakkara, and Dahshur with tickets included. Lunch not included. Visit Egypt’s first capital, explore the Step Pyramid, and discover Dahshur’s Red and Bent Pyramids with an expert guide.",
+     "duration": "3 - 8 hours",
+     "guestPrices": {
+      "adult": 104,
+      "child": 104,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 104,
+        "child": 104,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "pyramids-memphis-sakkara-shared-with-ticket-a081911f225b",
+     "title": "Pyramids, Memphis, Sakkara — Shared With Ticket",
+     "type": "Per Person",
+     "description": "Shared English tour of the Pyramids, Memphis, and Sakkara with tickets included. Lunch not included. Explore the Great Pyramid, ruins of Memphis, and the Step Pyramid of Djoser in one cultural and historical journey.",
+     "duration": "3 - 8 hours",
+     "guestPrices": {
+      "adult": 131,
+      "child": 131,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 131,
+        "child": 131,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 131,
+        "child": 131,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 131,
+        "child": 131,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 131,
+        "child": 131,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 131,
+        "child": 131,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-3",
+     "pricingKey": "pyramids-memphis-sakkara-private-with-ticket-7b522c2f779f",
+     "title": "Pyramids, Memphis, Sakkara — Private With Ticket",
+     "type": "Per Person",
+     "description": "Private English tour of the Pyramids, Memphis, and Sakkara with tickets included. Lunch not included, but can be added at checkout. Discover the Great Pyramid, Memphis ruins, and the Step Pyramid with your guide.",
+     "duration": "3 - 8 hours",
+     "guestPrices": {
+      "adult": 285,
+      "child": 132,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 285,
+        "child": 132,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 285,
+        "child": 132,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 285,
+        "child": 132,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 285,
+        "child": 132,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 285,
+        "child": 132,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-4",
+     "pricingKey": "pyramids-memphis-sakkara-private-with-ticket-04b1eb4c0c71",
+     "title": "Pyramids, Memphis, Sakkara — Private With Ticket",
+     "type": "Per Person",
+     "description": "Private Italian or Spanish tour of the Pyramids, Memphis, and Sakkara with tickets included. Lunch not included, but available as an add-on. Explore the pyramids, Memphis, and Step Pyramid in your preferred language.",
+     "duration": "3 - 8 hours",
+     "guestPrices": {
+      "adult": 341,
+      "child": 159,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 341,
+        "child": 159,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 341,
+        "child": 159,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 341,
+        "child": 159,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 341,
+        "child": 159,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 341,
+        "child": 159,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-5",
+     "pricingKey": "vip-private-pyramids-memphis-sakkara-dahshur--d1af83cd8115",
+     "title": "{VIP} Private: Pyramids, Memphis, Sakkara, Dahshur & Felucca",
+     "type": "Per Person",
+     "description": "VIP English private tour of the Pyramids, Memphis, Sakkara, and Dahshur with lunch included, ending with a scenic Nile felucca ride. A luxury full-day experience combining ancient history, iconic pyramids, and relaxing river sailing.",
+     "duration": "3 - 8 hours",
+     "guestPrices": {
+      "adult": 440,
+      "child": 208,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 440,
+        "child": 208,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a81247b038e3a1a665a9333",
+     "title": "Lunch per person",
+     "description": "",
+     "price": 33.74,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81247b038e3a1a665a9334",
+     "title": "Egyptian Museum Tour",
+     "description": "",
+     "price": 134.95,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81247b038e3a1a665a9335",
+     "title": "01 hour Felucca ride",
+     "description": "",
+     "price": 67.47,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81247b038e3a1a665a9336",
+     "title": "AlHakim bi-Amr Allah",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81247b038e3a1a665a9337",
+     "title": "Bab Zuweila",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81247b038e3a1a665a9338",
+     "title": "Sultan Al-Ghuri",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81247b038e3a1a665a9339",
+     "title": "Al-Salih Tala’i",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81247b038e3a1a665a933a",
+     "title": "Aqsunqur",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81247b038e3a1a665a933b",
+     "title": "Beit Zeinab Khatun",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81247b038e3a1a665a933c",
+     "title": "Darb al-Ahmar",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd64",
+     "title": "Islamic Art Museum",
+     "description": "",
+     "price": 107.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd65",
+     "title": "Cairo Opera House",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd66",
+     "title": "Al-Fishawi Café",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd67",
+     "title": "Old Cairo Tour",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd68",
+     "title": "Cairo Tower Tour",
+     "description": "",
+     "price": 107.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd69",
+     "title": "Menkaure Pyramid",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd6a",
+     "title": "Labor Tombs",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd6b",
+     "title": "Entrance To Khufu Pyramids",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd6c",
+     "title": "Abdeen Palace",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd6d",
+     "title": "Dahshur",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd6e",
+     "title": "30 Min Camel Ride",
+     "description": "",
+     "price": 67.43,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd6f",
+     "title": "30 Min Quad Bike",
+     "description": "",
+     "price": 67.43,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd70",
+     "title": "Airport Pickup Fees",
+     "description": "",
+     "price": 67.43,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd71",
+     "title": "Dinner Cruise Nile",
+     "description": "",
+     "price": 47.2,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd72",
+     "title": "Sultan Hassan Mosque",
+     "description": "",
+     "price": 107.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd73",
+     "title": "Romanian Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd74",
+     "title": "Hindi Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd75",
+     "title": "Indonesian Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd76",
+     "title": "Chinese guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd77",
+     "title": "Korean Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd78",
+     "title": "Japanese Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd79",
+     "title": "Hungarian Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd7a",
+     "title": "Czech Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd7b",
+     "title": "Polish Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd7c",
+     "title": "The Cave Church Tour",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd7d",
+     "title": "Islamic, Coptic Tour",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd7e",
+     "title": "Bayt al-Suhaymi",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd7f",
+     "title": "City of the Dead",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd80",
+     "title": "Mohamed Ali Palace",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd81",
+     "title": "Qalawun Complex",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd82",
+     "title": "Khan el-Khalili Tour",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd83",
+     "title": "Aqmar Mosque",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd84",
+     "title": "Al-Rifa'i Mosque",
+     "description": "",
+     "price": 953.48,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd85",
+     "title": "Amr ibn Al-Aas Masjd",
+     "description": "",
+     "price": 953.48,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd86",
+     "title": "Gayer-Anderson House",
+     "description": "",
+     "price": 953.48,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd87",
+     "title": "Al-Azhar Mosque",
+     "description": "",
+     "price": 953.48,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd88",
+     "title": "Ibn Tulun Mosque",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd89",
+     "title": "Entry to the Great Pyramids",
+     "description": "",
+     "price": 87.66,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd8a",
+     "title": "Private Tour Photographer",
+     "description": "",
+     "price": 202.29,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd8b",
+     "title": "Salah Al-Din Citadel",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a812a04ecec6984ec44bd8c",
+     "title": "Civilization Museum",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
   }
  ]
 }

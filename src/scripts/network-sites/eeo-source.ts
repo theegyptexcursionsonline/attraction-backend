@@ -37,11 +37,15 @@ export interface EeoAddon {
 export interface EeoTour {
   slug: string;
   id: string;
+  /** When this trip was read, for a programme added to the snapshot after it was first taken. */
+  readAt?: string;
   detail: {
     title: string;
     duration?: string;
     languages?: string[];
     whatsIncluded?: string[];
+    /** Where the record keeps its inclusions when `whatsIncluded` is empty (B03's Giza trips, 25 October 2026). */
+    includes?: string[];
     whatsNotIncluded?: string[];
     whatToBring?: string[];
     itinerary?: Array<{ title?: string; description?: string; duration?: string }>;
@@ -65,6 +69,16 @@ const strings = (items: unknown): string[] => (Array.isArray(items) ? items : []
 
 const sameMoney = (a: unknown, b: unknown) => Math.abs(Number(a ?? 0) - Number(b ?? 0)) < 0.005;
 const times = (option: EeoOption) => (option.timeSlots || []).map((slot) => slot.time).sort().join(',');
+
+/**
+ * What the published page shows under "What's included". The record keeps that list in `whatsIncluded` or,
+ * when that is empty, in `includes`, and the client's own page reads whichever is filled; every Giza trip of
+ * batch B03 fills only the second. Never both: the fuller field wins, so nothing is listed twice.
+ */
+const publishedInclusions = (detail: EeoTour['detail']): string[] => {
+  const named = strings(detail.whatsIncluded);
+  return named.length ? named : strings(detail.includes);
+};
 
 /**
  * The programme document the seed reads (the network's own trip shape), built from one EEO trip and the booking
@@ -118,7 +132,7 @@ export function eeoProgramme(tour: EeoTour, sold: string[], category: string): D
     pricingOptions,
     addons,
     entryWindows,
-    inclusions: strings(tour.detail.whatsIncluded),
+    inclusions: publishedInclusions(tour.detail),
     exclusions: strings(tour.detail.whatsNotIncluded),
     whatToBring: strings(tour.detail.whatToBring),
     itinerary: (tour.detail.itinerary || [])
