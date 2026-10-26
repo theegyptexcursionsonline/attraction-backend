@@ -275,7 +275,15 @@ const withoutIds = <T extends Record<string, unknown>>(items: T[] | undefined): 
  * a named option, extra or departure it no longer has, a missing price, or a child rate with no written terms
  * stops the run before any write.
  */
-export function programmeFacts(site: NetworkSite, trip: NetworkTrip, programme: SourceDoc) {
+/**
+ * The facts about a site that building one trip needs. `NetworkSite` carries them, and so does a site that
+ * already exists and is only having its catalogue replaced (`seed-network-high-ten`), which has no tenant
+ * record to write.
+ */
+export type TripSiteFacts = Pick<NetworkSite,
+  'slugPrefix' | 'listingPath' | 'city' | 'area' | 'coordinates' | 'currency' | 'pickupNote' | 'foreignPlaces'>;
+
+export function programmeFacts(site: TripSiteFacts, trip: NetworkTrip, programme: SourceDoc) {
   const spec = trip.price;
   const where = `${site.slugPrefix}${trip.path} (${spec.tenant}/${spec.source})`;
   const currency = String(programme.currency || '').trim().toUpperCase();
@@ -338,7 +346,7 @@ export function programmeFacts(site: NetworkSite, trip: NetworkTrip, programme: 
 }
 
 /** Text a trip copies from its programme: another company's live record, checked before the first write. */
-export function copiedFactProblems(site: NetworkSite, document: Record<string, unknown>): string[] {
+export function copiedFactProblems(site: Pick<NetworkSite, 'foreignPlaces'>, document: Record<string, unknown>): string[] {
   const texts = (items: unknown, ...keys: string[]): string[] => (Array.isArray(items) ? items : [])
     .flatMap((item) => (typeof item === 'string' ? [item] : keys.map((key) => (item as Record<string, unknown> | null)?.[key])))
     .filter((text): text is string => typeof text === 'string');
@@ -369,7 +377,7 @@ const cleanList = (items: unknown): string[] =>
 const once = (items: string[]): string[] => [...new Set(items)];
 
 /** A programme list without the exact lines the trip leaves out; a line that is not there stops the run. */
-function withoutLines(site: NetworkSite, trip: NetworkTrip, field: 'inclusions' | 'exclusions' | 'needToKnow', items: unknown): unknown[] {
+function withoutLines(site: Pick<NetworkSite, 'slugPrefix'>, trip: NetworkTrip, field: 'inclusions' | 'exclusions' | 'needToKnow', items: unknown): unknown[] {
   const list = Array.isArray(items) ? items : [];
   const drop = trip.price.omit?.[field] || [];
   for (const line of drop) {
@@ -379,7 +387,7 @@ function withoutLines(site: NetworkSite, trip: NetworkTrip, field: 'inclusions' 
 }
 
 /** The trip document for one site, from its written copy and the named programme. */
-export function tripDocument(site: NetworkSite, trip: NetworkTrip, programme: SourceDoc, index: number, tenantId: unknown): Record<string, unknown> {
+export function tripDocument(site: TripSiteFacts, trip: NetworkTrip, programme: SourceDoc, index: number, tenantId: unknown): Record<string, unknown> {
   const facts = programmeFacts(site, trip, programme);
   const inclusions = once([...cleanList(withoutLines(site, trip, 'inclusions', programme.inclusions)), ...cleanList(trip.price.add?.inclusions)]);
   const pickup = programme.hasHotelPickup === true || inclusions.some((item) => /hotel pickup|pickup and drop-off at your hotel/i.test(item));
