@@ -13960,65 +13960,37 @@
    ]
   },
   {
-   "slug": "cairo-old-town-khan-el-khalili-private-cultural-tour",
-   "id": "8356669b34f4bdf4e16b9174",
-   "readAt": "2026-10-27T06:12:28Z",
+   "slug": "from-sharm-el-sheikh-mount-sinai-sunrise-hike-st-catherine-monastery",
+   "id": "d4ced8f4024e95ff81ab7641",
+   "readAt": "2026-10-27T06:38:28Z",
    "detail": {
-    "title": "Cairo Old Town & Khan El Khalili: Private Cultural Tour",
-    "duration": "5 hours",
+    "title": "From Sharm El Sheikh: Mount Sinai Sunrise Hike & St. Catherine Monastery",
+    "duration": "17 hours",
     "languages": [],
     "whatsIncluded": [
-     "Egyptologist guide",
-     "Entrance fees",
-     "Transport",
-     "Parking",
-     "Taxes and service charge"
+     "16-17 hour tour",
+     "Pickup and drop-off from the hotel in Sharm el-Sheikh",
+     "Egyptologist tour guide",
+     "Bedouin guide for trekking the mountain",
+     "Transfer by a clean and air-conditioned vehicle",
+     "Water"
     ],
     "includes": [],
     "whatsNotIncluded": [
-     "Tips",
+     "Extra drinks",
      "Personal expenses"
     ],
-    "whatToBring": [],
-    "itinerary": [
-     {
-      "title": "Pickup location: Cairo",
-      "description": "",
-      "duration": ""
-     },
-     {
-      "title": "Khan el-Khalili",
-      "description": "",
-      "duration": "2 hours"
-     },
-     {
-      "title": "Hanging Church",
-      "description": "",
-      "duration": "30 minutes"
-     },
-     {
-      "title": "Ben Ezra Synagogue",
-      "description": "",
-      "duration": "15 minutes"
-     },
-     {
-      "title": "Abu Serga",
-      "description": "",
-      "duration": "20 minutes"
-     },
-     {
-      "title": "264J+CGP",
-      "description": "",
-      "duration": "15 minutes"
-     },
-     {
-      "title": "Arrive back at Cairo",
-      "description": "",
-      "duration": ""
-     }
+    "whatToBring": [
+     "Passport",
+     "Warm clothing",
+     "Hiking shoes",
+     "Jacket",
+     "Comfortable clothes",
+     "Food"
     ],
+    "itinerary": [],
     "pricingSummary": {
-     "fromPrice": 75,
+     "fromPrice": 66,
      "currency": "USD",
      "version": 0
     }
@@ -14026,113 +13998,251 @@
    "options": [
     {
      "id": "option-0",
-     "pricingKey": "old-cairo-and-khan-el-khalili-bazaar-private--28581f6a7770",
-     "title": "Old Cairo and Khan El Khalili Bazaar: Private Half-Day Tour",
+     "pricingKey": "shared-multilingual-tour-66104905913e",
+     "title": "Shared Multilingual Tour",
      "type": "Per Person",
-     "description": "Discover the heritage of Old Cairo and explore the lively Khan El Khalili Bazaar on a private half-day tour with an expert Egyptologist guide.",
-     "duration": "5 hours",
+     "description": "Join a shared tour with a multilingual guide who can speak different languages according to the language needs of the guests.",
+     "duration": "17 hours",
      "guestPrices": {
-      "adult": 75,
-      "child": 30,
+      "adult": 66,
+      "child": 33,
       "infant": 0
      },
      "maxCapacity": null,
      "timeSlots": [
       {
        "id": "slot-1",
-       "time": "09:00",
+       "time": "21:00",
        "guestPrices": {
-        "adult": 75,
-        "child": 30,
-        "infant": 0
-       }
-      },
-      {
-       "id": "slot-2",
-       "time": "10:00",
-       "guestPrices": {
-        "adult": 75,
-        "child": 30,
-        "infant": 0
-       }
-      },
-      {
-       "id": "slot-3",
-       "time": "11:00",
-       "guestPrices": {
-        "adult": 75,
-        "child": 30,
-        "infant": 0
-       }
-      },
-      {
-       "id": "slot-4",
-       "time": "12:00",
-       "guestPrices": {
-        "adult": 75,
-        "child": 30,
-        "infant": 0
-       }
-      },
-      {
-       "id": "slot-5",
-       "time": "13:00",
-       "guestPrices": {
-        "adult": 75,
-        "child": 30,
-        "infant": 0
-       }
-      },
-      {
-       "id": "slot-6",
-       "time": "14:00",
-       "guestPrices": {
-        "adult": 75,
-        "child": 30,
-        "infant": 0
-       }
-      },
-      {
-       "id": "slot-7",
-       "time": "15:00",
-       "guestPrices": {
-        "adult": 75,
-        "child": 30,
-        "infant": 0
-       }
-      },
-      {
-       "id": "slot-8",
-       "time": "16:00",
-       "guestPrices": {
-        "adult": 75,
-        "child": 30,
+        "adult": 66,
+        "child": 33,
         "infant": 0
        }
       }
      ]
     }
    ],
-   "addons": [
+   "addons": []
+  },
+  {
+   "slug": "st-catherine-monastery-dahab-day-trip-from-sharm-el-sheikh",
+   "id": "5c547ea08b574f9cc240e4d6",
+   "readAt": "2026-10-27T06:38:28Z",
+   "detail": {
+    "title": "St. Catherine Monastery & Dahab Day Trip from Sharm El Sheikh",
+    "duration": "12 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Hotel pickup and drop-off",
+     "Entry fees",
+     "Mount Sinai guide",
+     "Snacks"
+    ],
+    "whatsNotIncluded": [
+     "Tips"
+    ],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "Pickup location:",
+      "description": "Sharm El-Sheikh",
+      "duration": ""
+     },
+     {
+      "title": "Car",
+      "description": "",
+      "duration": "3 hours"
+     },
+     {
+      "title": "Saint Catherine's Monastery",
+      "description": "Guided tour",
+      "duration": ""
+     },
+     {
+      "title": "Dahab",
+      "description": "Guided tour",
+      "duration": ""
+     },
+     {
+      "title": "Car",
+      "description": "",
+      "duration": "3 hours"
+     },
+     {
+      "title": "Arrive back at:",
+      "description": "Sharm El-Sheikh",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 350,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
     {
-     "id": "6a8cce39b345b2b40b27dc99",
-     "title": "Felucca Ride 30 Min",
-     "description": "",
-     "price": 12,
-     "perGuest": true,
-     "bookingOptionKeys": [],
-     "required": false
+     "id": "option-0",
+     "pricingKey": "from-sharm-el-sheikh-day-trip-to-st-catherine-a28d1dbec478",
+     "title": "From Sharm-El-Sheikh: Day Trip to St. Catherine and Dahab",
+     "type": "Per Person",
+     "description": "A one-day excursion departing from Sharm El Sheikh that includes visits to St. Catherine and the town of Dahab.",
+     "duration": "12 hours",
+     "guestPrices": {
+      "adult": 350,
+      "child": 100,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "05:00",
+       "guestPrices": {
+        "adult": 350,
+        "child": 100,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "06:00",
+       "guestPrices": {
+        "adult": 350,
+        "child": 100,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": []
+  },
+  {
+   "slug": "sharm-el-sheikh-dahab-blue-hole-canyon-adventure-with-snorkeling-lunch",
+   "id": "cdf8cefeab03f47cae609535",
+   "readAt": "2026-10-27T06:38:28Z",
+   "detail": {
+    "title": "Sharm El Sheikh: Dahab Blue Hole & Canyon Adventure with Snorkeling & Lunch",
+    "duration": "9 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Hotel pickup & drop-off from Sharm El Sheikh (air-conditioned vehicle)",
+     "Professional guide throughout the trip",
+     "Snorkeling guide",
+     "Entry to the Blue Hole area (if option selected)",
+     "Snorkeling stop at the Blue Hole",
+     "Snorkeling equipment (mask and fins) (if add-ons are selected)",
+     "Camel ride",
+     "Canyon visit",
+     "Visit to Dahab",
+     "Lunch at a local restaurant",
+     "Bottled water during the tour"
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "Personal expenses"
+    ],
+    "whatToBring": [
+     "Sunglasses",
+     "Sun hat",
+     "Towel",
+     "Camera",
+     "Sunscreen",
+     "Cash"
+    ],
+    "itinerary": [
+     {
+      "title": "Pickup location",
+      "description": "Sharm El-Sheikh",
+      "duration": ""
+     },
+     {
+      "title": "Van",
+      "description": "",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Blue Hole, Red Sea",
+      "description": "Break time, Photo stop, Visit, Guided tour, Free time, Shopping, Sightseeing",
+      "duration": "3 hours"
+     },
+     {
+      "title": "Dahab",
+      "description": "Snorkeling, Scenic views on the way",
+      "duration": "3 hours"
+     },
+     {
+      "title": "Van",
+      "description": "",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Arrive back",
+      "description": "Sharm El-Sheikh",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 23.35,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "dahab-coastal-escape-with-snorkeling-lunch-37a6cb77bda1",
+     "title": "Dahab Coastal Escape with Snorkeling & Lunch",
+     "type": "Per Person",
+     "description": "Enjoy a relaxed Dahab coastal snorkeling experience with lunch. Swim at beautiful open-water spots along the coast without entering the Blue Hole, perfect for a calm and easy day by the Red Sea.",
+     "duration": "9 hours",
+     "guestPrices": {
+      "adult": 23.35,
+      "child": 11.67,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 23.35,
+        "child": 11.67,
+        "infant": 0
+       }
+      }
+     ]
     },
     {
-     "id": "6a8cce39b345b2b40b27dc9a",
-     "title": "Dinner Cruise on Nile",
-     "description": "",
-     "price": 55,
-     "perGuest": true,
-     "bookingOptionKeys": [],
-     "required": false
+     "id": "option-1",
+     "pricingKey": "blue-hole-magic-dahab-vibes-w-snorkeling-lunc-ff4d26fe82c3",
+     "title": "Blue Hole Magic & Dahab Vibes w/Snorkeling & Lunch",
+     "type": "Per Person",
+     "description": "Discover Dahab and snorkel at the iconic Blue Hole. Explore vibrant coral reefs, enjoy Red Sea views, and relax with lunch on this unforgettable full-day adventure from Sharm.",
+     "duration": "9 hours",
+     "guestPrices": {
+      "adult": 64.21,
+      "child": 32.69,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 64.21,
+        "child": 32.69,
+        "infant": 0
+       }
+      }
+     ]
     }
-   ]
+   ],
+   "addons": []
   }
  ]
 }

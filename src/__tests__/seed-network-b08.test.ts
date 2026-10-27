@@ -5,7 +5,7 @@ import { B01_SAFARI } from '../scripts/network-sites/b01-safari';
 import { B02 } from '../scripts/network-sites/b02';
 import { B03A } from '../scripts/network-sites/b03';
 import { B03B, B03C, B03D } from '../scripts/network-sites/b03-rest';
-import { B08A } from '../scripts/network-sites/b08';
+import { B08A, B08B } from '../scripts/network-sites/b08';
 import SNAPSHOT from '../scripts/network-sites/eeo-snapshot.json';
 
 const siteOf = (slug: string) => B08A.sites.find((site) => site.slug === slug)!;
@@ -48,16 +48,10 @@ describe('batch B08 group 1: Nabq National Park, Khan el Khalili Market and Moez
     const added = SNAPSHOT.tours.slice(44);
     // B08 read its programmes on its own day, each with the time its record was read.
     for (const tour of added) expect(tour.readAt).toMatch(/^2026-10-27T/);
-    const sold = new Set(B08A.sites.flatMap((site) => site.trips.map((trip) => trip.price.source)));
-    expect(sold.size).toBe(9);
-    for (const source of sold) expect(added.map((tour) => tour.slug)).toContain(source);
-    // The four Coptic Cairo programmes read the same day wait in the snapshot for group 2 (coptic-museum-cairo).
-    expect(added.map((tour) => tour.slug).filter((slug) => !sold.has(slug))).toEqual([
-      'cairo-coptic-cairo-cave-church-of-st-simon-private-tour',
-      'cairo-islamic-coptic-heritage-tour-with-lunch',
-      'cairo-coptic-islamic-heritage-tour',
-      'cairo-old-town-khan-el-khalili-private-cultural-tour',
-    ]);
+    const sold = new Set([...B08A.sites, ...B08B.sites].flatMap((site) => site.trips.map((trip) => trip.price.source)));
+    for (const source of sold) expect(slugs).toContain(source);
+    // Nothing B08 added is left unsold.
+    expect(added.map((tour) => tour.slug).filter((slug) => !sold.has(slug))).toEqual([]);
   });
 
   it('builds every trip from the dated snapshot into a complete trip', () => {
@@ -158,5 +152,81 @@ describe('batch B08 group 1: Nabq National Park, Khan el Khalili Market and Moez
       for (const trip of site.trips) expect(trip.imageAlts.filter((alt) => alt.trim().length > 20)).toHaveLength(trip.images.length);
     }
     expect(B08A.sites.filter((site) => site.photoShortfall).map((site) => site.slug)).toEqual(['nabq-national-park']);
+  });
+});
+
+describe('batch B08 group 2: Coptic Museum Cairo, Mount Sinai and Dahab Blue Hole', () => {
+  const site = (slug: string) => B08B.sites.find((item) => item.slug === slug)!;
+
+  it('is a valid batch of three new sites', () => {
+    expect(validateBatch(B08B)).toEqual([]);
+    expect(B08B.id).toBe('b08b');
+    expect(B08B.sites.map((item) => item.domain)).toEqual(['copticmuseumcairo.com', 'mountsinaieg.com', 'dahabbluehole.com']);
+    const built = new Set([...EARLIER, ...B08A.sites].flatMap((item) => [item.slug, item.domain, item.slugPrefix]));
+    for (const item of B08B.sites) {
+      expect(built.has(item.slug) || built.has(item.domain) || built.has(item.slugPrefix)).toBe(false);
+      expect([item.currency, item.listingPath]).toEqual(['USD', '/trips']);
+    }
+    const everySite = [...EARLIER, ...B08A.sites, ...B08B.sites];
+    for (const values of [
+      everySite.map((item) => item.heroImages[0]),
+      everySite.map((item) => item.seo.metaTitle.trim().toLowerCase()),
+      everySite.flatMap((item) => item.trips.map((trip) => `${item.slugPrefix}${trip.path}`)),
+    ]) expect(new Set(values).size).toBe(values.length);
+  });
+
+  it('builds every trip into a complete trip with pickup, published prices and no conditional lines', () => {
+    const tenantId = new Types.ObjectId();
+    let built = 0;
+    for (const item of B08B.sites) {
+      item.trips.forEach((trip, index) => {
+        const document = tripDocument(item, trip, eeoSourceProgramme(trip.price), index, tenantId) as Record<string, any>;
+        built += 1;
+        expect(copiedFactProblems(item, document)).toEqual([]);
+        expect(new Attraction(document).validateSync()?.errors ?? {}).toEqual({});
+        expect([document.currency, document.rating, document.reviewCount, document.instantConfirmation, document.hasHotelPickup]).toEqual(['USD', 0, 0, false, true]);
+        expect(document.inclusions as string[]).toEqual(expect.arrayContaining([expect.stringMatching(/[Hh]otel pick-?up|[Pp]ickup and drop-off at your hotel/)]));
+        expect([...document.inclusions, ...document.exclusions].filter((line: string) => /if (the )?option|if add-ons?|\(if /i.test(line))).toEqual([]);
+        expect(JSON.stringify(document)).not.toMatch(/authentic|expert|breathtaking|spectacular|FTS|Pickup location|drop-off locations/i);
+        for (const option of document.pricingOptions as Array<Record<string, unknown>>) {
+          expect(Number(option.price)).toBeGreaterThan(0);
+          expect(Number(option.childPrice)).toBeGreaterThan(0);
+          expect(Number(option.childPrice)).toBeLessThan(Number(option.price));
+        }
+        expect(String(document.duration)).toMatch(/\d+(\.\d+)?\s*(to \d+ )?hours?\b/);
+        expect(document.itinerary.length).toBeGreaterThan(2);
+      });
+    }
+    expect(built).toBe(9);
+  });
+
+  it('says on every Coptic Museum trip that the museum itself is not part of it', () => {
+    for (const trip of site('coptic-museum-cairo').trips) {
+      expect(trip.description).toMatch(/does not go inside the Coptic Museum/);
+      expect(trip.price.add?.needToKnow).toEqual(expect.arrayContaining([expect.stringMatching(/not the museum itself/)]));
+    }
+    expect(site('coptic-museum-cairo').description).toMatch(/None of these days goes inside the Coptic Museum/);
+  });
+
+  it('sells only the Blue Hole options on the Blue Hole site, and the mask and fins per guest', () => {
+    const blueHole = site('dahab-blue-hole');
+    const documents = blueHole.trips.map((trip, index) => tripDocument(blueHole, trip, eeoSourceProgramme(trip.price), index, new Types.ObjectId()) as Record<string, any>);
+    for (const document of documents) {
+      expect(document.inclusions.join('\n')).toMatch(/Entry to the Blue Hole/);
+      expect(document.pricingOptions.map((option: { name: string }) => option.name).join('\n')).not.toMatch(/without/i);
+    }
+    expect(documents[0].addons).toEqual([]);
+    expect(documents[1].addons).toEqual([expect.objectContaining({ name: 'Snorkel mask and fins', price: 23.35, pricingModel: 'per-person' })]);
+  });
+
+  it('tells every Mount Sinai guest about the monastery days, and shares only three programmes with earlier sites', () => {
+    for (const trip of site('mount-sinai').trips) expect(trip.price.add?.needToKnow?.join('\n')).toMatch(/closed on Sundays/);
+    const earlier = new Set(EARLIER.flatMap((item) => item.trips.map((trip) => trip.price.source)));
+    // The client publishes these three once; Sharm Tour Guide and Safari Sharm El Sheikh already sell them in other words.
+    expect(B08B.sites.flatMap((item) => item.trips.map((trip) => trip.price.source)).filter((source) => earlier.has(source)).sort()).toEqual([
+      'sharm-el-sheikh-colored-canyon-blue-hole-dahab-jeep-adventure',
+      'sharm-el-sheikh-mount-sinai-sunrise-hike-st-catherine-s-monastery',
+      'sharm-el-sheikh-private-st-catherine-s-monastery-tour',
+    ]);
   });
 });
