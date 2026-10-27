@@ -11055,6 +11055,3084 @@
      "required": false
     }
    ]
+  },
+  {
+   "slug": "sharm-el-sheikh-sinai-desert-red-sea-horseback-riding",
+   "id": "8aeb83dd4fab75ec2777b667",
+   "readAt": "2026-10-27T06:38:28Z",
+   "detail": {
+    "title": "Sharm El Sheikh: Sinai Desert & Red Sea Horseback Riding",
+    "duration": "1 hour",
+    "languages": [],
+    "whatsIncluded": [
+     "Guided horse-riding tour",
+     "Helmets and safety briefing",
+     "Professional, friendly guide",
+     "Nabq National Park fee",
+     "Transfers / pickup and drop-off",
+     "Time for photos",
+     "Soft drink"
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "Food"
+    ],
+    "whatToBring": [
+     "Comfortable clothes"
+    ],
+    "itinerary": [],
+    "pricingSummary": {
+     "fromPrice": 45,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "sharm-el-sheikh-1-hour-sinai-desert-red-sea-h-849f8887df2e",
+     "title": "Sharm El Sheikh: 1 Hour Sinai Desert & Red Sea Horse Ride",
+     "type": "Per Person",
+     "description": "Enjoy a 1 hour guided horseback riding experience through the desert and along the Red Sea, with transfers included",
+     "duration": "1H",
+     "guestPrices": {
+      "adult": 45,
+      "child": 22.5,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 45,
+        "child": 22.5,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 45,
+        "child": 22.5,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 45,
+        "child": 22.5,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "14:00",
+       "guestPrices": {
+        "adult": 45,
+        "child": 22.5,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "16:00",
+       "guestPrices": {
+        "adult": 45,
+        "child": 22.5,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "15:00",
+       "guestPrices": {
+        "adult": 45,
+        "child": 22.5,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "sharm-el-sheikh-2-hour-sinai-desert-red-sea-h-59c0f70f6827",
+     "title": "Sharm El Sheikh: 2 Hour Sinai Desert & Red Sea Horse Ride",
+     "type": "Per Person",
+     "description": "Spend 2 hours on a guided horse ride through the desert and beside the Red Sea, with transfers included.",
+     "duration": "2H",
+     "guestPrices": {
+      "adult": 80,
+      "child": 40,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 80,
+        "child": 40,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 80,
+        "child": 40,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 80,
+        "child": 40,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "14:00",
+       "guestPrices": {
+        "adult": 80,
+        "child": 40,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "15:00",
+       "guestPrices": {
+        "adult": 80,
+        "child": 40,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "16:00",
+       "guestPrices": {
+        "adult": 80,
+        "child": 40,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-7",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 80,
+        "child": 40,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": []
+  },
+  {
+   "slug": "cairo-private-souk-local-markets-shopping-tour-with-lunch",
+   "id": "66de1d692c021951ba39ff45",
+   "readAt": "2026-10-27T06:12:28Z",
+   "detail": {
+    "title": "Cairo Private Souk & Local Markets Shopping Tour with Lunch",
+    "duration": "4 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "All transfers by a private air-conditioned vehicle",
+     "Hotel pick-up and drop-off",
+     "Tour guide",
+     "Lunch",
+     "Bottle of water"
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "Tips"
+    ],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "4 pickup location options",
+      "description": "Al Haram, Giza District, 6th of October City, Cairo",
+      "duration": ""
+     },
+     {
+      "title": "Car",
+      "description": "",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Khan el-Khalili",
+      "description": "",
+      "duration": "2 hours"
+     },
+     {
+      "title": "4 drop-off locations",
+      "description": "Al Haram, Cairo, Giza District, 6th of October City",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 50,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "cairo-private-traditional-markets-khan-el-kha-f385341e26dd",
+     "title": "Cairo Private Traditional Markets & Khan el-Khalili Shopping Tour",
+     "type": "Per Person",
+     "description": "Discover Cairo’s authentic shopping scene on a private half-day tour through El Ghorya, Gamaleya, El Mosky, and Khan el-Khalili. Learn local bargaining tips, explore traditional bazaars, and enjoy a delicious Egyptian kushari lunch.",
+     "duration": "4 hours",
+     "guestPrices": {
+      "adult": 50,
+      "child": 15,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 50,
+        "child": 15,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 50,
+        "child": 15,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 50,
+        "child": 15,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "14:00",
+       "guestPrices": {
+        "adult": 50,
+        "child": 15,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "15:00",
+       "guestPrices": {
+        "adult": 50,
+        "child": 15,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "16:00",
+       "guestPrices": {
+        "adult": 50,
+        "child": 15,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-7",
+       "time": "17:00",
+       "guestPrices": {
+        "adult": 50,
+        "child": 15,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-8",
+       "time": "18:00",
+       "guestPrices": {
+        "adult": 50,
+        "child": 15,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": []
+  },
+  {
+   "slug": "cairo-private-shopping-tour-local-markets-khan-el-khalili",
+   "id": "22d8f95739b3f300b458ed01",
+   "readAt": "2026-10-27T06:12:28Z",
+   "detail": {
+    "title": "Cairo Private Shopping Tour: Local Markets & Khan El Khalili",
+    "duration": "3 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Hotel pick-up and drop-off",
+     "Transport by private air-conditioned vehicle",
+     "Private tour leader",
+     "Bottled water",
+     "Shopping tour in Cairo"
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "Food and drink",
+     "Tips",
+     "Pickup services are not available from touristic areas."
+    ],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "Pickup location: Cairo",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Transfer",
+      "description": "",
+      "duration": "(45 minutes)"
+     },
+     {
+      "title": "Bab al-Futuh",
+      "description": "Sightseeing, Walk (",
+      "duration": "10 minutes"
+     },
+     {
+      "title": "Bab El Nasr, Cairo",
+      "description": "Visit",
+      "duration": "10 minutes"
+     },
+     {
+      "title": "Bab Zuweila, Cairo",
+      "description": "Sightseeing, Walk",
+      "duration": "10 minutes"
+     },
+     {
+      "title": "Khan el-Khalili",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Transfer",
+      "description": "",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "Arrive back at: Cairo",
+      "description": "",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 0,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "private-tour-with-transfers-tickets-multiling-2739ca33f0a4",
+     "title": "Private Tour with Transfers, Tickets & Multilingual Guide",
+     "type": "Per Person",
+     "description": "Enjoy a hassle-free private tour with return transfers, entrance fees, and an expert guide in Arabic, English, French, German, or Spanish. Meals are not included.",
+     "duration": "3 hours",
+     "guestPrices": {
+      "adult": 60,
+      "child": 15,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 60,
+        "child": 15,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "11:30",
+       "guestPrices": {
+        "adult": 60,
+        "child": 15,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 60,
+        "child": 15,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "12:30",
+       "guestPrices": {
+        "adult": 60,
+        "child": 15,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 60,
+        "child": 15,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "13:30",
+       "guestPrices": {
+        "adult": 60,
+        "child": 15,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-7",
+       "time": "14:00",
+       "guestPrices": {
+        "adult": 60,
+        "child": 15,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-8",
+       "time": "14:30",
+       "guestPrices": {
+        "adult": 60,
+        "child": 15,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-9",
+       "time": "15:00",
+       "guestPrices": {
+        "adult": 60,
+        "child": 15,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-10",
+       "time": "15:30",
+       "guestPrices": {
+        "adult": 60,
+        "child": 15,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-11",
+       "time": "17:00",
+       "guestPrices": {
+        "adult": 60,
+        "child": 15,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-12",
+       "time": "17:30",
+       "guestPrices": {
+        "adult": 60,
+        "child": 15,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "private-cairo-experience-with-transfers-multi-f18368732899",
+     "title": "Private Cairo Experience with Transfers & Multilingual Guide",
+     "type": "Per Person",
+     "description": "Enjoy a private Cairo tour with convenient return transfers and a professional guide in your preferred language—Arabic, English, French, German, or Spanish. Entrance fees are included, while meals are not included.",
+     "duration": "3 hours",
+     "guestPrices": {
+      "adult": 0,
+      "child": 0,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 0,
+        "child": 0,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "11:30",
+       "guestPrices": {
+        "adult": 0,
+        "child": 0,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 0,
+        "child": 0,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "12:30",
+       "guestPrices": {
+        "adult": 0,
+        "child": 0,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 0,
+        "child": 0,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "13:30",
+       "guestPrices": {
+        "adult": 0,
+        "child": 0,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-7",
+       "time": "14:00",
+       "guestPrices": {
+        "adult": 0,
+        "child": 0,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-8",
+       "time": "14:30",
+       "guestPrices": {
+        "adult": 0,
+        "child": 0,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-9",
+       "time": "15:00",
+       "guestPrices": {
+        "adult": 0,
+        "child": 0,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-10",
+       "time": "15:00",
+       "guestPrices": {
+        "adult": 0,
+        "child": 0,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-11",
+       "time": "15:30",
+       "guestPrices": {
+        "adult": 0,
+        "child": 0,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-12",
+       "time": "14:00",
+       "guestPrices": {
+        "adult": 0,
+        "child": 0,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-13",
+       "time": "14:30",
+       "guestPrices": {
+        "adult": 0,
+        "child": 0,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-14",
+       "time": "17:00",
+       "guestPrices": {
+        "adult": 0,
+        "child": 0,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-15",
+       "time": "17:30",
+       "guestPrices": {
+        "adult": 0,
+        "child": 0,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a85868d4372ecbc5bc916b9",
+     "title": "N.Capital (Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a85868d4372ecbc5bc916ba",
+     "title": "Badr City (Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a85868d4372ecbc5bc916bb",
+     "title": "Heliopolis (Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a85868d4372ecbc5bc916bc",
+     "title": "New Cairo (Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a85868d4372ecbc5bc916bd",
+     "title": "Shorouk (Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a85868d4372ecbc5bc916be",
+     "title": "Rehab (Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a85868d4372ecbc5bc916bf",
+     "title": "Airport (Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a85868d4372ecbc5bc916c0",
+     "title": "Giza pyramids tour",
+     "description": "",
+     "price": 87,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a85868d4372ecbc5bc916c1",
+     "title": "Grand Egyptian Museum",
+     "description": "",
+     "price": 120,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a85868d4372ecbc5bc916c2",
+     "title": "Egyptian Museum Tour",
+     "description": "",
+     "price": 66,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a85868d4372ecbc5bc916c3",
+     "title": "Madinty (Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a85868d4372ecbc5bc916c4",
+     "title": "Sh. Zayed (Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a85868d4372ecbc5bc916c5",
+     "title": "Sheraton (Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a85868d4372ecbc5bc916c6",
+     "title": "Obour (Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "cairo-islamic-cairo-khan-el-khalili-tanoura-show",
+   "id": "874f7f97a19fc7cf9df0568f",
+   "readAt": "2026-10-27T06:12:28Z",
+   "detail": {
+    "title": "Cairo: Islamic Cairo, Khan El Khalili & Tanoura Show",
+    "duration": "6 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Hotel pickup and drop-off",
+     "Transport by air-conditioned vehicle",
+     "Tour Leader",
+     "Al Tanoura Heritage Show entry ticket",
+     "Walking tour of Historic Islamic Cairo",
+     "Visit to Bab al-Futuh",
+     "Visit to Al-Hakim Mosque",
+     "Visit to Al-Azhar Mosque",
+     "Free time at Khan El Khalili Bazaar",
+     "Bottle of water",
+     "Licensed Egyptologist guide (Included with the Private Tour in your preferred language: English, Arabic, French, Italian, Spanish or German. Available as an optional upgrade for the Small Group Tour.)"
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "Food and drinks",
+     "Personal purchases",
+     "Tips (optional)"
+    ],
+    "whatToBring": [
+     "Passport",
+     "Camera",
+     "Credit card",
+     "Cash"
+    ],
+    "itinerary": [
+     {
+      "title": "Pickup location: Cairo",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Van",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Bab al-Futuh",
+      "description": "",
+      "duration": "15 minutes"
+     },
+     {
+      "title": "Al-Hakim Mosque, Cairo",
+      "description": "",
+      "duration": "20 minutes"
+     },
+     {
+      "title": "Al-Mu'izz Street",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Khan el-Khalili",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Al-Azhar Mosque",
+      "description": "",
+      "duration": "20 minutes"
+     },
+     {
+      "title": "Wekalet El Ghoury",
+      "description": "",
+      "duration": "2 hours"
+     },
+     {
+      "title": "van",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Arrive back at: Cairo",
+      "description": "",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 60,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "cairo-al-muizz-street-khan-el-khalili-tanoura-59f49228c5d8",
+     "title": "Cairo: Al Muizz Street, Khan El Khalili & Tanoura Show Tour",
+     "type": "Per Person",
+     "description": "Discover Historic Cairo on an evening tour of Al Muizz Street, Khan El Khalili and iconic Islamic landmarks, ending with a captivating Tanoura heritage show at Wikalat Al Ghuri.",
+     "duration": "6 hours",
+     "guestPrices": {
+      "adult": 60,
+      "child": 20,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "15:30",
+       "guestPrices": {
+        "adult": 60,
+        "child": 20,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "private-tour-2a90036c8398",
+     "title": "Private tour",
+     "type": "Per Person",
+     "description": "Enjoy a personalised private tour with a dedicated vehicle and licensed Egyptologist guide in your preferred language. Discover Cairo at your own pace, with flexible sightseeing, expert guidance and convenient private hotel pickup and drop-off included.",
+     "duration": "6 hours",
+     "guestPrices": {
+      "adult": 120,
+      "child": 70,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "15:30",
+       "guestPrices": {
+        "adult": 120,
+        "child": 70,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8c7a1a57405f7f8b046289",
+     "title": "Long Distance Pickup",
+     "description": "",
+     "price": 20,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "cairo-islamic-heritage-tour-al-azhar-al-muizz-street-historic-mosques",
+   "id": "dc9bc1ab9d143c2f3aa21400",
+   "readAt": "2026-10-27T06:12:28Z",
+   "detail": {
+    "title": "Cairo Islamic Heritage Tour: Al-Azhar, Al-Muizz Street & Historic Mosques",
+    "duration": "6 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Egyptologist guide",
+     "Transport",
+     "Lunch",
+     "Entrance fees",
+     "Al-Azhar Mosque",
+     "Al Mouayyed Mosque",
+     "Bab Zuweila",
+     "Al Hussein Mosque",
+     "Beit El Seheimy",
+     "Al-Hakim Mosque",
+     "Bab al Fetouh",
+     "Bab Al Nas"
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "Any additional services not listed in the programme",
+     "Drinks and personal expenses"
+    ],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "Hotel Pickup",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Al Azhar mosque",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Al Mouayyed Mosque",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Bab Zuweila",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Al Hussein Mosque",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Beit El Seheimy",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Al-Hakim Mosque",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Bab al Fetouh",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Bab Al Nasr",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Transfer back to your hotel",
+      "description": "",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 95,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "private-islamic-cairo-tour-with-lunch-drinks-0755dc24f437",
+     "title": "Private Islamic Cairo Tour with Lunch & Drinks",
+     "type": "Per Person",
+     "description": "Explore Cairo’s Islamic landmarks with private pickup, an expert guide, lunch, and refreshing drinks included.",
+     "duration": "6 hours",
+     "guestPrices": {
+      "adult": 95,
+      "child": 48,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:30",
+       "guestPrices": {
+        "adult": 95,
+        "child": 48,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a817981598d12d7c20e8ed1",
+     "title": "Airport Pickup Fees",
+     "description": "",
+     "price": 34,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a817981598d12d7c20e8ed2",
+     "title": "Dinner Cruise extra",
+     "description": "",
+     "price": 27,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a817981598d12d7c20e8ed3",
+     "title": "30 Min Felucca Ride",
+     "description": "",
+     "price": 14,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "cairo-islamic-cairo-el-moez-street-al-azhar-park-tour",
+   "id": "4f4b343bdd4410d9251ff4f4",
+   "readAt": "2026-10-27T06:12:28Z",
+   "detail": {
+    "title": "Cairo: Islamic Cairo, El Moez Street & Al Azhar Park Tour",
+    "duration": "5 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "All transfers by a private air-conditioned vehicle.",
+     "Pick-up services from your hotel & return.",
+     "Private tour guide",
+     "Entrance fees to all the mentioned sites.",
+     "Dinner meal at Studio Misr restaurant.",
+     "Bottled water during your trip.",
+     "All taxes & service charge"
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "Any extras not mentioned in the itinerary.",
+     "Tipping.",
+     "Beverages and water during dinner."
+    ],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "Pickup location: Cairo",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Transfer",
+      "description": "",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "Al-Mu'izz Street",
+      "description": "",
+      "duration": "2 hours"
+     },
+     {
+      "title": "Al-Azhar Park",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Transfer",
+      "description": "",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "Arrive back at: Cairo",
+      "description": "",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 126,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "cairo-explore-el-moez-street-al-azhar-park-6d04f57caf52",
+     "title": "Cairo: Explore El Moez Street & Al Azhar Park",
+     "type": "Per Person",
+     "description": "Explore the historic heart of Cairo on a guided tour of El Moez Street, Islamic Cairo, and Al Azhar Park. Discover centuries-old monuments, traditional markets, and enjoy panoramic city views.",
+     "duration": "5 hours",
+     "guestPrices": {
+      "adult": 126,
+      "child": 37,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 126,
+        "child": 37,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 126,
+        "child": 37,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 126,
+        "child": 37,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "14:00",
+       "guestPrices": {
+        "adult": 126,
+        "child": 37,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8f50f9d3721afbaf5875d4",
+     "title": "Airport",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8f50f9d3721afbaf5875d5",
+     "title": "N.Capital",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8f50f9d3721afbaf5875d6",
+     "title": "New Cairo",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8f50f9d3721afbaf5875d7",
+     "title": "Heliopolis",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8f50f9d3721afbaf5875d8",
+     "title": "Badr City",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8f50f9d3721afbaf5875d9",
+     "title": "Shorouk",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8f50f9d3721afbaf5875da",
+     "title": "Rehab",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8f50f9d3721afbaf5875db",
+     "title": "Obour",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8f50f9d3721afbaf5875dc",
+     "title": "Sheraton",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8f50f9d3721afbaf5875dd",
+     "title": "Sh. Zayed",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8f50f9d3721afbaf5875de",
+     "title": "Madinty",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "cairo-el-moez-street-islamic-cairo-khan-el-khalili-walking-tour",
+   "id": "42c43c8421691a7591411660",
+   "readAt": "2026-10-27T06:12:28Z",
+   "detail": {
+    "title": "Cairo: El Moez Street, Islamic Cairo & Khan El Khalili Walking Tour",
+    "duration": "4 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Every transfer is made in a private air-conditioned car.",
+     "Pick-up and return services from your accommodation.",
+     "Private tour guide.",
+     "Fees to enter all the sites mentioned.",
+     "Bottled water for your journey.",
+     "All service fees and taxes.",
+     "Shopping tour in Cairo"
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "any additional costs not specified in the itinerary.",
+     "Tipping."
+    ],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "Pickup location: Cairo",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Car",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Al-Mu'izz Street",
+      "description": "",
+      "duration": "1.5 hours"
+     },
+     {
+      "title": "Khan el-Khalili",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Car",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Arrive back at: Cairo",
+      "description": "",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 41,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "cairo-el-moez-street-historic-cairo-khan-el-k-fdac77ec0143",
+     "title": "Cairo: El Moez Street, Historic Cairo & Khan El Khalili Private Tour",
+     "type": "Per Person",
+     "description": "Explore the heart of Islamic Cairo on a private walking tour through El Moez Street, historic gates, ancient mosques and El Darb El Asfar, ending at the lively Khan El Khalili Bazaar.",
+     "duration": "4 hours",
+     "guestPrices": {
+      "adult": 100,
+      "child": 42,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 100,
+        "child": 42,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 100,
+        "child": 42,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 100,
+        "child": 42,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "14:00",
+       "guestPrices": {
+        "adult": 100,
+        "child": 42,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "15:00",
+       "guestPrices": {
+        "adult": 100,
+        "child": 42,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "16:00",
+       "guestPrices": {
+        "adult": 100,
+        "child": 42,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-7",
+       "time": "18:00",
+       "guestPrices": {
+        "adult": 100,
+        "child": 42,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-8",
+       "time": "17:00",
+       "guestPrices": {
+        "adult": 100,
+        "child": 42,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "private-5-person-cairo-tour-with-tickets-tran-da420c4c8ea7",
+     "title": "Private 5-Person Cairo Tour with Tickets, Transfers & Guide",
+     "type": "Per Person",
+     "description": "Explore the heart of Islamic Cairo on a private walking tour through El Moez Street, historic gates, ancient mosques and El Darb El Asfar, ending at the lively Khan El Khalili Bazaar.",
+     "duration": "4 hours",
+     "guestPrices": {
+      "adult": 41,
+      "child": 41,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 41,
+        "child": 41,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 41,
+        "child": 41,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 41,
+        "child": 41,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "14:00",
+       "guestPrices": {
+        "adult": 41,
+        "child": 41,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "15:00",
+       "guestPrices": {
+        "adult": 41,
+        "child": 41,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "16:00",
+       "guestPrices": {
+        "adult": 41,
+        "child": 41,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-7",
+       "time": "17:00",
+       "guestPrices": {
+        "adult": 41,
+        "child": 41,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-8",
+       "time": "18:00",
+       "guestPrices": {
+        "adult": 41,
+        "child": 41,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "private-english-cairo-tour-with-tickets-trans-a6ae333926af",
+     "title": "Private English Cairo Tour with Tickets, Transfers & Expert Guide",
+     "type": "Per Person",
+     "description": "Explore the heart of Islamic Cairo on a private walking tour through El Moez Street, historic gates, ancient mosques and El Darb El Asfar, ending at the lively Khan El Khalili Bazaar.",
+     "duration": "4 hours",
+     "guestPrices": {
+      "adult": 75,
+      "child": 42,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 75,
+        "child": 42,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 75,
+        "child": 42,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 75,
+        "child": 42,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "14:00",
+       "guestPrices": {
+        "adult": 75,
+        "child": 42,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "15:00",
+       "guestPrices": {
+        "adult": 75,
+        "child": 42,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "16:00",
+       "guestPrices": {
+        "adult": 75,
+        "child": 42,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-7",
+       "time": "17:00",
+       "guestPrices": {
+        "adult": 75,
+        "child": 42,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-8",
+       "time": "18:00",
+       "guestPrices": {
+        "adult": 75,
+        "child": 42,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8cbfa162bffb3e8fc78811",
+     "title": "Airport",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8cbfa162bffb3e8fc78812",
+     "title": "N.Capital",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8cbfa162bffb3e8fc78813",
+     "title": "Heliopolis",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8cbfa162bffb3e8fc78814",
+     "title": "New Cairo",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8cbfa162bffb3e8fc78815",
+     "title": "Badr City",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8cbfa162bffb3e8fc78816",
+     "title": "Shorouk",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8cbfa162bffb3e8fc78817",
+     "title": "Rehab",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8cbfa162bffb3e8fc78818",
+     "title": "Obour",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8cbfa162bffb3e8fc78819",
+     "title": "Sheraton",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8cbfa162bffb3e8fc7881a",
+     "title": "Sh. Zayed",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8cbfa162bffb3e8fc7881b",
+     "title": "Madinty",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "cairo-islamic-tour-medieval-mosques-al-mu-izz-street-khan-elkhalili",
+   "id": "91d1a8f732d0374cda827deb",
+   "readAt": "2026-10-27T06:12:28Z",
+   "detail": {
+    "title": "Cairo Islamic Tour: Medieval Mosques, Al-Mu'izz Street & Khan ElKhalili",
+    "duration": "4 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Round-trip transfer from/to your destination in a private air-conditioned vehicle.",
+     "Tour guide in the language you speak.",
+     "All the entrance fees to all the mentioned sites as per the itinerary.",
+     "Bottled water during your trip.",
+     "All taxes & service charge"
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "Any extras not mentioned in the itinerary.",
+     "Tipping"
+    ],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "Pickup location: Cairo",
+      "description": "Pickup location",
+      "duration": ""
+     },
+     {
+      "title": "Transfer",
+      "description": "Transfer Step",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "Unknown Soldier Memorial, Cairo",
+      "description": "Visit, Sightseeing",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "Al Fishawi cafe",
+      "description": "Visit to  Al Fishawi cafe",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "Al-Mu'izz Street",
+      "description": "Visit, Walk",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "Transfer",
+      "description": "Transport",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "Arrive back at",
+      "description": "Arrive at your place",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 116,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "cairo-islamic-heritage-tour-al-mu-izz-street--1d9ac4cec552",
+     "title": "Cairo Islamic Heritage Tour: Al-Mu'izz Street & Khan El-Khalili",
+     "type": "Per Person",
+     "description": "Explore Cairo after dark on a fascinating journey through its Islamic heritage. Visit historic mosques, stroll along Al-Mu'izz Street, discover the lively Khan ElKhalili bazaar, and relax at the famous Al-Fishawi Cafe.",
+     "duration": "4 hours",
+     "guestPrices": {
+      "adult": 116,
+      "child": 36,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "16:15",
+       "guestPrices": {
+        "adult": 116,
+        "child": 36,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "16:00",
+       "guestPrices": {
+        "adult": 116,
+        "child": 36,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "16:30",
+       "guestPrices": {
+        "adult": 116,
+        "child": 36,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "16:45",
+       "guestPrices": {
+        "adult": 116,
+        "child": 36,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "17:00",
+       "guestPrices": {
+        "adult": 116,
+        "child": 36,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "17:15",
+       "guestPrices": {
+        "adult": 116,
+        "child": 36,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-7",
+       "time": "17:30",
+       "guestPrices": {
+        "adult": 116,
+        "child": 36,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-8",
+       "time": "17:45",
+       "guestPrices": {
+        "adult": 116,
+        "child": 36,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a80deda79f99e889a50b59c",
+     "title": "Airport(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a80deda79f99e889a50b59d",
+     "title": "N.Capital(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a80deda79f99e889a50b59e",
+     "title": "New Cairo/(Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a80deda79f99e889a50b59f",
+     "title": "Heliopolis(/Transfer",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a80deda79f99e889a50b5a0",
+     "title": "Badr City(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a80deda79f99e889a50b5a1",
+     "title": "Shorouk(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a80deda79f99e889a50b5a2",
+     "title": "Rehab(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a80deda79f99e889a50b5a3",
+     "title": "Obour(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a80deda79f99e889a50b5a4",
+     "title": "Sheraton (/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a80deda79f99e889a50b5a5",
+     "title": "Sh. Zayed(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a80deda79f99e889a50b5a6",
+     "title": "Madinty(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "islamic-cairo-walking-tour-el-moez-street-mosques-khan-el-khaliliculture-street-bites",
+   "id": "e88da044031785bdfc270099",
+   "readAt": "2026-10-27T06:12:28Z",
+   "detail": {
+    "title": "Islamic Cairo Walking Tour: El Moez Street, Mosques & Khan el Khalili Culture",
+    "duration": "3 - 4 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Entrance fees to all attractions",
+     "Professional Egyptologist Tour Guide",
+     "Bottled water",
+     "Local snacks (Zalabia or Halabiya, or similar street snacks)",
+     "Street Food (Authentic Koshary or Egyptian Pie)",
+     "All Service Tax",
+     "Pick-up and drop-off from your hotel in Cairo or Giza (if option booked)"
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "Any other expenses not mentioned",
+     "Tipping (Not mandatory)"
+    ],
+    "whatToBring": [
+     "Baby strollers",
+     "Luggage or large bags"
+    ],
+    "itinerary": [
+     {
+      "title": "Starting/pickup location Depends on the selected option",
+      "description": "Pickup location according to your choice",
+      "duration": ""
+     },
+     {
+      "title": "Bab al-Futuh",
+      "description": "Visit, Guided tour, Sightseeing, Walk",
+      "duration": "15 minutes"
+     },
+     {
+      "title": "Al-Hakim Mosque",
+      "description": "Cairo Visit, Guided tour, Sightseeing, Walk",
+      "duration": "25 minutes"
+     },
+     {
+      "title": "Bayt Al-Suhaymi",
+      "description": "Cairo Visit, Guided tour, Sightseeing, Walk ()",
+      "duration": "25 minutes"
+     },
+     {
+      "title": "Al-Mu'izz Street",
+      "description": "Visit, Guided tour, Sightseeing, Walk",
+      "duration": "15 minutes"
+     },
+     {
+      "title": "Khan el-Khalili",
+      "description": "Visit, Guided tour, Shopping, Sightseeing, Walk",
+      "duration": "15 minutes"
+     },
+     {
+      "title": "Mosque & Khanqah of Al-Nasir Faraj Ibn Barquq",
+      "description": "Visit, Guided tour, Sightseeing, Walk",
+      "duration": "20 minutes"
+     },
+     {
+      "title": "Qalawun Complex",
+      "description": "Cairo Visit, Guided tour, Sightseeing, Walk",
+      "duration": "25 minutes"
+     },
+     {
+      "title": "Al-Hussein Mosque",
+      "description": "Visit, Guided tour, Sightseeing, Walk",
+      "duration": "20 minutes"
+     },
+     {
+      "title": "2 drop-off locations Cairo, Al Emam El Hussein Mosque",
+      "description": "Drop-off locations",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 56,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "sharing-walking-tour-in-english-with-meeting--addead543d98",
+     "title": "Sharing Walking Tour in English with Meeting Point",
+     "type": "Per Person",
+     "description": "No hotel transfers are included with this option. Please meet your guide in front of Bab al-Futuh Gate at least 10 minutes before your scheduled start time. The walking tour concludes at Al Hussein Mosque, allowing you to continue exploring the surrounding area at your own pace.",
+     "duration": "3 - 4 hours",
+     "guestPrices": {
+      "adult": 56,
+      "child": 26,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 56,
+        "child": 26,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 56,
+        "child": 26,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "14:00",
+       "guestPrices": {
+        "adult": 56,
+        "child": 26,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "private-walking-tour-in-english-with-hotel-tr-02f104dba2a6",
+     "title": "Private Walking Tour in English with Hotel Transfers",
+     "type": "Per Person",
+     "description": "Upgrade to a shared English-speaking walking tour with convenient hotel pickup and drop-off in Cairo or Giza. Travel comfortably to and from the historic center and explore Islamic Cairo with your expert guide, enjoying a seamless experience without the hassle of arranging transportation.",
+     "duration": "3 - 4 hours",
+     "guestPrices": {
+      "adult": 126,
+      "child": 86,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 126,
+        "child": 86,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 126,
+        "child": 86,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 126,
+        "child": 86,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 126,
+        "child": 86,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 126,
+        "child": 86,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 126,
+        "child": 86,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-7",
+       "time": "14:00",
+       "guestPrices": {
+        "adult": 126,
+        "child": 86,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "sharing-walking-tour-in-english-with-hotel-tr-b27fb31710a2",
+     "title": "Sharing Walking Tour in English with Hotel Transfers",
+     "type": "Per Person",
+     "description": "Upgrade to a shared English-speaking walking tour with convenient hotel pickup and drop-off in Cairo or Giza. Enjoy a hassle-free experience as your guide takes care of the transfers, allowing you to focus on exploring the historic landmarks and vibrant streets of Islamic Cairo.",
+     "duration": "3 - 4 hours",
+     "guestPrices": {
+      "adult": 76,
+      "child": 36,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "12:30",
+       "guestPrices": {
+        "adult": 76,
+        "child": 36,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "13:30",
+       "guestPrices": {
+        "adult": 76,
+        "child": 36,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "09:30",
+       "guestPrices": {
+        "adult": 76,
+        "child": 36,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": []
+  },
+  {
+   "slug": "cairo-coptic-cairo-cave-church-of-st-simon-private-tour",
+   "id": "5f52069b71e921d95eea1101",
+   "readAt": "2026-10-27T06:12:28Z",
+   "detail": {
+    "title": "Cairo: Coptic Cairo & Cave Church of St. Simon Private Tour",
+    "duration": "5 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "All transfers by a private air-conditioned vehicle",
+     "Pick up services from your hotel & return",
+     "Private tour guide",
+     "Entrance fees to all the mentioned sites",
+     "Bottled water during your trip",
+     "Shopping tour in Cairo",
+     "All taxes & service charge"
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "Any extras not mentioned in the itinerary",
+     "Tipping"
+    ],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "Pickup location: Cairo",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Car",
+      "description": "",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "Abu serga",
+      "description": "",
+      "duration": "15 minutes"
+     },
+     {
+      "title": "Saint Barbara Church, Cairo",
+      "description": "",
+      "duration": "15 minutes"
+     },
+     {
+      "title": "Hanging Church",
+      "description": "",
+      "duration": "15 minutes"
+     },
+     {
+      "title": "Car",
+      "description": "",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "St. Simon \"The Tanner\" Monastery",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Arrive Back at Cairo",
+      "description": "",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 154,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "private-coptic-cairo-tour-with-tickets-transf-122eb71a6355",
+     "title": "Private Coptic Cairo Tour with Tickets, Transfers & Guide",
+     "type": "Per Person",
+     "description": "Enjoy a hassle-free private tour of Coptic Cairo with an expert English- or Arabic-speaking guide, comfortable round-trip transfers, and all entrance fees included. Explore the area’s historic churches and religious landmarks with personalized attention throughout your experience.",
+     "duration": "5 hours",
+     "guestPrices": {
+      "adult": 154,
+      "child": 34,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 154,
+        "child": 34,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8c5b201581566f5723fe50",
+     "title": "Madinty",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8c5b201581566f5723fe51",
+     "title": "Sh. Zayed",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8c5b201581566f5723fe52",
+     "title": "Sheraton",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8c5b201581566f5723fe53",
+     "title": "Obour",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8c5b201581566f5723fe54",
+     "title": "Rehab",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8c5b201581566f5723fe55",
+     "title": "Airport",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8c5b201581566f5723fe56",
+     "title": "N.Capital",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8c5b201581566f5723fe57",
+     "title": "Shorouk",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8c5b201581566f5723fe58",
+     "title": "Badr City",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8c5b201581566f5723fe59",
+     "title": "Heliopolis",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8c5b201581566f5723fe5a",
+     "title": "New Cairo",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "cairo-islamic-coptic-heritage-tour-with-lunch",
+   "id": "6c0953541d7e09417b662f88",
+   "readAt": "2026-10-27T06:12:28Z",
+   "detail": {
+    "title": "Cairo: Islamic & Coptic Heritage Tour with Lunch",
+    "duration": "6 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Pickup and drop-off from your accommodation in Cairo or Giza",
+     "Transportation in an air-conditioned vehicle",
+     "Egyptologist tour guide",
+     "Lunch at a local restaurant",
+     "Cold mineral water",
+     "Entrance fees to the sites mentioned",
+     "All service taxes"
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "Drinks during lunch",
+     "Extra services or expenses not mentioned",
+     "Tips (optional)"
+    ],
+    "whatToBring": [
+     "Passport or ID card, copy accepted"
+    ],
+    "itinerary": [
+     {
+      "title": "Pickup location",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Van",
+      "description": "",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Abu Serga",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Fort of Babylon",
+      "description": "",
+      "duration": "15 minutes"
+     },
+     {
+      "title": "St. George's Church",
+      "description": "",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Hanging Church",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Old Cairo",
+      "description": "lunch",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Cairo Citadel",
+      "description": "",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "Van",
+      "description": "",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Arrive back at: Cairo",
+      "description": "",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 121,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "small-group-english-tour-with-lunch-tickets-e-be73795dbf68",
+     "title": "Small-Group English Tour with Lunch – Tickets Excluded",
+     "type": "Per Person",
+     "description": "Join a small-group guided tour in English with comfortable transfers and a traditional Egyptian lunch. Entry tickets are not included and can be purchased separately at each attraction.",
+     "duration": "6 hours",
+     "guestPrices": {
+      "adult": 121,
+      "child": 54,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 121,
+        "child": 54,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "small-group-tour-in-english-with-lunch-and-en-760adacc46dc",
+     "title": "Small Group Tour in English with Lunch and Entry Tickets",
+     "type": "Per Person",
+     "description": "Discover the historic heart of Cairo on a full-day cultural tour featuring the Citadel of Salah al-Din, El Moez Street, Old Cairo’s famous churches, and Khan El Khalili Bazaar, with traditional Egyptian lunch included.",
+     "duration": "6 hours",
+     "guestPrices": {
+      "adult": 132,
+      "child": 65,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 132,
+        "child": 65,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "private-english-tour-with-lunch-entry-tickets-b09ce2f98266",
+     "title": "Private English Tour with Lunch & Entry Tickets Included",
+     "type": "Per Person",
+     "description": "Discover the historic heart of Cairo on a full-day cultural tour featuring the Citadel of Salah al-Din, El Moez Street, Old Cairo’s famous churches, and Khan El Khalili Bazaar, with traditional Egyptian lunch included.",
+     "duration": "6 hours",
+     "guestPrices": {
+      "adult": 205,
+      "child": 121,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 205,
+        "child": 121,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8b7726445f56b1b5c8514d",
+     "title": "Long Range Pickup",
+     "description": "",
+     "price": 18.5,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8b7726445f56b1b5c8514e",
+     "title": "01 hour Felucca ride",
+     "description": "",
+     "price": 28,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "cairo-coptic-islamic-heritage-tour",
+   "id": "7b80f02358be8441cd05eeb2",
+   "readAt": "2026-10-27T06:12:28Z",
+   "detail": {
+    "title": "Cairo Coptic & Islamic Heritage Tour",
+    "duration": "4 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Every transfer is made in a private air-conditioned car from/to the destination.",
+     "Private guide",
+     "Entrance tickets to all mentioned sites (Only if you choose the option that includes the tickets).",
+     "Bottled water for your journey.",
+     "All service fees and taxes.",
+     "Shopping tour in Cairo"
+    ],
+    "whatsNotIncluded": [
+     "Any additional costs not specified in the itinerary.",
+     "Tipping."
+    ],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "Pickup location: Cairo",
+      "description": "Pickup location",
+      "duration": ""
+     },
+     {
+      "title": "Car",
+      "description": "Transport",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "Cairo Citadel",
+      "description": "Visit, Guided tour, Sightseeing",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Mosque of Muhammad Ali Pasha",
+      "description": "Visit, Guided tour, Sightseeing",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Hanging Church",
+      "description": "Visit, Guided tour, Sightseeing",
+      "duration": "15 minutes"
+     },
+     {
+      "title": "Ben Ezra Synagogue",
+      "description": "Visit, Guided tour, Sightseeing",
+      "duration": "15 minutes"
+     },
+     {
+      "title": "Saint Barbara Church, Cairo",
+      "description": "Visit, Guided tour, Sightseeing",
+      "duration": "15 minutes"
+     },
+     {
+      "title": "Car",
+      "description": "Transport",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "Arrive back",
+      "description": "Arrive back at Cairo",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 139,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "private-tour-in-eng-with-tickets-transfer-and-749602157f5e",
+     "title": "Private Tour in ENG with Tickets, Transfer and Guide",
+     "type": "Per Person",
+     "description": "Discover Cairo’s religious heritage on a private tour of the Citadel, Mohamed Ali Alabaster Mosque, and the historic churches and synagogue of Coptic Cairo, with hotel transfers and a professional guide.",
+     "duration": "4 hours",
+     "guestPrices": {
+      "adult": 139,
+      "child": 34,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 139,
+        "child": 34,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:15",
+       "guestPrices": {
+        "adult": 139,
+        "child": 34,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "08:30",
+       "guestPrices": {
+        "adult": 139,
+        "child": 34,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "08:45",
+       "guestPrices": {
+        "adult": 139,
+        "child": 34,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 139,
+        "child": 34,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "09:15",
+       "guestPrices": {
+        "adult": 139,
+        "child": 34,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-7",
+       "time": "09:30",
+       "guestPrices": {
+        "adult": 139,
+        "child": 34,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-8",
+       "time": "09:45",
+       "guestPrices": {
+        "adult": 139,
+        "child": 34,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a80eef9a9b1fcdfa390a865",
+     "title": "Obour(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a80eef9a9b1fcdfa390a866",
+     "title": "Madinty(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a80eef9a9b1fcdfa390a867",
+     "title": "Sheraton (/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a80eef9a9b1fcdfa390a868",
+     "title": "Rehab(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a80eef9a9b1fcdfa390a869",
+     "title": "Shorouk(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a80eef9a9b1fcdfa390a86a",
+     "title": "New Cairo/(Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a80eef9a9b1fcdfa390a86b",
+     "title": "N.Capital(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a80eef9a9b1fcdfa390a86c",
+     "title": "Sh. Zayed(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a80eef9a9b1fcdfa390a86d",
+     "title": "Airport(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a80eef9a9b1fcdfa390a86e",
+     "title": "Heliopolis(/Transfer",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a80eef9a9b1fcdfa390a86f",
+     "title": "Badr City(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "cairo-old-town-khan-el-khalili-private-cultural-tour",
+   "id": "8356669b34f4bdf4e16b9174",
+   "readAt": "2026-10-27T06:12:28Z",
+   "detail": {
+    "title": "Cairo Old Town & Khan El Khalili: Private Cultural Tour",
+    "duration": "5 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Egyptologist guide",
+     "Entrance fees",
+     "Transport",
+     "Parking",
+     "Taxes and service charge"
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "Tips",
+     "Personal expenses"
+    ],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "Pickup location: Cairo",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Khan el-Khalili",
+      "description": "",
+      "duration": "2 hours"
+     },
+     {
+      "title": "Hanging Church",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Ben Ezra Synagogue",
+      "description": "",
+      "duration": "15 minutes"
+     },
+     {
+      "title": "Abu Serga",
+      "description": "",
+      "duration": "20 minutes"
+     },
+     {
+      "title": "264J+CGP",
+      "description": "",
+      "duration": "15 minutes"
+     },
+     {
+      "title": "Arrive back at Cairo",
+      "description": "",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 75,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "old-cairo-and-khan-el-khalili-bazaar-private--28581f6a7770",
+     "title": "Old Cairo and Khan El Khalili Bazaar: Private Half-Day Tour",
+     "type": "Per Person",
+     "description": "Discover the heritage of Old Cairo and explore the lively Khan El Khalili Bazaar on a private half-day tour with an expert Egyptologist guide.",
+     "duration": "5 hours",
+     "guestPrices": {
+      "adult": 75,
+      "child": 30,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 75,
+        "child": 30,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 75,
+        "child": 30,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 75,
+        "child": 30,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 75,
+        "child": 30,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 75,
+        "child": 30,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "14:00",
+       "guestPrices": {
+        "adult": 75,
+        "child": 30,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-7",
+       "time": "15:00",
+       "guestPrices": {
+        "adult": 75,
+        "child": 30,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-8",
+       "time": "16:00",
+       "guestPrices": {
+        "adult": 75,
+        "child": 30,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8cce39b345b2b40b27dc99",
+     "title": "Felucca Ride 30 Min",
+     "description": "",
+     "price": 12,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8cce39b345b2b40b27dc9a",
+     "title": "Dinner Cruise on Nile",
+     "description": "",
+     "price": 55,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
   }
  ]
 }

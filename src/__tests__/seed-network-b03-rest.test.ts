@@ -46,7 +46,8 @@ describe('batch B03 groups 2 to 4: the seven remaining domains', () => {
 
   it('sells only programmes that are in the dated snapshot, and leaves the earlier batches where they were', () => {
     const slugs = SNAPSHOT.tours.map((tour) => tour.slug);
-    expect(slugs).toHaveLength(44);
+    // Later batches append after B03's forty-four; the forty-four keep their place (seed-network-b08.test.ts).
+    expect(slugs.length).toBeGreaterThanOrEqual(44);
     // B02 read its twelve first and B03A its nine; both keep their place and their order.
     expect(slugs.slice(0, 21)).toEqual([
       'sharm-ras-mohamed-white-island-snorkeling-adventure-with-lunch',
@@ -75,9 +76,9 @@ describe('batch B03 groups 2 to 4: the seven remaining domains', () => {
     expect(sold.size).toBe(29);
     for (const source of sold) expect(slugs).toContain(source);
     // The twenty-three programmes these batches added were read on the batch's own day.
-    for (const tour of SNAPSHOT.tours.slice(21)) expect(tour.readAt).toMatch(/^2026-10-25T/);
+    for (const tour of SNAPSHOT.tours.slice(21, 44)) expect(tour.readAt).toMatch(/^2026-10-25T/);
     // Nothing these batches added to the snapshot is left unsold.
-    expect(slugs.slice(21).filter((slug) => !sold.has(slug))).toEqual([]);
+    expect(slugs.slice(21, 44).filter((slug) => !sold.has(slug))).toEqual([]);
   });
 
   it('builds every trip from the dated snapshot into a complete trip', () => {
