@@ -382,6 +382,14 @@ describe('batch B08 group 3: Coral Reefs Dahab, Marsa Mubarak and Citadel of Sal
     expect(turtle.needToKnow.join('\n')).toMatch(/North Marsa Alam costs extra and cannot be booked/);
   });
 
+  it('tells every guest looking for turtles and dugongs that no boat can promise a sighting', () => {
+    const marsa = site('marsa-mubarak');
+    expect(marsa.description).toMatch(/no boat can promise a sighting/);
+    const lookFor = built(marsa).filter((document) => /dugongs/.test(guestCopy(document)));
+    expect(lookFor.length).toBeGreaterThanOrEqual(2);
+    for (const document of lookFor) expect(document.needToKnow).toContain('Turtles and dugongs are wild animals, so no boat can promise a sighting.');
+  });
+
   it('names the Citadel on every trip the Citadel site sells, and never calls itself the Citadel’s own site', () => {
     const citadel = site('citadel-of-saladin');
     for (const trip of citadel.trips) {
@@ -457,6 +465,13 @@ describe('batch B08 group 4: Egyptian Museum', () => {
       expect(document.itinerary.map((step: { title: string }) => step.title)).toContain('The Egyptian Museum');
     }
     expect(museum.description).toMatch(/all go into the Egyptian Museum on Tahrir Square/);
+  });
+
+  it('says on the site and on every trip that it is the museum on Tahrir Square, not the Grand Egyptian Museum', () => {
+    expect(museum.description).toMatch(/not the Grand Egyptian Museum near the Giza Pyramids/);
+    for (const document of built(museum)) {
+      expect(document.needToKnow).toContain('This trip visits the Egyptian Museum on Tahrir Square in central Cairo, not the Grand Egyptian Museum near the Giza Pyramids.');
+    }
   });
 
   it('describes the museum rather than promising an exhibit that may have moved', () => {

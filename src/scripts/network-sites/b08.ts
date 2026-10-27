@@ -1278,6 +1278,8 @@ const PICKUP_MARSA = 'Pickup and drop-off at your hotel in Marsa Alam';
 const DAY_PICKUP = 'The trip is sold by the day; the team confirms your pickup time when it confirms your booking.';
 /** Options whose child price equals the adult one publish no child price at all, so none is claimed. */
 const SAME_PRICE = 'Children pay the same price as adults.';
+/** Marsa Mubarak's turtles and dugongs are wild: the trips say where to look, never that you will see one. */
+const WILD = 'Turtles and dugongs are wild animals, so no boat can promise a sighting.';
 
 const PROGRAMMES_C = {
   // ---- Coral Reefs Dahab --------------------------------------------------------------------------------------
@@ -1476,7 +1478,7 @@ const PROGRAMMES_C = {
     omit: { inclusions: ['Pickup and transfer to Marsa Mubarak', 'Snorkelling adventure', 'Optional diving session (if selected)'] },
     add: {
       inclusions: [PICKUP_MARSA, 'Guided snorkelling at Marsa Mubarak'],
-      needToKnow: ['Pickup from a hotel in North Marsa Alam costs extra and cannot be booked on this site. Ask the team before you book if your hotel is north of the town.'],
+      needToKnow: ['Pickup from a hotel in North Marsa Alam costs extra and cannot be booked on this site. Ask the team before you book if your hotel is north of the town.', WILD],
     },
     // The record publishes no schedule; the day is written from its own description and inclusions.
     itinerary: [
@@ -1521,6 +1523,7 @@ const PROGRAMMES_C = {
         DAY_PICKUP,
         'Snorkelling gear is not included and cannot be added on this site. Bring your own, or ask the team before you book.',
         'Some snorkelling experience helps.',
+        WILD,
       ],
     },
     itinerary: [
@@ -1805,7 +1808,7 @@ export const B08C: NetworkBatch = {
       slugPrefix: 'mmb-',
       foreignPlaces: NOT_MARSA,
       tagline: 'Snorkelling boat trips to Marsa Mubarak',
-      description: 'Marsa Mubarak sells boat days from Marsa Alam to the bay of Marsa Mubarak, north of the town: guided snorkelling among its reefs, where you can look for turtles and dugongs, with Marsa Shona or Small Shenwa as the second stop and a meal on board.\n\nThere is a sailing boat from Port Ghalib with a morning and an afternoon departure, a full day with the gear and lunch included, and a shorter day that ends with a walk around the marina. Every trip collects you from your hotel in Marsa Alam and brings you back. Hold a place online and pay later, or ask the team first about the pickup time.',
+      description: 'Marsa Mubarak sells boat days from Marsa Alam to the bay of Marsa Mubarak, north of the town: guided snorkelling among its reefs, where you can look for turtles and dugongs, with Marsa Shona or Small Shenwa as the second stop and a meal on board. Turtles and dugongs are wild animals, so no boat can promise a sighting.\n\nThere is a sailing boat from Port Ghalib with a morning and an afternoon departure, a full day with the gear and lunch included, and a shorter day that ends with a walk around the marina. Every trip collects you from your hotel in Marsa Alam and brings you back. Hold a place online and pay later, or ask the team first about the pickup time.',
       seo: {
         metaTitle: 'Marsa Mubarak Snorkelling Boat Trips from Marsa Alam',
         metaDescription: 'Boat days from Marsa Alam to Marsa Mubarak: guided snorkelling among the reefs, a second stop at Marsa Shona or Small Shenwa, a meal on board and hotel pickup.',
@@ -1999,6 +2002,9 @@ export const B08C: NetworkBatch = {
  * single exhibits that the museum moves between its halls and the newer museums, so the site describes the museum
  * and what a guided visit covers instead of promising one object.
  */
+/** Guests confuse the two museums; every trip says which one it visits. */
+const NOT_GEM = 'This trip visits the Egyptian Museum on Tahrir Square in central Cairo, not the Grand Egyptian Museum near the Giza Pyramids.';
+
 const PROGRAMMES_D = {
   EGM_MUSEUM_ONLY: {
     provider: 'eeo',
@@ -2034,7 +2040,7 @@ const PROGRAMMES_D = {
     add: {
       inclusions: ['A licensed English-speaking guide', 'The entry ticket to the Egyptian Museum', PICKUP_CAIRO],
       exclusions: ['Lunch'],
-      needToKnow: [SAME_PRICE],
+      needToKnow: [NOT_GEM, SAME_PRICE],
     },
     // The record publishes no schedule; the visit is written from this option's own description.
     itinerary: [
@@ -2080,7 +2086,7 @@ const PROGRAMMES_D = {
       inclusions: ['A licensed English-speaking guide', 'The entry tickets to the Egyptian Museum and the churches of Old Cairo', PICKUP_CAIRO],
       exclusions: ['Lunch'],
       // This option alone prices infants at the adult rate as well.
-      needToKnow: ['Children and infants pay the same price as adults.'],
+      needToKnow: [NOT_GEM, 'Children and infants pay the same price as adults.'],
     },
     itinerary: [
       { time: '11:00', title: 'Hotel pickup', description: 'An air-conditioned vehicle collects you from your hotel in Cairo or Giza.' },
@@ -2122,6 +2128,7 @@ const PROGRAMMES_D = {
     add: {
       inclusions: ['A private licensed English-speaking guide', 'The entry tickets to the Egyptian Museum, the Citadel and the churches of Old Cairo', PICKUP_CAIRO],
       exclusions: ['Lunch'],
+      needToKnow: [NOT_GEM],
     },
     itinerary: [
       { time: '08:00', title: 'Hotel pickup', description: 'A private air-conditioned vehicle collects you from your hotel in Cairo or Giza.' },
@@ -2155,7 +2162,7 @@ const PROGRAMMES_D = {
         'Shopping tours in Cairo.',
       ],
     },
-    add: { inclusions: [PICKUP_CAIRO, 'Entrance fees to the sites visited'] },
+    add: { inclusions: [PICKUP_CAIRO, 'Entrance fees to the sites visited'], needToKnow: [NOT_GEM] },
     // The record's schedule names the cruise boat; the evening is written as the stop it is.
     itinerary: [
       { title: 'Hotel pickup', description: 'A private air-conditioned vehicle collects you from your hotel in Cairo or Giza.' },
@@ -2188,7 +2195,7 @@ const PROGRAMMES_D = {
     omit: { inclusions: ['Expert Egyptologist Guide', 'mineral Water during the tour', 'Private tour'] },
     add: {
       inclusions: ['A private tour with an Egyptologist guide', 'Bottled water during the tour'],
-      needToKnow: [SAME_PRICE],
+      needToKnow: [NOT_GEM, SAME_PRICE],
     },
     itinerary: [
       { title: 'Hotel pickup', description: 'A private vehicle collects you from your hotel in Cairo or Giza.' },
@@ -2237,7 +2244,7 @@ export const B08D: NetworkBatch = {
       slugPrefix: 'egm-',
       foreignPlaces: NOT_EGYPTIAN_MUSEUM,
       tagline: 'Guided visits to the Egyptian Museum in Tahrir Square',
-      description: 'Egyptian Museum sells guided days that all go into the Egyptian Museum on Tahrir Square, with the entry ticket in the price. The shortest is a shared morning in the museum alone; the longer days add the churches of Old Cairo, the Citadel of Salah El Din, Khan el-Khalili, the Giza Pyramids and the Sphinx, or an evening dinner cruise on the Nile.\n\nEvery trip collects you from your hotel in Cairo or Giza and brings you back. Hold a place online and pay later, or ask the team first about the pickup time.',
+      description: 'Egyptian Museum sells guided days that all go into the Egyptian Museum on Tahrir Square, with the entry ticket in the price. It is the museum in central Cairo, not the Grand Egyptian Museum near the Giza Pyramids. The shortest is a shared morning in the museum alone; the longer days add the churches of Old Cairo, the Citadel of Salah El Din, Khan el-Khalili, the Giza Pyramids and the Sphinx, or an evening dinner cruise on the Nile.\n\nEvery trip collects you from your hotel in Cairo or Giza and brings you back. Hold a place online and pay later, or ask the team first about the pickup time.',
       seo: {
         metaTitle: 'Egyptian Museum Tours in Cairo with Hotel Pickup',
         metaDescription: 'Guided days at the Egyptian Museum on Tahrir Square, with Old Cairo, the Citadel, Khan el-Khalili, the Giza Pyramids or a Nile dinner cruise, and hotel pickup.',
