@@ -441,7 +441,10 @@ export function tripDocument(site: TripSiteFacts, trip: NetworkTrip, programme: 
     mobileTicket: true,
     hasHotelPickup: true,
     availability: {
-      type: programme.availability?.type || departureAvailabilityType(facts.entryWindows),
+      // The departures the trip sells decide how it is sold. A trip that names none is sold by the day,
+      // whatever its programme says: the Marsa Mubarak dugong trip publishes one 21:00 slot, which does
+      // not fit a snorkelling day, and a 'time-slots' trip with no departure could not be booked at all.
+      type: facts.entryWindows.length ? programme.availability?.type || departureAvailabilityType(facts.entryWindows) : 'date-only',
       advanceBooking: Number(programme.availability?.advanceBooking) > 0 ? Number(programme.availability.advanceBooking) : 30,
     },
     seo: { metaTitle: trip.seo.metaTitle, metaDescription: trip.seo.metaDescription },
@@ -541,6 +544,8 @@ async function loadBatch(id: string | null): Promise<NetworkBatch> {
     b03d: async () => (await import('./network-sites/b03-rest')).B03D,
     b08a: async () => (await import('./network-sites/b08')).B08A,
     b08b: async () => (await import('./network-sites/b08')).B08B,
+    b08c: async () => (await import('./network-sites/b08')).B08C,
+    b08d: async () => (await import('./network-sites/b08')).B08D,
   };
   if (!id || !batches[id]) throw new Error(`Pass --batch=<${Object.keys(batches).join('|')}>.`);
   return batches[id]();

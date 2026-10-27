@@ -14243,6 +14243,3884 @@
     }
    ],
    "addons": []
+  },
+  {
+   "slug": "sharm-el-sheikh-to-dahab-day-trip-colored-canyon-camel-ride-snorkeling",
+   "id": "550ec31e5ff2eea9af01885e",
+   "readAt": "2026-10-27T06:38:28Z",
+   "detail": {
+    "title": "Sharm El Sheikh to Dahab Day Trip: Colored Canyon, Camel Ride & Snorkeling",
+    "duration": "10.5 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Pick up and drop off from hotel.",
+     "Air - conditioned mini van",
+     "Guide.",
+     "Lunch",
+     "Salama Colored Canyon",
+     "Governmental fees and entry for Canyon",
+     "Camel Ride"
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "Snorkel gear",
+     "photos & videos ( available to purchase)",
+     "Drinks in Restaurant"
+    ],
+    "whatToBring": [
+     "Passport",
+     "Sun hat",
+     "Hat",
+     "Towel",
+     "Hiking shoes",
+     "Sunscreen",
+     "Cash"
+    ],
+    "itinerary": [
+     {
+      "title": "Pickup location:",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Van",
+      "description": "",
+      "duration": "105 minutes"
+     },
+     {
+      "title": "Dahab",
+      "description": "Camel ride",
+      "duration": "10 minutes"
+     },
+     {
+      "title": "Dahab",
+      "description": "Snorkeling\n\nOptional",
+      "duration": "40 minutes"
+     },
+     {
+      "title": "Dahab",
+      "description": "Lunch",
+      "duration": "105 minutes"
+     },
+     {
+      "title": "Van",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Dahab",
+      "description": "Shopping",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "Van",
+      "description": "",
+      "duration": "40 minutes"
+     },
+     {
+      "title": "Jeep / SUV",
+      "description": "",
+      "duration": "15 minutes"
+     },
+     {
+      "title": "Colored Canyon",
+      "description": "Visit, Dessert, Guided tour, Sightseeing, Walk",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "Arrive back at:",
+      "description": "",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 33,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "dahab-safari-camel-ride-canyon-snorkeling-hik-0de648094c0e",
+     "title": "Dahab Safari, Camel Ride, Canyon Snorkeling & Hike Without Blue Hole Entrance",
+     "type": "Per Person",
+     "description": "Experience a camel ride, snorkeling at the Canyon Site, lunch, shopping, a Jeep Safari, and a walk through Salama Colored Canyon.",
+     "duration": "10.5 hours",
+     "guestPrices": {
+      "adult": 33,
+      "child": 19,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "07:30",
+       "guestPrices": {
+        "adult": 33,
+        "child": 19,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "dahab-safari-camel-ride-canyon-snorkeling-hik-8f1ecc915c0a",
+     "title": "Dahab Safari, Camel Ride, Canyon Snorkeling & Hike With Blue Hole Entrance",
+     "type": "Per Person",
+     "description": "Swim and snorkel at the stunning Blue Hole Site, take a camel ride, enjoy lunch, go shopping, experience a Jeep Safari, and walk through Salama Colored Canyon.",
+     "duration": "10.5 hours",
+     "guestPrices": {
+      "adult": 56,
+      "child": 30,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "07:35",
+       "guestPrices": {
+        "adult": 56,
+        "child": 30,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8d3e2e853bb474c867d592",
+     "title": "ATV Single Ride",
+     "description": "",
+     "price": 15,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "dahab-safari-camel-ride-canyon-snorkeling-hik-0de648094c0e"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8d3e2e853bb474c867d593",
+     "title": "SINGLE ATV",
+     "description": "",
+     "price": 15,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "dahab-safari-camel-ride-canyon-snorkeling-hik-8f1ecc915c0a"
+     ],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "sharm-el-sheikh-day-tour-jeep-safari-colored-canyon-red-sea-snorkeling-camel-ride-atv-dahab",
+   "id": "090959a7551c118bd3d1df7d",
+   "readAt": "2026-10-27T06:38:28Z",
+   "detail": {
+    "title": "Sharm El Sheikh Day Tour: Jeep Safari, Colored Canyon, Red Sea Snorkeling, Camel Ride, ATV & Dahab",
+    "duration": "11 - 13.5 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Hotel pickup and drop-off",
+     "Air-conditioned minivan transport",
+     "Jeep adventure",
+     "Snorkeling from the coast in the best snorkeling place between Dahab and Abu galum",
+     "Camel ride along the beach and the desert",
+     "Quad biking along the beach and the desert (double quad) (if option selected)",
+     "Local lunch in a Bedouin tent on the coast of Dahab on the Red Sea.",
+     "Visit to Salama Colored Canyon",
+     "Visit to Dahab, where you have the opportunity to shop or just get a taste of the city"
+    ],
+    "whatsNotIncluded": [
+     "Snorkeling Equipment.",
+     "Drinks in the restaurant",
+     "Any extras not mentioned in the program"
+    ],
+    "whatToBring": [
+     "Passport",
+     "Comfortable shoes",
+     "Hat",
+     "Swimwear",
+     "Towel",
+     "Sunscreen",
+     "Passport or ID card for children",
+     "Sports shoes",
+     "Sportswear",
+     "Snorkeling gear"
+    ],
+    "itinerary": [
+     {
+      "title": "Pickup location:",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Bus/coach",
+      "description": "",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "Red Sea",
+      "description": "Visit",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Colored Canyon",
+      "description": "Visit, Walk",
+      "duration": ""
+     },
+     {
+      "title": "Jeep / SUV",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Dahab",
+      "description": "Visit, Guided tour, Sightseeing",
+      "duration": ""
+     },
+     {
+      "title": "Dahab",
+      "description": "Camel ride",
+      "duration": ""
+     },
+     {
+      "title": "Dahab",
+      "description": "Lunch",
+      "duration": ""
+     },
+     {
+      "title": "Dahab",
+      "description": "Snorkeling",
+      "duration": ""
+     },
+     {
+      "title": "Dahab",
+      "description": "Shopping, Walk, Pass by",
+      "duration": ""
+     },
+     {
+      "title": "Bus/coach",
+      "description": "",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "Arrive back at:",
+      "description": "",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 28.02,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "salama-canyon-jeep-safari-snorkeling-camel-ri-c6e17d852edf",
+     "title": "Salama Canyon, Jeep Safari, Snorkeling, Camel Ride & Dahab Tour (No ATV)",
+     "type": "Per Person",
+     "description": "This package includes a jeep excursion, Salama Canyon exploration, Red Sea snorkeling, a coastal camel ride, and a visit to Dahab without an ATV (quad) ride.",
+     "duration": "11 hours",
+     "guestPrices": {
+      "adult": 28.02,
+      "child": 12.84,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "07:25",
+       "guestPrices": {
+        "adult": 28.02,
+        "child": 12.84,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "sharm-el-sheikh-adventure-jeep-salama-canyon--5c442bec5cdf",
+     "title": "Sharm El Sheikh Adventure: Jeep, Salama Canyon, Snorkeling, Camel Ride, ATV & Dahab",
+     "type": "Per Person",
+     "description": "This package includes a jeep excursion, Salama Colored Canyon exploration, Red Sea snorkeling, a coastal camel ride, a visit to Dahab, and an ATV (quad) ride.",
+     "duration": "13.5 hours",
+     "guestPrices": {
+      "adult": 38.53,
+      "child": 28.02,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "07:30",
+       "guestPrices": {
+        "adult": 38.53,
+        "child": 28.02,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": []
+  },
+  {
+   "slug": "marsa-alam-luxury-pirates-boat-snorkeling-cruise-with-lunch",
+   "id": "eb1e39a1f0707c03072724a6",
+   "readAt": "2026-10-27T06:38:28Z",
+   "detail": {
+    "title": "Marsa Alam: Luxury Pirates Boat Snorkeling Cruise with Lunch",
+    "duration": "4.5 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Hotel pickup and drop-off",
+     "Two daily programs",
+     "Professional and experienced guides",
+     "Delicious open buffet lunch/dinner",
+     "Unlimited fizzy drinks and tea",
+     "45-minute fully guided snorkelling stops at Marsa Mubarak and Marsa Shona",
+     "Fresh juice welcome drink"
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "Personal expenses",
+     "Tips (optional)",
+     "Snorkelling gear available to rent from Marina shops"
+    ],
+    "whatToBring": [
+     "Hat",
+     "Swimwear",
+     "Towel",
+     "Camera",
+     "Snacks",
+     "Sunscreen",
+     "Water"
+    ],
+    "itinerary": [
+     {
+      "title": "Pickup location: Port Ghalib",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Bus/coach",
+      "description": "",
+      "duration": "50 minutes"
+     },
+     {
+      "title": "Marsa Mubarak",
+      "description": "Sailing",
+      "duration": "35 minutes"
+     },
+     {
+      "title": "Marsa Mubarak",
+      "description": "Snorkelling",
+      "duration": "2.75 hours"
+     },
+     {
+      "title": "Arrive back at: Port Ghalib",
+      "description": "",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 115,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "marsa-alam-pirates-premium-boat-to-turtle-bay-d101de788b0b",
+     "title": "Marsa Alam: Pirates Premium Boat to Turtle Bay with lunch",
+     "type": "Per Person",
+     "description": "Sail from Port Ghalib on a luxury Pirates boat to Marsa Mubarak and Marsa Shona. Snorkel among colorful reefs and marine life, then enjoy an open buffet meal on board.",
+     "duration": "4.5 hours",
+     "guestPrices": {
+      "adult": 115,
+      "child": 50,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 115,
+        "child": 50,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "14:00",
+       "guestPrices": {
+        "adult": 115,
+        "child": 50,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8e1768ba4278a4e0e26d75",
+     "title": "private bus up to 4",
+     "description": "",
+     "price": 35,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8e1768ba4278a4e0e26d76",
+     "title": "private bus upto 8",
+     "description": "",
+     "price": 39,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8e1768ba4278a4e0e26d77",
+     "title": "Snorkeling Gear Rent",
+     "description": "",
+     "price": 8,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "marsa-alam-marsa-mubarak-turtle-snorkelling-boat-trip",
+   "id": "254eb20c195504c4330334f5",
+   "readAt": "2026-10-27T06:38:28Z",
+   "detail": {
+    "title": "Marsa Alam: Marsa Mubarak Turtle Snorkelling & Boat Trip",
+    "duration": "8 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Pickup and transfer to Marsa Mubarak",
+     "Snorkelling adventure",
+     "Professional instructors",
+     "Lunch and soft drinks",
+     "Snorkelling equipment (mask, fins, life jacket)",
+     "Optional diving session (if selected)",
+     "Soft drinks and water",
+     "National Park fees"
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "Tips",
+     "Personal expenses",
+     "Transfers from hotels in North Marsa Alam (available for an extra charge)"
+    ],
+    "whatToBring": [],
+    "itinerary": [],
+    "pricingSummary": {
+     "fromPrice": 82,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "marsa-mubarak-sea-turtle-trip-with-lunch-and--b9350a52e3cd",
+     "title": "Marsa Mubarak Sea Turtle Trip with Lunch and Transfer",
+     "type": "Per Person",
+     "description": "Explore the crystal-clear waters of Marsa Mubarak on a full-day boat trip from Marsa Alam. Snorkel among colourful coral reefs, look for sea turtles and dugongs, and enjoy lunch on board.",
+     "duration": "8. hours",
+     "guestPrices": {
+      "adult": 82,
+      "child": 58,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 82,
+        "child": 58,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "with-1-intro-dive-snorkelling-and-lunch-5d73f8d46c61",
+     "title": "With 1 Intro Dive, Snorkelling, and Lunch",
+     "type": "Per Person",
+     "description": "Explore the crystal-clear waters of Marsa Mubarak on a full-day boat trip from Marsa Alam. Snorkel among colourful coral reefs, look for sea turtles and dugongs, and enjoy lunch on board.",
+     "duration": "8 hours",
+     "guestPrices": {
+      "adult": 152,
+      "child": 58,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 152,
+        "child": 58,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8d77ec00676556c748a1d1",
+     "title": "South Marsa transfer",
+     "description": "",
+     "price": 17.5,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8d77ec00676556c748a1d2",
+     "title": "North Marsa transfer",
+     "description": "",
+     "price": 17.5,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "marsa-mubarak-boat-trip-snorkel-with-dugongs-giant-turtles",
+   "id": "0ed01e5024270d2642285f50",
+   "readAt": "2026-10-27T06:38:28Z",
+   "detail": {
+    "title": "Marsa Mubarak Boat Trip: Snorkel with Dugongs & Giant Turtles",
+    "duration": "4.5 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Hotel pickup and drop-off in Marsa Alam",
+     "30-minute boat cruise to Marsa Mubarak",
+     "Two guided snorkeling stops (Marsa Mubarak + Small Shenwa)",
+     "Expert snorkeling guide",
+     "Open buffet lunch OR dinner (chicken, kofta, fish, salads, soups)",
+     "45-minute marina tour and shopping time",
+     "Snorkeling gear available - select from add-ons",
+     "All boat fees and permits"
+    ],
+    "whatsNotIncluded": [
+     "Snorkeling gear ( purchase as add-on)",
+     "Hot drinks, fresh juices, ice cream, coffee onboard (available for purchase)",
+     "Personal expenses",
+     "Gratuities (optional)"
+    ],
+    "whatToBring": [
+     "Swimwear",
+     "Towel",
+     "Sunscreen"
+    ],
+    "itinerary": [
+     {
+      "title": "Pickup location",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Bus/coach",
+      "description": "",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Marsa Mubarak",
+      "description": "Sailing",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Marsa Mubarak",
+      "description": "Free time, Snorkeling, Dolphin watching, Scenic views on the way",
+      "duration": "2.5 hours"
+     },
+     {
+      "title": "Port Ghalib Marina",
+      "description": "Photo stop, Sailing",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Port Ghalib Marina",
+      "description": "Guided tour",
+      "duration": "40 minutes"
+     },
+     {
+      "title": "Arrive back at:",
+      "description": "",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 90,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "marsa-alam-marsa-mubarak-sea-cow-turtles-snor-79343d11386c",
+     "title": "Marsa Alam: Marsa Mubarak Sea Cow & Turtles Snorkeling",
+     "type": "Per Person",
+     "description": "Swim with wild dugongs (sea cows), green sea turtles, and colorful reef fish.",
+     "duration": "4.5 hours",
+     "guestPrices": {
+      "adult": 90,
+      "child": 50,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "21:00",
+       "guestPrices": {
+        "adult": 90,
+        "child": 50,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a897e6f3468870b8471deda",
+     "title": "Private car with driver for up to 4 people",
+     "description": "",
+     "price": 45,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a897e6f3468870b8471dedb",
+     "title": "private bus up to 8",
+     "description": "",
+     "price": 55,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a897e6f3468870b8471dedc",
+     "title": "private bus up to 12",
+     "description": "",
+     "price": 60,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a897e6f3468870b8471dedd",
+     "title": "Snorkeling Gear Rent",
+     "description": "",
+     "price": 10,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "cairo-citadel-museum-old-cairo-heritage-tour",
+   "id": "4d96cebe435218f86b33c2c4",
+   "readAt": "2026-10-27T06:12:28Z",
+   "detail": {
+    "title": "Cairo Citadel, Museum & Old Cairo Heritage Tour",
+    "duration": "3 - 7 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Transport by air-conditioned vehicle",
+     "Professional licensed guide",
+     "Shared Tour: Professional English-speaking guide only",
+     "Private Tour: Professional guide available in all languages",
+     "Entry tickets to selected landmarks",
+     "Hotel pickup and drop-off from Cairo or Giza",
+     "Visits: Papyrus Gallery, Oils Factory, Bazaar, Cotton Store, Carpet School (upon request)",
+     "Bottled water"
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "Lunch – included in VIP Private Tour only, or available as an add-on for Private Tours",
+     "Any extras not mentioned in the programme",
+     "Felucca ride on the Nile (VIP option only)",
+     "Transfers from airport (available for an extra fee)",
+     "Personal expenses",
+     "Drinks"
+    ],
+    "whatToBring": [
+     "Sunglasses",
+     "Camera"
+    ],
+    "itinerary": [],
+    "pricingSummary": {
+     "fromPrice": 49,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "cairo-salah-el-din-citadel-guided-tour-1572db6d76c8",
+     "title": "Cairo: Salah El Din Citadel Guided Tour",
+     "type": "Per Person",
+     "description": "Explore the historic Salah El Din Citadel on a shared English-guided tour with your entry ticket included. Visit the magnificent Mosque of Muhammad Ali, walk through the ancient fortress, and enjoy panoramic views across Cairo. A great choice for travellers seeking a convenient and budget-friendly experience.",
+     "duration": "3 hours",
+     "guestPrices": {
+      "adult": 49,
+      "child": 49,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 49,
+        "child": 49,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "cairo-egyptian-museum-old-cairo-khan-el-khali-564b9383655c",
+     "title": "Cairo: Egyptian Museum, Old Cairo & Khan el-Khalili – Shared Tour with Ticket",
+     "type": "Per Person",
+     "description": "Explore Cairo’s ancient treasures and historic heritage on a shared English-guided tour with entry tickets included. Discover remarkable artefacts at the Egyptian Museum, visit the historic churches of Old Cairo, and wander through the lively Khan el-Khalili Bazaar. Lunch is not included.",
+     "duration": "5 hours",
+     "guestPrices": {
+      "adult": 79,
+      "child": 79,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 79,
+        "child": 79,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "cairo-citadel-egyptian-museum-old-cairo-priva-f2298d737481",
+     "title": "Cairo: Citadel, Egyptian Museum & Old Cairo – Private Tour with Ticket",
+     "type": "Per Person",
+     "description": "Enjoy a private English-guided tour of Cairo’s historic highlights with entry tickets included. Explore the Salah El Din Citadel and Mosque of Muhammad Ali, discover ancient treasures at the Egyptian Museum, and visit the historic churches of Old Cairo. Lunch is not included but can be added as an optional upgrade.",
+     "duration": "6 hours",
+     "guestPrices": {
+      "adult": 267,
+      "child": 113,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 267,
+        "child": 113,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-3",
+     "pricingKey": "cairo-vip-private-museum-citadel-old-cairo-ni-7b73232548ca",
+     "title": "Cairo: VIP Private Museum, Citadel, Old Cairo & Nile Felucca Tour",
+     "type": "Per Person",
+     "description": "Enjoy a VIP private English-guided journey through Cairo’s most iconic landmarks. Explore the Egyptian Museum, Salah El Din Citadel, Old Cairo, and Khan el-Khalili Bazaar, with lunch included. End your day with a relaxing felucca ride on the Nile for a memorable blend of history, culture, and scenery.",
+     "duration": "7 hours",
+     "guestPrices": {
+      "adult": 404,
+      "child": 170,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 404,
+        "child": 170,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": []
+  },
+  {
+   "slug": "cairo-saladin-citadel-old-cairo-khan-el-khalili-private-tour",
+   "id": "026bbc93521478970239944e",
+   "readAt": "2026-10-27T06:12:28Z",
+   "detail": {
+    "title": "Cairo: Saladin Citadel, Old Cairo & Khan El Khalili Private Tour",
+    "duration": "6 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Egyptologist guide",
+     "Lunch",
+     "Transport",
+     "Entrance fees",
+     "Parking fees",
+     "Taxes and service charge"
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "Tips and personal expenses",
+     "Drinks during lunch",
+     "Extra services or expenses not mentioned"
+    ],
+    "whatToBring": [
+     "Credit card",
+     "Long pants",
+     "Comfortable clothes",
+     "Long-sleeved clothes",
+     "Comfortable shoes",
+     "Cash",
+     "Passport or ID card"
+    ],
+    "itinerary": [
+     {
+      "title": "Pickup location: Cairo",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Van",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Salah El Din Citadel",
+      "description": "",
+      "duration": "2 hours"
+     },
+     {
+      "title": "Local restaurant",
+      "description": "",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Van",
+      "description": "",
+      "duration": "15 minutes"
+     },
+     {
+      "title": "Hanging Church",
+      "description": "",
+      "duration": "15 minutes"
+     },
+     {
+      "title": "Abu Serga",
+      "description": "",
+      "duration": "15 minutes"
+     },
+     {
+      "title": "Saint Barbara Church Complex",
+      "description": "",
+      "duration": "10 minutes"
+     },
+     {
+      "title": "Van",
+      "description": "",
+      "duration": "10 minutes"
+     },
+     {
+      "title": "Khan el-Khalili",
+      "description": "",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Van",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Arrive back at: Cairo",
+      "description": "",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 130,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "cairo-citadel-old-cairo-and-khan-el-khalili-p-5bdaa460be66",
+     "title": "Cairo: Citadel, Old Cairo and Khan El Khalili Private Tour",
+     "type": "Per Person",
+     "description": "Explore Cairo’s iconic Saladin Citadel, historic Old Cairo, and the bustling Khan El Khalili Bazaar on a private tour with an expert Egyptologist. Enjoy the Alabaster Mosque, ancient Coptic churches, a traditional Egyptian lunch, and hotel transfers.",
+     "duration": "6 hours",
+     "guestPrices": {
+      "adult": 130,
+      "child": 45,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 130,
+        "child": 45,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8d4a27224287dc115f32d4",
+     "title": "Civilization Museum",
+     "description": "",
+     "price": 45,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8d4a27224287dc115f32d5",
+     "title": "30 Min Felucca Ride",
+     "description": "",
+     "price": 15,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8d4a27224287dc115f32d6",
+     "title": "Long Distance Pickup",
+     "description": "",
+     "price": 7,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "cairo-islamic-heritage-tour-with-citadel-historic-mosques-khan-el-khalili",
+   "id": "18a8e38ab32e22811f1b01b0",
+   "readAt": "2026-10-27T06:12:28Z",
+   "detail": {
+    "title": "Cairo: Islamic Heritage Tour with Citadel, Historic Mosques & Khan El Khalili",
+    "duration": "6 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "All transfers by a private air-conditioned vehicle.",
+     "Pick-up services from your hotel & return.",
+     "Lunch will be served in a local restaurant.",
+     "Private tour guide.",
+     "Shopping tour in Cairo.",
+     "Entrance fees to all the mentioned sites.",
+     "Bottled water during your transfer.",
+     "All taxes & service charge."
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "Any extras not mentioned in the itinerary.",
+     "Tipping.",
+     "Beverages and water during lunch."
+    ],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "Pickup location: Cairo",
+      "description": "Pickup location in Cairo",
+      "duration": ""
+     },
+     {
+      "title": "Car",
+      "description": "Transport step",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "Cairo",
+      "description": "Visit, Shopping, Sightseeing",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Mosque of Muhammad Ali Pasha",
+      "description": "Photo stop, Visit, Guided tour, Sightseeing, Walk)",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Mosque-Madrassa of Sultan Hassan",
+      "description": "Visit, Guided tour, Sightseeing",
+      "duration": ""
+     },
+     {
+      "title": "Al-Azhar Mosque",
+      "description": "Photo stop, Visit, Guided tour, Free time, Sightseeing",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Khan el-Khalili",
+      "description": "Visit, Guided tour, Shopping",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Car",
+      "description": "transfer step",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "Arrive back at: Cairo",
+      "description": "Arrive back at: Cairo",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 207,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "private-islamic-cairo-tour-with-tickets-lunch-e5b857318c81",
+     "title": "Private Islamic Cairo Tour with Tickets, Lunch & Expert Guide",
+     "type": "Per Person",
+     "description": "Enjoy a hassle-free private tour with an expert English-speaking guide, private return transfers, lunch, and all entrance tickets included.",
+     "duration": "6 hour",
+     "guestPrices": {
+      "adult": 207,
+      "child": 55,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 207,
+        "child": 55,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "11:05",
+       "guestPrices": {
+        "adult": 207,
+        "child": 55,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 207,
+        "child": 55,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 207,
+        "child": 55,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 207,
+        "child": 55,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 207,
+        "child": 55,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a82c7b00b3a6357e4e45c82",
+     "title": "Airport(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a82c7b00b3a6357e4e45c83",
+     "title": "N.Capital(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a82c7b00b3a6357e4e45c84",
+     "title": "Sheraton (/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a82c7b00b3a6357e4e45c85",
+     "title": "Sh. Zayed(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a82c7b00b3a6357e4e45c86",
+     "title": "Madinty(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a82c7b00b3a6357e4e45c87",
+     "title": "Rehab(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a82c7b00b3a6357e4e45c88",
+     "title": "Obour(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a82c7b00b3a6357e4e45c89",
+     "title": "Badr City(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a82c7b00b3a6357e4e45c8a",
+     "title": "Shorouk(/Transfer)",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "cairo-national-museum-citadel-khan-el-khalili-private-tour",
+   "id": "b809aa5cdda57464592e5bcc",
+   "readAt": "2026-10-27T06:12:28Z",
+   "detail": {
+    "title": "Cairo: National Museum, Citadel & Khan El Khalili Private Tour",
+    "duration": "6 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Hotel pick up and drop-off service",
+     "Transfers in a private air-conditioned vehicle",
+     "Private guide",
+     "Entrance fees to all the mentioned sites",
+     "Bottled water in the vehicle during the tour",
+     "Shopping tour in Cairo",
+     "Lunch",
+     "All taxes and service charges"
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "Any extras not mentioned in the itinerary",
+     "Tipping",
+     "Beverages and water during lunch"
+    ],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "Pickup location: Cairo",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Transfer",
+      "description": "",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "National Museum of Egyptian Civilisation",
+      "description": "",
+      "duration": "2 hours"
+     },
+     {
+      "title": "Cairo Citadel",
+      "description": "",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Local restaurant",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Khan el-Khalili",
+      "description": "",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Transfer",
+      "description": "",
+      "duration": "45 minutes"
+     },
+     {
+      "title": "Arrive back at: Cairo",
+      "description": "",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 218,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "private-english-tour-with-tickets-transfers-e-030167623c05",
+     "title": "Private English Tour with Tickets, Transfers & Egyptologist Guide",
+     "type": "Per Person",
+     "description": "Enjoy a private Cairo sightseeing experience with an English-speaking Egyptologist guide. Your package includes round-trip hotel transfers, entrance tickets, and a delicious local lunch for a comfortable and hassle-free tour.",
+     "duration": "6 hours",
+     "guestPrices": {
+      "adult": 218,
+      "child": 54,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "07:30",
+       "guestPrices": {
+        "adult": 218,
+        "child": 54,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 218,
+        "child": 54,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "08:30",
+       "guestPrices": {
+        "adult": 218,
+        "child": 54,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 218,
+        "child": 54,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "09:30",
+       "guestPrices": {
+        "adult": 218,
+        "child": 54,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8d5a8943e3791c04168812",
+     "title": "Sheraton",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8d5a8943e3791c04168813",
+     "title": "Badr City",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8d5a8943e3791c04168814",
+     "title": "Sh. Zayed",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8d5a8943e3791c04168815",
+     "title": "Airport",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8d5a8943e3791c04168816",
+     "title": "New Capital",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8d5a8943e3791c04168817",
+     "title": "Shorouk",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8d5a8943e3791c04168818",
+     "title": "Madinty",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8d5a8943e3791c04168819",
+     "title": "New Cairo",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8d5a8943e3791c0416881a",
+     "title": "Rehab",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8d5a8943e3791c0416881b",
+     "title": "Obour",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8d5a8943e3791c0416881c",
+     "title": "Heliopolis",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "egyptian-museum-saladin-citadel-coptic-cairo-day-tour",
+   "id": "218dd834a276b27aa400521a",
+   "readAt": "2026-10-27T06:12:28Z",
+   "detail": {
+    "title": "Egyptian Museum, Saladin Citadel & Coptic Cairo Day Tour",
+    "duration": "3 - 6 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Transportation by air-conditioned vehicle",
+     "Licensed guide",
+     "Shared Tour: Professional English-speaking guide only",
+     "Private Tour: Professional guide available in all languages",
+     "Entry tickets to selected landmarks",
+     "Hotel pick-up and drop-off from Cairo or Giza",
+     "Visits: Papyrus Gallery, Oils Factory, Bazaar, Cotton Store, Carpet School (upon request)",
+     "Lunch (VIP Private Tour only; available as an add-on for private tours)",
+     "Felucca ride on the Nile (VIP option only)",
+     "Bottled water"
+    ],
+    "whatsNotIncluded": [],
+    "whatToBring": [
+     "Passport or ID card",
+     "Comfortable shoes",
+     "Sunglasses",
+     "Credit card",
+     "Sunscreen",
+     "Comfortable clothes",
+     "Cash"
+    ],
+    "itinerary": [],
+    "pricingSummary": {
+     "fromPrice": 48.55,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "egyptian-museum-only-shared-with-ticket-0e6469944ddd",
+     "title": "Egyptian Museum Only — Shared With Ticket",
+     "type": "Per Person",
+     "description": "Shared English tour of the Egyptian Museum with tickets included. Lunch not included. Explore Tutankhamun’s treasures, statues, and mummies with an expert guide. Ideal for travelers seeking culture on a budget or with limited time.",
+     "duration": "3 - 6 hours",
+     "guestPrices": {
+      "adult": 48.55,
+      "child": 48.55,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 48.55,
+        "child": 48.55,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "egyptian-museum-old-cairo-khan-khalili-shared-258c3af9fbf6",
+     "title": "Egyptian Museum, Old Cairo, Khan Khalili —Shared With Ticket",
+     "type": "Per Person",
+     "description": "Shared English tour of the Egyptian Museum, Old Cairo, and Khan el-Khalili with tickets included. Lunch not included. See Tutankhamun’s treasures, visit churches, and shop in Cairo’s most vibrant and historic marketplace.",
+     "duration": "3 - 6 hours",
+     "guestPrices": {
+      "adult": 107.89,
+      "child": 78.22,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 107.89,
+        "child": 78.22,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "egyptian-museum-citadel-old-cairo-shared-with-f133b4cc37fc",
+     "title": "Egyptian Museum, Citadel, Old Cairo — Shared With Ticket",
+     "type": "Per Person",
+     "description": "Shared English tour of the Egyptian Museum, Citadel, and Old Cairo with tickets included. Lunch not included. Visit artifacts, fortress walls, the Mosque of Muhammad Ali, and Old Cairo’s historic churches in one cultural journey.",
+     "duration": "3 - 6 hours",
+     "guestPrices": {
+      "adult": 114.63,
+      "child": 114.63,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 114.63,
+        "child": 114.63,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 114.63,
+        "child": 114.63,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-3",
+     "pricingKey": "egyptian-museum-citadel-old-cairo-private-wit-33d1a91fb737",
+     "title": "Egyptian Museum, Citadel, Old Cairo — Private With Ticket",
+     "type": "Per Person",
+     "description": "Private English tour of the Egyptian Museum, Citadel, and Old Cairo with tickets included. Lunch not included, but can be added at checkout. Explore artifacts, fortress history, mosque architecture, and Old Cairo’s churches.",
+     "duration": "3 - 6 hours",
+     "guestPrices": {
+      "adult": 264.33,
+      "child": 111.94,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 264.33,
+        "child": 111.94,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 264.33,
+        "child": 111.94,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8721ed9e38e79e08b840d9",
+     "title": "Abdeen Palace",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8721ed9e38e79e08b840da",
+     "title": "Saqqara",
+     "description": "",
+     "price": 134.95,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8721ed9e38e79e08b840db",
+     "title": "Memphis",
+     "description": "",
+     "price": 134.95,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8721ed9e38e79e08b840dc",
+     "title": "Dahshur",
+     "description": "",
+     "price": 134.95,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8721ed9e38e79e08b840dd",
+     "title": "Lunch per person",
+     "description": "",
+     "price": 33.74,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8721ed9e38e79e08b840de",
+     "title": "30 Min Quad Bike",
+     "description": "",
+     "price": 67.47,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8721ed9e38e79e08b840df",
+     "title": "30 Min Camel Ride",
+     "description": "",
+     "price": 67.47,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8721ed9e38e79e08b840e0",
+     "title": "Airport Pickup Fees",
+     "description": "",
+     "price": 67.47,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8721ed9e38e79e08b840e1",
+     "title": "Dinner Cruise Nile",
+     "description": "",
+     "price": 47.23,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8721ed9e38e79e08b840e2",
+     "title": "01 hour Felucca ride",
+     "description": "",
+     "price": 67.47,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af1590",
+     "title": "AlHakim bi-Amr Allah",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af1591",
+     "title": "Bab Zuweila",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af1592",
+     "title": "Sultan Al-Ghuri",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af1593",
+     "title": "Al-Salih Tala’i",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af1594",
+     "title": "Aqsunqur",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af1595",
+     "title": "Beit Zeinab Khatun",
+     "description": "",
+     "price": 94.4,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af1596",
+     "title": "Darb al-Ahmar",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af1597",
+     "title": "Islamic Art Museum",
+     "description": "",
+     "price": 107.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af1598",
+     "title": "Cairo Opera House",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af1599",
+     "title": "Al-Fishawi Café",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af159a",
+     "title": "Cairo Tower Tour",
+     "description": "",
+     "price": 107.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af159b",
+     "title": "Civilization Museum",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af159c",
+     "title": "Private Tour Photographer",
+     "description": "",
+     "price": 202.29,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af159d",
+     "title": "Sultan Hassan Mosque",
+     "description": "",
+     "price": 107.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af159e",
+     "title": "Romanian Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af159f",
+     "title": "Hindi Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15a0",
+     "title": "Indonesian Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15a1",
+     "title": "Chinese guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15a2",
+     "title": "Korean Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15a3",
+     "title": "Japanese Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15a4",
+     "title": "Dutch guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15a5",
+     "title": "Portuguese Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15a6",
+     "title": "Ukrainian Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15a7",
+     "title": "Turkish Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15a8",
+     "title": "Greek Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15a9",
+     "title": "Hungarian Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15aa",
+     "title": "Czech Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15ab",
+     "title": "Polish Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15ac",
+     "title": "The Cave Church Tour",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15ad",
+     "title": "Islamic, Coptic Tour",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15ae",
+     "title": "Bayt al-Suhaymi",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15af",
+     "title": "City of the Dead",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15b0",
+     "title": "Mohamed Ali Palace",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15b1",
+     "title": "Qalawun Complex",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15b2",
+     "title": "Khan el-Khalili Tour",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15b3",
+     "title": "Abu al-Abbas Mosque",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15b4",
+     "title": "Muizz Street",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15b5",
+     "title": "Aqmar Mosque",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15b6",
+     "title": "Al-Rifa'i Mosque",
+     "description": "",
+     "price": 953.48,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15b7",
+     "title": "Amr ibn Al-Aas Masjd",
+     "description": "",
+     "price": 953.48,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15b8",
+     "title": "Gayer-Anderson House",
+     "description": "",
+     "price": 953.48,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15b9",
+     "title": "Al-Azhar Mosque",
+     "description": "",
+     "price": 953.48,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8729028ad4e6cf02af15ba",
+     "title": "Ibn Tulun Mosque",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "giza-pyramids-sphinx-egyptian-museum-khan-el-khalili-bazaar-tour",
+   "id": "c9a3fb31b0d0ea308eccce58",
+   "readAt": "2026-10-27T06:12:28Z",
+   "detail": {
+    "title": "Giza Pyramids, Sphinx, Egyptian Museum & Khan El-Khalili Bazaar Tour",
+    "duration": "5 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Hotel pickup and drop-off",
+     "Expert Egyptologist Guide",
+     "Entry tickets to all mentioned sights",
+     "Lunch at local restaurant",
+     "mineral Water during the tour",
+     "Private tour"
+    ],
+    "whatsNotIncluded": [],
+    "whatToBring": [],
+    "itinerary": [],
+    "pricingSummary": {
+     "fromPrice": 95,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "day-tour-great-pyramids-and-sphinx-egyptian-m-36b98a6b8806",
+     "title": "Day tour Great Pyramids and sphinx Egyptian museum Bazzar",
+     "type": "Per Person",
+     "description": "Combine Cairo’s greatest ancient wonder and legendary treasures in one unforgettable day! Experience the majestic Pyramids of Giza and the Sphinx, explore thousands of pharaonic artifacts at the world-famous Egyptian Museum, and immerse yourself in the vibrant atmosphere of the historic Khan El-Khalili Bazaar.",
+     "duration": "5 hours",
+     "guestPrices": {
+      "adult": 95,
+      "child": 95,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 95,
+        "child": 95,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 95,
+        "child": 95,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": []
+  },
+  {
+   "slug": "cairo-private-heritage-tour-museum-citadel-old-cairo",
+   "id": "3441855badaff675882b85fe",
+   "readAt": "2026-10-27T06:12:28Z",
+   "detail": {
+    "title": "Cairo Private Heritage Tour – Museum, Citadel & Old Cairo",
+    "duration": "3-5 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Transport by air-conditioned vehicle",
+     "Professional licensed guide",
+     "Shared Tour: Professional English-speaking guide only",
+     "Private Tour: Professional guide available in all languages",
+     "Entry tickets to selected landmarks",
+     "Hotel pickup and drop-off from Cairo or Giza",
+     "Visits: Papyrus Gallery, Oils Factory, Bazaar, Cotton Store, Carpet School (upon request)",
+     "Bottled water"
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "Lunch – included in VIP Private Tour only, or available as an add-on for Private Tours",
+     "Any extras not mentioned in the programme",
+     "Felucca ride on the Nile (VIP option only)",
+     "Transfers from airport (available for an extra fee)",
+     "Personal expenses",
+     "Drinks"
+    ],
+    "whatToBring": [
+     "Passport or ID card",
+     "Credit card",
+     "Sunscreen",
+     "Cash"
+    ],
+    "itinerary": [],
+    "pricingSummary": {
+     "fromPrice": 49,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "salah-el-din-citadel-shared-guided-tour-5e9e433345fd",
+     "title": "Salah El Din Citadel – Shared Guided Tour",
+     "type": "Per Person",
+     "description": "Explore Cairo’s historic Salah El Din Citadel on a shared English-guided tour. Visit the magnificent Mosque of Muhammad Ali, walk along the ancient fortress walls, and enjoy panoramic views across Cairo. Entrance tickets are included, while lunch is not included.",
+     "duration": "3-5 hours",
+     "guestPrices": {
+      "adult": 49,
+      "child": 49,
+      "infant": 49
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 49,
+        "child": 49,
+        "infant": 49
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+     "title": "Egyptian Museum, Old Cairo & Khan el-Khalili – Shared Tour",
+     "type": "Per Person",
+     "description": "Discover Cairo’s ancient treasures and historic charm on a shared English-guided tour. Explore the Egyptian Museum’s remarkable artifacts, visit the historic churches of Old Cairo, and wander through the lively lanes of Khan el-Khalili Bazaar. Entrance tickets are included, while lunch is not included.",
+     "duration": "3-5 hours",
+     "guestPrices": {
+      "adult": 79,
+      "child": 79,
+      "infant": 79
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 79,
+        "child": 79,
+        "infant": 79
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+     "title": "Cairo Private Highlights – Citadel, Egyptian Museum & Old Cairo",
+     "type": "Per Person",
+     "description": "Discover Cairo’s history on a private English-guided tour of the Salah El Din Citadel, Egyptian Museum, and Old Cairo. Explore ancient treasures, visit the magnificent Mosque of Muhammad Ali, walk through the historic fortress, and discover Old Cairo’s iconic churches. Entrance tickets are included, while lunch is optional and can be added at checkout.",
+     "duration": "3-5 hours",
+     "guestPrices": {
+      "adult": 265.5,
+      "child": 112.5,
+      "infant": 112.5
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 265.5,
+        "child": 112.5,
+        "infant": 112.5
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-3",
+     "pricingKey": "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560",
+     "title": "VIP Cairo Experience – Museum, Citadel, Old Cairo, Khan El Khalili & Felucca",
+     "type": "Per Person",
+     "description": "Enjoy a VIP private tour of Cairo’s top cultural landmarks with an expert English-speaking guide. Visit the Egyptian Museum, Salah El Din Citadel, Old Cairo, and Khan El Khalili, with lunch included. End your full-day experience with a relaxing Felucca ride on the Nile for a memorable combination of history, culture, and scenic views.",
+     "duration": "3-5 hours",
+     "guestPrices": {
+      "adult": 401,
+      "child": 168,
+      "infant": 168
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 401,
+        "child": 168,
+        "infant": 168
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8416c9454b7c65d3deee3d",
+     "title": "Abdeen Palace",
+     "description": "",
+     "price": 95,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee3e",
+     "title": "Saqqara",
+     "description": "",
+     "price": 135.5,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee3f",
+     "title": "Memphis",
+     "description": "",
+     "price": 135.5,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee40",
+     "title": "Dahshur",
+     "description": "",
+     "price": 135.5,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee41",
+     "title": "Lunch per person",
+     "description": "",
+     "price": 34,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee42",
+     "title": "30 Min Quad Bike",
+     "description": "",
+     "price": 68,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee43",
+     "title": "30 Min Camel Ride",
+     "description": "",
+     "price": 68,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee44",
+     "title": "Airport Pickup Fees",
+     "description": "",
+     "price": 68,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee45",
+     "title": "Dinner Cruise Nile",
+     "description": "",
+     "price": 47.5,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee46",
+     "title": "01 hour Felucca ride",
+     "description": "",
+     "price": 68,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee47",
+     "title": "AlHakim bi-Amr Allah",
+     "description": "",
+     "price": 95,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee48",
+     "title": "Bab Zuweila",
+     "description": "",
+     "price": 95,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee49",
+     "title": "Sultan Al-Ghuri",
+     "description": "",
+     "price": 95,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee4a",
+     "title": "Al-Salih Tala’i",
+     "description": "",
+     "price": 95,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee4b",
+     "title": "Aqsunqur",
+     "description": "",
+     "price": 95,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee4c",
+     "title": "Beit Zeinab Khatun",
+     "description": "",
+     "price": 95,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee4d",
+     "title": "Darb al-Ahmar",
+     "description": "",
+     "price": 95,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee4e",
+     "title": "Islamic Art Museum",
+     "description": "",
+     "price": 95,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee4f",
+     "title": "Cairo Opera House",
+     "description": "",
+     "price": 95,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee50",
+     "title": "Al-Fishawi Café",
+     "description": "",
+     "price": 95,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee51",
+     "title": "Cairo Tower Tour",
+     "description": "",
+     "price": 108.5,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee52",
+     "title": "Civilization Museum",
+     "description": "",
+     "price": 135.5,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee53",
+     "title": "Private Tour Photographer",
+     "description": "",
+     "price": 203,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee54",
+     "title": "Sultan Hassan Mosque",
+     "description": "",
+     "price": 108.5,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee55",
+     "title": "Romanian Guide",
+     "description": "",
+     "price": 270,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee56",
+     "title": "Hindi Guide",
+     "description": "",
+     "price": 270,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee57",
+     "title": "Indonesian Guide",
+     "description": "",
+     "price": 270,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee58",
+     "title": "Indonesian Guide",
+     "description": "",
+     "price": 270,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee59",
+     "title": "Chinese guide",
+     "description": "",
+     "price": 270,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee5a",
+     "title": "Korean Guide",
+     "description": "",
+     "price": 270,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee5b",
+     "title": "Japanese Guide",
+     "description": "",
+     "price": 270,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee5c",
+     "title": "Dutch guide",
+     "description": "",
+     "price": 270,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee5d",
+     "title": "Portuguese Guide",
+     "description": "",
+     "price": 270,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee5e",
+     "title": "Ukrainian Guide",
+     "description": "",
+     "price": 270,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee5f",
+     "title": "Turkish Guide",
+     "description": "",
+     "price": 270,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee60",
+     "title": "Greek Guide",
+     "description": "",
+     "price": 270,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee61",
+     "title": "Hungarian Guide",
+     "description": "",
+     "price": 270,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee62",
+     "title": "Czech Guide",
+     "description": "",
+     "price": 270,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee63",
+     "title": "Polish Guide",
+     "description": "",
+     "price": 270,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee64",
+     "title": "The Cave Church Tour",
+     "description": "",
+     "price": 95,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee65",
+     "title": "Islamic, Coptic Tour",
+     "description": "",
+     "price": 135.5,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee66",
+     "title": "Bayt al-Suhaymi",
+     "description": "",
+     "price": 95,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee67",
+     "title": "City of the Dead",
+     "description": "",
+     "price": 95,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee68",
+     "title": "Mohamed Ali Palace",
+     "description": "",
+     "price": 95,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee69",
+     "title": "Qalawun Complex",
+     "description": "",
+     "price": 95,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee6a",
+     "title": "Khan el-Khalili Tour",
+     "description": "",
+     "price": 95,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee6b",
+     "title": "Abu al-Abbas Mosque",
+     "description": "",
+     "price": 95,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee6c",
+     "title": "Muizz Street",
+     "description": "",
+     "price": 95,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee6d",
+     "title": "Aqmar Mosque",
+     "description": "",
+     "price": 95,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee6e",
+     "title": "Al-Rifa'i Mosque",
+     "description": "",
+     "price": 968,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee6f",
+     "title": "Amr ibn Al-Aas Masjd",
+     "description": "",
+     "price": 960,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee70",
+     "title": "Gayer-Anderson House",
+     "description": "",
+     "price": 968,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee71",
+     "title": "Al-Azhar Mosque",
+     "description": "",
+     "price": 960,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8416c9454b7c65d3deee72",
+     "title": "Ibn Tulun Mosque",
+     "description": "",
+     "price": 95,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27",
+      "cairo-private-highlights-citadel-egyptian-mus-d9e88e786066",
+      "vip-cairo-experience-museum-citadel-old-cairo-a6a9f9119560"
+     ],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "cairo-highlights-egyptian-museum-citadel-old-cairo-guided-tour",
+   "id": "90fe4b66b572d6047ec61d5f",
+   "readAt": "2026-10-27T06:12:28Z",
+   "detail": {
+    "title": "Cairo Highlights: Egyptian Museum, Citadel & Old Cairo Guided Tour",
+    "duration": "3 - 6 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Transportation by air-conditioned vehicle",
+     "Licensed guide",
+     "Shared Tour: Professional English-speaking guide only",
+     "Private Tour: Professional guide available in all languages",
+     "Hotel pick-up and drop-off from Cairo or Giza",
+     "Visits: Papyrus Gallery, Oils Factory, Bazaar, Cotton Store, Carpet School (upon request)",
+     "Lunch (VIP Private Tour only; available as an add-on for private tours)",
+     "Bottled water",
+     "Entry tickets to selected landmarks",
+     "Felucca ride on the Nile (VIP option only)"
+    ],
+    "whatsNotIncluded": [
+     "Transfers from airport (available for an extra fee)",
+     "Personal expenses",
+     "Drinks"
+    ],
+    "whatToBring": [
+     "Passport or ID card",
+     "Credit card",
+     "Cash",
+     "Sunscreen"
+    ],
+    "itinerary": [],
+    "pricingSummary": {
+     "fromPrice": 49,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "egyptian-museum-guided-tour-shared-tour-with--b0c92dc1f8de",
+     "title": "Egyptian Museum Guided Tour — Shared Tour with Ticket Included",
+     "type": "Per Person",
+     "description": "Discover the treasures of ancient Egypt on a shared English-speaking tour of the Egyptian Museum. With your entrance ticket included, explore remarkable statues, royal artifacts, mummies, and the legendary treasures of Tutankhamun alongside an expert guide. This convenient and budget-friendly experience is ideal for travelers with limited time who want to experience Cairo’s ancient history without the added cost of lunch.",
+     "duration": "3 - 6 hours",
+     "guestPrices": {
+      "adult": 49,
+      "child": 49,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 49,
+        "child": 49,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "egyptian-museum-old-cairo-khan-el-khalili-sha-48ddaad6afc3",
+     "title": "Egyptian Museum, Old Cairo & Khan el-Khalili Shared Tour with Tickets",
+     "type": "Per Person",
+     "description": "Explore Cairo’s ancient treasures, historic churches, and vibrant markets on a shared English-speaking tour. Visit the Egyptian Museum to admire Tutankhamun’s treasures and fascinating artifacts, discover the historic churches of Old Cairo, and wander through the lively lanes of Khan el-Khalili. With entrance tickets included, this tour offers a convenient and budget-friendly way to experience some of Cairo’s most iconic cultural highlights. Lunch is not included.",
+     "duration": "3 - 6 hours",
+     "guestPrices": {
+      "adult": 109,
+      "child": 79,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 109,
+        "child": 79,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "cairo-private-tour-egyptian-museum-citadel-ol-b9e8cca2c667",
+     "title": "Cairo Private Tour: Egyptian Museum, Citadel & Old Cairo with Tickets",
+     "type": "Per Person",
+     "description": "Discover Cairo’s rich history on a private English-speaking tour covering three of the city’s most iconic attractions. Explore the remarkable artifacts of the Egyptian Museum, uncover the history of the Citadel, admire the architecture of the Muhammad Ali Mosque, and visit the historic churches of Old Cairo. Entrance tickets are included, while lunch is optional and can be added at checkout.",
+     "duration": "3 - 6 hours",
+     "guestPrices": {
+      "adult": 267,
+      "child": 113,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 267,
+        "child": 113,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-3",
+     "pricingKey": "egyptian-museum-citadel-old-cairo-shared-tour-3b184913b8c0",
+     "title": "Egyptian Museum, Citadel & Old Cairo – Shared Tour",
+     "type": "Per Person",
+     "description": "Explore Cairo’s highlights on a shared English-guided tour with tickets included. Discover ancient treasures at the Egyptian Museum, visit the Citadel and Mosque of Muhammad Ali, then explore the historic churches of Old Cairo. Lunch is not included.",
+     "duration": "3 - 6 hours",
+     "guestPrices": {
+      "adult": 0,
+      "child": 0,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 116,
+        "child": 116,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8021a1cebb11414c8cb3c7",
+     "title": "Abdeen Palace",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8021a1cebb11414c8cb3c8",
+     "title": "Saqqara",
+     "description": "",
+     "price": 134.95,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8021a1cebb11414c8cb3c9",
+     "title": "Memphis",
+     "description": "",
+     "price": 134.95,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8021a1cebb11414c8cb3ca",
+     "title": "Dahshur",
+     "description": "",
+     "price": 134.95,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8021a1cebb11414c8cb3cb",
+     "title": "Lunch per person",
+     "description": "",
+     "price": 33.74,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8021a1cebb11414c8cb3cc",
+     "title": "30 Min Quad Bike",
+     "description": "",
+     "price": 67.47,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8021a1cebb11414c8cb3cd",
+     "title": "30 Min Camel Ride",
+     "description": "",
+     "price": 67.47,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8021a1cebb11414c8cb3ce",
+     "title": "Airport Pickup Fees",
+     "description": "",
+     "price": 67.47,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8021a1cebb11414c8cb3cf",
+     "title": "01 hour Felucca ride",
+     "description": "",
+     "price": 67.47,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8021a1cebb11414c8cb3d0",
+     "title": "Dinner Cruise Nile",
+     "description": "",
+     "price": 47.23,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8021a1cebb11414c8cb3d1",
+     "title": "AlHakim bi-Amr Allah",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8021a1cebb11414c8cb3d2",
+     "title": "Bab Zuweila",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8021a1cebb11414c8cb3d3",
+     "title": "Beit Zeinab Khatun",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8021a1cebb11414c8cb3d4",
+     "title": "Islamic Art Museum",
+     "description": "",
+     "price": 107.96,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8021a1cebb11414c8cb3d5",
+     "title": "Civilization Museum",
+     "description": "",
+     "price": 134.95,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8021a1cebb11414c8cb3d6",
+     "title": "Private Tour Photographer",
+     "description": "",
+     "price": 202.42,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8021a1cebb11414c8cb3d7",
+     "title": "Islamic, Coptic Tour",
+     "description": "",
+     "price": 134.95,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8021a1cebb11414c8cb3d8",
+     "title": "Bayt al-Suhaymi",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8021a1cebb11414c8cb3d9",
+     "title": "Khan el-Khalili Tour",
+     "description": "",
+     "price": 94.46,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd58315",
+     "title": "Cairo Opera House",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd58316",
+     "title": "Al-Fishawi Café",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd58317",
+     "title": "Cairo Tower Tour",
+     "description": "",
+     "price": 107.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd58318",
+     "title": "Private Tour Photographer",
+     "description": "",
+     "price": 202.29,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd58319",
+     "title": "Sultan Hassan Mosque",
+     "description": "",
+     "price": 107.89,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd5831a",
+     "title": "Romanian Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd5831b",
+     "title": "Hindi Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd5831c",
+     "title": "Indonesian Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd5831d",
+     "title": "Chinese guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd5831e",
+     "title": "Korean Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd5831f",
+     "title": "Japanese Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd58320",
+     "title": "Dutch guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd58321",
+     "title": "Portuguese Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd58322",
+     "title": "Ukrainian Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd58323",
+     "title": "Turkish Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd58324",
+     "title": "Greek Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd58325",
+     "title": "Hungarian Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd58326",
+     "title": "Czech Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd58327",
+     "title": "Polish Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd58328",
+     "title": "The Cave Church Tour",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd58329",
+     "title": "Islamic, Coptic Tour",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd5832a",
+     "title": "Bayt al-Suhaymi",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd5832b",
+     "title": "City of the Dead",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd5832c",
+     "title": "Mohamed Ali Palace",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd5832d",
+     "title": "Qalawun Complex",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd5832e",
+     "title": "Abu al-Abbas Mosque",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd5832f",
+     "title": "Muizz Street",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd58330",
+     "title": "Aqmar Mosque",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd58331",
+     "title": "Al-Rifa'i Mosque",
+     "description": "",
+     "price": 953.48,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd58332",
+     "title": "Amr ibn Al-Aas Masjd",
+     "description": "",
+     "price": 953.48,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd58333",
+     "title": "Gayer-Anderson House",
+     "description": "",
+     "price": 953.48,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd58334",
+     "title": "Al-Azhar Mosque",
+     "description": "",
+     "price": 953.48,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81364ebf5af9b3fbd58335",
+     "title": "Ibn Tulun Mosque",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "cairo-egyptian-museum-citadel-coptic-cairo-nile-dinner-cruise",
+   "id": "542bd500df9faf39b940f98d",
+   "readAt": "2026-10-27T06:12:28Z",
+   "detail": {
+    "title": "Cairo: Egyptian Museum, Citadel, Coptic Cairo & Nile Dinner Cruise",
+    "duration": "12 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Pick-up services from your hotel & return.",
+     "All transfers by a private air-conditioned vehicle.",
+     "Private tour guide",
+     "Entrance fees to all the mentioned sites (Only if you choose the option that includes the tickets).",
+     "Lunch",
+     "Dinner meal on the Nile cruise.",
+     "Shopping tour in Cairo",
+     "Bottled water on board the vehicle during the tour.",
+     "Shopping tours in Cairo."
+    ],
+    "includes": [],
+    "whatsNotIncluded": [
+     "Any extras not mentioned in the programme",
+     "Beverages during lunch and dinner",
+     "Tipping."
+    ],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "Pickup location: Cairo",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Transfer",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Egyptian Museum of Antiquities",
+      "description": "",
+      "duration": "2 hours"
+     },
+     {
+      "title": "Mosque of Muhammad Ali Pasha",
+      "description": "",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Local restaurant",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Hanging Church",
+      "description": "",
+      "duration": "15 minutes"
+     },
+     {
+      "title": "Ben Ezra Synagogue",
+      "description": "",
+      "duration": "15 minutes"
+     },
+     {
+      "title": "Saint Barbara Church, Cairo",
+      "description": "",
+      "duration": "15 minutes"
+     },
+     {
+      "title": "St Sergius and St Bacchus Church",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Nile Crystal",
+      "description": "",
+      "duration": "2 hours"
+     },
+     {
+      "title": "Transfer",
+      "description": "",
+      "duration": ""
+     },
+     {
+      "title": "Arrive back at: Cairo",
+      "description": "",
+      "duration": ""
+     }
+    ],
+    "pricingSummary": {
+     "fromPrice": 277,
+     "currency": "USD",
+     "version": 0
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "private-english-tour-with-tickets-lunch-trans-f3df4badf3fe",
+     "title": "Private English Tour with Tickets, Lunch & Transfers",
+     "type": "Per Person",
+     "description": "Enjoy a private guided tour in English or Arabic with round-trip transfers, entrance tickets, and lunch included. Travel comfortably with a dedicated guide and explore the attractions at your own pace for a convenient, all-inclusive experience.",
+     "duration": "12 hours",
+     "guestPrices": {
+      "adult": 277,
+      "child": 69,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 277,
+        "child": 69,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 277,
+        "child": 69,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 277,
+        "child": 69,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8caf917ac387f96571c1da",
+     "title": "Badr City",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8caf917ac387f96571c1db",
+     "title": "Airport",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8caf917ac387f96571c1dc",
+     "title": "Obour",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8caf917ac387f96571c1dd",
+     "title": "Shorouk",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8caf917ac387f96571c1de",
+     "title": "Rehab",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8caf917ac387f96571c1df",
+     "title": "Heliopolis",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8caf917ac387f96571c1e0",
+     "title": "Sheraton",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8caf917ac387f96571c1e1",
+     "title": "Madinty",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8caf917ac387f96571c1e2",
+     "title": "New Cairo",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8caf917ac387f96571c1e3",
+     "title": "Sh. Zayed",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8caf917ac387f96571c1e4",
+     "title": "N.Capital",
+     "description": "",
+     "price": 32,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
   }
  ]
 }

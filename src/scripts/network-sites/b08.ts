@@ -1265,3 +1265,1090 @@ export const B08B: NetworkBatch = {
     },
   ],
 };
+
+// ================================================================================================================
+// B08C: Coral Reefs Dahab, Marsa Mubarak and Citadel of Saladin.
+// ================================================================================================================
+
+const WATER = 'water-activities';
+
+/** Marsa Alam's own pickup line; the Marsa Alam sites collect from hotels in the town. */
+const PICKUP_MARSA = 'Pickup and drop-off at your hotel in Marsa Alam';
+/** Where the trip names no departure, the time is settled with the booking. */
+const DAY_PICKUP = 'The trip is sold by the day; the team confirms your pickup time when it confirms your booking.';
+/** Options whose child price equals the adult one publish no child price at all, so none is claimed. */
+const SAME_PRICE = 'Children pay the same price as adults.';
+
+const PROGRAMMES_C = {
+  // ---- Coral Reefs Dahab --------------------------------------------------------------------------------------
+  CRD_THREE_POOLS: {
+    provider: 'eeo',
+    tenant: EEO,
+    source: 'sharm-el-sheikh-dahab-3-pools-camel-ride-red-canyon-lunch-tour',
+    category: DAY_TRIPS,
+    options: ['dahab-3-pools-camel-ride-red-canyon-lunch-43fae27c4c65', 'dahab-quad-bike-3-pools-camel-ride-red-canyon-3983acfc665a'],
+    // Each snorkel-gear extra is bound to one booking option only, so neither applies to both options sold.
+    addons: [],
+    departures: ['08:00'],
+    // The record types the programme's length as "8 - 9 hours".
+    duration: '8 to 9 hours',
+    rename: {
+      'dahab-3-pools-camel-ride-red-canyon-lunch-43fae27c4c65': {
+        name: 'Three Pools, the Red Canyon and a camel ride',
+        description: 'The canyon by jeep, the Three Pools, a camel ride and lunch by the sea. No quad ride.',
+      },
+      'dahab-quad-bike-3-pools-camel-ride-red-canyon-3983acfc665a': {
+        name: 'The same day with a quad ride',
+        description: 'The same stops, with an ATV quad ride between the mountains of the Red Canyon added.',
+      },
+    },
+    childNote: CHILD_NOTE,
+    // The quad line holds only for the option that names it, and the snorkelling line is written as a choice of add-on.
+    omit: {
+      inclusions: [
+        'Quad bike ride on the beach & between mountains (if option selected)',
+        'Snorkeling stop at the 3 Pools (Snorkeling Equipment not included) add on selection',
+      ],
+    },
+    add: {
+      inclusions: ['A snorkelling stop at the Three Pools'],
+      exclusions: ['Snorkelling equipment'],
+      needToKnow: [
+        'The quad ride belongs to the option that names it; the other option makes the same stops without it.',
+        'Bring your original passport.',
+        'The day includes off-road driving and some walking in the canyon; wear comfortable clothes and walking shoes.',
+        'Snorkelling depends on the sea, and visibility and access can change with the conditions.',
+        'Bring cash for personal spending and for renting equipment in Dahab.',
+        'Pickup is from the main gate of your hotel, and the time is confirmed after booking.',
+      ],
+    },
+    // The record's schedule is its transfer legs; the day is written from the stops the record names.
+    itinerary: [
+      { time: '08:00', title: 'Hotel pickup', duration: '1 hour', description: 'An air-conditioned vehicle collects you from the main gate of your hotel in Sharm El Sheikh for the drive north.' },
+      { title: 'Salama Canyon by jeep', description: 'A jeep takes the group into the canyon, with a guide for the walk through it.' },
+      { title: 'The Three Pools', duration: '3 hours', description: 'The sheltered water on the Dahab coast: a camel ride, a snorkelling stop and free time, with a quad ride between the mountains of the Red Canyon on the option that includes it.' },
+      { title: 'Dahab', duration: '2.5 hours', description: 'Time in the town, with the guide, and lunch at a seaside restaurant.' },
+      { title: 'Back to your hotel', duration: '1 hour', description: 'The drive back to Sharm El Sheikh.' },
+    ],
+  },
+  CRD_CANYON_DAY: {
+    provider: 'eeo',
+    tenant: EEO,
+    source: 'sharm-el-sheikh-to-dahab-day-trip-colored-canyon-camel-ride-snorkeling',
+    category: DAY_TRIPS,
+    // The option without the Blue Hole entry. The programme's other option buys that entry and leaves five
+    // minutes later, so the two cannot be sold together.
+    options: ['dahab-safari-camel-ride-canyon-snorkeling-hik-0de648094c0e'],
+    addons: [],
+    departures: ['07:30'],
+    rename: {
+      'dahab-safari-camel-ride-canyon-snorkeling-hik-0de648094c0e': {
+        name: 'Dahab day with the canyon and a camel ride',
+        description: 'A camel ride, a snorkelling stop at the canyon site, lunch, shopping, a jeep safari and the walk through Salama Coloured Canyon.',
+      },
+    },
+    childNote: CHILD_NOTE,
+    omit: {
+      inclusions: ['Pick up and drop off from hotel.', 'Air - conditioned mini van', 'Guide.', 'Governmental fees and entry for Canyon'],
+      exclusions: ['photos & videos ( available to purchase)'],
+    },
+    add: {
+      inclusions: [PICKUP_SHARM, 'An air-conditioned minivan', 'A guide for the day', 'Government fees and the canyon entry'],
+      exclusions: ['Photos and videos, which can be bought on the day'],
+      needToKnow: [
+        'This day does not go to the Blue Hole, and its price does not include the entry there.',
+        'Touching marine life is not allowed.',
+      ],
+    },
+    itinerary: [
+      { time: '07:30', title: 'Hotel pickup', duration: '105 minutes', description: 'A minivan collects you from your hotel in Sharm El Sheikh for the drive up the coast.' },
+      { title: 'Camel ride', duration: '10 minutes', description: 'A camel ride on the Dahab shore.' },
+      { title: 'Snorkelling at the canyon site', duration: '40 minutes', description: 'A snorkelling stop with the guide. Snorkel gear is not included.' },
+      { title: 'Lunch', duration: '105 minutes', description: 'Lunch at a restaurant by the sea.' },
+      { title: 'Dahab', duration: '45 minutes', description: 'Time in the town for the shops.' },
+      { title: 'Salama Coloured Canyon', duration: '45 minutes', description: 'A jeep takes the group in, and the walk through the canyon is guided; the government fees and the entry are in the price.' },
+      { title: 'Back to your hotel', description: 'The drive back to Sharm El Sheikh.' },
+    ],
+  },
+  CRD_JEEP_SAFARI: {
+    provider: 'eeo',
+    tenant: EEO,
+    source: 'sharm-el-sheikh-day-tour-jeep-safari-colored-canyon-red-sea-snorkeling-camel-ride-atv-dahab',
+    category: DAY_TRIPS,
+    // The option without the ATV; the programme's other option adds one and leaves five minutes later.
+    options: ['salama-canyon-jeep-safari-snorkeling-camel-ri-c6e17d852edf'],
+    addons: [],
+    departures: ['07:25'],
+    rename: {
+      'salama-canyon-jeep-safari-snorkeling-camel-ri-c6e17d852edf': {
+        name: 'Jeep safari and canyon day, without the quad ride',
+        description: 'A jeep drive, Salama Canyon, snorkelling in the Red Sea, a camel ride along the coast and time in Dahab.',
+      },
+    },
+    childNote: CHILD_NOTE,
+    // The snorkelling line ranks its own site, and the quad line holds only for the option the trip does not sell.
+    omit: {
+      inclusions: [
+        'Snorkeling from the coast in the best snorkeling place between Dahab and Abu galum',
+        'Quad biking along the beach and the desert (double quad) (if option selected)',
+      ],
+      exclusions: ['Snorkeling Equipment.'],
+    },
+    add: {
+      inclusions: ['Snorkelling from the shore between Dahab and Abu Galum'],
+      exclusions: ['Snorkelling equipment'],
+      needToKnow: [
+        'Snorkelling equipment is required for safety: bring your own or rent it on the spot during the trip.',
+        'The day involves a lot of walking, so wear comfortable shoes.',
+        'Bring your passport or ID card.',
+        'Touching marine life is not allowed.',
+      ],
+    },
+    itinerary: [
+      { time: '07:25', title: 'Hotel pickup', duration: '45 minutes', description: 'A coach collects you from your hotel in Sharm El Sheikh.' },
+      { title: 'The Red Sea', duration: '30 minutes', description: 'A first stop on the coast.' },
+      { title: 'Salama Coloured Canyon', description: 'A guided visit and a walk through the canyon.' },
+      { title: 'By jeep to Dahab', duration: '30 minutes', description: 'The jeep drive across the desert.' },
+      { title: 'Dahab', description: 'A guided visit to the town, a camel ride along the beach and the desert, lunch in a Bedouin tent on the coast, snorkelling from the shore, and time to walk and shop.' },
+      { title: 'Back to your hotel', duration: '45 minutes', description: 'The drive back to Sharm El Sheikh.' },
+    ],
+  },
+
+  // ---- Marsa Mubarak ------------------------------------------------------------------------------------------
+  MM_SAILING: {
+    provider: 'eeo',
+    tenant: EEO,
+    source: 'marsa-alam-luxury-pirates-boat-snorkeling-cruise-with-lunch',
+    category: WATER,
+    options: ['marsa-alam-pirates-premium-boat-to-turtle-bay-d101de788b0b'],
+    // The extras the record publishes are bound to no booking option, so none can be sold with this one.
+    addons: [],
+    departures: ['09:00', '14:00'],
+    // The published times are when the boat sails from Port Ghalib, not when the bus reaches your hotel.
+    departureLabels: { '09:00': 'Boat leaves at 09:00', '14:00': 'Boat leaves at 14:00' },
+    rename: {
+      'marsa-alam-pirates-premium-boat-to-turtle-bay-d101de788b0b': {
+        name: 'Sailing boat to Marsa Mubarak and Marsa Shona',
+        description: 'The sailing boat from Port Ghalib, two guided snorkelling stops and an open buffet meal on board.',
+      },
+    },
+    childNote: CHILD_NOTE,
+    omit: { inclusions: ['Two daily programs', 'Delicious open buffet lunch/dinner'] },
+    add: {
+      inclusions: ['An open buffet meal on board'],
+      needToKnow: [
+        'The time you choose is when the boat leaves Port Ghalib. The shared bus collects you from your hotel roughly ninety minutes earlier, and the exact time depends on where your hotel is.',
+        'Be at Port Ghalib Marina thirty minutes before the boat leaves.',
+        'Bring a valid ID card or passport.',
+        'Touching marine life and plants is not allowed.',
+        'Use biodegradable sunscreen to protect the reef.',
+      ],
+    },
+    itinerary: [
+      { title: 'Hotel pickup', duration: '50 minutes', description: 'A shared bus collects you from your hotel in Marsa Alam and drives to Port Ghalib Marina.' },
+      { title: 'Sailing to Marsa Mubarak', duration: '35 minutes', description: 'The boat leaves the marina and sails up the coast.' },
+      { title: 'Marsa Mubarak', duration: '45 minutes', description: 'The first guided snorkelling stop, among the reefs and the fish of the bay.' },
+      { title: 'Marsa Shona', duration: '45 minutes', description: 'The second guided snorkelling stop.' },
+      { title: 'A meal on board', description: 'An open buffet meal on deck, with fizzy drinks and tea through the day.' },
+      { title: 'Back to your hotel', description: 'The boat returns to Port Ghalib Marina and the bus takes you back to your hotel.' },
+    ],
+  },
+  MM_TURTLE: {
+    provider: 'eeo',
+    tenant: EEO,
+    source: 'marsa-alam-marsa-mubarak-turtle-snorkelling-boat-trip',
+    category: WATER,
+    // The snorkelling option only; the programme's other option adds an intro dive.
+    options: ['marsa-mubarak-sea-turtle-trip-with-lunch-and--b9350a52e3cd'],
+    addons: [],
+    departures: ['09:00'],
+    // The record types the option's length as "8. hours".
+    duration: '8 hours',
+    rename: {
+      'marsa-mubarak-sea-turtle-trip-with-lunch-and--b9350a52e3cd': {
+        name: 'Boat day at Marsa Mubarak with lunch',
+        description: 'The boat from Marsa Alam to Marsa Mubarak, guided snorkelling, the gear and lunch on board.',
+      },
+    },
+    childNote: CHILD_NOTE,
+    // The dive line holds only for the option the trip does not sell; the pickup line and the bare
+    // "Snorkelling adventure" are stated in the site's words instead.
+    omit: { inclusions: ['Pickup and transfer to Marsa Mubarak', 'Snorkelling adventure', 'Optional diving session (if selected)'] },
+    add: {
+      inclusions: [PICKUP_MARSA, 'Guided snorkelling at Marsa Mubarak'],
+      needToKnow: ['Pickup from a hotel in North Marsa Alam costs extra and cannot be booked on this site. Ask the team before you book if your hotel is north of the town.'],
+    },
+    // The record publishes no schedule; the day is written from its own description and inclusions.
+    itinerary: [
+      { time: '09:00', title: 'Hotel pickup', description: 'The transfer collects you from your hotel in Marsa Alam and takes you to the boat.' },
+      { title: 'Marsa Mubarak', description: 'The boat sails into the bay for the first guided snorkelling session, among the coral reefs and the fish, where you can look for sea turtles and dugongs.' },
+      { title: 'Lunch on board', description: 'Lunch and soft drinks on the boat between the snorkelling sessions.' },
+      { title: 'More snorkelling', description: 'A second session with the instructors; the mask, fins and life jacket are in the price.' },
+      { title: 'Back to your hotel', description: 'The boat returns and the transfer takes you back to your hotel in Marsa Alam.' },
+    ],
+  },
+  MM_DUGONG: {
+    provider: 'eeo',
+    tenant: EEO,
+    source: 'marsa-mubarak-boat-trip-snorkel-with-dugongs-giant-turtles',
+    category: WATER,
+    options: ['marsa-alam-marsa-mubarak-sea-cow-turtles-snor-79343d11386c'],
+    addons: [],
+    // The option's one published start is 21:00, which does not fit a snorkelling day, so the trip is sold
+    // by the day and the team settles the pickup time with the booking.
+    departures: [],
+    rename: {
+      'marsa-alam-marsa-mubarak-sea-cow-turtles-snor-79343d11386c': {
+        name: 'Snorkelling day at Marsa Mubarak and Small Shenwa',
+        description: 'Two guided snorkelling stops where you can look for turtles and dugongs, an open buffet meal and time at the marina.',
+      },
+    },
+    childNote: CHILD_NOTE,
+    // The guide line carries a word the network never shows, the gear lines point at an extra bound to no
+    // booking option, and the meal line reads as a toggle.
+    omit: {
+      inclusions: [
+        'Expert snorkeling guide',
+        'Snorkeling gear available - select from add-ons',
+        'Open buffet lunch OR dinner (chicken, kofta, fish, salads, soups)',
+      ],
+      exclusions: ['Snorkeling gear ( purchase as add-on)'],
+    },
+    add: {
+      inclusions: ['A snorkelling guide on board', 'An open buffet lunch or dinner on board: chicken, kofta, fish, salads and soups'],
+      exclusions: ['Snorkelling gear'],
+      needToKnow: [
+        DAY_PICKUP,
+        'Snorkelling gear is not included and cannot be added on this site. Bring your own, or ask the team before you book.',
+        'Some snorkelling experience helps.',
+      ],
+    },
+    itinerary: [
+      { title: 'Hotel pickup', duration: '1 hour', description: 'The bus collects you from your hotel in Marsa Alam and drives to the boat.' },
+      { title: 'Sailing to Marsa Mubarak', duration: '30 minutes', description: 'The boat leaves for the bay.' },
+      { title: 'Marsa Mubarak and Small Shenwa', duration: '2.5 hours', description: 'Two guided snorkelling stops with free time between them, where you can look for turtles and dugongs among the reef fish.' },
+      { title: 'A meal on board', description: 'An open buffet lunch or dinner on the boat.' },
+      { title: 'Port Ghalib Marina', duration: '45 minutes', description: 'A guided walk around the marina and time for the shops.' },
+      { title: 'Back to your hotel', description: 'The bus returns you to your hotel in Marsa Alam.' },
+    ],
+  },
+
+  // ---- Citadel of Saladin -------------------------------------------------------------------------------------
+  COS_CITADEL_SHARED: {
+    provider: 'eeo',
+    tenant: EEO,
+    source: 'cairo-citadel-museum-old-cairo-heritage-tour',
+    category: DAY_TRIPS,
+    // The shared Citadel tour only; the programme's other options add the museum, Old Cairo and a felucca.
+    options: ['cairo-salah-el-din-citadel-guided-tour-1572db6d76c8'],
+    addons: [],
+    departures: ['08:00'],
+    rename: {
+      'cairo-salah-el-din-citadel-guided-tour-1572db6d76c8': {
+        name: 'Shared guided tour of the Citadel',
+        description: 'A shared English-speaking group, the entry ticket to the Citadel and hotel transfers.',
+      },
+    },
+    // The option's child price equals its adult price, so the record publishes no child price at all.
+    omit: {
+      inclusions: [
+        'Professional licensed guide',
+        'Shared Tour: Professional English-speaking guide only',
+        'Private Tour: Professional guide available in all languages',
+        'Entry tickets to selected landmarks',
+        'Hotel pickup and drop-off from Cairo or Giza',
+        'Visits: Papyrus Gallery, Oils Factory, Bazaar, Cotton Store, Carpet School (upon request)',
+      ],
+      exclusions: [
+        'Lunch – included in VIP Private Tour only, or available as an add-on for Private Tours',
+        'Felucca ride on the Nile (VIP option only)',
+      ],
+    },
+    add: {
+      inclusions: ['A licensed English-speaking guide', 'The entry ticket to the Citadel', PICKUP_CAIRO],
+      exclusions: ['Lunch'],
+      needToKnow: [SAME_PRICE],
+    },
+    // The record publishes no schedule; the morning is written from this option's own description.
+    itinerary: [
+      { time: '08:00', title: 'Hotel pickup', description: 'An air-conditioned vehicle collects you from your hotel in Cairo or Giza.' },
+      { title: 'The Citadel of Salah El Din', description: 'A guided walk through the old fortress with the group, with the entry ticket in the price.' },
+      { title: 'The Mosque of Muhammad Ali', description: 'The mosque inside the Citadel walls.' },
+      { title: 'The view over Cairo', description: 'The terrace and its view across the city.' },
+      { title: 'Back to your hotel', description: 'The vehicle returns you to your hotel in Cairo or Giza.' },
+    ],
+  },
+  COS_PRIVATE_KHAN: {
+    provider: 'eeo',
+    tenant: EEO,
+    source: 'cairo-saladin-citadel-old-cairo-khan-el-khalili-private-tour',
+    category: DAY_TRIPS,
+    options: ['cairo-citadel-old-cairo-and-khan-el-khalili-p-5bdaa460be66'],
+    addons: [],
+    departures: ['09:00'],
+    // The option's own name and words carry a claim the network never shows.
+    rename: {
+      'cairo-citadel-old-cairo-and-khan-el-khalili-p-5bdaa460be66': {
+        name: 'Private tour with an Egyptologist guide',
+        description: 'Your own Egyptologist guide and vehicle, the entrance fees, a traditional Egyptian lunch and hotel transfers.',
+      },
+    },
+    childNote: CHILD_NOTE,
+    // The record lists no pickup line among its inclusions, but its own description promises hotel transfers.
+    add: { inclusions: [PICKUP_CAIRO] },
+    itinerary: [
+      { time: '09:00', title: 'Hotel pickup', duration: '30 minutes', description: 'A private vehicle collects you from your hotel in Cairo or Giza.' },
+      { title: 'Salah El Din Citadel', duration: '2 hours', description: 'The fortress and the Alabaster Mosque inside it, with your guide.' },
+      { title: 'Lunch', duration: '1 hour', description: 'A traditional Egyptian lunch at a local restaurant.' },
+      { title: 'The Hanging Church', duration: '15 minutes', description: 'The first of the old churches in Old Cairo.' },
+      { title: 'Abu Serga', duration: '15 minutes', description: 'The church beside it.' },
+      { title: 'St Barbara’s Church', duration: '10 minutes', description: 'The last of the churches.' },
+      { title: 'Khan El Khalili', duration: '1 hour', description: 'Time in the bazaar and its lanes of shops.' },
+      { title: 'Back to your hotel', duration: '30 minutes', description: 'The vehicle returns you to your hotel in Cairo or Giza.' },
+    ],
+  },
+  COS_ISLAMIC_HERITAGE: {
+    provider: 'eeo',
+    tenant: EEO,
+    source: 'cairo-islamic-heritage-tour-with-citadel-historic-mosques-khan-el-khalili',
+    category: DAY_TRIPS,
+    options: ['private-islamic-cairo-tour-with-tickets-lunch-e5b857318c81'],
+    addons: [],
+    departures: ['08:00', '09:00', '10:00', '11:00', '11:05', '12:00'],
+    // The record types the option's length as "6 hour".
+    duration: '6 hours',
+    rename: {
+      'private-islamic-cairo-tour-with-tickets-lunch-e5b857318c81': {
+        name: 'Private tour with tickets and lunch',
+        description: 'Your own English-speaking guide, private transfers both ways, lunch and all the entrance tickets.',
+      },
+    },
+    childNote: CHILD_NOTE,
+    omit: { inclusions: ['Pick-up services from your hotel & return.'] },
+    add: { inclusions: [PICKUP_CAIRO] },
+    // The record's schedule carries its transfer legs as stops; the day is written from the places it names.
+    itinerary: [
+      { title: 'Hotel pickup', duration: '45 minutes', description: 'A private air-conditioned vehicle collects you from your hotel in Cairo or Giza.' },
+      { title: 'The Citadel of Salah El Din', description: 'The fortress above the city, where the day begins.' },
+      { title: 'Mosque of Muhammad Ali Pasha', duration: '30 minutes', description: 'The mosque inside the Citadel walls.' },
+      { title: 'Mosque-Madrassa of Sultan Hassan', description: 'The Mamluk mosque and school below the Citadel.' },
+      { title: 'Lunch', description: 'Lunch at a local restaurant.' },
+      { title: 'Al-Azhar Mosque', duration: '30 minutes', description: 'The mosque on the edge of the old city, with time of your own.' },
+      { title: 'Khan el-Khalili', duration: '30 minutes', description: 'A guided walk through the bazaar, with a shopping stop.' },
+      { title: 'Back to your hotel', duration: '45 minutes', description: 'The vehicle returns you to your hotel in Cairo or Giza.' },
+    ],
+  },
+  COS_CIVILISATION_MUSEUM: {
+    provider: 'eeo',
+    tenant: EEO,
+    source: 'cairo-national-museum-citadel-khan-el-khalili-private-tour',
+    category: DAY_TRIPS,
+    options: ['private-english-tour-with-tickets-transfers-e-030167623c05'],
+    addons: [],
+    departures: ['07:30', '08:00', '08:30', '09:00', '09:30'],
+    rename: {
+      'private-english-tour-with-tickets-transfers-e-030167623c05': {
+        name: 'Private tour in English with an Egyptologist guide',
+        description: 'Your own English-speaking Egyptologist guide, hotel transfers both ways, the entrance tickets and a local lunch.',
+      },
+    },
+    childNote: CHILD_NOTE,
+    omit: { inclusions: ['Hotel pick up and drop-off service'] },
+    add: { inclusions: [PICKUP_CAIRO] },
+    itinerary: [
+      { title: 'Hotel pickup', duration: '45 minutes', description: 'A private air-conditioned vehicle collects you from your hotel in Cairo or Giza.' },
+      { title: 'National Museum of Egyptian Civilisation', duration: '2 hours', description: 'The museum in Fustat, with your guide and the entrance ticket in the price.' },
+      { title: 'Cairo Citadel', duration: '1 hour', description: 'The fortress of Salah El Din above the city.' },
+      { title: 'Lunch', duration: '30 minutes', description: 'Lunch at a local restaurant.' },
+      { title: 'Khan el-Khalili', duration: '1 hour', description: 'Time in the bazaar, with a shopping stop.' },
+      { title: 'Back to your hotel', duration: '45 minutes', description: 'The vehicle returns you to your hotel in Cairo or Giza.' },
+    ],
+  },
+} satisfies Record<string, PriceSpec>;
+
+const PHOTO_C = {
+  canyonCamel: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085617/attractions-network/network-b08/coral-reefs-dahab/wpygg5o9iwxlr8lxp9q4.jpg',
+  canyonWalls: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085619/attractions-network/network-b08/coral-reefs-dahab/lfsrxdbnyahmgcgfn9zl.jpg',
+  layeredRock: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085620/attractions-network/network-b08/coral-reefs-dahab/ipasekbgj3xdatb6lnvs.jpg',
+  snorkellerAndSails: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085622/attractions-network/network-b08/marsa-mubarak/vqybfirbk4vtbiqdtv70.jpg',
+  turtleOverReef: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085624/attractions-network/network-b08/marsa-mubarak/hua97b4rgydbu8xtuked.jpg',
+  turtleInBlue: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085626/attractions-network/network-b08/marsa-mubarak/xaeglheldpkpkqkrjtg7.jpg',
+  fortressWalls: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085628/attractions-network/network-b08/citadel-of-saladin/icidwwlnm8ijcmuw8jgh.jpg',
+  domesOverRampart: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085630/attractions-network/network-b08/citadel-of-saladin/zv4tt7k7p2vhemvqs1eh.jpg',
+  greenDomeCourtyard: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085631/attractions-network/network-b08/citadel-of-saladin/bu5tgoh0qaj2kkb6aygt.jpg',
+  seatedStatue: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085633/attractions-network/network-b08/citadel-of-saladin/yvh6dqw7hwddzvnsinmm.jpg',
+};
+
+/** Each photo described as it is, not as the trip it illustrates. */
+const ALT_C = {
+  canyonCamel: 'A rider on a camel in a narrow canyon of smooth red sandstone, with sunlight falling through the gap above',
+  canyonWalls: 'Weathered red rock walls above a sandy canyon floor, with a green shrub in the shade and blue sky over the ridge',
+  layeredRock: 'A close view of layered red sandstone, worn by the wind into shelves and hollows',
+  snorkellerAndSails: 'A snorkeller in a mask at the surface of clear green water, with a tall sailing boat under sail behind',
+  turtleOverReef: 'A sea turtle swimming just under the surface above a shallow coral reef',
+  turtleInBlue: 'A large sea turtle in deep blue water, with small fish and a reef behind it',
+  fortressWalls: 'Round towers and high stone walls of a hilltop fortress, with trees and small red kiosks along the road below',
+  domesOverRampart: 'A mosque of pale domes and two slender minarets seen above the battlements of a stone fortress wall',
+  greenDomeCourtyard: 'A mosque courtyard ringed by arcades of pointed arches, with a green dome and a minaret above the roofline',
+  seatedStatue: 'A large seated pharaoh statue in a museum gallery, with wooden cases and tall windows down the hall',
+};
+
+const MARSA_ALAM = { lat: 25.0676, lng: 34.879 };
+/** Places the Dahab day-trip site never names: its trips stay between Sharm El Sheikh and Dahab. */
+const NOT_DAHAB_COAST = /Hurghada|Cairo|Giza|Luxor|Aswan|Alexandria|Siwa|Bahariya|Fayoum|Marsa Alam|Quseir|Ghalib|Safaga|Soma Bay|Makadi|Gouna|Sahl|Saqqara|Sakkara|Memphis|Dahshur|Tiran|Ras Mohamed|Nabq|Catherine/i;
+/** Places the Marsa Mubarak site never names: its trips sail from Port Ghalib, which it does name. */
+const NOT_MARSA = /Gouna|Hurghada|Makadi|Sahl|Safaga|Soma Bay|Quseir|Sharm|Dahab|Nabq|Tiran|Ras Mohamed|Catherine|Cairo|Giza|Luxor|Aswan|Alexandria|Siwa|Bahariya|Fayoum|Saqqara|Sakkara|Memphis|Dahshur|Pyramid|Sphinx/i;
+/** Places the Citadel site never names: its trips stay in Cairo's old city and Coptic quarter. */
+const NOT_CITADEL = /Hurghada|Sharm|Dahab|Nabq|Tiran|Ras Mohamed|Marsa Alam|Quseir|Ghalib|Safaga|Soma Bay|Makadi|Gouna|Sahl|Luxor|Aswan|Alexandria|Siwa|Bahariya|Fayoum|Saqqara|Sakkara|Memphis|Dahshur|Pyramid|Sphinx/i;
+
+export const B08C: NetworkBatch = {
+  id: 'b08c',
+  sites: [
+    {
+      slug: 'coral-reefs-dahab',
+      name: 'Coral Reefs Dahab',
+      listingPath: '/trips',
+      domain: 'coralreefsdahab.com',
+      city: 'Sharm El Sheikh',
+      area: 'Sharm El Sheikh',
+      pickupDestination: 'sharm-el-sheikh',
+      coordinates: SHARM,
+      currency: 'USD',
+      slugPrefix: 'crd-',
+      foreignPlaces: NOT_DAHAB_COAST,
+      tagline: 'Days on the Dahab coast from Sharm El Sheikh',
+      description: 'Coral Reefs Dahab sells day trips up the coast from Sharm El Sheikh to Dahab and the desert behind it: the Three Pools, the Red Canyon, Salama Coloured Canyon by jeep, snorkelling from the shore, a camel ride along the sea and lunch in the town or in a Bedouin tent on the beach.\n\nNone of these days goes to the Blue Hole. Every trip collects you from your hotel in Sharm El Sheikh and brings you back. Hold a place online and pay later, or ask the team first about the pickup time.',
+      seo: {
+        metaTitle: 'Dahab Day Trips from Sharm El Sheikh: Canyons and Snorkelling',
+        metaDescription: 'Day trips from Sharm El Sheikh to Dahab: the Three Pools, the Red Canyon, Salama Coloured Canyon by jeep, snorkelling and a camel ride, with hotel pickup.',
+        keywords: [
+          'dahab day trip from sharm el sheikh',
+          'three pools dahab',
+          'coloured canyon dahab tour',
+          'dahab snorkelling day trip',
+          'salama canyon jeep safari',
+        ],
+      },
+      theme: { primaryColor: '#0F5C5A', secondaryColor: '#F6F0E6', accentColor: '#C2502F' },
+      heroImages: [PHOTO_C.canyonCamel, PHOTO_C.canyonWalls, PHOTO_C.layeredRock],
+      logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085677/attractions-network/tenant-logos/coral-reefs-dahab/monogram.png',
+      trips: [
+        {
+          path: 'three-pools-camel-ride-and-red-canyon-day',
+          price: PROGRAMMES_C.CRD_THREE_POOLS,
+          title: 'Dahab Three Pools, Camel Ride and Red Canyon Day',
+          short: 'Eight to nine hours from Sharm El Sheikh: Salama Canyon by jeep, the Three Pools with a camel ride and a snorkelling stop, and lunch by the sea in Dahab.',
+          description: 'A day on the coast and in the desert north of Sharm El Sheikh. An air-conditioned vehicle collects you from the main gate of your hotel at eight, and the first stop is Salama Canyon, which a jeep takes you into for a guided walk.\n\nThe day then moves to the Three Pools on the Dahab coast, where there is a camel ride, a snorkelling stop and time by the water, and on into the town for lunch at a seaside restaurant. There are two ways to book it: the day as it stands, or the same day with an ATV quad ride between the mountains of the Red Canyon. The guide, the entry to the Three Pools area and bottled water are in the price; snorkelling equipment is not. Children have their own price.',
+          highlights: [
+            'Salama Canyon by jeep, with a guided walk',
+            'A camel ride and a snorkelling stop at the Three Pools',
+            'Lunch at a seaside restaurant in Dahab',
+            'A quad ride between the mountains of the Red Canyon on the option that includes it',
+          ],
+          seo: {
+            metaTitle: 'Dahab Three Pools and Red Canyon Day from Sharm El Sheikh',
+            metaDescription: 'Eight to nine hours from Sharm El Sheikh: Salama Canyon by jeep, a camel ride and snorkelling at the Three Pools, and lunch by the sea in Dahab.',
+          },
+          images: [PHOTO_C.canyonCamel],
+          imageAlts: [ALT_C.canyonCamel],
+        },
+        {
+          path: 'coloured-canyon-and-snorkelling-day-in-dahab',
+          price: PROGRAMMES_C.CRD_CANYON_DAY,
+          title: 'Dahab Day Trip: Coloured Canyon, Camel Ride and Snorkelling',
+          short: 'Ten and a half hours from Sharm El Sheikh: a camel ride on the Dahab shore, a snorkelling stop, lunch, shopping and the guided walk through Salama Coloured Canyon.',
+          description: 'A full day up the coast from Sharm El Sheikh. A minivan collects you from your hotel at half past seven for the drive to Dahab, where the day opens with a camel ride on the shore and a snorkelling stop at the canyon site.\n\nLunch follows at a restaurant by the sea, then time in the town for the shops, and the afternoon ends with a jeep ride into Salama Coloured Canyon and a guided walk through it. The guide, the minivan, lunch, the camel ride, the government fees and the canyon entry are in the price; snorkel gear and drinks at the restaurant are not. This day does not go to the Blue Hole. Children have their own price.',
+          highlights: [
+            'A camel ride on the Dahab shore',
+            'A snorkelling stop at the canyon site',
+            'The guided walk through Salama Coloured Canyon',
+            'Lunch by the sea and time in the town',
+          ],
+          seo: {
+            metaTitle: 'Dahab Coloured Canyon and Snorkelling Day Trip',
+            metaDescription: 'Ten and a half hours from Sharm El Sheikh: a camel ride, a snorkelling stop, lunch and shopping in Dahab, and the guided walk through Salama Coloured Canyon.',
+          },
+          images: [PHOTO_C.canyonWalls],
+          imageAlts: [ALT_C.canyonWalls],
+        },
+        {
+          path: 'jeep-safari-coloured-canyon-and-dahab-day',
+          price: PROGRAMMES_C.CRD_JEEP_SAFARI,
+          title: 'Jeep Safari, Salama Canyon and Dahab Day from Sharm El Sheikh',
+          short: 'Eleven hours from Sharm El Sheikh: Salama Coloured Canyon, a jeep drive to Dahab, snorkelling from the shore, a camel ride and lunch in a Bedouin tent.',
+          description: 'A long day in the Sinai desert and on the Dahab coast. A coach collects you from your hotel in Sharm El Sheikh at twenty-five past seven, with a first stop on the Red Sea, and the morning is spent walking through Salama Coloured Canyon with a guide.\n\nA jeep then drives across the desert to Dahab for a guided visit to the town, a camel ride along the beach and the desert, lunch in a Bedouin tent on the coast, snorkelling from the shore between Dahab and Abu Galum, and time to walk and shop. The jeep drive, the minivan transport, the camel ride, lunch and the canyon visit are in the price; snorkelling equipment is not, and it is required, so bring your own or rent it on the spot. This option does not include the quad ride. Children have their own price.',
+          highlights: [
+            'Salama Coloured Canyon on foot',
+            'A jeep drive across the desert to Dahab',
+            'Snorkelling from the shore and a camel ride',
+            'Lunch in a Bedouin tent on the coast',
+          ],
+          seo: {
+            metaTitle: 'Jeep Safari, Salama Canyon and Dahab Day Trip',
+            metaDescription: 'Eleven hours from Sharm El Sheikh: Salama Coloured Canyon, a jeep drive to Dahab, snorkelling from the shore, a camel ride and lunch in a Bedouin tent.',
+          },
+          images: [PHOTO_C.layeredRock],
+          imageAlts: [ALT_C.layeredRock],
+        },
+      ],
+    },
+    {
+      slug: 'marsa-mubarak',
+      name: 'Marsa Mubarak',
+      listingPath: '/trips',
+      domain: 'marsamubarak.com',
+      city: 'Marsa Alam',
+      area: 'Marsa Alam',
+      pickupDestination: 'marsa-alam',
+      coordinates: MARSA_ALAM,
+      currency: 'USD',
+      slugPrefix: 'mmb-',
+      foreignPlaces: NOT_MARSA,
+      tagline: 'Snorkelling boat trips to Marsa Mubarak',
+      description: 'Marsa Mubarak sells boat days from Marsa Alam to the bay of Marsa Mubarak, north of the town: guided snorkelling among its reefs, where you can look for turtles and dugongs, with Marsa Shona or Small Shenwa as the second stop and a meal on board.\n\nThere is a sailing boat from Port Ghalib with a morning and an afternoon departure, a full day with the gear and lunch included, and a shorter day that ends with a walk around the marina. Every trip collects you from your hotel in Marsa Alam and brings you back. Hold a place online and pay later, or ask the team first about the pickup time.',
+      seo: {
+        metaTitle: 'Marsa Mubarak Snorkelling Boat Trips from Marsa Alam',
+        metaDescription: 'Boat days from Marsa Alam to Marsa Mubarak: guided snorkelling among the reefs, a second stop at Marsa Shona or Small Shenwa, a meal on board and hotel pickup.',
+        keywords: [
+          'marsa mubarak snorkelling',
+          'marsa mubarak boat trip',
+          'marsa alam snorkelling trip',
+          'marsa shona snorkelling',
+          'turtle snorkelling marsa alam',
+        ],
+      },
+      theme: { primaryColor: '#1D5B4F', secondaryColor: '#EEF5F0', accentColor: '#B7791F' },
+      heroImages: [PHOTO_C.snorkellerAndSails, PHOTO_C.turtleOverReef, PHOTO_C.turtleInBlue],
+      logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085680/attractions-network/tenant-logos/marsa-mubarak/monogram.png',
+      trips: [
+        {
+          path: 'sailing-boat-to-marsa-mubarak-and-marsa-shona',
+          price: PROGRAMMES_C.MM_SAILING,
+          title: 'Sailing Boat to Marsa Mubarak and Marsa Shona with a Meal',
+          short: 'Four and a half hours on a sailing boat from Port Ghalib: two guided snorkelling stops of forty-five minutes each, and an open buffet meal on deck.',
+          description: 'A sailing boat day from Port Ghalib, with a morning and an afternoon departure. A shared bus collects you from your hotel in Marsa Alam about ninety minutes before the boat leaves, and the sail up the coast to Marsa Mubarak takes about thirty-five minutes.\n\nThere are two guided snorkelling stops of forty-five minutes, at Marsa Mubarak and at Marsa Shona, among the reefs and the fish of the bays. Between and after them there is an open buffet meal on deck, with a fresh juice on arrival and fizzy drinks and tea through the day. Snorkelling gear is not included and can be rented from the marina shops. Children have their own price.',
+          highlights: [
+            'A sailing boat from Port Ghalib',
+            'Two guided snorkelling stops of forty-five minutes',
+            'Marsa Mubarak and Marsa Shona',
+            'An open buffet meal on deck',
+          ],
+          seo: {
+            metaTitle: 'Marsa Mubarak and Marsa Shona Sailing Boat Snorkelling Trip',
+            metaDescription: 'Four and a half hours from Port Ghalib: two guided snorkelling stops at Marsa Mubarak and Marsa Shona, an open buffet meal on deck and hotel pickup in Marsa Alam.',
+          },
+          images: [PHOTO_C.snorkellerAndSails],
+          imageAlts: [ALT_C.snorkellerAndSails],
+        },
+        {
+          path: 'marsa-mubarak-turtle-snorkelling-boat-day',
+          price: PROGRAMMES_C.MM_TURTLE,
+          title: 'Marsa Mubarak Snorkelling Boat Day with Lunch',
+          short: 'Eight hours from Marsa Alam: guided snorkelling at Marsa Mubarak with the mask, fins and life jacket included, and lunch with soft drinks on board.',
+          description: 'A full day on the water from Marsa Alam. The transfer collects you from your hotel at nine and takes you to the boat, which sails into the bay of Marsa Mubarak for the first guided snorkelling session among the coral reefs and the fish, where you can look for sea turtles and dugongs.\n\nLunch and soft drinks on board follow, then a second session with the instructors before the boat returns. The transfer, the instructors, the snorkelling equipment, lunch and the national park fees are in the price; tips and personal spending are not. Pickup from a hotel in North Marsa Alam costs extra and cannot be booked here. Children have their own price.',
+          highlights: [
+            'Guided snorkelling at Marsa Mubarak',
+            'Mask, fins and life jacket included',
+            'Lunch and soft drinks on board',
+            'The national park fees included',
+          ],
+          seo: {
+            metaTitle: 'Marsa Mubarak Snorkelling Boat Day with Lunch',
+            metaDescription: 'Eight hours from Marsa Alam: guided snorkelling at Marsa Mubarak with the gear included, lunch and soft drinks on board, and hotel pickup in the town.',
+          },
+          images: [PHOTO_C.turtleOverReef],
+          imageAlts: [ALT_C.turtleOverReef],
+        },
+        {
+          path: 'marsa-mubarak-and-small-shenwa-snorkelling-day',
+          price: PROGRAMMES_C.MM_DUGONG,
+          title: 'Marsa Mubarak and Small Shenwa Snorkelling Day',
+          short: 'Four and a half hours from Marsa Alam: two guided snorkelling stops, an open buffet meal on board and a walk around Port Ghalib Marina.',
+          description: 'A boat day on the reefs north of Marsa Alam. The bus collects you from your hotel and drives to the boat, which sails into the bay of Marsa Mubarak in about half an hour.\n\nThere are two guided snorkelling stops, at Marsa Mubarak and Small Shenwa, with free time between them, where you can look for turtles and dugongs among the reef fish, and an open buffet lunch or dinner on board. The day ends with a guided walk of about forty-five minutes around Port Ghalib Marina and time for the shops. The boat fees and permits are in the price; snorkelling gear is not included and cannot be added here, so bring your own or ask the team. The trip is sold by the day and the team confirms your pickup time after booking. Children have their own price.',
+          highlights: [
+            'Two guided snorkelling stops',
+            'Marsa Mubarak and Small Shenwa',
+            'An open buffet meal on board',
+            'A walk around Port Ghalib Marina',
+          ],
+          seo: {
+            metaTitle: 'Marsa Mubarak and Small Shenwa Snorkelling Day Trip',
+            metaDescription: 'Four and a half hours from Marsa Alam: two guided snorkelling stops at Marsa Mubarak and Small Shenwa, a meal on board and a walk around Port Ghalib Marina.',
+          },
+          images: [PHOTO_C.turtleInBlue],
+          imageAlts: [ALT_C.turtleInBlue],
+        },
+      ],
+    },
+    {
+      slug: 'citadel-of-saladin',
+      name: 'Citadel of Saladin',
+      listingPath: '/trips',
+      domain: 'citadelofsaladin.com',
+      city: 'Cairo',
+      area: 'Cairo or Giza',
+      pickupDestination: 'cairo',
+      coordinates: CAIRO,
+      currency: 'USD',
+      slugPrefix: 'cos-',
+      foreignPlaces: NOT_CITADEL,
+      tagline: 'Guided trips to the Citadel of Salah El Din',
+      description: 'Citadel of Saladin sells guided trips that take in the Citadel of Salah El Din, the medieval fortress above Cairo, and the Mosque of Muhammad Ali inside its walls. A short shared morning visits the Citadel on its own; the longer days go on to the old churches of Coptic Cairo, the mosques of the old city, Khan El Khalili or the National Museum of Egyptian Civilisation.\n\nEvery trip collects you from your hotel in Cairo or Giza and brings you back. Hold a place online and pay later, or ask the team first about the pickup time.',
+      seo: {
+        metaTitle: 'Saladin Citadel Tours from Cairo and Giza Hotels',
+        metaDescription: 'Guided trips to the Citadel of Salah El Din and the Mosque of Muhammad Ali, with Coptic Cairo, the old mosques, Khan El Khalili and hotel pickup in Cairo or Giza.',
+        keywords: [
+          'citadel of saladin tour',
+          'salah el din citadel cairo',
+          'muhammad ali mosque tour',
+          'cairo citadel guided tour',
+          'citadel and old cairo day tour',
+        ],
+      },
+      theme: { primaryColor: '#3A4A5C', secondaryColor: '#F3EEE6', accentColor: '#B06A2C' },
+      heroImages: [PHOTO_C.fortressWalls, PHOTO_C.domesOverRampart, PHOTO_C.greenDomeCourtyard],
+      logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085676/attractions-network/tenant-logos/citadel-of-saladin/monogram.png',
+      trips: [
+        {
+          path: 'shared-guided-tour-of-the-citadel',
+          price: PROGRAMMES_C.COS_CITADEL_SHARED,
+          title: 'Shared Guided Tour of the Citadel of Salah El Din',
+          short: 'Three hours from eight in the morning: the Citadel of Salah El Din and the Mosque of Muhammad Ali with an English-speaking guide, the ticket and hotel transfers.',
+          description: 'A short morning at the Citadel. An air-conditioned vehicle collects you from your hotel in Cairo or Giza at eight, and an English-speaking guide takes the group through the medieval fortress of Salah El Din, into the Mosque of Muhammad Ali inside its walls, and out to the terrace with its view across the city.\n\nThe guide, the transport, the entry ticket to the Citadel and bottled water are in the price; lunch, drinks and personal spending are not. The tour is three hours, and children pay the same price as adults.',
+          highlights: [
+            'The medieval fortress of Salah El Din',
+            'The Mosque of Muhammad Ali inside the walls',
+            'The view across Cairo',
+            'An English-speaking guide and hotel transfers',
+          ],
+          seo: {
+            metaTitle: 'Shared Citadel of Salah El Din Tour from Cairo or Giza',
+            metaDescription: 'Three hours with an English-speaking guide: the Citadel of Salah El Din, the Mosque of Muhammad Ali and the view over Cairo, with the ticket and hotel transfers.',
+          },
+          images: [PHOTO_C.fortressWalls],
+          imageAlts: [ALT_C.fortressWalls],
+        },
+        {
+          path: 'citadel-old-cairo-and-khan-el-khalili-private-day',
+          price: PROGRAMMES_C.COS_PRIVATE_KHAN,
+          title: 'Private Day: Saladin Citadel, Old Cairo and Khan El Khalili',
+          short: 'Six hours with a private Egyptologist guide: the Citadel and the Alabaster Mosque, lunch, the churches of Old Cairo and an hour in Khan El Khalili.',
+          description: 'A private day across Cairo’s heritage. The vehicle collects you from your hotel in Cairo or Giza at nine, and the first two hours are at the Citadel of Salah El Din, with the Alabaster Mosque inside its walls and your own Egyptologist guide.\n\nA traditional Egyptian lunch follows at a local restaurant, then the old churches of Old Cairo: the Hanging Church, Abu Serga and St Barbara’s. The day ends with an hour in Khan El Khalili among its lanes and shops. The guide, the transport, the entrance fees, the parking fees, lunch and the taxes are in the price; drinks with lunch, tips and personal spending are not. Children have their own price.',
+          highlights: [
+            'The Citadel and the Alabaster Mosque',
+            'The Hanging Church, Abu Serga and St Barbara’s',
+            'An hour in Khan El Khalili',
+            'A private Egyptologist guide and a traditional lunch',
+          ],
+          seo: {
+            metaTitle: 'Private Citadel, Old Cairo and Khan El Khalili Day Tour',
+            metaDescription: 'Six hours with a private Egyptologist guide: the Citadel and the Alabaster Mosque, a traditional lunch, the churches of Old Cairo and an hour in Khan El Khalili.',
+          },
+          images: [PHOTO_C.domesOverRampart],
+          imageAlts: [ALT_C.domesOverRampart],
+        },
+        {
+          path: 'islamic-cairo-mosques-and-citadel-private-day',
+          price: PROGRAMMES_C.COS_ISLAMIC_HERITAGE,
+          title: 'Private Islamic Cairo Day: Citadel, Historic Mosques and the Bazaar',
+          short: 'Six hours with a private guide: the Citadel, the Mosque of Muhammad Ali Pasha, the Sultan Hassan mosque and school, Al-Azhar Mosque and Khan el-Khalili, with lunch.',
+          description: 'A private day through the heart of Islamic Cairo, with starts through the morning from eight to noon. A private air-conditioned vehicle collects you from your hotel in Cairo or Giza, and the day begins at the Citadel of Salah El Din and the Mosque of Muhammad Ali Pasha inside it.\n\nIt continues to the Mosque-Madrassa of Sultan Hassan below the fortress, then lunch at a local restaurant, Al-Azhar Mosque with time of your own, and a guided walk through Khan el-Khalili with a shopping stop. The guide, the private transfers, all the entrance fees, lunch, bottled water and the taxes are in the price; drinks with lunch and tips are not. The day is six hours, and children have their own price.',
+          highlights: [
+            'The Citadel and the Mosque of Muhammad Ali Pasha',
+            'The Mosque-Madrassa of Sultan Hassan',
+            'Al-Azhar Mosque',
+            'A guided walk through Khan el-Khalili, with lunch',
+          ],
+          seo: {
+            metaTitle: 'Private Islamic Cairo Tour: Citadel, Mosques and the Bazaar',
+            metaDescription: 'Six hours with a private guide: the Citadel, the Mosque of Muhammad Ali Pasha, Sultan Hassan, Al-Azhar and Khan el-Khalili, with lunch and hotel transfers.',
+          },
+          images: [PHOTO_C.greenDomeCourtyard],
+          imageAlts: [ALT_C.greenDomeCourtyard],
+        },
+        {
+          path: 'civilization-museum-citadel-and-khan-el-khalili',
+          price: PROGRAMMES_C.COS_CIVILISATION_MUSEUM,
+          title: 'Private Day: Civilisation Museum, the Citadel and Khan el-Khalili',
+          short: 'Six hours with a private Egyptologist guide: two hours in the National Museum of Egyptian Civilisation, an hour at the Citadel, lunch and an hour in Khan el-Khalili.',
+          description: 'A private day with a guide who speaks English, leaving your hotel in Cairo or Giza at a start you choose between half past seven and half past nine. The morning is two hours in the National Museum of Egyptian Civilisation in Fustat, with the entrance ticket in the price.\n\nThe day goes on to the Cairo Citadel, the fortress of Salah El Din above the city, then lunch at a local restaurant and an hour in Khan el-Khalili with a shopping stop. The private vehicle, the guide, the entrance fees, lunch, bottled water and the taxes are in the price; drinks with lunch and tips are not. The day is six hours, and children have their own price.',
+          highlights: [
+            'Two hours in the National Museum of Egyptian Civilisation',
+            'The Cairo Citadel',
+            'An hour in Khan el-Khalili',
+            'A private Egyptologist guide and lunch',
+          ],
+          seo: {
+            metaTitle: 'Civilisation Museum, Citadel and Khan el-Khalili Private Tour',
+            metaDescription: 'Six hours with a private Egyptologist guide: the National Museum of Egyptian Civilisation, the Cairo Citadel, lunch and an hour in Khan el-Khalili.',
+          },
+          images: [PHOTO_C.seatedStatue],
+          imageAlts: [ALT_C.seatedStatue],
+        },
+      ],
+    },
+  ],
+};
+
+// ================================================================================================================
+// B08D: Egyptian Museum.
+// ================================================================================================================
+
+/**
+ * Every trip here goes into the Egyptian Museum in Tahrir Square. The client's own words for these options name
+ * single exhibits that the museum moves between its halls and the newer museums, so the site describes the museum
+ * and what a guided visit covers instead of promising one object.
+ */
+const PROGRAMMES_D = {
+  EGM_MUSEUM_ONLY: {
+    provider: 'eeo',
+    tenant: EEO,
+    source: 'egyptian-museum-saladin-citadel-coptic-cairo-day-tour',
+    category: DAY_TRIPS,
+    // The museum on its own; the programme's other options add the Citadel, Old Cairo and the bazaar.
+    options: ['egyptian-museum-only-shared-with-ticket-0e6469944ddd'],
+    addons: [],
+    departures: ['11:00'],
+    // The record types the option's length as "3 - 6 hours".
+    duration: '3 to 6 hours',
+    rename: {
+      'egyptian-museum-only-shared-with-ticket-0e6469944ddd': {
+        name: 'Shared tour of the Egyptian Museum',
+        description: 'A shared English-speaking group, the entry ticket to the museum and hotel transfers. Lunch is not included.',
+      },
+    },
+    // The conditional guide, lunch and felucca lines hold for options the trip does not sell; the ticket and
+    // pickup lines are stated in the site's words, with the area the copied line loses.
+    omit: {
+      inclusions: [
+        'Licensed guide',
+        'Shared Tour: Professional English-speaking guide only',
+        'Private Tour: Professional guide available in all languages',
+        'Entry tickets to selected landmarks',
+        'Hotel pick-up and drop-off from Cairo or Giza',
+        'Visits: Papyrus Gallery, Oils Factory, Bazaar, Cotton Store, Carpet School (upon request)',
+        'Lunch (VIP Private Tour only; available as an add-on for private tours)',
+        'Felucca ride on the Nile (VIP option only)',
+      ],
+    },
+    add: {
+      inclusions: ['A licensed English-speaking guide', 'The entry ticket to the Egyptian Museum', PICKUP_CAIRO],
+      exclusions: ['Lunch'],
+      needToKnow: [SAME_PRICE],
+    },
+    // The record publishes no schedule; the visit is written from this option's own description.
+    itinerary: [
+      { time: '11:00', title: 'Hotel pickup', description: 'An air-conditioned vehicle collects you from your hotel in Cairo or Giza.' },
+      { title: 'The Egyptian Museum', description: 'A guided visit with the group through the halls of the museum on Tahrir Square, among its statues, its coffins and the finds of ancient Egypt, with the entry ticket in the price.' },
+      { title: 'Back to your hotel', description: 'The vehicle returns you to your hotel in Cairo or Giza.' },
+    ],
+  },
+  EGM_OLD_CAIRO_SHARED: {
+    provider: 'eeo',
+    tenant: EEO,
+    source: 'cairo-private-heritage-tour-museum-citadel-old-cairo',
+    category: DAY_TRIPS,
+    // The shared museum, Old Cairo and bazaar option; the programme's others are the Citadel alone, a private
+    // day and a VIP day.
+    options: ['egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27'],
+    // The option carries a long list of extra sites, guides and meals; none is sold here.
+    addons: [],
+    departures: ['11:00'],
+    // The record types the option's length as "3-5 hours".
+    duration: '3 to 5 hours',
+    rename: {
+      'egyptian-museum-old-cairo-khan-el-khalili-sha-acaa5772fa27': {
+        name: 'Shared tour of the museum, Old Cairo and the bazaar',
+        description: 'A shared English-speaking group, the entry tickets and hotel transfers. Lunch is not included.',
+      },
+    },
+    omit: {
+      inclusions: [
+        'Professional licensed guide',
+        'Shared Tour: Professional English-speaking guide only',
+        'Private Tour: Professional guide available in all languages',
+        'Entry tickets to selected landmarks',
+        'Hotel pickup and drop-off from Cairo or Giza',
+        'Visits: Papyrus Gallery, Oils Factory, Bazaar, Cotton Store, Carpet School (upon request)',
+      ],
+      exclusions: [
+        'Lunch – included in VIP Private Tour only, or available as an add-on for Private Tours',
+        'Felucca ride on the Nile (VIP option only)',
+      ],
+    },
+    add: {
+      inclusions: ['A licensed English-speaking guide', 'The entry tickets to the Egyptian Museum and the churches of Old Cairo', PICKUP_CAIRO],
+      exclusions: ['Lunch'],
+      // This option alone prices infants at the adult rate as well.
+      needToKnow: ['Children and infants pay the same price as adults.'],
+    },
+    itinerary: [
+      { time: '11:00', title: 'Hotel pickup', description: 'An air-conditioned vehicle collects you from your hotel in Cairo or Giza.' },
+      { title: 'The Egyptian Museum', description: 'A guided visit through the halls of the museum on Tahrir Square, with the entry ticket in the price.' },
+      { title: 'Old Cairo', description: 'The historic churches of the old Christian quarter, around the Fort of Babylon.' },
+      { title: 'Khan el-Khalili', description: 'The lanes and shops of the bazaar.' },
+      { title: 'Back to your hotel', description: 'The vehicle returns you to your hotel in Cairo or Giza.' },
+    ],
+  },
+  EGM_PRIVATE_HIGHLIGHTS: {
+    provider: 'eeo',
+    tenant: EEO,
+    source: 'cairo-highlights-egyptian-museum-citadel-old-cairo-guided-tour',
+    category: DAY_TRIPS,
+    // The private option; of the programme's shared options, two cover less and one carries no price.
+    options: ['cairo-private-tour-egyptian-museum-citadel-ol-b9e8cca2c667'],
+    addons: [],
+    departures: ['08:00'],
+    duration: '3 to 6 hours',
+    rename: {
+      'cairo-private-tour-egyptian-museum-citadel-ol-b9e8cca2c667': {
+        name: 'Private tour of the museum, the Citadel and Old Cairo',
+        description: 'Your own English-speaking guide, the entry tickets and hotel transfers. Lunch is not included.',
+      },
+    },
+    childNote: CHILD_NOTE,
+    omit: {
+      inclusions: [
+        'Licensed guide',
+        'Shared Tour: Professional English-speaking guide only',
+        'Private Tour: Professional guide available in all languages',
+        'Hotel pick-up and drop-off from Cairo or Giza',
+        'Visits: Papyrus Gallery, Oils Factory, Bazaar, Cotton Store, Carpet School (upon request)',
+        'Lunch (VIP Private Tour only; available as an add-on for private tours)',
+        'Entry tickets to selected landmarks',
+        'Felucca ride on the Nile (VIP option only)',
+      ],
+    },
+    add: {
+      inclusions: ['A private licensed English-speaking guide', 'The entry tickets to the Egyptian Museum, the Citadel and the churches of Old Cairo', PICKUP_CAIRO],
+      exclusions: ['Lunch'],
+    },
+    itinerary: [
+      { time: '08:00', title: 'Hotel pickup', description: 'A private air-conditioned vehicle collects you from your hotel in Cairo or Giza.' },
+      { title: 'The Egyptian Museum', description: 'A guided visit through the halls of the museum on Tahrir Square, with the entry ticket in the price.' },
+      { title: 'The Citadel', description: 'The fortress of Salah El Din above the city, and the Mosque of Muhammad Ali inside its walls.' },
+      { title: 'Old Cairo', description: 'The historic churches of the old Christian quarter.' },
+      { title: 'Back to your hotel', description: 'The vehicle returns you to your hotel in Cairo or Giza.' },
+    ],
+  },
+  EGM_DINNER_CRUISE: {
+    provider: 'eeo',
+    tenant: EEO,
+    source: 'cairo-egyptian-museum-citadel-coptic-cairo-nile-dinner-cruise',
+    category: DAY_TRIPS,
+    options: ['private-english-tour-with-tickets-lunch-trans-f3df4badf3fe'],
+    addons: [],
+    departures: ['09:00', '10:00', '11:00'],
+    rename: {
+      'private-english-tour-with-tickets-lunch-trans-f3df4badf3fe': {
+        name: 'Private tour in English with tickets and lunch',
+        description: 'Your own guide in English or Arabic, private transfers both ways, the entrance tickets and lunch.',
+      },
+    },
+    childNote: CHILD_NOTE,
+    // The option sold is the one with the tickets, so the programme's conditional line is stated plainly; the
+    // record lists its shopping stop twice.
+    omit: {
+      inclusions: [
+        'Pick-up services from your hotel & return.',
+        'Entrance fees to all the mentioned sites (Only if you choose the option that includes the tickets).',
+        'Shopping tours in Cairo.',
+      ],
+    },
+    add: { inclusions: [PICKUP_CAIRO, 'Entrance fees to the sites visited'] },
+    // The record's schedule names the cruise boat; the evening is written as the stop it is.
+    itinerary: [
+      { title: 'Hotel pickup', description: 'A private air-conditioned vehicle collects you from your hotel in Cairo or Giza.' },
+      { title: 'The Egyptian Museum', duration: '2 hours', description: 'A guided visit through the halls of the museum on Tahrir Square.' },
+      { title: 'Mosque of Muhammad Ali Pasha', duration: '1 hour', description: 'The mosque inside the walls of the Citadel.' },
+      { title: 'Lunch', duration: '30 minutes', description: 'Lunch at a local restaurant.' },
+      { title: 'The Hanging Church', duration: '15 minutes', description: 'The first of the old churches of Coptic Cairo.' },
+      { title: 'Ben Ezra Synagogue', duration: '15 minutes', description: 'In the same quarter.' },
+      { title: 'St Barbara’s Church', duration: '15 minutes', description: 'Beside the other churches of the quarter.' },
+      { title: 'St Sergius and St Bacchus Church', description: 'The last of the churches.' },
+      { title: 'Dinner cruise on the Nile', duration: '2 hours', description: 'A dinner cruise with live entertainment on board.' },
+      { title: 'Back to your hotel', description: 'The vehicle returns you to your hotel in Cairo or Giza.' },
+    ],
+  },
+  EGM_PYRAMIDS: {
+    provider: 'eeo',
+    tenant: EEO,
+    source: 'giza-pyramids-sphinx-egyptian-museum-khan-el-khalili-bazaar-tour',
+    category: DAY_TRIPS,
+    options: ['day-tour-great-pyramids-and-sphinx-egyptian-m-36b98a6b8806'],
+    addons: [],
+    departures: ['08:00', '09:00'],
+    // The option's own name is a list of typed stops, and its words carry a claim the network never shows.
+    rename: {
+      'day-tour-great-pyramids-and-sphinx-egyptian-m-36b98a6b8806': {
+        name: 'Private day at the Pyramids, the museum and the bazaar',
+        description: 'A private day with an Egyptologist guide: the Giza Pyramids and the Sphinx, the Egyptian Museum and Khan El-Khalili, with the entry tickets and lunch.',
+      },
+    },
+    omit: { inclusions: ['Expert Egyptologist Guide', 'mineral Water during the tour', 'Private tour'] },
+    add: {
+      inclusions: ['A private tour with an Egyptologist guide', 'Bottled water during the tour'],
+      needToKnow: [SAME_PRICE],
+    },
+    itinerary: [
+      { title: 'Hotel pickup', description: 'A private vehicle collects you from your hotel in Cairo or Giza.' },
+      { title: 'The Giza Pyramids and the Sphinx', description: 'The pyramids on the plateau and the Sphinx below them, with your guide and the entry tickets in the price.' },
+      { title: 'The Egyptian Museum', description: 'A guided visit through the halls of the museum on Tahrir Square, among the finds of ancient Egypt.' },
+      { title: 'Lunch', description: 'Lunch at a local restaurant.' },
+      { title: 'Khan El-Khalili', description: 'The lanes and shops of the historic bazaar.' },
+      { title: 'Back to your hotel', description: 'The vehicle returns you to your hotel in Cairo or Giza.' },
+    ],
+  },
+} satisfies Record<string, PriceSpec>;
+
+const PHOTO_D = {
+  museumHall: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085635/attractions-network/network-b08/egyptian-museum/ufbwojbi4f7zovbd6za6.jpg',
+  lampMarket: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085636/attractions-network/network-b08/egyptian-museum/upf8g1fhghiy9jihxqne.jpg',
+  mosqueSkyline: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085638/attractions-network/network-b08/egyptian-museum/xqrhaaoye6bbkayz8vl8.jpg',
+  towersAndMinaret: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085640/attractions-network/network-b08/egyptian-museum/s4ielytxcmvdzmcucjqn.jpg',
+  domedMosqueAndFlags: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085642/attractions-network/network-b08/egyptian-museum/ujbyb8aj5cxiaqgtiboj.jpg',
+};
+
+/** Each photo described as it is, not as the trip it illustrates. */
+const ALT_D = {
+  museumHall: 'The great hall of a museum seen from a balcony, with rows of stone statues and cases under a high arched roof',
+  lampMarket: 'A busy market street of stalls hung with brass lamps and metalware, with shoppers walking between the shops',
+  mosqueSkyline: 'Domes and minarets of old stone mosques rising above low rooftops, with the modern city on the skyline behind',
+  towersAndMinaret: 'A stone fortress of round towers and crenellated walls, with a tall minaret and an arched gateway',
+  domedMosqueAndFlags: 'A large mosque with a central dome, half-domes and two tall minarets against a clear sky, with flags flying beside it',
+};
+
+/** Places the Egyptian Museum site never names: its trips stay in Cairo and on the Giza plateau. */
+const NOT_EGYPTIAN_MUSEUM = /Hurghada|Sharm|Dahab|Nabq|Tiran|Ras Mohamed|Marsa Alam|Quseir|Ghalib|Safaga|Soma Bay|Makadi|Gouna|Sahl|Luxor|Aswan|Alexandria|Siwa|Bahariya|Fayoum|Saqqara|Sakkara|Memphis|Dahshur/i;
+
+export const B08D: NetworkBatch = {
+  id: 'b08d',
+  sites: [
+    {
+      slug: 'egyptian-museum',
+      name: 'Egyptian Museum',
+      listingPath: '/trips',
+      domain: 'egyptianmuseum.net',
+      city: 'Cairo',
+      area: 'Cairo or Giza',
+      pickupDestination: 'cairo',
+      coordinates: CAIRO,
+      currency: 'USD',
+      slugPrefix: 'egm-',
+      foreignPlaces: NOT_EGYPTIAN_MUSEUM,
+      tagline: 'Guided visits to the Egyptian Museum in Tahrir Square',
+      description: 'Egyptian Museum sells guided days that all go into the Egyptian Museum on Tahrir Square, with the entry ticket in the price. The shortest is a shared morning in the museum alone; the longer days add the churches of Old Cairo, the Citadel of Salah El Din, Khan el-Khalili, the Giza Pyramids and the Sphinx, or an evening dinner cruise on the Nile.\n\nEvery trip collects you from your hotel in Cairo or Giza and brings you back. Hold a place online and pay later, or ask the team first about the pickup time.',
+      seo: {
+        metaTitle: 'Egyptian Museum Tours in Cairo with Hotel Pickup',
+        metaDescription: 'Guided days at the Egyptian Museum on Tahrir Square, with Old Cairo, the Citadel, Khan el-Khalili, the Giza Pyramids or a Nile dinner cruise, and hotel pickup.',
+        keywords: [
+          'egyptian museum tour',
+          'egyptian museum cairo tickets',
+          'egyptian museum guided tour',
+          'cairo museum and citadel day tour',
+          'egyptian museum and pyramids tour',
+        ],
+      },
+      theme: { primaryColor: '#8C3A2B', secondaryColor: '#F5EFE6', accentColor: '#C9A227' },
+      heroImages: [PHOTO_D.museumHall, PHOTO_D.towersAndMinaret, PHOTO_D.lampMarket],
+      logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085678/attractions-network/tenant-logos/egyptian-museum/monogram.png',
+      trips: [
+        {
+          path: 'shared-guided-tour-of-the-egyptian-museum',
+          price: PROGRAMMES_D.EGM_MUSEUM_ONLY,
+          title: 'Shared Guided Tour of the Egyptian Museum',
+          short: 'A shared English-guided visit to the Egyptian Museum on Tahrir Square, with the entry ticket, an air-conditioned vehicle and hotel transfers from Cairo or Giza.',
+          description: 'The museum on its own. An air-conditioned vehicle collects you from your hotel in Cairo or Giza at eleven, and an English-speaking guide takes the group through the halls of the Egyptian Museum on Tahrir Square, among its statues, its coffins and the finds of ancient Egypt.\n\nThe guide, the transport, the entry ticket to the museum and bottled water are in the price. Lunch is not included. Allow three to six hours, and children pay the same price as adults.',
+          highlights: [
+            'The Egyptian Museum on Tahrir Square',
+            'An English-speaking guide',
+            'The entry ticket included',
+            'Hotel transfers from Cairo or Giza',
+          ],
+          seo: {
+            metaTitle: 'Shared Egyptian Museum Guided Tour with Ticket',
+            metaDescription: 'An English-guided visit to the Egyptian Museum on Tahrir Square, with the entry ticket, an air-conditioned vehicle and hotel transfers from Cairo or Giza.',
+          },
+          images: [PHOTO_D.museumHall],
+          imageAlts: [ALT_D.museumHall],
+        },
+        {
+          path: 'museum-old-cairo-and-khan-el-khalili-shared-day',
+          price: PROGRAMMES_D.EGM_OLD_CAIRO_SHARED,
+          title: 'Egyptian Museum, Old Cairo and Khan el-Khalili Shared Day',
+          short: 'Three to five hours in an English-speaking group: the Egyptian Museum, the historic churches of Old Cairo and the lanes of Khan el-Khalili, with the tickets included.',
+          description: 'A shared day across three sides of Cairo. The vehicle collects you from your hotel in Cairo or Giza at eleven, and the day starts with a guided visit to the Egyptian Museum on Tahrir Square.\n\nIt goes on to the historic churches of Old Cairo, around the Fort of Babylon, and ends in the lanes and shops of Khan el-Khalili. The English-speaking guide, the air-conditioned transport, the entry tickets and bottled water are in the price; lunch, drinks, airport transfers and personal spending are not. Allow three to five hours, and children pay the same price as adults.',
+          highlights: [
+            'A guided visit to the Egyptian Museum',
+            'The historic churches of Old Cairo',
+            'The lanes and shops of Khan el-Khalili',
+            'Entry tickets and hotel transfers included',
+          ],
+          seo: {
+            metaTitle: 'Egyptian Museum, Old Cairo and Khan el-Khalili Shared Tour',
+            metaDescription: 'Three to five hours in an English-speaking group: the Egyptian Museum, the churches of Old Cairo and Khan el-Khalili, with the tickets and hotel transfers.',
+          },
+          images: [PHOTO_D.mosqueSkyline],
+          imageAlts: [ALT_D.mosqueSkyline],
+        },
+        {
+          path: 'museum-citadel-and-old-cairo-private-day',
+          price: PROGRAMMES_D.EGM_PRIVATE_HIGHLIGHTS,
+          title: 'Private Day: Egyptian Museum, the Citadel and Old Cairo',
+          short: 'From eight in the morning with your own English-speaking guide: the Egyptian Museum, the Citadel and the Mosque of Muhammad Ali, and the churches of Old Cairo.',
+          description: 'A private day through three of Cairo’s landmarks. A private air-conditioned vehicle collects you from your hotel in Cairo or Giza at eight, and your own English-speaking guide takes you through the halls of the Egyptian Museum on Tahrir Square.\n\nThe day goes on to the Citadel of Salah El Din, with the Mosque of Muhammad Ali inside its walls, and ends among the historic churches of Old Cairo. The guide, the transport, the entry tickets and bottled water are in the price; lunch, drinks, airport transfers and personal spending are not. Allow three to six hours, and children have their own price.',
+          highlights: [
+            'A private English-speaking guide',
+            'The Egyptian Museum on Tahrir Square',
+            'The Citadel and the Mosque of Muhammad Ali',
+            'The historic churches of Old Cairo',
+          ],
+          seo: {
+            metaTitle: 'Private Egyptian Museum, Citadel and Old Cairo Day Tour',
+            metaDescription: 'A private day from Cairo or Giza with your own English-speaking guide: the Egyptian Museum, the Citadel and the Mosque of Muhammad Ali, and Old Cairo.',
+          },
+          images: [PHOTO_D.towersAndMinaret],
+          imageAlts: [ALT_D.towersAndMinaret],
+        },
+        {
+          path: 'museum-citadel-coptic-cairo-and-nile-dinner-cruise',
+          price: PROGRAMMES_D.EGM_DINNER_CRUISE,
+          title: 'Egyptian Museum, the Citadel, Coptic Cairo and a Nile Dinner Cruise',
+          short: 'Twelve hours with a private guide: two hours in the Egyptian Museum, the Mosque of Muhammad Ali, the churches of Coptic Cairo, lunch and a dinner cruise on the Nile.',
+          description: 'A long private day that ends on the water. A private air-conditioned vehicle collects you from your hotel in Cairo or Giza at nine, ten or eleven, and the first two hours are in the Egyptian Museum on Tahrir Square with your guide, who speaks English or Arabic.\n\nAn hour at the Mosque of Muhammad Ali inside the Citadel walls follows, then lunch at a local restaurant and the old churches of Coptic Cairo: the Hanging Church, the Ben Ezra Synagogue, St Barbara’s Church and the church of St Sergius and St Bacchus. The evening ends with a two-hour dinner cruise on the Nile with live entertainment. The private transfers, the guide, the entrance fees, lunch, the dinner on board, a shopping stop and bottled water are in the price; drinks with the meals and tips are not. The day is twelve hours, and children have their own price.',
+          highlights: [
+            'Two hours in the Egyptian Museum',
+            'The Mosque of Muhammad Ali at the Citadel',
+            'The churches and synagogue of Coptic Cairo',
+            'A dinner cruise on the Nile with live entertainment',
+          ],
+          seo: {
+            metaTitle: 'Egyptian Museum, Citadel, Coptic Cairo and Nile Dinner Cruise',
+            metaDescription: 'Twelve hours with a private guide: the Egyptian Museum, the Mosque of Muhammad Ali, the churches of Coptic Cairo, lunch and a Nile dinner cruise.',
+          },
+          images: [PHOTO_D.domedMosqueAndFlags],
+          imageAlts: [ALT_D.domedMosqueAndFlags],
+        },
+        {
+          path: 'pyramids-sphinx-museum-and-khan-el-khalili-day',
+          price: PROGRAMMES_D.EGM_PYRAMIDS,
+          title: 'Giza Pyramids, the Sphinx, the Egyptian Museum and the Bazaar',
+          short: 'Five hours on a private day: the Giza Pyramids and the Sphinx, a guided visit to the Egyptian Museum, lunch and time in Khan El-Khalili.',
+          description: 'A private day across the two sides of ancient Cairo. A private vehicle collects you from your hotel in Cairo or Giza at eight or nine, and the morning is on the Giza plateau: the pyramids and the Sphinx below them, with your Egyptologist guide and the entry tickets in the price.\n\nThe day then crosses the river for a guided visit to the Egyptian Museum on Tahrir Square, among the finds of ancient Egypt, with lunch at a local restaurant and time in the lanes of Khan El-Khalili to finish. The private tour, the guide, the entry tickets, lunch, bottled water and hotel transfers are all included. The day is five hours, and children pay the same price as adults.',
+          highlights: [
+            'The Giza Pyramids and the Sphinx',
+            'A guided visit to the Egyptian Museum',
+            'Lunch at a local restaurant',
+            'Time in Khan El-Khalili',
+          ],
+          seo: {
+            metaTitle: 'Giza Pyramids, Sphinx, Egyptian Museum and Bazaar Day Tour',
+            metaDescription: 'Five hours on a private day from Cairo or Giza: the Giza Pyramids and the Sphinx, a guided visit to the Egyptian Museum, lunch and Khan El-Khalili.',
+          },
+          images: [PHOTO_D.lampMarket],
+          imageAlts: [ALT_D.lampMarket],
+        },
+      ],
+    },
+  ],
+};
