@@ -386,6 +386,19 @@ function withoutLines(site: Pick<NetworkSite, 'slugPrefix'>, trip: NetworkTrip, 
   return list.filter((item) => !drop.includes(item));
 }
 
+/**
+ * A network trip's hotel-pickup departures stop selling two hours before they leave (owner decision 27 Oct 2026,
+ * PLATFORM #1713; the same rule was applied to the trips already live). A cut-off the programme sets itself, such as
+ * a private yacht's 48 hours, is kept; a 0 copied from the programme was never chosen for this site and is replaced.
+ * A trip sold by the day has no departure to count back from and gets none.
+ */
+export const NETWORK_PICKUP_CUTOFF_MINUTES = 120;
+
+export function withPickupCutoff(options: Record<string, unknown>[], availabilityType: unknown): Record<string, unknown>[] {
+  if (availabilityType !== 'time-slots') return options;
+  return options.map((option) => (Number(option.bookingCutoffMinutes) > 0 ? option : { ...option, bookingCutoffMinutes: NETWORK_PICKUP_CUTOFF_MINUTES }));
+}
+
 /** The trip document for one site, from its written copy and the named programme. */
 export function tripDocument(site: TripSiteFacts, trip: NetworkTrip, programme: SourceDoc, index: number, tenantId: unknown): Record<string, unknown> {
   const facts = programmeFacts(site, trip, programme);
@@ -396,6 +409,10 @@ export function tripDocument(site: TripSiteFacts, trip: NetworkTrip, programme: 
     ? trip.price.itinerary.map((step) => ({ time: step.time || '', duration: step.duration || '', title: step.title, description: step.description }))
     : withoutIds(programme.itinerary).filter((step) => !UNBACKED_CLAIMS.test(`${(step as { title?: string }).title} ${(step as { description?: string }).description}`)))
     .map((step) => (trip.price.untimedItinerary ? { ...step, time: '' } : step));
+  // The departures the trip sells decide how it is sold. A trip that names none is sold by the day,
+  // whatever its programme says: the Marsa Mubarak dugong trip publishes one 21:00 slot, which does
+  // not fit a snorkelling day, and a 'time-slots' trip with no departure could not be booked at all.
+  const availabilityType = facts.entryWindows.length ? programme.availability?.type || departureAvailabilityType(facts.entryWindows) : 'date-only';
   return {
     slug: `${site.slugPrefix}${trip.path}`,
     pathSlug: trip.path,
@@ -414,7 +431,7 @@ export function tripDocument(site: TripSiteFacts, trip: NetworkTrip, programme: 
     reviewCount: 0,
     currency: site.currency,
     enquiryOnly: false,
-    pricingOptions: facts.pricingOptions,
+    pricingOptions: withPickupCutoff(facts.pricingOptions, availabilityType),
     priceFrom: facts.priceFrom,
     addons: facts.addons,
     entryWindows: facts.entryWindows,
@@ -441,10 +458,7 @@ export function tripDocument(site: TripSiteFacts, trip: NetworkTrip, programme: 
     mobileTicket: true,
     hasHotelPickup: true,
     availability: {
-      // The departures the trip sells decide how it is sold. A trip that names none is sold by the day,
-      // whatever its programme says: the Marsa Mubarak dugong trip publishes one 21:00 slot, which does
-      // not fit a snorkelling day, and a 'time-slots' trip with no departure could not be booked at all.
-      type: facts.entryWindows.length ? programme.availability?.type || departureAvailabilityType(facts.entryWindows) : 'date-only',
+      type: availabilityType,
       advanceBooking: Number(programme.availability?.advanceBooking) > 0 ? Number(programme.availability.advanceBooking) : 30,
     },
     seo: { metaTitle: trip.seo.metaTitle, metaDescription: trip.seo.metaDescription },

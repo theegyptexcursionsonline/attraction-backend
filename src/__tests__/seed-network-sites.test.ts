@@ -150,6 +150,31 @@ describe('network sites seed: the trip facts a site copies from a programme', ()
   });
 });
 
+describe('network sites seed: the booking cut-off of an operator programme (PLATFORM #1713)', () => {
+  const withAdultCutoff = (minutes: number) => ({
+    ...PROGRAMME,
+    pricingOptions: PROGRAMME.pricingOptions.map((option) => (option.id === 'adult' ? { ...option, bookingCutoffMinutes: minutes } : option)),
+  });
+
+  it('copies no 0 from the operator: the departure trip stops selling two hours before it leaves', () => {
+    const doc = tripDocument(site(), trip(), withAdultCutoff(0), 0, 'tenant-1') as Record<string, any>;
+    expect(doc.availability.type).toBe('time-slots');
+    expect(doc.pricingOptions.length).toBeGreaterThan(0);
+    for (const option of doc.pricingOptions) expect(option.bookingCutoffMinutes).toBe(120);
+  });
+
+  it('keeps a cut-off the operator sets itself', () => {
+    const doc = tripDocument(site(), trip(), withAdultCutoff(2880), 0, 'tenant-1') as Record<string, any>;
+    expect(doc.pricingOptions.find((option: { id: string }) => option.id === 'adult').bookingCutoffMinutes).toBe(2880);
+  });
+
+  it('gives a trip sold by the day none', () => {
+    const doc = tripDocument(site(), trip({ price: spec({ departures: [] }) }), PROGRAMME, 0, 'tenant-1') as Record<string, any>;
+    expect(doc.availability.type).toBe('date-only');
+    for (const option of doc.pricingOptions) expect(option).not.toHaveProperty('bookingCutoffMinutes');
+  });
+});
+
 describe('network sites seed: the trip document', () => {
   const document = tripDocument(site(), trip(), PROGRAMME, 0, 'tenant-1');
 
