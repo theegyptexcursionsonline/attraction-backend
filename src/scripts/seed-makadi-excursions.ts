@@ -12,6 +12,8 @@
  *   npm run seed:makadi-excursions -- --apply --confirm-domain=makadi-excursions.com
  */
 
+import { gatewaySafeSeedFilter } from '../services/gatewayDomainScope';
+
 type PricingModel = 'per-person' | 'per-booking';
 
 interface SeedOption {
@@ -315,7 +317,7 @@ async function applyPlan(): Promise<void> {
       return tourImages.get(tour.slug) as string;
     });
     const tenant = await Tenant.findOneAndUpdate(
-      { slug: TENANT_SLUG },
+      gatewaySafeSeedFilter(TENANT_SLUG),
       { $set: { ...MAKADI_EXCURSIONS_TENANT, logo, logoDark: logo, favicon: logo, heroImages, status: existingTenant?.status === 'active' ? 'active' : 'coming_soon', domainMigrated: false } },
       { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true },
     );

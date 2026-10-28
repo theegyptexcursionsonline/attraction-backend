@@ -66,6 +66,7 @@ const tenantSchema = new Schema<ITenant>(
       sparse: true,
       index: true,
     },
+    gatewayDomainRevision: { type: Number },
     // Flip to true (per tenant) once the custom domain serves the Attractions build,
     // so transactional email links use the brand domain instead of the shared origin.
     domainMigrated: {

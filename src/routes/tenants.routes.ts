@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { createGatewayDomain, getGatewayDomain } from '../controllers/gatewayDomain.controller';
 import { getTenantFinance, updateTenantFinance } from '../controllers/tenantFinance.controller';
 import {
   getTenants,
@@ -102,6 +103,12 @@ router.get('/public/:id', getPublicTenantById);
 router.get('/by-slug/:slug', getTenantBySlug);
 
 router.get('/by-domain/:hostname', getTenantByCustomDomain);
+
+// Additive routing lookup; the legacy public-domain lookup is unchanged.
+router.get('/gateway-domain/:hostname', getGatewayDomain);
+router.post('/:id/gateway-domain', authenticate, requireSuperAdmin,
+  validate(z.object({ domain: z.string().trim().min(3).max(253), adoptExisting: z.boolean().optional(),
+    expectedCurrentDomain: z.string().min(3).max(253).optional() })), createGatewayDomain);
 
 // Portfolio-wide totals for the admin Sites list page (Super-admin sees
 // everything; brand-admin sees only their assigned sites).

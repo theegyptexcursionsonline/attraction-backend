@@ -1,6 +1,7 @@
 import { connectDatabase, disconnectDatabase } from '../config';
 import { User, Tenant, Attraction, Category, Destination, Review, Booking } from '../models';
 import { requireScriptSecret } from './require-script-secret';
+import { assertDestructiveTenantSeedAllowed, runDestructiveTenantReset } from '../services/gatewayDomainScope';
 
 // Import mock data structures
 const categories = [
@@ -1818,6 +1819,7 @@ const buildSeedUsers = () => [
 
 const seed = async (): Promise<void> => {
   try {
+    assertDestructiveTenantSeedAllowed();
     const users = buildSeedUsers();
     console.log('🌱 Starting database seed...\n');
 
@@ -1825,7 +1827,7 @@ const seed = async (): Promise<void> => {
 
     // Clear existing data
     console.log('🗑️  Clearing existing data...');
-    await Promise.all([
+    await runDestructiveTenantReset(() => Promise.all([
       User.deleteMany({}),
       Tenant.deleteMany({}),
       Attraction.deleteMany({}),
@@ -1833,7 +1835,7 @@ const seed = async (): Promise<void> => {
       Destination.deleteMany({}),
       Review.deleteMany({}),
       Booking.deleteMany({}),
-    ]);
+    ]));
 
     // Seed categories
     console.log('📁 Seeding categories...');

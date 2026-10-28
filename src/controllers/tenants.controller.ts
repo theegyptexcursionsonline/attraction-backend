@@ -36,6 +36,7 @@ import { siteCurrencyChangeProblem } from '../utils/siteCurrency';
 import { sanitizeCustomPages } from '../utils/sanitizeHtml';
 import { navigationSchema } from '../utils/siteContent';
 import { DomainClaim } from '../models/DomainClaim';
+import { legacyDomainWriteBlocked } from '../services/gatewayDomainScope';
 import {
   NetlifyDomainError,
   NetlifyDomainReadiness,
@@ -470,6 +471,9 @@ export const configureCustomDomain = async (
   let claimCreated = false;
   let aliasesAdded: string[] = [];
   try {
+    if (legacyDomainWriteBlocked(domain)) {
+      sendError(res, 'Use the gateway domain workflow for this domain', 409); return;
+    }
     if (!netlifyDomainService.isConfigured()) {
       throw new NetlifyDomainError(
         'NETLIFY_NOT_CONFIGURED',
@@ -581,6 +585,9 @@ export const verifyCustomDomain = async (
       sendError(res, 'No custom domain is configured for this tenant', 400);
       return;
     }
+    if (legacyDomainWriteBlocked(tenant.customDomain)) {
+      sendError(res, 'Use the gateway domain workflow for this domain', 409); return;
+    }
 
     const readiness = await netlifyDomainService.getReadiness(tenant.customDomain);
     const ready = readiness.aliasesAttached && readiness.certificateReady;
@@ -630,6 +637,9 @@ export const removeCustomDomain = async (
     if (!tenant.customDomain) {
       sendSuccess(res, domainStatusDto(tenant), 'No custom domain was configured');
       return;
+    }
+    if (legacyDomainWriteBlocked(tenant.customDomain)) {
+      sendError(res, 'Use the gateway domain workflow for this domain', 409); return;
     }
 
     const domain = tenant.customDomain;
@@ -702,6 +712,9 @@ export const createTenant = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    if (legacyDomainWriteBlocked(req.body.domain)) {
+      sendError(res, 'Use the gateway domain workflow for this domain', 409); return;
+    }
     req.body = withoutFinanceFields(withoutPageSeoFields(withoutTrackingSettingsFields(req.body)));
     if (req.body.defaultCurrency !== undefined) {
       const currency = normalizeCurrencyCode(req.body.defaultCurrency);
@@ -945,6 +958,9 @@ export const updateTenant = async (
 ): Promise<void> => {
   try {
     if (!req.user || req.user.role !== 'super-admin') { sendError(res, 'Super admin access required', req.user ? 403 : 401); return; }
+    if (legacyDomainWriteBlocked(req.body.domain)) {
+      sendError(res, 'Use the gateway domain workflow for this domain', 409); return;
+    }
     req.body = withoutFinanceFields(withoutPageSeoFields(withoutTrackingSettingsFields(req.body)));
     if (Object.keys(req.body).some(key => key.startsWith('customPages.'))) {
       sendError(res, 'Use the Pages editor to update website pages', 400); return;

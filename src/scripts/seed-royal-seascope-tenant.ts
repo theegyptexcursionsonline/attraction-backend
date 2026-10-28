@@ -13,6 +13,7 @@
  */
 
 import { connectDatabase, disconnectDatabase } from '../config/database';
+import { guardGatewaySeedDocument } from '../services/gatewayDomainScope';
 import { Tenant } from '../models/Tenant';
 
 const TENANT_SLUG = 'royal-seascope';
@@ -234,6 +235,7 @@ async function main(): Promise<void> {
     const preserved = existingPages.filter((p) => !ourSlugs.has(p.slug));
     (tenant as any).customPages = [...preserved, ...CUSTOM_PAGES];
 
+    guardGatewaySeedDocument(tenant, tenant.customDomain);
     await tenant.save();
 
     const after = {

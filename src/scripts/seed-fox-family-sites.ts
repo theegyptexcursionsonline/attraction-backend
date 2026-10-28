@@ -26,6 +26,7 @@
  */
 
 import fs from 'fs';
+import { gatewaySafeSeedFilter } from '../services/gatewayDomainScope';
 import path from 'path';
 import { departureAvailabilityType } from '../utils/departureAvailability';
 import { FAMILY_SITE_HEROES, FAMILY_SITE_LOGOS, FAMILY_SITE_TRIPS, type FamilySiteSlug, type FamilySiteTrip } from './seed-fox-family-sites.catalogue';
@@ -491,6 +492,7 @@ async function applyPlan(): Promise<void> {
     for (const { site, existing, namespaceConflict, collision } of sites) {
       if (existing && !['active', 'coming_soon', 'pending'].includes(existing.status)) throw new Error(`${site.slug}: protected status ${existing.status}.`);
       if (existing?.domainMigrated) throw new Error(`${site.slug}: already serves its own domain.`);
+      if (existing?.gatewayDomainRevision !== undefined) throw new Error(`${site.slug}: gateway domain ownership is protected.`);
       if (namespaceConflict) throw new Error(`${site.slug}: namespace owned by ${namespaceConflict.slug}.`);
       if (collision) throw new Error(`${site.slug}: ${collision}`);
       const { problems } = planSiteTrips(site, sources, existing?._id ?? null);
@@ -501,7 +503,7 @@ async function applyPlan(): Promise<void> {
     for (const { site, existing } of sites) {
       const previewAccessCode = existing?.previewAccessCode || generatePreviewAccessCode();
       const tenant = await Tenant.findOneAndUpdate(
-        { slug: site.slug },
+        gatewaySafeSeedFilter(site.slug),
         {
           $set: { ...familyTenantRecord(site), previewAccessCode, previewAccessCodeUpdatedAt: existing?.previewAccessCodeUpdatedAt || new Date() },
           // The domain is attached in its own step, after DNS.

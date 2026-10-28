@@ -12,6 +12,8 @@
  *   npm run seed:cave-divers -- --apply --confirm-domain=cave-divers.com
  */
 
+import { gatewaySafeSeedFilter } from '../services/gatewayDomainScope';
+
 interface CaveItineraryStep {
   time: string;
   title: string;
@@ -911,7 +913,7 @@ async function applyPlan(): Promise<void> {
     const previewAccessCodeUpdatedAt = existingTenant?.previewAccessCodeUpdatedAt || new Date();
 
     const tenant = await Tenant.findOneAndUpdate(
-      { slug: TENANT_SLUG },
+      gatewaySafeSeedFilter(TENANT_SLUG),
       {
         $set: {
           ...CAVE_DIVERS_TENANT,
