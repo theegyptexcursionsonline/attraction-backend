@@ -425,6 +425,10 @@ export interface EmailTenant {
   slug?: string;
   customDomain?: string;
   domainMigrated?: boolean; // true once the custom domain serves the Attractions build
+  gatewayVerifiedEmailDomain?: string|null;
+  gatewayEmailState?: 'verified'|'unverified'|null;
+  gatewayEmailManaged?: boolean|null;
+  gatewayOwnedCount?: number;
   theme?: { primaryColor?: string; secondaryColor?: string };
   logo?: string;
   defaultLanguage?: string;
@@ -446,7 +450,7 @@ export interface EmailBrand {
   postalAddress?: string; // legal footer address, from the tenant's own contact details
 }
 
-const normalizedCustomDomain = (value?: string): string | null => {
+const normalizedCustomDomain = (value?: string|null): string | null => {
   const candidate = value
     ?.trim()
     .replace(/^https?:\/\//i, '')
@@ -512,6 +516,15 @@ export const getEmailBrand = (tenant?: EmailTenant | null): EmailBrand => {
     ...(postal ? { postalAddress: postal } : {}),
   };
   const cd = normalizedCustomDomain(tenant?.customDomain);
+  if (tenant?.gatewayEmailManaged === true ||
+      ((tenant?.gatewayOwnedCount ?? 0)>0 && tenant?.gatewayEmailManaged != null && typeof tenant.gatewayEmailManaged!=='boolean')) {
+    const verified = normalizedCustomDomain(tenant.gatewayVerifiedEmailDomain);
+    if (tenant.gatewayEmailState==='verified' && verified && verified === cd) {
+      const origin = `https://${verified}`;
+      return { ...common, origin, logo: absLogo(origin) };
+    }
+    return { ...common, origin: base, slug: tenant?.slug, logo: absLogo(base) };
+  }
   if (cd && (tenant?.domainMigrated || MIGRATED_DOMAINS.has(cd))) {
     const origin = `https://${cd}`;
     return { ...common, origin, logo: absLogo(origin) };

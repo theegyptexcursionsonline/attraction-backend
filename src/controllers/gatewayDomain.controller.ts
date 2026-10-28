@@ -5,6 +5,7 @@ import { createGatewayDomainOwnership, GatewayOwnershipConflict } from '../servi
 import { CustomDomainValidationError } from '../utils/customDomain';
 import { AuthRequest } from '../types';
 import { legacyDomainWriteBlocked } from '../services/gatewayDomainScope';
+import { createGatewayAlias } from '../services/gatewayAliasOwnership.service';
 
 export async function getGatewayDomain(req: Request, res: Response, next: NextFunction): Promise<void> {
   res.setHeader('Cache-Control', 'private, no-store');
@@ -31,6 +32,19 @@ export async function createGatewayDomain(req: AuthRequest, res: Response, next:
   } catch (error) {
     if (error instanceof CustomDomainValidationError) { sendError(res, 'Enter a valid public domain', 400); return; }
     if (error instanceof GatewayOwnershipConflict) { sendError(res, error.message, 409); return; }
+    next(error);
+  }
+}
+
+export async function createGatewayAliasDomain(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+  res.setHeader('Cache-Control', 'private, no-store');
+  if (!req.user || req.user.role !== 'super-admin') { sendError(res, 'Super admin access required', req.user ? 403 : 401); return; }
+  try {
+    const result=await createGatewayAlias(req.body.domain,req.params.id,String(req.user._id),req.body.expectedPrimaryDomain);
+    sendSuccess(res,result,'Domain alias reserved');
+  } catch(error) {
+    if(error instanceof CustomDomainValidationError) {sendError(res,'Enter a valid public domain',400);return;}
+    if(error instanceof GatewayOwnershipConflict) {sendError(res,error.message,409);return;}
     next(error);
   }
 }

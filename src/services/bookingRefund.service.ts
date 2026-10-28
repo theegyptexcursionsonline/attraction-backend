@@ -144,7 +144,7 @@ export const notifyBookingRefunded = (
   fullRefund: boolean
 ): void => {
   void Tenant.findById(booking.tenantId)
-    .select('name slug customDomain domainMigrated contactInfo theme logo defaultLanguage defaultCurrency timezone')
+    .select('name slug customDomain domainMigrated gatewayVerifiedEmailDomain gatewayEmailState gatewayEmailManaged gatewayOwnedCount contactInfo theme logo defaultLanguage defaultCurrency timezone')
     .lean()
     .then((tenant) => tenant ? sendBookingStatusEmail(
         booking.guestDetails.email,

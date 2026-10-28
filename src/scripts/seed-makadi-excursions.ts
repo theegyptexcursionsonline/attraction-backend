@@ -317,7 +317,7 @@ async function applyPlan(): Promise<void> {
       return tourImages.get(tour.slug) as string;
     });
     const tenant = await Tenant.findOneAndUpdate(
-      gatewaySafeSeedFilter(TENANT_SLUG),
+      gatewaySafeSeedFilter(TENANT_SLUG, existingTenant?.gatewayDomainRevision),
       { $set: { ...MAKADI_EXCURSIONS_TENANT, logo, logoDark: logo, favicon: logo, heroImages, status: existingTenant?.status === 'active' ? 'active' : 'coming_soon', domainMigrated: false } },
       { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true },
     );

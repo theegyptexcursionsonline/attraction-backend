@@ -67,6 +67,10 @@ const tenantSchema = new Schema<ITenant>(
       index: true,
     },
     gatewayDomainRevision: { type: Number },
+    gatewayOwnedCount: { type: Number, min: 0 },
+    gatewayVerifiedEmailDomain: { type: String, lowercase: true, trim: true },
+    gatewayEmailState: { type: String, enum: ['verified', 'unverified'] },
+    gatewayEmailManaged: { type: Boolean },
     // Flip to true (per tenant) once the custom domain serves the Attractions build,
     // so transactional email links use the brand domain instead of the shared origin.
     domainMigrated: {

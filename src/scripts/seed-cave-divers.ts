@@ -913,7 +913,7 @@ async function applyPlan(): Promise<void> {
     const previewAccessCodeUpdatedAt = existingTenant?.previewAccessCodeUpdatedAt || new Date();
 
     const tenant = await Tenant.findOneAndUpdate(
-      gatewaySafeSeedFilter(TENANT_SLUG),
+      gatewaySafeSeedFilter(TENANT_SLUG, existingTenant?.gatewayDomainRevision),
       {
         $set: {
           ...CAVE_DIVERS_TENANT,

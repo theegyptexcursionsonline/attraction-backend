@@ -1481,7 +1481,7 @@ async function applyPlan(): Promise<void> {
     const previewAccessCode = existingTenant?.previewAccessCode || generatePreviewAccessCode();
     const previewAccessCodeUpdatedAt = existingTenant?.previewAccessCodeUpdatedAt || new Date();
     const tenant = await Tenant.findOneAndUpdate(
-      gatewaySafeSeedFilter(TENANT_SLUG),
+      gatewaySafeSeedFilter(TENANT_SLUG, existingTenant?.gatewayDomainRevision),
       {
         $set: {
           ...HULA_HULA_TENANT,

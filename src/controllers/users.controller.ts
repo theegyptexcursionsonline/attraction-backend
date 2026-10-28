@@ -863,7 +863,7 @@ export const getUserById = async (
 };
 
 const USER_EMAIL_TENANT_FIELDS =
-  'name slug customDomain domainMigrated theme logo contactInfo defaultLanguage defaultCurrency timezone';
+  'name slug customDomain domainMigrated gatewayVerifiedEmailDomain gatewayEmailState gatewayEmailManaged gatewayOwnedCount theme logo contactInfo defaultLanguage defaultCurrency timezone';
 
 /**
  * The site whose brand an account email to this user should wear: the acting admin's current
@@ -1021,7 +1021,7 @@ export const createInvitationLink = async (
     const siteId = tenantIds.find((t) => mine.includes(t)) ?? tenantIds[0];
     const site = siteId
       ? await Tenant.findById(siteId)
-        .select('name slug customDomain domainMigrated theme logo contactInfo defaultLanguage defaultCurrency timezone')
+        .select('name slug customDomain domainMigrated gatewayVerifiedEmailDomain gatewayEmailState gatewayEmailManaged gatewayOwnedCount theme logo contactInfo defaultLanguage defaultCurrency timezone')
         .lean()
       : null;
 

@@ -697,7 +697,7 @@ async function applyPlan(batch: NetworkBatch): Promise<void> {
     for (const { site, existing, namespaceConflict, collision } of sites) {
       if (existing && !['active', 'coming_soon', 'pending'].includes(existing.status)) throw new Error(`${site.slug}: protected status ${existing.status}.`);
       if (existing?.domainMigrated) throw new Error(`${site.slug}: already serves its own domain.`);
-      if (existing?.gatewayDomainRevision !== undefined) throw new Error(`${site.slug}: gateway domain ownership is protected.`);
+      if ((existing?.gatewayOwnedCount ?? 0)>0) throw new Error(`${site.slug}: gateway domain ownership is protected.`);
       if (namespaceConflict) throw new Error(`${site.slug}: namespace owned by ${namespaceConflict.slug}.`);
       if (collision) throw new Error(`${site.slug}: ${collision}`);
       const { problems } = planSiteTrips(site, sources, existing?._id ?? null, schemaCheck);
@@ -709,7 +709,7 @@ async function applyPlan(batch: NetworkBatch): Promise<void> {
       const previewAccessCode = existing?.previewAccessCode || generatePreviewAccessCode();
       const { supportedLanguages, ...record } = tenantRecord(site);
       const tenant = await Tenant.findOneAndUpdate(
-        gatewaySafeSeedFilter(site.slug),
+        gatewaySafeSeedFilter(site.slug, existing?.gatewayDomainRevision),
         {
           $set: { ...record, previewAccessCode, previewAccessCodeUpdatedAt: existing?.previewAccessCodeUpdatedAt || new Date() },
           // Languages are set only on a first run: Arabic is switched on separately once its pages and

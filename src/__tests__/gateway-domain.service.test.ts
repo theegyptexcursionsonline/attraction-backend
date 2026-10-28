@@ -7,7 +7,8 @@ jest.mock('../models/DomainClaim', () => ({ DomainClaim: { findById: jest.fn() }
 jest.mock('../models/Tenant', () => ({ Tenant: { findById: jest.fn() } }));
 
 const session = { withTransaction: jest.fn(), endSession: jest.fn() };
-const claimant = { tenantId: 'tenant-1', provider:'cloudflare' };
+const generation='12345678-1234-4123-8123-123456789abc';
+const claimant = { tenantId: 'tenant-1', provider:'cloudflare', claimGeneration:generation };
 const owner = { _id: 'tenant-1', slug: 'site-one', customDomain: 'site-one.com', status: 'active' };
 const query = (value: unknown) => {
   const q = { select: jest.fn(), limit: jest.fn(), maxTimeMS: jest.fn(), session: jest.fn(), lean: jest.fn().mockResolvedValue(value) };
@@ -25,7 +26,7 @@ beforeEach(() => {
 afterEach(() => jest.restoreAllMocks());
 
 it('resolves a unique active claimant using a snapshot and canonical apex', async () => {
-  expect(await resolveGatewayDomain('WWW.Site-One.com.')).toEqual({ id: 'tenant-1', slug: 'site-one', customDomain: 'site-one.com', status: 'active' });
+  expect(await resolveGatewayDomain('WWW.Site-One.com.')).toEqual({ id: 'tenant-1', slug: 'site-one', customDomain: 'site-one.com', status: 'active',claimId:'site-one.com',claimGeneration:generation,canonicalReady:false });
   expect(DomainClaim.findById).toHaveBeenCalledWith('site-one.com');
   expect(Tenant.findById).toHaveBeenCalledWith('tenant-1');
   expect(session.withTransaction).toHaveBeenCalledWith(expect.any(Function), { readConcern: { level: 'snapshot' } });
@@ -55,6 +56,24 @@ it('rejects a legacy claim until it is explicitly adopted', async () => {
   (DomainClaim.findById as jest.Mock).mockReturnValue(query({tenantId:'tenant-1'}));
   expect(await resolveGatewayDomain('site-one.com')).toBeNull();
   expect(Tenant.findById).not.toHaveBeenCalled();
+});
+
+it('only marks a primary canonical ready after verified activation and does not expire it after six minutes', async () => {
+  const verifiedOwner={...owner,gatewayVerifiedEmailDomain:'site-one.com',gatewayEmailState:'verified',gatewayEmailManaged:true};
+  (Tenant.findById as jest.Mock).mockReturnValue(query(verifiedOwner));
+  for(const state of ['reserved','staged','unverified','rolled_back']) {
+    (DomainClaim.findById as jest.Mock).mockReturnValue(query({...claimant,gatewayState:state,gatewayVerifiedAt:new Date()}));
+    expect((await resolveGatewayDomain('site-one.com'))?.canonicalReady).toBe(false);
+  }
+  (DomainClaim.findById as jest.Mock).mockReturnValue(query({...claimant,gatewayState:'active'}));
+  expect((await resolveGatewayDomain('site-one.com'))?.canonicalReady).toBe(false);
+  (DomainClaim.findById as jest.Mock).mockReturnValue(query({...claimant,gatewayState:'active',gatewayVerifiedAt:new Date(Date.now()-360_000)}));
+  expect((await resolveGatewayDomain('site-one.com'))?.canonicalReady).toBe(true);
+  (DomainClaim.findById as jest.Mock).mockReturnValue(query({...claimant,gatewayState:'active',gatewayVerifiedAt:new Date(Date.now()+60_000)}));
+  expect((await resolveGatewayDomain('site-one.com'))?.canonicalReady).toBe(false);
+  (Tenant.findById as jest.Mock).mockReturnValue(query({...verifiedOwner,gatewayEmailState:'unverified'}));
+  (DomainClaim.findById as jest.Mock).mockReturnValue(query({...claimant,gatewayState:'active',gatewayVerifiedAt:new Date()}));
+  expect((await resolveGatewayDomain('site-one.com'))?.canonicalReady).toBe(false);
 });
 
 it('propagates transaction errors and still ends the session', async () => {

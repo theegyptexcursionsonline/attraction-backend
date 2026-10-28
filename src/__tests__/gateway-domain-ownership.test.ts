@@ -3,7 +3,7 @@ import { DomainClaim } from '../models/DomainClaim';
 import { Tenant } from '../models/Tenant';
 import { createGatewayDomainOwnership } from '../services/gatewayDomainOwnership.service';
 
-jest.mock('../models/DomainClaim', () => ({ DomainClaim: { findById: jest.fn(), create: jest.fn(), updateOne: jest.fn() } }));
+jest.mock('../models/DomainClaim', () => ({ DomainClaim: { findById: jest.fn(), create: jest.fn(), updateOne: jest.fn(), countDocuments:jest.fn() } }));
 jest.mock('../models/Tenant', () => ({ Tenant: { findById: jest.fn(), find: jest.fn(), findOneAndUpdate: jest.fn() } }));
 const id = '6ad9180019cdb7353ebbd0f5', actor = '6ad9180019cdb7353ebbd0f6';
 const tenant = { _id:id, slug:'site-one', status:'active', customDomain:null };
@@ -23,6 +23,7 @@ beforeEach(() => {
   (Tenant.findById as jest.Mock).mockReturnValue(q(tenant));
   (Tenant.find as jest.Mock).mockReturnValue(q([tenant]));
   (DomainClaim.findById as jest.Mock).mockReturnValue(q(null));
+  (DomainClaim.countDocuments as jest.Mock).mockReturnValue({session:jest.fn().mockResolvedValue(0)});
   (DomainClaim.create as jest.Mock).mockResolvedValue([{}]);
   (DomainClaim.updateOne as jest.Mock).mockResolvedValue({modifiedCount:1});
   (Tenant.findOneAndUpdate as jest.Mock).mockReturnValue(q({...tenant,customDomain:'site-one.com'}));
@@ -76,7 +77,7 @@ it('adopts an exact existing unclaimed assignment only with explicit confirmatio
     .resolves.toMatchObject({id,customDomain:'site-one.com'});
   expect(DomainClaim.create).toHaveBeenCalledTimes(1);
   expect(Tenant.findOneAndUpdate).toHaveBeenCalledWith(expect.objectContaining({customDomain:'site-one.com'}),
-    {$inc:{gatewayDomainRevision:1}},expect.objectContaining({session}));
+    {$inc:{gatewayDomainRevision:1,gatewayOwnedCount:1}},expect.objectContaining({session}));
 });
 
 it('adopts an existing same-tenant legacy claim only on explicit exact confirmation', async () => {
@@ -85,7 +86,7 @@ it('adopts an existing same-tenant legacy claim only on explicit exact confirmat
   await expect(createGatewayDomainOwnership('site-one.com',id,actor,{adoptExisting:true,expectedCurrentDomain:'site-one.com'}))
     .resolves.toMatchObject({id,customDomain:'site-one.com'});
   expect(DomainClaim.updateOne).toHaveBeenCalledWith(expect.objectContaining({_id:'site-one.com',tenantId:id}),
-    {$set:{provider:'cloudflare'}},{session});
+    {$set:{provider:'cloudflare',claimGeneration:expect.any(String),gatewayOriginal:expect.any(Object)}},{session});
   expect(DomainClaim.create).not.toHaveBeenCalled();
 });
 
