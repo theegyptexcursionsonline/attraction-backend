@@ -14,6 +14,7 @@
  */
 
 import { connectDatabase, disconnectDatabase } from '../config/database';
+import { guardGatewaySeedDocument } from '../services/gatewayDomainScope';
 import { Tenant } from '../models/Tenant';
 
 const TENANT_SLUG = 'rosetta-classic-boat';
@@ -233,6 +234,7 @@ async function main(): Promise<void> {
     (tenant as any).customPages = [...preserved, ...CUSTOM_PAGES];
     /* eslint-enable @typescript-eslint/no-explicit-any */
 
+    guardGatewaySeedDocument(tenant, tenant.customDomain);
     await tenant.save();
 
     console.log(

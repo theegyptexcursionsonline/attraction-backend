@@ -14,6 +14,7 @@
  */
 
 import { connectDatabase, disconnectDatabase } from '../config/database';
+import { guardGatewaySeedDocument, legacyDomainWriteBlocked } from '../services/gatewayDomainScope';
 import { Tenant } from '../models/Tenant';
 import { Attraction } from '../models/Attraction';
 import { User } from '../models/User';
@@ -343,9 +344,11 @@ async function seedGiza() {
       existingTenant.previewAccessCode = newPreviewCode;
       existingTenant.previewAccessCodeUpdatedAt = new Date();
     }
+    guardGatewaySeedDocument(existingTenant, GIZA_TENANT.customDomain);
     await existingTenant.save();
     tenant = existingTenant;
   } else {
+    if (legacyDomainWriteBlocked(GIZA_TENANT.customDomain)) throw new Error('Scoped gateway domains cannot be changed by a legacy seed');
     log('Creating new tenant…');
     tenant = await Tenant.create({
       ...GIZA_TENANT,

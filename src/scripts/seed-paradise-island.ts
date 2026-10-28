@@ -35,6 +35,7 @@
  */
 
 import crypto from 'crypto';
+import { gatewaySafeSeedFilter } from '../services/gatewayDomainScope';
 import fs from 'fs';
 import { departureAvailabilityType } from '../utils/departureAvailability';
 
@@ -1021,7 +1022,7 @@ async function applyPlan(): Promise<void> {
     const previewAccessCode = existingTenant?.previewAccessCode || generatePreviewAccessCode();
     const previewAccessCodeUpdatedAt = existingTenant?.previewAccessCodeUpdatedAt || new Date();
     const tenant = await Tenant.findOneAndUpdate(
-      { slug: TENANT_SLUG },
+      gatewaySafeSeedFilter(TENANT_SLUG, existingTenant?.gatewayDomainRevision),
       {
         $set: {
           ...PARADISE_TENANT,

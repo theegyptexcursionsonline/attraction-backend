@@ -133,7 +133,7 @@ export const processBookingPaymentNotifications = async (limit = 20): Promise<{
     try {
       const [booking, tenant] = await Promise.all([
         Booking.findOne({ _id: event.bookingId, tenantId: event.tenantId, ...standaloneBookingClause }).lean<PaymentBooking>(),
-        Tenant.findById(event.tenantId).select('name slug customDomain domainMigrated theme logo contactInfo defaultLanguage defaultCurrency timezone notificationSettings flatUrls').lean(),
+        Tenant.findById(event.tenantId).select('name slug customDomain domainMigrated gatewayVerifiedEmailDomain gatewayEmailState gatewayEmailManaged gatewayOwnedCount theme logo contactInfo defaultLanguage defaultCurrency timezone notificationSettings flatUrls').lean(),
       ]);
       if (!booking || !tenant) throw new NoticeDecision('manual_review', 'NOTIFICATION_SCOPE_MISSING');
       assertEligible(booking, event.kind);

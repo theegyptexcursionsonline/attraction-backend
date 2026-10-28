@@ -65,7 +65,7 @@ const issueSession = async (user: IUser, res: Response, rememberMe = false, req?
 };
 
 const TENANT_EMAIL_FIELDS =
-  'name slug customDomain domainMigrated theme logo contactInfo defaultLanguage defaultCurrency timezone';
+  'name slug customDomain domainMigrated gatewayVerifiedEmailDomain gatewayEmailState gatewayEmailManaged gatewayOwnedCount theme logo contactInfo defaultLanguage defaultCurrency timezone';
 
 /**
  * Which site an account email should speak in.

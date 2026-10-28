@@ -512,7 +512,7 @@ export const createBooking = async (
       // One tenant lookup, reused for both the customer confirmation (branding)
       // and the operator notification below.
       const tenantDoc = await Tenant.findById(tenantId)
-        .select('name slug customDomain domainMigrated contactInfo notificationSettings theme logo')
+        .select('name slug customDomain domainMigrated gatewayVerifiedEmailDomain gatewayEmailState gatewayEmailManaged gatewayOwnedCount contactInfo notificationSettings theme logo')
         .lean();
 
       try {
@@ -893,7 +893,7 @@ export const sendBookingPaymentLink = async (
     }
 
     const tenant = await Tenant.findById(booking.tenantId)
-      .select('name slug customDomain domainMigrated contactInfo theme logo')
+      .select('name slug customDomain domainMigrated gatewayVerifiedEmailDomain gatewayEmailState gatewayEmailManaged gatewayOwnedCount contactInfo theme logo')
       .lean();
     const guestName = `${booking.guestDetails.firstName} ${booking.guestDetails.lastName}`.trim();
     // Deliberately NOT deduped: an admin pressing "send payment link" again is a fresh intent

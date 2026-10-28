@@ -86,7 +86,7 @@ const processNotificationQueue = async (queue: typeof BookingOperatorNotificatio
         Booking.findOne({ _id: event.bookingId, tenantId: event.tenantId })
           .select('reference currency guestDetails.firstName guestDetails.lastName guestDetails.email').lean(),
         Tenant.findById(event.tenantId)
-          .select('name slug customDomain domainMigrated contactInfo theme logo defaultLanguage defaultCurrency timezone notificationSettings').lean(),
+          .select('name slug customDomain domainMigrated gatewayVerifiedEmailDomain gatewayEmailState gatewayEmailManaged gatewayOwnedCount contactInfo theme logo defaultLanguage defaultCurrency timezone notificationSettings').lean(),
       ]);
       if (!booking || !tenant) {
         lastError = 'NOTIFICATION_SCOPE_MISSING';

@@ -33,6 +33,7 @@ jest.mock('../models/DomainClaim', () => ({
 import {
   configureCustomDomain,
   getTenantByCustomDomain,
+  removeCustomDomain,
   verifyCustomDomain,
 } from '../controllers/tenants.controller';
 import { DomainClaim } from '../models/DomainClaim';
@@ -56,11 +57,39 @@ describe('custom-domain tenant controllers', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    Reflect.deleteProperty(process.env, 'GATEWAY_DOMAIN_WRITER_FENCE_ENABLED');
+    Reflect.deleteProperty(process.env, 'GATEWAY_DOMAIN_SCOPE');
     mockNetlify.isConfigured.mockReturnValue(true);
     mockNetlify.getDnsTargets.mockReturnValue({
       apex: 'apex-loadbalancer.netlify.com',
       www: 'foxes-network.netlify.app',
     });
+  });
+
+  afterEach(() => {
+    Reflect.deleteProperty(process.env, 'GATEWAY_DOMAIN_WRITER_FENCE_ENABLED');
+    Reflect.deleteProperty(process.env, 'GATEWAY_DOMAIN_SCOPE');
+  });
+
+  it('fences legacy Netlify configuration for a scoped gateway domain', async () => {
+    process.env.GATEWAY_DOMAIN_WRITER_FENCE_ENABLED = 'true';
+    process.env.GATEWAY_DOMAIN_SCOPE = 'future-domain.com';
+    const { res, status } = response();
+    await configureCustomDomain({ params: { id: String(tenantId) }, body: { domain: 'www.future-domain.com' }, user: { _id: userId } } as unknown as AuthRequest, res, next);
+    expect(status).toHaveBeenCalledWith(409);
+    expect(mockNetlify.addDomain).not.toHaveBeenCalled();
+    expect(DomainClaim.create).not.toHaveBeenCalled();
+  });
+
+  it('fences legacy Netlify removal for a scoped gateway domain', async () => {
+    process.env.GATEWAY_DOMAIN_WRITER_FENCE_ENABLED = 'true';
+    process.env.GATEWAY_DOMAIN_SCOPE = 'future-domain.com';
+    (Tenant.findById as jest.Mock).mockResolvedValue({_id:tenantId,customDomain:'future-domain.com'});
+    const { res, status } = response();
+    await removeCustomDomain({params:{id:String(tenantId)}} as unknown as AuthRequest,res,next);
+    expect(status).toHaveBeenCalledWith(409);
+    expect(mockNetlify.removeDomain).not.toHaveBeenCalled();
+    expect(DomainClaim.deleteOne).not.toHaveBeenCalled();
   });
 
   it('resolves www hostnames to the minimum public tenant identity', async () => {

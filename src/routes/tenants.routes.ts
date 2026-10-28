@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import { createGatewayAliasDomain, createGatewayDomain, getGatewayDomain } from '../controllers/gatewayDomain.controller';
+import { applyGatewayLifecycle, readGatewayLifecycleOperation, readGatewayLifecycleStatus } from '../controllers/gatewayLifecycle.controller';
 import { getTenantFinance, updateTenantFinance } from '../controllers/tenantFinance.controller';
 import {
   getTenants,
@@ -102,6 +104,31 @@ router.get('/public/:id', getPublicTenantById);
 router.get('/by-slug/:slug', getTenantBySlug);
 
 router.get('/by-domain/:hostname', getTenantByCustomDomain);
+
+// Additive routing lookup; the legacy public-domain lookup is unchanged.
+router.get('/gateway-domain/:hostname', getGatewayDomain);
+router.post('/:id/gateway-domain', authenticate, requireSuperAdmin,
+  validate(z.object({ domain: z.string().trim().min(3).max(253), adoptExisting: z.boolean().optional(),
+    expectedCurrentDomain: z.string().min(3).max(253).optional() })), createGatewayDomain);
+router.post('/:id/gateway-alias', authenticate, requireSuperAdmin,
+  validate(z.object({ domain:z.string().trim().min(3).max(253), expectedPrimaryDomain:z.string().min(3).max(253) })), createGatewayAliasDomain);
+const gatewayLifecycleProofSchema=z.object({
+  action:z.enum(['stage','activate','reconcile','rollback','detach']),domain:z.string().min(3).max(253),claimId:z.string().min(3).max(253),
+  claimGeneration:z.string().uuid(),tenantId:z.string().regex(/^[a-f0-9]{24}$/),tenantSlug:z.string().regex(/^[a-z0-9][a-z0-9-]{0,159}$/),claimRevision:z.number().int().positive(),
+  accountId:z.string().regex(/^[a-f0-9]{32}$/),zoneId:z.string().regex(/^[a-f0-9]{32}$/),routeFingerprint:z.string().regex(/^[a-f0-9]{64}$/),
+  previousTarget:z.string().regex(/^[a-f0-9]{64}$/),observedAt:z.number().int().nonnegative(),expiresAt:z.number().int().nonnegative(),
+  nonce:z.string().regex(/^[a-f0-9]{32}$/),zoneState:z.enum(['active','pending','unknown']),dns:z.enum(['assigned','other','unknown']),
+  route:z.enum(['gateway','rollback','unknown']),tls:z.enum(['valid','invalid','unknown']),tenant:z.enum(['matched','mismatch','unknown']),
+  serviceParity:z.enum(['complete','incomplete','unknown']),
+  rollbackMatched:z.enum(['matched','mismatch','unknown']),
+  gatewayAbsent:z.enum(['yes','no','unknown']),
+  policyMatch:z.enum(['matched','mismatch','unknown']),
+}).strict();
+router.post('/:id/gateway-lifecycle', authenticate, requireSuperAdmin,
+  validate(z.object({proof:gatewayLifecycleProofSchema,signature:z.string().regex(/^[a-f0-9]{64}$/),receipt:z.string().max(65_536).optional()}).strict()),
+  applyGatewayLifecycle);
+router.get('/:id/gateway-lifecycle-status/:domain/:generation',authenticate,requireSuperAdmin,readGatewayLifecycleStatus);
+router.get('/:id/gateway-lifecycle-operation/:domain/:operationId',authenticate,requireSuperAdmin,readGatewayLifecycleOperation);
 
 // Portfolio-wide totals for the admin Sites list page (Super-admin sees
 // everything; brand-admin sees only their assigned sites).

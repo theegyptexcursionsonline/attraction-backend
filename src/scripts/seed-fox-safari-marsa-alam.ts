@@ -30,6 +30,7 @@
  */
 
 import fs from 'fs';
+import { gatewaySafeSeedFilter } from '../services/gatewayDomainScope';
 import { departureAvailabilityType } from '../utils/departureAvailability';
 import { FOX_MARSA_ALAM_TOURS, FOX_MARSA_ALAM_IMG } from './seed-fox-safari-marsa-alam.catalogue';
 import type { FoxTour } from './seed-fox-safari-marsa-alam.catalogue';
@@ -704,7 +705,7 @@ async function applyPlan(): Promise<void> {
     const previewAccessCode = existingTenant?.previewAccessCode || generatePreviewAccessCode();
     const previewAccessCodeUpdatedAt = existingTenant?.previewAccessCodeUpdatedAt || new Date();
     const tenant = await Tenant.findOneAndUpdate(
-      { slug: TENANT_SLUG },
+      gatewaySafeSeedFilter(TENANT_SLUG, existingTenant?.gatewayDomainRevision),
       {
         $set: {
           ...FOX_TENANT,

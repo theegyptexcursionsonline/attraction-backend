@@ -44,7 +44,7 @@ const THANKYOU_MIN_AGO = 6 * HOUR;
 const THANKYOU_MAX_AGO = 72 * HOUR;
 
 const TENANT_EMAIL_FIELDS =
-  'name slug customDomain domainMigrated theme logo contactInfo defaultLanguage defaultCurrency timezone';
+  'name slug customDomain domainMigrated gatewayVerifiedEmailDomain gatewayEmailState gatewayEmailManaged gatewayOwnedCount theme logo contactInfo defaultLanguage defaultCurrency timezone';
 
 export interface ReminderSweepResult {
   remindersSent: number;

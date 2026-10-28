@@ -41,6 +41,31 @@ describe('getEmailBrand — brand-domain link selection', () => {
     expect(brand.slug).toBe('newclient');
   });
 
+  it('uses a verified gateway email domain after activation, without changing legacy behavior', () => {
+    const tenant={name:'Acme',slug:'acme',customDomain:'acme.com',domainMigrated:false};
+    expect(getEmailBrand(tenant).origin).not.toBe('https://acme.com');
+    expect(getEmailBrand({...tenant,gatewayVerifiedEmailDomain:'acme.com',gatewayEmailState:'verified',gatewayEmailManaged:true}).origin).toBe('https://acme.com');
+  });
+
+  it('fails closed when the stored verified gateway domain no longer matches the primary', () => {
+    const tenant={name:'Acme',slug:'acme',customDomain:'makadihorseclub.com',domainMigrated:true,gatewayVerifiedEmailDomain:'other.com',gatewayEmailState:'verified' as const,gatewayEmailManaged:true};
+    const brand=getEmailBrand(tenant);
+    expect(brand.origin).not.toBe('https://makadihorseclub.com');
+    expect(brand.slug).toBe('acme');
+  });
+
+  it('preserves unrelated legacy email behavior even when an unmanaged new field is null', () => {
+    const brand=getEmailBrand({name:'Acme',slug:'acme',customDomain:'acme.com',domainMigrated:true,gatewayEmailState:null});
+    expect(brand.origin).toBe('https://acme.com');
+  });
+
+  it('falls back to the safe shared origin for managed unverified email links', () => {
+    const brand=getEmailBrand({name:'Acme',slug:'acme',customDomain:'makadihorseclub.com',domainMigrated:true,
+      gatewayVerifiedEmailDomain:'makadihorseclub.com',gatewayEmailManaged:true,gatewayEmailState:'unverified'});
+    expect(brand.origin).not.toBe('https://makadihorseclub.com');
+    expect(brand.slug).toBe('acme');
+  });
+
   it('falls back to the platform brand + shared origin with no tenant', () => {
     const brand = getEmailBrand(null);
     expect(brand.name).toBe('Foxes Network');

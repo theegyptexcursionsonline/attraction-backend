@@ -9,6 +9,7 @@
  */
 
 import { connectDatabase, disconnectDatabase } from '../config/database';
+import { legacyDomainWriteBlocked } from '../services/gatewayDomainScope';
 import { Tenant } from '../models/Tenant';
 import { Attraction } from '../models/Attraction';
 import { User } from '../models/User';
@@ -279,6 +280,7 @@ async function main(): Promise<void> {
     if (tenant) {
       console.log(`Tenant already exists: ${tenant.name} (_id=${tenant._id})`);
     } else {
+      if (legacyDomainWriteBlocked(TENANT_DATA.customDomain)) throw new Error('Scoped gateway domains cannot be changed by a legacy seed');
       tenant = await Tenant.create(TENANT_DATA);
       console.log(`Created tenant: ${tenant.name} (_id=${tenant._id})`);
     }
