@@ -128,6 +128,12 @@ describe('a sign-up with the switch on', () => {
     await login(email).expect(200);
   });
 
+  it('still signs up when the site header names no known site', async () => {
+    await request(server).post('/api/auth/register').set('X-Tenant-ID', 'www.no-such-site.example')
+      .send({ email: 'qa-unknown-site@example.invalid', password: PASSWORD, firstName: 'Anna', lastName: 'Smith' }).expect(201);
+    expect(verificationMail.mock.calls.at(-1)?.[3]).toBeNull();
+  });
+
   it('refuses an expired link', async () => {
     await register('qa-expired@example.invalid').expect(201);
     const token = lastToken();

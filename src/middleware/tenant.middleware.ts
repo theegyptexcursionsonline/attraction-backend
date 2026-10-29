@@ -159,6 +159,38 @@ export const optionalTenant = async (
   next: NextFunction
 ): Promise<void> => resolveOptionalTenant(req, res, next, PUBLIC_TENANT_STATUSES);
 
+/**
+ * The site an account request comes from, when it can be told: a known site brands the account's emails, and an
+ * identifier no site answers to (a host name stored differently, a stale slug) leaves the request without one rather
+ * than refusing a sign-up or a sign-in over it.
+ */
+export const accountRequestTenant = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const identifier = typeof req.headers['x-tenant-id'] === 'string' ? req.headers['x-tenant-id'].trim() : '';
+    if (identifier && identifier.length <= 253) {
+      const isObjectId = Types.ObjectId.isValid(identifier);
+      const tenant = await Tenant.findOne({
+        $or: [
+          ...(isObjectId ? [{ _id: identifier }] : []),
+          { slug: identifier },
+          { domain: identifier },
+          { customDomain: identifier },
+          { customDomain: identifier.replace(/^www\./, '') },
+        ],
+        status: { $in: PUBLIC_TENANT_STATUSES },
+      });
+      if (tenant) req.tenant = tenant;
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Authenticated launch/readiness tools must be able to inspect a tenant that is
 // pending, suspended or inactive so the exact blocking condition remains
 // visible. Assignment boundaries are still enforced by resolveOptionalTenant.

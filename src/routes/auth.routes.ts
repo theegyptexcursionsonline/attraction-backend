@@ -19,7 +19,7 @@ import {
 } from '../controllers/auth.controller';
 import { authenticate, optionalAuth } from '../middleware/auth.middleware';
 import { validate } from '../middleware/validate.middleware';
-import { optionalTenant } from '../middleware/tenant.middleware';
+import { accountRequestTenant } from '../middleware/tenant.middleware';
 import { authLimiter, passwordResetLimiter, registerLimiter } from '../middleware/rate-limit.middleware';
 import {
   registerSchema,
@@ -59,7 +59,7 @@ const router = Router();
  *         $ref: '#/components/responses/ValidationError'
  */
 // The site a sign-up comes from (X-Tenant-ID) brands its confirmation email and links back to it.
-router.post('/register', registerLimiter, authLimiter, validate(registerSchema), optionalTenant, register);
+router.post('/register', registerLimiter, authLimiter, validate(registerSchema), accountRequestTenant, register);
 
 /**
  * @swagger
@@ -176,10 +176,10 @@ router.post('/refresh-token', refreshToken);
 router.post('/forgot-password', passwordResetLimiter, validate(forgotPasswordSchema), forgotPassword);
 
 /** Confirm a new account's email from the emailed link; signs the account in. */
-router.post('/verify-email', authLimiter, validate(verifyEmailSchema), optionalTenant, verifyEmail);
+router.post('/verify-email', authLimiter, validate(verifyEmailSchema), accountRequestTenant, verifyEmail);
 
 /** Send a new confirmation link. Answers the same whether or not an account is waiting. */
-router.post('/resend-verification', passwordResetLimiter, validate(resendVerificationSchema), optionalTenant, resendVerification);
+router.post('/resend-verification', passwordResetLimiter, validate(resendVerificationSchema), accountRequestTenant, resendVerification);
 
 /**
  * @swagger
