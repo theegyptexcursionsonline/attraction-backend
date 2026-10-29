@@ -1871,13 +1871,22 @@ const PROGRAMMES_B = {
     tenant: EEO,
     source: 'shaab-samadai-dolphin-sanctuary-snorkel-cruise-from-marsa-alam',
     category: WATER,
-    // The record's only option is named "National Park Fee (Adult)" at 100 and 53, while the same record sells the
-    // park fee as a 12 extra and lists a 10 euro park fee as not included: the price is the client's to confirm,
-    // so the trip is sold by enquiry (checklist C4) and the option is named only for the drift check.
+    // The record's only option is the trip itself under a wrong name: it is titled "National Park Fee (Adult)" but
+    // describes the cruise, at 100 adult and 53 child from 10:00. The owner's rule for a trip without a usable price
+    // (22 Oct 2026: book it at the best price on record, never "ask us") puts the client's own bookable option first,
+    // so the day sells at it under its own name, and the price stays on the client's list to confirm. The park fee
+    // stays outside the price: the record lists it as not included and its 12 extra is bound to no option.
     options: ['national-park-fee-adult-d39334dec233'],
+    rename: {
+      'national-park-fee-adult-d39334dec233': {
+        name: 'Shaab Samadai snorkelling boat day',
+        description: 'Hotel pickup in Marsa Alam, two guided snorkelling sessions at Shaab Samadai and a buffet lunch on board.',
+      },
+    },
+    childNote: CHILD_NOTE,
     addons: [],
-    departures: [],
-    enquiry: 'This trip is booked by enquiry while the team confirms its price. Send your date and hotel through the contact page, and the team replies with the price and the pickup time.',
+    departures: ['10:00'],
+    departureLabels: { '10:00': 'Morning' },
     omit: { exclusions: ['wetsuit available Additional fee (10€/Person)'] },
     add: { exclusions: ['A wetsuit, which can be hired on the day'] },
     // The record's description names Dolphin House, a reef off Hurghada, and promises a swim "alongside wild spinner
@@ -1919,12 +1928,12 @@ const SAMADAI_TRIP = {
   path: 'shaab-samadai-snorkelling-boat-day',
   price: PROGRAMMES_B.SHAAB_SAMADAI,
   title: 'Shaab Samadai Snorkelling Boat Day from Marsa Alam',
-  short: 'Seven hours from Marsa Alam: two guided snorkelling sessions at the reef of Shaab Samadai and a buffet lunch on the boat. Booked by enquiry.',
-  description: 'A boat day to Shaab Samadai, the horseshoe reef south of Marsa Alam whose lagoon spinner dolphins often use to rest. The car collects you from your hotel in Marsa Alam, and the boat sails out to the reef.\n\nThere are two guided snorkelling sessions with the equipment and life jackets, refreshments and soft drinks, and a buffet lunch on board. Dolphins are wild animals, so no boat can promise a sighting. The park fee, a wetsuit and pickup from North and South Marsa Alam are paid separately. The trip is booked by enquiry while the team confirms its price.',
+  short: 'Seven hours from Marsa Alam: two guided snorkelling sessions at the reef of Shaab Samadai and a buffet lunch on the boat.',
+  description: 'A boat day to Shaab Samadai, the horseshoe reef south of Marsa Alam whose lagoon spinner dolphins often use to rest. The car collects you from your hotel in Marsa Alam, and the boat sails out to the reef.\n\nThere are two guided snorkelling sessions with the equipment and life jackets, refreshments and soft drinks, and a buffet lunch on board. Dolphins are wild animals, so no boat can promise a sighting. The park fee, a wetsuit and pickup from North and South Marsa Alam are paid separately.',
   highlights: ['The reef of Shaab Samadai', 'Two guided snorkelling sessions', 'A buffet lunch on board', 'Hotel pickup in Marsa Alam'],
   seo: {
     metaTitle: 'Shaab Samadai Snorkelling Boat Day from Marsa Alam',
-    metaDescription: 'Seven hours from Marsa Alam: two guided snorkelling sessions at Shaab Samadai, a buffet lunch on board and hotel pickup. Booked by enquiry.',
+    metaDescription: 'Seven hours from Marsa Alam: two guided snorkelling sessions at Shaab Samadai, a buffet lunch on board and hotel pickup.',
   },
   images: [PHOTO_B.dolphinsAndSwimmer],
   imageAlts: [ALT_B.dolphinsAndSwimmer],

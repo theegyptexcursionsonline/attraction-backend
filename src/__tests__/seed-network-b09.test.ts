@@ -175,13 +175,18 @@ describe('batch B09: the network build queue', () => {
     expect(gouna.needToKnow.join('\n')).toMatch(/certified divers/);
   });
 
-  it('sells Shaab Samadai by enquiry, without a price, and never as Dolphin House', () => {
+  it('sells Shaab Samadai at the record\'s own option under its own name, and never as Dolphin House', () => {
     for (const site of [siteOf('shaab-samadai'), siteOf('marsa-alam-red-sea-egypt')]) {
       const samadai = built(site).find((document) => /shaab-samadai/.test(document.slug))!;
-      expect(samadai.enquiryOnly).toBe(true);
-      expect([samadai.pricingOptions, samadai.addons, samadai.entryWindows, samadai.priceFrom]).toEqual([[], [], [], undefined]);
-      expect(samadai.needToKnow.join('\n')).toMatch(/booked by enquiry/);
-      expect(guestCopy(samadai)).not.toMatch(/Dolphin House|Free cancellation|full refund/i);
+      expect(samadai.enquiryOnly).not.toBe(true);
+      // The record titles its one option "National Park Fee (Adult)"; the site sells it as the day it describes.
+      expect(samadai.pricingOptions.map((option: Record<string, unknown>) => [option.name, option.price, option.childPrice])).toEqual([
+        ['Shaab Samadai snorkelling boat day', 100, 53],
+      ]);
+      expect(samadai.priceFrom).toBe(100);
+      expect(samadai.addons).toEqual([]);
+      expect(JSON.stringify(samadai.entryWindows)).toMatch(/10:00/);
+      expect(guestCopy(samadai)).not.toMatch(/National Park Fee \(Adult\)|by enquiry|Dolphin House|Free cancellation|full refund/i);
       expect(site.foreignPlaces.test('home to the famous Dolphin House')).toBe(true);
     }
   });
