@@ -974,7 +974,7 @@ const PROGRAMMES_A = {
     omit: { exclusions: ['Transportation from El Gouna or Sahl Hasheeshare only add-ons'] },
     add: {
       exclusions: ['Pickup from outside Makadi Bay'],
-      needToKnow: ['Ask the team before you book whether the dives suit your level: the record does not say whether a certification is needed.'],
+      needToKnow: ['Ask the team before you book whether these dives suit your level and whether you need a diving certificate.'],
     },
     itinerary: [
       { time: '07:45', title: 'Hotel pickup', description: 'The car collects you from your hotel in Makadi Bay and drives to the marina.' },
@@ -1003,7 +1003,7 @@ const PROGRAMMES_A = {
     add: {
       // The record charges only for transfers "outside of Hurghada" and names an air-conditioned vehicle.
       inclusions: [PICKUP_HURGHADA],
-      needToKnow: ['Ask the team before you book whether the dives suit your level: the record does not say whether a certification is needed.'],
+      needToKnow: ['Ask the team before you book whether these dives suit your level and whether you need a diving certificate.'],
     },
     // The record's schedule names its sites by map code.
     itinerary: [
@@ -2119,10 +2119,10 @@ export const B09B: NetworkBatch = {
       slugPrefix: 'ssd-',
       foreignPlaces: NOT_SAMADAI,
       tagline: 'Snorkelling at the reef of Shaab Samadai',
-      description: 'Shaab Samadai sells one trip: a boat day from Marsa Alam to the horseshoe reef of Shaab Samadai, with two guided snorkelling sessions and a buffet lunch on board. Spinner dolphins often rest in its lagoon; they are wild animals, so no boat can promise a sighting.\n\nThe car collects you from your hotel in Marsa Alam and brings you back. The trip is booked by enquiry while the team confirms its price: send your date and hotel through the contact page.',
+      description: 'Shaab Samadai sells one trip: a boat day from Marsa Alam to the horseshoe reef of Shaab Samadai, with two guided snorkelling sessions and a buffet lunch on board. Spinner dolphins often rest in its lagoon; they are wild animals, so no boat can promise a sighting.\n\nThe car collects you from your hotel in Marsa Alam and brings you back. Hold a place online and pay later, or ask the team first.',
       seo: {
         metaTitle: 'Shaab Samadai Snorkelling Trip from Marsa Alam',
-        metaDescription: 'A boat day from Marsa Alam to the reef of Shaab Samadai: two guided snorkelling sessions, a buffet lunch and hotel pickup. Booked by enquiry.',
+        metaDescription: 'A boat day from Marsa Alam to the reef of Shaab Samadai: two guided snorkelling sessions, a buffet lunch and hotel pickup.',
         keywords: ['shaab samadai', 'samadai reef snorkelling', 'shaab samadai marsa alam', 'marsa alam snorkelling trip', 'samadai boat trip'],
       },
       theme: { primaryColor: '#0F4C5C', secondaryColor: '#EAF5F4', accentColor: '#E9A23B' },

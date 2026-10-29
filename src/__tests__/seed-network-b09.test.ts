@@ -59,6 +59,8 @@ function expectCompleteTrip(site: NetworkSite, document: Record<string, any>): v
   expect([...document.inclusions, ...document.exclusions].filter((line: string) => CONDITIONAL.test(line))).toEqual([]);
   expect(guestCopy(document)).not.toMatch(/authentic|\bexpert\b|breathtaking|spectacular|\bbest\b|unforgettable|world.s largest|famous|Pickup location|drop-off locations|\\times/i);
   expect(guestCopy(document)).not.toMatch(RECORD_NAMES);
+  // A guest reads the trip, not our notes on it: no line speaks of the record it was written from.
+  expect(guestCopy(document)).not.toMatch(/\brecords?\b|\bsnapshot\b/i);
   // No wildlife is promised: a guest is told where to look, never what it will see.
   expect(guestCopy(document)).not.toMatch(/swim with|swim alongside|you will see (?:turtles|dugongs|dolphins)/i);
   for (const field of ['inclusions', 'exclusions', 'needToKnow', 'whatToBring'] as const) {
@@ -217,6 +219,14 @@ describe('batch B09: the network build queue', () => {
     expect(turtle.needToKnow.join('\n')).toMatch(/Hotel pickup and drop-off in Makadi Bay is an extra/);
     expect([turtle.rating, turtle.reviewCount]).toEqual([0, 0]);
     expect(guestCopy(turtle)).not.toMatch(/Best chance|captures your turtle/i);
+  });
+
+  it('never sends a guest to enquire on a site whose trips are all booked online', () => {
+    for (const site of B09) {
+      expect(built(site).some((document) => document.enquiryOnly)).toBe(false);
+      const copy = [site.tagline, site.description, site.seo.metaTitle, site.seo.metaDescription].join('\n');
+      expect(copy).not.toMatch(/enquir|contact page/i);
+    }
   });
 
   it('counts the trips its copy names', () => {
