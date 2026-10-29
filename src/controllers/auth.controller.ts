@@ -24,6 +24,7 @@ import {
   sendWelcomeEmail,
 } from '../services/email.service';
 import { createAdminNotifications } from '../services/notification.service';
+import { screenSignup } from '../utils/signupScreening';
 import { createTwoFactorSetup, generateTwoFactorRecoveryCodes, verifyTwoFactorCode } from '../utils/twoFactor';
 
 const ADMIN_ROLES = new Set(['super-admin', 'brand-admin', 'manager', 'editor', 'viewer']);
@@ -120,6 +121,14 @@ export const register = async (
 ): Promise<void> => {
   try {
     const { email, password, firstName, lastName, phone, country } = req.body;
+
+    // A scripted sign-up is refused before any account, welcome email or admin notice is made.
+    const screened = screenSignup({ firstName, lastName, email });
+    if (screened) {
+      console.info('[auth] refused a scripted sign-up', { reason: screened, ip: req.ip });
+      sendError(res, 'We could not create this account. Please check your name and email address, or contact us.', 400);
+      return;
+    }
 
     // Check if user exists
     const existingUser = await User.findOne({ email: email.toLowerCase() });

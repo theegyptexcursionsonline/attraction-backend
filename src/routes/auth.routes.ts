@@ -17,7 +17,7 @@ import {
 } from '../controllers/auth.controller';
 import { authenticate, optionalAuth } from '../middleware/auth.middleware';
 import { validate } from '../middleware/validate.middleware';
-import { authLimiter, passwordResetLimiter } from '../middleware/rate-limit.middleware';
+import { authLimiter, passwordResetLimiter, registerLimiter } from '../middleware/rate-limit.middleware';
 import {
   registerSchema,
   loginSchema,
@@ -53,7 +53,7 @@ const router = Router();
  *       400:
  *         $ref: '#/components/responses/ValidationError'
  */
-router.post('/register', authLimiter, validate(registerSchema), register);
+router.post('/register', registerLimiter, authLimiter, validate(registerSchema), register);
 
 /**
  * @swagger

@@ -28,6 +28,7 @@ export {
 export {
   apiLimiter,
   authLimiter,
+  registerLimiter,
   passwordResetLimiter,
   bookingLimiter,
   publicWriteLimiter,

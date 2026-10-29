@@ -23,6 +23,20 @@ export const apiLimiter = rateLimit({
   skip: (req) => shouldSkipRateLimit(req.ip),
 });
 
+// Account creation, counted whether it succeeds or not: the auth limiter skips successful requests, so on its own it
+// let a script register accounts without limit.
+export const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,
+  message: {
+    success: false,
+    error: 'Too many accounts created from this connection. Please try again later.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => shouldSkipRateLimit(req.ip),
+});
+
 // Strict limiter for auth endpoints
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
