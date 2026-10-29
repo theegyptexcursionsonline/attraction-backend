@@ -77,12 +77,18 @@ export interface PriceSpec {
    * Exact programme lines to leave out because they describe an option the trip does not sell. A line the
    * programme no longer has stops the run, so a changed programme is read again before it is sold.
    */
-  omit?: { inclusions?: string[]; exclusions?: string[]; needToKnow?: string[] };
+  omit?: { inclusions?: string[]; exclusions?: string[]; needToKnow?: string[]; whatToBring?: string[] };
   /**
    * Lines the options sold make true (the dinner a dinner option includes), and what they leave out where the
    * programme only says it conditionally ("Snorkeling gear (if selected from add-ons)").
    */
   add?: { inclusions?: string[]; exclusions?: string[]; needToKnow?: string[] };
+  /**
+   * The trip is sold by enquiry only (checklist C4): the record's booking option is still named, so the run checks
+   * it against the live record, but the trip carries no price, no option, no extra and no departure, and the page
+   * leads to the contact route. The line says why, in the site's words, and is added to "Need to know".
+   */
+  enquiry?: string;
 }
 
 export interface NetworkTrip {
@@ -98,6 +104,12 @@ export interface NetworkTrip {
   imageAlts: string[];
   /** The programme itself includes pickup from this site's area, so the site's pickup note does not apply. */
   pickupIncluded?: boolean;
+  /**
+   * Where this trip starts, for a site whose trips start in more than one town (the Grand Egyptian Museum from Cairo
+   * and from Sharm El Sheikh, diving from Hurghada, Sharm El Sheikh and Dahab): its destination, its pickup area and
+   * its coordinates. A trip without one starts where the site does.
+   */
+  where?: { city: string; area: string; coordinates: { lat: number; lng: number } };
 }
 
 export interface NetworkSite {
@@ -198,6 +210,7 @@ export function validateBatch(batch: NetworkBatch): string[] {
     const paths = new Set<string>();
     for (const trip of site.trips) {
       const slug = `${site.slugPrefix}${trip.path}`;
+      if (trip.where && !Object.prototype.hasOwnProperty.call(TOWN_REGIONS, trip.where.city)) errors.push(`${slug}: no region on record for ${trip.where.city}; add the town to TOWN_REGIONS.`);
       if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(trip.path)) errors.push(`${slug}: invalid public path.`);
       if (paths.has(trip.path)) errors.push(`${slug}: duplicate public path.`);
       if (tripSlugs.has(slug)) errors.push(`${slug}: duplicate trip slug.`);
@@ -230,6 +243,7 @@ export function validateBatch(batch: NetworkBatch): string[] {
         spec.childNote || '',
         ...Object.values(spec.departureLabels || {}),
         spec.duration || '',
+        spec.enquiry || '',
         ...(spec.itinerary || []).flatMap((step) => [step.title, step.description]),
         ...(spec.add?.inclusions || []),
         ...(spec.add?.exclusions || []),
@@ -377,7 +391,7 @@ const cleanList = (items: unknown): string[] =>
 const once = (items: string[]): string[] => [...new Set(items)];
 
 /** A programme list without the exact lines the trip leaves out; a line that is not there stops the run. */
-function withoutLines(site: Pick<NetworkSite, 'slugPrefix'>, trip: NetworkTrip, field: 'inclusions' | 'exclusions' | 'needToKnow', items: unknown): unknown[] {
+function withoutLines(site: Pick<NetworkSite, 'slugPrefix'>, trip: NetworkTrip, field: 'inclusions' | 'exclusions' | 'needToKnow' | 'whatToBring', items: unknown): unknown[] {
   const list = Array.isArray(items) ? items : [];
   const drop = trip.price.omit?.[field] || [];
   for (const line of drop) {
@@ -401,7 +415,11 @@ export function withPickupCutoff(options: Record<string, unknown>[], availabilit
 
 /** The trip document for one site, from its written copy and the named programme. */
 export function tripDocument(site: TripSiteFacts, trip: NetworkTrip, programme: SourceDoc, index: number, tenantId: unknown): Record<string, unknown> {
-  const facts = programmeFacts(site, trip, programme);
+  // The published facts are always read and checked, an enquiry trip's too; an enquiry trip then sells none of them.
+  const published = programmeFacts(site, trip, programme);
+  const enquiry = trip.price.enquiry?.trim();
+  const facts = enquiry ? { ...published, pricingOptions: [], addons: [], entryWindows: [], priceFrom: undefined } : published;
+  const place = trip.where || site;
   const inclusions = once([...cleanList(withoutLines(site, trip, 'inclusions', programme.inclusions)), ...cleanList(trip.price.add?.inclusions)]);
   const pickup = programme.hasHotelPickup === true || inclusions.some((item) => /hotel pickup|pickup and drop-off at your hotel/i.test(item));
   if (!pickup) throw new Error(`${site.slugPrefix}${trip.path}: the programme does not include hotel pickup, which every network trip promises.`);
@@ -413,6 +431,7 @@ export function tripDocument(site: TripSiteFacts, trip: NetworkTrip, programme: 
   // whatever its programme says: the Marsa Mubarak dugong trip publishes one 21:00 slot, which does
   // not fit a snorkelling day, and a 'time-slots' trip with no departure could not be booked at all.
   const availabilityType = facts.entryWindows.length ? programme.availability?.type || departureAvailabilityType(facts.entryWindows) : 'date-only';
+  const notes = enquiry ? [...facts.notes.filter((note) => !CHILD_RATE.test(note)), enquiry] : facts.notes;
   return {
     slug: `${site.slugPrefix}${trip.path}`,
     pathSlug: trip.path,
@@ -424,33 +443,33 @@ export function tripDocument(site: TripSiteFacts, trip: NetworkTrip, programme: 
     imageAltTexts: trip.images.map((url, imageIndex) => ({ url, alt: trip.imageAlts[imageIndex] || trip.title })),
     category: programme.category || 'adventure',
     ...(programme.subcategory ? { subcategory: programme.subcategory } : {}),
-    destination: { city: site.city, country: 'Egypt', coordinates: site.coordinates },
+    destination: { city: place.city, country: 'Egypt', coordinates: place.coordinates },
     ...(trip.price.duration || programme.duration ? { duration: trip.price.duration || programme.duration } : {}),
     languages: cleanList(programme.languages),
     rating: 0,
     reviewCount: 0,
     currency: site.currency,
-    enquiryOnly: false,
+    enquiryOnly: Boolean(enquiry),
     pricingOptions: withPickupCutoff(facts.pricingOptions, availabilityType),
-    priceFrom: facts.priceFrom,
+    ...(facts.priceFrom === undefined ? {} : { priceFrom: facts.priceFrom }),
     addons: facts.addons,
     entryWindows: facts.entryWindows,
     itinerary,
     highlights: trip.highlights,
     inclusions,
     exclusions: once([...cleanList(withoutLines(site, trip, 'exclusions', programme.exclusions)), ...cleanList(trip.price.add?.exclusions)]),
-    whatToBring: once(cleanList(programme.whatToBring)),
+    whatToBring: once(cleanList(withoutLines(site, trip, 'whatToBring', programme.whatToBring))),
     needToKnow: once([
       ...cleanList(withoutLines(site, trip, 'needToKnow', programme.needToKnow)),
       ...cleanList(trip.price.add?.needToKnow),
-      ...facts.notes,
+      ...notes,
       ...(site.pickupNote && !trip.pickupIncluded ? [site.pickupNote] : []),
     ]),
     participantRequirements: once(cleanList(programme.participantRequirements)),
     accessibility: once(cleanList(programme.accessibility)),
-    gettingThere: [{ mode: 'Hotel pickup', description: `Pickup and drop-off at your hotel in ${site.area}.` }],
+    gettingThere: [{ mode: 'Hotel pickup', description: `Pickup and drop-off at your hotel in ${place.area}.` }],
     meetingPoint: {
-      address: `Your hotel in ${site.area}`,
+      address: `Your hotel in ${place.area}`,
       instructions: 'The team confirms your pickup time when it confirms your booking.',
       mapUrl: '',
     },
@@ -484,6 +503,7 @@ const TOWN_REGIONS: Readonly<Record<string, string | null>> = {
   'Makadi Bay': 'Red Sea',
   'Marsa Alam': 'Red Sea',
   'Sharm El Sheikh': 'South Sinai',
+  Dahab: 'South Sinai',
   Cairo: null,
   Luxor: null,
   Fayoum: null,
@@ -560,6 +580,9 @@ async function loadBatch(id: string | null): Promise<NetworkBatch> {
     b08b: async () => (await import('./network-sites/b08')).B08B,
     b08c: async () => (await import('./network-sites/b08')).B08C,
     b08d: async () => (await import('./network-sites/b08')).B08D,
+    b09a: async () => (await import('./network-sites/b09')).B09A,
+    b09b: async () => (await import('./network-sites/b09')).B09B,
+    b09c: async () => (await import('./network-sites/b09')).B09C,
   };
   if (!id || !batches[id]) throw new Error(`Pass --batch=<${Object.keys(batches).join('|')}>.`);
   return batches[id]();
@@ -640,7 +663,7 @@ function planSiteTrips(site: NetworkSite, sources: Map<string, SourceDoc>, tenan
 
 const tripSummary = (document: Record<string, unknown>) => ({
   slug: document.slug,
-  from: `${String(document.priceFrom)} ${String(document.currency)}`,
+  from: document.enquiryOnly ? 'enquiry only' : `${String(document.priceFrom)} ${String(document.currency)}`,
   options: (document.pricingOptions as Array<{ name: string; price: number; childPrice?: number; pricingModel?: string; maxParticipants?: number }>)
     .map((option) => `${option.name}: ${option.price}${option.childPrice !== undefined ? ` (child ${option.childPrice})` : ''}${option.pricingModel === 'per-booking' ? ` per booking, up to ${option.maxParticipants}` : ''}`),
   departures: (document.entryWindows as Array<{ label: string; startTime: string }>).map((window) => `${window.label} ${window.startTime}`),

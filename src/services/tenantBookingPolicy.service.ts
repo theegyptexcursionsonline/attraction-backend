@@ -11,6 +11,16 @@ import { ITenant } from '../types';
 const BOOKING_CREATION_CLOSED_TENANT_SLUGS = [
   'makadi-horse-club',
   'king-of-egypt-tours',
+  // The network queue's eight new sites (batch B09): seeded for the owner's review and closed to real bookings
+  // until the owner approves and opens each one. Opening a site is removing its slug.
+  'grand-egyptian-museum',
+  'hurghada-boat-tour',
+  'dive2egypt',
+  'marsa-alam-red-sea-egypt',
+  'wadi-el-gemal-reserve',
+  'shaab-samadai',
+  'bahria-oasis',
+  'turtle-bay-hurghada',
 ] as const;
 
 export class TenantBookingCreationClosedError extends AppError {

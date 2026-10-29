@@ -18,6 +18,8 @@
     "seed:fox-family-sites": "ts-node src/scripts/seed-fox-family-sites.ts",
     "seed:network-sites": "ts-node src/scripts/seed-network-sites.ts",
     "seed:network-high-ten": "ts-node src/scripts/seed-network-high-ten.ts",
+    "read:eeo-snapshot": "ts-node src/scripts/read-eeo-snapshot.ts",
+    "fix:network-unbacked-ratings": "ts-node src/scripts/fix-network-unbacked-ratings.ts",
     "images:queen-magi-islands": "ts-node src/scripts/generate-queen-magi-island-images.ts",
     "images:cave-divers": "ts-node src/scripts/generate-cave-divers-images.ts",
     "images:cave-divers:import": "ts-node src/scripts/import-cave-divers-images.ts",

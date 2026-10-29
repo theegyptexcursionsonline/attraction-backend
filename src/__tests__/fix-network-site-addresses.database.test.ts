@@ -44,10 +44,11 @@ describe('siteAddress', () => {
     expect(siteAddress('Sharm El Sheikh')).toBe('Sharm El Sheikh, South Sinai, Egypt');
     expect(siteAddress('Cairo')).toBe('Cairo, Egypt');
     expect(siteAddress('Luxor')).toBe('Luxor, Egypt');
+    expect(siteAddress('Dahab')).toBe('Dahab, South Sinai, Egypt');
   });
 
   it('refuses a town it has no region for, so nothing is published under a guessed one', () => {
-    expect(() => siteAddress('Dahab')).toThrow('Dahab: no region on record for this town.');
+    expect(() => siteAddress('Siwa')).toThrow('Siwa: no region on record for this town.');
   });
 });
 

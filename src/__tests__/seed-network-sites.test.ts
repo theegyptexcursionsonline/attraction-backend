@@ -304,7 +304,8 @@ describe('network sites seed: what the batch check refuses', () => {
   });
 
   it('refuses a town with no region on record', () => {
-    expect(validateBatch(batch([site({ city: 'Dahab' })]))).toContain('safari-test-town: no region on record for Dahab; add the town to TOWN_REGIONS.');
+    // Dahab has been on record since the network queue's batch; Siwa still is not.
+    expect(validateBatch(batch([site({ city: 'Siwa' })]))).toContain('safari-test-town: no region on record for Siwa; add the town to TOWN_REGIONS.');
   });
 
   it('refuses claims, brands, other places, missing photos and paths it cannot serve', () => {

@@ -31,6 +31,9 @@ describe('tenant booking-creation closure policy', () => {
 
   it('keeps the King of Egypt Tours preview closed to real bookings, by slug', () => {
     expect(isTenantBookingCreationClosed({ slug: 'king-of-egypt-tours' })).toBe(true);
+    for (const slug of ['grand-egyptian-museum', 'hurghada-boat-tour', 'dive2egypt', 'marsa-alam-red-sea-egypt', 'wadi-el-gemal-reserve', 'shaab-samadai', 'bahria-oasis', 'turtle-bay-hurghada']) {
+      expect(isTenantBookingCreationClosed({ slug })).toBe(true);
+    }
     expect(() => assertTenantBookingCreationAllowed({ slug: 'king-of-egypt-tours' }))
       .toThrow(TenantBookingCreationClosedError);
     // A look-alike slug is a different site and is not closed by this policy.
@@ -54,7 +57,12 @@ describe('tenant booking-creation closure policy', () => {
       .rejects.toBeInstanceOf(TenantBookingCreationClosedError);
     expect(findOne).toHaveBeenCalledWith({
       _id: { $in: [otherId.toString(), makadiId.toString()] },
-      slug: { $in: ['makadi-horse-club', 'king-of-egypt-tours'] },
+      slug: { $in: [
+        'makadi-horse-club', 'king-of-egypt-tours',
+        // The network queue's eight new sites stay closed until the owner opens each one.
+        'grand-egyptian-museum', 'hurghada-boat-tour', 'dive2egypt', 'marsa-alam-red-sea-egypt',
+        'wadi-el-gemal-reserve', 'shaab-samadai', 'bahria-oasis', 'turtle-bay-hurghada',
+      ] },
     });
 
     findOne.mockResolvedValueOnce(null);

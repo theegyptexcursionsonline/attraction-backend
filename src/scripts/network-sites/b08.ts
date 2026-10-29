@@ -1281,7 +1281,7 @@ const SAME_PRICE = 'Children pay the same price as adults.';
 /** Marsa Mubarak's turtles and dugongs are wild: the trips say where to look, never that you will see one. */
 const WILD = 'Turtles and dugongs are wild animals, so no boat can promise a sighting.';
 
-const PROGRAMMES_C = {
+export const PROGRAMMES_C = {
   // ---- Coral Reefs Dahab --------------------------------------------------------------------------------------
   CRD_THREE_POOLS: {
     provider: 'eeo',
@@ -1669,7 +1669,7 @@ const PROGRAMMES_C = {
   },
 } satisfies Record<string, PriceSpec>;
 
-const PHOTO_C = {
+export const PHOTO_C = {
   canyonCamel: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085617/attractions-network/network-b08/coral-reefs-dahab/wpygg5o9iwxlr8lxp9q4.jpg',
   canyonWalls: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085619/attractions-network/network-b08/coral-reefs-dahab/lfsrxdbnyahmgcgfn9zl.jpg',
   layeredRock: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085620/attractions-network/network-b08/coral-reefs-dahab/ipasekbgj3xdatb6lnvs.jpg',

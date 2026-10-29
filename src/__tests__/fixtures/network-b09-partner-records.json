@@ -1,0 +1,294 @@
+{
+ "rittal-travel-egypt/desert-safari-white": {
+  "_id": "69d4b9bc3ce9482287286bc2",
+  "slug": "desert-safari-white",
+  "title": "White Desert Overnight Safari",
+  "shortDescription": "Camp under the stars in the stunning White Desert with Bedouin dinner",
+  "description": "Camp under the stars in the stunning White Desert with Bedouin dinner. A premium experience by Rittal Travel Egypt, your Class A travel partner.",
+  "images": [
+   "https://res.cloudinary.com/dm3sxllch/image/upload/v1775553754/attractions-network/attractions-network/rittal/tours/bvwm2aqwzgkfoul0cywf.jpg"
+  ],
+  "category": "desert-safari",
+  "destination": {
+   "city": "Cairo",
+   "country": "Egypt",
+   "coordinates": {
+    "lat": 30.0444,
+    "lng": 31.2357
+   }
+  },
+  "duration": "2 days",
+  "languages": [
+   "English",
+   "Arabic",
+   "German",
+   "French"
+  ],
+  "rating": 0,
+  "reviewCount": 0,
+  "priceFrom": 180,
+  "currency": "USD",
+  "pricingOptions": [
+   {
+    "id": "opt_1",
+    "name": "Standard",
+    "description": "Full guided experience",
+    "price": 180,
+    "_id": "69d4b9bc3ce9482287286bc3"
+   }
+  ],
+  "addons": [
+   {
+    "id": "addon_lunch",
+    "name": "Gourmet Lunch",
+    "price": 15,
+    "_id": "69d4b9bc3ce9482287286bc4"
+   },
+   {
+    "id": "addon_photo",
+    "name": "Photo Package",
+    "price": 20,
+    "_id": "69d4b9bc3ce9482287286bc5"
+   }
+  ],
+  "entryWindows": [
+   {
+    "label": "Morning",
+    "startTime": "07:00",
+    "endTime": "12:00",
+    "_id": "69d4b9bc3ce9482287286bc6"
+   },
+   {
+    "label": "Afternoon",
+    "startTime": "13:00",
+    "endTime": "18:00",
+    "_id": "69d4b9bc3ce9482287286bc7"
+   }
+  ],
+  "itinerary": [
+   {
+    "time": "14:00",
+    "duration": "30 min",
+    "title": "Hotel Pickup",
+    "description": "Afternoon pickup from your hotel in a 4x4 safari vehicle",
+    "_id": "69d7c73064766bb007091b8d"
+   },
+   {
+    "time": "14:30",
+    "duration": "45 min",
+    "title": "Desert Drive & Dune Bashing",
+    "description": "Exciting off-road drive through the Eastern Desert with sand dune thrills",
+    "_id": "69d7c73064766bb007091b8e"
+   },
+   {
+    "time": "15:15",
+    "duration": "45 min",
+    "title": "Bedouin Village Experience",
+    "description": "Visit a Bedouin settlement, ride camels, and learn about nomadic traditions",
+    "_id": "69d7c73064766bb007091b8f"
+   },
+   {
+    "time": "16:00",
+    "duration": "60 min",
+    "title": "Sunset & BBQ Dinner",
+    "description": "Watch the desert sunset followed by a traditional BBQ dinner under the stars",
+    "_id": "69d7c73064766bb007091b90"
+   },
+   {
+    "time": "17:00",
+    "duration": "30 min",
+    "title": "Stargazing & Return",
+    "description": "Brief stargazing session in the clear desert sky, then drive back to hotel",
+    "_id": "69d7c73064766bb007091b91"
+   }
+  ],
+  "whatToBring": [],
+  "accessibility": [],
+  "gettingThere": [],
+  "highlights": [
+   "Expert Egyptologist guide",
+   "Hotel pickup included",
+   "Skip the line access",
+   "Authentic local experience"
+  ],
+  "inclusions": [
+   "Professional guide",
+   "Transport",
+   "Entrance fees",
+   "Water"
+  ],
+  "exclusions": [
+   "Tips",
+   "Personal expenses",
+   "Lunch (optional)"
+  ],
+  "meetingPoint": {
+   "address": "",
+   "instructions": "",
+   "mapUrl": ""
+  },
+  "cancellationPolicy": "Free cancellation up to 24 hours before",
+  "instantConfirmation": true,
+  "mobileTicket": true,
+  "badges": [
+   "bestseller",
+   "free-cancellation",
+   "instant-confirm"
+  ],
+  "availability": {
+   "type": "time-slots",
+   "advanceBooking": 1
+  },
+  "seo": {
+   "keywords": []
+  },
+  "status": "active",
+  "featured": true,
+  "sortOrder": 0,
+  "operator": {
+   "name": "Rittal Travel Egypt",
+   "relationship": "own"
+  },
+  "bookingTenantSlug": "rittal-travel-egypt"
+ },
+ "makadi-bay-snorkeling/makadi-snorkel-and-turtle-bay-trip": {
+  "_id": "6a1400958ff079c3230f1b9f",
+  "slug": "makadi-snorkel-and-turtle-bay-trip",
+  "title": "Makadi Bay · Snorkel & Turtle Bay Trip",
+  "shortDescription": "A full-day boat trip combining the Makadi house reef with the seagrass turtle grounds — your best chance to snorkel beside green turtles.",
+  "description": "For everyone who wants to swim with turtles. This full-day boat trip pairs a coral-reef snorkel stop with a longer stop over the seagrass meadows where Makadi's resident green turtles feed. A marine guide briefs the group on respectful turtle-watching — keep your distance, no touching — then leads the swim. Time on a coral reef earlier in the day, lunch on board, and the headland reef on the way home. Turtle sightings are very frequent but never guaranteed; the crew knows where they graze.",
+  "images": [
+   "https://res.cloudinary.com/dm3sxllch/image/upload/v1779648884/attractions-network/tenant-heroes/royal-seascope/real/royal-seascope-real-04.jpg",
+   "https://res.cloudinary.com/dm3sxllch/image/upload/v1775676165/attractions-network/tours/sunmarine/bjfqqnau9dfzqgrbji73.jpg",
+   "https://res.cloudinary.com/dm3sxllch/image/upload/v1779648881/attractions-network/tenant-heroes/royal-seascope/real/royal-seascope-real-02.jpg",
+   "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001740/attractions-network/tours/makadi-bay-snorkeling/dqgky1xrtcddcepr82g4.jpg"
+  ],
+  "category": "water-activities",
+  "destination": {
+   "city": "Makadi Bay",
+   "country": "Egypt",
+   "coordinates": {
+    "lat": 26.9806,
+    "lng": 33.9056
+   }
+  },
+  "duration": "~6 h · 3 snorkel stops",
+  "languages": [
+   "English",
+   "Arabic",
+   "German",
+   "Russian",
+   "Italian",
+   "French"
+  ],
+  "rating": 4.699999999999999,
+  "reviewCount": 306,
+  "priceFrom": 38,
+  "currency": "USD",
+  "pricingOptions": [
+   {
+    "id": "adult",
+    "name": "Adult",
+    "description": "Full-day trip + gear + lunch · age 12+",
+    "price": 38,
+    "_id": "6a1400958ff079c3230f1ba0"
+   },
+   {
+    "id": "child",
+    "name": "Child (6-11)",
+    "description": "Reduced rate · kids lunch",
+    "price": 23,
+    "_id": "6a1400958ff079c3230f1ba1"
+   },
+   {
+    "id": "family",
+    "name": "Family pack (2A + 2C)",
+    "description": "Family group rate",
+    "price": 108,
+    "_id": "6a1400958ff079c3230f1ba2"
+   }
+  ],
+  "addons": [
+   {
+    "id": "pickup",
+    "name": "Hotel pickup & drop-off",
+    "description": "Air-conditioned van from any Makadi hotel",
+    "price": 6,
+    "_id": "6a1400958ff079c3230f1ba3"
+   },
+   {
+    "id": "photos",
+    "name": "Turtle photo package",
+    "description": "Guide captures your turtle swim · digital gallery",
+    "price": 18,
+    "_id": "6a1400958ff079c3230f1ba4"
+   },
+   {
+    "id": "wetsuit",
+    "name": "Shorty wetsuit hire",
+    "description": "Warmth for the longer day · all sizes",
+    "price": 6,
+    "_id": "6a1400958ff079c3230f1ba5"
+   }
+  ],
+  "entryWindows": [
+   {
+    "label": "Full-day departure",
+    "startTime": "08:30",
+    "endTime": "14:30",
+    "_id": "6a1400958ff079c3230f1ba6"
+   }
+  ],
+  "itinerary": [],
+  "whatToBring": [],
+  "accessibility": [],
+  "gettingThere": [],
+  "highlights": [
+   "Best chance to snorkel with green turtles",
+   "Coral reef + seagrass turtle grounds",
+   "Respectful turtle-watching briefing",
+   "Three snorkel stops",
+   "Lunch on board"
+  ],
+  "inclusions": [
+   "Marina boarding",
+   "Mask, snorkel, fins & vest",
+   "Three guided snorkel stops",
+   "Lunch + soft drinks",
+   "Marine insurance"
+  ],
+  "exclusions": [
+   "Hotel pickup (add-on)",
+   "Photos (add-on)",
+   "Tips"
+  ],
+  "meetingPoint": {
+   "address": "Makadi Bay · Red Sea coast · Hurghada",
+   "instructions": "Walk-in trips meet at the beach dive station. Boat trips meet at Makadi marina 30 min before departure. Hotel pickup is available as an add-on on boat trips.",
+   "mapUrl": "https://maps.google.com/?q=26.9806,33.9056"
+  },
+  "cancellationPolicy": "Free cancellation up to 24 hours before",
+  "instantConfirmation": true,
+  "mobileTicket": true,
+  "hasHotelPickup": true,
+  "badges": [
+   "free-cancellation",
+   "instant-confirm"
+  ],
+  "availability": {
+   "type": "date-only",
+   "advanceBooking": 30
+  },
+  "seo": {
+   "keywords": []
+  },
+  "status": "active",
+  "featured": true,
+  "sortOrder": 0,
+  "operator": {
+   "name": "Makadi Bay Snorkeling",
+   "relationship": "own"
+  },
+  "bookingTenantSlug": "makadi-bay-snorkeling"
+ }
+}
