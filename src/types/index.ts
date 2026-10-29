@@ -44,6 +44,12 @@ export interface IUser extends Document {
   twoFactorRecoveryCodeHashes?: string[];
   passwordResetToken?: string;
   passwordResetExpires?: Date;
+  emailVerificationRequired?: boolean;
+  emailVerifiedAt?: Date;
+  emailVerificationToken?: string;
+  emailVerificationExpires?: Date;
+  emailVerificationSentAt?: Date;
+  signupTenant?: Types.ObjectId;
   lastLogin?: Date;
   createdAt: Date;
   updatedAt: Date;

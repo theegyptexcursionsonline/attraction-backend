@@ -1462,6 +1462,45 @@ export const sendPasswordResetEmail = async (
 };
 
 /**
+ * Sent when someone creates an account: the account opens only once the address's owner follows the link, so a
+ * sign-up made with someone else's address never becomes an account in their name.
+ */
+export const renderEmailVerification = (
+  brand: EmailBrand,
+  input: { userName: string; verifyUrl: string }
+): { html: string; text: string } =>
+  renderActionEmailParts(brand, {
+    title: 'Confirm your email address',
+    preheader: 'Confirm your email to finish creating your account. This link expires in 24 hours.',
+    badge: { label: 'Account', tone: 'neutral' },
+    heading: 'Confirm your email address',
+    intro: `Hi ${escapeEmailHtml(firstNameOf(input.userName))}, confirm this is your email address to finish creating your account at ${escapeEmailHtml(brand.name)}. The link expires in 24 hours.`,
+    ctaLabel: 'Confirm email',
+    ctaUrl: input.verifyUrl,
+    note: "If you didn't create an account, you can safely ignore this email. No account is opened without this confirmation.",
+    whyReceived: WHY_ACCOUNT,
+  });
+
+export const sendEmailVerificationEmail = async (
+  email: string,
+  verificationToken: string,
+  userName: string,
+  tenant: EmailTenant | null
+): Promise<void> => {
+  const brand = getEmailBrand(tenant);
+  const verifyUrl = brandedLink(brand, '/verify-email', { token: verificationToken });
+  const { html, text } = renderEmailVerification(brand, { userName, verifyUrl });
+  await sendEmail({
+    to: email,
+    subject: emailSubject('Confirm your email address', brand.name),
+    html,
+    text,
+    tenant: tenant || null,
+    category: 'account',
+  });
+};
+
+/**
  * Sent after a password actually changes, whoever changed it. This is the message that lets
  * someone notice a compromised account, so it is never suppressed and never batched.
  */

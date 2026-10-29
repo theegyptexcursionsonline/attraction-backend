@@ -14,15 +14,20 @@ import {
   setupTwoFactor,
   confirmTwoFactorSetup,
   verifyTwoFactorLogin,
+  verifyEmail,
+  resendVerification,
 } from '../controllers/auth.controller';
 import { authenticate, optionalAuth } from '../middleware/auth.middleware';
 import { validate } from '../middleware/validate.middleware';
+import { optionalTenant } from '../middleware/tenant.middleware';
 import { authLimiter, passwordResetLimiter, registerLimiter } from '../middleware/rate-limit.middleware';
 import {
   registerSchema,
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  verifyEmailSchema,
+  resendVerificationSchema,
   acceptInvitationSchema,
   changePasswordSchema,
   updateProfileSchema,
@@ -53,7 +58,8 @@ const router = Router();
  *       400:
  *         $ref: '#/components/responses/ValidationError'
  */
-router.post('/register', registerLimiter, authLimiter, validate(registerSchema), register);
+// The site a sign-up comes from (X-Tenant-ID) brands its confirmation email and links back to it.
+router.post('/register', registerLimiter, authLimiter, validate(registerSchema), optionalTenant, register);
 
 /**
  * @swagger
@@ -168,6 +174,12 @@ router.post('/refresh-token', refreshToken);
  *         description: Too many requests
  */
 router.post('/forgot-password', passwordResetLimiter, validate(forgotPasswordSchema), forgotPassword);
+
+/** Confirm a new account's email from the emailed link; signs the account in. */
+router.post('/verify-email', authLimiter, validate(verifyEmailSchema), optionalTenant, verifyEmail);
+
+/** Send a new confirmation link. Answers the same whether or not an account is waiting. */
+router.post('/resend-verification', passwordResetLimiter, validate(resendVerificationSchema), optionalTenant, resendVerification);
 
 /**
  * @swagger

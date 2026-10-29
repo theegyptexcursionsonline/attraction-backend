@@ -168,6 +168,9 @@ export const env = {
   netlifyDomainAliasLimit: parseInt(process.env.NETLIFY_DOMAIN_ALIAS_LIMIT || '50', 10),
   
   // Rate Limiting
+  // New self sign-ups must confirm their email before they get a session. Off until the storefront that shows the
+  // verify-email page is live: with it on, an older storefront could not complete a registration.
+  emailVerificationRequired: process.env.EMAIL_VERIFICATION_REQUIRED === 'true',
   rateLimitWindowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10),
   rateLimitMaxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '1000', 10),
   

@@ -130,6 +130,33 @@ const userSchema = new Schema<IUser>(
       type: Date,
       select: false,
     },
+    // Email verification. Only accounts created by self sign-up while verification is on carry the requirement;
+    // every account made before it, by an admin or from an invitation, keeps signing in as it always has.
+    emailVerificationRequired: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerifiedAt: {
+      type: Date,
+    },
+    emailVerificationToken: {
+      type: String,
+      select: false,
+    },
+    emailVerificationExpires: {
+      type: Date,
+      select: false,
+    },
+    emailVerificationSentAt: {
+      type: Date,
+      select: false,
+    },
+    // The site the account was created on, so its verification links and resends carry that site's brand.
+    signupTenant: {
+      type: Schema.Types.ObjectId,
+      ref: 'Tenant',
+      select: false,
+    },
     lastLogin: {
       type: Date,
     },
@@ -143,6 +170,10 @@ const userSchema = new Schema<IUser>(
         delete obj.refreshToken;
         delete obj.passwordResetToken;
         delete obj.passwordResetExpires;
+        delete obj.emailVerificationToken;
+        delete obj.emailVerificationExpires;
+        delete obj.emailVerificationSentAt;
+        delete obj.signupTenant;
         delete obj.tokenVersion;
         delete obj.twoFactorSecretEnc;
         delete obj.twoFactorPendingSecretEnc;

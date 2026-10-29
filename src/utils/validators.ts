@@ -25,6 +25,14 @@ export const loginSchema = z.object({
   rememberMe: z.boolean().optional(),
 });
 
+export const verifyEmailSchema = z.object({
+  token: z.string().min(1, 'Token is required'),
+});
+
+export const resendVerificationSchema = z.object({
+  email: z.string().email('Invalid email address'),
+});
+
 export const forgotPasswordSchema = z.object({
   email: z.string().email('Invalid email address'),
 });

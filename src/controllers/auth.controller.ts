@@ -20,6 +20,7 @@ import { env } from '../config/env';
 import {
   EmailTenant,
   sendPasswordChangedEmail,
+  sendEmailVerificationEmail,
   sendPasswordResetEmail,
   sendWelcomeEmail,
 } from '../services/email.service';
@@ -93,6 +94,58 @@ const accountEmailTenant = async (
   return (tenant as unknown as EmailTenant) || null;
 };
 
+const EMAIL_VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;
+// A new link is sent at most this often for one account, however often it is asked for.
+const EMAIL_VERIFICATION_RESEND_MS = 2 * 60 * 1000;
+
+/** Whether an account still has to confirm its email before it may sign in. */
+export const awaitsEmailVerification = (user: { emailVerificationRequired?: boolean; emailVerifiedAt?: Date | null }): boolean =>
+  user.emailVerificationRequired === true && !user.emailVerifiedAt;
+
+/** The site a verification email speaks for: the one asked from, else the one the account was created on. */
+const verificationEmailTenant = async (req: AuthRequest, user: IUser): Promise<EmailTenant | null> => {
+  if (req.tenant) return accountEmailTenant(req, user);
+  if (!user.signupTenant) return null;
+  const tenant = await Tenant.findById(user.signupTenant).select(TENANT_EMAIL_FIELDS).lean();
+  return (tenant as unknown as EmailTenant) || null;
+};
+
+/**
+ * Issues a fresh verification link and mails it, unless one went out moments ago. The token is saved before the send
+ * and a mail failure is only logged: the caller's answer never depends on the provider.
+ */
+const sendVerificationLink = async (req: AuthRequest, user: IUser): Promise<void> => {
+  if (user.emailVerificationSentAt && Date.now() - user.emailVerificationSentAt.getTime() < EMAIL_VERIFICATION_RESEND_MS) return;
+  const token = generateRandomToken();
+  user.emailVerificationToken = hashToken(token);
+  user.emailVerificationExpires = new Date(Date.now() + EMAIL_VERIFICATION_TTL_MS);
+  user.emailVerificationSentAt = new Date();
+  await user.save();
+  try {
+    const tenant = await verificationEmailTenant(req, user);
+    await sendEmailVerificationEmail(user.email, token, `${user.firstName} ${user.lastName}`.trim(), tenant);
+  } catch (error) {
+    console.error('[email] verification send failed', { error: error instanceof Error ? error.message.slice(0, 300) : 'unknown' });
+  }
+};
+
+const VERIFICATION_SELECT = '+emailVerificationToken +emailVerificationExpires +emailVerificationSentAt +signupTenant';
+
+/** Tell the admins about a new customer and welcome them: once the account is real. */
+const announceNewAccount = (req: AuthRequest, user: IUser): void => {
+  createAdminNotifications({
+    type: 'user',
+    title: 'New User Registered',
+    message: `${user.firstName} ${user.lastName} (${user.email}) created an account`,
+    link: '/admin/users',
+    data: { userId: user._id },
+  }).catch(() => {});
+  // Deduped per address per site, and isolated: a mail failure must never fail the request.
+  void verificationEmailTenant(req, user)
+    .then((tenant) => sendWelcomeEmail(user.email, `${user.firstName} ${user.lastName}`.trim(), tenant))
+    .catch((error) => console.error('[email] welcome send failed', { error: error?.message }));
+};
+
 /**
  * Fire-and-forget "your password was changed" notice. Detached from the response and guarded at
  * every step: the password change already succeeded and must never be reported as a failure
@@ -131,11 +184,16 @@ export const register = async (
     }
 
     // Check if user exists
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    const existingUser = await User.findOne({ email: email.toLowerCase() }).select(VERIFICATION_SELECT);
     if (existingUser) {
+      // An account still waiting for its owner keeps the password it was created with: a second sign-up never
+      // replaces it. The address's owner gets a fresh link (or resets the password, which confirms the address too).
+      if (awaitsEmailVerification(existingUser)) await sendVerificationLink(req, existingUser);
       sendError(res, 'Email already registered', 409);
       return;
     }
+
+    const verify = env.emailVerificationRequired;
 
     // Create user
     const user = await User.create({
@@ -147,7 +205,15 @@ export const register = async (
       country,
       role: 'customer',
       status: 'active',
+      ...(verify ? { emailVerificationRequired: true, ...(req.tenant ? { signupTenant: req.tenant._id } : {}) } : {}),
     });
+
+    // With verification on, the account opens only from the link: no session, no admin notice, no welcome yet.
+    if (verify) {
+      await sendVerificationLink(req, user);
+      sendSuccess(res, { requiresEmailVerification: true, email: user.email }, 'Check your email to confirm your account', 201);
+      return;
+    }
 
     // Generate tokens
     const accessToken = generateAccessToken(user);
@@ -162,20 +228,7 @@ export const register = async (
     res.cookie('accessToken', accessToken, ACCESS_COOKIE_OPTIONS);
     res.cookie('refreshToken', refreshToken, refreshCookieOptions());
 
-    // Notify admins about new user
-    createAdminNotifications({
-      type: 'user',
-      title: 'New User Registered',
-      message: `${firstName} ${lastName} (${email}) created an account`,
-      link: '/admin/users',
-      data: { userId: user._id },
-    }).catch(() => {});
-
-    // Welcome the new account holder. Deduped per address per site, and isolated: a mail
-    // failure must never turn a successful registration into a 500.
-    void accountEmailTenant(req, user)
-      .then((tenant) => sendWelcomeEmail(user.email, `${firstName} ${lastName}`.trim(), tenant))
-      .catch((error) => console.error('[email] welcome send failed', { error: error?.message }));
+    announceNewAccount(req, user);
 
     sendSuccess(res, { user }, 'Registration successful', 201);
   } catch (error) {
@@ -211,6 +264,14 @@ export const login = async (
     if (user.status !== 'active') {
       if (ADMIN_ROLES.has(user.role)) recordAudit(req, { action: 'auth.login_failed', outcome: 'failure', actor: user, statusCode: 403 });
       sendError(res, 'Account is not active. Please contact support.', 403);
+      return;
+    }
+
+    // The right password on an account whose email is not confirmed yet: send the link again (throttled) and say so.
+    if (awaitsEmailVerification(user)) {
+      const pending = await User.findById(user._id).select(VERIFICATION_SELECT);
+      if (pending) await sendVerificationLink(req, pending);
+      res.status(403).json({ success: false, error: 'Please confirm your email address first. We have sent you a new link.', code: 'EMAIL_NOT_VERIFIED' });
       return;
     }
 
@@ -600,6 +661,57 @@ export const me = async (
   }
 };
 
+export const verifyEmail = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { token } = req.body;
+    const user = await User.findOne({
+      emailVerificationToken: hashToken(token),
+      emailVerificationExpires: { $gt: new Date() },
+    }).select(VERIFICATION_SELECT);
+
+    if (!user) {
+      sendError(res, 'This confirmation link is invalid or has expired', 400);
+      return;
+    }
+    if (user.status !== 'active') {
+      sendError(res, 'Account is not active. Please contact support.', 403);
+      return;
+    }
+
+    user.emailVerifiedAt = new Date();
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save();
+    announceNewAccount(req, user);
+
+    // The link proved the inbox: the person who followed it is signed in, as after a successful sign-up.
+    const userResponse = await issueSession(user, res, false, req);
+    sendSuccess(res, { user: userResponse }, 'Email confirmed');
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resendVerification = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email: email.toLowerCase() }).select(VERIFICATION_SELECT);
+    // The same answer whether or not the address has an account waiting, so it reveals nothing.
+    if (user && user.status === 'active' && awaitsEmailVerification(user)) await sendVerificationLink(req, user);
+    sendSuccess(res, null, 'If an account is waiting for this address, a new confirmation link is on its way');
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const forgotPassword = async (
   req: AuthRequest,
   res: Response,
@@ -672,7 +784,12 @@ export const resetPassword = async (
     user.password = password;
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
+    // The link reached the inbox, so the address is confirmed too. This is also how the owner of an address someone
+    // else signed up with takes the account over: the password chosen at sign-up is replaced here.
+    const confirmsEmail = awaitsEmailVerification(user);
+    if (confirmsEmail) user.emailVerifiedAt = new Date();
     await user.save();
+    if (confirmsEmail) announceNewAccount(req, user);
 
     // Tell the account holder their password moved. This is the message that lets someone
     // notice a compromised account, so it is sent on every change.
