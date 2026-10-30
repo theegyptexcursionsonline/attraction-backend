@@ -20,6 +20,27 @@ const MAX_GMAIL_DOTS = 3;
 
 export type SignupScreeningReason = 'random-name' | 'dotted-gmail';
 
+const escapeRegex = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * Every spelling that reaches the same inbox as `email`: a "+tag" anywhere, and for Gmail any dots in the name and the
+ * googlemail.com domain. One mailbox gets one account, so a sign-up matching an existing account is a duplicate.
+ * Null when the address has no name part to match on.
+ */
+export function sameMailboxPattern(email: string): RegExp | null {
+  const at = email.lastIndexOf('@');
+  if (at <= 0) return null;
+  const base = email.slice(0, at).split('+')[0].toLowerCase();
+  const domain = email.slice(at + 1).toLowerCase();
+  if (GMAIL_DOMAINS.has(domain)) {
+    const letters = [...base.replace(/\./g, '')];
+    if (!letters.length) return null;
+    return new RegExp(`^${letters.map(escapeRegex).join('\\.?')}(\\+[^@]*)?@(gmail|googlemail)\\.com$`, 'i');
+  }
+  if (!base) return null;
+  return new RegExp(`^${escapeRegex(base)}(\\+[^@]*)?@${escapeRegex(domain)}$`, 'i');
+}
+
 export function screenSignup(input: { firstName?: unknown; lastName?: unknown; email?: unknown }): SignupScreeningReason | null {
   const names = [input.firstName, input.lastName].filter((value): value is string => typeof value === 'string');
   if (names.some((name) => name.split(/\s+/).some(RANDOM_CASE_WORD))) return 'random-name';

@@ -169,3 +169,21 @@ describe('an account made before the switch', () => {
     await login('qa-existing@example.invalid').expect(200);
   });
 });
+
+describe('one inbox, one account', () => {
+  it('refuses another spelling of an inbox that already has an account, and mails nobody', async () => {
+    await User.create({ email: 'qa.inbox.owner@gmail.com', password: PASSWORD, firstName: 'QA', lastName: 'Owner', role: 'customer', status: 'active' });
+    await User.create({ email: 'qa-desk@example.invalid', password: PASSWORD, firstName: 'QA', lastName: 'Desk', role: 'customer', status: 'active' });
+    for (const variant of ['qainboxowner@gmail.com', 'q.a.inbox.owner+promo@googlemail.com', 'QA.Inbox.Owner+x@Gmail.com', 'qa-desk+2@example.invalid']) {
+      const response = await register(variant).expect(409);
+      expect(response.body.error).toBe('Email already registered');
+    }
+    expect(verificationMail).not.toHaveBeenCalled();
+    expect(await User.countDocuments({ email: { $in: ['qainboxowner@gmail.com', 'qa-desk+2@example.invalid'] } })).toBe(0);
+  });
+
+  it('still lets a different inbox sign up', async () => {
+    await register('qa.inbox.owner2@gmail.com').expect(201);
+    await register('qa-desk2@example.invalid').expect(201);
+  });
+});

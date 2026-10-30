@@ -25,7 +25,7 @@ import {
   sendWelcomeEmail,
 } from '../services/email.service';
 import { createAdminNotifications } from '../services/notification.service';
-import { screenSignup } from '../utils/signupScreening';
+import { sameMailboxPattern, screenSignup } from '../utils/signupScreening';
 import { createTwoFactorSetup, generateTwoFactorRecoveryCodes, verifyTwoFactorCode } from '../utils/twoFactor';
 
 const ADMIN_ROLES = new Set(['super-admin', 'brand-admin', 'manager', 'editor', 'viewer']);
@@ -189,6 +189,14 @@ export const register = async (
       // An account still waiting for its owner keeps the password it was created with: a second sign-up never
       // replaces it. The address's owner gets a fresh link (or resets the password, which confirms the address too).
       if (awaitsEmailVerification(existingUser)) await sendVerificationLink(req, existingUser);
+      sendError(res, 'Email already registered', 409);
+      return;
+    }
+    // The same inbox under another spelling (Gmail dots, a "+tag"): one mailbox gets one account. No email is sent;
+    // the inbox's owner already has an account and can sign in or reset its password.
+    const sameMailbox = sameMailboxPattern(email);
+    if (sameMailbox && (await User.exists({ email: { $regex: sameMailbox } }))) {
+      console.info('[auth] refused a sign-up for an inbox that already has an account', { ip: req.ip });
       sendError(res, 'Email already registered', 409);
       return;
     }

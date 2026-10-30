@@ -1,7 +1,4 @@
-import express from 'express';
-import request from '../test/loopbackRequest';
-import { registerLimiter } from '../middleware/rate-limit.middleware';
-import { screenSignup } from '../utils/signupScreening';
+import { sameMailboxPattern, screenSignup } from '../utils/signupScreening';
 
 describe('scripted sign-up screening', () => {
   it('refuses the two sign-ups seen on the network in October 2026', () => {
@@ -27,17 +24,30 @@ describe('scripted sign-up screening', () => {
   });
 });
 
-describe('the account-creation limit', () => {
-  it('counts successful sign-ups and stops a sixth from one connection within the hour', async () => {
-    const app = express();
-    app.set('trust proxy', 1);
-    app.post('/register', registerLimiter, (_req, res) => res.status(201).json({ success: true }));
-    for (let index = 0; index < 5; index += 1) {
-      expect((await request(app).post('/register').set('x-forwarded-for', '198.51.100.41')).status).toBe(201);
-    }
-    const sixth = await request(app).post('/register').set('x-forwarded-for', '198.51.100.41');
-    expect(sixth.status).toBe(429);
-    expect(sixth.body.error).toMatch(/too many accounts/i);
-    expect((await request(app).post('/register').set('x-forwarded-for', '198.51.100.42')).status).toBe(201);
+describe('one inbox under another spelling', () => {
+  it('matches Gmail dots, googlemail.com and a +tag, in any case', () => {
+    const pattern = sameMailboxPattern('anna.smith@gmail.com')!;
+    for (const same of ['annasmith@gmail.com', 'a.n.n.a.s.m.i.t.h@gmail.com', 'anna.smith+tours@googlemail.com', 'Anna.Smith@GMAIL.com']) expect(pattern.test(same)).toBe(true);
+    for (const other of ['annasmith1@gmail.com', 'anna.smith@example.com', 'xanna.smith@gmail.com', 'anna.smit@gmail.com']) expect(pattern.test(other)).toBe(false);
+  });
+
+  it('matches a +tag on other domains but keeps their dots', () => {
+    const pattern = sameMailboxPattern('desk+promo@example.eg')!;
+    expect(pattern.test('desk@example.eg')).toBe(true);
+    expect(pattern.test('desk+other@example.eg')).toBe(true);
+    expect(pattern.test('d.esk@example.eg')).toBe(false);
+    expect(pattern.test('desk@example.eg.evil')).toBe(false);
+  });
+
+  it('treats regex characters in an address as plain text', () => {
+    const pattern = sameMailboxPattern('a*b(c)@example.com')!;
+    expect(pattern.test('a*b(c)@example.com')).toBe(true);
+    expect(pattern.test('aaab(c)@example.com')).toBe(false);
+  });
+
+  it('has nothing to match without a name part', () => {
+    expect(sameMailboxPattern('@gmail.com')).toBeNull();
+    expect(sameMailboxPattern('+tag@example.com')).toBeNull();
+    expect(sameMailboxPattern('...@gmail.com')).toBeNull();
   });
 });

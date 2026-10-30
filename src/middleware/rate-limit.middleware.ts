@@ -1,5 +1,6 @@
 import rateLimit from 'express-rate-limit';
 import { env } from '../config/env';
+import { MongoRateLimitStore } from './mongoRateLimitStore';
 
 const isLocalAddress = (ip?: string): boolean => {
   if (!ip) return false;
@@ -24,10 +25,13 @@ export const apiLimiter = rateLimit({
 });
 
 // Account creation, counted whether it succeeds or not: the auth limiter skips successful requests, so on its own it
-// let a script register accounts without limit.
+// let a script register accounts without limit. Counted in the database, so a release or a second instance doesn't
+// reset or split the count; if the database can't be reached the sign-up goes on (screening still applies).
 export const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 5,
+  store: new MongoRateLimitStore('register:'),
+  passOnStoreError: true,
   message: {
     success: false,
     error: 'Too many accounts created from this connection. Please try again later.',
