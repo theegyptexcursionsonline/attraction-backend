@@ -1,42 +1,49 @@
 /**
- * Batch B11, the five sites that already exist (30 October 2026). Fouad's list moves `makadi-bay-safari`,
+ * Batch B11, the four sites that already exist (30 October 2026). Fouad's list moves
  * `cairo-tour-from-hurghada`, `luxor-tour-from-hurghada`, `hurghada-snorkeling` and `cairo-night-cruise` onto
- * domains of their own. Each is an active tenant already, so this run never creates one and never touches a
- * tenant's name, words, colours, domain, custom domain, contacts, payments, languages or notification settings.
+ * domains of their own. Each is an active tenant already, so this run never creates one, and it writes **no
+ * tenant document at all, in any mode** — not a name, not a word of copy, not a colour, a domain, a contact, a
+ * payment setting, a language, a notification setting, a currency, a logo, a dark logo or a favicon.
  *
- * What the five look like today, read from production on 30 October 2026 (`readiness-proof/2026-10-30-b11/`):
- * fifty-one trip listings across them, and **not one of them is the client's**. Every listing is a record from the
- * old demo catalogue: option ids `opt_1`/`opt_2`, round prices, a rating between 4.5 and 4.9 with a review count
- * between 89 and 456 behind which there is **no review at all** of any status, and `ownerTenantId` unset. Each is
- * listed on between four and twenty-one tenants at once. There are **no bookings** — none on any of the fifty-one
- * trips, and none on any of the five tenants, cancelled or otherwise.
+ * `makadi-bay-safari` was in an earlier draft of this batch and has been dropped from it entirely (coordinator,
+ * 30 October): the tenant has been `inactive` since 24 May, the client asked for it to be deduplicated with
+ * `makadi-bay-safari-center`, and it must stay exactly as it is. Nothing here names it.
+ *
+ * **Correcting the record of 30 October.** An earlier version of this file described these sites from a local
+ * database, not from production: `env.ts` calls `dotenv.config()` with no path, so `DOTENV_CONFIG_PATH` is
+ * ignored and dotenv reads `.env` from the working directory. Run from a worktree that has no `.env`, the
+ * connection fell back to the hard-coded `mongodb://localhost:27017/attractions-network` in `env.ts` rather than
+ * the cluster. Everything below was re-read from production (`attraction-network.ffybpa.mongodb.net`, database
+ * `attractions-network`) on 30 October; the full read is in `readiness-proof/2026-10-30-b11/`.
+ *
+ * What the four carry in production today: ninety-nine listings between them — forty-one on
+ * `cairo-tour-from-hurghada`, thirty on `luxor-tour-from-hurghada`, nine on `hurghada-snorkeling` and nineteen on
+ * `cairo-night-cruise`. All four sell in USD, which is what the client publishes in, so no currency has to change.
+ * None of the ninety-nine is one of the client's published records. But, unlike the old shared catalogue, **every
+ * one of them is owned by one of these four sites**, several were written in May and edited on 26 October, and one
+ * — `horse-riding-hurghada`, listed on both Hurghada sites — carries a **confirmed booking**.
  *
  * So the plan for each site is:
  *   - create the client's real trips, built from the dated snapshot at the client's published prices, owned by the
  *     site, and written with `rating: 0` and `reviewCount: 0` as every network trip is;
- *   - take every demo listing off the site. Because each is listed on other tenants too, taking it off is
- *     **unlisting**: this tenant's id is removed from the record's `tenantIds` and nothing else about the record
- *     changes, so no other site is touched. A record only this site listed would be archived instead, keeping the
- *     status it had; none is, today. Nothing is ever deleted.
- *   - leave the ratings on those demo records alone. They are unbacked, but the record is owned by no tenant and
- *     shown on up to twenty-one sites, so clearing one would change every one of them — outside this batch.
- *     Unlisting removes them from these five sites, which is what this batch is for. The figures are reported for
- *     the coordinator, and `fix-network-unbacked-ratings.ts` is the tool if the client wants them cleared network-wide.
+ *   - and take off only what is safe to take off. Two rules refuse, and they come before the batch's own intent:
+ *     a listing with a **booking of any status** is never taken off, and a listing **one of these four sites owns**
+ *     is never taken off. Both are reported instead, with the reason, so nothing a guest bought and nothing a site
+ *     wrote disappears without someone deciding. On the production read of 30 October those two rules refuse all
+ *     ninety-nine, so this run creates fifteen trips and takes nothing off at all. That is the honest result, not
+ *     a failure: replacing this content is a separate decision for the coordinator and the client.
+ *   - where a listing ever does become safe to take off, taking it off is **unlisting** — this tenant's id is
+ *     pulled from the record's `tenantIds` and nothing else about the record changes, so no other site is touched.
+ *     A record only this site lists would be archived instead, keeping the status it had. Nothing is ever deleted.
+ *   - leave every rating alone. Ninety-six of the ninety-nine carry a rating with no approved review behind it,
+ *     but the records belong to these sites and are shown on up to seven tenants each, so clearing one is a
+ *     decision of its own. The figures are reported, and `fix-network-unbacked-ratings.ts` is the tool for it.
  *
- * **No logo, dark logo or favicon is written on any of the five** (coordinator, 30 October). Four of them —
- * `cairo-tour-from-hurghada`, `luxor-tour-from-hurghada`, `hurghada-snorkeling` and `cairo-night-cruise` — carry
- * the client's own marks, which must stay exactly as they are; this script writes no mark on any site, so they
- * cannot be touched by it, and a test holds that. The seventh mark in the coordinator's `--logos` file, for
- * `makadi-bay-safari`, therefore has nowhere to go in this run: `--logos` belongs to `seed-network-sites.ts`, which
- * only ever creates or updates the six new tenants of batches b11a and b11b. **Open item: `makadi-bay-safari` needs
- * its new mark written by a separate, named step** — this batch deliberately does not grow a second way to write
- * tenant fields.
- *
- * One tenant field does have to change, and it is fenced on its own. All five sites carry `defaultCurrency: EGP`
- * while every record the client publishes is priced in USD, and a network trip's price is never converted. Until
- * the currency is corrected, not one of the client's trips can go on these sites. The correction is planned here,
- * written only when `--apply` is also given `--set-currency`, journalled with the value it replaced, and undone by
- * `--restore`. Nothing else about any tenant is written, in any mode.
+ * Two things this batch cannot do, recorded so they are not forgotten: the sites' own taglines and descriptions
+ * live on the tenant record, which this script never writes, so the Luxor site's "leaves Makadi Bay" line has to
+ * be added there in the step that connects the domain; and `makadi-bay-safari`'s mark in the coordinator's
+ * `--logos` file has nowhere to go, since `--logos` belongs to `seed-network-sites.ts` and that site is no longer
+ * in this batch.
  *
  * Held back, and why (each is a question for the client in the build report):
  * - `luxor-tour-from-hurghada` has no record that leaves from Hurghada. The client publishes twenty-seven trips
@@ -53,18 +60,6 @@
  *   Egyptian Museum visit is an extra bound to no booking option (batch B09 recorded the same), so the museum is
  *   not sold and the day's own conditional line about it is left out. The day itself includes hotel pickup, so
  *   unlike the records held back below it can be sold.
- * - `from-makadi-bay-hurghada-desert-quad-bike-camel-ride`: the record lists "Hotel pickup and drop-off" and
- *   "Transportation in an air-conditioned vehicle" under what is **not** included and sells the transfer as an
- *   extra, so it does not include the pickup every network trip promises. Two of its four options are priced zero.
- * - `makadi-bay-atv-camel-safari-with-dinner-and-stargazing`, `makadi-bay-sunset-atv-quad-safari-with-stunning-sea-views`
- *   and `hurghada-quad-biking-adventure-with-dinner-show-stargazing-options`: each promises its pickup only as
- *   "Hotel pickup and drop-off (if selected)" and sells the transfer for each area as a separate extra bound to the
- *   entry-ticket option, so no option sold would carry the pickup. Two of the first record's options are priced
- *   zero and one is priced per group.
- * - `sunrise-buggy-safari-in-makadi-bay-with-breakfast`: the same conditional pickup, and every one of its six
- *   options is priced "Per Group" rather than per person, which the seed refuses.
- * - `makadi-bay-2-hour-quad-bike-adventure-across-desert-coast`, its "Double Quad" option: priced "Per Couple",
- *   which the seed refuses. The single quad is sold; the double quad is a question for the client.
  * - `from-hurghada-paradise-island-yacht-speedboat-cruise-with-snorkeling-lunch`: the record prices each of its
  *   two departures apart from the booking option itself — the nine o'clock slot costs more than the option says,
  *   and each slot charges a child the adult price while the option publishes a child price of half. The seed
@@ -77,8 +72,10 @@
  * Read-only check (the default; connects to the database, writes nothing):
  *   npm run seed:network-b11-existing
  * Apply, three sites at a time (owner, 25 October):
- *   npm run seed:network-b11-existing -- --apply --confirm-sites=a,b,c --journal-dir=<directory outside git> \
- *     [--set-currency=a,b,c]
+ *   npm run seed:network-b11-existing -- --apply --confirm-sites=a,b,c --journal-dir=<directory outside git>
+ *
+ * Run it from a directory whose `.env` is the one you mean: `env.ts` reads `.env` from the working directory and
+ * ignores `DOTENV_CONFIG_PATH`, and falls back to a local database when it finds none.
  * Put those sites back exactly as they were:
  *   npm run seed:network-b11-existing -- --restore --confirm-sites=a,b,c --journal-dir=<the same directory>
  */
@@ -112,109 +109,6 @@ const CLOUDINARY = /^https:\/\/res\.cloudinary\.com\/dm3sxllch\/image\/upload\//
  * departure and inclusion is copied from the snapshot at build time.
  */
 export const PROGRAMMES = {
-  // The record's inclusions carry a typo ("All ocal taxes") and promise pickup only inside Makadi Bay, with the
-  // pickup from outside it sold as an exclusion; both are said plainly in the site's own words.
-  MAKADI_SUNSET_QUAD: {
-    provider: 'eeo',
-    tenant: EEO,
-    source: 'golden-sunset-quad-safari-in-makadi-bay',
-    category: ADVENTURES,
-    options: ['quad-sunset-6faa56b781a9'],
-    addons: [],
-    departures: ['18:00'],
-    departureLabels: { '18:00': 'Late afternoon' },
-    rename: {
-      'quad-sunset-6faa56b781a9': {
-        name: 'Sunset quad safari',
-        description: 'Three hours into the desert behind Makadi Bay on a quad bike, with a guide, a helmet and the sun going down.',
-      },
-    },
-    childNote: CHILD_NOTE,
-    omit: {
-      inclusions: ['All ocal taxes, fees and handling charges', 'Hotel pickup and drop-off (within Makadi Bay)'],
-      exclusions: ['Hotel pickup and drop-off (if outside Makadi Bay)', 'Drinks other than complimentary drinks given.', 'DVD (available to purchase)'],
-    },
-    add: {
-      inclusions: ['Hotel pickup and drop-off in Makadi Bay', 'All local taxes and fees'],
-      exclusions: ['Drinks beyond the ones served on the trip'],
-      needToKnow: [
-        'Pickup from outside Makadi Bay costs extra and cannot be booked on this site. Ask the team before you book if your hotel is further out.',
-        'A photo or video of the ride can be bought on the day.',
-      ],
-    },
-    itinerary: [
-      { title: 'Hotel pickup', description: 'The car collects you from your hotel in Makadi Bay.' },
-      { title: 'Safety briefing', description: 'The guide fits your helmet and walks you through the controls before you set off.' },
-      { title: 'Into the desert', duration: '2 hours', description: 'Two hours on the quad bike across the desert behind the bay, with stops for photographs.' },
-      { title: 'Back to your hotel', description: 'The car returns you to your hotel in Makadi Bay.' },
-    ],
-  },
-  // The record writes its pickup as "Pickup From Makadi Hotels" and prices its two exclusions in the line itself;
-  // both are replaced here. Its second option is priced per couple, which the seed refuses, so one is sold.
-  MAKADI_TWO_HOUR_QUAD: {
-    provider: 'eeo',
-    tenant: EEO,
-    source: 'makadi-bay-2-hour-quad-bike-adventure-across-desert-coast',
-    category: ADVENTURES,
-    options: ['single-quad-652928d03bae'],
-    addons: [],
-    // The record writes its length as "2h"; the network says it the way every other trip does.
-    duration: '2 hours',
-    departures: ['10:00', '13:00', '15:00'],
-    rename: {
-      'single-quad-652928d03bae': {
-        name: 'One rider, one quad bike',
-        description: 'Two hours on a quad bike of your own, across the desert and along the coast, with a guide and a helmet.',
-      },
-    },
-    childNote: CHILD_NOTE,
-    omit: {
-      inclusions: ['Pickup From Makadi Hotels', 'All Fees and Taxes', '120min Quad bike'],
-      exclusions: ['Optional: Scarf & Goggles for $5', 'Pickup from outside Makadi: $5 per person'],
-    },
-    add: {
-      inclusions: ['Hotel pickup and drop-off in Makadi Bay', 'All fees and taxes', 'Two hours on the quad bike'],
-      exclusions: ['A scarf and goggles, which can be bought on the day'],
-      needToKnow: ['Pickup from outside Makadi Bay costs extra and cannot be booked on this site. Ask the team before you book if your hotel is further out.'],
-    },
-    itinerary: [
-      { title: 'Hotel pickup', description: 'An air-conditioned vehicle collects you from your hotel in Makadi Bay.' },
-      { title: 'Safety briefing', description: 'You meet the guides at the meeting point and are shown the controls and the route.' },
-      { title: 'Across the desert', duration: '2 hours', description: 'Two hours on the quad bike over the sand and on along the coast road above the sea.' },
-      { title: 'Back to your hotel', description: 'The vehicle returns you to your hotel in Makadi Bay.' },
-    ],
-  },
-  // The option sold is the one that collects from Makadi Bay; its published name lists four other towns, so the
-  // site names its own. The record's schedule is a list of pickup towns the option does not use.
-  MAKADI_DESERT_DINNER: {
-    provider: 'eeo',
-    tenant: EEO,
-    source: 'makadi-bay-luxury-desert-dinner-stargazing-experience',
-    category: ADVENTURES,
-    options: ['makadi-bay-soma-bay-safaga-alahyaa-sahl-hashe-a03ce8972937'],
-    addons: [],
-    departures: ['18:00'],
-    departureLabels: { '18:00': 'Evening' },
-    rename: {
-      'makadi-bay-soma-bay-safaga-alahyaa-sahl-hashe-a03ce8972937': {
-        name: 'Evening in the desert, with pickup in Makadi Bay',
-        description: 'A four-hour evening at a Bedouin camp with tea, a four-course dinner, music and an hour under the stars.',
-      },
-    },
-    childNote: CHILD_NOTE,
-    omit: { inclusions: ['Hotel pick-up and transfer'] },
-    add: {
-      inclusions: ['Hotel pickup and drop-off in Makadi Bay'],
-      needToKnow: ['The desert is cold once the sun is down, so bring something warm whatever the day has been like.'],
-    },
-    itinerary: [
-      { title: 'Hotel pickup', description: 'A car collects you from your hotel in Makadi Bay in the early evening.' },
-      { title: 'The camp', duration: '3 hours', description: 'Bedouin tea, coffee and karkade on arrival, bread baked and coffee roasted in front of you, then a four-course dinner.' },
-      { title: 'Music and stories', description: 'Bedouin music, dancing and storytelling around the camp.' },
-      { title: 'Under the stars', description: 'A stargazing session away from the lights of the coast.' },
-      { title: 'Back to your hotel', duration: '30 minutes', description: 'The car returns you to your hotel in Makadi Bay.' },
-    ],
-  },
   // The Grand Egyptian Museum is an extra bound to no booking option, so it is not sold and the record's own
   // conditional line about it is left out. The record's schedule is its pickup areas and its van legs.
   CAIRO_FROM_HURGHADA: {
@@ -360,9 +254,6 @@ const P = {
 
 /** Each record's own photo, as the client publishes it, with the Hurghada set as batch B09 chose it. */
 const PHOTO = {
-  quadsAtSunset: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788291989/tours/hmowvbgjhywfuejbydvq.jpg',
-  riderWithHelmet: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788292022/tours/jvcy9deqstjo3kaiu6le.jpg',
-  telescopeUnderStars: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788291814/tours/uiqzszlpitf8kzc4iuj0.jpg',
   camelsAtGiza: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788791945/tours/yjqr6fs1oba2lvki3z6j.jpg',
   paintedTomb: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788292235/tours/z3ccgjomvqg4seawox1i.jpg',
   citadelMosque: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085642/attractions-network/network-b08/egyptian-museum/ujbyb8aj5cxiaqgtiboj.jpg',
@@ -381,9 +272,6 @@ const PHOTO = {
 
 /** Each photo described as it is, not as the trip it illustrates. */
 const ALT: Record<keyof typeof PHOTO, string> = {
-  quadsAtSunset: 'Two riders on quad bikes in silhouette on desert sand, with a low orange sun on the horizon behind them',
-  riderWithHelmet: 'A man in a white t-shirt carrying a helmet under his arm, standing on sand beside two red quad bikes',
-  telescopeUnderStars: 'A person in a hooded jacket crouched in silhouette beside a telescope on a tripod, under a dense starry sky',
   camelsAtGiza: 'A line of riders on camels crossing the sand at Giza, with three pyramids and the smaller queens’ pyramids behind under a clear blue sky',
   paintedTomb: 'The painted wall of a royal tomb, covered in rows of hieroglyphs and figures in red, yellow and blue, with a blue-painted rock formation in front',
   citadelMosque: 'A large mosque with a central dome, half-domes and two tall minarets against a clear sky, with flags flying beside it',
@@ -427,8 +315,6 @@ export interface ExistingSite extends TripSiteFacts {
   design: string;
   /** The one category every trip this site creates is filed under. */
   category: (typeof NETWORK_CATEGORIES)[number];
-  /** The currency the tenant carries today, and the one its trips need. A difference is planned, never assumed. */
-  currencyNow: 'EGP' | 'USD';
   /** Trips on the site today that have a record behind them; this run leaves them alone. */
   keep: string[];
   /** Trips on the site today with no record behind them; this run takes them off. */
@@ -448,82 +334,6 @@ export const B11_EXISTING: ExistingBatch = {
   readAt: '2026-10-30',
   sites: [
     {
-      slug: 'makadi-bay-safari',
-      name: 'Makadi Bay Safari',
-      domain: 'makadibaysafari.com',
-      design: 'makadidunes',
-      listingPath: '/trips',
-      city: 'Makadi Bay',
-      area: 'Makadi Bay',
-      coordinates: MAKADI_BAY,
-      currency: 'USD',
-      currencyNow: 'EGP',
-      slugPrefix: 'mbs-',
-      category: ADVENTURES,
-      foreignPlaces: NOT_MAKADI,
-      keep: [],
-      retire: ['makadi-bay-safari', 'makadi-bay-snorkeling'],
-      trips: [
-        {
-          path: 'sunset-quad-safari',
-          price: P.MAKADI_SUNSET_QUAD,
-          title: 'Sunset Quad Safari in the Desert',
-          short: 'Three hours on a quad bike behind Makadi Bay in the late afternoon, with a guide, a helmet and hotel pickup.',
-          description: 'The car collects you at six, which is late enough that the sand has lost its heat and the light has started to go. The guide fits your helmet, shows you the controls, and then takes the group out across the desert behind the bay for two hours.\n\nThere are stops along the way to get off and look, and the ride turns for home with the sun low. The guide, the helmet and the pickup from your hotel in Makadi Bay are in the price, and children have their own.',
-          highlights: [
-            'Two hours on a quad bike across the desert',
-            'A late-afternoon start, with the sun going down',
-            'A guide and a helmet for every rider',
-            'Hotel pickup in Makadi Bay included',
-          ],
-          seo: {
-            metaTitle: 'Makadi Bay Sunset Quad Safari with Hotel Pickup',
-            metaDescription: 'A three-hour quad bike safari into the desert behind Makadi Bay in the late afternoon, with a guide, a helmet and hotel pickup.',
-          },
-          images: [PHOTO.quadsAtSunset],
-          imageAlts: [ALT.quadsAtSunset],
-        },
-        {
-          path: 'two-hour-quad-bike-desert-and-coast',
-          price: P.MAKADI_TWO_HOUR_QUAD,
-          title: 'Two Hours by Quad Bike, Desert and Coast',
-          short: 'A quad bike of your own for two hours across the desert and along the coast, with three starts to choose from.',
-          description: 'This is the ride for people who would rather not share a machine: one rider, one quad bike, for the whole two hours. An air-conditioned vehicle collects you from your hotel in Makadi Bay and brings you to the meeting point, where the guides fit the helmets and run through the controls.\n\nThe route goes out over the sand and then turns along the coast, where the desert runs down to the sea. There are three starts through the day, and children have their own price.',
-          highlights: [
-            'One rider to a quad bike',
-            'Two hours across the desert and along the coast',
-            'Three starts through the day',
-            'Helmet, guide and hotel pickup included',
-          ],
-          seo: {
-            metaTitle: 'Makadi Bay Quad Bike Safari: Desert and Coast',
-            metaDescription: 'Two hours on your own quad bike across the desert and the coast at Makadi Bay, with a guide, a helmet and hotel pickup.',
-          },
-          images: [PHOTO.riderWithHelmet],
-          imageAlts: [ALT.riderWithHelmet],
-        },
-        {
-          path: 'desert-dinner-and-stargazing',
-          price: P.MAKADI_DESERT_DINNER,
-          title: 'Desert Dinner and Stargazing at a Bedouin Camp',
-          short: 'Four hours at a desert camp: Bedouin tea, a four-course dinner, music and an hour under the stars.',
-          description: 'The car collects you at six and drives inland, far enough that the lights of the coast are gone. At the camp there is tea, coffee and karkade to begin, bread baked on an iron dome and coffee roasted in front of you, then a dinner of four courses.\n\nAfterwards there is music and dancing and storytelling, and then the sky, which is the point of coming this far out. Children have their own price, and the pickup from your hotel in Makadi Bay is included.',
-          highlights: [
-            'A four-course Bedouin dinner at a desert camp',
-            'Bread baked and coffee roasted in front of you',
-            'Music, dancing and storytelling',
-            'A stargazing session away from the coast',
-          ],
-          seo: {
-            metaTitle: 'Makadi Bay Desert Dinner and Stargazing Evening',
-            metaDescription: 'Four hours at a Bedouin desert camp from Makadi Bay with tea, a four-course dinner, music and a stargazing session.',
-          },
-          images: [PHOTO.telescopeUnderStars],
-          imageAlts: [ALT.telescopeUnderStars],
-        },
-      ],
-    },
-    {
       slug: 'cairo-tour-from-hurghada',
       name: 'Cairo Tour From Hurghada',
       domain: 'cairotourfromhurghada.com',
@@ -533,16 +343,52 @@ export const B11_EXISTING: ExistingBatch = {
       area: 'Hurghada',
       coordinates: HURGHADA,
       currency: 'USD',
-      currencyNow: 'EGP',
       slugPrefix: 'cth-',
       category: DAY_TRIPS,
       foreignPlaces: NOT_CAIRO_DAY,
       keep: [],
       retire: [
-        'cairo-night-cruise', 'camel-riding-hurghada', 'cairo-tour-from-hurghada', 'giftun-island-hurghada',
-        'orange-bay-tours', 'cairo-tours-packages', 'horse-riding-hurghada', 'parasailing-hurghada',
-        'hurghada-fishing', 'pyramids-excursions', 'hurghada-jeep-safari', 'hurghada-luxury-cruise',
-        'hurghada-private-safari', 'hurghada-private-tours', 'hurghada-snorkeling', 'hurghada-spa', 'toureg-safari',
+        'cairo-2-days-trip-bus',
+        'cairo-citadel-mosque-tour',
+        'cairo-day-trip-pyramids-museum',
+        'cairo-food-street-tour',
+        'cairo-night-cruise',
+        'cairo-old-city-walking-tour',
+        'cairo-overnight-pyramids-khan-khalili',
+        'cairo-private-day-car-felucca',
+        'cairo-private-tour-hurghada-bus',
+        'cairo-private-tour-plane',
+        'cairo-private-vip-tour-hurghada',
+        'cairo-pyramids-nile-dinner-cruise',
+        'cairo-pyramids-sakkara-dahshur',
+        'cairo-quad-bike-pyramids',
+        'cairo-small-group-tour-bus',
+        'cairo-sound-light-show-pyramids',
+        'cairo-sunset-felucca-ride',
+        'cairo-tour-from-hurghada',
+        'cairo-tour-from-hurghada-experience',
+        'cairo-tours-packages',
+        'camel-riding-hurghada',
+        'egyptian-museum-vip-tour',
+        'giftun-island-hurghada',
+        'horse-riding-hurghada',
+        'hurghada-beginner-guided-reef-snorkel',
+        'hurghada-dolphin-house-snorkel-trip',
+        'hurghada-fishing',
+        'hurghada-giftun-island-snorkel-beach-day',
+        'hurghada-luxury-cruise',
+        'hurghada-orange-bay-snorkel-beach-day',
+        'hurghada-private-snorkel-boat-charter',
+        'hurghada-private-tours',
+        'hurghada-snorkeling',
+        'hurghada-sunset-snorkel-cruise',
+        'hurghada-three-reef-snorkel-safari',
+        'orange-bay-tours',
+        'parasailing-hurghada',
+        'pyramids-excursions',
+        'ramadan-iftar-cruise',
+        'test-abc-123',
+        'test-with-addons-xyz',
       ],
       trips: [
         {
@@ -576,16 +422,41 @@ export const B11_EXISTING: ExistingBatch = {
       area: 'Hurghada',
       coordinates: HURGHADA,
       currency: 'USD',
-      currencyNow: 'EGP',
       slugPrefix: 'lth-',
       category: DAY_TRIPS,
       foreignPlaces: NOT_LUXOR_DAY,
       keep: [],
       retire: [
-        'camel-riding-hurghada', 'luxor-air-balloon', 'giftun-island-hurghada', 'luxor-tour-from-hurghada',
-        'orange-bay-tours', 'horse-riding-hurghada', 'parasailing-hurghada', 'hurghada-fishing',
-        'hurghada-jeep-safari', 'hurghada-luxury-cruise', 'hurghada-private-safari', 'hurghada-private-tours',
-        'hurghada-snorkeling', 'hurghada-spa', 'toureg-safari',
+        '5-day-nile-cruise-luxor-aswan',
+        'camel-riding-hurghada',
+        'giftun-island-hurghada',
+        'horse-riding-hurghada',
+        'hurghada-2-day-luxor-hot-air-balloon',
+        'hurghada-beginner-guided-reef-snorkel',
+        'hurghada-dolphin-house-snorkel-trip',
+        'hurghada-fishing',
+        'hurghada-giftun-island-snorkel-beach-day',
+        'hurghada-luxury-cruise',
+        'hurghada-orange-bay-snorkel-beach-day',
+        'hurghada-private-snorkel-boat-charter',
+        'hurghada-private-tours',
+        'hurghada-snorkeling',
+        'hurghada-sunset-snorkel-cruise',
+        'hurghada-three-reef-snorkel-safari',
+        'luxor-air-balloon',
+        'luxor-day-trip-hurghada-bus',
+        'luxor-day-trip-valley-kings',
+        'luxor-express-karnak-valley-kings',
+        'luxor-hot-air-balloon-temples',
+        'luxor-overnight-dendera-abydos',
+        'luxor-private-full-day-east-west',
+        'luxor-tour-from-hurghada',
+        'luxor-tour-from-hurghada-excursion',
+        'luxor-two-days-trip-hurghada',
+        'orange-bay-tours',
+        'overnight-tour-luxor-abu-simbel',
+        'parasailing-hurghada',
+        'private-luxor-tour-hurghada-car',
       ],
       trips: [
         {
@@ -640,15 +511,20 @@ export const B11_EXISTING: ExistingBatch = {
       area: 'Hurghada',
       coordinates: HURGHADA,
       currency: 'USD',
-      currencyNow: 'EGP',
       slugPrefix: 'hsn-',
       category: WATER,
       foreignPlaces: NOT_HURGHADA,
       keep: [],
       retire: [
-        'camel-riding-hurghada', 'giftun-island-hurghada', 'orange-bay-tours', 'horse-riding-hurghada',
-        'parasailing-hurghada', 'hurghada-fishing', 'hurghada-jeep-safari', 'hurghada-luxury-cruise',
-        'hurghada-private-safari', 'hurghada-private-tours', 'hurghada-snorkeling', 'hurghada-spa', 'toureg-safari',
+        'giftun-island-hurghada',
+        'hurghada-beginner-guided-reef-snorkel',
+        'hurghada-dolphin-house-snorkel-trip',
+        'hurghada-giftun-island-snorkel-beach-day',
+        'hurghada-orange-bay-snorkel-beach-day',
+        'hurghada-private-snorkel-boat-charter',
+        'hurghada-snorkeling',
+        'hurghada-sunset-snorkel-cruise',
+        'hurghada-three-reef-snorkel-safari',
       ],
       trips: [
         {
@@ -872,12 +748,31 @@ export const B11_EXISTING: ExistingBatch = {
       area: 'Cairo or Giza',
       coordinates: CAIRO,
       currency: 'USD',
-      currencyNow: 'EGP',
       slugPrefix: 'cnc-',
       category: DAY_TRIPS,
       foreignPlaces: NOT_CAIRO,
       keep: [],
-      retire: ['cairo-night-cruise', 'cairo-tour-from-hurghada', 'cairo-tours-packages', 'pyramids-excursions'],
+      retire: [
+        'cairo-citadel-mosque-tour',
+        'cairo-food-street-tour',
+        'cairo-night-cruise',
+        'cairo-old-city-walking-tour',
+        'cairo-quad-bike-pyramids',
+        'cairo-sound-light-show-pyramids',
+        'cairo-sunset-felucca-ride',
+        'cairo-tour-from-hurghada',
+        'cairo-tours-packages',
+        'classic-5-course-nile-dinner',
+        'couples-anniversary-cruise',
+        'egyptian-museum-vip-tour',
+        'family-cruise-kids-menu',
+        'late-night-jazz-felucca',
+        'private-yacht-charter',
+        'pyramids-excursions',
+        'ramadan-iftar-cruise',
+        'sunset-felucca-dinner',
+        'tanoura-folkloric-dinner',
+      ],
       trips: [
         {
           path: 'museum-citadel-old-cairo-and-a-nile-dinner-cruise',
@@ -1023,6 +918,8 @@ export interface DemoListing {
   bookingsNotCancelled: number;
   listedOn: number;
   owned: boolean;
+  /** The slug of the site that owns the record, where one does; a record with no owner has none. */
+  ownerSlug: string | null;
 }
 
 /** What one site looks like today and what this run would do to it. */
@@ -1033,16 +930,22 @@ export interface SiteState {
   domainMigrated: boolean;
   customDomain: string | null;
   currencyNow: string;
-  currencyChange: { from: string; to: string } | null;
+  /** Listings this run will not take off, and why: a guest's booking, or a record one of these sites owns. */
+  refused: Array<{ slug: string; reason: string }>;
   create: string[];
   update: string[];
   archive: Array<{ slug: string; status: string }>;
   unlist: Array<{ slug: string; listedOn: number }>;
   demo: DemoListing[];
   unbackedRatings: string[];
-  bookingsOnRetired: string[];
   problems: string[];
 }
+
+/**
+ * The sites this batch touches. A listing owned by any of them is the site's own content, not a leftover of the
+ * old shared catalogue, so it is never taken off: it is reported and left exactly as it is.
+ */
+const OWNED_BY: string[] = B11_EXISTING.sites.map((site) => site.slug);
 
 export async function readSiteState(site: ExistingSite): Promise<SiteState | { site: ExistingSite; problems: string[] }> {
   const { Tenant } = await import('../models/Tenant');
@@ -1055,11 +958,12 @@ export async function readSiteState(site: ExistingSite): Promise<SiteState | { s
   if (!tenant) return { site, problems: [`${site.slug}: no such site on the network. This batch never creates one.`] };
   if (!['active', 'coming_soon', 'pending'].includes(String(tenant.status))) problems.push(`${site.slug}: protected status ${tenant.status}.`);
   if (tenant.domainMigrated) problems.push(`${site.slug}: already serves its own domain; its catalogue is not changed here.`);
+  // Nothing converts a price, so a site whose currency is not the one its trips are published in stops the run.
+  // This batch writes no tenant field at all, so the currency is read and judged, never corrected here.
   const currencyNow = String(tenant.defaultCurrency || '');
-  if (currencyNow !== site.currencyNow && currencyNow !== site.currency) {
-    problems.push(`${site.slug}: the site sells in ${currencyNow}, which is neither the ${site.currencyNow} this batch read nor the ${site.currency} its trips need. Read the site again.`);
+  if (currencyNow !== site.currency) {
+    problems.push(`${site.slug}: the site sells in ${currencyNow} and its trips are published in ${site.currency}. A price is never converted, so nothing is written.`);
   }
-  const currencyChange = currencyNow === site.currency ? null : { from: currencyNow, to: site.currency };
 
   const wanted = site.trips.map((trip) => `${site.slugPrefix}${trip.path}`);
   const held = await Attraction.find({ slug: { $in: wanted } }).select('slug ownerTenantId tenantIds').lean();
@@ -1071,9 +975,13 @@ export async function readSiteState(site: ExistingSite): Promise<SiteState | { s
 
   const onSite = await Attraction.find({ tenantIds: tenant._id })
     .select('_id slug title status rating reviewCount ownerTenantId tenantIds').lean();
+  // Who owns each listing, by slug: a record one of these four sites owns is theirs, not the old shared catalogue.
+  const ownerIds = [...new Set(onSite.map((record) => record.ownerTenantId).filter(Boolean).map(String))];
+  const owners = await Tenant.find({ _id: { $in: ownerIds } }).select('_id slug').lean();
+  const ownerSlugOf = new Map(owners.map((owner) => [String(owner._id), owner.slug as string]));
   const demo: DemoListing[] = [];
   const unbackedRatings: string[] = [];
-  const bookingsOnRetired: string[] = [];
+  const refused: Array<{ slug: string; reason: string }> = [];
   for (const record of onSite) {
     const approved = await Review.countDocuments({ attractionId: record._id, status: 'approved' });
     const bookings = await Booking.find({ attractionId: record._id }).select('status').lean();
@@ -1089,14 +997,25 @@ export async function readSiteState(site: ExistingSite): Promise<SiteState | { s
       bookingsNotCancelled: live,
       listedOn: (record.tenantIds || []).length,
       owned: String(record.ownerTenantId) === String(tenant._id),
+      ownerSlug: record.ownerTenantId ? (ownerSlugOf.get(String(record.ownerTenantId)) ?? null) : null,
     };
     demo.push(listing);
     if ((listing.rating > 0 || listing.reviewCount > 0) && approved === 0) unbackedRatings.push(listing.slug);
-    // A trip with a live booking is never taken off, whoever's record it is: it is kept and reported.
-    if (site.retire.includes(listing.slug) && live > 0) bookingsOnRetired.push(`${listing.slug} (${live} booking(s) not cancelled)`);
+    if (!site.retire.includes(listing.slug)) continue;
+    // Two things are never taken off a site, whatever the batch intended, because either would lose something a
+    // guest or a site owns: a record with a booking of any status, and a record one of these sites owns itself.
+    // Both are reported instead, for the coordinator to decide what becomes of them.
+    if (bookings.length > 0) {
+      refused.push({ slug: listing.slug, reason: `${bookings.length} booking(s) (${[...new Set(bookings.map((booking) => String(booking.status)))].join(', ')})` });
+      continue;
+    }
+    const ownerSlug = listing.ownerSlug;
+    if (ownerSlug && OWNED_BY.includes(ownerSlug)) {
+      refused.push({ slug: listing.slug, reason: ownerSlug === site.slug ? 'this site owns the record' : `${ownerSlug} owns the record` });
+    }
   }
 
-  const retire = site.retire.filter((slug) => !bookingsOnRetired.some((line) => line.startsWith(`${slug} `)));
+  const retire = site.retire.filter((slug) => !refused.some((entry) => entry.slug === slug));
   const { archive, unlist, problems: retireProblems } = retirePlan(retire, onSite.map((trip): TripOnSite => ({
     slug: trip.slug as string, status: String(trip.status), listedOn: (trip.tenantIds || []).length,
   })));
@@ -1116,14 +1035,13 @@ export async function readSiteState(site: ExistingSite): Promise<SiteState | { s
     domainMigrated: Boolean(tenant.domainMigrated),
     customDomain: (tenant as Record<string, unknown>).customDomain as string ?? null,
     currencyNow,
-    currencyChange,
+    refused,
     create: wanted.filter((slug) => !held.some((record) => record.slug === slug)),
     update: wanted.filter((slug) => held.some((record) => record.slug === slug)),
     archive,
     unlist,
     demo,
     unbackedRatings,
-    bookingsOnRetired,
     problems,
   };
 }
@@ -1149,12 +1067,6 @@ function confirmedSites(batch: ExistingBatch): ExistingSite[] {
     throw new Error(`Name the sites in the batch's own order: ${chosen.map((site) => site.slug).join(',')}`);
   }
   return chosen;
-}
-
-/** The sites whose currency this run may correct. A tenant field is never written without its own fence. */
-function currencyFenced(site: ExistingSite): boolean {
-  const named = (argValue('set-currency') || '').split(',').map((slug) => slug.trim()).filter(Boolean);
-  return named.includes(site.slug);
 }
 
 function journalFile(site: ExistingSite): string {
@@ -1202,13 +1114,12 @@ async function describe(batch: ExistingBatch, sites: ExistingSite[]) {
       tenant: isState(state)
         ? { status: state.status, customDomain: state.customDomain, domainMigrated: state.domainMigrated, currency: state.currencyNow }
         : { missing: true },
-      currencyCorrection: isState(state) ? state.currencyChange : null,
       wouldCreate: isState(state) ? state.create : [],
       wouldUpdate: isState(state) ? state.update : [],
       wouldUnlist: isState(state) ? state.unlist : [],
       wouldArchive: isState(state) ? state.archive : [],
       keptBecauseTheyHaveARecord: site.keep,
-      keptBecauseTheyHaveALiveBooking: isState(state) ? state.bookingsOnRetired : [],
+      refusedAndLeftExactlyAsTheyAre: isState(state) ? state.refused : [],
       unbackedRatingsLeftAlone: isState(state) ? state.unbackedRatings : [],
       listingsOnTheSiteToday: isState(state) ? state.demo : [],
       problems: [...state.problems, ...plan.problems],
@@ -1235,14 +1146,16 @@ async function check(batch: ExistingBatch): Promise<void> {
         tripsToCreate: report.reduce((total, site) => total + site.wouldCreate.length, 0),
         listingsToUnlist: report.reduce((total, site) => total + site.wouldUnlist.length, 0),
         listingsToArchive: report.reduce((total, site) => total + site.wouldArchive.length, 0),
+        listingsRefused: report.reduce((total, site) => total + site.refusedAndLeftExactlyAsTheyAre.length, 0),
         problems: report.reduce((total, site) => total + site.problems.length, 0),
       },
       writes: 'none',
       safeguards: [
         'no tenant is created, renamed, re-domained or re-themed',
         'no record is deleted; a listing is unlisted or archived, and the journal reverses it',
-        'a trip with a booking that is not cancelled is kept and reported',
-        'the currency correction is the only tenant field written, and only behind --set-currency',
+        'a listing with a booking of any status is never taken off; it is reported',
+        'a listing one of these sites owns is never taken off; it is reported',
+        'no tenant document is written at all, in any mode',
       ],
     }, null, 2));
   } finally {
@@ -1253,7 +1166,6 @@ async function check(batch: ExistingBatch): Promise<void> {
 interface Journal {
   site: string;
   appliedAt: string;
-  currency: { from: string; to: string } | null;
   created: string[];
   updated: Array<{ slug: string; before: Record<string, unknown> }>;
   unlisted: Array<{ slug: string; tenantId: string }>;
@@ -1273,28 +1185,14 @@ async function apply(batch: ExistingBatch): Promise<void> {
     // The whole run is checked before the first write, so a guard failure writes nothing at all.
     if (missing.length) throw new Error(`Records missing or drifted since they were read: ${missing.join(', ')}.`);
     for (const site of report) if (site.problems.length) throw new Error(`${site.slug}: nothing was written.\n- ${site.problems.join('\n- ')}`);
-    for (const site of sites) {
-      const needs = report.find((item) => item.slug === site.slug)?.currencyCorrection;
-      if (needs && !currencyFenced(site)) {
-        throw new Error(`${site.slug}: its trips are priced in ${needs.to} and the site sells in ${needs.from}. Pass --set-currency=${sites.filter((item) => report.find((r) => r.slug === item.slug)?.currencyCorrection).map((item) => item.slug).join(',')} to correct it, or take the site out of this run.`);
-      }
-    }
-
     const done = [];
     for (const site of sites) {
       const state = await readSiteState(site);
       if (!isState(state)) throw new Error(`${site.slug}: ${state.problems.join('; ')}`);
       const file = journalFile(site);
-      const journal: Journal = { site: site.slug, appliedAt: new Date().toISOString(), currency: null, created: [], updated: [], unlisted: [], archived: [] };
+      const journal: Journal = { site: site.slug, appliedAt: new Date().toISOString(), created: [], updated: [], unlisted: [], archived: [] };
       const record = () => fs.writeFileSync(file, JSON.stringify(journal, null, 2), { mode: 0o600 });
       record();
-
-      if (state.currencyChange) {
-        const result = await Tenant.updateOne({ slug: site.slug, defaultCurrency: state.currencyChange.from }, { $set: { defaultCurrency: state.currencyChange.to } });
-        if (result.modifiedCount !== 1) throw new Error(`${site.slug}: the currency changed since it was read; nothing further was written.`);
-        journal.currency = state.currencyChange;
-        record();
-      }
 
       for (const [index, trip] of site.trips.entries()) {
         const source = sources.get(`${site.slug}/${sourceKey(trip.price)}`);
@@ -1331,7 +1229,7 @@ async function apply(batch: ExistingBatch): Promise<void> {
       if (owned !== site.trips.length || rated !== 0 || otherCurrency !== 0) {
         throw new Error(`${site.slug}: post-apply check failed (owned=${owned}, rated=${rated}, otherCurrency=${otherCurrency}). The journal reverses what was written.`);
       }
-      done.push({ slug: site.slug, created: journal.created.length, updated: journal.updated.length, unlisted: journal.unlisted.length, archived: journal.archived.length, currency: journal.currency });
+      done.push({ slug: site.slug, created: journal.created.length, updated: journal.updated.length, unlisted: journal.unlisted.length, archived: journal.archived.length, refused: state.refused.length });
     }
     console.log(JSON.stringify({ mode: 'applied', batch: batch.id, sites: done, deleted: 'none' }, null, 2));
   } finally {
@@ -1356,8 +1254,7 @@ async function restore(batch: ExistingBatch): Promise<void> {
       for (const entry of journal.unlisted) await Attraction.updateOne({ slug: entry.slug }, { $addToSet: { tenantIds: entry.tenantId } });
       for (const entry of journal.updated) await Attraction.replaceOne({ slug: entry.slug }, entry.before);
       if (journal.created.length) await Attraction.deleteMany({ slug: { $in: journal.created } });
-      if (journal.currency) await Tenant.updateOne({ slug: site.slug }, { $set: { defaultCurrency: journal.currency.from } });
-      done.push({ slug: site.slug, restored: journal.created.length + journal.updated.length + journal.unlisted.length + journal.archived.length, currency: journal.currency ? journal.currency.from : 'unchanged' });
+      done.push({ slug: site.slug, restored: journal.created.length + journal.updated.length + journal.unlisted.length + journal.archived.length });
     }
     console.log(JSON.stringify({ mode: 'restored', batch: batch.id, sites: done }, null, 2));
   } finally {

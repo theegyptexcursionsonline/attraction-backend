@@ -215,14 +215,11 @@ describe('batch B11: the six new sites', () => {
       // ours, and the line is being taken off the trip rather than shown. Everywhere else, no sum of money.
       expect(source.replace(/omit: \{[\s\S]*?\n {4}\},/g, '')).not.toMatch(/[$€]\d/);
     }
-    // The only priced lines quoted in the batch data are the two this batch takes off a trip.
+    // No line this batch quotes to take off a trip names a sum of money either.
     const omitted = [...B11, ...B11_EXISTING.sites].flatMap((site) => site.trips)
       .flatMap((trip) => Object.values(trip.price.omit || {}).flat() as string[])
       .filter((line) => /[$€£]\s?\d/.test(line));
-    expect([...new Set(omitted)].sort()).toEqual([
-      'Optional: Scarf & Goggles for $5',
-      'Pickup from outside Makadi: $5 per person',
-    ]);
+    expect(omitted).toEqual([]);
     // No sentence this batch writes names a sum of money either; a guest reads the structured price.
     const ownCopy = [...B11, ...B11_EXISTING.sites].flatMap((site) => site.trips.flatMap((trip) => [
       trip.title, trip.short, trip.description, ...trip.highlights, trip.seo.metaTitle, trip.seo.metaDescription,
@@ -324,29 +321,19 @@ describe('batch B11: the six new sites', () => {
     // Every one of its options sells a yacht tour, so none of them is a speedboat day.
     for (const option of paradise.options) expect(option.title).toMatch(/Yacht Tour/i);
 
-    // The Makadi records that promise their pickup only conditionally, or price an option per group or per couple.
+    // makadi-bay-safari was dropped from this batch (coordinator, 30 October): the tenant is inactive and the
+    // client asked for it to be deduplicated, so nothing here names it or any record written only for it.
+    expect(B11_EXISTING.sites.map((site) => site.slug)).not.toContain('makadi-bay-safari');
     for (const slug of [
       'from-makadi-bay-hurghada-desert-quad-bike-camel-ride',
+      'golden-sunset-quad-safari-in-makadi-bay',
+      'makadi-bay-2-hour-quad-bike-adventure-across-desert-coast',
       'makadi-bay-atv-camel-safari-with-dinner-and-stargazing',
+      'makadi-bay-luxury-desert-dinner-stargazing-experience',
       'makadi-bay-sunset-atv-quad-safari-with-stunning-sea-views',
       'sunrise-buggy-safari-in-makadi-bay-with-breakfast',
       'hurghada-quad-biking-adventure-with-dinner-show-stargazing-options',
-    ]) {
-      const record = tour(slug)!;
-      expect(sold.has(slug)).toBe(false);
-      const included = (record.detail.whatsIncluded?.length ? record.detail.whatsIncluded : record.detail.includes) || [];
-      const notIncluded = record.detail.whatsNotIncluded || [];
-      const conditionalPickup = included.some((line) => /hotel pickup/i.test(line) && CONDITIONAL.test(line));
-      const excludedPickup = notIncluded.some((line) => /hotel pickup/i.test(line));
-      expect(conditionalPickup || excludedPickup).toBe(true);
-    }
-    // Every option of the sunrise buggy record is priced per group, which the record's own type says.
-    for (const option of tour('sunrise-buggy-safari-in-makadi-bay-with-breakfast')!.options) expect(option.type).toBe('Per Group');
-    // The two-hour quad record's second option is priced per couple, so only the single quad is sold.
-    const twoHour = tour('makadi-bay-2-hour-quad-bike-adventure-across-desert-coast')!;
-    expect(twoHour.options.find((option) => option.pricingKey === 'double-quad-4a3e1777d7d0')!.type).toBe('Per Couple');
-    expect(existingOf('makadi-bay-safari').trips.find((trip) => trip.price.source === twoHour.slug)!.price.options)
-      .toEqual(['single-quad-652928d03bae']);
+    ]) expect(sold.has(slug)).toBe(false);
 
     // The client publishes no Luxor day that leaves from Hurghada; the one it sells from the coast leaves Makadi Bay.
     const luxor = tour('makadi-bay-to-luxor-discover-the-valley-of-the-kings-king-tut-s-tomb')!;
@@ -428,11 +415,10 @@ describe('batch B11: the six new sites', () => {
   });
 });
 
-describe('batch B11: the five sites that already exist', () => {
-  it('is five existing sites with their domains and designs, and creates no tenant', () => {
+describe('batch B11: the four sites that already exist', () => {
+  it('is four existing sites with their domains and designs, and creates no tenant', () => {
     expect(validateExisting(B11_EXISTING)).toEqual([]);
     expect(B11_EXISTING.sites.map((site) => [site.slug, site.domain, site.design])).toEqual([
-      ['makadi-bay-safari', 'makadibaysafari.com', 'makadidunes'],
       ['cairo-tour-from-hurghada', 'cairotourfromhurghada.com', 'cairoday'],
       ['luxor-tour-from-hurghada', 'luxortourfromhurghada.com', 'luxorday'],
       ['hurghada-snorkeling', 'hurghadasnorkeling.com', 'hrgsnorkel'],
@@ -447,18 +433,19 @@ describe('batch B11: the five sites that already exist', () => {
     expect(new Set(ours).size).toBe(ours.length);
   });
 
-  it('plans the client\'s real trips on each, and takes nothing else on', () => {
+  it('plans the client\'s real trips on each, against what production actually lists', () => {
     expect(B11_EXISTING.sites.map((site) => [site.slug, site.trips.length, site.retire.length, site.keep.length])).toEqual([
-      ['makadi-bay-safari', 3, 2, 0],
-      ['cairo-tour-from-hurghada', 1, 17, 0],
-      ['luxor-tour-from-hurghada', 2, 15, 0],
-      ['hurghada-snorkeling', 11, 13, 0],
-      ['cairo-night-cruise', 1, 4, 0],
+      ['cairo-tour-from-hurghada', 1, 41, 0],
+      ['luxor-tour-from-hurghada', 2, 30, 0],
+      ['hurghada-snorkeling', 11, 9, 0],
+      ['cairo-night-cruise', 1, 19, 0],
     ]);
-    // Nothing is kept, because not one listing on the five sites is the client's: every one is a demo record.
+    // Nothing is kept, because not one listing on the four sites is a record the client publishes.
     expect(B11_EXISTING.sites.flatMap((site) => site.keep)).toEqual([]);
-    expect(B11_EXISTING.sites.reduce((total, site) => total + site.trips.length, 0)).toBe(18);
-    expect(B11_EXISTING.sites.reduce((total, site) => total + site.retire.length, 0)).toBe(51);
+    expect(B11_EXISTING.sites.reduce((total, site) => total + site.trips.length, 0)).toBe(15);
+    expect(B11_EXISTING.sites.reduce((total, site) => total + site.retire.length, 0)).toBe(99);
+    // makadi-bay-safari has been dropped from this batch: it is inactive and must stay exactly as it is.
+    expect(JSON.stringify(B11_EXISTING)).not.toMatch(/makadi-bay-safari/);
     // No retired slug is one this batch writes, so nothing is created and taken off in the same run.
     for (const site of B11_EXISTING.sites) {
       const wanted = site.trips.map((trip) => `${site.slugPrefix}${trip.path}`);
@@ -476,7 +463,7 @@ describe('batch B11: the five sites that already exist', () => {
       }
       for (const document of built(site, site.trips)) { expectCompleteTrip(site, document); count += 1; }
     }
-    expect(count).toBe(18);
+    expect(count).toBe(15);
     // Every price a guest sees is the published one, copied at build time.
     for (const site of B11_EXISTING.sites) for (const document of built(site, site.trips)) {
       const trip = site.trips.find((item) => `${site.slugPrefix}${item.path}` === document.slug)!;
@@ -503,14 +490,10 @@ describe('batch B11: the five sites that already exist', () => {
     const own = B11_EXISTING.sites.flatMap((site) => site.trips).filter((trip) => !earlier.has(trip.price));
     expect([...new Set(own.map((trip) => trip.price.source))].sort()).toEqual([
       'from-hurghada-cairo-pyramids-grand-egyptian-museum-citadel-day-trip',
-      'golden-sunset-quad-safari-in-makadi-bay',
-      'makadi-bay-2-hour-quad-bike-adventure-across-desert-coast',
-      'makadi-bay-luxury-desert-dinner-stargazing-experience',
       'makadi-bay-to-luxor-discover-the-valley-of-the-kings-king-tut-s-tomb',
     ]);
     expect(Object.keys(B11EP).sort()).toEqual([
       'CAIRO_FROM_HURGHADA', 'LUXOR_FROM_MAKADI_PRIVATE', 'LUXOR_FROM_MAKADI_SHARED',
-      'MAKADI_DESERT_DINNER', 'MAKADI_SUNSET_QUAD', 'MAKADI_TWO_HOUR_QUAD',
     ]);
     // The two Luxor options leave at different hours, so each is its own trip rather than one with two departures.
     expect([B11EP.LUXOR_FROM_MAKADI_SHARED.departures, B11EP.LUXOR_FROM_MAKADI_PRIVATE.departures]).toEqual([['04:00'], ['05:00']]);
@@ -528,35 +511,38 @@ describe('batch B11: the five sites that already exist', () => {
     }
   });
 
-  it('plans the currency correction as the only tenant field it would ever write', () => {
-    // All five carry EGP today and every record the client publishes is priced in USD; a price is never converted.
-    for (const site of B11_EXISTING.sites) expect([site.currencyNow, site.currency]).toEqual(['EGP', 'USD']);
-    // Nothing else about a tenant is named in the batch data: no name change, no domain, no theme, no contact.
+  it('writes no tenant document at all, in any mode', () => {
+    // All four already sell in USD, which is what the client publishes in, so no currency has to change and the
+    // script has no way to change one: a site whose currency differs stops the run instead.
+    for (const site of B11_EXISTING.sites) expect(site.currency).toBe('USD');
+    // Nothing about a tenant is named in the batch data: no name change, no domain, no theme, no contact, no mark.
     for (const site of B11_EXISTING.sites as ExistingSite[]) {
       expect(Object.keys(site).sort()).toEqual([
-        'area', 'category', 'city', 'coordinates', 'currency', 'currencyNow', 'design', 'domain', 'foreignPlaces',
+        'area', 'category', 'city', 'coordinates', 'currency', 'design', 'domain', 'foreignPlaces',
         'keep', 'listingPath', 'name', 'retire', 'slug', 'slugPrefix', 'trips',
       ]);
     }
-    // The script writes a tenant's currency and nothing else; no other Tenant field is set anywhere in it.
     const script = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'seed-network-b11-existing.ts'), 'utf8');
-    // The correction lands in the same run as the trips and before them, so a USD trip is never written to a site
-    // still selling in EGP; the restore unwinds in the opposite order, so the trips go before the currency reverts.
-    const apply = script.slice(script.indexOf('async function apply('), script.indexOf('async function restore('));
-    expect(apply.indexOf('defaultCurrency: state.currencyChange.to')).toBeLessThan(apply.indexOf('for (const [index, trip] of site.trips.entries())'));
-    expect(apply.indexOf('for (const [index, trip] of site.trips.entries())')).toBeLessThan(apply.indexOf('for (const entry of state.unlist)'));
-    const restoreBody = script.slice(script.indexOf('async function restore('));
-    expect(restoreBody.indexOf('deleteMany')).toBeLessThan(restoreBody.indexOf('defaultCurrency: journal.currency.from'));
-    // It is written only behind its own fence, and only when the value read is still the value on the record.
-    expect(apply).toMatch(/currencyFenced\(site\)/);
-    expect(apply).toMatch(/Tenant\.updateOne\(\{ slug: site\.slug, defaultCurrency: state\.currencyChange\.from \}/);
-    const tenantWrites = [...script.matchAll(/Tenant\.updateOne\([^)]*\$set: \{ ([a-zA-Z]+):/g)].map((match) => match[1]);
-    expect([...new Set(tenantWrites)]).toEqual(['defaultCurrency']);
-    expect(script).not.toMatch(/Tenant\.(?:create|insertMany|deleteOne|deleteMany|findOneAndDelete)/);
+    // No Tenant write of any kind, so the four client logos and every other tenant field are out of reach.
+    expect(script).not.toMatch(/Tenant\.(?:updateOne|updateMany|findOneAndUpdate|create|insertMany|replaceOne|deleteOne|deleteMany|findOneAndDelete|bulkWrite)/);
     expect(script).not.toMatch(/Attraction\.deleteOne\b|Attraction\.findOneAndDelete\b/);
     // Taking a listing off is reversible: a pull from tenantIds, or an archive that keeps the status it had.
     expect(script).toMatch(/\$pull: \{ tenantIds: state\.tenantId \}/);
     expect(script).toMatch(/statusBeforeArchive: entry\.status/);
+    // The only record ever deleted is one this run created, and only by --restore from its own journal.
+    const restoreBody = script.slice(script.indexOf('async function restore('));
+    expect(restoreBody).toMatch(/Attraction\.deleteMany\(\{ slug: \{ \$in: journal\.created \} \}\)/);
+  });
+
+  it('refuses to take off a listing with a booking, or one these sites own', () => {
+    const script = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'seed-network-b11-existing.ts'), 'utf8');
+    const read = script.slice(script.indexOf('export async function readSiteState('));
+    // Both refusals happen before the retire list reaches the plan, so neither can be overtaken by intent.
+    expect(read).toMatch(/if \(bookings\.length > 0\) \{/);
+    expect(read).toMatch(/if \(ownerSlug && OWNED_BY\.includes\(ownerSlug\)\)/);
+    expect(read).toMatch(/const retire = site\.retire\.filter\(\(slug\) => !refused\.some\(/);
+    // The owned-by list is the batch's own sites, so the two can never drift apart.
+    expect(script).toMatch(/const OWNED_BY: string\[\] = B11_EXISTING\.sites\.map\(\(site\) => site\.slug\);/);
   });
 
   it('never writes a logo, a dark logo or a favicon on any of the five', () => {

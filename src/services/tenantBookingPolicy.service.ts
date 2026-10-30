@@ -33,10 +33,12 @@ const BOOKING_CREATION_CLOSED_TENANT_SLUGS = [
   'pyramids-of-dahshur',
   'statue-of-ramesses-ii',
   'three-pools-dahab',
-  // The network queue's eleven sites (batch B11): closed to real bookings until each domain is connected and the
-  // owner opens it. Opening a site is removing its slug. The first six are new; the last five already existed and
-  // were carrying a catalogue with no record behind it, no payment gateway and no booking inbox, so they are
-  // closed here too (coordinator, 30 October) rather than left open on a catalogue being replaced.
+  // The network queue's batch B11: closed to real bookings until each domain is connected and the owner opens it.
+  // Opening a site is removing its slug. The first six are the new sites; the rest already existed and none of
+  // them has a payment gateway or a booking inbox, so they are closed here too rather than left open while their
+  // catalogue is worked on. `makadi-bay-safari` is kept closed although it has been dropped from batch B11: it has
+  // been inactive since May, awaiting deduplication with `makadi-bay-safari-center`, so fail-closed is right and
+  // removing the slug would be the only change this work makes to a site that must stay exactly as it is.
   'saqqara-necropolis',
   'pyramid-of-djoser',
   'red-pyramid-egypt',
