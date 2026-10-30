@@ -98,9 +98,58 @@ export async function getBookingFeed(req: Request, res: Response): Promise<void>
   }
 }
 
+/** Statuses of a site that can sell, or soon will. Anything else (inactive, suspended) is left out. */
+const LISTED_SITE_STATUSES = ['active', 'pending', 'coming_soon'];
+const MAX_SITES = 1000;
+
+/**
+ * GET /api/internal/booking-feed/sites — every network site the booking API may name, with the same
+ * signature as the feed (no parameters), so operations can give a person access to a site before
+ * its first booking. Slug, name and status only: nothing about a guest, a domain or a setting.
+ */
+export async function getFeedSites(req: Request, res: Response): Promise<void> {
+  res.set('Cache-Control', 'no-store');
+  const secret = process.env.BOOKING_FEED_SECRET;
+  if (!secret) {
+    res.status(503).json({ success: false, error: 'Not configured' });
+    return;
+  }
+  const url = new URL(req.originalUrl || req.url, 'http://booking-feed.invalid');
+  if (!verifyFeedSignature(secret, req.header(FEED_SIGNATURE_HEADER), req.method, url.pathname, url.searchParams, Date.now() / 1000)) {
+    res.status(401).json({ success: false, error: 'Unauthorized' });
+    return;
+  }
+  if ([...url.searchParams.keys()].length) {
+    res.status(400).json({ success: false, error: 'Invalid request', field: 'query' });
+    return;
+  }
+  try {
+    const rows = await Tenant.collection
+      .find({ $or: [{ status: { $in: LISTED_SITE_STATUSES } }, { status: { $exists: false } }] }, { projection: { slug: 1, name: 1, status: 1 } })
+      .sort({ slug: 1 })
+      .limit(MAX_SITES + 1)
+      .toArray();
+    // More sites than one answer holds would make the list silently incomplete: say so instead.
+    if (rows.length > MAX_SITES) {
+      res.status(503).json({ success: false, error: 'Too many sites' });
+      return;
+    }
+    const sites = rows
+      .filter((row) => typeof row.slug === 'string' && /^[a-z0-9][a-z0-9-]{0,79}$/.test(row.slug))
+      .map((row) => ({ slug: row.slug as string, name: typeof row.name === 'string' && row.name.trim() ? row.name.trim() : row.slug, status: typeof row.status === 'string' ? row.status : null }));
+    res.json({ success: true, data: { sites } });
+  } catch (error) {
+    console.error('Booking feed site list failed.', { code: error instanceof Error ? error.name : 'UNKNOWN_ERROR' });
+    res.status(503).json({ success: false, error: 'Feed unavailable' });
+  }
+}
+
 const router = Router();
 router.get('/booking-feed', bookingFeedLimiter, (req, res, next) => {
   getBookingFeed(req, res).catch(next);
+});
+router.get('/booking-feed/sites', bookingFeedLimiter, (req, res, next) => {
+  getFeedSites(req, res).catch(next);
 });
 
 export default router;
