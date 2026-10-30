@@ -72,7 +72,7 @@ const HRG = pickupLegs('Hurghada');
 // B09A: Grand Egyptian Museum, Hurghada Boat Tour and Dive2Egypt.
 // ================================================================================================================
 
-const PROGRAMMES_A = {
+export const PROGRAMMES_A = {
   // ---- Grand Egyptian Museum ---------------------------------------------------------------------------------
   GEM_VISIT: {
     provider: 'eeo',

@@ -21,6 +21,18 @@ const BOOKING_CREATION_CLOSED_TENANT_SLUGS = [
   'shaab-samadai',
   'bahria-oasis',
   'turtle-bay-hurghada',
+  // The network queue's ten monument sites (batch B10): closed to real bookings until each domain is connected
+  // and the owner opens it. Opening a site is removing its slug.
+  'great-sphinx-of-giza',
+  'pyramid-complex-giza',
+  'great-pyramid-of-cheops',
+  'mit-rahina-museum',
+  'sakkara-pyramids',
+  'pyramid-of-khafre',
+  'pyramid-of-menkaure',
+  'pyramids-of-dahshur',
+  'statue-of-ramesses-ii',
+  'three-pools-dahab',
 ] as const;
 
 export class TenantBookingCreationClosedError extends AppError {

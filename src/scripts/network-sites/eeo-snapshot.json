@@ -26550,6 +26550,1625 @@
      "required": false
     }
    ]
+  },
+  {
+   "slug": "full-day-cairo-giza-pyramids-egyptian-museum",
+   "id": "fbc8ae21e9dd0243544c2239",
+   "readAt": "2026-10-30T06:51:11Z",
+   "detail": {
+    "title": "Full-Day Cairo: Giza Pyramids & Egyptian Museum",
+    "duration": "8 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Pickup service from your Hotel by a private A/C. vehicle and return.",
+     "Professional English speaking Egyptology Tour guide.",
+     "Bottle of water during the tour.",
+     "All services and charges."
+    ],
+    "whatsNotIncluded": [],
+    "whatToBring": [],
+    "itinerary": [],
+    "pricingSummary": {
+     "currency": "USD"
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "giza-pyramids-and-egyptian-museum-b15c5ccaa122",
+     "title": "Giza Pyramids and Egyptian Museum",
+     "type": "Per Person",
+     "description": "Step back in time to discover Egypt's UNESCO World Heritage wonders! Marvel at the ancient Pyramids of Giza, stand face-to-face with the Sphinx, and explore over 5,000 years of pharaonic art and gold at the historic Egyptian Museum.",
+     "duration": "8 hours",
+     "guestPrices": {
+      "adult": 130,
+      "child": 130,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "06:05",
+       "guestPrices": {
+        "adult": 130,
+        "child": 130,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "07:00",
+       "guestPrices": {
+        "adult": 130,
+        "child": 130,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 130,
+        "child": 130,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 130,
+        "child": 130,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 130,
+        "child": 130,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 130,
+        "child": 130,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": []
+  },
+  {
+   "slug": "giza-pyramids-sphinx-custom-cairo-sightseeing-tour",
+   "id": "b1b4e7beb3df94d48422492b",
+   "readAt": "2026-10-30T06:51:11Z",
+   "detail": {
+    "title": "Giza Pyramids, Sphinx & Custom Cairo Sightseeing Tour",
+    "duration": "3 - 8 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Transportation by air-conditioned vehicle",
+     "Professional licensed guide",
+     "Shared Tour: Professional English-speaking guide only",
+     "Private Tour: Professional guide available in all languages",
+     "Entry tickets to selected landmarks",
+     "Hotel pickup and drop-off from Cairo or Giza",
+     "Visits: Papyrus Gallery, Oils Factory, Bazaar, Cotton Store, Carpet School (upon request)",
+     "Bottled water"
+    ],
+    "whatsNotIncluded": [],
+    "whatToBring": [
+     "Comfortable shoes",
+     "Sunglasses",
+     "Sun hat",
+     "Hat",
+     "Camera",
+     "Sunscreen",
+     "Comfortable clothes"
+    ],
+    "itinerary": [
+     {
+      "title": "2 pickup location options",
+      "description": "Giza, Cairo"
+     },
+     {
+      "title": "Car",
+      "description": "Giza",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Pyramids of Giza",
+      "description": "Guided tour",
+      "duration": "2 hour"
+     },
+     {
+      "title": "Cairo",
+      "description": "Break time, Lunch",
+      "duration": "1 hours"
+     },
+     {
+      "title": "Egyptian Museum of Antiquities",
+      "description": "Guided tour",
+      "duration": "2 hour"
+     },
+     {
+      "title": "Giza",
+      "description": "Shopping",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Car",
+      "description": "Giza",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "2 drop-off locations",
+      "description": "Giza, Cairo"
+     }
+    ],
+    "pricingSummary": {
+     "currency": "USD"
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "egyptian-museum-old-cairo-khan-khalili-shared-63856fdfa130",
+     "title": "Egyptian Museum, Old Cairo, Khan Khalili —Shared With Ticket",
+     "type": "Per Person",
+     "description": "Shared English tour of the Egyptian Museum, Old Cairo, and Khan el-Khalili with tickets included. Lunch not included. Explore artifacts, churches, and Cairo’s most vibrant bazaar for history and shopping in one trip.",
+     "duration": "3 - 8 hours",
+     "guestPrices": {
+      "adult": 78,
+      "child": 78,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 78,
+        "child": 78,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "pyramids-egyptian-museum-old-cairo-shared-wit-d7d116d74da4",
+     "title": "Pyramids, Egyptian Museum, Old Cairo — Shared With Ticket",
+     "type": "Per Person",
+     "description": "Shared English tour of the Pyramids, Egyptian Museum, and Old Cairo with tickets included. Lunch not included. See the Great Pyramid, Tutankhamun’s treasures, and Old Cairo’s historic churches in one cultural journey.",
+     "duration": "3 - 8 hours",
+     "guestPrices": {
+      "adult": 115,
+      "child": 115,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 115,
+        "child": 115,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 115,
+        "child": 115,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 115,
+        "child": 115,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+     "title": "Pyramids, Egyptian Museum, Old Cairo — Private With Ticket",
+     "type": "Per Person",
+     "description": "Private English tour of the Pyramids, Egyptian Museum, and Old Cairo with tickets included. Lunch not included, but can be added at checkout. Discover monuments, treasures, and churches with a personal guide.",
+     "duration": "3 - 8 hours",
+     "guestPrices": {
+      "adult": 399.19,
+      "child": 120.03,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 399.19,
+        "child": 120.03,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 399.19,
+        "child": 120.03,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 399.19,
+        "child": 120.03,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-3",
+     "pricingKey": "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07",
+     "title": "{VIP} Private: Pyramid, Museum, Citadel, Old Cairo & Felucca",
+     "type": "Per Person",
+     "description": "VIP English private tour of the Giza Pyramids, Egyptian Museum, Citadel, and Old Cairo with lunch included, ending with a Nile felucca ride. A luxury full-day journey blending ancient history, culture, and scenic relaxation.",
+     "duration": "3 - 8 hours",
+     "guestPrices": {
+      "adult": 435,
+      "child": 202,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 435,
+        "child": 202,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 435,
+        "child": 202,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 435,
+        "child": 202,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a7f45db520bc5c44a5b6d65",
+     "title": "Lunch per person",
+     "description": "",
+     "price": 33.72,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a7f45db520bc5c44a5b6d66",
+     "title": "30 Min Quad Bike",
+     "description": "",
+     "price": 67.43,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a7f45db520bc5c44a5b6d67",
+     "title": "30 Min Camel Ride",
+     "description": "",
+     "price": 67.43,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a7f45db520bc5c44a5b6d68",
+     "title": "Airport Pickup Fees",
+     "description": "",
+     "price": 67.43,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a7f45db520bc5c44a5b6d69",
+     "title": "Dinner Cruise Nile",
+     "description": "",
+     "price": 47.2,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a7f45db520bc5c44a5b6d6a",
+     "title": "Sultan Hassan Mosque",
+     "description": "",
+     "price": 107.89,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a7f45db520bc5c44a5b6d6b",
+     "title": "Romanian Guide",
+     "description": "Romanian Guide\nxxxxxxxxxxxxxxxxxxxx",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a7f45db520bc5c44a5b6d6c",
+     "title": "Hindi Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a7f45db520bc5c44a5b6d6d",
+     "title": "Indonesian Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a7f45db520bc5c44a5b6d6e",
+     "title": "Chinese guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a7f45db520bc5c44a5b6d6f",
+     "title": "Korean Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a7f45db520bc5c44a5b6d70",
+     "title": "Japanese Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a7f45db520bc5c44a5b6d71",
+     "title": "Dutch guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a7f45db520bc5c44a5b6d72",
+     "title": "Portuguese Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a7f45db520bc5c44a5b6d73",
+     "title": "Ukrainian Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a7f45db520bc5c44a5b6d74",
+     "title": "Turkish Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a7f45db520bc5c44a5b6d75",
+     "title": "Greek Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a7f45db520bc5c44a5b6d76",
+     "title": "Hungarian Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a7f45db520bc5c44a5b6d77",
+     "title": "Czech Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a7f45db520bc5c44a5b6d78",
+     "title": "Polish Guide",
+     "description": "",
+     "price": 269.73,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a45",
+     "title": "Cairo Tower Tour",
+     "description": "",
+     "price": 107.89,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a46",
+     "title": "Labor Tombs",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a47",
+     "title": "Menkaure Pyramid",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a48",
+     "title": "Entrance To Khufu Pyramids",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a49",
+     "title": "Abdeen Palace",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a4a",
+     "title": "Saqqara",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a4b",
+     "title": "Memphis",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a4c",
+     "title": "Dahshur",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a4d",
+     "title": "The Cave Church Tour",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a4e",
+     "title": "Islamic, Coptic Tour",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a4f",
+     "title": "Bayt al-Suhaymi",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a50",
+     "title": "City of the Dead",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a51",
+     "title": "Mohamed Ali Palace",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a52",
+     "title": "Qalawun Complex",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a53",
+     "title": "Khan el-Khalili Tour",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a54",
+     "title": "Abu al-Abbas Mosque",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a55",
+     "title": "Muizz Street",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a56",
+     "title": "Aqmar Mosque",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a57",
+     "title": "Al-Rifa'i Mosque",
+     "description": "",
+     "price": 953.48,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a58",
+     "title": "Amr ibn Al-Aas Masjd",
+     "description": "",
+     "price": 953.48,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a59",
+     "title": "Gayer-Anderson House",
+     "description": "",
+     "price": 953.48,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a5a",
+     "title": "Al-Azhar Mosque",
+     "description": "",
+     "price": 953.48,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a5b",
+     "title": "Ibn Tulun Mosque",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a5c",
+     "title": "Entry to the Great Pyramids",
+     "description": "",
+     "price": 87.66,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a5d",
+     "title": "Private Tour Photographer",
+     "description": "",
+     "price": 202.29,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a5e",
+     "title": "Salah Al-Din Citadel",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a5f",
+     "title": "Civilization Museum",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a60",
+     "title": "01 hour Felucca ride",
+     "description": "",
+     "price": 67.43,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a61",
+     "title": "AlHakim bi-Amr Allah",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a62",
+     "title": "Bab Zuweila",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a63",
+     "title": "Sultan Al-Ghuri",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a64",
+     "title": "Al-Salih Tala’i",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a65",
+     "title": "Aqsunqur",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a66",
+     "title": "Beit Zeinab Khatun",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a67",
+     "title": "Darb al-Ahmar",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a68",
+     "title": "Islamic Art Museum",
+     "description": "",
+     "price": 107.89,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a69",
+     "title": "Cairo Opera House",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873d7a73930e0b2c8a7a6a",
+     "title": "Al-Fishawi Café",
+     "description": "",
+     "price": 94.4,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+     ],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "cairo-private-day-trip-by-car-from-sharm-el-sheikh",
+   "id": "04186ec20f0f4d51c8ddee93",
+   "readAt": "2026-10-30T06:51:11Z",
+   "detail": {
+    "title": "Cairo Private Day Trip by Car from Sharm El Sheikh",
+    "duration": "22 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Hotel pickup and drop-off",
+     "English-speaking guide (if you need a Spanish, German, or French-speaking guide please select the relevant add-on during booking)",
+     "Lunch meal at a local restaurant",
+     "All entrance fees",
+     "Private Air-conditioned vehicle",
+     "Professional licensed driver"
+    ],
+    "whatsNotIncluded": [],
+    "whatToBring": [],
+    "itinerary": [],
+    "pricingSummary": {
+     "currency": "USD"
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "from-sharm-el-sheikh-cairo-private-day-trip-b-1c33a0b74d33",
+     "title": "From Sharm El Sheikh: Cairo Private Day Trip By Private Car",
+     "type": "Per Person",
+     "description": "Journey from Sharm El Sheikh to Cairo on an exclusive private day trip! Experience the majestic Pyramids of Giza and the Sphinx, enjoy an optional camel ride, explore thousands of pharaonic artifacts at the Egyptian Museum, and shop at the historic Khan El-Khalili Bazaar.",
+     "duration": "22 hours",
+     "guestPrices": {
+      "adult": 306,
+      "child": 306,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "01:00",
+       "guestPrices": {
+        "adult": 306,
+        "child": 306,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a81cde1a2aa398b97321646",
+     "title": "English Speaking Tour Guide",
+     "description": "",
+     "price": 0,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a81cde1a2aa398b97321647",
+     "title": "German, Spanish, French guide",
+     "description": "",
+     "price": 100,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "cairo-museum-tour-choose-your-museum-explore-egypt-s-history",
+   "id": "588d5e0f0a2c8a8770bf6989",
+   "readAt": "2026-10-30T06:51:11Z",
+   "detail": {
+    "title": "Cairo Museum Tour: Choose Your Museum & Explore Egypt’s History",
+    "duration": "2.5 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Entry Ticket to the selected Museum",
+     "Professional Egyptologist tour guide"
+    ],
+    "whatsNotIncluded": [
+     "Hotel transfers (available as an add-on)",
+     "Tips (optional)"
+    ],
+    "whatToBring": [
+     "Passport or ID card, copy accepted"
+    ],
+    "itinerary": [
+     {
+      "title": "Meeting Point 1",
+      "description": "Meeting point according to Coptic museum option",
+      "duration": "2.5 hours"
+     },
+     {
+      "title": "Meeting Point 2",
+      "description": "Meeting point according to  Memphis museum option",
+      "duration": "2.5 hours"
+     },
+     {
+      "title": "Meeting Point 3",
+      "description": "Meeting point according to Museum of Islamic Art option",
+      "duration": "2.5 hours"
+     },
+     {
+      "title": "Meeting Point 4",
+      "description": "Meeting point according to Old Egyptian Museum option",
+      "duration": "2.5 hours"
+     },
+     {
+      "title": "Meeting Point 5",
+      "description": "Meeting point according to the National Museum of Egyptian Civilisation option",
+      "duration": "2.5 hours"
+     },
+     {
+      "title": "Meeting Point 6",
+      "description": "Meeting point according to the Grand Egyptian Museum option",
+      "duration": "2.5 hours"
+     }
+    ],
+    "pricingSummary": {
+     "currency": "USD"
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "half-day-guided-tour-inside-the-coptic-museum-391960ea533f",
+     "title": "Coptic Museum Guided Tour",
+     "type": "Per Person",
+     "description": "Enjoy a half-day guided visit to the Coptic Museum with an entry ticket and shared tour included. Discover Egypt’s rich Christian heritage, historic artifacts, and beautiful collections with an expert guide.",
+     "duration": "2.5 hours",
+     "guestPrices": {
+      "adult": 49,
+      "child": 29,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 49,
+        "child": 29,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 49,
+        "child": 29,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "half-day-guided-tour-inside-memphis-museum-0cd1ae447124",
+     "title": "Memphis Museum Guided Tour",
+     "type": "Per Person",
+     "description": "Explore the Memphis Museum on a half-day shared guided tour with your entry ticket included. Discover ancient Egyptian artifacts and learn about the history of Memphis from an expert guide.",
+     "duration": "2.5 hours",
+     "guestPrices": {
+      "adult": 50,
+      "child": 30,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 50,
+        "child": 30,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 50,
+        "child": 30,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "half-day-guided-tour-inside-old-egyptian-muse-3a424a7040ee",
+     "title": "Egyptian Museum Guided Tour",
+     "type": "Per Person",
+     "description": "Enjoy a half-day shared guided tour of the Old Egyptian Museum, also known as the Museum of Egyptian Antiquities, with your entry ticket included. Explore its remarkable collection of ancient Egyptian artifacts and learn about Egypt’s fascinating history from an expert guide.",
+     "duration": "2.5 hours",
+     "guestPrices": {
+      "adult": 54,
+      "child": 34,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 54,
+        "child": 34,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 54,
+        "child": 34,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-3",
+     "pricingKey": "national-museum-of-egyptian-civilisation-entr-77398bd9af14",
+     "title": "NMEC Guided Museum Tour",
+     "type": "Per Person",
+     "description": "Enjoy a half-day shared guided tour of the National Museum of Egyptian Civilization (NMEC) with your entry ticket included. Discover Egypt’s rich heritage and explore its fascinating collections with an expert guide.",
+     "duration": "2.5 hours",
+     "guestPrices": {
+      "adult": 56,
+      "child": 36,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 56,
+        "child": 36,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 56,
+        "child": 36,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-4",
+     "pricingKey": "half-day-guided-tour-inside-museum-of-islamic-915d7c6fcc99",
+     "title": "Museum of Islamic Art Guided Tour",
+     "type": "Per Person",
+     "description": "Enjoy a half-day shared guided tour of the Museum of Islamic Art in Cairo with your entry ticket included. Explore its remarkable collection of Islamic artifacts and discover their historical and cultural significance with an expert guide.",
+     "duration": "2.5 hours",
+     "guestPrices": {
+      "adult": 51,
+      "child": 31,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 51,
+        "child": 31,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 51,
+        "child": 31,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-5",
+     "pricingKey": "half-day-guided-tour-inside-the-grand-egyptia-14bc45bee4fb",
+     "title": "Grand Egyptian Museum Guided Tour",
+     "type": "Per Person",
+     "description": "Enjoy a half-day shared guided tour of the Grand Egyptian Museum (GEM) with your entry ticket included. Explore its impressive collections and discover the fascinating history of ancient Egypt with an expert guide.",
+     "duration": "2.5 hours",
+     "guestPrices": {
+      "adult": 62,
+      "child": 42,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 62,
+        "child": 42,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 62,
+        "child": 42,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a81ad8b706ccac27368d613",
+     "title": "Hotel transfers",
+     "description": "",
+     "price": 20,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "cairo-private-guided-tour-to-your-choice-of-top-attractions",
+   "id": "8284e22f8edb151826ff653a",
+   "readAt": "2026-10-30T06:51:11Z",
+   "detail": {
+    "title": "Cairo: Private Guided Tour to Your Choice of Top Attractions",
+    "duration": "2.5 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Entry ticket to your selected attraction",
+     "Professional Egyptologist tour guide"
+    ],
+    "whatsNotIncluded": [
+     "Hotel pick-up and drop-off (available as an add-on)",
+     "Tips (optional)"
+    ],
+    "whatToBring": [
+     "Passport or ID card, copy accepted"
+    ],
+    "itinerary": [
+     {
+      "title": "Meeting point for option Prince Mohamed Ali Palace: Half-Day Guided Tour",
+      "description": ""
+     },
+     {
+      "title": "Meeting point for Salah El-Din Citadel: Half-Day Guided Tour option",
+      "description": ""
+     },
+     {
+      "title": "Meeting point for Saqqara: Half-Day Guided Tour of the Ancient Monuments",
+      "description": ""
+     }
+    ],
+    "pricingSummary": {
+     "currency": "USD"
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "prince-mohamed-ali-palace-half-day-guided-tou-fe0f48e94d42",
+     "title": "Prince Mohamed Ali Palace: Half-Day Guided Tour",
+     "type": "Per Person",
+     "description": "Choose your favorite Cairo attraction and explore it with a private guide. Visit Saqqara, the Citadel, Prince Mohamed Ali Palace, or another top site with tickets included.",
+     "duration": "2.5 hours",
+     "guestPrices": {
+      "adult": 51,
+      "child": 31,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 51,
+        "child": 31,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 51,
+        "child": 31,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "salah-el-din-citadel-half-day-guided-tour-c17f7ed3f209",
+     "title": "Salah El-Din Citadel: Half-Day Guided Tour",
+     "type": "Per Person",
+     "description": "Visit Cairo’s historic Salah El-Din Citadel on a shared guided tour with your entry ticket included. Explore the impressive Mosque of Muhammad Ali and enjoy panoramic views of Cairo. Hotel transfers are available as an optional add-on.",
+     "duration": "2.5 hours",
+     "guestPrices": {
+      "adult": 54,
+      "child": 34,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 54,
+        "child": 34,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 54,
+        "child": 34,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "saqqara-half-day-guided-tour-of-the-ancient-m-2544df7da254",
+     "title": "Saqqara: Half-Day Guided Tour of the Ancient Monuments",
+     "type": "Per Person",
+     "description": "Explore Saqqara’s ancient monuments on a shared guided tour with your entry ticket included. Discover the Step Pyramid of Djoser and surrounding archaeological sites. Entry inside the pyramids is not included. Hotel transfers are available as an optional add-on.",
+     "duration": "2.5 hours",
+     "guestPrices": {
+      "adult": 56,
+      "child": 36,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 56,
+        "child": 36,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 56,
+        "child": 36,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a84a5e4335c796fe7673808",
+     "title": "Hotel transfers",
+     "description": "",
+     "price": 20,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "secrets-of-cairo-2-day-private-sightseeing-tour",
+   "id": "fcc65f970936d272da08926a",
+   "readAt": "2026-10-30T06:51:11Z",
+   "detail": {
+    "title": "Secrets of Cairo: 2-Day Private Sightseeing Tour",
+    "duration": "2 days",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Lunch x 2",
+     "Private transportation",
+     "Air-conditioned vehicle",
+     "Tour Guide",
+     "Entry Fees",
+     "Bottle Of Water"
+    ],
+    "whatsNotIncluded": [],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "2 pickup location options",
+      "description": "Cairo, Cairo International Airport"
+     },
+     {
+      "title": "Car",
+      "description": "Giza",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Pyramids of Giza",
+      "description": "Guided tour"
+     },
+     {
+      "title": "Valley Temple",
+      "description": "Giza",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Saqqara (Sakkara) Pyramids",
+      "description": ""
+     },
+     {
+      "title": "colossal statue of Ramses II",
+      "description": ""
+     },
+     {
+      "title": "Alabaster Sphinx",
+      "description": ""
+     },
+     {
+      "title": "Egyptian Museum",
+      "description": ""
+     },
+     {
+      "title": "National Museum of Egyptian Civilisation",
+      "description": ""
+     },
+     {
+      "title": "2 drop-off locations",
+      "description": "Cairo, Cairo International Airport"
+     }
+    ],
+    "pricingSummary": {
+     "currency": "USD"
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "secrets-of-cairo-a-2-day-private-magical-adve-b8969b9ddc98",
+     "title": "Secrets of Cairo: A 2-Day Private Magical Adventure",
+     "type": "Per Person",
+     "description": "Uncover 5,000 years of history on a private 2-day Cairo adventure! Marvel at the Giza Pyramids, Saqqara, and ancient Memphis on Day 1, then explore pharaonic treasures and royal mummies at the Egyptian Museum and NMEC on Day 2.",
+     "duration": "2 days",
+     "guestPrices": {
+      "adult": 295,
+      "child": 96,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 295,
+        "child": 96,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": []
   }
  ]
 }

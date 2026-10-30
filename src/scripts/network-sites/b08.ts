@@ -2005,7 +2005,7 @@ export const B08C: NetworkBatch = {
 /** Guests confuse the two museums; every trip says which one it visits. */
 const NOT_GEM = 'This trip visits the Egyptian Museum on Tahrir Square in central Cairo, not the Grand Egyptian Museum near the Giza Pyramids.';
 
-const PROGRAMMES_D = {
+export const PROGRAMMES_D = {
   EGM_MUSEUM_ONLY: {
     provider: 'eeo',
     tenant: EEO,

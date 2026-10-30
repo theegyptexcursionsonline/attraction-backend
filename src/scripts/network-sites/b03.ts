@@ -33,7 +33,7 @@ const SHARED_GUIDE_LINE = 'Shared Tour: Professional English-speaking guide only
 const PRIVATE_GUIDE_LINE = 'Private Tour: Professional guide available in all languages';
 const HOTEL_LINE = 'Hotel pick-up and drop-off from Cairo or Giza';
 
-const PROGRAMMES: Record<string, PriceSpec> = {
+export const PROGRAMMES: Record<string, PriceSpec> = {
   // ---- Giza Plateau Pyramids -------------------------------------------------------------------------------
   GPP_HALF_DAY: {
     provider: 'eeo',

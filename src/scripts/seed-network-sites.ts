@@ -19,7 +19,8 @@
  * Dry run (no database):   npm run seed:network-sites -- --batch=b01
  * Read-only check:         npm run seed:network-sites -- --batch=b01 --check
  * Apply (the whole batch): npm run seed:network-sites -- --batch=b01 --apply \
- *   --confirm-sites=<every slug of the batch, comma-separated, in order> --preview-code-dir=<directory outside git>
+ *   --confirm-sites=<every slug of the batch, comma-separated, in order> --preview-code-dir=<directory outside git> \
+ *   --logos=<file naming every site's approved logo, logoDark and favicon>
  */
 
 import fs from 'fs';
@@ -516,7 +517,40 @@ export function siteAddress(city: string): string {
   return region ? `${city}, ${region}, Egypt` : `${city}, Egypt`;
 }
 
-export function tenantRecord(site: NetworkSite): Record<string, unknown> {
+/** The approved logo, dark logo and favicon a site is published with. */
+export interface SiteLogos { logo: string; logoDark: string; favicon: string }
+export type LogoBook = Record<string, SiteLogos>;
+
+/**
+ * The logos a batch is applied with, read from the file `--logos=<path>` names:
+ * `{ "<site slug>": { "logo": url, "logoDark": url, "favicon": url } }`.
+ *
+ * The monogram public ids written in a batch are placeholders for where the owner uploads the real marks, so
+ * `--apply` refuses to run until every site in the batch has all three, each already on the network's Cloudinary.
+ * `--check` may run without the file and reports "logos: not supplied".
+ */
+export function logoProblems(batch: NetworkBatch, book: LogoBook | null): string[] {
+  if (!book) return ['No --logos=<path> given.'];
+  return batch.sites.flatMap((site) => {
+    const entry = book[site.slug];
+    if (!entry || typeof entry !== 'object') return [`${site.slug}: no logo entry.`];
+    return (['logo', 'logoDark', 'favicon'] as const).flatMap((field) => {
+      const url = entry[field];
+      if (typeof url !== 'string' || !url.trim()) return [`${site.slug}: ${field} is missing.`];
+      return CLOUDINARY.test(url) ? [] : [`${site.slug}: ${field} must already be on the network's Cloudinary: ${url}`];
+    });
+  });
+}
+
+/** The logo book the command line names, or null when it names none. A file that is not a JSON object stops the run. */
+export function readLogoBook(path: string | null): LogoBook | null {
+  if (!path) return null;
+  const parsed: unknown = JSON.parse(fs.readFileSync(path, 'utf8'));
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error(`${path}: expected an object of site slugs.`);
+  return parsed as LogoBook;
+}
+
+export function tenantRecord(site: NetworkSite, logos?: SiteLogos): Record<string, unknown> {
   return {
     slug: site.slug,
     name: site.name,
@@ -548,10 +582,10 @@ export function tenantRecord(site: NetworkSite): Record<string, unknown> {
     ],
     seoSettings: site.seo,
     heroImages: site.heroImages,
-    // An initials monogram until the site sends its logo (recorded as an open question).
-    logo: site.logo,
-    logoDark: site.logo,
-    favicon: site.logo,
+    // The approved uploads where `--apply` was given them; otherwise an initials monogram, which `--apply` refuses.
+    logo: logos?.logo || site.logo,
+    logoDark: logos?.logoDark || site.logo,
+    favicon: logos?.favicon || site.logo,
     paymentSettings: { enabledGateways: ['pay-later'], ownPaymentGateway: false, stripe: { enabled: false } },
     bundleSettings: { mode: 'off', reason: 'The site sells single trips only.' },
     aiSettings: {
@@ -583,6 +617,10 @@ async function loadBatch(id: string | null): Promise<NetworkBatch> {
     b09a: async () => (await import('./network-sites/b09')).B09A,
     b09b: async () => (await import('./network-sites/b09')).B09B,
     b09c: async () => (await import('./network-sites/b09')).B09C,
+    b10a: async () => (await import('./network-sites/b10')).B10A,
+    b10b: async () => (await import('./network-sites/b10')).B10B,
+    b10c: async () => (await import('./network-sites/b10')).B10C,
+    b10d: async () => (await import('./network-sites/b10')).B10D,
   };
   if (!id || !batches[id]) throw new Error(`Pass --batch=<${Object.keys(batches).join('|')}>.`);
   return batches[id]();
@@ -670,7 +708,8 @@ const tripSummary = (document: Record<string, unknown>) => ({
   extras: (document.addons as Array<{ name: string; price: number; pricingModel: string }>).map((addon) => `${addon.name}: ${addon.price} ${addon.pricingModel}`),
 });
 
-async function checkPlan(batch: NetworkBatch): Promise<void> {
+async function checkPlan(batch: NetworkBatch, logos: LogoBook | null): Promise<void> {
+  const logoTrouble = logoProblems(batch, logos);
   const { connectDatabase, disconnectDatabase } = await import('../config/database');
   await connectDatabase();
   try {
@@ -678,6 +717,7 @@ async function checkPlan(batch: NetworkBatch): Promise<void> {
     console.log(JSON.stringify({
       mode: 'check',
       batch: batch.id,
+      logos: logoTrouble.length ? (logos ? logoTrouble : 'not supplied') : 'complete',
       missingSourceProgrammes: missing,
       sites: sites.map(({ site, existing, namespaceConflict, existingSlugs, collision }) => {
         const plan = planSiteTrips(site, sources, existing?._id ?? null, schemaCheck);
@@ -698,11 +738,14 @@ async function checkPlan(batch: NetworkBatch): Promise<void> {
   }
 }
 
-async function applyPlan(batch: NetworkBatch): Promise<void> {
+async function applyPlan(batch: NetworkBatch, logos: LogoBook | null): Promise<void> {
   const expected = batch.sites.map((site) => site.slug).join(',');
   if (argValue('confirm-sites') !== expected) throw new Error(`Apply fence missing. Pass --confirm-sites=${expected}.`);
   const codeDir = argValue('preview-code-dir');
   if (!codeDir || !fs.existsSync(codeDir) || !fs.statSync(codeDir).isDirectory()) throw new Error('Pass --preview-code-dir=<existing directory outside git>.');
+  // No site is published under a stand-in mark: the approved uploads are named before the first write.
+  const logoTrouble = logoProblems(batch, logos);
+  if (logoTrouble.length) throw new Error(`Approved logos missing. Pass --logos=<path>.\n- ${logoTrouble.join('\n- ')}`);
 
   const { connectDatabase, disconnectDatabase } = await import('../config/database');
   const { Tenant } = await import('../models/Tenant');
@@ -728,7 +771,7 @@ async function applyPlan(batch: NetworkBatch): Promise<void> {
     const report = [];
     for (const { site, existing } of sites) {
       const previewAccessCode = existing?.previewAccessCode || generatePreviewAccessCode();
-      const { supportedLanguages, ...record } = tenantRecord(site);
+      const { supportedLanguages, ...record } = tenantRecord(site, logos?.[site.slug]);
       const tenant = await Tenant.findOneAndUpdate(
         { slug: site.slug },
         {
@@ -782,11 +825,14 @@ export async function main(): Promise<void> {
   const batch = await loadBatch(argValue('batch'));
   const errors = validateBatch(batch);
   if (errors.length) throw new Error(`Batch ${batch.id} is invalid:\n- ${errors.join('\n- ')}`);
-  if (process.argv.includes('--check')) return checkPlan(batch);
-  if (process.argv.includes('--apply')) return applyPlan(batch);
+  const logos = readLogoBook(argValue('logos'));
+  if (process.argv.includes('--check')) return checkPlan(batch, logos);
+  if (process.argv.includes('--apply')) return applyPlan(batch, logos);
+  const logoTrouble = logoProblems(batch, logos);
   console.log(JSON.stringify({
     mode: 'dry-run',
     batch: batch.id,
+    logos: logoTrouble.length ? (logos ? logoTrouble : 'not supplied') : 'complete',
     sites: batch.sites.map((site) => ({
       slug: site.slug,
       name: site.name,

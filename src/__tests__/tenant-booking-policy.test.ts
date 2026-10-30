@@ -34,6 +34,12 @@ describe('tenant booking-creation closure policy', () => {
     for (const slug of ['grand-egyptian-museum', 'hurghada-boat-tour', 'dive2egypt', 'marsa-alam-red-sea-egypt', 'wadi-el-gemal-reserve', 'shaab-samadai', 'bahria-oasis', 'turtle-bay-hurghada']) {
       expect(isTenantBookingCreationClosed({ slug })).toBe(true);
     }
+    // Batch B10's ten monument sites take no booking until each domain is connected and the owner opens it.
+    for (const slug of ['great-sphinx-of-giza', 'pyramid-complex-giza', 'great-pyramid-of-cheops', 'mit-rahina-museum',
+      'sakkara-pyramids', 'pyramid-of-khafre', 'pyramid-of-menkaure', 'pyramids-of-dahshur', 'statue-of-ramesses-ii',
+      'three-pools-dahab']) {
+      expect(isTenantBookingCreationClosed({ slug })).toBe(true);
+    }
     expect(() => assertTenantBookingCreationAllowed({ slug: 'king-of-egypt-tours' }))
       .toThrow(TenantBookingCreationClosedError);
     // A look-alike slug is a different site and is not closed by this policy.
@@ -62,6 +68,10 @@ describe('tenant booking-creation closure policy', () => {
         // The network queue's eight new sites stay closed until the owner opens each one.
         'grand-egyptian-museum', 'hurghada-boat-tour', 'dive2egypt', 'marsa-alam-red-sea-egypt',
         'wadi-el-gemal-reserve', 'shaab-samadai', 'bahria-oasis', 'turtle-bay-hurghada',
+        // Batch B10's ten monument sites, closed until each domain is connected.
+        'great-sphinx-of-giza', 'pyramid-complex-giza', 'great-pyramid-of-cheops', 'mit-rahina-museum',
+        'sakkara-pyramids', 'pyramid-of-khafre', 'pyramid-of-menkaure', 'pyramids-of-dahshur',
+        'statue-of-ramesses-ii', 'three-pools-dahab',
       ] },
     });
 

@@ -43,7 +43,7 @@ const PICKUP_HURGHADA = 'Pickup and drop-off at your hotel in Hurghada';
 /** The line every Valley of the Nobles trip carries, because no published day walks through those tombs. */
 const NOT_THE_NOBLES = 'This day does not include the Tombs of the Nobles. If you want to walk through those tombs, ask the team before you book.';
 
-const PROGRAMMES: Record<string, PriceSpec> = {
+export const PROGRAMMES: Record<string, PriceSpec> = {
   // ---- Temple of Karnak ------------------------------------------------------------------------------------
   TOK_BOTH_BANKS: {
     provider: 'eeo',

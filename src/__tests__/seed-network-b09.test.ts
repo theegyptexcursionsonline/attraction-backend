@@ -113,7 +113,8 @@ describe('batch B09: the network build queue', () => {
       .toEqual([['network', 'makadi-bay-snorkeling', 'makadi-snorkel-and-turtle-bay-trip']]);
     // Every client trip it sells was read on 28 October 2026; the ones it holds back are named in the batch's header.
     const tours = SNAPSHOT.tours as Array<{ slug: string; readAt?: string }>;
-    const added = tours.slice(73);
+    // The entries B09 read on its own day; later batches append their own reads after them.
+    const added = tours.filter((tour) => /^2026-10-28T/.test(String(tour.readAt)));
     const sold = new Set(B09.flatMap((site) => site.trips.map((trip) => trip.price.source)));
     for (const source of sold) if (!source.includes('desert-safari') && !source.includes('turtle-bay')) expect(tours.map((tour) => tour.slug)).toContain(source);
     expect(added.map((tour) => tour.slug).filter((slug) => !sold.has(slug)).sort()).toEqual([
