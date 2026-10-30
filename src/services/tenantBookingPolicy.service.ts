@@ -33,15 +33,21 @@ const BOOKING_CREATION_CLOSED_TENANT_SLUGS = [
   'pyramids-of-dahshur',
   'statue-of-ramesses-ii',
   'three-pools-dahab',
-  // The network queue's six new sites (batch B11): closed to real bookings until each domain is connected and
-  // the owner opens it. Opening a site is removing its slug. The five sites batch B11 moves onto their own
-  // domains already exist and keep the booking state they have; none of them is listed here.
+  // The network queue's eleven sites (batch B11): closed to real bookings until each domain is connected and the
+  // owner opens it. Opening a site is removing its slug. The first six are new; the last five already existed and
+  // were carrying a catalogue with no record behind it, no payment gateway and no booking inbox, so they are
+  // closed here too (coordinator, 30 October) rather than left open on a catalogue being replaced.
   'saqqara-necropolis',
   'pyramid-of-djoser',
   'red-pyramid-egypt',
   'sphinx-of-memphis',
   'samadai-beach',
   'hurghada-speedboat',
+  'makadi-bay-safari',
+  'cairo-tour-from-hurghada',
+  'luxor-tour-from-hurghada',
+  'hurghada-snorkeling',
+  'cairo-night-cruise',
 ] as const;
 
 export class TenantBookingCreationClosedError extends AppError {

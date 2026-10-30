@@ -19,31 +19,34 @@
  * published words (kept beside the test in `__tests__/fixtures/network-b11-record-names.json`). Saqqara Necropolis
  * takes the days whose record names Sakkara or Saqqara; the Pyramid of Djoser only the days whose record names
  * Djoser or the Step Pyramid; the Red Pyramid only the days whose record names the Red Pyramid *and* whose own
- * booking option goes to Dahshur; the Sphinx of Memphis only the day whose record stops at the Alabaster Sphinx —
- * a day that reaches Memphis and names no more than the Ramses colossus goes to batch B10's Mit Rahina Museum and
- * Statue of Ramesses II, not here. Samadai Beach takes the one Samadai record; Hurghada Speedboat the days whose
- * record sells a speedboat.
+ * booking option goes to Dahshur (coordinator, 30 October: the strict rule, so two trips rather than three); the
+ * Sphinx of Memphis the days whose own schedule stops at Memphis or Mit Rahina, because the alabaster sphinx
+ * stands in that open-air museum and a day that walks it reaches the sphinx (coordinator, 30 October: batch B10's
+ * same-day rule, so the same five the Mit Rahina Museum sells). A record that names Memphis in passing, or as part
+ * of a company name, is never counted: all three sold here list "Memphis, Egypt" or the Alabaster Sphinx among
+ * their own published stops. Samadai Beach takes the one Samadai record; Hurghada Speedboat the days whose record
+ * sells a speedboat.
  *
  * Every programme this batch sells was already written by an earlier batch (`b03`, `b09`, `b10`), so this batch
  * imports them rather than restating them: the same options, departures, renames and schedules, so the network
  * says the same thing about the same trip wherever it is sold. No programme is new here.
  *
- * Four things the coordinator must decide:
+ * What the coordinator settled on 30 October, kept here so a later batch does not re-open it:
  * - Four sites here sell records that batch B10's sites already sell, because the client's days visit these
- *   monuments together: Saqqara Necropolis sells the same five as Sakkara Pyramids, and the Pyramid of Djoser,
- *   the Red Pyramid and the Sphinx of Memphis each sell a subset of them. Same-subject sites sharing a record was
- *   decided for B10; these six domains are monument names rather than new subjects. The sites differ in their
- *   words, their photos and their design, not in their catalogue.
- * - The Red Pyramid is sold on the strict rule above (two trips). On the looser rule batch B10 used for Dahshur —
- *   any day whose own booking option goes to Dahshur — it would also sell the Nile-sail day, for three. One edit.
- * - The Sphinx of Memphis sells one trip, the only record that names the Alabaster Sphinx among its stops. If a
- *   day that stops at Memphis counts whether or not its record names the sphinx, it would sell five. One edit.
+ *   monuments together: Saqqara Necropolis and the Sphinx of Memphis each sell the same five as Sakkara Pyramids
+ *   and the Mit Rahina Museum, and the Pyramid of Djoser and the Red Pyramid sell a subset of them. Same-subject
+ *   sites sharing a record was decided for B10; these six domains are monument names rather than new subjects. The
+ *   sites differ in their words, their photos and their design, not in their catalogue.
+ * - Settled 30 October: the Red Pyramid keeps the strict rule, two trips. The Sphinx of Memphis takes the
+ *   same-day rule and sells five, the same catalogue as the Mit Rahina Museum, because the sphinx stands in the
+ *   museum those five days walk.
  * - The client publishes only three distinct photos across every record these four monument sites sell, and all
  *   three already open a site that is live (Memphis and Sakkara, Sakkara Pyramids, Pyramids of Dahshur). No photo
- *   is invented and none is mislabelled, so these sites open on a photo another site opens on until the client
- *   supplies their own. Samadai Beach opens on the same photo as the live Shaab Samadai site for the same reason:
- *   they sell the one record the client publishes for that reef, and it publishes one photo. The Sphinx of
- *   Memphis also sells a single trip, and the photo that trip publishes is of the Step Pyramid, not of the sphinx.
+ *   is invented and none is mislabelled, so these sites open on a photo another site opens on. Samadai Beach opens
+ *   on the same photo as the live Shaab Samadai site for the same reason: they sell the one record the client
+ *   publishes for that reef, and it publishes one photo. No photo on the Sphinx of Memphis shows the sphinx, since
+ *   none of the records publishes one. Accepted for now (coordinator, 30 October): every photo here is replaceable
+ *   the moment the client supplies each site's own, and nothing but the photo lists and their descriptions change.
  *
  * Held back, and why (each is a question for the client in the build report):
  * - The long packages: `cairo-3-day-tour-pyramids-museums-islamic-cairo-nile-cruise`,
@@ -428,18 +431,93 @@ export const B11A: NetworkBatch = {
       currency: 'USD',
       slugPrefix: 'som-',
       foreignPlaces: NOT_SOUTH_OF_GIZA,
-      photoShortfall: 'The one trip this site sells publishes one photo.',
-      tagline: 'The day that stops at the alabaster sphinx',
-      description: 'Sphinx of Memphis sells the day whose own record stops at the alabaster sphinx: a single block of calcite carved into a lion with a king’s head, lying in the open-air museum at Mit Rahina beside the fallen colossus of Ramses II, in what is left of Egypt’s first capital.\n\nThe trip is a private two-day tour of Cairo, and the sphinx comes on its first day, after the Giza plateau and Saqqara. It collects you from your hotel and brings you back, and the page says what its price covers. Hold a place online and pay later, or ask the team first about the pickup time.',
+      tagline: 'Guided days that reach the alabaster sphinx',
+      description: 'Sphinx of Memphis sells the days that stop at Mit Rahina, where the alabaster sphinx lies: a single block of calcite carved into a lion with a king’s head, in the open-air museum beside the fallen colossus of Ramses II, in what is left of Egypt’s first capital.\n\nEvery one of these days walks that museum. Some go on to Saqqara and Dahshur, some begin on the Giza plateau, and one runs over two days and ends in the museums of Cairo. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.',
       seo: {
-        metaTitle: 'Sphinx of Memphis Tour at Mit Rahina, with Pickup',
-        metaDescription: 'The guided day that stops at the alabaster sphinx of Memphis at Mit Rahina, with the Giza plateau, Saqqara and hotel pickup in Cairo or Giza.',
+        metaTitle: 'Sphinx of Memphis Tours at Mit Rahina, with Pickup',
+        metaDescription: 'Guided days at the alabaster sphinx and colossus of Memphis at Mit Rahina, with Saqqara, Dahshur or the Giza plateau, and hotel pickup.',
         keywords: ['sphinx of memphis tour', 'alabaster sphinx mit rahina', 'memphis open air museum tour', 'mit rahina day trip from cairo', 'memphis sphinx tour with pickup'],
       },
       theme: { primaryColor: '#263445', secondaryColor: '#EFF1F0', accentColor: '#A9814B' },
-      heroImages: [PHOTO.stepPyramidAtDusk],
+      heroImages: [PHOTO.stepPyramidAtDusk, PHOTO.stepPyramid, PHOTO.feluccasAtCairo],
       logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/sphinx-of-memphis/monogram.png',
       trips: [
+        {
+          path: 'sakkara-memphis-and-dahshur-shared',
+          price: P.SOUTH_SHARED,
+          title: 'Shared Day at Memphis, Saqqara and Dahshur',
+          short: 'A shared day with a guide and the entry tickets: the open-air museum at Memphis, the Saqqara necropolis and the pyramids of Dahshur.',
+          description: 'Memphis closes this day. The guide walks you through the open-air museum at Mit Rahina, where the colossus of Ramses II lies on its back under a roof of its own and the alabaster sphinx rests in the garden outside it, carved from one block of calcite.\n\nBefore that the day crosses the Saqqara necropolis with its Step Pyramid, and the field at Dahshur with the Bent and Red Pyramids. The vehicle is air-conditioned and shared with other guests, the guide speaks English, and the entry tickets for the sites the day visits are in the price, with pickup from your hotel in Cairo or Giza.',
+          highlights: [
+            'The alabaster sphinx and the colossus at Mit Rahina',
+            'The Saqqara necropolis and its Step Pyramid',
+            'The Bent and Red Pyramids at Dahshur',
+            'Entry tickets and hotel pickup included',
+          ],
+          seo: {
+            metaTitle: 'Memphis, Saqqara and Dahshur: Shared Day Tour',
+            metaDescription: 'A shared guided day at the Memphis open-air museum, the Saqqara necropolis and Dahshur, with the entry tickets and hotel pickup.',
+          },
+          images: [PHOTO.stepPyramid],
+          imageAlts: [ALT.stepPyramid],
+        },
+        {
+          path: 'private-sakkara-memphis-and-dahshur',
+          price: P.SOUTH_PRIVATE,
+          title: 'Private Day at Memphis, Saqqara and Dahshur',
+          short: 'The same three places with your own guide and vehicle, an eight o’clock start and the entry tickets.',
+          description: 'The private way to reach Mit Rahina, and the one with time to stand at the sphinx rather than pass it. Your own guide walks you round the open-air museum, the colossus of Ramses II under its roof and the alabaster sphinx in the garden, and can tell you which king’s face the carvers were working from.\n\nAn eight o’clock start puts the day ahead of the shared groups at Saqqara, and Dahshur follows. The guide can be asked for in another language, the entry tickets for the sites the day visits are in the price, and your own vehicle collects you from your hotel in Cairo or Giza.',
+          highlights: [
+            'The alabaster sphinx with your own guide',
+            'The colossus of Ramses II under its roof',
+            'Saqqara and the pyramids of Dahshur',
+            'An early start and the entry tickets included',
+          ],
+          seo: {
+            metaTitle: 'Private Memphis, Saqqara and Dahshur Day Tour',
+            metaDescription: 'A private guided day at the Memphis open-air museum, Saqqara and Dahshur with your own vehicle, the entry tickets and hotel pickup.',
+          },
+          images: [PHOTO.stepPyramidAtDusk],
+          imageAlts: [ALT.stepPyramidAtDusk],
+        },
+        {
+          path: 'giza-pyramids-sakkara-and-memphis',
+          price: P.GIZA_SOUTH,
+          title: 'The Giza Pyramids, Saqqara and Memphis in One Day',
+          short: 'One day from the Giza plateau to the necropolis and the open-air museum at Memphis, shared or private, with the entry tickets.',
+          description: 'The day begins on the Giza plateau among the pyramids and the Great Sphinx, drives south to the Saqqara necropolis and its Step Pyramid, and ends at Mit Rahina, where the alabaster sphinx and the colossus of Ramses II lie in the open-air museum of the capital these tombs were built for.\n\nYou choose how to travel: a shared group, or your own guide and vehicle. The entry tickets for the sites the day visits are in the price either way, and the vehicle collects you from your hotel in Cairo or Giza.',
+          highlights: [
+            'The alabaster sphinx at the end of the day',
+            'The Giza plateau and the Great Sphinx',
+            'The Saqqara necropolis and its Step Pyramid',
+            'A shared group or your own guide and vehicle',
+          ],
+          seo: {
+            metaTitle: 'Giza Pyramids, Saqqara and Memphis Day Tour',
+            metaDescription: 'A guided day from the Giza plateau to Saqqara and the Memphis open-air museum, shared or private, with the entry tickets and hotel pickup.',
+          },
+          images: [PHOTO.stepPyramid],
+          imageAlts: [ALT.stepPyramid],
+        },
+        {
+          path: 'private-day-with-lunch-and-a-nile-sail',
+          price: P.GIZA_SOUTH_VIP,
+          title: 'Private Day at Memphis and Saqqara with Lunch and a Nile Sail',
+          short: 'A private day taking in the plateau, Saqqara, the open-air museum at Memphis and Dahshur, with lunch and an hour under sail.',
+          description: 'The longest way to reach the sphinx, and the slowest. Your own guide and vehicle take you from the Giza plateau to Saqqara, on to Mit Rahina for the colossus and the alabaster sphinx beside it, and out to the Bent and Red Pyramids at Dahshur, with lunch along the way.\n\nThe day closes on the river, an hour under the white sail of a felucca. The entry tickets for the sites the day visits are in the price, and the vehicle collects you from your hotel in Cairo or Giza.',
+          highlights: [
+            'The alabaster sphinx and colossus with your own guide',
+            'Saqqara, Dahshur and the Giza plateau',
+            'Lunch at a local restaurant',
+            'An hour on the Nile under sail',
+          ],
+          seo: {
+            metaTitle: 'Private Memphis and Saqqara Day with a Nile Sail',
+            metaDescription: 'A private day at the Giza plateau, Saqqara, the Memphis open-air museum and Dahshur, with lunch, an hour under sail and hotel pickup.',
+          },
+          images: [PHOTO.feluccasAtCairo],
+          imageAlts: [ALT.feluccasAtCairo],
+        },
         {
           path: 'two-private-days-in-cairo',
           price: P.TWO_DAY_PRIVATE,

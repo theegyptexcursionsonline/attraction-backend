@@ -23,6 +23,15 @@
  *     Unlisting removes them from these five sites, which is what this batch is for. The figures are reported for
  *     the coordinator, and `fix-network-unbacked-ratings.ts` is the tool if the client wants them cleared network-wide.
  *
+ * **No logo, dark logo or favicon is written on any of the five** (coordinator, 30 October). Four of them —
+ * `cairo-tour-from-hurghada`, `luxor-tour-from-hurghada`, `hurghada-snorkeling` and `cairo-night-cruise` — carry
+ * the client's own marks, which must stay exactly as they are; this script writes no mark on any site, so they
+ * cannot be touched by it, and a test holds that. The seventh mark in the coordinator's `--logos` file, for
+ * `makadi-bay-safari`, therefore has nowhere to go in this run: `--logos` belongs to `seed-network-sites.ts`, which
+ * only ever creates or updates the six new tenants of batches b11a and b11b. **Open item: `makadi-bay-safari` needs
+ * its new mark written by a separate, named step** — this batch deliberately does not grow a second way to write
+ * tenant fields.
+ *
  * One tenant field does have to change, and it is fenced on its own. All five sites carry `defaultCurrency: EGP`
  * while every record the client publishes is priced in USD, and a network trip's price is never converted. Until
  * the currency is corrected, not one of the client's trips can go on these sites. The correction is planned here,
@@ -32,10 +41,14 @@
  * Held back, and why (each is a question for the client in the build report):
  * - `luxor-tour-from-hurghada` has no record that leaves from Hurghada. The client publishes twenty-seven trips
  *   that name Luxor and exactly one of them starts on the Red Sea coast: `makadi-bay-to-luxor-...`, whose own
- *   inclusions say "Hotel pickup and drop-off from your hotel in Makadi Bay". Both of its options are sold here and
- *   both say plainly that they start in Makadi Bay. **The coordinator decides** whether a domain reading
- *   "luxortourfromhurghada" may sell a day that leaves from Makadi Bay, or whether the client should publish a
- *   Hurghada pickup first and the site wait.
+ *   inclusions say "Hotel pickup and drop-off from your hotel in Makadi Bay". Settled by the coordinator on
+ *   30 October: both of its options are sold here, and the start is stated plainly in every place a guest sees it —
+ *   each trip's summary, the opening line of each description, a highlight and a "Need to know" line all say the
+ *   day **leaves Makadi Bay, south of Hurghada**, and each trip is filed as starting there rather than in the town
+ *   the domain names. **Owner follow-up: a Hurghada pickup would fit the domain better**, so if the client adds one
+ *   this site should sell that instead. One thing this batch cannot do: the site's own tagline and description live
+ *   on the tenant record, which this script never writes (see below), so the same line has to be added there in the
+ *   step that connects the domain.
  * - `cairo-tour-from-hurghada` has exactly one record, `from-hurghada-cairo-...-citadel-day-trip`. Its Grand
  *   Egyptian Museum visit is an extra bound to no booking option (batch B09 recorded the same), so the museum is
  *   not sold and the day's own conditional line about it is left out. The day itself includes hotel pickup, so
@@ -272,7 +285,7 @@ export const PROGRAMMES = {
     add: {
       inclusions: ['Hotel pickup and drop-off in Makadi Bay'],
       needToKnow: [
-        'The day starts in Makadi Bay, where the minivan collects you, and it is sixteen hours long: the road to Luxor is about four hours each way.',
+        'The day leaves Makadi Bay, south of Hurghada, where the minivan collects you, and it is sixteen hours long: the road to Luxor is about four hours each way.',
         'The guide speaks English, French or German. A guide in Spanish costs extra and cannot be booked on this site.',
         'Bring your passport or an identity card; a copy is accepted.',
       ],
@@ -309,7 +322,7 @@ export const PROGRAMMES = {
     add: {
       inclusions: ['Hotel pickup and drop-off in Makadi Bay'],
       needToKnow: [
-        'The day starts in Makadi Bay, where the minivan collects you, and it is sixteen hours long: the road to Luxor is about four hours each way.',
+        'The day leaves Makadi Bay, south of Hurghada, where the minivan collects you, and it is sixteen hours long: the road to Luxor is about four hours each way.',
         'The guide speaks English, French or German. A guide in Spanish costs extra and cannot be booked on this site.',
         'Bring your passport or an identity card; a copy is accepted.',
       ],
@@ -579,13 +592,13 @@ export const B11_EXISTING: ExistingBatch = {
           path: 'shared-day-in-luxor',
           price: P.LUXOR_FROM_MAKADI_SHARED,
           title: 'Shared Day in Luxor: the Valley of the Kings and Karnak',
-          short: 'Sixteen hours to Luxor and back in a shared minivan, with an Egyptologist guide, lunch and the entry tickets. The day starts in Makadi Bay.',
-          description: 'The minivan collects you in Makadi Bay at four in the morning and drives inland to the Nile valley. Karnak comes first, the temple complex with its hall of columns, then lunch at a restaurant in Luxor and a short sail across the river on a felucca.\n\nThe west bank is the afternoon: three royal tombs in the Valley of the Kings including Tutankhamun’s, the terraces of the Temple of Hatshepsut cut into the cliff, and a stop at the Colossi of Memnon. The entry tickets for all four are in the price, with the guide and the lunch.',
+          short: 'Sixteen hours to Luxor and back in a shared minivan, with an Egyptologist guide, lunch and the entry tickets. It leaves Makadi Bay, south of Hurghada.',
+          description: 'The day leaves Makadi Bay, south of Hurghada: the minivan collects you there at four in the morning and drives inland to the Nile valley. Karnak comes first, the temple complex with its hall of columns, then lunch at a restaurant in Luxor and a short sail across the river on a felucca.\n\nThe west bank is the afternoon: three royal tombs in the Valley of the Kings including Tutankhamun’s, the terraces of the Temple of Hatshepsut cut into the cliff, and a stop at the Colossi of Memnon. The entry tickets for all four are in the price, with the guide and the lunch.',
           highlights: [
             'Three tombs in the Valley of the Kings, Tutankhamun’s among them',
             'Karnak Temple and the Temple of Hatshepsut',
             'An Egyptologist guide and lunch in Luxor',
-            'The entry tickets and hotel pickup in Makadi Bay',
+            'The entry tickets and hotel pickup in Makadi Bay, south of Hurghada',
           ],
           seo: {
             metaTitle: 'Shared Luxor Day Trip: Valley of the Kings and Karnak',
@@ -599,13 +612,13 @@ export const B11_EXISTING: ExistingBatch = {
           path: 'private-day-in-luxor',
           price: P.LUXOR_FROM_MAKADI_PRIVATE,
           title: 'Private Day in Luxor: the Valley of the Kings and Karnak',
-          short: 'The same day with your own minivan and guide, and a five o’clock start. The day starts in Makadi Bay.',
-          description: 'The private way to make the crossing to Luxor: your own air-conditioned minivan and your own Egyptologist guide, and an hour’s later start because you are not collecting anyone else.\n\nThe day is Karnak with its hall of columns, lunch at a restaurant in Luxor, a short sail across the Nile, then three royal tombs in the Valley of the Kings including Tutankhamun’s, the Temple of Hatshepsut and the Colossi of Memnon. The entry tickets for all four are in the price, and children have their own.',
+          short: 'The same day with your own minivan and guide, and a five o’clock start. It leaves Makadi Bay, south of Hurghada.',
+          description: 'The private way to make the crossing to Luxor, and it leaves Makadi Bay, south of Hurghada: your own air-conditioned minivan and your own Egyptologist guide, and an hour’s later start because you are not collecting anyone else.\n\nThe day is Karnak with its hall of columns, lunch at a restaurant in Luxor, a short sail across the Nile, then three royal tombs in the Valley of the Kings including Tutankhamun’s, the Temple of Hatshepsut and the Colossi of Memnon. The entry tickets for all four are in the price, and children have their own.',
           highlights: [
             'Your own guide and minivan for the whole day',
             'Three tombs in the Valley of the Kings, Tutankhamun’s among them',
             'Karnak, Hatshepsut and the Colossi of Memnon',
-            'The entry tickets, lunch and hotel pickup in Makadi Bay',
+            'The entry tickets, lunch and hotel pickup in Makadi Bay, south of Hurghada',
           ],
           seo: {
             metaTitle: 'Private Luxor Day Trip: Valley of the Kings and Karnak',

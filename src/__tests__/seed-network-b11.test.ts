@@ -157,11 +157,11 @@ describe('batch B11: the six new sites', () => {
       ['saqqara-necropolis', 5],
       ['pyramid-of-djoser', 3],
       ['red-pyramid-egypt', 2],
-      ['sphinx-of-memphis', 1],
+      ['sphinx-of-memphis', 5],
       ['samadai-beach', 1],
       ['hurghada-speedboat', 5],
     ]);
-    expect(B11.reduce((total, site) => total + site.trips.length, 0)).toBe(17);
+    expect(B11.reduce((total, site) => total + site.trips.length, 0)).toBe(21);
     // What each record the batch sells says about itself, kept beside this test: the client's published title,
     // description, inclusions, options and stops, read from the live list and booking API on 30 October 2026.
     for (const [slug, record] of Object.entries(RECORDS)) {
@@ -175,7 +175,15 @@ describe('batch B11: the six new sites', () => {
     named('saqqara-necropolis', /sakkara|saqqara/i);
     named('pyramid-of-djoser', /djoser|step pyramid/i);
     named('red-pyramid-egypt', /red pyramid/i);
-    named('sphinx-of-memphis', /alabaster/i);
+    // The alabaster sphinx stands in the Mit Rahina open-air museum, so the rule is the day's own stops: each
+    // record lists "Memphis, Egypt" or the Alabaster Sphinx in its published schedule, never Memphis in passing.
+    for (const trip of siteOf('sphinx-of-memphis').trips) {
+      expect((RECORDS[trip.price.source].itinerary as string[]).join(' | ')).toMatch(/Memphis, Egypt|Alabaster Sphinx/i);
+    }
+    // It is exactly the catalogue batch B10's Mit Rahina Museum sells, which is what the records support.
+    const mitRahina = B10B.sites.find((item) => item.slug === 'mit-rahina-museum')!;
+    expect(siteOf('sphinx-of-memphis').trips.map((trip) => trip.path)).toEqual(mitRahina.trips.map((trip) => trip.path));
+    expect(siteOf('sphinx-of-memphis').trips.map((trip) => trip.price)).toEqual(mitRahina.trips.map((trip) => trip.price));
     named('samadai-beach', /samadai/i);
     named('hurghada-speedboat', /speedboat/i);
     // The Red Pyramid is the strict reading: the record names it AND the option sold goes to Dahshur.
@@ -246,7 +254,7 @@ describe('batch B11: the six new sites', () => {
   it('builds every trip into a complete trip', () => {
     let count = 0;
     for (const site of B11) for (const document of built(site, site.trips)) { expectCompleteTrip(site, document); count += 1; }
-    expect(count).toBe(17);
+    expect(count).toBe(21);
   });
 
   it('writes no programme of its own: every one is the batch that first sold the record', () => {
@@ -346,7 +354,7 @@ describe('batch B11: the six new sites', () => {
       .toMatch(/Hotel pickup and drop-off from your hotel in Makadi Bay/i);
     for (const trip of existingOf('luxor-tour-from-hurghada').trips) {
       expect(trip.where).toEqual({ city: 'Makadi Bay', area: 'Makadi Bay', coordinates: { lat: 26.9956, lng: 33.8955 } });
-      expect(trip.short).toMatch(/starts in Makadi Bay/);
+      expect(trip.short).toMatch(/leaves Makadi Bay, south of Hurghada/);
     }
 
     // The Grand Egyptian Museum is an extra bound to no booking option on the Cairo day from Hurghada.
@@ -390,8 +398,9 @@ describe('batch B11: the six new sites', () => {
       expect(record.domain).toBe(`${site.slug}.foxesnetwork.com`);
       expect((record.paymentSettings as { enabledGateways: string[] }).enabledGateways).toEqual(['pay-later']);
     }
-    // The five sites that already exist keep the booking state they have: none of them is closed by this batch.
-    for (const site of B11_EXISTING.sites) expect(isTenantBookingCreationClosed({ slug: site.slug })).toBe(false);
+    // The five that already exist are closed here too (coordinator, 30 October): their catalogue is being
+    // replaced, and neither of them has a payment gateway or a booking inbox to take a real booking with.
+    for (const site of B11_EXISTING.sites) expect(isTenantBookingCreationClosed({ slug: site.slug })).toBe(true);
   });
 
   it('refuses to apply a new site until it has its approved logo, dark logo and favicon', () => {
@@ -531,6 +540,16 @@ describe('batch B11: the five sites that already exist', () => {
     }
     // The script writes a tenant's currency and nothing else; no other Tenant field is set anywhere in it.
     const script = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'seed-network-b11-existing.ts'), 'utf8');
+    // The correction lands in the same run as the trips and before them, so a USD trip is never written to a site
+    // still selling in EGP; the restore unwinds in the opposite order, so the trips go before the currency reverts.
+    const apply = script.slice(script.indexOf('async function apply('), script.indexOf('async function restore('));
+    expect(apply.indexOf('defaultCurrency: state.currencyChange.to')).toBeLessThan(apply.indexOf('for (const [index, trip] of site.trips.entries())'));
+    expect(apply.indexOf('for (const [index, trip] of site.trips.entries())')).toBeLessThan(apply.indexOf('for (const entry of state.unlist)'));
+    const restoreBody = script.slice(script.indexOf('async function restore('));
+    expect(restoreBody.indexOf('deleteMany')).toBeLessThan(restoreBody.indexOf('defaultCurrency: journal.currency.from'));
+    // It is written only behind its own fence, and only when the value read is still the value on the record.
+    expect(apply).toMatch(/currencyFenced\(site\)/);
+    expect(apply).toMatch(/Tenant\.updateOne\(\{ slug: site\.slug, defaultCurrency: state\.currencyChange\.from \}/);
     const tenantWrites = [...script.matchAll(/Tenant\.updateOne\([^)]*\$set: \{ ([a-zA-Z]+):/g)].map((match) => match[1]);
     expect([...new Set(tenantWrites)]).toEqual(['defaultCurrency']);
     expect(script).not.toMatch(/Tenant\.(?:create|insertMany|deleteOne|deleteMany|findOneAndDelete)/);
@@ -538,5 +557,22 @@ describe('batch B11: the five sites that already exist', () => {
     // Taking a listing off is reversible: a pull from tenantIds, or an archive that keeps the status it had.
     expect(script).toMatch(/\$pull: \{ tenantIds: state\.tenantId \}/);
     expect(script).toMatch(/statusBeforeArchive: entry\.status/);
+  });
+
+  it('never writes a logo, a dark logo or a favicon on any of the five', () => {
+    // Four of the five carry the client's own marks and must keep them exactly (coordinator, 30 October). The
+    // script writes no mark on any site, so none of the four can be touched by it.
+    const script = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'seed-network-b11-existing.ts'), 'utf8');
+    for (const field of ['logo', 'logoDark', 'favicon']) expect(script).not.toMatch(new RegExp(`\\b${field}\\b\\s*:`));
+    // The batch data names no mark either, so there is nothing for a later edit to start writing.
+    expect(JSON.stringify(B11_EXISTING)).not.toMatch(/"logo"|"logoDark"|"favicon"/);
+    // `--logos` belongs to the six new sites only: the runner's logo book is checked against a NetworkBatch, and
+    // the five that already exist are not in one. A file carrying all seven marks still satisfies b11a and b11b.
+    const mark = (slug: string, kind: string) => `https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/${slug}/${kind}.png`;
+    const sevenMarks = Object.fromEntries([...B11.map((site) => site.slug), 'makadi-bay-safari']
+      .map((slug) => [slug, { logo: mark(slug, 'logo'), logoDark: mark(slug, 'logo-dark'), favicon: mark(slug, 'favicon') }]));
+    for (const batch of GROUPS) expect(logoProblems(batch, sevenMarks)).toEqual([]);
+    // Nothing in this batch consumes makadi-bay-safari's mark, so it stays an open item rather than a silent no-op.
+    expect(GROUPS.flatMap((batch) => batch.sites).map((site) => site.slug)).not.toContain('makadi-bay-safari');
   });
 });
