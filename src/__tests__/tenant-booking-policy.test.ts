@@ -72,6 +72,10 @@ describe('tenant booking-creation closure policy', () => {
         'great-sphinx-of-giza', 'pyramid-complex-giza', 'great-pyramid-of-cheops', 'mit-rahina-museum',
         'sakkara-pyramids', 'pyramid-of-khafre', 'pyramid-of-menkaure', 'pyramids-of-dahshur',
         'statue-of-ramesses-ii', 'three-pools-dahab',
+        // Batch B11's six new sites and the five existing sites moving onto their own brands, closed the same way.
+        'saqqara-necropolis', 'pyramid-of-djoser', 'red-pyramid-egypt', 'sphinx-of-memphis', 'samadai-beach',
+        'hurghada-speedboat', 'makadi-bay-safari', 'cairo-tour-from-hurghada', 'luxor-tour-from-hurghada',
+        'hurghada-snorkeling', 'cairo-night-cruise',
       ] },
     });
 
