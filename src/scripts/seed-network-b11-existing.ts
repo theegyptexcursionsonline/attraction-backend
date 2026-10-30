@@ -1224,7 +1224,9 @@ async function apply(batch: ExistingBatch): Promise<void> {
       }
 
       const owned = await Attraction.countDocuments({ ownerTenantId: state.tenantId, status: 'active', slug: { $in: site.trips.map((trip) => `${site.slugPrefix}${trip.path}`) } });
-      const rated = await Attraction.countDocuments({ ownerTenantId: state.tenantId, $or: [{ rating: { $gt: 0 } }, { reviewCount: { $gt: 0 } }] });
+      // Only this batch's trips must be unrated: records the site already owned are refused and left exactly as they
+      // were (their unbacked ratings are reported, not changed), so they are not part of this check.
+      const rated = await Attraction.countDocuments({ ownerTenantId: state.tenantId, slug: { $in: site.trips.map((trip) => `${site.slugPrefix}${trip.path}`) }, $or: [{ rating: { $gt: 0 } }, { reviewCount: { $gt: 0 } }] });
       const otherCurrency = await Attraction.countDocuments({ ownerTenantId: state.tenantId, currency: { $ne: site.currency } });
       if (owned !== site.trips.length || rated !== 0 || otherCurrency !== 0) {
         throw new Error(`${site.slug}: post-apply check failed (owned=${owned}, rated=${rated}, otherCurrency=${otherCurrency}). The journal reverses what was written.`);
