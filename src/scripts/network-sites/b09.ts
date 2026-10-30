@@ -1694,7 +1694,8 @@ const PICKUP_MARSA = 'Pickup and drop-off at your hotel in Marsa Alam';
 /** The camel and horse rides collect from the area each option names. */
 const PICKUP_BY_AREA = 'Pickup and drop-off at your hotel in the area your option names';
 
-const PROGRAMMES_B = {
+/** Exported so a later batch sells the same record the same way (batch B11 reuses `SHAAB_SAMADAI`). */
+export const PROGRAMMES_B = {
   MA_CAMEL: {
     provider: 'eeo',
     tenant: EEO,

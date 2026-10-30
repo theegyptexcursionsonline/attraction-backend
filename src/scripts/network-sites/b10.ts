@@ -97,7 +97,7 @@ const PICKUP_CAIRO = 'Hotel pickup and drop-off in Cairo or Giza';
 /**
  * The five programmes written here. The other fourteen are imported from the batches that first wrote them.
  */
-const NEW_PROGRAMMES = {
+export const NEW_PROGRAMMES = {
   // The record lists its pickup as "Pickup service from your Hotel by a private A/C. vehicle and return" and its
   // guide as a sentence of its own; both are said once, in the site's words. It names no entrance fee, so no
   // trip here says the plateau ticket is covered.

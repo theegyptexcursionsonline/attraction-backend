@@ -1,0 +1,920 @@
+{
+ "cairo-egyptian-museum-citadel-coptic-cairo-nile-dinner-cruise": {
+  "title": "Cairo: Egyptian Museum, Citadel, Coptic Cairo & Nile Dinner Cruise",
+  "description": "Discover Cairo’s ancient and religious heritage with visits to the Egyptian Museum, Salah El Din Citadel, Mohamed Ali Mosque and historic Coptic Cairo, followed by a relaxing Nile dinner cruise with live entertainment.",
+  "included": [
+   "Pick-up services from your hotel & return.",
+   "All transfers by a private air-conditioned vehicle.",
+   "Private tour guide",
+   "Entrance fees to all the mentioned sites (Only if you choose the option that includes the tickets).",
+   "Lunch",
+   "Dinner meal on the Nile cruise.",
+   "Shopping tour in Cairo",
+   "Bottled water on board the vehicle during the tour.",
+   "Shopping tours in Cairo."
+  ],
+  "notIncluded": [
+   "Any extras not mentioned in the programme",
+   "Beverages during lunch and dinner",
+   "Tipping."
+  ],
+  "options": [
+   "Private English Tour with Tickets, Lunch & Transfers"
+  ],
+  "itinerary": [
+   "Pickup location: Cairo",
+   "Transfer",
+   "Egyptian Museum of Antiquities",
+   "Mosque of Muhammad Ali Pasha",
+   "Local restaurant",
+   "Hanging Church",
+   "Ben Ezra Synagogue",
+   "Saint Barbara Church, Cairo",
+   "St Sergius and St Bacchus Church",
+   "Nile Crystal",
+   "Transfer",
+   "Arrive back at: Cairo"
+  ],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "Visit the Egyptian Museum and explore its remarkable ancient Egyptian collection",
+   "Discover Salah El Din Citadel and Mohamed Ali Mosque",
+   "Explore the historic churches and religious landmarks of Coptic Cairo",
+   "Visit the Hanging Church, Ben Ezra Synagogue, St. Barbara and Abu Serga",
+   "Enjoy lunch at a local restaurant",
+   "Experience a two-hour Nile dinner cruise",
+   "Enjoy dinner with belly dancing, folklore and Oriental music",
+   "Travel with an Egyptologist guide and hotel transfers"
+  ]
+ },
+ "from-hurghada-cairo-pyramids-grand-egyptian-museum-citadel-day-trip": {
+  "title": "From Hurghada: Cairo Pyramids, Grand Egyptian Museum & Citadel Day Trip",
+  "description": "Experience Egypt’s greatest historical treasures on an unforgettable day trip from Hurghada to Cairo. Explore the iconic Giza Pyramids, the historic Citadel of Saladin, and remarkable ancient Egyptian treasures with an expert Egyptologist guide.",
+  "included": [
+   "Hotel pickup and drop-off",
+   "Transportation by air-conditioned minivan",
+   "Live tour guide",
+   "Visit to the Citadel of Salah Din",
+   "Visit to the Pyramids of Giza",
+   "Visit to the Grand Egyptian Museum ( if option selected)",
+   "Lunch at a local restaurant"
+  ],
+  "notIncluded": [
+   "Drinks during lunch",
+   "Personal expenses",
+   "Nile trip"
+  ],
+  "options": [
+   "Hurghada: Cairo Pyramids, Grand Museum & Citadel by Bus"
+  ],
+  "itinerary": [
+   "Pickup location:",
+   "Van",
+   "Cairo Citadel",
+   "Pyramids of Giza",
+   "Al Haram, Giza",
+   "Grand Egyptian Museum",
+   "Van",
+   "Arrive back at:"
+  ],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "Marvel at the Great Pyramid of Khufu and the Great Sphinx of Giza",
+   "Explore the Citadel of Salah al-Din and the Mosque of Muhammad Ali",
+   "Discover the treasures of ancient Egypt at the Egyptian Museum",
+   "Enjoy a relaxed lunch at a local restaurant in Cairo",
+   "Travel in comfort from Hurghada to Cairo in an air-conditioned minivan"
+  ]
+ },
+ "giza-pyramids-sakkara-memphis-day-tour-with-nile-sail": {
+  "title": "Giza Pyramids, Sakkara & Memphis Day Tour with Nile Sail",
+  "description": "Trace the origins of Ancient Egypt on a custom journey through Giza, Memphis, Sakkara, and Dahshur. Choose your ideal itinerary—from a quick Pyramids highlight tour to a full VIP day complete with lunch and a tranquil Nile Felucca sail.",
+  "included": [
+   "Transportation by air-conditioned vehicle",
+   "Professional licensed guide",
+   "Shared Tour: Professional English-speaking guide only",
+   "Private Tour: Professional guide available in all languages",
+   "Entry tickets to selected landmarks",
+   "Hotel pick-up and drop-off from Cairo or Giza",
+   "Visits: Papyrus Gallery, Oils Factory, Bazaar, Cotton Store, Carpet School (upon request)",
+   "Bottled water",
+   "Lunch — included in VIP Private Tour only, or available as an add-on for Private Tours"
+  ],
+  "notIncluded": [],
+  "options": [
+   "Pyramids Only — Shared With Ticket",
+   "Memphis, Sakkara, Dahshur — Shared With Ticket",
+   "Pyramids, Memphis, Sakkara — Shared With Ticket",
+   "Pyramids, Memphis, Sakkara — Private With Ticket",
+   "Pyramids, Memphis, Sakkara — Private With Ticket",
+   "{VIP} Private: Pyramids, Memphis, Sakkara, Dahshur & Felucca"
+  ],
+  "itinerary": [
+   "3 pickup location options",
+   "Car",
+   "Giza Plateau",
+   "Sakkara",
+   "Memphis, Egypt",
+   "Car",
+   "3 drop-off locations"
+  ],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "Explore the iconic Pyramids of Giza and the Great Sphinx.",
+   "Visit Memphis, Egypt’s first capital, and see the Colossus of Ramses II.",
+   "Choose from a shared tour, a private tour. with or lunch",
+   "Shop for unique Egyptian souvenirs like perfumes, papyrus, carpets, and jewelry.",
+   "Enjoy adventure options like quad biking, a Felucca boat ride, a photographer."
+  ]
+ },
+ "golden-sunset-quad-safari-in-makadi-bay": {
+  "title": "Golden Sunset Quad Safari in Makadi Bay",
+  "description": "Enjoy a small-group Makadi Bay adventure with a private beach visit, camel ride, Bedouin tea, and an exciting ATV ride through desert trails and coastal landscapes.",
+  "included": [
+   "All ocal taxes, fees and handling charges",
+   "Hotel pickup and drop-off (within Makadi Bay)",
+   "Professional guide",
+   "Use of helmet"
+  ],
+  "notIncluded": [
+   "Drinks other than complimentary drinks given.",
+   "DVD (available to purchase)",
+   "Hotel pickup and drop-off (if outside Makadi Bay)",
+   "Scarfs and glasses"
+  ],
+  "options": [
+   "Quad Sunset"
+  ],
+  "itinerary": [
+   "Pick-up",
+   "Makadi Bay",
+   "Return"
+  ],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "Explore a private beach in Makadi Bay",
+   "Enjoy a traditional camel ride",
+   "Visit a Bedouin tent and taste traditional tea",
+   "Ride an ATV through desert dunes and trails",
+   "Admire scenic views of the Red Sea coastline",
+   "Experience Makadi Bay with a local guide",
+   "Enjoy a small-group adventure",
+   "Combine desert exploration, culture, and beach scenery"
+  ]
+ },
+ "hurghada-dolphin-house-speedboat-trip-dolphin-swim": {
+  "title": "Hurghada Dolphin House Speedboat Trip & Dolphin Swim",
+  "description": "Experience the Red Sea's beautiful coastline and vibrant marine life. Search for wild dolphins in their natural habitat, then enjoy snorkeling and relaxing in the sun.",
+  "included": [
+   "Pick-up and drop-off from Hurghada (see Know Before You Go for details)",
+   "Long-range pickup from Makadi Bay, Safaga, El Gouna, Sahl Hasheesh, and the Soma Bay area is available as a product option",
+   "Speedboat cruise",
+   "Snorkeling equipment",
+   "2 snorkeling/swimming stops at Dolphin House",
+   "Guided snorkeling",
+   "Mineral water & Soft drinks",
+   "Fresh seasonal fruits",
+   "Shaded area on the boat (Taneda)",
+   "Life jackets"
+  ],
+  "notIncluded": [
+   "Nature Reserve Fee: €5 per person (adult/child), not included. Pay by cash, Visa, or payment link"
+  ],
+  "options": [
+   "Hurghada Dolphin House Speedboat Trip & Dolphin Swimming",
+   "Dolphin Speedboat Trip from Makadi Bay, El Gouna & Sahl Hasheesh",
+   "Dolphin Speedboat Trip from Safaga & Soma Bay"
+  ],
+  "itinerary": [
+   "Pickup location:",
+   "Red Sea Governorate",
+   "Sataya Reef (Dolphin House)",
+   "Red Sea Governorate",
+   "Arrive back at:"
+  ],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "Get up close with friendly dolphins in their natural habitat",
+   "Snorkel and get unforgettable views of reefs and corals",
+   "Relax and sunbathe on one of the most beautiful islands of the area",
+   "Swimming with dolphins depends on the weather. (not guaranteed)",
+   "Choose an option to fly for up to 5 min so you can enjoy the Red Sea from above"
+  ]
+ },
+ "hurghada-hula-hula-island-speedboat-tour-with-snorkeling": {
+  "title": "Hurghada Hula Hula Island Speedboat Tour with Snorkeling",
+  "description": "Enjoy a Hula Hula Island speedboat tour from Hurghada with white sandy beaches, crystal-clear waters, colorful coral reefs, snorkeling, water sports, and optional lunch.",
+  "included": [
+   "Hotel pickup and drop-off (if option selected)",
+   "Speedboat ride to Hula Hula Island",
+   "Hula Hula entry ticket (included for 4-hour and 5-hour options)",
+   "Use of snorkeling gear",
+   "Life jackets",
+   "Guided snorkeling stop",
+   "Free time on the beach",
+   "Fruits and soft drinks (included in 4-hour and 5-hour options)",
+   "Lunch",
+   "Tour guide"
+  ],
+  "notIncluded": [
+   "Personal expenses"
+  ],
+  "options": [
+   "4-Hour Hula Hula Island Speedboat Tour Without Transfer",
+   "4-Hour Hula Hula Island Speedboat Tour Without Transfer & Lunch",
+   "4-Hour Hula Hula Island Speedboat Tour from Hurghada Hotels",
+   "4-Hour Hula Hula Island Speedboat Tour from Makadi Bay, Sahl Hasheesh & Al Ahyaa",
+   "4-Hour Hula Hula Island Speedboat Tour from El Gouna, Soma Bay & Safaga",
+   "4-Hour Private Hula Hula Island Speedboat Tour",
+   "4-Hour Private Hula Hula Island Speedboat Tour with Lunch"
+  ],
+  "itinerary": [
+   "Starting/pickup location",
+   "Van",
+   "Speedboat",
+   "Giftun Island",
+   "Speedboat",
+   "Van",
+   "2 drop-off locations"
+  ],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "Speedboat access to a quiet island with clear waters and white sand",
+   "Includes snorkeling, water sports, and a short massage on the beach",
+   "Multiple options with or without hotel transfers, shared or private",
+   "Flexible tour durations: choose from 3-hour or 7-hour experiences",
+   "Ideal for couples, families, or groups seeking fun and relaxation"
+  ]
+ },
+ "hurghada-luxury-orange-bay-cruise-with-snorkeling-massage-lunch": {
+  "title": "Hurghada: Luxury Orange Bay Cruise with Snorkeling, Massage & Lunch",
+  "description": "Enjoy a luxury cruise to Orange Bay with snorkeling in the Red Sea, a rich buffet lunch, and a relaxing professional massage onboard.",
+  "included": [
+   "Hotel pickup and drop-off",
+   "Boat cruise",
+   "Tour guide",
+   "Snorkeling stop with use of snorkeling equipment",
+   "Stop at Orange Bay Island",
+   "Open buffet (fish, chicken, chicken nuggets, oven-roasted potatoes, rice, pasta, meat kofta)",
+   "4 different kinds of salad",
+   "3 different kinds of fruits",
+   "Unlimited soft drinks and hot drinks",
+   "Unlimited snacks",
+   "1 massage per guest",
+   "Life jackets",
+   "Tax",
+   "Marine fee"
+  ],
+  "notIncluded": [
+   "Drinks on the island"
+  ],
+  "options": [
+   "Hurghada Hotel Pickup & Return Luxury Cruise",
+   "Luxury Cruise with Pickup from Makadi, Sahl Hasheesh, Soma Bay, El Gouna & Safaga"
+  ],
+  "itinerary": [
+   "2 pickup location options",
+   "Van",
+   "Red Sea",
+   "Orange Bay",
+   "Jazā'ir Jiftūn",
+   "Red Sea",
+   "Jazīrat Abū Rimāthī",
+   "Red Sea",
+   "Red Sea",
+   "Red Sea Governorate",
+   "Van",
+   "2 drop-off locations"
+  ],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "Experience a unique boat trip to the Egyptian Caribbean Island Orange Bay",
+   "Experience the crystal clear waters and marine life of the Red Sea",
+   "Treat your body with a relaxing back massage while on board",
+   "Discover the Red Sea and enjoy snorkeling, water sport, and much more",
+   "Spot marine life and coral as you snorkel at 2 selected spots"
+  ]
+ },
+ "hurghada-luxury-red-sea-diving-snorkeling-island-lunch": {
+  "title": "Hurghada: Luxury Red Sea Diving, Snorkeling, Island & Lunch",
+  "description": "Set sail from Hurghada on a luxury Red Sea yacht cruise with diving, snorkeling, a visit to Orange Bay Island, lunch, and a relaxing onboard massage.",
+  "included": [
+   "Transfer from Hotel",
+   "Transfer back to the Hotel",
+   "Guide",
+   "Nature reserve fee: $5",
+   "Marine fee",
+   "Boat tour",
+   "Introductory dive for beginners lasting 10 to 15 minutes per guest (no certificate needed)",
+   "Snorkeling",
+   "Massage for each guest",
+   "Orange Bay Island",
+   "Open buffet lunch (rice, pasta, oven-baked vegetables, grilled kofta, chicken, and fish)",
+   "4 different kinds of salad",
+   "3 different kinds of fruit",
+   "Soft drinks",
+   "Hot drinks",
+   "Unlimited water",
+   "Snacks",
+   "Snorkeling gear",
+   "Diving equipment",
+   "Life vest",
+   "Diving suit"
+  ],
+  "notIncluded": [
+   "Tips (optional)",
+   "Any extras not mentioned",
+   "Diving is not allowed for anyone under 13 years old"
+  ],
+  "options": [
+   "Tour from Hurghada",
+   "Tour from Makadi Bay, Soma Bay, Sahl Hasheesh, El Gouna or Safaga"
+  ],
+  "itinerary": [
+   "2 pickup location options",
+   "Orange Bay",
+   "Orange Bay",
+   "Small Giftun diving site",
+   "Red Sea",
+   "Giftun Island",
+   "Red Sea",
+   "Red Sea",
+   "Hurghada",
+   "2 drop-off locations"
+  ],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "Explore the Red Sea for adventure, relaxation, and natural beauty",
+   "Discover the magic of diving and the wonders it reveals",
+   "Enjoy a massage as you sail the calm waters of the Red Sea and feel the luxury",
+   "Marvel at Orange Bay Island and enjoy the tranquil surroundings",
+   "Glide over the water and snorkel among unique marine species"
+  ]
+ },
+ "hurghada-orange-bay-yacht-cruise-with-snorkeling-breakfast-lunch-drinks": {
+  "title": "Hurghada: Orange Bay Yacht Cruise with Snorkeling, Breakfast, Lunch & Drinks",
+  "description": "Enjoy a small group yacht cruise to Orange Bay or a private trip to Magawish Island, with a breakfast buffet onboard, snorkeling at a coral reef with equipment provided, and 1 hour to relax on the island's white sandy beaches.",
+  "included": [
+   "Pick-up and drop-off from Hurghada (see Know Before You Go for details)",
+   "Food & Drinks",
+   "5h Tour: Breakfast buffet",
+   "8h Tour: Breakfast + Lunch",
+   "Unlimited drinks (tea, coffee, soft drinks, water) & Fresh seasonal fruits",
+   "Activities",
+   "5h Tour: 45-min snorkeling stop",
+   "8h Tour: 2 snorkeling stops",
+   "1 hour at Orange Bay Island (white sand beaches & turquoise waters)",
+   "Equipment & Fees: Snorkeling equipment, Island entry fees & Marine tax",
+   "Guides & Crew: Professional guides on each boat, Special guide for non-swimmers & Professional crew"
+  ],
+  "notIncluded": [
+   "Towels",
+   "Underwater photos",
+   "Gratuities (optional)",
+   "Long-range pickup from Makadi, Safaga, El Gouna, Sahl Hasheesh, and Soma Bay (available as an add-on)"
+  ],
+  "options": [
+   "5 Hour Orange Bay Trip with Breakfast",
+   "8 Hour Orange Bay Trip with Breakfast & Lunch",
+   "Private Orange Bay Trip with Breakfast"
+  ],
+  "itinerary": [
+   "4 pickup location options",
+   "Van",
+   "Giftun Island",
+   "4 drop-off locations"
+  ],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "Enjoy a 5 or 8- hour small-group yacht cruise on the Red Sea",
+   "Savor breakfast onboard with stunning coastal views",
+   "Snorkel at Orange Bay coral reefs (30-minute snorkeling session)",
+   "1-hour island visit — relax on white sandy beaches",
+   "Swim in calm waters perfect for all skill levels",
+   "Relax with hotel pickup and drop-off included"
+  ]
+ },
+ "hurghada-panoramic-semi-submarine-cruise-snorkeling": {
+  "title": "Hurghada: Panoramic Semi Submarine Cruise & Snorkeling",
+  "description": "Explore Hurghada’s underwater world from a semi submarine, enjoy panoramic views below the surface, spot marine life, and snorkel among vibrant coral reefs.",
+  "included": [
+   "Hotel pick-up and drop-off",
+   "Submarine trip",
+   "Snorkeling equipment",
+   "One soft drink",
+   "Unlimited mineral water on board",
+   "All entry tickets"
+  ],
+  "notIncluded": [
+   "Drinks and snacks on the floating station",
+   "Photos taken by a professional photographer",
+   "Transfer from El Gouna Hotels (available for an extra fee)"
+  ],
+  "options": [
+   "Hurghada Panoramic Semi Submarine Cruise with Snorkeling"
+  ],
+  "itinerary": [
+   "2 pickup location options",
+   "Bus/coach",
+   "Hurghada Marina",
+   "Bus/coach",
+   "2 drop-off locations"
+  ],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "Discover the mysterious underwater world aboard an incredible Semi-submarine",
+   "Descend 5 meters below the surface for the chance to look at wild sea creatures",
+   "panoramic views of the underwater World without getting wet",
+   "Relaxing at the unique floating station in the Red Sea",
+   "Jump into the Red Sea to snorkel in one of the most beautiful spots in Egypt"
+  ]
+ },
+ "hurghada-red-sea-water-sports-twister-snorkeling": {
+  "title": "Hurghada: Red Sea Water Sports, Twister & Snorkeling",
+  "description": "Spend an exciting day on the Red Sea in Hurghada with banana boat rides, tubing, Twister, and snorkeling. You can also choose to add an exciting speedboat experience for even more adventure.",
+  "included": [
+   "Pick-up and drop-off from Hurghada (see Know Before You Go for details)",
+   "15 mins Banana ride",
+   "15 mins Tube ride",
+   "Bottle of water",
+   "1 stop snorkeling (if option selected)",
+   "Snorkeling equipment",
+   "Life jackets",
+   "Guide snorkeling",
+   "Speedboat ride (if option selected)",
+   "Search with dolphins (if add on selected )",
+   "Speedboat cruise (if add on selected )",
+   "Lunch in hotel (if add on selected )",
+   "Shaded area on the boat (Taneda)",
+   "Stereo system",
+   "Captain"
+  ],
+  "notIncluded": [
+   "Long-range pickup from Makadi, Safaga, El Gouna, Sahl Hasheesh, and the Soma Bay (available as an add-on)"
+  ],
+  "options": [
+   "Banana Boat & Sofa Ride",
+   "Banana Boat, Sofa & Twister Ride",
+   "Banana Boat, Sofa & Speedboat Snorkeling",
+   "Banana Boat, Sofa, Snorkeling & Dolphin Watching",
+   "Private Speedboat, Snorkeling & Dolphin Watching"
+  ],
+  "itinerary": [
+   "4 pickup location options",
+   "Bus/coach",
+   "Snorkeling",
+   "Visit",
+   "Dolphin house small reef",
+   "Long-tail boat ride",
+   "Bus/coach",
+   "4 drop-off locations"
+  ],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "Exciting banana boat rides for a splash of fun!",
+   "Thrilling tubing adventure across the waves!",
+   "Speedboat ride with a snorkeling stop to discover marine life!",
+   "Convenient hotel pickup and customizable options available!"
+  ]
+ },
+ "hurghada-speedboat-dolphin-watching-snorkeling-2-islands": {
+  "title": "Hurghada: Speedboat Dolphin Watching, Snorkeling & 2 Islands",
+  "description": "Escape to the Red Sea for a speedboat trip where you can spot dolphins in their natural environment, explore vibrant marine life while snorkeling, and enjoy time relaxing and sunbathing by the sea.",
+  "included": [
+   "Pick-up and drop-off from Hurghada (see Know Before You Go for details)",
+   "Long-distance pickup from Makadi Bay, Safaga, El Gouna, Sahl Hasheesh, and Soma Bay (extra fee - add at checkout)",
+   "Speedboat cruise",
+   "Snorkeling equipment",
+   "2 or 3 snorkeling stops",
+   "Guided snorkeling",
+   "Mineral water onboard the boat",
+   "Soft drinks",
+   "Fresh seasonal fruits",
+   "Shaded area on the boat (Taneda)",
+   "Life jackets",
+   "Stereo system",
+   "Captain",
+   "Nature reserve fees",
+   "Water sports Banana § Sofa (if option selected)"
+  ],
+  "notIncluded": [
+   "The long-range pickup service from Makadi, Safaga, El Gouna, Sahl Hasheesh, and the Soma bay area’s is available to book in the checkout process as \"add on\""
+  ],
+  "options": [
+   "Group Dolphin Watching & Swimming Without Islands",
+   "Private Dolphin Watching, Snorkeling & 2 Islands",
+   "Luxury Speedboat Experience"
+  ],
+  "itinerary": [
+   "2 pickup location options",
+   "Van",
+   "Giftun Island",
+   "Juzur Abū Minqār",
+   "2 drop-off locations"
+  ],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "Get up close with friendly dolphins in their natural habitat",
+   "Snorkel and get unforgettable views of reefs and corals",
+   "Relax and sunbathe on one of the most beautiful islands of the area",
+   "Swimming with dolphins depends on the weather and the number of boats in the area. (Is not guaranteed)",
+   "Choose an option to fly for up to 5 min so you can enjoy the Red Sea from above"
+  ]
+ },
+ "hurghada-speedboat-snorkeling-trip-with-hotel-pickup": {
+  "title": "Hurghada: Speedboat Snorkeling Trip with Hotel Pickup",
+  "description": "Explore the Red Sea by speedboat from Hurghada and visit three different snorkeling spots. Swim in crystal clear waters, discover colorful marine life, and enjoy a convenient trip with hotel pickup.",
+  "included": [
+   "Pick-up and drop-off from Hurghada (see Know Before You Go for details)",
+   "Snorkeling equipment",
+   "Guide",
+   "Boat cruise",
+   "Shaded area on the boat ( Taneda )",
+   "Life jackets",
+   "Stereo system",
+   "Fresh seasonal fruits",
+   "Drinks (soft drinks and mineral water)",
+   "Captain",
+   "Nature reserve fees"
+  ],
+  "notIncluded": [
+   "The long-range pickup service from Makadi, Safaga, El Gouna, Sahl Hasheesh, and the Soma bay area’s is available to book in the checkout process as \"add on\""
+  ],
+  "options": [
+   "Hurghada: Small Group Snorkeling Speedboat Tour with Hotel Pickup",
+   "Hurghada: Private Snorkeling Speedboat Tour with Hotel Pickup"
+  ],
+  "itinerary": [],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "Explore three different subtropical snorkelling stops",
+   "Travel in style on a speedboat",
+   "Stop for an exciting snorkeling break in the Red Sea",
+   "Benefit from the convenience of hotel pickup and drop-off"
+  ]
+ },
+ "hurghada-speedboat-trip-to-6-islands-with-dolphin-watching-snorkeling": {
+  "title": "Hurghada: Speedboat Trip to 6 Islands with Dolphin Watching & Snorkeling",
+  "description": "Set out from Hurghada by speedboat to visit 6 islands, walk along the Juzur Abū Minqār sandbank, watch dolphins, snorkel among the colorful reefs of Giftun National Park, and relax on beautiful beaches.",
+  "included": [
+   "Pick-up and drop-off from Hurghada (see Know Before You Go for details)",
+   "Pickup from Makadi, Safaga, El Gouna, Sahl Hasheesh, and Soma Bay (if add-on selected)",
+   "Speedboat tour",
+   "Three snorkeling stops",
+   "Snorkeling gear provided",
+   "Professional guide",
+   "Visit to the Giftun National Park area",
+   "Orange Bay Island entrance fees included",
+   "White Island entrance fees included",
+   "Magawish Island entrance fees included",
+   "Juzur Abu Monqar Island entry included",
+   "Visit to a Sandbank island",
+   "Wreck snorkeling stop",
+   "Soft drinks and water",
+   "Seasonal fruits",
+   "Shaded area (tenda) on the board",
+   "Life jacket",
+   "Experienced captain",
+   "5-minute parasailing (if add-on selected)",
+   "Lunch on the island (if add-on selected)"
+  ],
+  "notIncluded": [
+   "The long-range pickup service from Makadi, Safaga, El Gouna, Sahl Hasheesh, and the Soma bay areaâs is available to book in the checkout process as \"Add on\"",
+   "and it cost 10 euro per person."
+  ],
+  "options": [
+   "6 Island Small Group Tour with Dolphin Watching, Snorkeling & Fruit",
+   "Private 6 Island Tour with Dolphin Watching & Snorkeling"
+  ],
+  "itinerary": [
+   "3 pickup location options",
+   "Car",
+   "Giftun Island",
+   "Nemo Bay island",
+   "Orange Bay",
+   "Magawish Island",
+   "Hurghada",
+   "Juzur AbÅ« MinqÄr",
+   "Giftun Island",
+   "Van",
+   "3 drop-off locations"
+  ],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "Feel the excitement as you ride along in a speedboat to visit 6 islands in Egypt",
+   "Get up close with many friendly dolphins swimming in their natural environment",
+   "Snorkel in the sea to explore the vibrant coral reefs and the underwater world",
+   "Relax on the beach and soak up the sun then enjoy a delicious lunch on an island",
+   "Stroll on a sandbank on Juzur Abū Minqār island and then visit Magawish Island"
+  ]
+ },
+ "makadi-bay-2-hour-quad-bike-adventure-across-desert-coast": {
+  "title": "Makadi Bay: 2-Hour Quad Bike Adventure Across Desert & Coast",
+  "description": "Experience a 2-hour quad bike adventure in Makadi, combining thrilling rides across desert dunes with a scenic journey along the beautiful Red Sea coastline. Enjoy convenient hotel pick-up and drop-off with expert guides throughout the experience.",
+  "included": [
+   "Air-conditioned vehicle",
+   "All Fees and Taxes",
+   "Pickup From Makadi Hotels",
+   "120min Quad bike",
+   "Safety Helmet"
+  ],
+  "notIncluded": [
+   "Optional: Scarf & Goggles for $5",
+   "Pickup from outside Makadi: $5 per person"
+  ],
+  "options": [
+   "Single Quad",
+   "Double Quad"
+  ],
+  "itinerary": [
+   "Pick-Up",
+   "Makadi Meeting Point",
+   "Desert Quad Bike Ride",
+   "Red Sea Coastline",
+   "Makadi Return Point",
+   "Drop-Off"
+  ],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "2-Hour Quad Bike Adventure: Enjoy an exciting ride through Makadi’s desert and coastal landscapes.",
+   "Desert Dune Ride: Experience the thrill of riding across stunning desert dunes.",
+   "Red Sea Coastline: Continue your adventure with a scenic ride along the beautiful coast.",
+   "Expert Guides: Enjoy a safe and fun experience with professional guidance.",
+   "Breathtaking Views: Take in beautiful desert and sea scenery and capture memorable photos.",
+   "Hotel Pick-Up & Drop-Off: Travel conveniently with easy transfer service."
+  ]
+ },
+ "makadi-bay-luxury-desert-dinner-stargazing-experience": {
+  "title": "Makadi Bay: Luxury Desert Dinner & Stargazing Experience",
+  "description": "Experience the beauty of the desert with an unforgettable visit to the BADU Camp in Makadi Bay. Enjoy a delicious traditional Bedouin dinner, take a camel ride while watching the stunning sunset, and admire the night sky during a peaceful stargazing experience in the Makadi Bay desert.",
+  "included": [
+   "Hotel pick-up and transfer",
+   "Traditional Bedouin tea, coffee, and karkade",
+   "Bread making and coffee roasting",
+   "Four-course Bedouin dinner",
+   "Bedouin performance (music, dance, storytelling)",
+   "Stargazing session"
+  ],
+  "notIncluded": [
+   "Tips",
+   "Personal expenses"
+  ],
+  "options": [
+   "Hurghada: BADU Luxury Bedouin Dinner Experience & Stargaze",
+   "Makadi Bay, Soma Bay, Safaga, Alahyaa, Sahl Hashesh",
+   "This option is for Pickup from Al Gouna"
+  ],
+  "itinerary": [
+   "2 pickup location options",
+   "Limousine",
+   "Badu camp",
+   "Limousine",
+   "2 drop-off locations"
+  ],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "Immerse yourself in authentic Bedouin culture through interactive activities and traditional performances.",
+   "Enjoy a luxurious four-course Bedouin dinner beneath the stars in the peaceful desert.",
+   "Watch the spectacular desert sunset and take a relaxing camel ride while enjoying breathtaking views.",
+   "Learn about the desert night sky from experienced guides and discover the fascinating wonders of the universe.",
+   "Experience a unique combination of Bedouin culture, traditional cuisine, entertainment, and the natural beauty of the Red Sea desert."
+  ]
+ },
+ "makadi-bay-snorkeling-and-diving-at-orange-bay": {
+  "title": "Makadi Bay: Snorkeling and Diving at Orange Bay",
+  "description": "Discover the beauty of Orange Bay Island on a full-day boat trip from Hurghada. Enjoy exciting diving and snorkeling in the Red Sea, relax on board, and savor a delicious lunch while cruising through the crystal-clear waters.",
+  "included": [
+   "Roundtrip transfers",
+   "Guide",
+   "Unlimited water",
+   "Snorkeling trip by boat with snorkeling gear",
+   "Orange Bay Island stop",
+   "Scuba Diving",
+   "Diving equipment",
+   "Marine fee",
+   "Snacks",
+   "Life vest",
+   "Soft drinks on boat",
+   "Hot drinks on boat",
+   "Lunch open buffet on boat"
+  ],
+  "notIncluded": [],
+  "options": [
+   "Tour from Hurghada",
+   "Tour from Makadi/Soma Bay/El Gouna/Sahl Hasheesh/Safaga"
+  ],
+  "itinerary": [
+   "2 pickup location options",
+   "Giftun Island",
+   "Orange Bay",
+   "Giftun Island Optional",
+   "Hurghada Optional",
+   "Red Sea Governorate Optional",
+   "Hurghada Optional",
+   "Red Sea Governorate Optional",
+   "Red Sea Governorate",
+   "2 drop-off locations"
+  ],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "Experience snorkeling aboard a stylish yacht while exploring the Red Sea.",
+   "Discover angelfish, manta rays, sea turtles, dolphins, and other marine life in their natural habitat.",
+   "Relax and enjoy the beautiful surroundings of the spectacular Orange Bay.",
+   "Take part in an introductory diving experience, ideal for beginners.",
+   "Enjoy a delicious buffet lunch featuring fish, BBQ dishes, and a variety of salads."
+  ]
+ },
+ "makadi-bay-to-luxor-discover-the-valley-of-the-kings-king-tut-s-tomb": {
+  "title": "Makadi Bay to Luxor: Discover the Valley of the Kings & King Tut’s Tomb",
+  "description": "Explore Luxor’s ancient wonders on a full-day guided trip from Makadi Bay. Visit Karnak Temple, the Valley of the Kings, King Tut’s Tomb, Hatshepsut Temple, and the Colossi of Memnon, with a relaxing Nile boat ride.",
+  "included": [
+   "Hotel pickup and drop-off from your hotel in Makadi Bay by air-conditioned minivan",
+   "Professional English/French/German Egyptologist guide",
+   "Lunch at a local restaurant in Luxor",
+   "Entry ticket to the Valley of the Kings, Tomb of Tutankhamun, Karnak Temple, and Hatshepsut Temple"
+  ],
+  "notIncluded": [
+   "Spanish guide (available as an add-on)",
+   "Tips"
+  ],
+  "options": [
+   "Shared Tour Option",
+   "Private Tour Option"
+  ],
+  "itinerary": [
+   "Starting Point",
+   "Travel",
+   "Karnak Temple",
+   "Lunch Break",
+   "Short Felucca Ride",
+   "Valley of the Kings",
+   "Hatshepsut Temple",
+   "Colossi of Memnon",
+   "Return Transfer",
+   "Drop-off"
+  ],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "Explore Luxor’s ancient wonders on a full-day guided tour from Makadi Bay",
+   "Discover the Valley of the Kings and King Tut’s famous tomb",
+   "Admire the grand temples and ancient history of Karnak",
+   "Enjoy a relaxing felucca ride along the Nile",
+   "Visit Hatshepsut Temple and the Colossi of Memnon"
+  ]
+ },
+ "sakkara-memphis-dahshur-giza-pyramids-day-tour": {
+  "title": "Sakkara, Memphis, Dahshur & Giza Pyramids Day Tour",
+  "description": "Step back to the dawn of Ancient Egypt on a custom journey through Sakkara, Memphis, Dahshur, and the Giza Pyramids. Choose your ideal package—from budget-friendly shared trips to an all-inclusive VIP private day complete with lunch and a peaceful Nile Felucca sail.",
+  "included": [
+   "Transportation by air-conditioned vehicle",
+   "Professional licensed guide",
+   "Shared Tour: Professional English-speaking guide only",
+   "Private Tour: Professional guide available in all languages",
+   "Entry tickets to selected landmarks",
+   "Hotel pick-up and drop-off from Cairo or Giza",
+   "Visits: Papyrus Gallery, Oils Factory, Bazaar, Cotton Store, Carpet School (upon request)",
+   "Bottled water"
+  ],
+  "notIncluded": [],
+  "options": [
+   "Pyramids Only — Shared With Ticket",
+   "Memphis, Sakkara, Dahshur — Shared With Ticket",
+   "Pyramids, Memphis, Sakkara — Shared With Ticket",
+   "Sakkara, Memphis, Dahshur — Private With Ticket",
+   "{VIP} Private: Pyramids, Memphis, Sakkara, Dahshur & Felucca"
+  ],
+  "itinerary": [
+   "Pickup location:",
+   "Car",
+   "Dahshur",
+   "Car",
+   "Sakkara",
+   "Car",
+   "Memphis, Egypt",
+   "Car",
+   "Arrive back at:"
+  ],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "Discover Djoser’s Step Pyramid at Sakkara and Dahshur’s famous Bent & Red Pyramids.",
+   "Walk through Memphis—Egypt’s 5,000-year-old first capital—and see the colossal Ramses II statue.",
+   ": Optional add-ons to explore the Great Pyramids of Giza and the majestic Sphinx.",
+   "End your journey with a relaxing sailboat ride down the Nile River.",
+   "Select between shared group tours, private multilingual guides, or VIP packages with lunch included.",
+   "Personalize your day with camel/horse rides or visits to Cairo's historic landmarks."
+  ]
+ },
+ "secrets-of-cairo-2-day-private-sightseeing-tour": {
+  "title": "Secrets of Cairo: 2-Day Private Sightseeing Tour",
+  "description": "Uncover 5,000 years of history on a private 2-day Cairo adventure! Marvel at the Giza Pyramids, Saqqara, and ancient Memphis on Day 1, then explore pharaonic treasures and royal mummies at the Egyptian Museum and NMEC on Day 2.",
+  "included": [
+   "Lunch x 2",
+   "Private transportation",
+   "Air-conditioned vehicle",
+   "Tour Guide",
+   "Entry Fees",
+   "Bottle Of Water"
+  ],
+  "notIncluded": [],
+  "options": [
+   "Secrets of Cairo: A 2-Day Private Magical Adventure"
+  ],
+  "itinerary": [
+   "2 pickup location options",
+   "Car",
+   "Pyramids of Giza",
+   "Valley Temple",
+   "Saqqara (Sakkara) Pyramids",
+   "colossal statue of Ramses II",
+   "Alabaster Sphinx",
+   "Egyptian Museum",
+   "National Museum of Egyptian Civilisation",
+   "2 drop-off locations"
+  ],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "Explore the Great Pyramids of Giza, the Valley Temple, and the enigmatic Great Sphinx",
+   "Stand before the Step Pyramid of Saqqara—the world's oldest stone monument",
+   "Discover Memphis, Egypt’s ancient 3100 B.C. capital, and its Colossal Statue of Ramses II",
+   "Walk among pharaonic masterpieces and Tutankhamun relics at the historic Egyptian Museum",
+   "View preserved pharaohs in the Royal Mummies Hall at the National Museum of Egyptian Civilization (NMEC)",
+   "Enjoy personalized care, expert commentary, and comfortable hotel transfers on both days"
+  ]
+ },
+ "shaab-samadai-dolphin-sanctuary-snorkel-cruise-from-marsa-alam": {
+  "title": "Shaab Samadai Dolphin Sanctuary Snorkel & Cruise from Marsa Alam",
+  "description": "Cruise into the crystal-clear Red Sea waters of Shaab Samadai, home to the famous Dolphin House. Swim alongside wild spinner dolphins, explore thriving coral gardens, and enjoy a freshly prepared lunch on deck.",
+  "included": [
+   "Hotel pickup and drop-off in Marsa Alam",
+   "Full-day boat trip to Shaab Samadai Reef",
+   "Two guided snorkelling sessions (equipment included)",
+   "Professional snorkelling guide",
+   "Refreshments and soft drinks on board",
+   "Buffet lunch on the boat",
+   "Life jackets and safety equipment"
+  ],
+  "notIncluded": [
+   "Personal expenses",
+   "wetsuit available Additional fee (10€/Person)",
+   "National park/environmental entrance fee (10€/Person)",
+   "Transfers from hotels in North & South Marsa Alam (available for an extra charge)"
+  ],
+  "options": [
+   "National Park Fee (Adult)"
+  ],
+  "itinerary": [],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "Swim alongside vibrant coral gardens teeming with colorful fish and rays",
+   "Relax on deck, soak up the sun, and enjoy a freshly prepared lunch",
+   "Snorkel in the warm waters of the Red Sea at Shaab Samadai Reef",
+   "Enjoy a scenic boat journey across crystal-clear waters",
+   "Experience a unique connection with the ocean and its inhabitants"
+  ]
+ },
+ "sunset-yacht-and-snorkeling-cruise-in-hurghada-5-hour-excursion": {
+  "title": "Sunset Yacht and Snorkeling Cruise in Hurghada: 5 Hour Excursion",
+  "description": "Discover the Red Sea on a 5-hour journey from Hurghada. Snorkel vibrant coral reefs, enjoy freshly prepared fish and chips on a sunset yacht cruise, and sip unlimited beverages as the sun sets over the coast.",
+  "included": [
+   "Pick-up and drop-off from Hurghada",
+   "Long-range pickup from Makadi Bay, Safaga, El Gouna, Sahl Hasheesh, and the Soma Bay area is available as a product option",
+   "Professional guides on each boat",
+   "Special guide for non-swimmers",
+   "3-hour yacht cruise on the Red Sea (excluding the pick-up and drop-off time)",
+   "40-minute snorkeling session",
+   "Clamari, Fish & chips meal",
+   "Unlimited hot drinks (tea and coffee)",
+   "Unlimited soft drinks (Coca-Cola, Sprite, Fanta)",
+   "Unlimited bottled water",
+   "All snorkeling equipment (mask, snorkel, fins, life jacket)",
+   "Professional crew",
+   "Please read the \"Know Before You Go\" section"
+  ],
+  "notIncluded": [
+   "Towels",
+   "Underwater photos",
+   "Gratuities (optional)",
+   "Nature Reserve Fee: €5 per person (adult/child), not included. Pay by cash, Visa, or payment link"
+  ],
+  "options": [
+   "5-Hour Sunset Yacht and Snorkeling Trip from Hurghada",
+   "5-Hour Sunset Yacht and Snorkeling Cruise from Makadi Bay, El Gouna & Sahl Hasheesh",
+   "5-Hour Sunset Yacht and Snorkeling Tour from Safaga & Soma Bay"
+  ],
+  "itinerary": [
+   "3 pickup location options",
+   "Red Sea",
+   "Giftun Island",
+   "Red Sea",
+   "3 drop-off locations"
+  ],
+  "readFrom": "live list and booking API, 30 Oct 2026",
+  "highlights": [
+   "5-hour sunset yacht cruise on the Red Sea",
+   "40-minute snorkeling session at colorful coral reefs",
+   "Fish & chips meal with unlimited drinks onboard",
+   "All snorkeling equipment included",
+   "Breathtaking Red Sea sunset views from the yacht"
+  ]
+ }
+}

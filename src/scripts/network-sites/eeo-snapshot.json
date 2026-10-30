@@ -28169,6 +28169,3092 @@
     }
    ],
    "addons": []
+  },
+  {
+   "slug": "from-makadi-bay-hurghada-desert-quad-bike-camel-ride",
+   "id": "d46219a11610f7e9f3b7cd14",
+   "readAt": "2026-10-30T08:59:11Z",
+   "detail": {
+    "title": "From Makadi Bay: Hurghada Desert Quad Bike & Camel Ride",
+    "duration": "3 - 5 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Professional desert guide and escort",
+     "Safety briefing and short practice drive before the tour",
+     "Helmet and required safety equipment",
+     "2-hour quad bike ride",
+     "Short camel ride of approximately 5 minutes for photos",
+     "Stops in the desert for photos and relaxation",
+     "Small-group experience for added comfort and safety"
+    ],
+    "whatsNotIncluded": [
+     "Hotel pickup and drop-off",
+     "Transportation in an air-conditioned vehicle",
+     "Oriental breakfast with the 5:00 AM sunrise tour",
+     "Stargazing, Oriental dinner, and live entertainment with the sunset tour",
+     "Private transfer",
+     "Private guide",
+     "Extended 30-minute camel ride",
+     "30-minute buggy session",
+     "Scarf or goggles"
+    ],
+    "whatToBring": [
+     "Comfortable shoes",
+     "Sunglasses",
+     "Sun hat",
+     "Sunscreen",
+     "Comfortable clothes",
+     "Scarf",
+     "Weather-appropriate clothing",
+     "Charged Smartphone",
+     "Face mask or protective covering"
+    ],
+    "itinerary": [],
+    "pricingSummary": {
+     "currency": "USD"
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "2-hour-quad-bike-without-transfer-entry-ticke-0a1f427dcadd",
+     "title": "2-Hour Quad Bike Without Transfer (Entry Ticket Only)",
+     "type": "Per Person",
+     "description": "Designed for independent travelers. Meet at the quad base; no transfer is included. Set off on a 2-hour guided ride across dunes, valleys, and desert trails with Red Sea views. Breakfast is offered only on the 5:00 AM sunrise tour.",
+     "duration": "3 - 5 hours",
+     "guestPrices": {
+      "adult": 12.35,
+      "child": 6.18,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "05:00",
+       "guestPrices": {
+        "adult": 16.45,
+        "child": 16.45,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 12.35,
+        "child": 12.35,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 12.55,
+        "child": 12.55,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 16.45,
+        "child": 16.45,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "15:00",
+       "guestPrices": {
+        "adult": 16.45,
+        "child": 16.45,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "17:00",
+       "guestPrices": {
+        "adult": 16.45,
+        "child": 16.45,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "2-hour-quad-bike-hurghada-sahl-hasheesh-makad-fc1183e62070",
+     "title": "2-Hour Quad Bike Hurghada, Sahl Hasheesh, Makadi Bay",
+     "type": "Per Person",
+     "description": "Pickup is included from Hurghada, Sahl Hasheesh, and Makadi Bay. Enjoy a shared 2-hour quad ride across dunes and open desert, with scenic photo stops and Red Sea views. Breakfast is available only on the 5:00 AM sunrise tour.",
+     "duration": "3 - 5 hours",
+     "guestPrices": {
+      "adult": 16.45,
+      "child": 8.23,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "05:00",
+       "guestPrices": {
+        "adult": 20.5,
+        "child": 20.5,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 16.45,
+        "child": 16.45,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 16.45,
+        "child": 16.45,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 20.57,
+        "child": 20.57,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "15:00",
+       "guestPrices": {
+        "adult": 20.57,
+        "child": 20.57,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "17:00",
+       "guestPrices": {
+        "adult": 20.57,
+        "child": 20.57,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "2-hour-quad-bike-from-al-ahyaa-el-gouna-safag-dfb0d9aeb07b",
+     "title": "2-Hour Quad Bike From Al Ahyaa, El Gouna, Safaga, Soma Bay",
+     "type": "Per Person",
+     "description": "Transfers are included from Al Ahyaa, El Gouna, Safaga, and Soma Bay. Follow desert trails through dunes and valleys on a shared 2-hour quad safari with panoramic Red Sea views. Breakfast is served only on the 5:00 AM sunrise tour.",
+     "duration": "3 - 5 hours",
+     "guestPrices": {
+      "adult": 20.5,
+      "child": 10.25,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "05:00",
+       "guestPrices": {
+        "adult": 20.5,
+        "child": 20.5,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 16.45,
+        "child": 16.45,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 16.45,
+        "child": 16.45,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 20.57,
+        "child": 20.57,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "15:00",
+       "guestPrices": {
+        "adult": 20.57,
+        "child": 20.57,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "17:00",
+       "guestPrices": {
+        "adult": 20.57,
+        "child": 20.57,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-3",
+     "pricingKey": "90-min-quad-bike-stargazing-dinner-show-all-l-ead817e08e7d",
+     "title": "90-Min Quad Bike Stargazing, Dinner & Show (All Locations)",
+     "type": "Per Person",
+     "description": "Spend the evening in the desert with a 90-minute quad ride and a 30-minute camel ride at sunset. Continue with an Oriental dinner, live cultural show, and stargazing. Hotel transfers, professional guides, and photo stops are included.",
+     "duration": "3 - 5 hours",
+     "guestPrices": {
+      "adult": 0,
+      "child": 0,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "17:30",
+       "guestPrices": {
+        "adult": 34.96,
+        "child": 34.96,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a90a2df766528a3c90e195c",
+     "title": "Private Transfer (9 - 16 people)",
+     "description": "",
+     "price": 100,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a90a2df766528a3c90e195d",
+     "title": "Private Transfer (4-8 people)",
+     "description": "",
+     "price": 85,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a90a2df766528a3c90e195e",
+     "title": "Private Transfer (1-3 people)",
+     "description": "",
+     "price": 70,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a90a2df766528a3c90e195f",
+     "title": "Private Guide (no other guests)",
+     "description": "",
+     "price": 85,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a90a2df766528a3c90e1960",
+     "title": "20-Min Horse Ride",
+     "description": "",
+     "price": 30,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a90a2df766528a3c90e1961",
+     "title": "20-Min Camel Ride",
+     "description": "",
+     "price": 15,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a90a2df766528a3c90e1962",
+     "title": "20-Min Buggy Ride",
+     "description": "",
+     "price": 70,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a90a2df766528a3c90e1963",
+     "title": "additional 20 minutes quad drive",
+     "description": "",
+     "price": 15,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "golden-sunset-quad-safari-in-makadi-bay",
+   "id": "5530969010a177408c75df21",
+   "readAt": "2026-10-30T08:59:11Z",
+   "detail": {
+    "title": "Golden Sunset Quad Safari in Makadi Bay",
+    "duration": "3 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "All ocal taxes, fees and handling charges",
+     "Hotel pickup and drop-off (within Makadi Bay)",
+     "Professional guide",
+     "Use of helmet"
+    ],
+    "whatsNotIncluded": [
+     "Drinks other than complimentary drinks given.",
+     "DVD (available to purchase)",
+     "Hotel pickup and drop-off (if outside Makadi Bay)",
+     "Scarfs and glasses"
+    ],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "Pick-up",
+      "description": "Pick-up"
+     },
+     {
+      "title": "Makadi Bay",
+      "description": "Stop",
+      "duration": "2 hours"
+     },
+     {
+      "title": "Return",
+      "description": "Return to the starting point"
+     }
+    ],
+    "pricingSummary": {
+     "currency": "USD"
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "quad-sunset-6faa56b781a9",
+     "title": "Quad Sunset",
+     "type": "Per Person",
+     "description": "Enjoy a small-group Makadi Bay adventure with a private beach visit, camel ride, Bedouin tea, and an exciting ATV ride through desert trails and coastal landscapes.",
+     "duration": "3 hours",
+     "guestPrices": {
+      "adult": 23.59,
+      "child": 11.9,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "18:00",
+       "guestPrices": {
+        "adult": 23.59,
+        "child": 11.9,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": []
+  },
+  {
+   "slug": "makadi-bay-2-hour-quad-bike-adventure-across-desert-coast",
+   "id": "3d306eb813c37eeb2702f036",
+   "readAt": "2026-10-30T08:59:11Z",
+   "detail": {
+    "title": "Makadi Bay: 2-Hour Quad Bike Adventure Across Desert & Coast",
+    "duration": "2h",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Air-conditioned vehicle",
+     "All Fees and Taxes",
+     "Pickup From Makadi Hotels",
+     "120min Quad bike",
+     "Safety Helmet"
+    ],
+    "whatsNotIncluded": [
+     "Optional: Scarf & Goggles for $5",
+     "Pickup from outside Makadi: $5 per person"
+    ],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "Pick-Up",
+      "description": "Pick-Up"
+     },
+     {
+      "title": "Makadi Meeting Point",
+      "description": "Meet your guides and receive a brief safety orientation."
+     },
+     {
+      "title": "Desert Quad Bike Ride",
+      "description": "Ride across the golden desert sands and enjoy the scenic views."
+     },
+     {
+      "title": "Red Sea Coastline",
+      "description": "Continue along the coastline and admire the contrast between sea and desert."
+     },
+     {
+      "title": "Makadi Return Point",
+      "description": "Return to the starting point and relax after the ride."
+     },
+     {
+      "title": "Drop-Off",
+      "description": "Drop-Off"
+     }
+    ],
+    "pricingSummary": {
+     "currency": "USD"
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "single-quad-652928d03bae",
+     "title": "Single Quad",
+     "type": "Per Person",
+     "description": "Single Quad – 1 Pax: One person per quad bike, ideal for solo riders who want full control and an exciting adventure.",
+     "duration": "2h",
+     "guestPrices": {
+      "adult": 20,
+      "child": 15,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 20,
+        "child": 15,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 20,
+        "child": 15,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "15:00",
+       "guestPrices": {
+        "adult": 20,
+        "child": 15,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "double-quad-4a3e1777d7d0",
+     "title": "Double Quad",
+     "type": "Per Couple",
+     "description": "Double Quad – 2 Pax: Two people share one quad bike, perfect for couples or friends who want to enjoy the adventure together.",
+     "duration": "2h",
+     "guestPrices": {
+      "adult": 35,
+      "child": 35,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 35,
+        "child": 35,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 35,
+        "child": 35,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "15:00",
+       "guestPrices": {
+        "adult": 35,
+        "child": 35,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": []
+  },
+  {
+   "slug": "makadi-bay-atv-camel-safari-with-dinner-and-stargazing",
+   "id": "bc3f55a4b2a233da7a1649fc",
+   "readAt": "2026-10-30T08:59:11Z",
+   "detail": {
+    "title": "Makadi Bay ATV & Camel Safari with Dinner and Stargazing",
+    "duration": "1 - 5 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Hotel pickup and drop-off (if selected)",
+     "Transportation in an air-conditioned vehicle (if selected)",
+     "Professional guide and desert escort",
+     "Safety briefing and short driving test before departure",
+     "Helmet and safety equipment",
+     "2-hour quad bike ride (or 1H quad + 1H horse combo, depending on option)",
+     "Short 5-minute camel ride for photos (included in all tours)",
+     "Oriental breakfast (sunrise option only at 5:00 AM)",
+     "Stargazing, Oriental dinner, and live show (sunset option only)",
+     "Desert stops for photos and relaxation",
+     "Small group experience for safety and comfort"
+    ],
+    "whatsNotIncluded": [
+     "Scarf or goggles",
+     "Private guide (available for an extra fee)",
+     "Private transfer (available for an extra fee)"
+    ],
+    "whatToBring": [
+     "Comfortable shoes",
+     "Sunglasses",
+     "Sun hat",
+     "Sunscreen",
+     "Comfortable clothes",
+     "Scarf",
+     "Weather-appropriate clothing",
+     "Goggles",
+     "Sportswear"
+    ],
+    "itinerary": [
+     {
+      "title": "Starting/pickup location",
+      "description": "Depends on the selected option"
+     },
+     {
+      "title": "Van",
+      "description": "Transport",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "Sahl Hasheesh",
+      "description": "Camel ride, Sunset, Quad bike ride, Sunrise",
+      "duration": "2 hours"
+     },
+     {
+      "title": "Sahl Hasheesh",
+      "description": "Photo stop, Dinner, Horse riding, Dance show, Traditional dance show\n\n(Optional, Extra fee)",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Van",
+      "description": "Transport",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "3 drop-off locations",
+      "description": "Hurghada, XVM5+RV7, Makadi Bay"
+     }
+    ],
+    "pricingSummary": {
+     "currency": "USD"
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "2-hour-quad-bike-without-transfer-entry-ticke-617f2d97cec4",
+     "title": "2-Hour Quad Bike Without Transfer (Entry Ticket Only)",
+     "type": "Per Person",
+     "description": "Ticket-only option for independent travelers. Meet directly at the base and enjoy a 2-hour guided quad adventure across dunes, valleys, and desert trails with Red Sea views. Oriental breakfast is included only with the 5:00 AM sunrise ride.",
+     "duration": "2 hours",
+     "guestPrices": {
+      "adult": 0,
+      "child": 0,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "05:00",
+       "guestPrices": {
+        "adult": 29.78,
+        "child": 29.78,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 23.01,
+        "child": 23.01,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 21.66,
+        "child": 21.66,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 29.78,
+        "child": 29.78,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "14:00",
+       "guestPrices": {
+        "adult": 33.84,
+        "child": 33.84,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "from-hurghada-sahl-hasheesh-makadi-bay-2-hour-df175718d6dc",
+     "title": "From Hurghada, Sahl Hasheesh, Makadi Bay: 2-Hour Quad Bike",
+     "type": "Per Person",
+     "description": "Shared 2-hour quad adventure with pickup from Hurghada, Sahl Hasheesh, or Makadi Bay. Ride desert dunes and open plains with photo stops and Red Sea views. Oriental breakfast is included only with the 5:00 AM sunrise ride.",
+     "duration": "3 hours",
+     "guestPrices": {
+      "adult": 0,
+      "child": 0,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "05:00",
+       "guestPrices": {
+        "adult": 37.9,
+        "child": 37.9,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 27.07,
+        "child": 27.07,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 27.07,
+        "child": 27.07,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 27.07,
+        "child": 27.07,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "14:00",
+       "guestPrices": {
+        "adult": 33.84,
+        "child": 33.84,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "2-hour-quad-bike-from-al-ahyaa-el-gouna-safag-31d6cec17441",
+     "title": "2-Hour Quad Bike | From Al Ahyaa, El Gouna, Safaga, Soma Bay",
+     "type": "Per Person",
+     "description": "Shared 2-hour quad ride with transfers from Al Ahyaa, El Gouna, Safaga, or Soma Bay. Explore desert trails, dunes, and valleys with stunning Red Sea views. Oriental breakfast is included only with the 5:00 AM sunrise ride.",
+     "duration": "3 hours",
+     "guestPrices": {
+      "adult": 29.78,
+      "child": 29.78,
+      "infant": 29.78
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "05:00",
+       "guestPrices": {
+        "adult": 29.78,
+        "child": 29.78,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 27.07,
+        "child": 27.07,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 27.07,
+        "child": 27.07,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 41.96,
+        "child": 41.96,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "14:00",
+       "guestPrices": {
+        "adult": 60.92,
+        "child": 60.92,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-3",
+     "pricingKey": "2h-quad-bike-stargazing-dinner-show-all-locat-33e7923fe53a",
+     "title": "2H Quad Bike | Stargazing, Dinner & Show (All Locations)",
+     "type": "Per Person",
+     "description": "Evening desert adventure with a 2-hour quad bike ride at sunset, followed by an Oriental dinner, live cultural show, and stargazing. Includes hotel transfers, professional guides, photo stops, and a short camel ride.",
+     "duration": "5 hours",
+     "guestPrices": {
+      "adult": 60.92,
+      "child": 60.92,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "16:00",
+       "guestPrices": {
+        "adult": 60.92,
+        "child": 60.92,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-4",
+     "pricingKey": "2h-quad-bike-stargazing-dinner-show-all-locat-5634de4eb580",
+     "title": "Makadi Bay Special Private Group 1-hour Quad Bike",
+     "type": "Per Group",
+     "description": "Ideal for large groups, this 1-hour private tour offers an exclusive desert experience for friends, families, or colleagues.",
+     "duration": "1 hour",
+     "guestPrices": {
+      "adult": 609.2,
+      "child": 304.6,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "16:00",
+       "guestPrices": {
+        "adult": 61.38,
+        "child": 61.38,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a830c136c1df20f79a69bc3",
+     "title": "Private Guide",
+     "description": "",
+     "price": 67.68,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "from-hurghada-sahl-hasheesh-makadi-bay-2-hour-df175718d6dc",
+      "2h-quad-bike-stargazing-dinner-show-all-locat-33e7923fe53a",
+      "2-hour-quad-bike-from-al-ahyaa-el-gouna-safag-31d6cec17441",
+      "2h-quad-bike-stargazing-dinner-show-all-locat-5634de4eb580"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a830c136c1df20f79a69bc4",
+     "title": "Private transfer",
+     "description": "",
+     "price": 47.38,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "from-hurghada-sahl-hasheesh-makadi-bay-2-hour-df175718d6dc",
+      "2h-quad-bike-stargazing-dinner-show-all-locat-33e7923fe53a",
+      "2-hour-quad-bike-from-al-ahyaa-el-gouna-safag-31d6cec17441",
+      "2h-quad-bike-stargazing-dinner-show-all-locat-5634de4eb580"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a830c136c1df20f79a69bc5",
+     "title": "Double Buggy Upgrade (+1 passenger)",
+     "description": "",
+     "price": 135.37,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "from-hurghada-sahl-hasheesh-makadi-bay-2-hour-df175718d6dc",
+      "2h-quad-bike-stargazing-dinner-show-all-locat-33e7923fe53a",
+      "2-hour-quad-bike-from-al-ahyaa-el-gouna-safag-31d6cec17441",
+      "2h-quad-bike-stargazing-dinner-show-all-locat-5634de4eb580"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a830c136c1df20f79a69bc6",
+     "title": "Upgrade Your Camel Ride to 15-Min",
+     "description": "",
+     "price": 40.61,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "from-hurghada-sahl-hasheesh-makadi-bay-2-hour-df175718d6dc",
+      "2h-quad-bike-stargazing-dinner-show-all-locat-33e7923fe53a",
+      "2-hour-quad-bike-from-al-ahyaa-el-gouna-safag-31d6cec17441",
+      "2h-quad-bike-stargazing-dinner-show-all-locat-5634de4eb580"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a830c136c1df20f79a69bc7",
+     "title": "Private Guide",
+     "description": "",
+     "price": 67.68,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-without-transfer-entry-ticke-617f2d97cec4"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a830c136c1df20f79a69bc8",
+     "title": "Private transfer",
+     "description": "",
+     "price": 67.68,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-without-transfer-entry-ticke-617f2d97cec4"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a830c136c1df20f79a69bc9",
+     "title": "Makadi Bay Transfer (Per Person)",
+     "description": "",
+     "price": 13.54,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-without-transfer-entry-ticke-617f2d97cec4"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a830c136c1df20f79a69bca",
+     "title": "Sahl Hasheesh Transfer (Per Person)",
+     "description": "",
+     "price": 13.54,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-without-transfer-entry-ticke-617f2d97cec4"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a830c136c1df20f79a69bcb",
+     "title": "Soma Bay Transfer (Per Person)",
+     "description": "",
+     "price": 20.31,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-without-transfer-entry-ticke-617f2d97cec4"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a830c136c1df20f79a69bcc",
+     "title": "Port Safaga Transfer",
+     "description": "",
+     "price": 20.31,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-without-transfer-entry-ticke-617f2d97cec4"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a830c136c1df20f79a69bcd",
+     "title": "Pickup & Drop-off in Al Ahyaa",
+     "description": "",
+     "price": 20.31,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-without-transfer-entry-ticke-617f2d97cec4"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a830c136c1df20f79a69bce",
+     "title": "El Gouna Transfer (Per Person)",
+     "description": "",
+     "price": 20.31,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-without-transfer-entry-ticke-617f2d97cec4"
+     ],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "makadi-bay-luxury-desert-dinner-stargazing-experience",
+   "id": "d45f603772f17368c908b025",
+   "readAt": "2026-10-30T08:59:11Z",
+   "detail": {
+    "title": "Makadi Bay: Luxury Desert Dinner & Stargazing Experience",
+    "duration": "4 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Hotel pick-up and transfer",
+     "Traditional Bedouin tea, coffee, and karkade",
+     "Bread making and coffee roasting",
+     "Four-course Bedouin dinner",
+     "Bedouin performance (music, dance, storytelling)",
+     "Stargazing session"
+    ],
+    "whatsNotIncluded": [
+     "Tips",
+     "Personal expenses"
+    ],
+    "whatToBring": [
+     "Warm clothing",
+     "Hat",
+     "Camera",
+     "Sunscreen",
+     "Comfortable clothes"
+    ],
+    "itinerary": [
+     {
+      "title": "2 pickup location options",
+      "description": "El Gouna, Hurghada"
+     },
+     {
+      "title": "Limousine",
+      "description": ""
+     },
+     {
+      "title": "Badu camp",
+      "description": "Coffee, Tea, Dinner, Guided tour, Camel ride, Camp activities, BBQ, Sunset, Traditional dance show, Welcome refreshments, Coffee tasting",
+      "duration": "3 hours"
+     },
+     {
+      "title": "Limousine",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "title": "2 drop-off locations",
+      "description": "Hurghada, El Gouna"
+     }
+    ],
+    "pricingSummary": {
+     "currency": "USD"
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "hurghada-badu-luxury-bedouin-dinner-experienc-b7f20a5bdbd8",
+     "title": "Hurghada: BADU Luxury Bedouin Dinner Experience & Stargaze",
+     "type": "Per Person",
+     "description": "This option is for hotel pickup from Hurghada only",
+     "duration": "4 hours",
+     "guestPrices": {
+      "adult": 60,
+      "child": 30,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "18:00",
+       "guestPrices": {
+        "adult": 60,
+        "child": 30,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "makadi-bay-soma-bay-safaga-alahyaa-sahl-hashe-a03ce8972937",
+     "title": "Makadi Bay, Soma Bay, Safaga, Alahyaa, Sahl Hashesh",
+     "type": "Per Person",
+     "description": "This option is for hotel pickup from Makadi Bay, Soma Bay, Safaga, Alahyaa, and Sahl Hashesh.",
+     "duration": "4 hours",
+     "guestPrices": {
+      "adult": 65,
+      "child": 35,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "18:00",
+       "guestPrices": {
+        "adult": 65,
+        "child": 35,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "this-option-is-for-pickup-from-al-gouna-f655e51b410b",
+     "title": "This option is for Pickup from Al Gouna",
+     "type": "Per Person",
+     "description": "This option is for hotel pickup from El Gouna.",
+     "duration": "4 hours",
+     "guestPrices": {
+      "adult": 70,
+      "child": 30,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "18:00",
+       "guestPrices": {
+        "adult": 70,
+        "child": 30,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a873726d99dbf6bb1a799f3",
+     "title": "Private transfers (1-5 people)",
+     "description": "",
+     "price": 45,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "hurghada-badu-luxury-bedouin-dinner-experienc-b7f20a5bdbd8"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873726d99dbf6bb1a799f4",
+     "title": "Private Dinner",
+     "description": "",
+     "price": 80,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "hurghada-badu-luxury-bedouin-dinner-experienc-b7f20a5bdbd8"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873726d99dbf6bb1a799f5",
+     "title": "HD Photo and Video Package",
+     "description": "",
+     "price": 35,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "hurghada-badu-luxury-bedouin-dinner-experienc-b7f20a5bdbd8"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873726d99dbf6bb1a799f6",
+     "title": "Private transfers (1-5 people)",
+     "description": "",
+     "price": 60,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "makadi-bay-soma-bay-safaga-alahyaa-sahl-hashe-a03ce8972937",
+      "this-option-is-for-pickup-from-al-gouna-f655e51b410b"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873726d99dbf6bb1a799f7",
+     "title": "Private Dinner",
+     "description": "",
+     "price": 80,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "makadi-bay-soma-bay-safaga-alahyaa-sahl-hashe-a03ce8972937",
+      "this-option-is-for-pickup-from-al-gouna-f655e51b410b"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a873726d99dbf6bb1a799f8",
+     "title": "HD Photo and Video Package",
+     "description": "",
+     "price": 35,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "makadi-bay-soma-bay-safaga-alahyaa-sahl-hashe-a03ce8972937",
+      "this-option-is-for-pickup-from-al-gouna-f655e51b410b"
+     ],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "makadi-bay-sunset-atv-quad-safari-with-stunning-sea-views",
+   "id": "221527eca52a0132c12355b4",
+   "readAt": "2026-10-30T08:59:11Z",
+   "detail": {
+    "title": "Makadi Bay Sunset ATV & Quad Safari with Stunning Sea Views",
+    "duration": "2 - 3 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Hotel pickup and drop-off (if selected)",
+     "Transportation in an air-conditioned vehicle (if selected)",
+     "Professional guide and desert escort",
+     "Safety briefing and a short driving test before departure",
+     "Helmet and safety equipment",
+     "2-hour quad bike ride (or 1-hour quad plus 1-hour horse combo, depending on the option selected)",
+     "Short 5-minute camel ride for photos (included in all tours)",
+     "Oriental dinner, and live show (sunset option only)",
+     "Desert stops for photos and relaxation",
+     "Small group experience for safety and comfort"
+    ],
+    "whatsNotIncluded": [
+     "Scarf or goggles",
+     "Private transfer (available for an extra fee)",
+     "Private guide (available for an extra fee)",
+     "Extended 30-minute camel ride (optional add-on)",
+     "30-minute buggy session (optional add-on)",
+     "Personal expenses"
+    ],
+    "whatToBring": [
+     "Passport or ID card",
+     "Comfortable shoes",
+     "Sunglasses",
+     "Sun hat",
+     "Hat",
+     "Sunscreen",
+     "Comfortable clothes",
+     "Scarf",
+     "Weather-appropriate clothing",
+     "Sportswear",
+     "Goggles"
+    ],
+    "itinerary": [
+     {
+      "title": "Starting/pickup location",
+      "description": "Depends on the selected option"
+     },
+     {
+      "title": "Car",
+      "description": "Transport",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Makadi Bay",
+      "description": "Quad bike ride",
+      "duration": "2 hours"
+     },
+     {
+      "title": "Car",
+      "description": "Transport",
+      "duration": "1 hour"
+     },
+     {
+      "title": "3 drop-off locations",
+      "description": "Hurghada, XVM5+RV7, Makadi Bay"
+     }
+    ],
+    "pricingSummary": {
+     "currency": "USD"
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "sunrise-quad-bike-camel-and-bedouin-breakfast-6628f4a2cb03",
+     "title": "Sunrise Quad Bike, Camel and Bedouin Breakfast",
+     "type": "Per Person",
+     "description": "This option includes a 2-hour quad bike adventure with a camel ride and traditional Bedouin breakfast, with hotel pickup from Makadi Bay.",
+     "duration": "3 hours",
+     "guestPrices": {
+      "adult": 21.59,
+      "child": 21.59,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "05:00",
+       "guestPrices": {
+        "adult": 21.59,
+        "child": 21.59,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "2-hour-quad-bike-without-transfer-entry-ticke-cdbd37eeaea8",
+     "title": "2-Hour Quad Bike | Without Transfer (Entry Ticket Only)",
+     "type": "Per Person",
+     "description": "Ideal for independent travelers, this ticket-only option lets you meet directly at the quad base and enjoy a 2-hour guided ride through desert dunes, valleys, and trails overlooking the Red Sea. The 5:00 AM sunrise departure also includes a traditional Oriental breakfast.",
+     "duration": "2 hours",
+     "guestPrices": {
+      "adult": 29.69,
+      "child": 29.69,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "05:00",
+       "guestPrices": {
+        "adult": 29.69,
+        "child": 29.69,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 21.59,
+        "child": 21.59,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 21.59,
+        "child": 21.59,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 29.69,
+        "child": 29.69,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "14:00",
+       "guestPrices": {
+        "adult": 27.66,
+        "child": 27.66,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "2-hour-quad-bike-hurghada-sahl-hasheesh-makad-d60c09964cbb",
+     "title": "2-Hour Quad Bike | Hurghada, Sahl Hasheesh, Makadi Bay",
+     "type": "Per Person",
+     "description": "Enjoy a shared 2-hour quad bike adventure with convenient pickup from Hurghada, Sahl Hasheesh, or Makadi Bay. Explore desert dunes and open plains, stop for photos, and take in beautiful Red Sea views. The 5:00 AM sunrise option also includes a traditional Oriental breakfast.",
+     "duration": "3 hours",
+     "guestPrices": {
+      "adult": 37.79,
+      "child": 37.79,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "05:00",
+       "guestPrices": {
+        "adult": 37.79,
+        "child": 37.79,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 24.29,
+        "child": 24.29,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 26.99,
+        "child": 26.99,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 35.09,
+        "child": 35.09,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "14:00",
+       "guestPrices": {
+        "adult": 47.23,
+        "child": 47.23,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-3",
+     "pricingKey": "from-al-ahyaa-el-gouna-safaga-soma-bay-e11c53e508cc",
+     "title": "From Al Ahyaa, El Gouna, Safaga, Soma Bay",
+     "type": "Per Person",
+     "description": "Enjoy a shared 2-hour quad bike adventure with hotel transfers from Al Ahyaa, El Gouna, Safaga, or Soma Bay. Ride through desert trails, sandy dunes, and scenic valleys while taking in beautiful views of the Red Sea. The 5:00 AM sunrise option also includes a traditional Oriental breakfast.",
+     "duration": "3 hours",
+     "guestPrices": {
+      "adult": 29.69,
+      "child": 29.69,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "05:00",
+       "guestPrices": {
+        "adult": 29.69,
+        "child": 29.69,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 41.83,
+        "child": 41.83,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 26.99,
+        "child": 26.99,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 41.83,
+        "child": 41.83,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "14:00",
+       "guestPrices": {
+        "adult": 60.73,
+        "child": 60.73,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-4",
+     "pricingKey": "90-min-quad-bike-stargazing-dinner-show-all-l-8160ab33dd47",
+     "title": "90-Min Quad Bike | Stargazing, Dinner & Show (All Locations)",
+     "type": "Per Person",
+     "description": "Enjoy an evening desert escape featuring a 90-minute quad bike ride and a 30-minute camel ride as the sun sets. Continue with a traditional Oriental dinner, live cultural show, and stargazing beneath the desert sky. The experience includes hotel transfers, professional guides, scenic photo stops, and a short camel ride.",
+     "duration": "2 hours",
+     "guestPrices": {
+      "adult": 60.73,
+      "child": 60.73,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "16:00",
+       "guestPrices": {
+        "adult": 60.73,
+        "child": 60.73,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a80521184803932d69b8929",
+     "title": "Private Guide",
+     "description": "",
+     "price": 67.43,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-without-transfer-entry-ticke-cdbd37eeaea8"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a80521184803932d69b892a",
+     "title": "private transfer",
+     "description": "",
+     "price": 67.43,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-without-transfer-entry-ticke-cdbd37eeaea8"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a80521184803932d69b892b",
+     "title": "Makadi Bay Transfer (Per Person)",
+     "description": "",
+     "price": 13.49,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-without-transfer-entry-ticke-cdbd37eeaea8"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a80521184803932d69b892c",
+     "title": "Sahl Hasheesh Transfer (Per Person)",
+     "description": "",
+     "price": 13.49,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-without-transfer-entry-ticke-cdbd37eeaea8"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a80521184803932d69b892d",
+     "title": "Soma Bay Transfer (Per Person)",
+     "description": "",
+     "price": 20.23,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-without-transfer-entry-ticke-cdbd37eeaea8"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a80521184803932d69b892e",
+     "title": "Port Safaga Transfer",
+     "description": "",
+     "price": 20.23,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-without-transfer-entry-ticke-cdbd37eeaea8"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a80521184803932d69b892f",
+     "title": "Pickup & Drop-off in Al Ahyaa",
+     "description": "",
+     "price": 20.23,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-without-transfer-entry-ticke-cdbd37eeaea8"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a80521184803932d69b8930",
+     "title": "El Gouna Transfer (Per Person)",
+     "description": "",
+     "price": 20.23,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-without-transfer-entry-ticke-cdbd37eeaea8"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a80521184803932d69b8931",
+     "title": "Double Buggy Upgrade (+1 passenger)",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-without-transfer-entry-ticke-cdbd37eeaea8"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a80521184803932d69b8932",
+     "title": "Upgrade Your Camel Ride to 15-Min",
+     "description": "",
+     "price": 40.46,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-without-transfer-entry-ticke-cdbd37eeaea8"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8058e3deed418392b79f41",
+     "title": "Private Guide",
+     "description": "",
+     "price": 67.43,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "sunrise-quad-bike-camel-and-bedouin-breakfast-6628f4a2cb03",
+      "2-hour-quad-bike-hurghada-sahl-hasheesh-makad-d60c09964cbb"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8058e3deed418392b79f42",
+     "title": "Private transfer",
+     "description": "",
+     "price": 67.43,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "sunrise-quad-bike-camel-and-bedouin-breakfast-6628f4a2cb03",
+      "2-hour-quad-bike-hurghada-sahl-hasheesh-makad-d60c09964cbb"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8058e3deed418392b79f43",
+     "title": "Sahl Hasheesh Transfer (Per Person)",
+     "description": "",
+     "price": 13.49,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "sunrise-quad-bike-camel-and-bedouin-breakfast-6628f4a2cb03",
+      "2-hour-quad-bike-hurghada-sahl-hasheesh-makad-d60c09964cbb"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8058e3deed418392b79f44",
+     "title": "Soma Bay Transfer (Per Person)",
+     "description": "",
+     "price": 20.23,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "sunrise-quad-bike-camel-and-bedouin-breakfast-6628f4a2cb03",
+      "2-hour-quad-bike-hurghada-sahl-hasheesh-makad-d60c09964cbb"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8058e3deed418392b79f45",
+     "title": "Port Safaga Transfer",
+     "description": "",
+     "price": 20.23,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "sunrise-quad-bike-camel-and-bedouin-breakfast-6628f4a2cb03",
+      "2-hour-quad-bike-hurghada-sahl-hasheesh-makad-d60c09964cbb"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8058e3deed418392b79f46",
+     "title": "Pickup & Drop-off in Al Ahyaa",
+     "description": "",
+     "price": 20.23,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "sunrise-quad-bike-camel-and-bedouin-breakfast-6628f4a2cb03",
+      "2-hour-quad-bike-hurghada-sahl-hasheesh-makad-d60c09964cbb"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8058e3deed418392b79f47",
+     "title": "El Gouna Transfer (Per Person)",
+     "description": "",
+     "price": 20.23,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "sunrise-quad-bike-camel-and-bedouin-breakfast-6628f4a2cb03",
+      "2-hour-quad-bike-hurghada-sahl-hasheesh-makad-d60c09964cbb"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8058e3deed418392b79f48",
+     "title": "Private Guide",
+     "description": "",
+     "price": 67.43,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "90-min-quad-bike-stargazing-dinner-show-all-l-8160ab33dd47"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8058e3deed418392b79f49",
+     "title": "private transfer",
+     "description": "",
+     "price": 47.2,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "90-min-quad-bike-stargazing-dinner-show-all-l-8160ab33dd47"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8058e3deed418392b79f4a",
+     "title": "Double Buggy Upgrade (+1 passenger)",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "90-min-quad-bike-stargazing-dinner-show-all-l-8160ab33dd47"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8058e3deed418392b79f4b",
+     "title": "Upgrade Your Camel Ride to 15-Min",
+     "description": "",
+     "price": 40.46,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "90-min-quad-bike-stargazing-dinner-show-all-l-8160ab33dd47"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a87422dcb89115bf67be40a",
+     "title": "Full Body Massage After Tour",
+     "description": "",
+     "price": 68.03,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-without-transfer-entry-ticke-cdbd37eeaea8"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a87422dcb89115bf67be40b",
+     "title": "Full Body Massage After Tour",
+     "description": "",
+     "price": 68.03,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "sunrise-quad-bike-camel-and-bedouin-breakfast-6628f4a2cb03",
+      "2-hour-quad-bike-hurghada-sahl-hasheesh-makad-d60c09964cbb"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a87422dcb89115bf67be40c",
+     "title": "Makadi Bay Transfer (Per Person)",
+     "description": "",
+     "price": 13.49,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "sunrise-quad-bike-camel-and-bedouin-breakfast-6628f4a2cb03",
+      "2-hour-quad-bike-hurghada-sahl-hasheesh-makad-d60c09964cbb"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a87422dcb89115bf67be40d",
+     "title": "Private Guide",
+     "description": "",
+     "price": 67.43,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "from-al-ahyaa-el-gouna-safaga-soma-bay-e11c53e508cc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a87422dcb89115bf67be40e",
+     "title": "private transfer",
+     "description": "",
+     "price": 47.2,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "from-al-ahyaa-el-gouna-safaga-soma-bay-e11c53e508cc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a87422dcb89115bf67be40f",
+     "title": "Double Buggy Upgrade (+1 passenger)",
+     "description": "",
+     "price": 134.86,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "from-al-ahyaa-el-gouna-safaga-soma-bay-e11c53e508cc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a87422dcb89115bf67be410",
+     "title": "Upgrade Your Camel Ride to 15-Min",
+     "description": "",
+     "price": 40.46,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "from-al-ahyaa-el-gouna-safaga-soma-bay-e11c53e508cc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a87422dcb89115bf67be411",
+     "title": "Full Body Massage After Tour",
+     "description": "",
+     "price": 68.03,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "from-al-ahyaa-el-gouna-safaga-soma-bay-e11c53e508cc"
+     ],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "sunrise-buggy-safari-in-makadi-bay-with-breakfast",
+   "id": "77c80f42c3ddbf93f799bcbd",
+   "readAt": "2026-10-30T08:59:11Z",
+   "detail": {
+    "title": "Sunrise Buggy Safari in Makadi Bay with Breakfast",
+    "duration": "3 - 5 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Professional guide and desert escort",
+     "Safety briefing and short driving test",
+     "Helmet and required safety equipment",
+     "Dune buggy ride according to the selected option",
+     "Guided desert driving route",
+     "Desert photo and relaxation stops",
+     "Hotel pickup and drop-off (if selected)",
+     "Air-conditioned transportation (if selected)",
+     "Oriental breakfast (with the 5:00 AM sunrise option only)",
+     "Oriental dinner (with the evening options only)",
+     "Live cultural show (with the evening options only)",
+     "Stargazing experience (with the evening options only)"
+    ],
+    "whatsNotIncluded": [
+     "Personal expenses",
+     "Scarf or goggles",
+     "Food and drinks outside the selected meal",
+     "Private transfer (available for an extra fee)",
+     "Private guide (available for an extra fee)",
+     "Private guide (available for an extra fee)",
+     "20-minute Camel ride (available for an extra fee)",
+     "20-minute horse ride (available for an extra fee)",
+     "20-minute quad ride (available for an extra fee)",
+     "Extra 1-hour dune buggy (available for an extra fee)"
+    ],
+    "whatToBring": [
+     "Sunglasses",
+     "Sun hat",
+     "Sunscreen",
+     "Comfortable clothes",
+     "Scarf",
+     "Weather-appropriate clothing",
+     "Charged Smartphone",
+     "Face mask or protective covering"
+    ],
+    "itinerary": [
+     {
+      "title": "Starting Point",
+      "description": "Makadi Bay Hotel"
+     },
+     {
+      "title": "Pickup & Transfer",
+      "description": "Travel to the desert base"
+     },
+     {
+      "title": "Dune Buggy Safari",
+      "description": "Guided ride through the Makadi Bay desert"
+     },
+     {
+      "title": "Scenic Desert Stops",
+      "description": "Photos and Red Sea views along the route"
+     },
+     {
+      "title": "Sunrise & Breakfast/ Dinner, Show & Stargazing",
+      "description": "Early ride with Oriental breakfast (Option)\nEvening desert program (Option)"
+     },
+     {
+      "title": "Return Transfer",
+      "description": "Travel back to the hotel"
+     },
+     {
+      "title": "Drop-off",
+      "description": "Makadi Bay Hotel"
+     }
+    ],
+    "pricingSummary": {
+     "currency": "USD"
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "family-dune-buggy-max-4-riders-b6e1ca82ab1a",
+     "title": "Family Dune Buggy (Max 4 Riders)",
+     "type": "Per Group",
+     "description": "Ride together in a family dune buggy for up to 4 people and explore Makadi Bay’s desert with a guide. Enjoy scenic stops along the way. The 5:00 AM departure includes sunrise and Oriental breakfast.",
+     "duration": "3 hours",
+     "guestPrices": {
+      "adult": 66.28,
+      "child": 33.14,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "05:00",
+       "guestPrices": {
+        "adult": 66.28,
+        "child": 33.14,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 132.57,
+        "child": 66.29,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "15:00",
+       "guestPrices": {
+        "adult": 132.57,
+        "child": 66.29,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "17:00",
+       "guestPrices": {
+        "adult": 132.57,
+        "child": 66.29,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 66.28,
+        "child": 33.14,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 132.57,
+        "child": 66.29,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "double-dune-buggy-max-2-riders-ebb6f22aae0e",
+     "title": "Double Dune Buggy (Max 2 Riders)",
+     "type": "Per Group",
+     "description": "Share one dune buggy with up to 2 riders and follow your guide across Makadi Bay’s desert tracks. Includes scenic stops along the route. Choose 5:00 AM for sunrise and Oriental breakfast. Hotel transfer can be selected separately.",
+     "duration": "3 hours",
+     "guestPrices": {
+      "adult": 183.55,
+      "child": 91.78,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "05:00",
+       "guestPrices": {
+        "adult": 183.55,
+        "child": 91.78,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 183.55,
+        "child": 91.78,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "15:00",
+       "guestPrices": {
+        "adult": 183.55,
+        "child": 91.78,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "17:00",
+       "guestPrices": {
+        "adult": 183.55,
+        "child": 91.78,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 183.55,
+        "child": 91.78,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 183.55,
+        "child": 91.78,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "single-dune-buggy-1-rider-681bcabdd38f",
+     "title": "Single Dune Buggy (1 Rider)",
+     "type": "Per Group",
+     "description": "Drive your own buggy on a guided Makadi Bay desert route with photo and relaxation stops. Choose the 5:00 AM departure for sunrise and Oriental breakfast. Hotel transfer can be selected separately.",
+     "duration": "3 hours",
+     "guestPrices": {
+      "adult": 275.33,
+      "child": 137.67,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "17:00",
+       "guestPrices": {
+        "adult": 275.33,
+        "child": 137.67,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-3",
+     "pricingKey": "double-dune-buggy-max-2-riders-dinner-show-st-bdbd96a90d50",
+     "title": "Double Dune Buggy (Max 2 Riders) | Dinner, Show & Stargazing",
+     "type": "Per Group",
+     "description": "Share a dune buggy for up to 2 riders on an evening desert safari. After the drive, enjoy an Oriental dinner, live cultural show, and stargazing beneath the open desert sky. Hotel transfer can be selected separately.",
+     "duration": "5 hours",
+     "guestPrices": {
+      "adult": 142.76,
+      "child": 71.38,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "17:00",
+       "guestPrices": {
+        "adult": 142.76,
+        "child": 71.38,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-4",
+     "pricingKey": "family-dune-buggy-max-4-riders-dinner-show-st-54ddaefec17d",
+     "title": "Family Dune Buggy (Max 4 Riders) | Dinner, Show & Stargazing",
+     "type": "Per Group",
+     "description": "Ride together in a family buggy for up to 4 people on an evening desert safari. Finish with an Oriental dinner, live cultural show, and stargazing beneath the desert sky. Hotel transfer can be selected separately.",
+     "duration": "5 hours",
+     "guestPrices": {
+      "adult": 173.36,
+      "child": 86.68,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "17:00",
+       "guestPrices": {
+        "adult": 173.36,
+        "child": 86.68,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-5",
+     "pricingKey": "single-dune-buggy-1-rider-dinner-show-stargaz-66eff2723811",
+     "title": "Single Dune Buggy (1 Rider) | Dinner, Show & Stargazing",
+     "type": "Per Group",
+     "description": "Drive a single dune buggy on a guided evening safari, then continue with an Oriental dinner, live cultural show, and desert stargazing. Hotel transfer can be selected according to your pickup area.",
+     "duration": "5 hours",
+     "guestPrices": {
+      "adult": 275.33,
+      "child": 137.67,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "17:00",
+       "guestPrices": {
+        "adult": 275.33,
+        "child": 275.33,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a84d0912c1c0be600fa159b",
+     "title": "Makadi Bay Transfer (Per Person)",
+     "description": "",
+     "price": 15,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a84d0912c1c0be600fa159c",
+     "title": "20-Min Horse Ride",
+     "description": "",
+     "price": 30,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a84d0912c1c0be600fa159d",
+     "title": "20-Min Quad Bike Ride",
+     "description": "",
+     "price": 15,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a84d0912c1c0be600fa159e",
+     "title": "Port Safaga Transfer",
+     "description": "",
+     "price": 20,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a84d0912c1c0be600fa159f",
+     "title": "20-Min Camel Ride",
+     "description": "",
+     "price": 15,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a84d0912c1c0be600fa15a0",
+     "title": "Extra 1hr Dune Buggy",
+     "description": "",
+     "price": 70,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a84d0912c1c0be600fa15a1",
+     "title": "Sahl Hasheesh Transfer (Per Person)",
+     "description": "",
+     "price": 15,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a84d0912c1c0be600fa15a2",
+     "title": "Private Transfer (1-3 people)",
+     "description": "",
+     "price": 70,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a84d0912c1c0be600fa15a3",
+     "title": "Pickup & Drop-off in Al Ahyaa",
+     "description": "",
+     "price": 15,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a84d0912c1c0be600fa15a4",
+     "title": "El Gouna Transfer (Per Person)",
+     "description": "",
+     "price": 20,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a84d0912c1c0be600fa15a5",
+     "title": "Soma Bay Transfer (Per Person)",
+     "description": "",
+     "price": 20,
+     "perGuest": true,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a84d0912c1c0be600fa15a6",
+     "title": "Private Transfer (9 - 16 people)",
+     "description": "",
+     "price": 100,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a84d0912c1c0be600fa15a7",
+     "title": "Private Guide (no other guests)",
+     "description": "",
+     "price": 85,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a84d0912c1c0be600fa15a8",
+     "title": "Private Transfer (4-8 people)",
+     "description": "",
+     "price": 85,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "hurghada-quad-biking-adventure-with-dinner-show-stargazing-options",
+   "id": "3a460b750ed9ae7df2c1b332",
+   "readAt": "2026-10-30T08:59:11Z",
+   "detail": {
+    "title": "Hurghada Quad Biking Adventure with Dinner, Show & Stargazing Options",
+    "duration": "2 - 5 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Professional desert guide and escort",
+     "Safety briefing and short practice drive",
+     "Helmet and required safety equipment",
+     "Quad bike ride according to the selected option",
+     "Short 5-minute camel ride for photos (included with all options)",
+     "Small-group experience for safety and comfort",
+     "Desert stops for photos and relaxation",
+     "Hotel pickup and drop-off (if selected)",
+     "Air-conditioned transportation (if selected)",
+     "Oriental breakfast (with the 5:00 AM sunrise option only)",
+     "Oriental dinner, live show, and stargazing (with the sunset option only)"
+    ],
+    "whatsNotIncluded": [
+     "Personal expenses",
+     "Food and drinks outside the selected meal option",
+     "Scarf and goggles",
+     "Private transfer (available as an add-on at checkout)",
+     "Private guide (available as an add-on at checkout)",
+     "Extended 30-minute camel ride (available as an add-on at checkout)",
+     "30-minute buggy session (available as an add-on at checkout)"
+    ],
+    "whatToBring": [
+     "Sunglasses",
+     "Sun hat",
+     "Sunscreen",
+     "Comfortable clothes",
+     "Scarf",
+     "Weather-appropriate clothing",
+     "Charged Smartphone",
+     "Face mask or protective covering"
+    ],
+    "itinerary": [],
+    "pricingSummary": {
+     "currency": "USD"
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "2-hour-guided-quad-bike-entry-ticket-only-8fa7c325ce04",
+     "title": "2-Hour Guided Quad Bike Entry Ticket Only",
+     "type": "Per Person",
+     "description": "Arrive independently at the quad station for a 2-hour guided desert ride that includes a safety briefing, driving test, photo stops, and a short camel ride. Hotel transportation is not included. An Oriental breakfast is provided only with the 5:00 AM departure.",
+     "duration": "2 hours",
+     "guestPrices": {
+      "adult": 11.27,
+      "child": 5.64,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 11.27,
+        "child": 11.27,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 11.27,
+        "child": 11.27,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "05:00",
+       "guestPrices": {
+        "adult": 15.36,
+        "child": 15.36,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 15.36,
+        "child": 15.36,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "15:00",
+       "guestPrices": {
+        "adult": 23.55,
+        "child": 23.55,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "17:00",
+       "guestPrices": {
+        "adult": 29.69,
+        "child": 29.69,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "2-hour-quad-bike-from-hurghada-sahl-hasheesh--84553ee89459",
+     "title": "2-Hour Quad Bike from Hurghada, Sahl Hasheesh & Makadi Bay",
+     "type": "Per Person",
+     "description": "Take shared hotel transportation from Hurghada, Sahl Hasheesh, or Makadi Bay before setting off on a 2-hour guided quad ride with desert photo stops and a short camel ride. An Oriental breakfast is included only when the 5:00 AM departure is selected.",
+     "duration": "3 hours",
+     "guestPrices": {
+      "adult": 15.36,
+      "child": 7.68,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 15.36,
+        "child": 15.36,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 15.36,
+        "child": 15.36,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 19.45,
+        "child": 19.45,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "15:00",
+       "guestPrices": {
+        "adult": 29.69,
+        "child": 29.69,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "17:00",
+       "guestPrices": {
+        "adult": 33.79,
+        "child": 33.79,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "05:00",
+       "guestPrices": {
+        "adult": 19.45,
+        "child": 19.45,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "2-hour-quad-bike-from-al-ahyaa-el-gouna-safag-42efe032b4bc",
+     "title": "2-Hour Quad Bike from Al Ahyaa, El Gouna, Safaga & Soma Bay",
+     "type": "Per Person",
+     "description": "Travel by shared transfer from Al Ahyaa, El Gouna, Safaga, or Soma Bay for a guided 2-hour quad ride featuring photo stops and a short camel ride. Transfer time may reach up to one hour. An Oriental breakfast is included only with the 5:00 AM departure.",
+     "duration": "3 hours",
+     "guestPrices": {
+      "adult": 15.36,
+      "child": 7.68,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "05:00",
+       "guestPrices": {
+        "adult": 19.45,
+        "child": 19.45,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 15.36,
+        "child": 15.36,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 15.36,
+        "child": 15.36,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 19.45,
+        "child": 19.45,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "15:00",
+       "guestPrices": {
+        "adult": 33.79,
+        "child": 33.79,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "17:00",
+       "guestPrices": {
+        "adult": 39.93,
+        "child": 39.93,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-3",
+     "pricingKey": "90-min-quad-bike-with-stargazing-dinner-show--7c91c8f7a5ba",
+     "title": "90-Min Quad Bike with Stargazing, Dinner & Show All Locations",
+     "type": "Per Person",
+     "description": "Enjoy shared pickup from any of the listed areas before setting out on a guided 90-minute quad ride. Then head to a desert camp for an Oriental dinner, live cultural entertainment, and stargazing, followed by shared return transportation.",
+     "duration": "5 hours",
+     "guestPrices": {
+      "adult": 46.07,
+      "child": 23.04,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "17:30",
+       "guestPrices": {
+        "adult": 46.07,
+        "child": 46.07,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a901e9800b699bcd48e31ad",
+     "title": "Private Transfer (4-8 people)",
+     "description": "",
+     "price": 85,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-guided-quad-bike-entry-ticket-only-8fa7c325ce04"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a901e9800b699bcd48e31ae",
+     "title": "Private Transfer (1-3 people)",
+     "description": "",
+     "price": 70,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-guided-quad-bike-entry-ticket-only-8fa7c325ce04"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a901e9800b699bcd48e31af",
+     "title": "Private Guide (no other guests)",
+     "description": "",
+     "price": 85,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-guided-quad-bike-entry-ticket-only-8fa7c325ce04"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a901e9800b699bcd48e31b0",
+     "title": "Private Transfer (9 - 16 people)",
+     "description": "",
+     "price": 100,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-guided-quad-bike-entry-ticket-only-8fa7c325ce04"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a901e9800b699bcd48e31b1",
+     "title": "20-Min Horse Ride",
+     "description": "",
+     "price": 16,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-guided-quad-bike-entry-ticket-only-8fa7c325ce04"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a901e9800b699bcd48e31b2",
+     "title": "20-Min Camel Ride",
+     "description": "",
+     "price": 12,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-guided-quad-bike-entry-ticket-only-8fa7c325ce04"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a901e9800b699bcd48e31b3",
+     "title": "20-Min Buggy Ride",
+     "description": "",
+     "price": 70,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-guided-quad-bike-entry-ticket-only-8fa7c325ce04"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a901e9800b699bcd48e31b4",
+     "title": "additional 20 minutes quad drive",
+     "description": "",
+     "price": 15,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-guided-quad-bike-entry-ticket-only-8fa7c325ce04"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a901e9800b699bcd48e31b5",
+     "title": "Private Transfer (4-8 people)",
+     "description": "",
+     "price": 85,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-from-hurghada-sahl-hasheesh--84553ee89459"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a901e9800b699bcd48e31b6",
+     "title": "Private Transfer (1-3 people)",
+     "description": "",
+     "price": 70,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-from-hurghada-sahl-hasheesh--84553ee89459"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a901e9800b699bcd48e31b7",
+     "title": "Private Guide (no other guests)",
+     "description": "",
+     "price": 85,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-from-hurghada-sahl-hasheesh--84553ee89459"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a901e9800b699bcd48e31b8",
+     "title": "Private Transfer (9 - 16 people)",
+     "description": "",
+     "price": 100,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-from-hurghada-sahl-hasheesh--84553ee89459"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a901e9800b699bcd48e31b9",
+     "title": "20-Min Horse Ride",
+     "description": "",
+     "price": 16,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-from-hurghada-sahl-hasheesh--84553ee89459"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a901e9800b699bcd48e31ba",
+     "title": "20-Min Camel Ride",
+     "description": "",
+     "price": 12,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-from-hurghada-sahl-hasheesh--84553ee89459"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a9026dc2dd2abe23f5c18ec",
+     "title": "20-Min Buggy Ride",
+     "description": "",
+     "price": 70,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-from-hurghada-sahl-hasheesh--84553ee89459"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a9026dc2dd2abe23f5c18ed",
+     "title": "additional 20 minutes quad drive",
+     "description": "",
+     "price": 15,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-from-hurghada-sahl-hasheesh--84553ee89459"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a9026dc2dd2abe23f5c18ee",
+     "title": "Private Guide (no other guests)",
+     "description": "",
+     "price": 85,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-from-al-ahyaa-el-gouna-safag-42efe032b4bc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a9026dc2dd2abe23f5c18ef",
+     "title": "Private Transfer (9 - 16 people)",
+     "description": "",
+     "price": 100,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-from-al-ahyaa-el-gouna-safag-42efe032b4bc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a9026dc2dd2abe23f5c18f0",
+     "title": "Private Transfer (4-8 people)",
+     "description": "",
+     "price": 85,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-from-al-ahyaa-el-gouna-safag-42efe032b4bc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a9026dc2dd2abe23f5c18f1",
+     "title": "Private Transfer (1-3 people)",
+     "description": "",
+     "price": 70,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-from-al-ahyaa-el-gouna-safag-42efe032b4bc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a9026dc2dd2abe23f5c18f2",
+     "title": "20-Min Horse Ride",
+     "description": "",
+     "price": 16,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-from-al-ahyaa-el-gouna-safag-42efe032b4bc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a9026dc2dd2abe23f5c18f3",
+     "title": "20-Min Camel Ride",
+     "description": "",
+     "price": 12,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-from-al-ahyaa-el-gouna-safag-42efe032b4bc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a9026dc2dd2abe23f5c18f4",
+     "title": "20-Min Buggy Ride",
+     "description": "",
+     "price": 70,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-from-al-ahyaa-el-gouna-safag-42efe032b4bc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a9026dc2dd2abe23f5c18f5",
+     "title": "additional 20 minutes quad drive",
+     "description": "",
+     "price": 15,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "2-hour-quad-bike-from-al-ahyaa-el-gouna-safag-42efe032b4bc"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a9026dc2dd2abe23f5c18f6",
+     "title": "Private Guide (no other guests)",
+     "description": "",
+     "price": 85,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "90-min-quad-bike-with-stargazing-dinner-show--7c91c8f7a5ba"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a9026dc2dd2abe23f5c18f7",
+     "title": "Private Transfer (9 - 16 people)",
+     "description": "",
+     "price": 100,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "90-min-quad-bike-with-stargazing-dinner-show--7c91c8f7a5ba"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a9026dc2dd2abe23f5c18f8",
+     "title": "Private Transfer (4-8 people)",
+     "description": "",
+     "price": 85,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "90-min-quad-bike-with-stargazing-dinner-show--7c91c8f7a5ba"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a9026dc2dd2abe23f5c18f9",
+     "title": "Private Transfer (1-3 people)",
+     "description": "",
+     "price": 70,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "90-min-quad-bike-with-stargazing-dinner-show--7c91c8f7a5ba"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a9026dc2dd2abe23f5c18fa",
+     "title": "20-Min Horse Ride",
+     "description": "",
+     "price": 16,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "90-min-quad-bike-with-stargazing-dinner-show--7c91c8f7a5ba"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a9026dc2dd2abe23f5c18fb",
+     "title": "20-Min Camel Ride",
+     "description": "",
+     "price": 12,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "90-min-quad-bike-with-stargazing-dinner-show--7c91c8f7a5ba"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a9026dc2dd2abe23f5c18fc",
+     "title": "20-Min Buggy Ride",
+     "description": "",
+     "price": 70,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "90-min-quad-bike-with-stargazing-dinner-show--7c91c8f7a5ba"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a9026dc2dd2abe23f5c18fd",
+     "title": "additional 20 minutes quad drive",
+     "description": "",
+     "price": 15,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "90-min-quad-bike-with-stargazing-dinner-show--7c91c8f7a5ba"
+     ],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "makadi-bay-to-luxor-discover-the-valley-of-the-kings-king-tut-s-tomb",
+   "id": "dd0ac274d56c88f7ee0cc8da",
+   "readAt": "2026-10-30T08:59:11Z",
+   "detail": {
+    "title": "Makadi Bay to Luxor: Discover the Valley of the Kings & King Tut’s Tomb",
+    "duration": "16 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Hotel pickup and drop-off from your hotel in Makadi Bay by air-conditioned minivan",
+     "Professional English/French/German Egyptologist guide",
+     "Lunch at a local restaurant in Luxor",
+     "Entry ticket to the Valley of the Kings, Tomb of Tutankhamun, Karnak Temple, and Hatshepsut Temple"
+    ],
+    "whatsNotIncluded": [
+     "Spanish guide (available as an add-on)",
+     "Tips"
+    ],
+    "whatToBring": [
+     "Comfortable shoes",
+     "Sunglasses",
+     "Sun hat",
+     "Sunscreen",
+     "Comfortable clothes",
+     "Passport or ID card, copy accepted"
+    ],
+    "itinerary": [
+     {
+      "title": "Starting Point",
+      "description": "Makadi Bay Hotel"
+     },
+     {
+      "title": "Travel",
+      "description": "Travel to Luxor"
+     },
+     {
+      "title": "Karnak Temple",
+      "description": "Explore the temple complex"
+     },
+     {
+      "title": "Lunch Break",
+      "description": "Local restaurant"
+     },
+     {
+      "title": "Short Felucca Ride",
+      "description": ""
+     },
+     {
+      "title": "Valley of the Kings",
+      "description": "Visit three royal tombs, including King Tut’s Tomb"
+     },
+     {
+      "title": "Hatshepsut Temple",
+      "description": "Explore the ancient terraces"
+     },
+     {
+      "title": "Colossi of Memnon",
+      "description": "Photo stop"
+     },
+     {
+      "title": "Return Transfer",
+      "description": "Travel back to Makadi Bay"
+     },
+     {
+      "title": "Drop-off",
+      "description": "Makadi Bay Hotel"
+     }
+    ],
+    "pricingSummary": {
+     "currency": "USD"
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "shared-tour-option-76af73858fc8",
+     "title": "Shared Tour Option",
+     "type": "Per Person",
+     "description": "Explore Luxor’s ancient wonders on a full-day guided trip from Makadi Bay. Visit Karnak Temple, the Valley of the Kings, King Tut’s Tomb, Hatshepsut Temple, and the Colossi of Memnon, with a relaxing Nile boat ride.",
+     "duration": "16 hours",
+     "guestPrices": {
+      "adult": 145,
+      "child": 100,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "04:00",
+       "guestPrices": {
+        "adult": 145,
+        "child": 100,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "private-tour-option-62f3c32eec8e",
+     "title": "Private Tour Option",
+     "type": "Per Person",
+     "description": "Explore Luxor’s ancient wonders on a full-day guided trip from Makadi Bay. Visit Karnak Temple, the Valley of the Kings, King Tut’s Tomb, Hatshepsut Temple, and the Colossi of Memnon, with a relaxing Nile boat ride.",
+     "duration": "16 hours",
+     "guestPrices": {
+      "adult": 335,
+      "child": 170,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "05:00",
+       "guestPrices": {
+        "adult": 335,
+        "child": 170,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a84c1dbd7fe2ec932171023",
+     "title": "Spanish Guide",
+     "description": "",
+     "price": 100,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
   }
  ]
 }
