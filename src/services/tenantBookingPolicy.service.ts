@@ -63,6 +63,14 @@ const BOOKING_CREATION_CLOSED_TENANT_SLUGS = [
   'pyramid-of-pepi-ii',
   'pyramid-of-sahure',
   'mangrove-forest-egypt',
+  // The network queue's batch B13, the seven sites that take the network to 100: the two pyramids of Abusir,
+  // the pyramid on the hill at Abu Rawash, the tower at Meidum, and the three Red Sea sites of its second
+  // group, which are added with that group. Each is closed to real bookings until its domain is connected and
+  // the owner opens it; opening a site is removing its slug.
+  'pyramid-of-neferirkare',
+  'pyramid-of-neferefre',
+  'pyramid-of-djedefre',
+  'meidum-pyramid',
 ] as const;
 
 export class TenantBookingCreationClosedError extends AppError {

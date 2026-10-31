@@ -46,6 +46,11 @@ describe('tenant booking-creation closure policy', () => {
       'mangrove-forest-egypt']) {
       expect(isTenantBookingCreationClosed({ slug })).toBe(true);
     }
+    // Batch B13's sites are closed the same way; its second group's three are added with that group.
+    for (const slug of ['pyramid-of-neferirkare', 'pyramid-of-neferefre', 'pyramid-of-djedefre',
+      'meidum-pyramid']) {
+      expect(isTenantBookingCreationClosed({ slug })).toBe(true);
+    }
     expect(() => assertTenantBookingCreationAllowed({ slug: 'king-of-egypt-tours' }))
       .toThrow(TenantBookingCreationClosedError);
     // A look-alike slug is a different site and is not closed by this policy.
@@ -85,6 +90,8 @@ describe('tenant booking-creation closure policy', () => {
         // Batch B12's nine monument sites and its mangrove site, closed the same way.
         'imhotep-museum', 'serapeum-of-saqqara', 'pyramid-of-teti', 'pyramid-of-unas', 'pyramid-of-userkaf',
         'tomb-of-nefer', 'buried-pyramid', 'pyramid-of-pepi-ii', 'pyramid-of-sahure', 'mangrove-forest-egypt',
+        // Batch B13's first group: the two pyramids of Abusir, Abu Rawash and Meidum, closed the same way.
+        'pyramid-of-neferirkare', 'pyramid-of-neferefre', 'pyramid-of-djedefre', 'meidum-pyramid',
       ] },
     });
 

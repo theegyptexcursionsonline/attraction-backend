@@ -10,8 +10,9 @@ import { PROGRAMMES as B03 } from '../scripts/network-sites/b03';
 import { B10A, B10B, B10C, B10D } from '../scripts/network-sites/b10';
 import { B11A } from '../scripts/network-sites/b11';
 import { B12A } from '../scripts/network-sites/b12';
+import { B13A } from '../scripts/network-sites/b13';
 
-const BATCHES: NetworkBatch[] = [B10A, B10B, B10C, B10D, B11A, B12A];
+const BATCHES: NetworkBatch[] = [B10A, B10B, B10C, B10D, B11A, B12A, B13A];
 
 /** Dahshur, then Sakkara, then Memphis: the shared and the private day south of Giza. */
 const SOUTH_DAYS = [B03.MAS_SHARED, B03.MAS_PRIVATE];
