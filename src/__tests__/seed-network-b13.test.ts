@@ -61,6 +61,42 @@ const THEMES: Record<string, [string, string, string]> = {
   'erg-somaya': ['#12343B', '#F3F1EC', '#6B3FA0'],
 };
 
+/**
+ * The two pictures uploaded for each site on 31 October 2026, in the order the creation run writes them: the
+ * home page's opening picture, then the inner pages' one. Held here as literals so the batch is checked against
+ * the upload result rather than against itself.
+ */
+const SITE_PICTURES: Record<string, [string, string]> = {
+  'pyramid-of-neferirkare': [
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467676/attractions-network/tenant-heroes/pyramid-of-neferirkare/site-20261031-hero-223e286edbc2.png',
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467679/attractions-network/tenant-heroes/pyramid-of-neferirkare/site-20261031-second-2ce98452aee1.png',
+  ],
+  'pyramid-of-neferefre': [
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467680/attractions-network/tenant-heroes/pyramid-of-neferefre/site-20261031-hero-29d33c8a0969.png',
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467682/attractions-network/tenant-heroes/pyramid-of-neferefre/site-20261031-second-ffb9f7e3d7ee.png',
+  ],
+  'pyramid-of-djedefre': [
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467683/attractions-network/tenant-heroes/pyramid-of-djedefre/site-20261031-hero-9dc4cbf6cb95.png',
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467685/attractions-network/tenant-heroes/pyramid-of-djedefre/site-20261031-second-7daa6460cec6.png',
+  ],
+  'meidum-pyramid': [
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467689/attractions-network/tenant-heroes/meidum-pyramid/site-20261031-hero-82eff93476a8.png',
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467691/attractions-network/tenant-heroes/meidum-pyramid/site-20261031-second-1bf052bd4cb4.png',
+  ],
+  'shaab-sabina': [
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467692/attractions-network/tenant-heroes/shaab-sabina/site-20261031-hero-5aecd578356c.png',
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467694/attractions-network/tenant-heroes/shaab-sabina/site-20261031-second-32200c09038e.png',
+  ],
+  'ras-disha': [
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467699/attractions-network/tenant-heroes/ras-disha/site-20261031-hero-7535f7ca2c58.png',
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467701/attractions-network/tenant-heroes/ras-disha/site-20261031-second-324afbe96813.png',
+  ],
+  'erg-somaya': [
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467702/attractions-network/tenant-heroes/erg-somaya/site-20261031-hero-94c7d6c335db.png',
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467704/attractions-network/tenant-heroes/erg-somaya/site-20261031-second-652d31e19274.png',
+  ],
+};
+
 /** The three days that drive from the Giza plateau down to Saqqara, between which Abusir lies. */
 const GIZA_ROAD = [
   'giza-pyramids-sakkara-and-memphis',
@@ -343,34 +379,38 @@ describe('batch B13: the seven sites that take the network to 100', () => {
     expect(new Set(metaTitles).size).toBe(metaTitles.length);
   });
 
-  it('names every site that opens on a photo another site already opens on', () => {
-    // The client publishes three distinct photos across the records the two Abusir sites and the Meidum
-    // Pyramid sell, and five across the Djedefre days. Each already opens a site that is live or was written
-    // in an earlier batch. Nothing is invented and nothing is mislabelled, so the overlap is named here rather
-    // than hidden, and it goes once the client supplies each site's own photography.
+  it('opens every site on its own two pictures, then on its records’ photos', () => {
+    // The creation run writes each site's own pair first, so no later picture write is needed and no site
+    // opens on a photograph another site already opens on.
+    const PICTURE = /^https:\/\/res\.cloudinary\.com\/dm3sxllch\/image\/upload\/v\d+\/attractions-network\/tenant-heroes\/([a-z0-9-]+)\/site-20261031-(hero|second)-[0-9a-f]{12}\.png$/;
+    for (const site of B13) {
+      const pair = site.heroImages.slice(0, 2);
+      expect(pair).toEqual(SITE_PICTURES[site.slug]);
+      pair.forEach((url, index) => {
+        const parts = PICTURE.exec(url);
+        expect(parts).not.toBeNull();
+        expect(parts![1]).toBe(site.slug);
+        expect(parts![2]).toBe(index === 0 ? 'hero' : 'second');
+      });
+    }
+    // No picture is shared between two sites, and none is one an earlier batch already uses.
+    const pictures = B13.flatMap((site) => site.heroImages.slice(0, 2));
+    expect(pictures).toHaveLength(2 * B13_SITES);
+    expect(new Set(pictures).size).toBe(pictures.length);
+    const earlierImages = new Set(EARLIER.flatMap((site) => site.heroImages));
+    expect(pictures.filter((url) => earlierImages.has(url))).toEqual([]);
+    // Nothing opens on a photograph another site opens on any more.
     const taken = new Map<string, string>();
     for (const site of EARLIER) if (!taken.has(site.heroImages[0])) taken.set(site.heroImages[0], site.slug);
-    const sharing = B13
-      .filter((site) => taken.has(site.heroImages[0]))
-      .map((site) => [site.slug, taken.get(site.heroImages[0])]);
-    expect(sharing).toEqual([
-      ['pyramid-of-neferirkare', 'mit-rahina-museum'],
-      ['pyramid-of-neferefre', 'sakkara-pyramids'],
-      ['pyramid-of-djedefre', 'great-pyramid-of-cheops'],
-      ['meidum-pyramid', 'pyramids-of-dahshur'],
-    ]);
-    // Six sites show three distinct photos of their own records; the Makadi Bay reef sells one day, which
-    // publishes one photo, so it says why it shows one.
-    for (const site of B13) {
-      if (site.slug === 'ras-disha') continue;
-      expect(site.photoShortfall).toBeUndefined();
-    }
-    expect(siteOf('ras-disha').photoShortfall).toBe('The one day this site sells publishes one photo.');
+    expect(B13.filter((site) => taken.has(site.heroImages[0])).map((site) => site.slug)).toEqual([]);
+    // Each site shows at least three distinct pictures now, so none needs the shortfall note; the record
+    // photographs follow the site's own pair, and every one of them is a record's own.
+    for (const site of B13) expect(site.photoShortfall).toBeUndefined();
     const recordPhotos = new Set(B13.flatMap((site) => site.trips.flatMap((trip) => trip.images)));
     for (const site of B13) {
-      expect(site.heroImages).toHaveLength(site.photoShortfall ? 1 : 3);
+      expect(site.heroImages.length).toBeGreaterThanOrEqual(3);
       expect(new Set(site.heroImages).size).toBe(site.heroImages.length);
-      for (const url of site.heroImages) expect(recordPhotos.has(url)).toBe(true);
+      for (const url of site.heroImages.slice(2)) expect(recordPhotos.has(url)).toBe(true);
     }
     // Each photo is described once across the batch, so none is described two ways.
     const described = new Map<string, Set<string>>();

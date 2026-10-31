@@ -62,12 +62,11 @@
  *   visit these places' neighbours together. Same-subject sites sharing a record was decided for B10; these
  *   domains are monument names rather than new subjects. The sites differ in their words, their photos and
  *   their design, not in their catalogue. No two sites on the network share a trip title.
- * - The client publishes three distinct photos across the records the two Abusir sites and the Meidum Pyramid
- *   sell, and five across the Djedefre days; every one already opens a site that is live or was written in an
- *   earlier batch. No photo is invented and none is mislabelled, so these sites open on a photo another site
- *   opens on, and the three Saqqara photographs are spread across the three sites that share them rather than
- *   repeated. Accepted for now: every photo here is replaceable the moment the client supplies each site's own,
- *   and nothing but the photo lists and their descriptions change.
+ * - Each site has two pictures of its own place, uploaded for this batch on 31 October, and the creation run
+ *   writes them first: the home page's opening picture, then the inner pages' one. So no site opens on a
+ *   photograph another site opens on, and no later picture write is needed (batch B12 had to change pictures
+ *   after creation and re-stamp its Arabic rows). Behind that pair each site still lists the photographs its
+ *   own records publish, which the client can replace at any time without touching anything else.
  * - The three reefs follow the Hurghada boat site of batch B09 for their town, pickup area and coordinates, and
  *   two of them for its fence as well. Ras Disha keeps the same fence with Makadi Bay and Sahl Hasheesh let
  *   through: its own reef lies at the northern end of that bay below Sahl Hasheesh, and the day it sells
@@ -120,11 +119,11 @@
  *   Orange Island entry fee, and no Giftun island, so it does not carry the Giftun tower's page. It is not
  *   moved to Shaab Sabina either, because the two Giftun reefs share no day. Erg Somaya would have sold four.
  *
- * Photos are the ones each record publishes, already on the network's Cloudinary; the seven sea photographs are
- * the ones batch B09 chose for the same records, with that batch's own descriptions. Ras Disha sells one day,
- * which publishes one photo, so it says why it opens on one rather than three. Copying them into a network-b13
- * folder, each site's own photos and the seven logos are open questions: `--apply` refuses to run without
- * `--logos=<file>` naming every site's approved logo, logoDark and favicon, for all seven sites.
+ * Behind each site's own pair, the photographs are the ones each record publishes, already on the network's
+ * Cloudinary; the seven sea photographs are the ones batch B09 chose for the same records, with that batch's own
+ * descriptions. Copying the record photographs into a network-b13 folder stays an open question, as do the seven
+ * logos: `--apply` refuses to run without `--logos=<file>` naming every site's approved logo, logoDark and
+ * favicon, for all seven sites.
  */
 import type { NetworkBatch, PriceSpec } from '../seed-network-sites';
 import { PROGRAMMES as B03 } from './b03';
@@ -195,6 +194,58 @@ const ALT: Record<keyof typeof PHOTO, string> = {
   diverOnReef: 'A scuba diver with arms spread over a coral reef, with striped fish nearby',
 };
 
+/**
+ * Each site's own two pictures, uploaded for this batch on 31 October 2026 and written here as the upload
+ * results they are, so the creation run itself publishes them and no later picture write is needed. The first
+ * opens the home page and the second carries the inner pages; each site's record photos follow them. What each
+ * picture shows is kept beside it: the tenant record has nowhere to store a description of a hero image (its
+ * `heroImages` is a list of addresses), so these stay as notes until the storefront has a field for them.
+ */
+const HERO: Record<string, [string, string]> = {
+  'pyramid-of-neferirkare': [
+    // A stepped stone pyramid rises behind low mud-brick ruins in a bare desert beneath a blue dawn sky.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467676/attractions-network/tenant-heroes/pyramid-of-neferirkare/site-20261031-hero-223e286edbc2.png',
+    // Weathered mud-brick courtyard walls frame a plain opening, with a stepped stone pyramid rising behind them.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467679/attractions-network/tenant-heroes/pyramid-of-neferirkare/site-20261031-second-2ce98452aee1.png',
+  ],
+  'pyramid-of-neferefre': [
+    // A low square limestone platform stands in pale desert with two faint pyramids on the horizon beneath an overcast sky.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467680/attractions-network/tenant-heroes/pyramid-of-neferefre/site-20261031-hero-29d33c8a0969.png',
+    // An elevated view shows limestone courses meeting at a square corner and casting a long shadow across pale sand.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467682/attractions-network/tenant-heroes/pyramid-of-neferefre/site-20261031-second-ffb9f7e3d7ee.png',
+  ],
+  'pyramid-of-djedefre': [
+    // Low broken stone courses stand on an ochre rocky hill above a hazy desert horizon under a deep blue evening sky.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467683/attractions-network/tenant-heroes/pyramid-of-djedefre/site-20261031-hero-9dc4cbf6cb95.png',
+    // Several reddish granite blocks with smooth and broken faces lie partly buried on a sandy slope.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467685/attractions-network/tenant-heroes/pyramid-of-djedefre/site-20261031-second-7daa6460cec6.png',
+  ],
+  'meidum-pyramid': [
+    // A steep three-step stone tower rises from a broad rubble mound, with distant green fields and palms beneath a violet sky.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467689/attractions-network/tenant-heroes/meidum-pyramid/site-20261031-hero-82eff93476a8.png',
+    // An upward view shows steep limestone faces and upper setbacks, with one face in shadow against a clear violet sky.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467691/attractions-network/tenant-heroes/meidum-pyramid/site-20261031-second-1bf052bd4cb4.png',
+  ],
+  'shaab-sabina': [
+    // A split-waterline view shows two low desert islands above turquoise water and tiered hard corals sloping toward pale sand below.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467692/attractions-network/tenant-heroes/shaab-sabina/site-20261031-hero-5aecd578356c.png',
+    // Three parrotfish swim beside stacked table and branching corals in clear turquoise water above pale sand.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467694/attractions-network/tenant-heroes/shaab-sabina/site-20261031-second-32200c09038e.png',
+  ],
+  'ras-disha': [
+    // A plain beacon post stands on a flat reef above the waterline, with a steep coral wall descending into deep blue water below.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467699/attractions-network/tenant-heroes/ras-disha/site-20261031-hero-7535f7ca2c58.png',
+    // A dense shoal of small silvery glassfish fills a blue-lit crack between dark coral-covered pinnacles.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467701/attractions-network/tenant-heroes/ras-disha/site-20261031-second-324afbe96813.png',
+  ],
+  'erg-somaya': [
+    // A coral tower covered with sea fans and pink, violet and orange soft corals rises from a reef shelf amid small orange fish in deep blue water.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467702/attractions-network/tenant-heroes/erg-somaya/site-20261031-hero-94c7d6c335db.png',
+    // A single pale branching sea fan stands above pink and violet soft corals against open blue water and shafts of sunlight.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793467704/attractions-network/tenant-heroes/erg-somaya/site-20261031-second-652d31e19274.png',
+  ],
+};
+
 const CAIRO = { lat: 30.0444, lng: 31.2357 };
 const HURGHADA = { lat: 27.2579, lng: 33.8116 };
 const MAKADI = { lat: 26.9806, lng: 33.9056 };
@@ -251,7 +302,7 @@ export const B13A: NetworkBatch = {
         keywords: ['pyramid of neferirkare abusir', 'abusir royal pyramids fifth dynasty', 'giza to saqqara guided day', 'memphis and necropolis day from cairo', 'cairo hotel pickup day trips'],
       },
       theme: { primaryColor: '#3A2618', secondaryColor: '#EADFCB', accentColor: '#B4552D' },
-      heroImages: [PHOTO.stepPyramid, PHOTO.feluccasAtCairo, PHOTO.stepPyramidAtDusk],
+      heroImages: [...HERO['pyramid-of-neferirkare'], PHOTO.stepPyramid, PHOTO.feluccasAtCairo, PHOTO.stepPyramidAtDusk],
       logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/pyramid-of-neferirkare/monogram.png',
       trips: [
         {
@@ -333,7 +384,7 @@ export const B13A: NetworkBatch = {
         keywords: ['pyramid of neferefre abusir', 'unfinished abusir pyramid', 'giza and sakkara day trip', 'old capital memphis guided day', 'guided day trips from giza'],
       },
       theme: { primaryColor: '#2A2826', secondaryColor: '#F1EEE6', accentColor: '#4A5A8C' },
-      heroImages: [PHOTO.stepPyramidAtDusk, PHOTO.stepPyramid, PHOTO.feluccasAtCairo],
+      heroImages: [...HERO['pyramid-of-neferefre'], PHOTO.stepPyramidAtDusk, PHOTO.stepPyramid, PHOTO.feluccasAtCairo],
       logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/pyramid-of-neferefre/monogram.png',
       trips: [
         {
@@ -415,7 +466,7 @@ export const B13A: NetworkBatch = {
         keywords: ['pyramid of djedefre abu rawash', 'abu rawash fourth dynasty pyramid', 'giza plateau half day', 'camel ride and breakfast at giza', 'cairo museum and bazaar private day'],
       },
       theme: { primaryColor: '#22303A', secondaryColor: '#EEF2F4', accentColor: '#D9773A' },
-      heroImages: [PHOTO.pyramidsOverDunes, PHOTO.plateauAtLowSun, PHOTO.camelAtSunrise],
+      heroImages: [...HERO['pyramid-of-djedefre'], PHOTO.pyramidsOverDunes, PHOTO.plateauAtLowSun, PHOTO.camelAtSunrise],
       logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/pyramid-of-djedefre/monogram.png',
       trips: [
         {
@@ -535,7 +586,7 @@ export const B13A: NetworkBatch = {
         keywords: ['meidum pyramid sneferu', 'bent pyramid and red pyramid day', 'dahshur guided day out', 'sneferu three great pyramids', 'necropolis and dahshur from cairo'],
       },
       theme: { primaryColor: '#4B3F5C', secondaryColor: '#F0E8D8', accentColor: '#C9A227' },
-      heroImages: [PHOTO.feluccasAtCairo, PHOTO.stepPyramid, PHOTO.stepPyramidAtDusk],
+      heroImages: [...HERO['meidum-pyramid'], PHOTO.feluccasAtCairo, PHOTO.stepPyramid, PHOTO.stepPyramidAtDusk],
       logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/meidum-pyramid/monogram.png',
       trips: [
         {
@@ -624,7 +675,7 @@ export const B13B: NetworkBatch = {
         keywords: ['shaab sabina reef hurghada', 'orange bay day trip from hurghada', 'giftun strait coral garden', 'orange bay snorkelling and diving', 'hurghada boat day with hotel pickup'],
       },
       theme: { primaryColor: '#0E5A63', secondaryColor: '#EEF6F4', accentColor: '#D9654B' },
-      heroImages: [PHOTO.orangeBayBeach, PHOTO.bowOverLagoon, PHOTO.diverDescending],
+      heroImages: [...HERO['shaab-sabina'], PHOTO.orangeBayBeach, PHOTO.bowOverLagoon, PHOTO.diverDescending],
       logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/shaab-sabina/monogram.png',
       trips: [
         {
@@ -698,7 +749,6 @@ export const B13B: NetworkBatch = {
       currency: 'USD',
       slugPrefix: 'rdh-',
       foreignPlaces: NOT_MAKADI_REEF,
-      photoShortfall: 'The one day this site sells publishes one photo.',
       tagline: 'A diving day on the Makadi Bay wall',
       description: `Ras Disha is a fringing reef on the coast at the northern end of Makadi Bay. A shallow plateau on sandy ground carries pinnacles split by cracks, with an oval coral erg at its southern end, and the pinnacles hold caverns packed with glassfish. To the north-west that plateau narrows into a slim shelf which opens onto a steep wall, and a beacon on the main reef marks where the drift dives begin, running north along it. Butterflyfish, bannerfish and parrotfish work the wall, blue-spotted stingrays and gobies the sand, scorpionfish and groupers hunt the glassfish, and crocodilefish and roaming turtles keep to the main reef.\n\nThe day sold here dives and cruises in Makadi Bay. Its programme does not name Ras Disha, the fringing reef at the bay’s northern end below Sahl Hasheesh, and it makes no stop there. It is a full day aboard a diving boat: two guided dives with the kit, a buffet lunch between them, and a car to the marina and back. ${CLOSING}`,
       seo: {
@@ -707,7 +757,7 @@ export const B13B: NetworkBatch = {
         keywords: ['ras disha reef makadi bay', 'makadi bay diving boat day', 'drift dive wall makadi bay', 'two guided dives red sea', 'makadi bay diving with hotel pickup'],
       },
       theme: { primaryColor: '#1B3A6B', secondaryColor: '#F2EBDD', accentColor: '#E2582B' },
-      heroImages: [PHOTO.whiteDiveYacht],
+      heroImages: [...HERO['ras-disha'], PHOTO.whiteDiveYacht],
       logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/ras-disha/monogram.png',
       trips: [
         {
@@ -752,7 +802,7 @@ export const B13B: NetworkBatch = {
         keywords: ['erg somaya small giftun', 'giftun islands boat day hurghada', 'coral tower dive site hurghada', 'six island speedboat day', 'giftun yacht day with pickup'],
       },
       theme: { primaryColor: '#12343B', secondaryColor: '#F3F1EC', accentColor: '#6B3FA0' },
-      heroImages: [PHOTO.yachtAtSunset, PHOTO.snorkellerSelfie, PHOTO.diverOnReef],
+      heroImages: [...HERO['erg-somaya'], PHOTO.yachtAtSunset, PHOTO.snorkellerSelfie, PHOTO.diverOnReef],
       logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/erg-somaya/monogram.png',
       trips: [
         {
