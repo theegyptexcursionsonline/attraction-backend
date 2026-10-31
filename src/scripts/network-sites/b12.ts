@@ -1168,7 +1168,7 @@ export const B12B: NetworkBatch = {
       foreignPlaces: NOT_RAS_MOHAMED,
       photoShortfall: 'The two trips this site sells publish two photos between them.',
       tagline: 'Two days that stop at the mangrove shore',
-      description: `Mangroves grow on parts of Egypt’s Red Sea and Sinai coasts, and the main species is the grey mangrove, Avicennia marina, whose upright breathing roots rise out of the mud. The stand this site is named for lies inside Ras Mohamed National Park, at the southern tip of Sinai, south of Sharm el-Sheikh.\n\nBoth days sold here stop at that shore: their own published schedules name the mangroves, along with the Earthquake Crack, the Magic Lake and Allah’s Gate. One is half a day by shared bus; the other starts before dawn with a quad or buggy ride and goes on to the park by bus. ${CLOSING}`,
+      description: `Mangroves grow on parts of Egypt’s Red Sea and Sinai coasts, and the main species is the grey mangrove, Avicennia marina, whose upright breathing roots rise out of the mud. The stand these two days reach lies inside Ras Mohamed National Park, at the southern tip of Sinai, south of Sharm el-Sheikh.\n\nBoth days sold here stop at that shore: their own published schedules name the mangroves, along with the Earthquake Crack, the Magic Lake and Allah’s Gate. One is half a day by shared bus; the other starts before dawn with a quad or buggy ride and goes on to the park by bus. ${CLOSING}`,
       seo: {
         metaTitle: 'Mangrove Forest Egypt: Ras Mohamed Day Trips',
         metaDescription: 'Two guided days from Sharm el-Sheikh that stop at the mangrove shore in Ras Mohamed National Park, with the Magic Lake, the Earthquake Crack and Allah’s Gate.',
