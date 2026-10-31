@@ -626,6 +626,7 @@ async function loadBatch(id: string | null): Promise<NetworkBatch> {
     b12a: async () => (await import('./network-sites/b12')).B12A,
     b12b: async () => (await import('./network-sites/b12')).B12B,
     b13a: async () => (await import('./network-sites/b13')).B13A,
+    b13b: async () => (await import('./network-sites/b13')).B13B,
   };
   if (!id || !batches[id]) throw new Error(`Pass --batch=<${Object.keys(batches).join('|')}>.`);
   return batches[id]();

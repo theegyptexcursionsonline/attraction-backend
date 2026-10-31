@@ -1,10 +1,229 @@
 {
  "readAt": "2026-10-31T06:56:04Z",
- "note": "The live network as scanned 31 Oct 2026 (121 sites, 928 trips): every public site's own tenant copy, and every trip's own copy for the records batch B13 sells. Kept so no B13 field can repeat a sentence another site already publishes.",
+ "note": "The live network as scanned 31 Oct 2026 (121 public sites, 928 trips): every public site's own tenant copy, and every trip's own copy for the records batch B13 sells, each tagged with the record it is built on. Kept so no B13 field can repeat a sentence another site already publishes.",
  "trips": [
+  {
+   "site": "cairo-tours-packages",
+   "pathSlug": "sakkara-memphis-dahshur-and-giza-pyramids-day-tour",
+   "record": "sakkara-memphis-dahshur-giza-pyramids-day-tour",
+   "fields": [
+    "Sakkara, Memphis, Dahshur and Giza Pyramids Day Tour",
+    "Dahshur, Sakkara and Memphis, Egypt. 3 - 8 hours from your hotel in Cairo or Giza.",
+    "Pickup is from your hotel in Cairo or Giza, and you are taken back there at the end. The day takes in Dahshur, Sakkara, Memphis, Egypt and Arrive back at. The trip runs 3 - 8 hours in all.\n\nYou choose between Pyramids, Memphis, Sakkara — Shared With Ticket, Sakkara, Memphis, Dahshur — Private With Ticket and {VIP} Private: Pyramids, Memphis, Sakkara, Dahshur and Felucca when you book.",
+    "Dahshur",
+    "Sakkara",
+    "Memphis, Egypt",
+    "Arrive back at",
+    "Sakkara, Memphis, Dahshur and Giza Pyramids Day Tour",
+    "Dahshur, Sakkara and Memphis, Egypt. 3 - 8 hours from your hotel in Cairo or Giza."
+   ]
+  },
+  {
+   "site": "cairo-tours-packages",
+   "pathSlug": "vip-giza-pyramids-experience-private-tour-camel-ride-and",
+   "record": "vip-giza-pyramids-experience-private-tour-camel-ride-lunch",
+   "fields": [
+    "VIP Giza Pyramids Experience: Private Tour, Camel Ride and Lunch",
+    "A trip from Cairo or Giza, with hotel pickup and drop-off. 4 hours from your hotel in Cairo or Giza.",
+    "Pickup is from your hotel in Cairo or Giza, and you are taken back there at the end. The trip runs 4 hours in all.\n\nOne booking option is sold: Private Tour + Entrance Fees + Guide + Camel Ride + Lunch.",
+    "Hotel pickup and drop-off in Cairo or Giza",
+    "4 hours from your hotel in Cairo or Giza",
+    "VIP Giza Pyramids Experience: Private Tour, Camel Ride and Lunch",
+    "A trip from Cairo or Giza, with hotel pickup and drop-off. 4 hours from your hotel in Cairo or Giza."
+   ]
+  },
+  {
+   "site": "cairo-tours-packages",
+   "pathSlug": "giza-pyramids-and-great-sphinx-half-day-private-tour",
+   "record": "giza-pyramids-great-sphinx-half-day-private-tour",
+   "fields": [
+    "Giza Pyramids and Great Sphinx Half-Day Private Tour",
+    "Pyramids of Giza. 4 hours from your hotel in Cairo or Giza.",
+    "Pickup is from your hotel in Cairo or Giza, and you are taken back there at the end. The day takes in Pyramids of Giza. The trip runs 4 hours in all.\n\nOne booking option is sold: A Half-Day Expedition to Giza Pyramids and Sphinx.",
+    "Pyramids of Giza",
+    "4 hours from your hotel in Cairo or Giza",
+    "Giza Pyramids and Great Sphinx Half-Day Private Tour",
+    "Pyramids of Giza. 4 hours from your hotel in Cairo or Giza."
+   ]
+  },
+  {
+   "site": "cairo-tours-packages",
+   "pathSlug": "private-pyramids-egyptian-museum-and-khan-el-khalili-tour",
+   "record": "private-pyramids-egyptian-museum-khan-el-khalili-tour",
+   "fields": [
+    "Private Pyramids, Egyptian Museum and Khan El Khalili Tour",
+    "Pyramids of Giza, Egyptian Museum of Antiquities and Khan el-Khalili. 8 hours from your hotel in Cairo or Giza.",
+    "Pickup is from your hotel in Cairo or Giza, and you are taken back there at the end. The day takes in Pyramids of Giza, Egyptian Museum of Antiquities and Khan el-Khalili. The trip runs 8 hours in all.\n\nOne booking option is sold: Private Pyramids, Museum and Bazaar Tour with Lunch.",
+    "Pyramids of Giza",
+    "Egyptian Museum of Antiquities",
+    "Khan el-Khalili",
+    "8 hours from your hotel in Cairo or Giza",
+    "Private Pyramids, Egyptian Museum and Khan El Khalili Tour",
+    "Pyramids of Giza, Egyptian Museum of Antiquities and Khan el-Khalili. 8 hours from your hotel in Cairo or Giza."
+   ]
+  },
+  {
+   "site": "cairo-tours-packages",
+   "pathSlug": "secrets-of-cairo-2-day-private-sightseeing-tour",
+   "record": "secrets-of-cairo-2-day-private-sightseeing-tour",
+   "fields": [
+    "Secrets of Cairo: 2-Day Private Sightseeing Tour",
+    "Pyramids of Giza, Valley Temple and Saqqara (Sakkara) Pyramids. 2 days from your hotel in Cairo or Giza.",
+    "Pickup is from your hotel in Cairo or Giza, and you are taken back there at the end. The day takes in Pyramids of Giza, Valley Temple, Saqqara (Sakkara) Pyramids, colossal statue of Ramses II and Alabaster Sphinx. The trip runs 2 days in all.\n\nOne booking option is sold: Secrets of Cairo: A 2-Day Private Magical Adventure.",
+    "Pyramids of Giza",
+    "Valley Temple",
+    "Saqqara (Sakkara) Pyramids",
+    "colossal statue of Ramses II",
+    "Secrets of Cairo: 2-Day Private Sightseeing Tour",
+    "Pyramids of Giza, Valley Temple and Saqqara (Sakkara) Pyramids. 2 days from your hotel in Cairo or Giza."
+   ]
+  },
+  {
+   "site": "dive2egypt",
+   "pathSlug": "makadi-bay-two-guided-dives",
+   "record": "makadi-bay-full-day-red-sea-diving-cruise-with-lunch",
+   "fields": [
+    "Makadi Bay Diving Boat Day with Two Dives and Lunch",
+    "Seven hours from Makadi Bay: two guided dives with the full equipment, a buffet lunch and soft drinks.",
+    "A full day on a diving boat from Makadi Bay. The car collects you from your hotel at a quarter to eight, and the boat leaves after a safety briefing and the equipment set-up.\n\nTwo guided dives with an instructor, on two reefs, frame a buffet lunch on board, with soft drinks and water. The full diving equipment is in the price. Ask the team before you book whether the dives suit your level. Bring a towel and a copy of your passport. Children have their own price.",
+    "Two guided dives",
+    "The full equipment included",
+    "A buffet lunch on board",
+    "Hotel pickup in Makadi Bay",
+    "Makadi Bay Diving Boat Day with Two Dives and Lunch",
+    "Seven hours from Makadi Bay: two guided dives with the full equipment, a buffet lunch, soft drinks and hotel pickup."
+   ]
+  },
+  {
+   "site": "dive2egypt",
+   "pathSlug": "orange-bay-snorkelling-and-diving",
+   "record": "makadi-bay-snorkeling-and-diving-at-orange-bay",
+   "fields": [
+    "Orange Bay Snorkelling and Scuba Day from Hurghada",
+    "Eight and a half hours from Hurghada: snorkelling, a scuba dive with the equipment, Orange Bay Island and an open buffet lunch.",
+    "A day at sea with snorkelling and a scuba dive. The car collects you from your hotel in Hurghada at half past seven, and the boat sails past Giftun to Orange Bay Island.\n\nThe diving and snorkelling equipment, a life vest, the marine fee, snacks, an open buffet lunch and soft and hot drinks are in the price. Bring a hat, a towel and reef-safe sunscreen. Children have their own price.",
+    "A scuba dive with the equipment",
+    "Snorkelling by boat",
+    "Orange Bay Island",
+    "An open buffet lunch",
+    "Orange Bay Snorkelling and Scuba Day from Hurghada",
+    "Eight and a half hours from Hurghada: a scuba dive, snorkelling, Orange Bay Island, an open buffet lunch and hotel pickup."
+   ]
+  },
+  {
+   "site": "dive2egypt",
+   "pathSlug": "yacht-day-with-an-introductory-dive",
+   "record": "hurghada-luxury-red-sea-diving-snorkeling-island-lunch",
+   "fields": [
+    "Hurghada Yacht Day with a First Dive and Orange Bay",
+    "Eight hours from Hurghada: a ten-to-fifteen-minute introductory dive for each guest, snorkelling, Orange Bay and an open buffet lunch.",
+    "A gentle way to try diving. The car collects you from your hotel in Hurghada at half past seven, and the yacht sails to Orange Bay Island for time on the beach.\n\nEach guest has a short introductory dive with an instructor, the diving equipment, a suit and a life vest; no certificate is needed, and diving is not allowed under thirteen. A snorkelling stop, an open buffet lunch, drinks, snacks, a massage and the nature reserve and marine fees are in the price. Children have their own price.",
+    "A first dive with an instructor",
+    "No certificate needed",
+    "Orange Bay and a snorkelling stop",
+    "An open buffet lunch",
+    "Hurghada First Dive Yacht Day with Orange Bay",
+    "Eight hours from Hurghada: a short introductory dive, snorkelling, Orange Bay, an open buffet lunch, the fees and hotel pickup."
+   ]
+  },
+  {
+   "site": "giftun-beach",
+   "pathSlug": "six-island-speedboat",
+   "record": "hurghada-speedboat-trip-to-6-islands-with-dolphin-watching-snorkeling",
+   "fields": [
+    "Six Islands by Speedboat with Snorkelling and Dolphin Watching",
+    "A speedboat day from Hurghada taking in six islands, three snorkelling stops and a walk out on a sandbank.",
+    "A speedboat day that leaves at half past eight and runs about eight hours. The route takes in six islands, among them Giftun, Nemo Bay, Orange Bay, Magawish and the sandbank at Abu Minqar, where you can walk out on the sand. Three snorkelling stops are made along the way, one of them over a wreck, and there is dolphin watching off Giftun.\n\nIsland entrance fees sit in the price, together with snorkelling gear, a life jacket, a guide, soft drinks, water, seasonal fruit and a shaded area on board. Lunch is not part of this option: a lunch or a seafood lunch on the island can be added when you book, and so can a wetsuit, a GoPro video, a banana boat ride or a twister ride. Bring a towel, sunscreen and some cash for the day.",
+    "Six islands in one run, including a sandbank",
+    "Three snorkelling stops, one over a wreck",
+    "Dolphin watching off Giftun",
+    "Lunch on the island can be added",
+    "Six Island Speedboat Trip from Hurghada",
+    "A speedboat day from Hurghada to six islands with three snorkelling stops, a wreck stop, dolphin watching and a walk out on the Abu Minqar sandbank."
+   ]
+  },
+  {
+   "site": "giftun-beach",
+   "pathSlug": "three-island-yacht",
+   "record": "hurghada-yacht-cruise-to-orange-bay-giftun-magawish-with-dolphins",
+   "fields": [
+    "Three Islands by Yacht: Orange Bay, Giftun and Magawish",
+    "A yacht day out of Hurghada with an hour at Orange Bay, snorkelling off Giftun, an hour at Magawish and a seafood lunch.",
+    "The yacht leaves at half past eight for a day of about eight hours. Breakfast comes first on board, eggs, cheese, butter, honey and bread, and then the boat heads for Orange Bay for an hour ashore and in the water. Giftun follows, forty minutes of swimming and snorkelling, and then Magawish for another hour of the same.\n\nEntrance fees for all three islands are covered, as are two snorkelling stops at different sites, the equipment, a life vest and a snorkelling guide. Dolphin watching is part of this option. Seafood lunch, unlimited soft and hot drinks, water and seasonal fruit are served on board, and the deck has shade and a sound system. A wetsuit, a GoPro video, photographs, a banana boat ride or an extra dive can be added. Infants are charged at the infant rate.",
+    "An hour each at Orange Bay and Magawish",
+    "Two snorkelling stops with gear and a guide",
+    "Breakfast and a seafood lunch on board",
+    "Entrance fees for all three islands covered",
+    "Three Island Yacht Day from Hurghada",
+    "Orange Bay, Giftun and Magawish in one yacht day from Hurghada, with two snorkelling stops, breakfast and a seafood lunch served on board."
+   ]
+  },
+  {
+   "site": "giftun-island-hurghada",
+   "pathSlug": "luxury-red-sea-diving-snorkelling-island-and-lunch",
+   "record": "hurghada-luxury-red-sea-diving-snorkeling-island-lunch",
+   "fields": [
+    "Luxury Red Sea Diving, Snorkelling, Island and Lunch",
+    "Orange Bay, Small Giftun diving site and Red Sea. 8 hours from your hotel in Hurghada.",
+    "Pickup is from your hotel in Hurghada, and you are taken back there at the end. The day takes in Orange Bay, Small Giftun diving site, Red Sea and Giftun Island. The trip runs 8 hours in all.\n\nYou choose between Tour from Hurghada and Tour from Makadi Bay, Soma Bay, Sahl Hasheesh, El Gouna or Safaga when you book.",
+    "Orange Bay",
+    "Small Giftun diving site",
+    "Red Sea",
+    "Giftun Island",
+    "Luxury Red Sea Diving, Snorkelling, Island and Lunch",
+    "Orange Bay, Small Giftun diving site and Red Sea. 8 hours from your hotel in Hurghada."
+   ]
+  },
+  {
+   "site": "giftun-island-hurghada",
+   "pathSlug": "orange-bay-yacht-cruise-with-snorkelling-breakfast-lunch",
+   "record": "hurghada-orange-bay-yacht-cruise-with-snorkeling-breakfast-lunch-drinks",
+   "fields": [
+    "Orange Bay Yacht Cruise with Snorkelling, Breakfast, Lunch and Drinks",
+    "Giftun Island. 5 - 8 hours from your hotel in Hurghada.",
+    "Pickup is from your hotel in Hurghada, and you are taken back there at the end. The day takes in Giftun Island. The trip runs 5 - 8 hours in all.\n\nYou choose between 5 Hour Orange Bay Trip with Breakfast and 8 Hour Orange Bay Trip with Breakfast and Lunch when you book.",
+    "Giftun Island",
+    "5 - 8 hours from your hotel in Hurghada",
+    "Orange Bay Yacht Cruise with Snorkelling, Breakfast, Lunch and Drinks",
+    "Giftun Island. 5 - 8 hours from your hotel in Hurghada."
+   ]
+  },
+  {
+   "site": "giftun-island-hurghada",
+   "pathSlug": "speedboat-trip-to-6-islands-with-dolphin-watching-and",
+   "record": "hurghada-speedboat-trip-to-6-islands-with-dolphin-watching-snorkeling",
+   "fields": [
+    "Speedboat Trip to 6 Islands with Dolphin Watching and Snorkelling",
+    "Giftun Island, Nemo Bay island and Orange Bay. 8 hours from your hotel in Hurghada.",
+    "Pickup is from your hotel in Hurghada, and you are taken back there at the end. The day takes in Giftun Island, Nemo Bay island, Orange Bay, Magawish Island and Juzur Abū Minqār. The trip runs 8 hours in all.\n\nOne booking option is sold: 6 Island Small Group Tour with Dolphin Watching, Snorkelling and Fruit.",
+    "Giftun Island",
+    "Nemo Bay island",
+    "Orange Bay",
+    "Magawish Island",
+    "Speedboat Trip to 6 Islands with Dolphin Watching and Snorkelling",
+    "Giftun Island, Nemo Bay island and Orange Bay. 8 hours from your hotel in Hurghada."
+   ]
+  },
+  {
+   "site": "giftun-island-hurghada",
+   "pathSlug": "yacht-cruise-to-orange-bay-giftun-and-magawish-with-dolphins",
+   "record": "hurghada-yacht-cruise-to-orange-bay-giftun-magawish-with-dolphins",
+   "fields": [
+    "Yacht Cruise to Orange Bay, Giftun and Magawish with Dolphins",
+    "Orange Bay, Giftun Island and Magawish Island. 8 hours from your hotel in Hurghada.",
+    "Pickup is from your hotel in Hurghada, and you are taken back there at the end. The day takes in Orange Bay, Giftun Island and Magawish Island. The trip runs 8 hours in all.\n\nYou choose between 3 Island Yacht Adventure with Dolphin Watching and Seafood Lunch, 3 Island Pickup from Makadi Bay, El Gouna and Sahl Hasheesh and Yacht Cruise Dolphin and 3 Island from Safaga and Soma Bay when you book.",
+    "Orange Bay",
+    "Giftun Island",
+    "Magawish Island",
+    "8 hours from your hotel in Hurghada",
+    "Yacht Cruise to Orange Bay, Giftun and Magawish with Dolphins",
+    "Orange Bay, Giftun Island and Magawish Island. 8 hours from your hotel in Hurghada."
+   ]
+  },
   {
    "site": "giza-plateau-pyramids",
    "pathSlug": "pyramids-and-an-hour-on-the-nile",
+   "record": "giza-pyramids-tour-with-1-hour-nile-felucca-sail",
    "fields": [
     "Giza Pyramids and an Hour Under Sail on the Nile",
     "Five hours with a private vehicle: three hours on the plateau with the Great Pyramid, Khafre, Menkaure and the Sphinx, then an hour on a felucca.",
@@ -20,6 +239,7 @@
   {
    "site": "giza-plateau-pyramids",
    "pathSlug": "private-day-camel-ride-and-lunch",
+   "record": "vip-giza-pyramids-experience-private-tour-camel-ride-lunch",
    "fields": [
     "Private Pyramids Day with a Camel Ride and Lunch",
     "Four hours with a private guide and car: the Giza plateau, a camel ride around it, lunch at a local restaurant and the entrance fees.",
@@ -35,6 +255,7 @@
   {
    "site": "giza-plateau-pyramids",
    "pathSlug": "sunrise-or-morning-camel-ride",
+   "record": "giza-pyramids-sunrise-morning-guided-tour-with-camel-ride-breakfast",
    "fields": [
     "Sunrise or Morning at the Pyramids with a Camel Ride and Breakfast",
     "A shared five-hour trip: an hour on a camel or a horse beside the plateau, an Egyptian breakfast and two guided hours among the pyramids.",
@@ -50,6 +271,7 @@
   {
    "site": "giza-plateau-pyramids",
    "pathSlug": "half-day-pyramids-and-sphinx",
+   "record": "giza-pyramids-great-sphinx-half-day-private-tour",
    "fields": [
     "Private Half Day at the Pyramids and the Great Sphinx",
     "Four hours on the plateau with a private guide and car: the three pyramids, the Valley Temple and the Sphinx, with the entry fees.",
@@ -65,6 +287,7 @@
   {
    "site": "great-pyramid-of-cheops",
    "pathSlug": "two-private-days-in-cairo",
+   "record": "secrets-of-cairo-2-day-private-sightseeing-tour",
    "fields": [
     "Two Private Days: the Plateau, Sakkara, Memphis and the Museums",
     "Two private days from your hotel: the Giza plateau, Sakkara and Memphis on the first, the Egyptian Museum and the Museum of Egyptian Civilization on the second.",
@@ -79,22 +302,8 @@
   },
   {
    "site": "great-pyramid-of-cheops",
-   "pathSlug": "private-day-pyramids-museum-and-bazaar",
-   "fields": [
-    "Private Day: the Pyramids, the Egyptian Museum and the Bazaar",
-    "Five hours with an Egyptologist guide: the Giza pyramids and the Sphinx, the Egyptian Museum, lunch and the lanes of Khan El-Khalili.",
-    "The Great Pyramid is the first of the day, with its entry ticket and an Egyptologist guide. A private vehicle collects you from your hotel in Cairo or Giza at eight or at nine. The pyramids on the plateau and the Sphinx below them come first with the guide, then a guided walk through the halls of the museum on Tahrir Square, lunch at a local restaurant and the shops of the historic bazaar.\n\nThe entry tickets, the private tour with an Egyptologist guide, lunch and bottled water are in the price. This day visits the museum on Tahrir Square, not the Grand Egyptian Museum. Children pay the same price as adults.",
-    "The Great Pyramid with an Egyptologist guide",
-    "An Egyptologist guide for your group",
-    "The Egyptian Museum on Tahrir Square",
-    "Lunch and the Khan El-Khalili bazaar",
-    "Great Pyramid: Private Pyramids, Egyptian Museum and Bazaar Day",
-    "A private day with an Egyptologist guide: the Giza pyramids and the Sphinx, the Egyptian Museum, lunch and Khan El-Khalili, with hotel pickup."
-   ]
-  },
-  {
-   "site": "great-pyramid-of-cheops",
    "pathSlug": "pyramids-egyptian-museum-and-khan-el-khalili",
+   "record": "private-pyramids-egyptian-museum-khan-el-khalili-tour",
    "fields": [
     "The Pyramids, the Egyptian Museum and Khan el-Khalili",
     "Eight hours with a private guide and car: the Giza plateau, the Egyptian Museum of Antiquities, the Khan el-Khalili bazaar and lunch.",
@@ -110,6 +319,7 @@
   {
    "site": "great-pyramid-of-cheops",
    "pathSlug": "pyramids-and-an-hour-on-the-nile",
+   "record": "giza-pyramids-tour-with-1-hour-nile-felucca-sail",
    "fields": [
     "Giza Pyramids and an Hour Under Sail on the Nile",
     "Five hours with a private vehicle: three hours on the plateau with the Great Pyramid, Khafre, Menkaure and the Sphinx, then an hour on a felucca.",
@@ -125,6 +335,7 @@
   {
    "site": "great-pyramid-of-cheops",
    "pathSlug": "private-day-with-a-camel-ride-and-lunch",
+   "record": "vip-giza-pyramids-experience-private-tour-camel-ride-lunch",
    "fields": [
     "Private Pyramids Day with a Camel Ride and Lunch",
     "Four hours with a private guide and car: the Giza plateau, a camel ride around it, lunch at a local restaurant and the entrance fees.",
@@ -139,7 +350,24 @@
   },
   {
    "site": "great-pyramid-of-cheops",
+   "pathSlug": "private-sunrise-camel-ride-and-breakfast",
+   "record": "giza-pyramids-sunrise-morning-guided-tour-with-camel-ride-breakfast",
+   "fields": [
+    "Private Sunrise or Morning Ride with Breakfast at the Pyramids",
+    "The same hour in the saddle, breakfast and guided walk, with the vehicle and the guide for your group alone, and a third start in the afternoon.",
+    "The Great Pyramid is walked privately after the ride, at whichever of the three starts you pick. This is the private way to take the ride: half past four for the sunrise, eight o’clock for the morning or one in the afternoon. The hour on a camel or a horse runs on the sand beside the plateau, breakfast follows, and your own guide walks you through the pyramids complex and the Sphinx.\n\nThe entry ticket for the Giza pyramids complex is in the price, as are the private air-conditioned vehicle and the pickup from your hotel in Cairo or Giza. Children have their own price.",
+    "The Great Pyramid walked with your own guide",
+    "Your own vehicle and guide",
+    "Three starts, from before dawn to the afternoon",
+    "The pyramids entry ticket included",
+    "Great Pyramid: Private Giza Sunrise Camel Ride and Breakfast",
+    "A private hour on a camel or horse beside the plateau, breakfast and a guided walk of the pyramids, with the entry ticket and hotel pickup."
+   ]
+  },
+  {
+   "site": "great-pyramid-of-cheops",
    "pathSlug": "sunrise-camel-ride-and-breakfast",
+   "record": "giza-pyramids-sunrise-morning-guided-tour-with-camel-ride-breakfast",
    "fields": [
     "Sunrise or Morning at the Pyramids with a Camel Ride and Breakfast",
     "A shared five-hour trip: an hour on a camel or a horse beside the plateau, an Egyptian breakfast and two guided hours among the pyramids.",
@@ -155,6 +383,7 @@
   {
    "site": "great-pyramid-of-cheops",
    "pathSlug": "private-half-day-pyramids-and-sphinx",
+   "record": "giza-pyramids-great-sphinx-half-day-private-tour",
    "fields": [
     "Private Half Day at the Pyramids and the Great Sphinx",
     "Four hours on the Giza plateau with a private guide and car: the three pyramids, the Valley Temple and the Great Sphinx, with the entry fees.",
@@ -170,6 +399,7 @@
   {
    "site": "great-sphinx-of-giza",
    "pathSlug": "private-day-with-lunch-and-a-nile-sail",
+   "record": "giza-pyramids-sakkara-memphis-day-tour-with-nile-sail",
    "fields": [
     "Private Day: the Pyramids, Memphis, Sakkara and Dahshur with a Nile Sail",
     "A private day with lunch that takes in the Giza pyramids, Memphis, Sakkara and Dahshur and finishes with a felucca sail on the Nile.",
@@ -185,6 +415,7 @@
   {
    "site": "great-sphinx-of-giza",
    "pathSlug": "giza-pyramids-sakkara-and-memphis",
+   "record": "giza-pyramids-sakkara-memphis-day-tour-with-nile-sail",
    "fields": [
     "The Giza Pyramids, Sakkara and Memphis in One Day",
     "Two hours on the Giza plateau, an hour at Sakkara and an hour at Memphis, shared or private, with the entry tickets included.",
@@ -200,6 +431,7 @@
   {
    "site": "great-sphinx-of-giza",
    "pathSlug": "two-private-days-in-cairo",
+   "record": "secrets-of-cairo-2-day-private-sightseeing-tour",
    "fields": [
     "Two Private Days: the Plateau, Sakkara, Memphis and the Museums",
     "Two private days from your hotel: the Giza plateau, Sakkara and Memphis on the first, the Egyptian Museum and the Museum of Egyptian Civilization on the second.",
@@ -214,22 +446,8 @@
   },
   {
    "site": "great-sphinx-of-giza",
-   "pathSlug": "private-day-pyramids-museum-and-bazaar",
-   "fields": [
-    "Private Day: the Pyramids, the Egyptian Museum and the Bazaar",
-    "Five hours with an Egyptologist guide: the Giza pyramids and the Sphinx, the Egyptian Museum, lunch and the lanes of Khan El-Khalili.",
-    "The Sphinx below the pyramids opens this private day before it turns towards the museum. A private vehicle collects you from your hotel in Cairo or Giza at eight or at nine. The pyramids on the plateau and the Sphinx below them come first with the guide, then a guided walk through the halls of the museum on Tahrir Square, lunch at a local restaurant and the shops of the historic bazaar.\n\nThe entry tickets, the private tour with an Egyptologist guide, lunch and bottled water are in the price. This day visits the museum on Tahrir Square, not the Grand Egyptian Museum. Children pay the same price as adults.",
-    "The pyramids and the Sphinx below them",
-    "An Egyptologist guide for your group",
-    "The Egyptian Museum on Tahrir Square",
-    "Lunch and the Khan El-Khalili bazaar",
-    "Great Sphinx: Private Pyramids, Egyptian Museum and Bazaar Day",
-    "A private day with an Egyptologist guide: the Giza pyramids and the Sphinx, the Egyptian Museum, lunch and Khan El-Khalili, with hotel pickup."
-   ]
-  },
-  {
-   "site": "great-sphinx-of-giza",
    "pathSlug": "pyramids-egyptian-museum-and-khan-el-khalili",
+   "record": "private-pyramids-egyptian-museum-khan-el-khalili-tour",
    "fields": [
     "The Pyramids, the Egyptian Museum and Khan el-Khalili",
     "Eight hours with a private guide and car: the Giza plateau, the Egyptian Museum of Antiquities, the Khan el-Khalili bazaar and lunch.",
@@ -245,6 +463,7 @@
   {
    "site": "great-sphinx-of-giza",
    "pathSlug": "pyramids-and-an-hour-on-the-nile",
+   "record": "giza-pyramids-tour-with-1-hour-nile-felucca-sail",
    "fields": [
     "Giza Pyramids and an Hour Under Sail on the Nile",
     "Five hours with a private vehicle: three hours on the plateau with the Great Pyramid, Khafre, Menkaure and the Sphinx, then an hour on a felucca.",
@@ -260,6 +479,7 @@
   {
    "site": "great-sphinx-of-giza",
    "pathSlug": "private-day-with-a-camel-ride-and-lunch",
+   "record": "vip-giza-pyramids-experience-private-tour-camel-ride-lunch",
    "fields": [
     "Private Pyramids Day with a Camel Ride and Lunch",
     "Four hours with a private guide and car: the Giza plateau, a camel ride around it, lunch at a local restaurant and the entrance fees.",
@@ -274,7 +494,24 @@
   },
   {
    "site": "great-sphinx-of-giza",
+   "pathSlug": "private-sunrise-camel-ride-and-breakfast",
+   "record": "giza-pyramids-sunrise-morning-guided-tour-with-camel-ride-breakfast",
+   "fields": [
+    "Private Sunrise or Morning Ride with Breakfast at the Pyramids",
+    "The same hour in the saddle, breakfast and guided walk, with the vehicle and the guide for your group alone, and a third start in the afternoon.",
+    "The Sphinx comes at the end of the private walk, when the group before you has gone. This is the private way to take the ride: half past four for the sunrise, eight o’clock for the morning or one in the afternoon. The hour on a camel or a horse runs on the sand beside the plateau, breakfast follows, and your own guide walks you through the pyramids complex and the Sphinx.\n\nThe entry ticket for the Giza pyramids complex is in the price, as are the private air-conditioned vehicle and the pickup from your hotel in Cairo or Giza. Children have their own price.",
+    "The Sphinx walked with your own guide",
+    "Your own vehicle and guide",
+    "Three starts, from before dawn to the afternoon",
+    "The pyramids entry ticket included",
+    "Great Sphinx: Private Giza Sunrise Camel Ride and Breakfast",
+    "A private hour on a camel or horse beside the plateau, breakfast and a guided walk of the pyramids, with the entry ticket and hotel pickup."
+   ]
+  },
+  {
+   "site": "great-sphinx-of-giza",
    "pathSlug": "sunrise-camel-ride-and-breakfast",
+   "record": "giza-pyramids-sunrise-morning-guided-tour-with-camel-ride-breakfast",
    "fields": [
     "Sunrise or Morning at the Pyramids with a Camel Ride and Breakfast",
     "A shared five-hour trip: an hour on a camel or a horse beside the plateau, an Egyptian breakfast and two guided hours among the pyramids.",
@@ -290,6 +527,7 @@
   {
    "site": "great-sphinx-of-giza",
    "pathSlug": "private-half-day-pyramids-and-sphinx",
+   "record": "giza-pyramids-great-sphinx-half-day-private-tour",
    "fields": [
     "Private Half Day at the Pyramids and the Great Sphinx",
     "Four hours on the Giza plateau with a private guide and car: the three pyramids, the Valley Temple and the Great Sphinx, with the entry fees.",
@@ -303,8 +541,295 @@
    ]
   },
   {
+   "site": "hurghada-boat-tour",
+   "pathSlug": "yacht-day-with-an-introductory-dive",
+   "record": "hurghada-luxury-red-sea-diving-snorkeling-island-lunch",
+   "fields": [
+    "Yacht Day with an Introductory Dive, Orange Bay and Lunch",
+    "Eight hours on a yacht from Hurghada: a short introductory dive, snorkelling, Orange Bay, an open buffet lunch and a massage.",
+    "A full yacht day for anyone curious about diving. The car collects you from your hotel in Hurghada at half past seven, and the yacht sails to Orange Bay Island for an hour and a quarter on the beach.\n\nEach guest has a short introductory dive of ten to fifteen minutes with an instructor and the full equipment, with no certificate needed, and there is a snorkelling stop with the gear. An open buffet lunch, salads, fruit, soft and hot drinks, snacks and a massage for each guest are in the price, with the nature reserve and marine fees. Diving is not allowed under thirteen. Children have their own price.",
+    "An introductory dive for each guest",
+    "Snorkelling and Orange Bay",
+    "An open buffet lunch",
+    "A massage for each guest",
+    "Hurghada Yacht Day with Introductory Dive and Orange Bay",
+    "Eight hours from Hurghada: an introductory dive, snorkelling, Orange Bay, an open buffet lunch, a massage and hotel pickup."
+   ]
+  },
+  {
+   "site": "hurghada-boat-tour",
+   "pathSlug": "orange-bay-snorkelling-and-diving-day",
+   "record": "makadi-bay-snorkeling-and-diving-at-orange-bay",
+   "fields": [
+    "Orange Bay Snorkelling and Diving Day",
+    "Eight and a half hours from Hurghada: snorkelling with the gear, a scuba dive with the equipment, Orange Bay and an open buffet lunch.",
+    "A day that mixes snorkelling and a first look at diving. The car collects you from your hotel in Hurghada at half past seven, and the boat sails past Giftun to Orange Bay Island for an hour and a quarter.\n\nThe day includes snorkelling with the gear, a scuba dive with the diving equipment and a life vest, the marine fee, snacks, an open buffet lunch on board and soft and hot drinks. Bring a hat, a towel and reef-safe sunscreen. Children have their own price.",
+    "Snorkelling and a scuba dive",
+    "Orange Bay Island",
+    "The diving equipment included",
+    "An open buffet lunch",
+    "Hurghada Orange Bay Snorkelling and Diving Day",
+    "Eight and a half hours from Hurghada: snorkelling, a scuba dive with the equipment, Orange Bay, an open buffet lunch and hotel pickup."
+   ]
+  },
+  {
+   "site": "hurghada-boat-tour",
+   "pathSlug": "orange-bay-cruise-with-massage",
+   "record": "hurghada-luxury-orange-bay-cruise-with-snorkeling-massage-lunch",
+   "fields": [
+    "Orange Bay Cruise with Snorkelling, a Massage and Lunch",
+    "Eight and a half hours from Hurghada: Orange Bay, a snorkelling stop, an open buffet and one massage for each guest.",
+    "A long day out to Orange Bay. The car collects you from your hotel in Hurghada at half past seven, and the boat sails for about forty-five minutes to the island, where you have an hour and a quarter on the beach.\n\nThere is a snorkelling stop with the gear and the guide, an open buffet of fish, chicken, kofta, pasta, rice, salads and fruit, unlimited soft and hot drinks and snacks, and one massage for each guest. The marine fee and tax are in the price; drinks on the island are not. Children have their own price.",
+    "Time on Orange Bay Island",
+    "A snorkelling stop",
+    "An open buffet lunch",
+    "One massage for each guest",
+    "Orange Bay Cruise from Hurghada with Massage and Lunch",
+    "Eight and a half hours from Hurghada: Orange Bay, a snorkelling stop, an open buffet, unlimited drinks, a massage each and hotel pickup."
+   ]
+  },
+  {
+   "site": "hurghada-boat-tour",
+   "pathSlug": "orange-bay-cruise-with-lunch",
+   "record": "orange-island-premium-cruise-from-hurghada-with-lunch-transfer",
+   "fields": [
+    "Orange Bay Cruise with Two Snorkelling Stops and Lunch",
+    "Eight hours from Hurghada: two snorkelling stops, two hours on Orange Bay Island and a buffet lunch on board.",
+    "A full day at sea with a long stop at Orange Bay. The coach collects you from your hotel in Hurghada at eight, and the boat sails out for the first of two snorkelling stops with an instructor and the gear.\n\nTwo hours on Orange Bay Island follow, the entry covered, then a buffet lunch with salads and fruit and unlimited juice, cola, tea and coffee. The boat has toilets and showers. Drinks on the island and photos are not included. Children have their own price.",
+    "Two hours on Orange Bay Island",
+    "Two snorkelling stops",
+    "A buffet lunch on board",
+    "Unlimited drinks",
+    "Orange Bay Cruise from Hurghada with Snorkelling and Lunch",
+    "Eight hours from Hurghada: two snorkelling stops, two hours on Orange Bay Island, a buffet lunch, unlimited drinks and hotel pickup."
+   ]
+  },
+  {
+   "site": "hurghada-boat-tour",
+   "pathSlug": "orange-bay-yacht-with-breakfast",
+   "record": "hurghada-orange-bay-yacht-cruise-with-snorkeling-breakfast-lunch-drinks",
+   "fields": [
+    "Orange Bay Yacht Trip with Breakfast and Snorkelling",
+    "Five or eight hours on a yacht from Hurghada: breakfast, snorkelling and time on Orange Bay Island, with lunch on the longer day.",
+    "A yacht day to Orange Bay Island in two lengths. The car collects you from your hotel in Hurghada at half past eight, and a breakfast buffet is served as the yacht sails out.\n\nThe five-hour trip makes one snorkelling stop and spends an hour on the island; the eight-hour trip makes two stops, spends two hours there and adds lunch. Both include the snorkelling gear, the island entry and marine tax, unlimited drinks and fruit, and a guide for non-swimmers. Towels, underwater photos and tips are not included. Children have their own price.",
+    "Five or eight hours",
+    "Time on Orange Bay Island",
+    "Breakfast, and lunch on the longer trip",
+    "The island entry included",
+    "Orange Bay Yacht Trip from Hurghada with Breakfast",
+    "Five or eight hours on a yacht from Hurghada: breakfast, snorkelling and Orange Bay Island, lunch on the longer day and hotel pickup."
+   ]
+  },
+  {
+   "site": "hurghada-boat-tour",
+   "pathSlug": "three-islands-by-yacht",
+   "record": "hurghada-yacht-cruise-to-orange-bay-giftun-magawish-with-dolphins",
+   "fields": [
+    "Orange Bay, Giftun and Magawish by Yacht with a Seafood Lunch",
+    "Eight hours on a yacht from Hurghada: Orange Bay, Giftun and Magawish, two snorkelling stops, breakfast and a seafood lunch.",
+    "A yacht day to three islands. The car collects you from your hotel at half past eight, and breakfast is served as the yacht sails out; keep a look out for dolphins, which are wild and never promised.\n\nThe day spends an hour at Orange Bay, forty minutes snorkelling at Giftun Island and an hour at Magawish, with their entrance fees, two snorkelling stops with the gear and a guide, a seafood lunch, fruit and unlimited drinks. Bring a towel and a copy of your passport. Children have their own price.",
+    "Orange Bay, Giftun and Magawish",
+    "Two snorkelling stops",
+    "Breakfast and a seafood lunch",
+    "The island fees included",
+    "Hurghada Three Islands Yacht Trip with Seafood Lunch",
+    "Eight hours on a yacht from Hurghada: Orange Bay, Giftun and Magawish, two snorkelling stops, breakfast, a seafood lunch and hotel pickup."
+   ]
+  },
+  {
+   "site": "hurghada-boat-tour",
+   "pathSlug": "six-islands-by-speedboat",
+   "record": "hurghada-speedboat-trip-to-6-islands-with-dolphin-watching-snorkeling",
+   "fields": [
+    "Six Islands by Speedboat with Dolphin Watching",
+    "Eight hours by speedboat from Hurghada: Giftun, Nemo Bay, Orange Bay, Magawish, White Island and Abu Minqar, with three snorkelling stops.",
+    "A full day around the islands off Hurghada. The car collects you from your hotel at half past eight, and the speedboat spends two hours in the Giftun National Park area looking for dolphins and snorkelling. Dolphins are wild, so no boat can promise a sighting.\n\nThe day goes on to Nemo Bay, Orange Bay, Magawish Island, a sandbank and Abu Minqar, with a snorkelling stop at a wreck, and the entrance fees for Orange Bay, White Island, Magawish and Abu Minqar are in the price, with soft drinks, water and fruit. Lunch is not included. Children have their own price.",
+    "Six islands in a day",
+    "Three snorkelling stops, one at a wreck",
+    "Dolphin watching at Giftun",
+    "The island entrance fees included",
+    "Hurghada Six Islands Speedboat Trip with Snorkelling",
+    "Eight hours by speedboat from Hurghada: six islands, three snorkelling stops, dolphin watching, the island fees and hotel pickup."
+   ]
+  },
+  {
+   "site": "hurghada-dolphins",
+   "pathSlug": "yacht-cruise-to-orange-bay-giftun-and-magawish-with-dolphins",
+   "record": "hurghada-yacht-cruise-to-orange-bay-giftun-magawish-with-dolphins",
+   "fields": [
+    "Yacht Cruise to Orange Bay, Giftun and Magawish with Dolphins",
+    "Orange Bay, Giftun Island and Magawish Island. 8 hours from your hotel in Hurghada.",
+    "Pickup is from your hotel in Hurghada, and you are taken back there at the end. The day takes in Orange Bay, Giftun Island and Magawish Island. The trip runs 8 hours in all.\n\nYou choose between 3 Island Yacht Adventure with Dolphin Watching and Seafood Lunch, 3 Island Pickup from Makadi Bay, El Gouna and Sahl Hasheesh and Yacht Cruise Dolphin and 3 Island from Safaga and Soma Bay when you book.",
+    "Orange Bay",
+    "Giftun Island",
+    "Magawish Island",
+    "8 hours from your hotel in Hurghada",
+    "Yacht Cruise to Orange Bay, Giftun and Magawish with Dolphins",
+    "Orange Bay, Giftun Island and Magawish Island. 8 hours from your hotel in Hurghada."
+   ]
+  },
+  {
+   "site": "hurghada-dolphins",
+   "pathSlug": "speedboat-trip-to-6-islands-with-dolphin-watching-and",
+   "record": "hurghada-speedboat-trip-to-6-islands-with-dolphin-watching-snorkeling",
+   "fields": [
+    "Speedboat Trip to 6 Islands with Dolphin Watching and Snorkelling",
+    "Giftun Island, Nemo Bay island and Orange Bay. 8 hours from your hotel in Hurghada.",
+    "Pickup is from your hotel in Hurghada, and you are taken back there at the end. The day takes in Giftun Island, Nemo Bay island, Orange Bay, Magawish Island and Juzur Abū Minqār. The trip runs 8 hours in all.\n\nOne booking option is sold: 6 Island Small Group Tour with Dolphin Watching, Snorkelling and Fruit.",
+    "Giftun Island",
+    "Nemo Bay island",
+    "Orange Bay",
+    "Magawish Island",
+    "Speedboat Trip to 6 Islands with Dolphin Watching and Snorkelling",
+    "Giftun Island, Nemo Bay island and Orange Bay. 8 hours from your hotel in Hurghada."
+   ]
+  },
+  {
+   "site": "hurghada-luxury-cruise",
+   "pathSlug": "orange-bay-yacht-cruise-with-snorkelling-breakfast-lunch",
+   "record": "hurghada-orange-bay-yacht-cruise-with-snorkeling-breakfast-lunch-drinks",
+   "fields": [
+    "Orange Bay Yacht Cruise with Snorkelling, Breakfast, Lunch and Drinks",
+    "Giftun Island. 5 - 8 hours from your hotel in Hurghada.",
+    "Pickup is from your hotel in Hurghada, and you are taken back there at the end. The day takes in Giftun Island. The trip runs 5 - 8 hours in all.\n\nYou choose between 5 Hour Orange Bay Trip with Breakfast and 8 Hour Orange Bay Trip with Breakfast and Lunch when you book.",
+    "Giftun Island",
+    "5 - 8 hours from your hotel in Hurghada",
+    "Orange Bay Yacht Cruise with Snorkelling, Breakfast, Lunch and Drinks",
+    "Giftun Island. 5 - 8 hours from your hotel in Hurghada."
+   ]
+  },
+  {
+   "site": "hurghada-luxury-cruise",
+   "pathSlug": "luxury-orange-bay-cruise-with-snorkelling-massage-and-lunch",
+   "record": "hurghada-luxury-orange-bay-cruise-with-snorkeling-massage-lunch",
+   "fields": [
+    "Luxury Orange Bay Cruise with Snorkelling, Massage and Lunch",
+    "Red Sea, Orange Bay and Jazā'ir Jiftūn. 8.5 hours from your hotel in Hurghada.",
+    "Pickup is from your hotel in Hurghada, and you are taken back there at the end. The day takes in Red Sea, Orange Bay, Jazā'ir Jiftūn, Jazīrat Abū Rimāthī and Red Sea Governorate. The trip runs 8.5 hours in all.\n\nYou choose between Hurghada Hotel Pickup and Return Luxury Cruise and Luxury Cruise with Pickup from Makadi, Sahl Hasheesh, Soma Bay, El Gouna and Safaga when you book.",
+    "Red Sea",
+    "Orange Bay",
+    "Jazā'ir Jiftūn",
+    "Jazīrat Abū Rimāthī",
+    "Luxury Orange Bay Cruise with Snorkelling, Massage and Lunch",
+    "Red Sea, Orange Bay and Jazā'ir Jiftūn. 8.5 hours from your hotel in Hurghada."
+   ]
+  },
+  {
+   "site": "hurghada-luxury-cruise",
+   "pathSlug": "luxury-red-sea-diving-snorkelling-island-and-lunch",
+   "record": "hurghada-luxury-red-sea-diving-snorkeling-island-lunch",
+   "fields": [
+    "Luxury Red Sea Diving, Snorkelling, Island and Lunch",
+    "Orange Bay, Small Giftun diving site and Red Sea. 8 hours from your hotel in Hurghada.",
+    "Pickup is from your hotel in Hurghada, and you are taken back there at the end. The day takes in Orange Bay, Small Giftun diving site, Red Sea and Giftun Island. The trip runs 8 hours in all.\n\nYou choose between Tour from Hurghada and Tour from Makadi Bay, Soma Bay, Sahl Hasheesh, El Gouna or Safaga when you book.",
+    "Orange Bay",
+    "Small Giftun diving site",
+    "Red Sea",
+    "Giftun Island",
+    "Luxury Red Sea Diving, Snorkelling, Island and Lunch",
+    "Orange Bay, Small Giftun diving site and Red Sea. 8 hours from your hotel in Hurghada."
+   ]
+  },
+  {
+   "site": "hurghada-snorkeling",
+   "pathSlug": "yacht-day-with-an-introductory-dive",
+   "record": "hurghada-luxury-red-sea-diving-snorkeling-island-lunch",
+   "fields": [
+    "Yacht Day with Snorkelling and an Introductory Dive",
+    "A yacht day over the reefs with snorkelling, an introductory dive, a massage and lunch aboard.",
+    "The boat leaves early and spends the day between reef stops, with the snorkelling gear aboard and a guide in the water at each one. An introductory dive is part of the day for anyone who wants to go deeper, taken with an instructor.\n\nThere is a massage on board, lunch is served, and the day includes a stop at an island. Pickup from your hotel in Hurghada and the drive back are included.",
+    "Snorkelling at the reef stops with a guide",
+    "An introductory dive with an instructor",
+    "A massage on board and lunch served",
+    "Hotel pickup and drop-off included",
+    "Hurghada Yacht Day: Snorkelling and a First Dive",
+    "A yacht day from Hurghada with guided snorkelling, an introductory dive, a massage on board, lunch and hotel pickup."
+   ]
+  },
+  {
+   "site": "hurghada-snorkeling",
+   "pathSlug": "orange-bay-snorkelling-and-diving-day",
+   "record": "makadi-bay-snorkeling-and-diving-at-orange-bay",
+   "fields": [
+    "Orange Bay Snorkelling and Diving Day",
+    "A full day at Orange Bay with snorkelling over the reefs and a first dive for those who want one.",
+    "A day for a group that cannot agree: the snorkellers go over the side at each reef stop with the gear and a guide, and anyone who wants to try breathing underwater can take a first dive with an instructor instead.\n\nNo certificate is needed for the dive, which is supervised throughout, and the rest of the day is spent at Orange Bay. Lunch is served on board. Pickup from your hotel in Hurghada and the drive back are included.",
+    "Snorkelling over the reefs with a guide",
+    "A first dive with an instructor, no certificate needed",
+    "A full day at Orange Bay",
+    "Lunch aboard and hotel pickup included",
+    "Orange Bay Snorkelling and First-Dive Day",
+    "A full day from Hurghada at Orange Bay with guided snorkelling, an optional first dive with an instructor, lunch and hotel pickup."
+   ]
+  },
+  {
+   "site": "hurghada-snorkeling",
+   "pathSlug": "orange-bay-cruise-with-massage",
+   "record": "hurghada-luxury-orange-bay-cruise-with-snorkeling-massage-lunch",
+   "fields": [
+    "Orange Bay Cruise with Snorkelling, a Massage and Lunch",
+    "A day to Orange Bay with snorkelling stops, lunch and a massage on board.",
+    "The same sandbar, taken slowly. The boat leaves early, stops over the reefs for snorkelling with the gear and a guide, and ties up at Orange Bay for the middle of the day.\n\nA massage is given on board, lunch is served, and the rest of the day is yours between the beach club on the shore and the water in front of it. Pickup from your hotel in Hurghada and the drive back are included.",
+    "Snorkelling stops over the reefs",
+    "A massage given on board",
+    "Lunch served during the day",
+    "Hotel pickup and drop-off included",
+    "Orange Bay Snorkelling Cruise with a Massage",
+    "A day cruise from Hurghada to Orange Bay with snorkelling stops, lunch and a massage on board, with hotel pickup."
+   ]
+  },
+  {
+   "site": "hurghada-snorkeling",
+   "pathSlug": "orange-bay-yacht-with-breakfast",
+   "record": "hurghada-orange-bay-yacht-cruise-with-snorkeling-breakfast-lunch-drinks",
+   "fields": [
+    "Orange Bay by Yacht with Breakfast and Lunch",
+    "A yacht day to Orange Bay with snorkelling stops, breakfast, lunch and drinks aboard.",
+    "A full day on a yacht out to Orange Bay, the long white sandbar with shallow water either side of it. The boat stops over the reefs on the way for snorkelling, with the gear aboard and a guide in the water.\n\nBreakfast is served after the boat leaves, lunch during the day, and drinks throughout. The rest of the time is spent on the sand or in the shallows. Pickup from your hotel in Hurghada and the drive back are included.",
+    "A full yacht day to the Orange Bay sandbar",
+    "Snorkelling stops with the gear aboard",
+    "Breakfast, lunch and drinks served",
+    "Hotel pickup and drop-off included",
+    "Orange Bay Yacht Day with Snorkelling and Lunch",
+    "A yacht day from Hurghada to Orange Bay with snorkelling stops, breakfast, lunch, drinks aboard and hotel pickup."
+   ]
+  },
+  {
+   "site": "hurghada-snorkeling",
+   "pathSlug": "six-islands-by-speedboat",
+   "record": "hurghada-speedboat-trip-to-6-islands-with-dolphin-watching-snorkeling",
+   "fields": [
+    "Six Islands by Speedboat with Three Snorkelling Stops",
+    "A full day around six islands off Hurghada with three guided snorkelling stops and the island entry fees.",
+    "Six islands in a day is a speedboat’s kind of trip: quick enough between them that the day is spent at the stops rather than on the way. The route takes in Orange Bay, White Island, Magawish, Abu Minqar and a sandbank, and the entry fees for them are in the price.\n\nThere are three guided snorkelling stops, one of them over a wreck, with the gear and life jackets aboard. Drinks and seasonal fruit are served, the captain watches for dolphins in the open water, and pickup from your hotel in Hurghada is included. Lunch is not part of this price.",
+    "Six islands in one day",
+    "Three guided snorkelling stops, one over a wreck",
+    "The island entry fees included",
+    "Drinks and fruit aboard, with hotel pickup",
+    "Six Islands Snorkelling Day by Speedboat, Hurghada",
+    "A full day around six islands off Hurghada with three guided snorkelling stops, the island entry fees and hotel pickup."
+   ]
+  },
+  {
+   "site": "hurghada-speedboat",
+   "pathSlug": "six-islands-by-speedboat",
+   "record": "hurghada-speedboat-trip-to-6-islands-with-dolphin-watching-snorkeling",
+   "fields": [
+    "Six Islands by Speedboat",
+    "A full day by speedboat around six islands off Hurghada, with three snorkelling stops and the island entry fees.",
+    "Six islands in a day is a speedboat’s kind of trip: the hull is quick enough between them that the day is spent at the stops rather than on the way to them. The route takes in Orange Bay, White Island, Magawish, Abu Minqar and a sandbank, with the entry fees for them in the price.\n\nThere are three guided snorkelling stops, one of them over a wreck, and the gear and life jackets are aboard. Drinks and seasonal fruit are served on the boat, the captain watches for dolphins in the open water between the islands, and pickup from your hotel in Hurghada is included. Lunch is not part of this price.",
+    "Six islands in one day by speedboat",
+    "Three guided snorkelling stops, one over a wreck",
+    "The island entry fees included",
+    "Drinks and fruit aboard, with hotel pickup",
+    "Six Islands Speedboat Day from Hurghada",
+    "A full speedboat day around six islands off Hurghada, with three snorkelling stops, the island entry fees and hotel pickup."
+   ]
+  },
+  {
    "site": "memphis-and-sakkara",
    "pathSlug": "private-day-with-lunch-and-a-nile-sail",
+   "record": "giza-pyramids-sakkara-memphis-day-tour-with-nile-sail",
    "fields": [
     "Private Day: the Pyramids, Memphis, Sakkara and Dahshur with a Nile Sail",
     "A private day with lunch that takes in the Giza pyramids, Memphis, Sakkara and Dahshur and finishes with a felucca sail on the Nile.",
@@ -320,6 +845,7 @@
   {
    "site": "memphis-and-sakkara",
    "pathSlug": "giza-pyramids-sakkara-and-memphis",
+   "record": "giza-pyramids-sakkara-memphis-day-tour-with-nile-sail",
    "fields": [
     "The Giza Pyramids, Sakkara and Memphis in One Day",
     "Two hours on the Giza plateau, an hour at Sakkara and an hour at Memphis, shared or private, with the entry tickets included.",
@@ -335,6 +861,7 @@
   {
    "site": "memphis-and-sakkara",
    "pathSlug": "private-sakkara-memphis-and-dahshur",
+   "record": "sakkara-memphis-dahshur-giza-pyramids-day-tour",
    "fields": [
     "Private Day at Sakkara, Memphis and Dahshur",
     "The same three sites with your own guide and vehicle, leaving at eight: Dahshur, the Step Pyramid at Sakkara and the ruins of Memphis.",
@@ -350,6 +877,7 @@
   {
    "site": "memphis-and-sakkara",
    "pathSlug": "memphis-sakkara-and-dahshur",
+   "record": "sakkara-memphis-dahshur-giza-pyramids-day-tour",
    "fields": [
     "Memphis, Sakkara and Dahshur in One Day",
     "A shared late-morning day to the Bent and Red Pyramids at Dahshur, the Step Pyramid at Sakkara and the ruins of Memphis, tickets included.",
@@ -365,6 +893,7 @@
   {
    "site": "mit-rahina-museum",
    "pathSlug": "two-private-days-in-cairo",
+   "record": "secrets-of-cairo-2-day-private-sightseeing-tour",
    "fields": [
     "Two Private Days: the Plateau, Sakkara, Memphis and the Museums",
     "Two private days from your hotel: the Giza plateau, Sakkara and Memphis on the first, the Egyptian Museum and the Museum of Egyptian Civilization on the second.",
@@ -380,6 +909,7 @@
   {
    "site": "mit-rahina-museum",
    "pathSlug": "private-day-with-lunch-and-a-nile-sail",
+   "record": "giza-pyramids-sakkara-memphis-day-tour-with-nile-sail",
    "fields": [
     "Private Day: the Pyramids, Memphis, Sakkara and Dahshur with a Nile Sail",
     "A private day with lunch that takes in the Giza pyramids, Memphis, Sakkara and Dahshur and finishes with a felucca sail on the Nile.",
@@ -395,6 +925,7 @@
   {
    "site": "mit-rahina-museum",
    "pathSlug": "giza-pyramids-sakkara-and-memphis",
+   "record": "giza-pyramids-sakkara-memphis-day-tour-with-nile-sail",
    "fields": [
     "The Giza Pyramids, Sakkara and Memphis in One Day",
     "Two hours on the Giza plateau, an hour at Sakkara and an hour at Memphis, shared or private, with the entry tickets included.",
@@ -410,6 +941,7 @@
   {
    "site": "mit-rahina-museum",
    "pathSlug": "private-sakkara-memphis-and-dahshur",
+   "record": "sakkara-memphis-dahshur-giza-pyramids-day-tour",
    "fields": [
     "Private Day at Dahshur, Sakkara and Memphis",
     "The same three sites with your own guide and vehicle, leaving at eight: Dahshur, the Step Pyramid at Sakkara and the ruins of Memphis.",
@@ -425,6 +957,7 @@
   {
    "site": "mit-rahina-museum",
    "pathSlug": "sakkara-memphis-and-dahshur-shared",
+   "record": "sakkara-memphis-dahshur-giza-pyramids-day-tour",
    "fields": [
     "Dahshur, Sakkara and Memphis in One Shared Day",
     "A shared late-morning day to the Bent and Red Pyramids at Dahshur, the Step Pyramid at Sakkara and the ruins of Memphis, tickets included.",
@@ -438,8 +971,103 @@
    ]
   },
   {
+   "site": "orange-bay-tours",
+   "pathSlug": "luxury-red-sea-diving-snorkelling-island-and-lunch",
+   "record": "hurghada-luxury-red-sea-diving-snorkeling-island-lunch",
+   "fields": [
+    "Luxury Red Sea Diving, Snorkelling, Island and Lunch",
+    "Orange Bay, Small Giftun diving site and Red Sea. 8 hours from your hotel in Hurghada.",
+    "Pickup is from your hotel in Hurghada, and you are taken back there at the end. The day takes in Orange Bay, Small Giftun diving site, Red Sea and Giftun Island. The trip runs 8 hours in all.\n\nYou choose between Tour from Hurghada and Tour from Makadi Bay, Soma Bay, Sahl Hasheesh, El Gouna or Safaga when you book.",
+    "Orange Bay",
+    "Small Giftun diving site",
+    "Red Sea",
+    "Giftun Island",
+    "Luxury Red Sea Diving, Snorkelling, Island and Lunch",
+    "Orange Bay, Small Giftun diving site and Red Sea. 8 hours from your hotel in Hurghada."
+   ]
+  },
+  {
+   "site": "orange-bay-tours",
+   "pathSlug": "yacht-cruise-to-orange-bay-giftun-and-magawish-with-dolphins",
+   "record": "hurghada-yacht-cruise-to-orange-bay-giftun-magawish-with-dolphins",
+   "fields": [
+    "Yacht Cruise to Orange Bay, Giftun and Magawish with Dolphins",
+    "Orange Bay, Giftun Island and Magawish Island. 8 hours from your hotel in Hurghada.",
+    "Pickup is from your hotel in Hurghada, and you are taken back there at the end. The day takes in Orange Bay, Giftun Island and Magawish Island. The trip runs 8 hours in all.\n\nYou choose between 3 Island Yacht Adventure with Dolphin Watching and Seafood Lunch, 3 Island Pickup from Makadi Bay, El Gouna and Sahl Hasheesh and Yacht Cruise Dolphin and 3 Island from Safaga and Soma Bay when you book.",
+    "Orange Bay",
+    "Giftun Island",
+    "Magawish Island",
+    "8 hours from your hotel in Hurghada",
+    "Yacht Cruise to Orange Bay, Giftun and Magawish with Dolphins",
+    "Orange Bay, Giftun Island and Magawish Island. 8 hours from your hotel in Hurghada."
+   ]
+  },
+  {
+   "site": "orange-bay-tours",
+   "pathSlug": "snorkelling-and-diving-at-orange-bay",
+   "record": "makadi-bay-snorkeling-and-diving-at-orange-bay",
+   "fields": [
+    "Snorkelling and Diving at Orange Bay",
+    "Giftun Island, Orange Bay and Giftun Island Optional. 8.5 hours from your hotel in Hurghada.",
+    "Pickup is from your hotel in Hurghada, and you are taken back there at the end. The day takes in Giftun Island, Orange Bay, Giftun Island Optional, Hurghada Optional and Red Sea Governorate Optional. The trip runs 8.5 hours in all.\n\nYou choose between Tour from Hurghada and Tour from Makadi and Soma Bay and El Gouna and Sahl Hasheesh and Safaga when you book.",
+    "Giftun Island",
+    "Orange Bay",
+    "Giftun Island Optional",
+    "Hurghada Optional",
+    "Snorkelling and Diving at Orange Bay",
+    "Giftun Island, Orange Bay and Giftun Island Optional. 8.5 hours from your hotel in Hurghada."
+   ]
+  },
+  {
+   "site": "orange-bay-tours",
+   "pathSlug": "orange-island-premium-cruise-from-hurghada-with-lunch-and",
+   "record": "orange-island-premium-cruise-from-hurghada-with-lunch-transfer",
+   "fields": [
+    "Orange Island Premium Cruise from Hurghada with Lunch and Transfer",
+    "Other water transport, Orange Bay and Arrive back at. 8 hours from your hotel in Hurghada.",
+    "Pickup is from your hotel in Hurghada, and you are taken back there at the end. The day takes in Other water transport, Orange Bay and Arrive back at. The trip runs 8 hours in all.\n\nYou choose between Premium Hurghada Orange Island Cruise with Lunch and Transfers and Premium Orange Island Tour with Pickup from Sahl Hasheesh, Makadi Bay, Soma Bay and El Gouna when you book.",
+    "Other water transport",
+    "Orange Bay",
+    "Arrive back at",
+    "8 hours from your hotel in Hurghada",
+    "Orange Island Premium Cruise from Hurghada with Lunch and Transfer",
+    "Other water transport, Orange Bay and Arrive back at. 8 hours from your hotel in Hurghada."
+   ]
+  },
+  {
+   "site": "orange-bay-tours",
+   "pathSlug": "orange-bay-yacht-cruise-with-snorkelling-breakfast-lunch",
+   "record": "hurghada-orange-bay-yacht-cruise-with-snorkeling-breakfast-lunch-drinks",
+   "fields": [
+    "Orange Bay Yacht Cruise with Snorkelling, Breakfast, Lunch and Drinks",
+    "Giftun Island. 5 - 8 hours from your hotel in Hurghada.",
+    "Pickup is from your hotel in Hurghada, and you are taken back there at the end. The day takes in Giftun Island. The trip runs 5 - 8 hours in all.\n\nYou choose between 5 Hour Orange Bay Trip with Breakfast and 8 Hour Orange Bay Trip with Breakfast and Lunch when you book.",
+    "Giftun Island",
+    "5 - 8 hours from your hotel in Hurghada",
+    "Orange Bay Yacht Cruise with Snorkelling, Breakfast, Lunch and Drinks",
+    "Giftun Island. 5 - 8 hours from your hotel in Hurghada."
+   ]
+  },
+  {
+   "site": "orange-bay-tours",
+   "pathSlug": "luxury-orange-bay-cruise-with-snorkelling-massage-and-lunch",
+   "record": "hurghada-luxury-orange-bay-cruise-with-snorkeling-massage-lunch",
+   "fields": [
+    "Luxury Orange Bay Cruise with Snorkelling, Massage and Lunch",
+    "Red Sea, Orange Bay and Jazā'ir Jiftūn. 8.5 hours from your hotel in Hurghada.",
+    "Pickup is from your hotel in Hurghada, and you are taken back there at the end. The day takes in Red Sea, Orange Bay, Jazā'ir Jiftūn, Jazīrat Abū Rimāthī and Red Sea Governorate. The trip runs 8.5 hours in all.\n\nYou choose between Hurghada Hotel Pickup and Return Luxury Cruise and Luxury Cruise with Pickup from Makadi, Sahl Hasheesh, Soma Bay, El Gouna and Safaga when you book.",
+    "Red Sea",
+    "Orange Bay",
+    "Jazā'ir Jiftūn",
+    "Jazīrat Abū Rimāthī",
+    "Luxury Orange Bay Cruise with Snorkelling, Massage and Lunch",
+    "Red Sea, Orange Bay and Jazā'ir Jiftūn. 8.5 hours from your hotel in Hurghada."
+   ]
+  },
+  {
    "site": "pyramid-complex-giza",
    "pathSlug": "private-day-with-lunch-and-a-nile-sail",
+   "record": "giza-pyramids-sakkara-memphis-day-tour-with-nile-sail",
    "fields": [
     "Private Day: the Pyramids, Memphis, Sakkara and Dahshur with a Nile Sail",
     "A private day with lunch that takes in the Giza pyramids, Memphis, Sakkara and Dahshur and finishes with a felucca sail on the Nile.",
@@ -455,6 +1083,7 @@
   {
    "site": "pyramid-complex-giza",
    "pathSlug": "giza-pyramids-sakkara-and-memphis",
+   "record": "giza-pyramids-sakkara-memphis-day-tour-with-nile-sail",
    "fields": [
     "The Giza Pyramids, Sakkara and Memphis in One Day",
     "Two hours on the Giza plateau, an hour at Sakkara and an hour at Memphis, shared or private, with the entry tickets included.",
@@ -470,6 +1099,7 @@
   {
    "site": "pyramid-complex-giza",
    "pathSlug": "two-private-days-in-cairo",
+   "record": "secrets-of-cairo-2-day-private-sightseeing-tour",
    "fields": [
     "Two Private Days: the Plateau, Sakkara, Memphis and the Museums",
     "Two private days from your hotel: the Giza plateau, Sakkara and Memphis on the first, the Egyptian Museum and the Museum of Egyptian Civilization on the second.",
@@ -484,22 +1114,8 @@
   },
   {
    "site": "pyramid-complex-giza",
-   "pathSlug": "private-day-pyramids-museum-and-bazaar",
-   "fields": [
-    "Private Day: the Pyramids, the Egyptian Museum and the Bazaar",
-    "Five hours with an Egyptologist guide: the Giza pyramids and the Sphinx, the Egyptian Museum, lunch and the lanes of Khan El-Khalili.",
-    "The complex comes first on this private day, with its entry tickets in the price. A private vehicle collects you from your hotel in Cairo or Giza at eight or at nine. The pyramids on the plateau and the Sphinx below them come first with the guide, then a guided walk through the halls of the museum on Tahrir Square, lunch at a local restaurant and the shops of the historic bazaar.\n\nThe entry tickets, the private tour with an Egyptologist guide, lunch and bottled water are in the price. This day visits the museum on Tahrir Square, not the Grand Egyptian Museum. Children pay the same price as adults.",
-    "The plateau and the Sphinx with the tickets",
-    "An Egyptologist guide for your group",
-    "The Egyptian Museum on Tahrir Square",
-    "Lunch and the Khan El-Khalili bazaar",
-    "Giza Complex: Private Pyramids, Egyptian Museum and Bazaar Day",
-    "A private day with an Egyptologist guide: the Giza pyramids and the Sphinx, the Egyptian Museum, lunch and Khan El-Khalili, with hotel pickup."
-   ]
-  },
-  {
-   "site": "pyramid-complex-giza",
    "pathSlug": "pyramids-egyptian-museum-and-khan-el-khalili",
+   "record": "private-pyramids-egyptian-museum-khan-el-khalili-tour",
    "fields": [
     "The Pyramids, the Egyptian Museum and Khan el-Khalili",
     "Eight hours with a private guide and car: the Giza plateau, the Egyptian Museum of Antiquities, the Khan el-Khalili bazaar and lunch.",
@@ -515,6 +1131,7 @@
   {
    "site": "pyramid-complex-giza",
    "pathSlug": "pyramids-and-an-hour-on-the-nile",
+   "record": "giza-pyramids-tour-with-1-hour-nile-felucca-sail",
    "fields": [
     "Giza Pyramids and an Hour Under Sail on the Nile",
     "Five hours with a private vehicle: three hours on the plateau with the Great Pyramid, Khafre, Menkaure and the Sphinx, then an hour on a felucca.",
@@ -530,6 +1147,7 @@
   {
    "site": "pyramid-complex-giza",
    "pathSlug": "private-day-with-a-camel-ride-and-lunch",
+   "record": "vip-giza-pyramids-experience-private-tour-camel-ride-lunch",
    "fields": [
     "Private Pyramids Day with a Camel Ride and Lunch",
     "Four hours with a private guide and car: the Giza plateau, a camel ride around it, lunch at a local restaurant and the entrance fees.",
@@ -544,7 +1162,24 @@
   },
   {
    "site": "pyramid-complex-giza",
+   "pathSlug": "private-sunrise-camel-ride-and-breakfast",
+   "record": "giza-pyramids-sunrise-morning-guided-tour-with-camel-ride-breakfast",
+   "fields": [
+    "Private Sunrise or Morning Ride with Breakfast at the Pyramids",
+    "The same hour in the saddle, breakfast and guided walk, with the vehicle and the guide for your group alone, and a third start in the afternoon.",
+    "The complex is walked privately after the ride, with its entry ticket in the price. This is the private way to take the ride: half past four for the sunrise, eight o’clock for the morning or one in the afternoon. The hour on a camel or a horse runs on the sand beside the plateau, breakfast follows, and your own guide walks you through the pyramids complex and the Sphinx.\n\nThe entry ticket for the Giza pyramids complex is in the price, as are the private air-conditioned vehicle and the pickup from your hotel in Cairo or Giza. Children have their own price.",
+    "The pyramids complex with your own guide",
+    "Your own vehicle and guide",
+    "Three starts, from before dawn to the afternoon",
+    "The pyramids entry ticket included",
+    "Giza Complex: Private Giza Sunrise Camel Ride and Breakfast",
+    "The Giza pyramid complex: a private hour on a camel or horse beside the plateau, breakfast and a guided walk of the pyramids, with the entry ticket and hotel pickup."
+   ]
+  },
+  {
+   "site": "pyramid-complex-giza",
    "pathSlug": "sunrise-camel-ride-and-breakfast",
+   "record": "giza-pyramids-sunrise-morning-guided-tour-with-camel-ride-breakfast",
    "fields": [
     "Sunrise or Morning at the Pyramids with a Camel Ride and Breakfast",
     "A shared five-hour trip: an hour on a camel or a horse beside the plateau, an Egyptian breakfast and two guided hours among the pyramids.",
@@ -560,6 +1195,7 @@
   {
    "site": "pyramid-complex-giza",
    "pathSlug": "private-half-day-pyramids-and-sphinx",
+   "record": "giza-pyramids-great-sphinx-half-day-private-tour",
    "fields": [
     "Private Half Day at the Pyramids and the Great Sphinx",
     "Four hours on the Giza plateau with a private guide and car: the three pyramids, the Valley Temple and the Great Sphinx, with the entry fees.",
@@ -575,6 +1211,7 @@
   {
    "site": "pyramid-of-djoser",
    "pathSlug": "two-private-days-in-cairo",
+   "record": "secrets-of-cairo-2-day-private-sightseeing-tour",
    "fields": [
     "Two Private Days: the Step Pyramid, Memphis and the Museums",
     "Day one at the Giza plateau, the Step Pyramid and Memphis; day two at the Egyptian Museum and the Museum of Egyptian Civilization.",
@@ -590,6 +1227,7 @@
   {
    "site": "pyramid-of-djoser",
    "pathSlug": "private-sakkara-memphis-and-dahshur",
+   "record": "sakkara-memphis-dahshur-giza-pyramids-day-tour",
    "fields": [
     "Private Day at the Step Pyramid, Memphis and Dahshur",
     "The Step Pyramid with your own guide and vehicle, an eight o’clock start, then Memphis and Dahshur, with the entry tickets.",
@@ -605,6 +1243,7 @@
   {
    "site": "pyramid-of-djoser",
    "pathSlug": "sakkara-memphis-and-dahshur-shared",
+   "record": "sakkara-memphis-dahshur-giza-pyramids-day-tour",
    "fields": [
     "Shared Day at the Step Pyramid, Memphis and Dahshur",
     "A shared day with a guide and the entry tickets: the Step Pyramid of Djoser, the ruins of Memphis and the pyramids of Dahshur.",
@@ -620,6 +1259,7 @@
   {
    "site": "pyramid-of-khafre",
    "pathSlug": "pyramids-and-an-hour-on-the-nile",
+   "record": "giza-pyramids-tour-with-1-hour-nile-felucca-sail",
    "fields": [
     "Giza Pyramids and an Hour Under Sail on the Nile",
     "Five hours with a private vehicle: three hours on the plateau with the Great Pyramid, Khafre, Menkaure and the Sphinx, then an hour on a felucca.",
@@ -635,6 +1275,7 @@
   {
    "site": "pyramid-of-khafre",
    "pathSlug": "private-day-with-a-camel-ride-and-lunch",
+   "record": "vip-giza-pyramids-experience-private-tour-camel-ride-lunch",
    "fields": [
     "Private Pyramids Day with a Camel Ride and Lunch",
     "Four hours with a private guide and car: the Giza plateau, a camel ride around it, lunch at a local restaurant and the entrance fees.",
@@ -650,6 +1291,7 @@
   {
    "site": "pyramid-of-khafre",
    "pathSlug": "private-half-day-pyramids-and-sphinx",
+   "record": "giza-pyramids-great-sphinx-half-day-private-tour",
    "fields": [
     "Private Half Day at the Pyramids and the Great Sphinx",
     "Four hours on the Giza plateau with a private guide and car: the three pyramids, the Valley Temple and the Great Sphinx, with the entry fees.",
@@ -665,6 +1307,7 @@
   {
    "site": "pyramid-of-menkaure",
    "pathSlug": "pyramids-and-an-hour-on-the-nile",
+   "record": "giza-pyramids-tour-with-1-hour-nile-felucca-sail",
    "fields": [
     "Giza Pyramids and an Hour Under Sail on the Nile",
     "Five hours with a private vehicle: three hours on the plateau with the Great Pyramid, Khafre, Menkaure and the Sphinx, then an hour on a felucca.",
@@ -680,6 +1323,7 @@
   {
    "site": "pyramid-of-menkaure",
    "pathSlug": "private-day-with-a-camel-ride-and-lunch",
+   "record": "vip-giza-pyramids-experience-private-tour-camel-ride-lunch",
    "fields": [
     "Private Pyramids Day with a Camel Ride and Lunch",
     "Four hours with a private guide and car: the Giza plateau, a camel ride around it, lunch at a local restaurant and the entrance fees.",
@@ -695,6 +1339,7 @@
   {
    "site": "pyramid-of-menkaure",
    "pathSlug": "private-half-day-pyramids-and-sphinx",
+   "record": "giza-pyramids-great-sphinx-half-day-private-tour",
    "fields": [
     "Private Half Day at the Pyramids and the Great Sphinx",
     "Four hours on the Giza plateau with a private guide and car: the three pyramids, the Valley Temple and the Great Sphinx, with the entry fees.",
@@ -710,6 +1355,7 @@
   {
    "site": "pyramids-camel-tour",
    "pathSlug": "private-day-with-a-camel-ride-and-lunch",
+   "record": "vip-giza-pyramids-experience-private-tour-camel-ride-lunch",
    "fields": [
     "Private Pyramids Day with a Camel Ride Around the Plateau and Lunch",
     "Four hours with your own guide and car: the pyramids and the Sphinx, a camel ride around the plateau, lunch at a local restaurant and the entrance fees.",
@@ -724,7 +1370,24 @@
   },
   {
    "site": "pyramids-camel-tour",
+   "pathSlug": "private-sunrise-camel-ride-and-breakfast",
+   "record": "giza-pyramids-sunrise-morning-guided-tour-with-camel-ride-breakfast",
+   "fields": [
+    "Private Camel Ride at the Pyramids with Breakfast",
+    "The same five hours with the vehicle and the guide for your group alone, and an afternoon start as well as the sunrise and morning ones.",
+    "This is the private way to take the same programme: an hour on a camel or a horse on the sand beside the plateau, a traditional Egyptian breakfast, and two guided hours in the pyramids complex and at the Sphinx. The entry ticket for the complex is in the price.\n\nThere are three starts: half past four, eight o’clock and one in the afternoon. The vehicle is air-conditioned and yours alone, the guide is an English-speaking Egyptologist, and pickup and drop-off are at your hotel in Cairo or Giza. Children have their own price, and the booking applies it.",
+    "The vehicle and the guide for your group alone",
+    "An hour on a camel or a horse",
+    "Sunrise, morning or afternoon starts",
+    "Breakfast and the entry ticket included",
+    "Private Giza Camel Ride Tour with Breakfast",
+    "A private five-hour trip at the Giza pyramids: an hour on a camel or horse, breakfast, two guided hours at the pyramids and the Sphinx, with hotel pickup."
+   ]
+  },
+  {
+   "site": "pyramids-camel-tour",
    "pathSlug": "shared-sunrise-camel-ride-and-breakfast",
+   "record": "giza-pyramids-sunrise-morning-guided-tour-with-camel-ride-breakfast",
    "fields": [
     "Shared Camel Ride at the Pyramids with Breakfast",
     "Five hours in a shared group: an hour on a camel or a horse beside the plateau, an Egyptian breakfast and two guided hours among the pyramids.",
@@ -740,6 +1403,7 @@
   {
    "site": "pyramids-of-dahshur",
    "pathSlug": "private-day-with-lunch-and-a-nile-sail",
+   "record": "giza-pyramids-sakkara-memphis-day-tour-with-nile-sail",
    "fields": [
     "Private Day: the Pyramids, Memphis, Sakkara and Dahshur with a Nile Sail",
     "A private day with lunch that takes in the Giza pyramids, Memphis, Sakkara and Dahshur and finishes with a felucca sail on the Nile.",
@@ -755,6 +1419,7 @@
   {
    "site": "pyramids-of-dahshur",
    "pathSlug": "private-sakkara-memphis-and-dahshur",
+   "record": "sakkara-memphis-dahshur-giza-pyramids-day-tour",
    "fields": [
     "Private Day at Dahshur, Sakkara and Memphis",
     "The same three sites with your own guide and vehicle, leaving at eight: Dahshur, the Step Pyramid at Sakkara and the ruins of Memphis.",
@@ -770,6 +1435,7 @@
   {
    "site": "pyramids-of-dahshur",
    "pathSlug": "sakkara-memphis-and-dahshur-shared",
+   "record": "sakkara-memphis-dahshur-giza-pyramids-day-tour",
    "fields": [
     "Dahshur, Sakkara and Memphis in One Shared Day",
     "A shared late-morning day to the Bent and Red Pyramids at Dahshur, the Step Pyramid at Sakkara and the ruins of Memphis, tickets included.",
@@ -785,6 +1451,7 @@
   {
    "site": "pyramids-of-giza-egypt",
    "pathSlug": "pyramids-egyptian-museum-and-khan-el-khalili",
+   "record": "private-pyramids-egyptian-museum-khan-el-khalili-tour",
    "fields": [
     "The Pyramids, the Egyptian Museum and Khan el-Khalili",
     "Eight hours with a private guide and car: the Giza plateau, the Egyptian Museum of Antiquities, the Khan el-Khalili bazaar and lunch.",
@@ -800,6 +1467,7 @@
   {
    "site": "red-pyramid-egypt",
    "pathSlug": "private-sakkara-memphis-and-dahshur",
+   "record": "sakkara-memphis-dahshur-giza-pyramids-day-tour",
    "fields": [
     "Private Day at the Red Pyramid, Saqqara and Memphis",
     "The Red Pyramid and the Bent Pyramid with your own guide and vehicle, an eight o’clock start, and the entry tickets.",
@@ -815,6 +1483,7 @@
   {
    "site": "red-pyramid-egypt",
    "pathSlug": "sakkara-memphis-and-dahshur-shared",
+   "record": "sakkara-memphis-dahshur-giza-pyramids-day-tour",
    "fields": [
     "Shared Day at the Red Pyramid, Saqqara and Memphis",
     "A shared day with a guide and the entry tickets: the Saqqara necropolis, the ruins of Memphis and the Bent and Red Pyramids at Dahshur.",
@@ -830,6 +1499,7 @@
   {
    "site": "sakkara-pyramids",
    "pathSlug": "two-private-days-in-cairo",
+   "record": "secrets-of-cairo-2-day-private-sightseeing-tour",
    "fields": [
     "Two Private Days: the Plateau, Sakkara, Memphis and the Museums",
     "Two private days from your hotel: the Giza plateau, Sakkara and Memphis on the first, the Egyptian Museum and the Museum of Egyptian Civilization on the second.",
@@ -845,6 +1515,7 @@
   {
    "site": "sakkara-pyramids",
    "pathSlug": "private-day-with-lunch-and-a-nile-sail",
+   "record": "giza-pyramids-sakkara-memphis-day-tour-with-nile-sail",
    "fields": [
     "Private Day: the Pyramids, Memphis, Sakkara and Dahshur with a Nile Sail",
     "A private day with lunch that takes in the Giza pyramids, Memphis, Sakkara and Dahshur and finishes with a felucca sail on the Nile.",
@@ -860,6 +1531,7 @@
   {
    "site": "sakkara-pyramids",
    "pathSlug": "giza-pyramids-sakkara-and-memphis",
+   "record": "giza-pyramids-sakkara-memphis-day-tour-with-nile-sail",
    "fields": [
     "The Giza Pyramids, Sakkara and Memphis in One Day",
     "Two hours on the Giza plateau, an hour at Sakkara and an hour at Memphis, shared or private, with the entry tickets included.",
@@ -875,6 +1547,7 @@
   {
    "site": "sakkara-pyramids",
    "pathSlug": "private-sakkara-memphis-and-dahshur",
+   "record": "sakkara-memphis-dahshur-giza-pyramids-day-tour",
    "fields": [
     "Private Day at Dahshur, Sakkara and Memphis",
     "The same three sites with your own guide and vehicle, leaving at eight: Dahshur, the Step Pyramid at Sakkara and the ruins of Memphis.",
@@ -890,6 +1563,7 @@
   {
    "site": "sakkara-pyramids",
    "pathSlug": "sakkara-memphis-and-dahshur-shared",
+   "record": "sakkara-memphis-dahshur-giza-pyramids-day-tour",
    "fields": [
     "Dahshur, Sakkara and Memphis in One Shared Day",
     "A shared late-morning day to the Bent and Red Pyramids at Dahshur, the Step Pyramid at Sakkara and the ruins of Memphis, tickets included.",
@@ -905,6 +1579,7 @@
   {
    "site": "saqqara-necropolis",
    "pathSlug": "two-private-days-in-cairo",
+   "record": "secrets-of-cairo-2-day-private-sightseeing-tour",
    "fields": [
     "Two Private Days: the Necropolis, Memphis and the Museums",
     "Day one at the Giza plateau, Saqqara and Memphis; day two at the Egyptian Museum and the Museum of Egyptian Civilization.",
@@ -920,6 +1595,7 @@
   {
    "site": "saqqara-necropolis",
    "pathSlug": "private-day-with-lunch-and-a-nile-sail",
+   "record": "giza-pyramids-sakkara-memphis-day-tour-with-nile-sail",
    "fields": [
     "Private Day at Saqqara and Memphis with Lunch and a Nile Sail",
     "A private day that takes in the plateau, the necropolis, Memphis and Dahshur, with lunch and an hour under sail on the Nile.",
@@ -935,6 +1611,7 @@
   {
    "site": "saqqara-necropolis",
    "pathSlug": "giza-pyramids-sakkara-and-memphis",
+   "record": "giza-pyramids-sakkara-memphis-day-tour-with-nile-sail",
    "fields": [
     "The Giza Pyramids, Saqqara and Memphis in One Day",
     "One day from the Giza plateau to the necropolis and the old capital, shared or private, with the entry tickets.",
@@ -950,6 +1627,7 @@
   {
    "site": "saqqara-necropolis",
    "pathSlug": "private-sakkara-memphis-and-dahshur",
+   "record": "sakkara-memphis-dahshur-giza-pyramids-day-tour",
    "fields": [
     "Private Day at Saqqara, Memphis and Dahshur",
     "The same three places with your own guide and vehicle, an eight o’clock start and the entry tickets.",
@@ -965,6 +1643,7 @@
   {
    "site": "saqqara-necropolis",
    "pathSlug": "sakkara-memphis-and-dahshur-shared",
+   "record": "sakkara-memphis-dahshur-giza-pyramids-day-tour",
    "fields": [
     "Sakkara, Memphis and Dahshur in a Shared Group",
     "A shared day south of Giza with a guide and the entry tickets: the Saqqara necropolis, the ruins of Memphis and the pyramids of Dahshur.",
@@ -980,6 +1659,7 @@
   {
    "site": "sphinx-of-memphis",
    "pathSlug": "two-private-days-in-cairo",
+   "record": "secrets-of-cairo-2-day-private-sightseeing-tour",
    "fields": [
     "Two Private Days: the Alabaster Sphinx, Memphis and the Museums",
     "Day one at the Giza plateau, Saqqara and Memphis, where the alabaster sphinx lies; day two in the museums of Cairo.",
@@ -995,6 +1675,7 @@
   {
    "site": "sphinx-of-memphis",
    "pathSlug": "private-day-with-lunch-and-a-nile-sail",
+   "record": "giza-pyramids-sakkara-memphis-day-tour-with-nile-sail",
    "fields": [
     "Private Day at Memphis and Saqqara with Lunch and a Nile Sail",
     "A private day taking in the plateau, Saqqara, the open-air museum at Memphis and Dahshur, with lunch and an hour under sail.",
@@ -1010,6 +1691,7 @@
   {
    "site": "sphinx-of-memphis",
    "pathSlug": "giza-pyramids-sakkara-and-memphis",
+   "record": "giza-pyramids-sakkara-memphis-day-tour-with-nile-sail",
    "fields": [
     "The Giza Pyramids, Saqqara and Memphis in One Day",
     "One day from the Giza plateau to the necropolis and the open-air museum at Memphis, shared or private, with the entry tickets.",
@@ -1025,6 +1707,7 @@
   {
    "site": "sphinx-of-memphis",
    "pathSlug": "private-sakkara-memphis-and-dahshur",
+   "record": "sakkara-memphis-dahshur-giza-pyramids-day-tour",
    "fields": [
     "Private Day at Memphis, Saqqara and Dahshur",
     "The same three places with your own guide and vehicle, an eight o’clock start and the entry tickets.",
@@ -1040,6 +1723,7 @@
   {
    "site": "sphinx-of-memphis",
    "pathSlug": "sakkara-memphis-and-dahshur-shared",
+   "record": "sakkara-memphis-dahshur-giza-pyramids-day-tour",
    "fields": [
     "Shared Day at Memphis, Saqqara and Dahshur",
     "A shared day with a guide and the entry tickets: the open-air museum at Memphis, the Saqqara necropolis and the pyramids of Dahshur.",
@@ -1055,6 +1739,7 @@
   {
    "site": "statue-of-ramesses-ii",
    "pathSlug": "two-private-days-in-cairo",
+   "record": "secrets-of-cairo-2-day-private-sightseeing-tour",
    "fields": [
     "Two Private Days: the Plateau, Sakkara, Memphis and the Museums",
     "Two private days from your hotel: the Giza plateau, Sakkara and Memphis on the first, the Egyptian Museum and the Museum of Egyptian Civilization on the second.",
@@ -1070,6 +1755,7 @@
   {
    "site": "statue-of-ramesses-ii",
    "pathSlug": "private-day-with-lunch-and-a-nile-sail",
+   "record": "giza-pyramids-sakkara-memphis-day-tour-with-nile-sail",
    "fields": [
     "Private Day: the Pyramids, Memphis, Sakkara and Dahshur with a Nile Sail",
     "A private day with lunch that takes in the Giza pyramids, Memphis, Sakkara and Dahshur and finishes with a felucca sail on the Nile.",
@@ -1085,6 +1771,7 @@
   {
    "site": "statue-of-ramesses-ii",
    "pathSlug": "giza-pyramids-sakkara-and-memphis",
+   "record": "giza-pyramids-sakkara-memphis-day-tour-with-nile-sail",
    "fields": [
     "The Giza Pyramids, Sakkara and Memphis in One Day",
     "Two hours on the Giza plateau, an hour at Sakkara and an hour at Memphis, shared or private, with the entry tickets included.",
@@ -1100,6 +1787,7 @@
   {
    "site": "statue-of-ramesses-ii",
    "pathSlug": "private-sakkara-memphis-and-dahshur",
+   "record": "sakkara-memphis-dahshur-giza-pyramids-day-tour",
    "fields": [
     "Private Day at Dahshur, Sakkara and Memphis",
     "The same three sites with your own guide and vehicle, leaving at eight: Dahshur, the Step Pyramid at Sakkara and the ruins of Memphis.",
@@ -1115,6 +1803,7 @@
   {
    "site": "statue-of-ramesses-ii",
    "pathSlug": "sakkara-memphis-and-dahshur-shared",
+   "record": "sakkara-memphis-dahshur-giza-pyramids-day-tour",
    "fields": [
     "Dahshur, Sakkara and Memphis in One Shared Day",
     "A shared late-morning day to the Bent and Red Pyramids at Dahshur, the Step Pyramid at Sakkara and the ruins of Memphis, tickets included.",
@@ -1125,6 +1814,38 @@
     "Entry tickets and hotel pickup included",
     "Ramesses II: Dahshur, Sakkara and Memphis Shared Day Tour",
     "A shared day from Cairo or Giza to the Bent and Red Pyramids at Dahshur, the Step Pyramid at Sakkara and the ruins of Memphis, tickets included."
+   ]
+  },
+  {
+   "site": "umm-gamar-hurghada",
+   "pathSlug": "six-islands-by-speedboat",
+   "record": "hurghada-speedboat-trip-to-6-islands-with-dolphin-watching-snorkeling",
+   "fields": [
+    "Six Islands by Speedboat with Three Snorkelling Stops",
+    "A speedboat day from Hurghada to six islands, a sandbank and a wreck, with snorkelling gear, fruit and drinks.",
+    "The speedboat leaves Hurghada at half past eight for a day of about eight hours. It takes in six islands, among them Giftun, Nemo Bay, Orange Bay, Magawish and the sandbank at Abu Minqar, with three snorkelling stops, one over a wreck, and dolphin watching off Giftun. The route does not include Umm Gamar.\n\nIsland entrance fees, snorkelling gear, a life jacket, a guide, soft drinks, water and seasonal fruit are included, and there is shade on board. Lunch is not part of this option: a lunch or a seafood lunch on the island, a wetsuit, a GoPro video, a banana boat and sofa ride or a twister ride can be added when you book.",
+    "Six islands and a sandbank",
+    "Three snorkelling stops, one over a wreck",
+    "Dolphin watching off Giftun",
+    "Lunch on the island as an extra",
+    "Six Islands by Speedboat from Hurghada",
+    "A speedboat day from Hurghada to six islands with three snorkelling stops, a wreck, a sandbank walk, fruit and drinks, and hotel pickup."
+   ]
+  },
+  {
+   "site": "umm-gamar-hurghada",
+   "pathSlug": "three-islands-by-yacht",
+   "record": "hurghada-yacht-cruise-to-orange-bay-giftun-magawish-with-dolphins",
+   "fields": [
+    "Orange Bay, Giftun and Magawish in One Yacht Day",
+    "Breakfast on board, an hour at Orange Bay, snorkelling at Giftun, an hour at Magawish and a seafood lunch.",
+    "The yacht leaves Hurghada at half past eight for a day of about eight hours, with breakfast on board as it goes. It spends an hour at Orange Bay, forty minutes in the water at Giftun and an hour at Magawish, with two snorkelling stops at different sites, the equipment, a life vest and a snorkelling guide. Dolphin watching is part of this option. Umm Gamar is not one of the stops.\n\nEntrance fees for the three islands are covered. A seafood lunch, unlimited soft and hot drinks, water and seasonal fruit are served on board. A wetsuit, a GoPro video, photographs, a banana boat ride or an extra dive can be added when you book, and children and infants have their own prices.",
+    "An hour each at Orange Bay and Magawish",
+    "Snorkelling at Giftun with a guide",
+    "Breakfast and a seafood lunch on board",
+    "Entrance fees for the three islands",
+    "Three Islands by Yacht from Hurghada",
+    "Orange Bay, Giftun and Magawish in one eight-hour yacht day from Hurghada, with snorkelling, breakfast, a seafood lunch and hotel pickup."
    ]
   }
  ],

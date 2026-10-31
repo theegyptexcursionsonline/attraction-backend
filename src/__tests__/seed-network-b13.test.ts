@@ -11,27 +11,22 @@ import { B02 } from '../scripts/network-sites/b02';
 import { B03A, PROGRAMMES as B03 } from '../scripts/network-sites/b03';
 import { B03B, B03C, B03D, PROGRAMMES as B03R } from '../scripts/network-sites/b03-rest';
 import { B08A, B08B, B08C, B08D } from '../scripts/network-sites/b08';
-import { B09A, B09B, B09C } from '../scripts/network-sites/b09';
+import { B09A, B09B, B09C, PROGRAMMES_A as B09AP } from '../scripts/network-sites/b09';
 import { B10A, B10B, B10C, B10D, NEW_PROGRAMMES as B10N } from '../scripts/network-sites/b10';
 import { B11A, B11B } from '../scripts/network-sites/b11';
 import { B12A, B12B } from '../scripts/network-sites/b12';
-import { B13A } from '../scripts/network-sites/b13';
+import { B13A, B13B } from '../scripts/network-sites/b13';
 import SNAPSHOT from '../scripts/network-sites/eeo-snapshot.json';
 import { isTenantBookingCreationClosed } from '../services/tenantBookingPolicy.service';
 
 const EARLIER = [B01_SAFARI, B02, B03A, B03B, B03C, B03D, B08A, B08B, B08C, B08D, B09A, B09B, B09C,
   B10A, B10B, B10C, B10D, B11A, B11B, B12A, B12B].flatMap((batch) => batch.sites);
-const GROUPS: NetworkBatch[] = [B13A];
+const GROUPS: NetworkBatch[] = [B13A, B13B];
 const B13 = GROUPS.flatMap((batch) => batch.sites);
 const siteOf = (slug: string) => B13.find((site) => site.slug === slug)!;
 
-/**
- * Batch B13 is seven sites: the four pyramid sites written here, and the three Red Sea sites of its second
- * group, which the coordinator ranks separately. `--apply` needs every one of the seven named in its
- * `--logos` file, so no part of B13 can be applied until that group is written; this test holds that open.
- */
+/** Batch B13 is seven sites: four pyramids inland, three reefs on the Red Sea. `--logos` needs every one. */
 const B13_SITES = 7;
-const PENDING_SITES = 3;
 
 /** Each new site's storefront design, from the network build queue; the storefront picks it by slug. */
 const DESIGNS: Record<string, string> = {
@@ -39,6 +34,9 @@ const DESIGNS: Record<string, string> = {
   'pyramid-of-neferefre': 'neferefre',
   'pyramid-of-djedefre': 'djedefre',
   'meidum-pyramid': 'meidum',
+  'shaab-sabina': 'shaabsabina',
+  'ras-disha': 'rasdisha',
+  'erg-somaya': 'ergsomaya',
 };
 
 /** Every new site's domain, as Fouad's list gives it. */
@@ -47,6 +45,9 @@ const DOMAINS: Record<string, string> = {
   'pyramid-of-neferefre': 'pyramidofneferefre.com',
   'pyramid-of-djedefre': 'pyramidofdjedefre.com',
   'meidum-pyramid': 'meidumpyramid.com',
+  'shaab-sabina': 'shaabsabinahurghada.com',
+  'ras-disha': 'rasdishahurghada.com',
+  'erg-somaya': 'ergsomayahurghada.com',
 };
 
 /** The admin palette each site is created with, from the batch concepts (primary / secondary / accent). */
@@ -55,6 +56,9 @@ const THEMES: Record<string, [string, string, string]> = {
   'pyramid-of-neferefre': ['#2A2826', '#F1EEE6', '#4A5A8C'],
   'pyramid-of-djedefre': ['#22303A', '#EEF2F4', '#D9773A'],
   'meidum-pyramid': ['#4B3F5C', '#F0E8D8', '#C9A227'],
+  'shaab-sabina': ['#0E5A63', '#EEF6F4', '#D9654B'],
+  'ras-disha': ['#1B3A6B', '#F2EBDD', '#E2582B'],
+  'erg-somaya': ['#12343B', '#F3F1EC', '#6B3FA0'],
 };
 
 /** The three days that drive from the Giza plateau down to Saqqara, between which Abusir lies. */
@@ -78,6 +82,20 @@ const DAHSHUR = [
   'private-day-with-lunch-and-a-nile-sail',
 ];
 const ABUSIR = ['pyramid-of-neferirkare', 'pyramid-of-neferefre'];
+const PYRAMID_SITES = ['pyramid-of-neferirkare', 'pyramid-of-neferefre', 'pyramid-of-djedefre', 'meidum-pyramid'];
+const REEF_SITES = ['shaab-sabina', 'ras-disha', 'erg-somaya'];
+/** The three days whose own records sail to Orange Bay on Big Giftun. */
+const ORANGE_BAY = [
+  'orange-bay-cruise-with-massage',
+  'orange-bay-snorkelling-and-diving-day',
+  'orange-bay-yacht-with-breakfast',
+];
+/** The three days whose own records name the Giftun islands. */
+const GIFTUN = [
+  'three-islands-by-yacht',
+  'six-islands-by-speedboat',
+  'yacht-day-with-an-introductory-dive',
+];
 
 /** What each site's own place is called, so no page can be read as selling a stop there. */
 const PLACE: Record<string, RegExp> = {
@@ -85,6 +103,9 @@ const PLACE: Record<string, RegExp> = {
   'pyramid-of-neferefre': /Pyramid of Neferefre|Abusir/i,
   'pyramid-of-djedefre': /Pyramid of Djedefre|Abu Rawash/i,
   'meidum-pyramid': /Meidum/i,
+  'shaab-sabina': /Shaab Sabina/i,
+  'ras-disha': /Ras Disha/i,
+  'erg-somaya': /Erg Somaya/i,
 };
 
 /** The one clause in which a site's trip copy may name its own place: to say it is not a stop. */
@@ -93,6 +114,9 @@ const NOT_A_STOP: Record<string, string> = {
   'pyramid-of-neferefre': ', not Abusir or the Pyramid of Neferefre; neither is on the day it sells.',
   'pyramid-of-djedefre': ', not Abu Rawash; the pyramid on the hill is no stop on it.',
   'meidum-pyramid': ', not Meidum, and no stop on the day is made there.',
+  'shaab-sabina': ', not Shaab Sabina out in the strait; no boat stops there.',
+  'ras-disha': ', not Ras Disha at the bay\u2019s northern end; the boat makes no stop there.',
+  'erg-somaya': ', not Erg Somaya off Small Giftun; nothing stops at the tower.',
 };
 
 /** The "nearest days" sentences every site's description carries, word for word. */
@@ -101,6 +125,9 @@ const NEAREST: Record<string, string> = {
   'pyramid-of-neferefre': 'All three days on sale here take the desert road from Giza down to the necropolis at Sakkara. Abusir stands a short way north of it, and neither Abusir nor the Pyramid of Neferefre is named by any of their published programmes, or visited by any of them.',
   'pyramid-of-djedefre': 'Every day on sale here halts on the Giza plateau, where Khufu\u2019s Great Pyramid stands. Abu Rawash is named in none of their published programmes, nor is the pyramid on its hill, and no day turns north towards it.',
   'meidum-pyramid': 'Each day on sale here halts at Dahshur, where two of the three great pyramids credited to Sneferu stand: the Bent Pyramid and the Red Pyramid. Meidum lies about forty-five kilometres further south, is named by none of their published programmes, and is reached by none of them.',
+  'shaab-sabina': 'All three days sold here sail to Orange Bay on Big Giftun. None of their programmes names Shaab Sabina, the reef in the strait between the two islands and under three kilometres from the bay, and none stops there.',
+  'ras-disha': 'The day sold here dives and cruises in Makadi Bay. Its programme does not name Ras Disha, the fringing reef at the bay\u2019s northern end below Sahl Hasheesh, and it makes no stop there.',
+  'erg-somaya': 'All three days sold here sail to the Giftun islands. None of their programmes names Erg Somaya, the coral tower about a kilometre off the east side of Small Giftun, and none stops there.',
 };
 
 /** Verbs that would turn a mention of the site's own place into a stop the record does not publish. */
@@ -185,35 +212,15 @@ const copyOfSite = (site: NetworkSite): Copy[] => [
   }),
 ];
 
-/** Which record each trip path on the live network belongs to; the scan records no programme of its own. */
-const LIVE_RECORD: Record<string, string> = {
-  'giza-pyramids-sakkara-and-memphis': 'giza-pyramids-sakkara-memphis-day-tour-with-nile-sail',
-  'private-day-with-lunch-and-a-nile-sail': 'giza-pyramids-sakkara-memphis-day-tour-with-nile-sail',
-  'two-private-days-in-cairo': 'secrets-of-cairo-2-day-private-sightseeing-tour',
-  'sakkara-memphis-and-dahshur-shared': 'sakkara-memphis-dahshur-giza-pyramids-day-tour',
-  'memphis-sakkara-and-dahshur': 'sakkara-memphis-dahshur-giza-pyramids-day-tour',
-  'private-sakkara-memphis-and-dahshur': 'sakkara-memphis-dahshur-giza-pyramids-day-tour',
-  'pyramids-and-an-hour-on-the-nile': 'giza-pyramids-tour-with-1-hour-nile-felucca-sail',
-  'sunrise-camel-ride-and-breakfast': 'giza-pyramids-sunrise-morning-guided-tour-with-camel-ride-breakfast',
-  'shared-sunrise-camel-ride-and-breakfast': 'giza-pyramids-sunrise-morning-guided-tour-with-camel-ride-breakfast',
-  'sunrise-or-morning-camel-ride': 'giza-pyramids-sunrise-morning-guided-tour-with-camel-ride-breakfast',
-  'private-half-day-pyramids-and-sphinx': 'giza-pyramids-great-sphinx-half-day-private-tour',
-  'half-day-pyramids-and-sphinx': 'giza-pyramids-great-sphinx-half-day-private-tour',
-  'pyramids-egyptian-museum-and-khan-el-khalili': 'private-pyramids-egyptian-museum-khan-el-khalili-tour',
-  'private-day-with-a-camel-ride-and-lunch': 'vip-giza-pyramids-experience-private-tour-camel-ride-lunch',
-  'private-day-camel-ride-and-lunch': 'vip-giza-pyramids-experience-private-tour-camel-ride-lunch',
-  'private-day-pyramids-museum-and-bazaar': 'giza-pyramids-sphinx-egyptian-museum-khan-el-khalili-bazaar-tour',
-};
-
 const LIVE = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'network-b13-existing-copy.json'), 'utf8')) as {
   readAt: string;
-  trips: Array<{ site: string; pathSlug: string; fields: string[] }>;
+  trips: Array<{ site: string; pathSlug: string; record: string; fields: string[] }>;
   tenants: Array<{ slug: string; fields: string[] }>;
 };
 
 const CORPUS: Copy[] = [
   ...EARLIER.flatMap(copyOfSite),
-  ...LIVE.trips.flatMap((trip) => trip.fields.map((text) => ({ site: trip.site, record: LIVE_RECORD[trip.pathSlug] ?? null, where: `live ${trip.pathSlug}`, text }))),
+  ...LIVE.trips.flatMap((trip) => trip.fields.map((text) => ({ site: trip.site, record: trip.record, where: `live ${trip.pathSlug}`, text }))),
   ...LIVE.tenants.flatMap((tenant) => tenant.fields.map((text) => ({ site: tenant.slug, record: null, where: 'live tenant', text: text.split(CLOSING_LINE).join(' ') }))),
 ];
 
@@ -279,14 +286,16 @@ function expectCompleteTrip(site: Pick<NetworkSite, 'foreignPlaces'>, document: 
   expect((document.needToKnow as string[]).join('\n')).toMatch(childPriced ? /have their own price/ : /pay the same price as adults/);
 }
 
-describe('batch B13: the four pyramid sites of its first group', () => {
-  it('is one valid group of four sites, none of them built before', () => {
-    expect(GROUPS.map((batch) => batch.id)).toEqual(['b13a']);
+describe('batch B13: the seven sites that take the network to 100', () => {
+  it('is two valid groups of the seven sites, none of them built before', () => {
+    expect(GROUPS.map((batch) => batch.id)).toEqual(['b13a', 'b13b']);
     for (const batch of GROUPS) expect(validateBatch(batch)).toEqual([]);
     expect(B13.map((site) => site.slug)).toEqual(Object.keys(DESIGNS));
     expect(B13.map((site) => site.name)).toEqual([
       'Pyramid of Neferirkare', 'Pyramid of Neferefre', 'Pyramid of Djedefre', 'Meidum Pyramid',
+      'Shaab Sabina', 'Ras Disha', 'Erg Somaya',
     ]);
+    expect(B13).toHaveLength(B13_SITES);
     for (const site of B13) {
       expect(site.domain).toBe(DOMAINS[site.slug]);
       expect(DESIGNS[site.slug]).toMatch(/^[a-z]+$/);
@@ -305,7 +314,7 @@ describe('batch B13: the four pyramid sites of its first group', () => {
     for (const site of B13) {
       expect(before.has(site.slug) || before.has(site.domain) || before.has(site.slugPrefix)).toBe(false);
     }
-    expect(B13.map((site) => site.slugPrefix)).toEqual(['pnk-', 'pnf-', 'djf-', 'mdp-']);
+    expect(B13.map((site) => site.slugPrefix)).toEqual(['pnk-', 'pnf-', 'djf-', 'mdp-', 'ssb-', 'rdh-', 'esy-']);
     const prefixes = B13.map((site) => site.slugPrefix);
     expect(new Set(prefixes).size).toBe(prefixes.length);
     // No site across every batch shares a title or a trip slug.
@@ -320,7 +329,7 @@ describe('batch B13: the four pyramid sites of its first group', () => {
     // All four sites sell records batches B03, B10, B11 and B12 already sell, so the one thing that must not
     // be shared is the words. No two sites anywhere on the network carry the same trip title.
     const mine = B13.flatMap((site) => site.trips.map((trip) => trip.title));
-    expect(mine).toHaveLength(14);
+    expect(mine).toHaveLength(21);
     expect(new Set(mine).size).toBe(mine.length);
     const taken = new Set([
       ...EXISTING_TITLES,
@@ -350,11 +359,16 @@ describe('batch B13: the four pyramid sites of its first group', () => {
       ['pyramid-of-djedefre', 'great-pyramid-of-cheops'],
       ['meidum-pyramid', 'pyramids-of-dahshur'],
     ]);
-    // Each site still shows three distinct photos of its own records, so none needs the shortfall note.
-    for (const site of B13) expect(site.photoShortfall).toBeUndefined();
+    // Six sites show three distinct photos of their own records; the Makadi Bay reef sells one day, which
+    // publishes one photo, so it says why it shows one.
+    for (const site of B13) {
+      if (site.slug === 'ras-disha') continue;
+      expect(site.photoShortfall).toBeUndefined();
+    }
+    expect(siteOf('ras-disha').photoShortfall).toBe('The one day this site sells publishes one photo.');
     const recordPhotos = new Set(B13.flatMap((site) => site.trips.flatMap((trip) => trip.images)));
     for (const site of B13) {
-      expect(site.heroImages).toHaveLength(3);
+      expect(site.heroImages).toHaveLength(site.photoShortfall ? 1 : 3);
       expect(new Set(site.heroImages).size).toBe(site.heroImages.length);
       for (const url of site.heroImages) expect(recordPhotos.has(url)).toBe(true);
     }
@@ -375,8 +389,11 @@ describe('batch B13: the four pyramid sites of its first group', () => {
       ['pyramid-of-neferefre', GIZA_ROAD],
       ['pyramid-of-djedefre', PLATEAU],
       ['meidum-pyramid', DAHSHUR],
+      ['shaab-sabina', ORANGE_BAY],
+      ['ras-disha', ['makadi-bay-two-guided-dives']],
+      ['erg-somaya', GIFTUN],
     ]);
-    expect(B13.reduce((total, site) => total + site.trips.length, 0)).toBe(14);
+    expect(B13.reduce((total, site) => total + site.trips.length, 0)).toBe(21);
     // The two Abusir pyramids stand in one place, so they sell exactly the same three days.
     expect(siteOf('pyramid-of-neferefre').trips.map((trip) => trip.price))
       .toEqual(siteOf('pyramid-of-neferirkare').trips.map((trip) => trip.price));
@@ -416,6 +433,22 @@ describe('batch B13: the four pyramid sites of its first group', () => {
       .find((trip) => trip.path === 'giza-pyramids-sakkara-and-memphis')!;
     expect(scheduleOf(noDahshur)).not.toMatch(/Dahshur/);
     expect(siteOf('meidum-pyramid').trips.map((trip) => trip.price)).not.toContain(noDahshur.price);
+    // The reefs are judged on each record's own published words, kept beside this test: Shaab Sabina's days
+    // name Orange Bay, Erg Somaya's name the Giftun islands, and the Makadi Bay reef's day names its bay.
+    for (const trip of siteOf('shaab-sabina').trips) {
+      expect(JSON.stringify(RECORDS[trip.price.source])).toMatch(/orange bay|orange island/i);
+    }
+    for (const trip of siteOf('erg-somaya').trips) {
+      expect(JSON.stringify(RECORDS[trip.price.source])).toMatch(/giftun/i);
+    }
+    for (const trip of siteOf('ras-disha').trips) {
+      expect(JSON.stringify(RECORDS[trip.price.source])).toMatch(/makadi bay/i);
+    }
+    // The two Giftun reefs share not one day: a reef sells the days its own strait or island is nearest to.
+    const sabina = new Set(siteOf('shaab-sabina').trips.map((trip) => trip.price));
+    expect(siteOf('erg-somaya').trips.filter((trip) => sabina.has(trip.price))).toEqual([]);
+    const sabinaRecords = new Set(siteOf('shaab-sabina').trips.map((trip) => trip.price.source));
+    expect(siteOf('erg-somaya').trips.filter((trip) => sabinaRecords.has(trip.price.source))).toEqual([]);
   });
 
   it('says on every page what the programme names, and never that the place is a stop', () => {
@@ -465,7 +498,10 @@ describe('batch B13: the four pyramid sites of its first group', () => {
     const copiedMoney = B13.flatMap((site) => built(site, site.trips))
       .flatMap((document) => [...document.inclusions, ...document.exclusions, ...document.needToKnow, ...document.whatToBring] as string[])
       .filter((line) => /[$€£]\s?\d|\b\d+\s?(?:USD|EUR|EGP)\b/.test(line));
-    expect([...new Set(copiedMoney)].sort()).toEqual([]);
+    // One copied line names a sum: the nature reserve fee the yacht day's own record lists as included, which
+    // batch B09's Hurghada boat site already publishes word for word. Named here so a changed record cannot
+    // introduce another unnoticed, and left as the record writes it rather than reworded.
+    expect([...new Set(copiedMoney)].sort()).toEqual(['Nature reserve fee: $5']);
     // Every price a guest sees is the published one, copied at build time.
     for (const site of B13) for (const document of built(site, site.trips)) {
       const found = tour((site.trips.find((trip) => `${site.slugPrefix}${trip.path}` === document.slug)!).price.source)!;
@@ -496,7 +532,7 @@ describe('batch B13: the four pyramid sites of its first group', () => {
   it('builds every trip into a complete trip', () => {
     let count = 0;
     for (const site of B13) for (const document of built(site, site.trips)) { expectCompleteTrip(site, document); count += 1; }
-    expect(count).toBe(14);
+    expect(count).toBe(21);
   });
 
   it('writes no programme of its own: every one is the batch that first sold the record', () => {
@@ -511,6 +547,13 @@ describe('batch B13: the four pyramid sites of its first group', () => {
       ['private-half-day-pyramids-and-sphinx', B03.GPP_HALF_DAY],
       ['pyramids-egyptian-museum-and-khan-el-khalili', B03.PGE_BAZAAR],
       ['private-day-with-a-camel-ride-and-lunch', B03R.PCT_CAMEL_LUNCH],
+      ['orange-bay-cruise-with-massage', B09AP.HBT_ORANGE_MASSAGE],
+      ['orange-bay-snorkelling-and-diving-day', B09AP.HBT_ORANGE_DIVE],
+      ['orange-bay-yacht-with-breakfast', B09AP.HBT_ORANGE_YACHT],
+      ['makadi-bay-two-guided-dives', B09AP.D2E_MAKADI_DIVES],
+      ['three-islands-by-yacht', B09AP.HBT_THREE_ISLANDS],
+      ['six-islands-by-speedboat', B09AP.HBT_SIX_ISLANDS],
+      ['yacht-day-with-an-introductory-dive', B09AP.HBT_INTRO_DIVE_YACHT],
     ];
     for (const [tripPath, programme] of reused) {
       const trips = B13.flatMap((site) => site.trips).filter((trip) => trip.path === tripPath);
@@ -518,10 +561,10 @@ describe('batch B13: the four pyramid sites of its first group', () => {
       // The same object, so the network says the same thing about the same trip wherever it is sold.
       for (const trip of trips) expect(trip.price).toBe(programme);
     }
-    const earlier = new Set<unknown>([...Object.values(B03), ...Object.values(B03R), ...Object.values(B10N)]);
+    const earlier = new Set<unknown>([...Object.values(B03), ...Object.values(B03R), ...Object.values(B09AP), ...Object.values(B10N)]);
     expect(B13.flatMap((site) => site.trips).filter((trip) => !earlier.has(trip.price))).toEqual([]);
-    // Ten programmes, and the batch adds none: the file exports its group and nothing else.
-    expect(new Set(B13.flatMap((site) => site.trips).map((trip) => trip.price)).size).toBe(10);
+    // Seventeen programmes, and the batch adds none: the file exports its two groups and nothing else.
+    expect(new Set(B13.flatMap((site) => site.trips).map((trip) => trip.price)).size).toBe(17);
   });
 
   it('holds each held-back record to the reason the batch gives', () => {
@@ -567,14 +610,52 @@ describe('batch B13: the four pyramid sites of its first group', () => {
     expect(sold.has(cheaper.slug)).toBe(true);
     expect((dearer.options as Array<Record<string, any>>)[0].guestPrices.adult)
       .toBeGreaterThan((cheaper.options as Array<Record<string, any>>)[0].guestPrices.adult);
+    // The two submarine cruises the Makadi Bay reef was given are published by the client but are not in the
+    // dated snapshot this batch builds from, so neither can be sold without reading the record in first.
+    for (const slug of [
+      'safaga-makadi-bay-semi-submarine-snorkeling-adventure',
+      'safaga-makadi-bay-royal-seascope-submarine-cruise-with-hotel-pickup',
+    ]) {
+      expect(tour(slug)).toBeUndefined();
+      expect(sold.has(slug)).toBe(false);
+    }
+    // The Orange Bay cruise with a massage publishes a price where its length should be ("$$69"), so the day
+    // has no published duration to copy and nothing here types one.
+    const noDuration = tour('hurghada-orange-bay-snorkeling-diving-cruise-with-massage')!;
+    expect(noDuration.detail.duration).toBe('$$69');
+    expect(sold.has(noDuration.slug)).toBe(false);
+    // The Orange Island premium cruise names Orange Bay and no Giftun island, so it cannot carry the Giftun
+    // reef's page, and the two Giftun reefs may not share a day, so it is sold on neither.
+    const orangeOnly = tour('orange-island-premium-cruise-from-hurghada-with-lunch-transfer')!;
+    expect(JSON.stringify(orangeOnly)).not.toMatch(/giftun/i);
+    expect(sold.has(orangeOnly.slug)).toBe(false);
   });
 
   it('starts each site where its own trips start', () => {
-    for (const site of B13) {
+    for (const slug of PYRAMID_SITES) {
+      const site = siteOf(slug);
       expect([site.city, site.pickupDestination, site.area]).toEqual(['Cairo', 'cairo', 'Cairo or Giza']);
       expect(site.coordinates).toEqual({ lat: 30.0444, lng: 31.2357 });
       for (const trip of site.trips) expect(trip.where).toBeUndefined();
       for (const document of built(site, site.trips)) expect(document.meetingPoint.address).toBe('Your hotel in Cairo or Giza');
+    }
+    // The three reefs follow the Hurghada boat site of batch B09: the same town, pickup area and coordinates.
+    const boats = B09A.sites.find((item) => item.slug === 'hurghada-boat-tour')!;
+    for (const slug of REEF_SITES) {
+      const site = siteOf(slug);
+      expect([site.city, site.pickupDestination, site.area]).toEqual(['Hurghada', 'hurghada', 'Hurghada']);
+      expect(site.coordinates).toEqual(boats.coordinates);
+    }
+    // Its one day collects in Makadi Bay, where the record collects, so that trip says where it starts.
+    const dives = siteOf('ras-disha').trips[0];
+    expect(dives.where).toEqual({ city: 'Makadi Bay', area: 'Makadi Bay', coordinates: { lat: 26.9806, lng: 33.9056 } });
+    for (const document of built(siteOf('ras-disha'), [dives])) {
+      expect(document.meetingPoint.address).toBe('Your hotel in Makadi Bay');
+      expect(document.destination.city).toBe('Makadi Bay');
+    }
+    for (const slug of ['shaab-sabina', 'erg-somaya']) {
+      for (const trip of siteOf(slug).trips) expect(trip.where).toBeUndefined();
+      for (const document of built(siteOf(slug), siteOf(slug).trips)) expect(document.meetingPoint.address).toBe('Your hotel in Hurghada');
     }
   });
 
@@ -598,21 +679,17 @@ describe('batch B13: the four pyramid sites of its first group', () => {
     });
     const complete = Object.fromEntries(B13.map((site) => [site.slug, good(site.slug)]));
     for (const batch of GROUPS) expect(logoProblems(batch, complete)).toEqual([]);
-    // Every site of a group is required: a file missing any single one refuses the group it belongs to.
+    // Every one of the seven is required: a file missing any single site refuses the group it belongs to.
+    expect(Object.keys(complete)).toHaveLength(B13_SITES);
     for (const site of B13) {
       const { [site.slug]: _dropped, ...withoutOne } = complete;
-      expect(logoProblems(B13A, withoutOne)).toEqual([`${site.slug}: no logo entry.`]);
+      const batch = B13A.sites.includes(site) ? B13A : B13B;
+      expect(logoProblems(batch, withoutOne)).toEqual([`${site.slug}: no logo entry.`]);
     }
     expect(logoProblems(B13A, { ...complete, 'meidum-pyramid': { ...good('meidum-pyramid'), favicon: '' } }))
       .toEqual(['meidum-pyramid: favicon is missing.']);
-    expect(logoProblems(B13A, { ...complete, 'pyramid-of-djedefre': { ...good('pyramid-of-djedefre'), logoDark: 'https://example.com/logo.png' } }))
-      .toEqual(["pyramid-of-djedefre: logoDark must already be on the network's Cloudinary: https://example.com/logo.png"]);
-    // Batch B13 is seven sites, and `--logos` must name every one of them. Four are written, so a complete
-    // book cannot exist yet: the three Red Sea sites of the second group are still to come, and until they
-    // are written no `--logos` file can cover the whole batch.
-    expect(B13).toHaveLength(B13_SITES - PENDING_SITES);
-    expect(Object.keys(complete)).toHaveLength(B13_SITES - PENDING_SITES);
-    expect(B13_SITES - Object.keys(complete).length).toBe(PENDING_SITES);
+    expect(logoProblems(B13B, { ...complete, 'erg-somaya': { ...good('erg-somaya'), logoDark: 'https://example.com/logo.png' } }))
+      .toEqual(["erg-somaya: logoDark must already be on the network's Cloudinary: https://example.com/logo.png"]);
   });
 
   it('repeats no sentence another site on the network already publishes', () => {
@@ -660,8 +737,12 @@ describe('batch B13: the four pyramid sites of its first group', () => {
     // The corpus is the dated scan plus every earlier batch, so this cannot pass by comparing against nothing.
     expect(LIVE.readAt).toBe('2026-10-31T06:56:04Z');
     expect(LIVE.tenants).toHaveLength(121);
+    // Every record this batch sells has its live copy in the corpus, so nothing is compared against nothing.
+    const covered = new Set(LIVE.trips.map((trip) => trip.record));
+    const sold = [...new Set(B13.flatMap((site) => site.trips).map((trip) => trip.price.source))];
+    expect(sold.filter((record) => !covered.has(record))).toEqual([]);
     expect(CORPUS.length).toBeGreaterThan(4000);
-    expect(mine.length).toBeGreaterThan(150);
+    expect(mine.length).toBeGreaterThan(200);
   });
 
   it('counts the trips its copy names', () => {
@@ -669,7 +750,9 @@ describe('batch B13: the four pyramid sites of its first group', () => {
       const copy = [site.tagline, site.description, site.seo.metaTitle, site.seo.metaDescription, ...site.seo.keywords].join('\n');
       for (const count of statedTripCounts(copy)) expect(count).toBe(site.trips.length);
     }
-    // The Djedefre site is the one that counts its days out loud, so the count is held to its catalogue.
+    // Three sites count their days out loud, so each count is held to that site's own catalogue.
     expect(statedTripCounts(siteOf('pyramid-of-djedefre').description)).toEqual([5]);
+    expect(statedTripCounts(siteOf('shaab-sabina').description)).toEqual([3]);
+    expect(statedTripCounts(siteOf('erg-somaya').description)).toEqual([3]);
   });
 });

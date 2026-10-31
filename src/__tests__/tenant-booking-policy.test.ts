@@ -46,9 +46,9 @@ describe('tenant booking-creation closure policy', () => {
       'mangrove-forest-egypt']) {
       expect(isTenantBookingCreationClosed({ slug })).toBe(true);
     }
-    // Batch B13's sites are closed the same way; its second group's three are added with that group.
+    // Batch B13's seven sites are closed the same way, until each domain is connected and the owner opens it.
     for (const slug of ['pyramid-of-neferirkare', 'pyramid-of-neferefre', 'pyramid-of-djedefre',
-      'meidum-pyramid']) {
+      'meidum-pyramid', 'shaab-sabina', 'ras-disha', 'erg-somaya']) {
       expect(isTenantBookingCreationClosed({ slug })).toBe(true);
     }
     expect(() => assertTenantBookingCreationAllowed({ slug: 'king-of-egypt-tours' }))
@@ -90,8 +90,9 @@ describe('tenant booking-creation closure policy', () => {
         // Batch B12's nine monument sites and its mangrove site, closed the same way.
         'imhotep-museum', 'serapeum-of-saqqara', 'pyramid-of-teti', 'pyramid-of-unas', 'pyramid-of-userkaf',
         'tomb-of-nefer', 'buried-pyramid', 'pyramid-of-pepi-ii', 'pyramid-of-sahure', 'mangrove-forest-egypt',
-        // Batch B13's first group: the two pyramids of Abusir, Abu Rawash and Meidum, closed the same way.
+        // Batch B13's seven: the two pyramids of Abusir, Abu Rawash, Meidum and the three Red Sea reefs.
         'pyramid-of-neferirkare', 'pyramid-of-neferefre', 'pyramid-of-djedefre', 'meidum-pyramid',
+        'shaab-sabina', 'ras-disha', 'erg-somaya',
       ] },
     });
 

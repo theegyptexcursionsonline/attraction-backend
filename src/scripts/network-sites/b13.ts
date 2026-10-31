@@ -4,7 +4,8 @@
  *
  * - B13A: Pyramid of Neferirkare, Pyramid of Neferefre (both at Abusir), Pyramid of Djedefre (Abu Rawash) and
  *   the Meidum Pyramid.
- * - B13B: the three Red Sea sites, which the coordinator ranks separately.
+ * - B13B: Shaab Sabina (the reef in the strait between the two Giftun islands), Ras Disha (the fringing reef
+ *   at the northern end of Makadi Bay) and Erg Somaya (the coral tower off Small Giftun).
  *
  * Every trip is built on the record the client publishes on its own main site, read into the dated snapshot
  * (`network-sites/eeo-snapshot.json`); prices, child rates, departures and inclusions are copied from that
@@ -47,9 +48,14 @@
  *   are the three the Pyramid of Pepi II sells in batch B12 and the three the Pyramids of Dahshur site sells,
  *   and the client publishes no fourth day that reaches Dahshur.
  *
- * Every programme this batch sells was already written by an earlier batch (`b03`, `b03-rest`, `b10`), so this
- * batch imports them rather than restating them: the same options, departures, renames and schedules, so the
- * network says the same thing about the same trip wherever it is sold. No programme is new here.
+ * - The three reefs lie off days the client sells from Hurghada and Makadi Bay, so each takes the sea days its
+ *   own water is nearest to: Shaab Sabina the days that sail to Orange Bay on Big Giftun, Erg Somaya the days
+ *   that sail to the Giftun islands, and Ras Disha the diving day that works Makadi Bay. The two Giftun reefs
+ *   share not one day between them, and no reef site sells a desert day: a reef sells sea days.
+ *
+ * Every programme this batch sells was already written by an earlier batch (`b03`, `b03-rest`, `b09`, `b10`), so
+ * this batch imports them rather than restating them: the same options, departures, renames and schedules, so
+ * the network says the same thing about the same trip wherever it is sold. No programme is new here.
  *
  * What the coordinator settled on 31 October, kept here so a later batch does not re-open it:
  * - These four sites sell records that batches B03, B10, B11 and B12 already sell, because the client's days
@@ -62,6 +68,12 @@
  *   opens on, and the three Saqqara photographs are spread across the three sites that share them rather than
  *   repeated. Accepted for now: every photo here is replaceable the moment the client supplies each site's own,
  *   and nothing but the photo lists and their descriptions change.
+ * - The three reefs follow the Hurghada boat site of batch B09 for their town, pickup area and coordinates, and
+ *   two of them for its fence as well. Ras Disha keeps the same fence with Makadi Bay and Sahl Hasheesh let
+ *   through: its own reef lies at the northern end of that bay below Sahl Hasheesh, and the day it sells
+ *   collects in Makadi Bay, where that record collects, so its one trip says so.
+ * - Ras Disha sells one day, so its page says "the day sold here" where the other six say "the days": the two
+ *   other Makadi Bay days the coordinator listed are held back (below), and nothing else in its sentence moved.
  * - The Pyramid of Djedefre keeps the tighter fence of batch B10's single-pyramid sites rather than B12A's:
  *   not one of its five days goes south of Giza, so Saqqara, Memphis and Dahshur are names this site never
  *   uses either. The two Abusir sites and the Meidum Pyramid keep B12A's fence, because their days do run
@@ -94,15 +106,30 @@
  * - `giza-pyramids-sunrise-morning-guided-tour-with-camel-ride-breakfast`, its private option: it leaves at
  *   other times than the shared one, so batch B03 wrote the two as separate programmes, and the Djedefre site
  *   sells the cheaper of them. The private ride is the same day at more than twice the published price.
+ * - `safaga-makadi-bay-semi-submarine-snorkeling-adventure` and
+ *   `safaga-makadi-bay-royal-seascope-submarine-cruise-with-hotel-pickup`: both are on the client's published
+ *   list, read 31 October, but neither is in the dated snapshot this batch builds from, so neither has a record
+ *   to copy prices, options and departures from. Ras Disha would have sold three days rather than one. Reading
+ *   the two records into the shared snapshot is a question for the coordinator; nothing here types a price.
+ *   Both also pair Safaga with Makadi Bay, which a reef at the northern end of that bay does not serve.
+ * - `hurghada-orange-bay-snorkeling-diving-cruise-with-massage`: the client publishes a price where the day's
+ *   length should be, so the record carries no duration to copy and nothing here invents one. Shaab Sabina
+ *   would have sold four days rather than three. The record is otherwise complete, so this is one field for
+ *   the client to correct.
+ * - `orange-island-premium-cruise-from-hurghada-with-lunch-transfer`: its own record names Orange Bay and the
+ *   Orange Island entry fee, and no Giftun island, so it does not carry the Giftun tower's page. It is not
+ *   moved to Shaab Sabina either, because the two Giftun reefs share no day. Erg Somaya would have sold four.
  *
- * Photos are the ones each record publishes, already on the network's Cloudinary. Copying them into a
- * network-b13 folder, each site's own photos and the seven logos are open questions: `--apply` refuses to run
- * without `--logos=<file>` naming every site's approved logo, logoDark and favicon, and the file must name all
- * seven, so no part of batch B13 can be applied until its second group is written.
+ * Photos are the ones each record publishes, already on the network's Cloudinary; the seven sea photographs are
+ * the ones batch B09 chose for the same records, with that batch's own descriptions. Ras Disha sells one day,
+ * which publishes one photo, so it says why it opens on one rather than three. Copying them into a network-b13
+ * folder, each site's own photos and the seven logos are open questions: `--apply` refuses to run without
+ * `--logos=<file>` naming every site's approved logo, logoDark and favicon, for all seven sites.
  */
 import type { NetworkBatch, PriceSpec } from '../seed-network-sites';
 import { PROGRAMMES as B03 } from './b03';
 import { PROGRAMMES as B03R } from './b03-rest';
+import { PROGRAMMES_A as B09A } from './b09';
 import { NEW_PROGRAMMES as B10N } from './b10';
 
 /** Every programme this batch sells. All ten were written by the batch that first sold the record. */
@@ -117,6 +144,13 @@ const P = {
   HALF_DAY: B03.GPP_HALF_DAY,
   BAZAAR_PRIVATE: B03.PGE_BAZAAR,
   CAMEL_LUNCH: B03R.PCT_CAMEL_LUNCH,
+  ORANGE_MASSAGE: B09A.HBT_ORANGE_MASSAGE,
+  ORANGE_DIVE: B09A.HBT_ORANGE_DIVE,
+  ORANGE_YACHT: B09A.HBT_ORANGE_YACHT,
+  MAKADI_DIVES: B09A.D2E_MAKADI_DIVES,
+  THREE_ISLANDS: B09A.HBT_THREE_ISLANDS,
+  SIX_ISLANDS: B09A.HBT_SIX_ISLANDS,
+  INTRO_DIVE_YACHT: B09A.HBT_INTRO_DIVE_YACHT,
 } satisfies Record<string, PriceSpec>;
 
 /**
@@ -133,6 +167,13 @@ const PHOTO = {
   threePyramids: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1787780674/tours/cyqhwwakyack600gfghk.jpg',
   felucca: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1787781643/tours/ppovupzztby04d2o9wqq.jpg',
   pyramidsOverDunes: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788891906/tours/idsqp9obgnragpxbmjpp.jpg',
+  orangeBayBeach: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788289814/tours/mqucr1dumbvdnyqejzc6.jpg',
+  diverDescending: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788292330/tours/qgmeqrxj4kngqfei9snq.jpg',
+  bowOverLagoon: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1787782233/tours/wirlheh3pj6ibboavetn.jpg',
+  whiteDiveYacht: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788292140/tours/od1x6rhlyxx6fz6atv12.jpg',
+  yachtAtSunset: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1787781893/tours/uaguqygoeo7djujix5fy.jpg',
+  snorkellerSelfie: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788291087/tours/a5hjhquanje6nm8wbsbf.jpg',
+  diverOnReef: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788795165/tours/qrhdatgwm8zww53clwpq.jpg',
 };
 
 /** Each photo described as it is, not as the trip it illustrates, in the words the earlier batches used. */
@@ -145,9 +186,21 @@ const ALT: Record<keyof typeof PHOTO, string> = {
   threePyramids: 'The three Giza pyramids under a blue sky with white cloud, the smaller queens’ pyramids and loose blocks in front and rippled sand in the foreground',
   felucca: 'A felucca under a tall white sail carrying passengers on the river, with more feluccas and a moored river boat along the far bank',
   pyramidsOverDunes: 'Three pyramids on the horizon at sunset, seen across rippled sand dunes under a pink and orange sky',
+  orangeBayBeach: 'A beach club of wooden decks and terraces on a sandy shore, with shallow turquoise water in front',
+  diverDescending: 'A scuba diver descending through blue water above a reef, with other divers below',
+  bowOverLagoon: 'The white bow of a boat heading across a turquoise lagoon towards a low sandy shore',
+  whiteDiveYacht: 'A large white diving yacht moored in clear shallow water',
+  yachtAtSunset: 'A motor yacht in silhouette on the sea under an orange sunset, with hills on the horizon',
+  snorkellerSelfie: 'A snorkeller in a mask taking a photo of himself underwater above a coral reef',
+  diverOnReef: 'A scuba diver with arms spread over a coral reef, with striped fish nearby',
 };
 
 const CAIRO = { lat: 30.0444, lng: 31.2357 };
+const HURGHADA = { lat: 27.2579, lng: 33.8116 };
+const MAKADI = { lat: 26.9806, lng: 33.9056 };
+
+/** The Makadi Bay diving day collects where its own record collects, as batch B09's diving site sells it. */
+const FROM_MAKADI = { city: 'Makadi Bay', area: 'Makadi Bay', coordinates: MAKADI };
 
 /**
  * Places the two Abusir sites and the Meidum Pyramid never name. Their days run between Cairo, Giza, Sakkara,
@@ -159,6 +212,17 @@ const NOT_SOUTH_OF_GIZA = /Hurghada|Sharm|Dahab|Nabq|Tiran|Ras Mohamed|Marsa Ala
  * stays on the plateau and in Cairo, so the necropolis south of Giza is a name it never uses either.
  */
 const NOT_OFF_THE_PLATEAU = /Hurghada|Sharm|Dahab|Nabq|Tiran|Ras Mohamed|Marsa Alam|Quseir|Ghalib|Safaga|Soma Bay|Makadi|Gouna|Sahl|Luxor|Aswan|Alexandria|Siwa|Bahariya|Fayoum|Saqqara|Sakkara|Memphis|Dahshur/i;
+/**
+ * Places the two Giftun reef sites never name: their boats leave Hurghada for the islands off it, exactly as
+ * the Hurghada boat site of batch B09 does, so that batch's fence is the fence here.
+ */
+const NOT_HURGHADA_BOATS = /Cairo|Giza|Luxor|Aswan|Sharm|Dahab|Nabq|Tiran|Ras Mohamed|Marsa Alam|Quseir|Ghalib|Safaga|Soma Bay|Gouna|Sahl|Makadi|Alexandria|Siwa|Bahariya|Fayoum|Sataya|Samadai/i;
+/**
+ * The Makadi Bay reef keeps the same fence with Makadi Bay and Sahl Hasheesh let through: its own reef lies at
+ * the northern end of that bay below Sahl Hasheesh, and the day it sells collects in Makadi Bay, so both names
+ * are its own to use. Every other town on the coast is still kept out.
+ */
+const NOT_MAKADI_REEF = /Cairo|Giza|Luxor|Aswan|Sharm|Dahab|Nabq|Tiran|Ras Mohamed|Marsa Alam|Quseir|Ghalib|Safaga|Soma Bay|Gouna|Alexandria|Siwa|Bahariya|Fayoum|Sataya|Samadai/i;
 
 /** The closing line every B11 and B12 site ends on, and every site here: what is included, and how to book. */
 const CLOSING = 'Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.';
@@ -530,6 +594,223 @@ export const B13A: NetworkBatch = {
           },
           images: [PHOTO.feluccasAtCairo],
           imageAlts: [ALT.feluccasAtCairo],
+        },
+      ],
+    },
+  ],
+};
+
+/** B13B: the reef in the Giftun strait, the fringing reef off Makadi Bay and the coral tower off Small Giftun. */
+export const B13B: NetworkBatch = {
+  id: 'b13b',
+  sites: [
+    {
+      slug: 'shaab-sabina',
+      name: 'Shaab Sabina',
+      listingPath: '/trips',
+      domain: 'shaabsabinahurghada.com',
+      city: 'Hurghada',
+      area: 'Hurghada',
+      pickupDestination: 'hurghada',
+      coordinates: HURGHADA,
+      currency: 'USD',
+      slugPrefix: 'ssb-',
+      foreignPlaces: NOT_HURGHADA_BOATS,
+      tagline: 'Orange Bay days across the Giftun strait',
+      description: `Shaab Sabina is a shallow reef that juts east off Big Giftun as a tongue of coral, out in the strait between Big Giftun and Small Giftun. Twelve to fourteen metres is as deep as it goes, and the draw is a coral garden that spills from the crest down a drop-off to a seabed about fourteen metres below, hard corals piled one on another. North of the main reef the ground breaks into a maze of coral ergs and ridges with sand between them; boats tie up along the southern side, and the site is built for drift dives, with turtles, large pufferfish and parrotfish recorded on it.\n\nAll three days sold here sail to Orange Bay on Big Giftun. None of their programmes names Shaab Sabina, the reef in the strait between the two islands and under three kilometres from the bay, and none stops there. One is a cruise boat with a massage and a buffet, one adds a scuba dive, and one goes by yacht with breakfast. ${CLOSING}`,
+      seo: {
+        metaTitle: 'Shaab Sabina: Orange Bay Days from Hurghada',
+        metaDescription: 'Boat days out of Hurghada to Orange Bay on Big Giftun, with a snorkelling stop, a scuba dive or a yacht breakfast, and a car from your hotel.',
+        keywords: ['shaab sabina reef hurghada', 'orange bay day trip from hurghada', 'giftun strait coral garden', 'orange bay snorkelling and diving', 'hurghada boat day with hotel pickup'],
+      },
+      theme: { primaryColor: '#0E5A63', secondaryColor: '#EEF6F4', accentColor: '#D9654B' },
+      heroImages: [PHOTO.orangeBayBeach, PHOTO.bowOverLagoon, PHOTO.diverDescending],
+      logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/shaab-sabina/monogram.png',
+      trips: [
+        {
+          path: 'orange-bay-cruise-with-massage',
+          price: P.ORANGE_MASSAGE,
+          title: 'Eight and a Half Hours Out to Orange Bay',
+          short: 'A whole day on a cruise boat: a snorkelling stop with the gear handed out, time on the white beach, a massage each and an open buffet.',
+          description: 'The boat has the whole day for it, out across the water and back. A snorkelling stop comes with the gear and the life jackets handed out, then seventy-five minutes ashore on the white beach of Orange Bay Island, and one massage for every guest. The programme names the open water, Orange Bay and the Giftun islands, not Shaab Sabina out in the strait; no boat stops there.\n\nAn open buffet is laid out with salads and fruit, and soft drinks, hot drinks and snacks are unlimited; the marine fee and the life jackets are in the price. What you buy on the island is not. Children have their own price, and a car calls at your Hurghada hotel at half past seven.',
+          highlights: [
+            'A snorkelling stop, gear handed out',
+            'Seventy-five minutes on the white beach',
+            'One massage for every guest',
+            'An open buffet, drinks unlimited',
+          ],
+          seo: {
+            metaTitle: 'Eight and a Half Hours Out to Orange Bay',
+            metaDescription: 'A whole cruise-boat day to Orange Bay: a snorkelling stop with the gear, time on the beach, a massage each and an open buffet.',
+          },
+          images: [PHOTO.orangeBayBeach],
+          imageAlts: [ALT.orangeBayBeach],
+        },
+        {
+          path: 'orange-bay-snorkelling-and-diving-day',
+          price: P.ORANGE_DIVE,
+          title: 'Two Ways Into the Water, and Orange Bay Between',
+          short: 'One boat day with both: snorkelling with the gear provided and a scuba dive with the equipment, plus a stop at Orange Bay and lunch aboard.',
+          description: 'Snorkel and dive on the same ticket. The boat sails out towards Giftun, puts in at Orange Bay Island for seventy-five minutes, and gives the rest of the day to a snorkel with the gear and a scuba dive with the full equipment. The programme names Giftun Island and Orange Bay, not Shaab Sabina out in the strait; no boat stops there.\n\nLunch is an open buffet on board with soft and hot drinks, and the guide, the life vest and the marine fee are all counted in. Children have their own price, and the transfer runs both ways from your hotel in Hurghada.',
+          highlights: [
+            'Snorkelling with the gear provided',
+            'A scuba dive, equipment included',
+            'Seventy-five minutes at Orange Bay',
+            'An open buffet lunch aboard',
+          ],
+          seo: {
+            metaTitle: 'Snorkel and Dive in One Day, with Orange Bay',
+            metaDescription: 'A boat day with snorkelling gear, the diving equipment, a stop at Orange Bay Island, and a buffet served aboard, from your Hurghada hotel.',
+          },
+          images: [PHOTO.diverDescending],
+          imageAlts: [ALT.diverDescending],
+        },
+        {
+          path: 'orange-bay-yacht-with-breakfast',
+          price: P.ORANGE_YACHT,
+          title: 'By Yacht to Orange Bay: Five Hours or Eight',
+          short: 'The same yacht day at two lengths: breakfast and one stop in five hours, or breakfast, lunch and two stops in eight.',
+          description: 'Two lengths of one yacht day, and you pick when you book. Five hours brings a breakfast buffet, a single snorkelling stop and an hour on the island; eight hours adds lunch, a second stop and a second hour ashore. The programme names Giftun Island and Orange Bay, not Shaab Sabina out in the strait; no boat stops there.\n\nThe snorkelling equipment, the island entry fees and the marine tax come with either length, and a guide is on each boat with another for anyone who does not swim. Children are priced separately, and the yacht casts off at half past eight, once the car has been round the Hurghada hotels.',
+          highlights: [
+            'Five hours, or eight with lunch',
+            'A breakfast buffet as you sail',
+            'One snorkelling stop, or two',
+            'A guide for anyone not swimming',
+          ],
+          seo: {
+            metaTitle: 'Orange Bay by Yacht: Five Hours, or Eight',
+            metaDescription: 'A yacht to Orange Bay at two lengths: breakfast and one snorkelling stop in five hours, or breakfast, lunch and two stops in eight.',
+          },
+          images: [PHOTO.bowOverLagoon],
+          imageAlts: [ALT.bowOverLagoon],
+        },
+      ],
+    },
+    {
+      slug: 'ras-disha',
+      name: 'Ras Disha',
+      listingPath: '/trips',
+      domain: 'rasdishahurghada.com',
+      city: 'Hurghada',
+      area: 'Hurghada',
+      pickupDestination: 'hurghada',
+      coordinates: HURGHADA,
+      currency: 'USD',
+      slugPrefix: 'rdh-',
+      foreignPlaces: NOT_MAKADI_REEF,
+      photoShortfall: 'The one day this site sells publishes one photo.',
+      tagline: 'A diving day on the Makadi Bay wall',
+      description: `Ras Disha is a fringing reef on the coast at the northern end of Makadi Bay. A shallow plateau on sandy ground carries pinnacles split by cracks, with an oval coral erg at its southern end, and the pinnacles hold caverns packed with glassfish. To the north-west that plateau narrows into a slim shelf which opens onto a steep wall, and a beacon on the main reef marks where the drift dives begin, running north along it. Butterflyfish, bannerfish and parrotfish work the wall, blue-spotted stingrays and gobies the sand, scorpionfish and groupers hunt the glassfish, and crocodilefish and roaming turtles keep to the main reef.\n\nThe day sold here dives and cruises in Makadi Bay. Its programme does not name Ras Disha, the fringing reef at the bay’s northern end below Sahl Hasheesh, and it makes no stop there. It is a full day aboard a diving boat: two guided dives with the kit, a buffet lunch between them, and a car to the marina and back. ${CLOSING}`,
+      seo: {
+        metaTitle: 'Ras Disha: a Makadi Bay Diving Boat Day',
+        metaDescription: 'A full day aboard a diving boat in Makadi Bay, with two guided dives, the whole kit and a buffet lunch, collected from your hotel in the bay.',
+        keywords: ['ras disha reef makadi bay', 'makadi bay diving boat day', 'drift dive wall makadi bay', 'two guided dives red sea', 'makadi bay diving with hotel pickup'],
+      },
+      theme: { primaryColor: '#1B3A6B', secondaryColor: '#F2EBDD', accentColor: '#E2582B' },
+      heroImages: [PHOTO.whiteDiveYacht],
+      logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/ras-disha/monogram.png',
+      trips: [
+        {
+          path: 'makadi-bay-two-guided-dives',
+          price: P.MAKADI_DIVES,
+          title: 'A Diving Boat, Two Reefs, One Long Day',
+          short: 'Out of the marina at a quarter to eight for two guided dives on two reefs, with the whole kit, an instructor and a buffet lunch aboard.',
+          description: 'The boat casts off at a quarter to eight and the day is built around two dives, one on each of two reefs, with the briefing and the kit set up as it leaves. An instructor and crew are aboard and the full equipment comes with the price. The programme names Makadi Bay and its reefs, not Ras Disha at the bay’s northern end; the boat makes no stop there.\n\nA buffet lunch falls between the two dives, with soft drinks and bottled water. A car runs you from your Makadi Bay hotel to the marina and home again; being fetched from outside the bay is not part of this price. Children pay their own rate, and the team will say whether these dives suit your level before you book.',
+          highlights: [
+            'Two guided dives on two reefs',
+            'The full equipment, kit set up aboard',
+            'A buffet lunch between the dives',
+            'An instructor and crew on the boat',
+          ],
+          seo: {
+            metaTitle: 'A Diving Boat, Two Reefs, One Long Day',
+            metaDescription: 'Out of Makadi Bay at a quarter to eight: two guided dives on two reefs, the whole kit, an instructor aboard and a buffet lunch between them.',
+          },
+          images: [PHOTO.whiteDiveYacht],
+          imageAlts: [ALT.whiteDiveYacht],
+          where: FROM_MAKADI,
+        },
+      ],
+    },
+    {
+      slug: 'erg-somaya',
+      name: 'Erg Somaya',
+      listingPath: '/trips',
+      domain: 'ergsomayahurghada.com',
+      city: 'Hurghada',
+      area: 'Hurghada',
+      pickupDestination: 'hurghada',
+      coordinates: HURGHADA,
+      currency: 'USD',
+      slugPrefix: 'esy-',
+      foreignPlaces: NOT_HURGHADA_BOATS,
+      tagline: 'Island days off the smaller Giftun',
+      description: `Erg Somaya is a coral tower rising from a shelf off the east side of Small Giftun, the smaller of the two Giftun islands, a little north of the Gorgonia Garden site. It opens as a vertical wall that runs onto the shelf the tower stands on, then turns into a second wall of coral formations, one of them shaped like a pyramid. Tall towers jut from the steep wall at the northern end, thick with gorgonians and soft coral above a drop-off that falls away into the depths, and there are caves grown over with both and a chimney packed with glassfish. Barracuda, snapper, jackfish and tuna pass in the blue, silversides and anthias shoal around the towers, and butterflyfish turn up in many species.\n\nAll three days sold here sail to the Giftun islands. None of their programmes names Erg Somaya, the coral tower about a kilometre off the east side of Small Giftun, and none stops there. One is a yacht working three islands, one a speedboat working six, and one a yacht day built around a first dive. ${CLOSING}`,
+      seo: {
+        metaTitle: 'Erg Somaya: Giftun Island Days by Boat',
+        metaDescription: 'Yacht and speedboat days from Hurghada to the Giftun islands, with snorkelling stops, time ashore and a first dive, and a car from your hotel.',
+        keywords: ['erg somaya small giftun', 'giftun islands boat day hurghada', 'coral tower dive site hurghada', 'six island speedboat day', 'giftun yacht day with pickup'],
+      },
+      theme: { primaryColor: '#12343B', secondaryColor: '#F3F1EC', accentColor: '#6B3FA0' },
+      heroImages: [PHOTO.yachtAtSunset, PHOTO.snorkellerSelfie, PHOTO.diverOnReef],
+      logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/erg-somaya/monogram.png',
+      trips: [
+        {
+          path: 'three-islands-by-yacht',
+          price: P.THREE_ISLANDS,
+          title: 'A Yacht Working Three Islands in a Day',
+          short: 'Sixty minutes ashore at Orange Bay, forty inside the Giftun reserve, sixty more at Magawish, two snorkelling stops and seafood aboard.',
+          description: 'Three islands, eight hours and one yacht. Sixty minutes at Orange Bay, forty of snorkelling inside the Giftun Island nature reserve, sixty at Magawish, and two snorkelling stops at different sites on the way. The programme names those three islands, not Erg Somaya off Small Giftun; nothing stops at the tower.\n\nBreakfast is served as the yacht sails and the midday meal is seafood, with unlimited soft drinks, hot drinks, water and seasonal fruit, and the entrance fee for each island is counted in. The crew watch for dolphins on the way out, which are wild and cannot be promised. Children have their own price, and the pickup from your Hurghada hotel is at half past eight.',
+          highlights: [
+            'An hour ashore at Orange Bay',
+            'Inside the Giftun nature reserve',
+            'An hour at Magawish Island',
+            'Breakfast aboard, seafood at midday',
+          ],
+          seo: {
+            metaTitle: 'A Yacht Working Three Islands in a Day',
+            metaDescription: 'Eight hours by yacht: an hour at Orange Bay, the Giftun nature reserve, an hour at Magawish, two snorkelling stops and seafood aboard.',
+          },
+          images: [PHOTO.yachtAtSunset],
+          imageAlts: [ALT.yachtAtSunset],
+        },
+        {
+          path: 'six-islands-by-speedboat',
+          price: P.SIX_ISLANDS,
+          title: 'Six Islands, Three Snorkelling Stops, One Hull',
+          short: 'A speedboat covers Giftun, Nemo Bay, Orange Bay, Magawish, a wreck and Abu Minqar, with the island fees and a shaded deck.',
+          description: 'A small fast hull reaches in a day what a day boat cannot: two hours around Giftun, then Nemo Bay, Orange Bay, Magawish, a snorkelling stop over a wreck and a last call at Abu Minqar. Three of those stops are for snorkelling. The programme names the Giftun National Park area and those islands, not Erg Somaya off Small Giftun; nothing stops at the tower.\n\nThe entrance fees are counted in, with the snorkelling gear, a guide, a life jacket, soft drinks, water, fruit in season and shade on deck. The crew watch for dolphins, which are wild and cannot be promised. Lunch on the island is not in this price; children are priced separately, and a car comes for you in Hurghada.',
+          highlights: [
+            'Two hours around Giftun first',
+            'Nemo Bay, Magawish and Abu Minqar',
+            'A snorkelling stop over a wreck',
+            'Island fees and a shaded deck',
+          ],
+          seo: {
+            metaTitle: 'Six Islands and Three Snorkelling Stops',
+            metaDescription: 'A speedboat day around Giftun, Nemo Bay, Orange Bay, Magawish, a wreck and Abu Minqar, with the island fees and a shaded deck.',
+          },
+          images: [PHOTO.snorkellerSelfie],
+          imageAlts: [ALT.snorkellerSelfie],
+        },
+        {
+          path: 'yacht-day-with-an-introductory-dive',
+          price: P.INTRO_DIVE_YACHT,
+          title: 'A First Dive, Ten Minutes Under, No Certificate',
+          short: 'A yacht day built around a short first dive with an instructor, plus snorkelling, time on the island, a buffet and a massage each.',
+          description: 'The dive is the point of this one, and it asks nothing of you beforehand: ten to fifteen minutes under water for each guest, with an instructor alongside and the equipment and suit provided, and no certificate needed. Snorkelling, seventy-five minutes on the island and a massage each fill the rest. The programme names Orange Bay and the Small Giftun dive site, not Erg Somaya off Small Giftun; nothing stops at the tower.\n\nAn open buffet is served on board, with salads, fruit, snacks, soft drinks, hot drinks and unlimited water, and the nature reserve fee and marine fee are counted in. Diving is not for anyone under thirteen. Children have their own price, and the yacht sails at half past seven once the car has been round.',
+          highlights: [
+            'A first dive of ten to fifteen minutes',
+            'An instructor alongside, suit provided',
+            'Snorkelling and time on the island',
+            'An open buffet and a massage each',
+          ],
+          seo: {
+            metaTitle: 'A First Dive, No Certificate, Off Small Giftun',
+            metaDescription: 'A yacht day around a short first dive with an instructor and the equipment, plus snorkelling, island time, a buffet and a massage each.',
+          },
+          images: [PHOTO.diverOnReef],
+          imageAlts: [ALT.diverOnReef],
         },
       ],
     },

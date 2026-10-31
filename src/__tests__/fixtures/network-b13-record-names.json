@@ -125,6 +125,316 @@
   ],
   "readFrom": "the dated snapshot network-sites/eeo-snapshot.json, read 24 Oct 2026; the published list re-screened 31 Oct 2026, unchanged"
  },
+ "hurghada-luxury-orange-bay-cruise-with-snorkeling-massage-lunch": {
+  "title": "Hurghada: Luxury Orange Bay Cruise with Snorkeling, Massage & Lunch",
+  "duration": "8.5 hours",
+  "included": [
+   "Hotel pickup and drop-off",
+   "Boat cruise",
+   "Tour guide",
+   "Snorkeling stop with use of snorkeling equipment",
+   "Stop at Orange Bay Island",
+   "Open buffet (fish, chicken, chicken nuggets, oven-roasted potatoes, rice, pasta, meat kofta)",
+   "4 different kinds of salad",
+   "3 different kinds of fruits",
+   "Unlimited soft drinks and hot drinks",
+   "Unlimited snacks",
+   "1 massage per guest",
+   "Life jackets",
+   "Tax",
+   "Marine fee"
+  ],
+  "notIncluded": [
+   "Drinks on the island"
+  ],
+  "options": [
+   "Hurghada Hotel Pickup & Return Luxury Cruise",
+   "Luxury Cruise with Pickup from Makadi, Sahl Hasheesh, Soma Bay, El Gouna & Safaga"
+  ],
+  "optionKeys": [
+   "hurghada-hotel-pickup-return-luxury-cruise-16d1ffa32338",
+   "luxury-cruise-with-pickup-from-makadi-sahl-ha-15c1c85151c8"
+  ],
+  "itinerary": [
+   "2 pickup location options",
+   "Van",
+   "Red Sea",
+   "Orange Bay",
+   "Jazā'ir Jiftūn",
+   "Red Sea",
+   "Jazīrat Abū Rimāthī",
+   "Red Sea",
+   "Red Sea",
+   "Red Sea Governorate",
+   "Van",
+   "2 drop-off locations"
+  ],
+  "readFrom": "the dated snapshot network-sites/eeo-snapshot.json, read 24 Oct 2026; the published list re-screened 31 Oct 2026, unchanged"
+ },
+ "hurghada-luxury-red-sea-diving-snorkeling-island-lunch": {
+  "title": "Hurghada: Luxury Red Sea Diving, Snorkeling, Island & Lunch",
+  "duration": "8 hours",
+  "included": [
+   "Transfer from Hotel",
+   "Transfer back to the Hotel",
+   "Guide",
+   "Nature reserve fee: $5",
+   "Marine fee",
+   "Boat tour",
+   "Introductory dive for beginners lasting 10 to 15 minutes per guest (no certificate needed)",
+   "Snorkeling",
+   "Massage for each guest",
+   "Orange Bay Island",
+   "Open buffet lunch (rice, pasta, oven-baked vegetables, grilled kofta, chicken, and fish)",
+   "4 different kinds of salad",
+   "3 different kinds of fruit",
+   "Soft drinks",
+   "Hot drinks",
+   "Unlimited water",
+   "Snacks",
+   "Snorkeling gear",
+   "Diving equipment",
+   "Life vest",
+   "Diving suit"
+  ],
+  "notIncluded": [
+   "Tips (optional)",
+   "Any extras not mentioned",
+   "Diving is not allowed for anyone under 13 years old"
+  ],
+  "options": [
+   "Tour from Hurghada",
+   "Tour from Makadi Bay, Soma Bay, Sahl Hasheesh, El Gouna or Safaga"
+  ],
+  "optionKeys": [
+   "tour-from-hurghada-32f15f6b5aaf",
+   "tour-from-makadi-bay-soma-bay-sahl-hasheesh-e-0a31ebcc9b1e"
+  ],
+  "itinerary": [
+   "2 pickup location options",
+   "Orange Bay",
+   "Orange Bay",
+   "Small Giftun diving site",
+   "Red Sea",
+   "Giftun Island",
+   "Red Sea",
+   "Red Sea",
+   "Hurghada",
+   "2 drop-off locations"
+  ],
+  "readFrom": "the dated snapshot network-sites/eeo-snapshot.json, read 24 Oct 2026; the published list re-screened 31 Oct 2026, unchanged"
+ },
+ "hurghada-orange-bay-yacht-cruise-with-snorkeling-breakfast-lunch-drinks": {
+  "title": "Hurghada: Orange Bay Yacht Cruise with Snorkeling, Breakfast, Lunch & Drinks",
+  "duration": "5 - 8 hours",
+  "included": [
+   "Pick-up and drop-off from Hurghada (see Know Before You Go for details)",
+   "Food & Drinks",
+   "5h Tour: Breakfast buffet",
+   "8h Tour: Breakfast + Lunch",
+   "Unlimited drinks (tea, coffee, soft drinks, water) & Fresh seasonal fruits",
+   "Activities",
+   "5h Tour: 45-min snorkeling stop",
+   "8h Tour: 2 snorkeling stops",
+   "1 hour at Orange Bay Island (white sand beaches & turquoise waters)",
+   "Equipment & Fees: Snorkeling equipment, Island entry fees & Marine tax",
+   "Guides & Crew: Professional guides on each boat, Special guide for non-swimmers & Professional crew"
+  ],
+  "notIncluded": [
+   "Towels",
+   "Underwater photos",
+   "Gratuities (optional)",
+   "Long-range pickup from Makadi, Safaga, El Gouna, Sahl Hasheesh, and Soma Bay (available as an add-on)"
+  ],
+  "options": [
+   "5 Hour Orange Bay Trip with Breakfast",
+   "8 Hour Orange Bay Trip with Breakfast & Lunch",
+   "Private Orange Bay Trip with Breakfast"
+  ],
+  "optionKeys": [
+   "5-hour-orange-bay-trip-with-breakfast-c611b52197e1",
+   "8-hour-orange-bay-trip-with-breakfast-lunch-5ca8942ae903",
+   "private-orange-bay-trip-with-breakfast-3faa31826278"
+  ],
+  "itinerary": [
+   "4 pickup location options",
+   "Van",
+   "Giftun Island",
+   "4 drop-off locations"
+  ],
+  "readFrom": "the dated snapshot network-sites/eeo-snapshot.json, read 24 Oct 2026; the published list re-screened 31 Oct 2026, unchanged"
+ },
+ "hurghada-speedboat-trip-to-6-islands-with-dolphin-watching-snorkeling": {
+  "title": "Hurghada: Speedboat Trip to 6 Islands with Dolphin Watching & Snorkeling",
+  "duration": "8 hours",
+  "included": [
+   "Pick-up and drop-off from Hurghada (see Know Before You Go for details)",
+   "Pickup from Makadi, Safaga, El Gouna, Sahl Hasheesh, and Soma Bay (if add-on selected)",
+   "Speedboat tour",
+   "Three snorkeling stops",
+   "Snorkeling gear provided",
+   "Professional guide",
+   "Visit to the Giftun National Park area",
+   "Orange Bay Island entrance fees included",
+   "White Island entrance fees included",
+   "Magawish Island entrance fees included",
+   "Juzur Abu Monqar Island entry included",
+   "Visit to a Sandbank island",
+   "Wreck snorkeling stop",
+   "Soft drinks and water",
+   "Seasonal fruits",
+   "Shaded area (tenda) on the board",
+   "Life jacket",
+   "Experienced captain",
+   "5-minute parasailing (if add-on selected)",
+   "Lunch on the island (if add-on selected)"
+  ],
+  "notIncluded": [
+   "The long-range pickup service from Makadi, Safaga, El Gouna, Sahl Hasheesh, and the Soma bay areaâs is available to book in the checkout process as \"Add on\"",
+   "and it cost 10 euro per person."
+  ],
+  "options": [
+   "6 Island Small Group Tour with Dolphin Watching, Snorkeling & Fruit",
+   "Private 6 Island Tour with Dolphin Watching & Snorkeling"
+  ],
+  "optionKeys": [
+   "6-island-small-group-tour-with-dolphin-watchi-277b7487db82",
+   "private-6-island-tour-with-dolphin-watching-s-518511256754"
+  ],
+  "itinerary": [
+   "3 pickup location options",
+   "Car",
+   "Giftun Island",
+   "Nemo Bay island",
+   "Orange Bay",
+   "Magawish Island",
+   "Hurghada",
+   "Juzur AbÅ« MinqÄr",
+   "Giftun Island",
+   "Van",
+   "3 drop-off locations"
+  ],
+  "readFrom": "the dated snapshot network-sites/eeo-snapshot.json, read 24 Oct 2026; the published list re-screened 31 Oct 2026, unchanged"
+ },
+ "hurghada-yacht-cruise-to-orange-bay-giftun-magawish-with-dolphins": {
+  "title": "Hurghada: Yacht Cruise to Orange Bay, Giftun & Magawish with Dolphins",
+  "duration": "Duration 8 hours",
+  "included": [
+   "Pick-up and drop-off from Hurghada (see Know Before You Go for details)",
+   "Boat cruise with a shaded seating area and stereo sound system",
+   "Snorkeling equipment and life vest provided",
+   "Professional snorkeling guide",
+   "Two snorkeling stops at different sites",
+   "Orange Island entrance fees included (1h)",
+   "Giftun Island Nature Reserve fees included (40min)",
+   "Magawish Island entrance fees included (1h)",
+   "Breakfast served onboard (eggs, cheese, butter, honey, and bread)",
+   "Seafood lunch",
+   "Unlimited soft drinks, hot drinks, and water",
+   "Seasonal fruits",
+   "Professional guide throughout the trip"
+  ],
+  "notIncluded": [
+   "Long-range pickup from Makadi, Safaga, El Gouna, Sahl Hasheesh, and the Soma Bay (available as an add-on)"
+  ],
+  "options": [
+   "No Transfer Included",
+   "Hurghada: 3 Island Yacht Adventure with Dolphin Watching & Seafood Lunch",
+   "Hurghada: Private Yacht Experience with Dolphin Watching & 1 Island",
+   "Hurghada: Private Yacht Experience with Dolphin Watching & 1 Island",
+   "3 Island Pickup from Makadi Bay, El Gouna and Sahl Hasheesh",
+   "Yacht Cruise Dolphin and 3 Island from Safaga and Soma Bay"
+  ],
+  "optionKeys": [
+   "no-transfer-included-e756cc35414b",
+   "hurghada-3-island-yacht-adventure-with-dolphi-324f544a94cc",
+   "hurghada-private-yacht-experience-with-dolphi-4a3e3ab41544",
+   "hurghada-private-yacht-experience-with-dolphi-9bf40431b5f2",
+   "3-island-pickup-from-makadi-bay-el-gouna-and--64708e614f68",
+   "yacht-cruise-dolphin-and-3-island-from-safaga-6a6b2a771987"
+  ],
+  "itinerary": [
+   "Starting/pickup location",
+   "Orange Bay",
+   "Giftun Island",
+   "Magawish Island",
+   "2 drop-off locations"
+  ],
+  "readFrom": "the dated snapshot network-sites/eeo-snapshot.json, read 24 Oct 2026; the published list re-screened 31 Oct 2026, unchanged"
+ },
+ "makadi-bay-full-day-red-sea-diving-cruise-with-lunch": {
+  "title": "Makadi Bay: Full-Day Red Sea Diving Cruise with Lunch",
+  "duration": "7 hours",
+  "included": [
+   "Hotel pickup and drop-off",
+   "Full-day diving boat trip",
+   "Professional dive instructor and crew",
+   "2 guided scuba dives",
+   "Full diving equipment",
+   "Buffet lunch onboard",
+   "Soft drinks and bottled water"
+  ],
+  "notIncluded": [
+   "Transportation from El Gouna or Sahl Hasheeshare only add-ons"
+  ],
+  "options": [
+   "Makadi Bay: Red Sea Scuba Diving Boat Trip with Lunch"
+  ],
+  "optionKeys": [
+   "makadi-bay-red-sea-scuba-diving-boat-trip-wit-8d74c0cf242d"
+  ],
+  "itinerary": [
+   "Hotel Pickup",
+   "Boat Departure",
+   "First Dive",
+   "Lunch Break",
+   "Second Dive",
+   "Return Cruise",
+   "Hotel Drop-Off"
+  ],
+  "readFrom": "the dated snapshot network-sites/eeo-snapshot.json, read 24 Oct 2026; the published list re-screened 31 Oct 2026, unchanged"
+ },
+ "makadi-bay-snorkeling-and-diving-at-orange-bay": {
+  "title": "Makadi Bay: Snorkeling and Diving at Orange Bay",
+  "duration": "8.5 hours",
+  "included": [
+   "Roundtrip transfers",
+   "Guide",
+   "Unlimited water",
+   "Snorkeling trip by boat with snorkeling gear",
+   "Orange Bay Island stop",
+   "Scuba Diving",
+   "Diving equipment",
+   "Marine fee",
+   "Snacks",
+   "Life vest",
+   "Soft drinks on boat",
+   "Hot drinks on boat",
+   "Lunch open buffet on boat"
+  ],
+  "notIncluded": [],
+  "options": [
+   "Tour from Hurghada",
+   "Tour from Makadi/Soma Bay/El Gouna/Sahl Hasheesh/Safaga"
+  ],
+  "optionKeys": [
+   "tour-from-hurghada-5a8a06dd2db1",
+   "tour-from-makadi-soma-bay-el-gouna-sahl-hashe-7ce26f0c3863"
+  ],
+  "itinerary": [
+   "2 pickup location options",
+   "Giftun Island",
+   "Orange Bay",
+   "Giftun Island Optional",
+   "Hurghada Optional",
+   "Red Sea Governorate Optional",
+   "Hurghada Optional",
+   "Red Sea Governorate Optional",
+   "Red Sea Governorate",
+   "2 drop-off locations"
+  ],
+  "readFrom": "the dated snapshot network-sites/eeo-snapshot.json, read 24 Oct 2026; the published list re-screened 31 Oct 2026, unchanged"
+ },
  "private-pyramids-egyptian-museum-khan-el-khalili-tour": {
   "title": "Private Pyramids, Egyptian Museum & Khan El Khalili Tour",
   "duration": "8 hours",
