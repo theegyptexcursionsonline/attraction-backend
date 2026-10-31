@@ -1,0 +1,198 @@
+{
+ "early-morning-atv-safari-to-ras-mohammed-allah-gate": {
+  "title": "Early Morning ATV Safari to Ras Mohammed & Allah Gate",
+  "duration": "8 hours",
+  "included": [
+   "Sunrise ATV Quad experience",
+   "Breakfast",
+   "Visit to Ras Mohammed National Park",
+   "Visit to Allah Gate",
+   "Visit to Mangrove Trees",
+   "Visit to Earthquake Crack",
+   "Visit to Magic Lake",
+   "Panoramic viewpoints",
+   "Snorkeling break"
+  ],
+  "notIncluded": [
+   "Lunch",
+   "Snorkeling gear"
+  ],
+  "options": [
+   "1 Person (1 SGL Quad) and Allah Gates Entrance",
+   "1 Person (1 SGL Buggy) and Allah Gates Entrance",
+   "2 People (1 DBL Quad) and Allah Gates Entrance",
+   "2 People (1 DBL Buggy) and Allah Gates Entrance",
+   "3 People (1 TRBL Buggy) and Allah Gates Entrance",
+   "4 People (1 Family Buggy) and Allah Gates Entrance"
+  ],
+  "optionKeys": [
+   "1-person-1-sgl-quad-and-allah-gates-entrance-e92db079e1fc",
+   "1-person-1-sgl-buggy-and-allah-gates-entrance-d64290a67f41",
+   "2-people-1-dbl-quad-and-allah-gates-entrance-0d4528a27354",
+   "2-people-1-dbl-buggy-and-allah-gates-entrance-2964c18cde43",
+   "3-people-1-trbl-buggy-and-allah-gates-entranc-671d50b9ac6a",
+   "4-people-1-family-buggy-and-allah-gates-entra-0484a6b7fdb6"
+  ],
+  "itinerary": [
+   "2 pickup location options",
+   "Bus/coach",
+   "Sharm el-Sheikh",
+   "Sharm el-Sheikh",
+   "Bus/coach",
+   "Sharm el-Sheikh",
+   "Bus/coach",
+   "Ras Muhammad National Park",
+   "Bus/coach",
+   "2 drop-off locations"
+  ],
+  "readFrom": "the dated snapshot network-sites/eeo-snapshot.json, read 24 Oct 2026; the published list re-screened 31 Oct 2026, unchanged"
+ },
+ "giza-pyramids-sakkara-memphis-day-tour-with-nile-sail": {
+  "title": "Giza Pyramids, Sakkara & Memphis Day Tour with Nile Sail",
+  "duration": "3 - 8 hours",
+  "included": [
+   "Transportation by air-conditioned vehicle",
+   "Professional licensed guide",
+   "Shared Tour: Professional English-speaking guide only",
+   "Private Tour: Professional guide available in all languages",
+   "Entry tickets to selected landmarks",
+   "Hotel pick-up and drop-off from Cairo or Giza",
+   "Visits: Papyrus Gallery, Oils Factory, Bazaar, Cotton Store, Carpet School (upon request)",
+   "Bottled water",
+   "Lunch — included in VIP Private Tour only, or available as an add-on for Private Tours"
+  ],
+  "notIncluded": [],
+  "options": [
+   "Pyramids Only — Shared With Ticket",
+   "Memphis, Sakkara, Dahshur — Shared With Ticket",
+   "Pyramids, Memphis, Sakkara — Shared With Ticket",
+   "Pyramids, Memphis, Sakkara — Private With Ticket",
+   "Pyramids, Memphis, Sakkara — Private With Ticket",
+   "{VIP} Private: Pyramids, Memphis, Sakkara, Dahshur & Felucca"
+  ],
+  "optionKeys": [
+   "pyramids-only-shared-with-ticket-dc6d2b9e0b33",
+   "memphis-sakkara-dahshur-shared-with-ticket-844b69a67e0a",
+   "pyramids-memphis-sakkara-shared-with-ticket-a081911f225b",
+   "pyramids-memphis-sakkara-private-with-ticket-7b522c2f779f",
+   "pyramids-memphis-sakkara-private-with-ticket-04b1eb4c0c71",
+   "vip-private-pyramids-memphis-sakkara-dahshur--d1af83cd8115"
+  ],
+  "itinerary": [
+   "3 pickup location options",
+   "Car",
+   "Giza Plateau",
+   "Sakkara",
+   "Memphis, Egypt",
+   "Car",
+   "3 drop-off locations"
+  ],
+  "readFrom": "the dated snapshot network-sites/eeo-snapshot.json, read 24 Oct 2026; the published list re-screened 31 Oct 2026, unchanged"
+ },
+ "sakkara-memphis-dahshur-giza-pyramids-day-tour": {
+  "title": "Sakkara, Memphis, Dahshur & Giza Pyramids Day Tour",
+  "duration": "3 - 8 hours",
+  "included": [
+   "Transportation by air-conditioned vehicle",
+   "Professional licensed guide",
+   "Shared Tour: Professional English-speaking guide only",
+   "Private Tour: Professional guide available in all languages",
+   "Entry tickets to selected landmarks",
+   "Hotel pick-up and drop-off from Cairo or Giza",
+   "Visits: Papyrus Gallery, Oils Factory, Bazaar, Cotton Store, Carpet School (upon request)",
+   "Bottled water"
+  ],
+  "notIncluded": [],
+  "options": [
+   "Pyramids Only — Shared With Ticket",
+   "Memphis, Sakkara, Dahshur — Shared With Ticket",
+   "Pyramids, Memphis, Sakkara — Shared With Ticket",
+   "Sakkara, Memphis, Dahshur — Private With Ticket",
+   "{VIP} Private: Pyramids, Memphis, Sakkara, Dahshur & Felucca"
+  ],
+  "optionKeys": [
+   "pyramids-only-shared-with-ticket-f78cb6b39be2",
+   "memphis-sakkara-dahshur-shared-with-ticket-d1e880becd96",
+   "pyramids-memphis-sakkara-shared-with-ticket-f121ee983d8c",
+   "sakkara-memphis-dahshur-private-with-ticket-5c570d8fdea6",
+   "vip-private-pyramids-memphis-sakkara-dahshur--e1cd8286d0bf"
+  ],
+  "itinerary": [
+   "Pickup location:",
+   "Car",
+   "Dahshur",
+   "Car",
+   "Sakkara",
+   "Car",
+   "Memphis, Egypt",
+   "Car",
+   "Arrive back at:"
+  ],
+  "readFrom": "the dated snapshot network-sites/eeo-snapshot.json, read 24 Oct 2026; the published list re-screened 31 Oct 2026, unchanged"
+ },
+ "secrets-of-cairo-2-day-private-sightseeing-tour": {
+  "title": "Secrets of Cairo: 2-Day Private Sightseeing Tour",
+  "duration": "2 days",
+  "included": [
+   "Lunch x 2",
+   "Private transportation",
+   "Air-conditioned vehicle",
+   "Tour Guide",
+   "Entry Fees",
+   "Bottle Of Water"
+  ],
+  "notIncluded": [],
+  "options": [
+   "Secrets of Cairo: A 2-Day Private Magical Adventure"
+  ],
+  "optionKeys": [
+   "secrets-of-cairo-a-2-day-private-magical-adve-b8969b9ddc98"
+  ],
+  "itinerary": [
+   "2 pickup location options",
+   "Car",
+   "Pyramids of Giza",
+   "Valley Temple",
+   "Saqqara (Sakkara) Pyramids",
+   "colossal statue of Ramses II",
+   "Alabaster Sphinx",
+   "Egyptian Museum",
+   "National Museum of Egyptian Civilisation",
+   "2 drop-off locations"
+  ],
+  "readFrom": "the dated snapshot network-sites/eeo-snapshot.json, read 24 Oct 2026; the published list re-screened 31 Oct 2026, unchanged"
+ },
+ "sharm-el-sheikh-half-day-bus-trip-to-ras-mohammed-allah-s-gate": {
+  "title": "Sharm El Sheikh: Half-Day Bus Trip to Ras Mohammed & Allah’s Gate",
+  "duration": "4 hours",
+  "included": [
+   "Hotel pickup and drop-off in an air-conditioned vehicle",
+   "Certified snorkeling guide",
+   "Allah's Gate visit",
+   "Mangrove Rock and Magic Lake visit",
+   "Mandatory National Park entry fees 10€ (if selected from add-ons) otherwise to be paid upon arrival",
+   "Snorkeling gear (if selected from add-ons)",
+   "Private hotel pickup and drop-off (if selected from add-ons)"
+  ],
+  "notIncluded": [
+   "Photos and videos (available to purchase)"
+  ],
+  "options": [
+   "Ras Mohammed Tour and Allah's Gate Half-Day Bus Tour"
+  ],
+  "optionKeys": [
+   "ras-mohammed-tour-and-allah-s-gate-half-day-b-7c87dc45d34c"
+  ],
+  "itinerary": [
+   "Pickup location",
+   "Bus/coach",
+   "Ras Muhammad National Park",
+   "Ras Muhammad National Park",
+   "Ras Muhammad National Park",
+   "\"Allah\" Gate",
+   "Bus/coach",
+   "Arrive back"
+  ],
+  "readFrom": "the dated snapshot network-sites/eeo-snapshot.json, read 24 Oct 2026; the published list re-screened 31 Oct 2026, unchanged"
+ }
+}

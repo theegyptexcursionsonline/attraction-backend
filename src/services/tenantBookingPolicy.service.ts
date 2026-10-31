@@ -50,6 +50,19 @@ const BOOKING_CREATION_CLOSED_TENANT_SLUGS = [
   'luxor-tour-from-hurghada',
   'hurghada-snorkeling',
   'cairo-night-cruise',
+  // The network queue's batch B12: nine monuments of the Saqqara necropolis and its neighbours, and one
+  // mangrove shore inside Ras Mohamed National Park. Each is closed to real bookings until its domain is
+  // connected and the owner opens it; opening a site is removing its slug.
+  'imhotep-museum',
+  'serapeum-of-saqqara',
+  'pyramid-of-teti',
+  'pyramid-of-unas',
+  'pyramid-of-userkaf',
+  'tomb-of-nefer',
+  'buried-pyramid',
+  'pyramid-of-pepi-ii',
+  'pyramid-of-sahure',
+  'mangrove-forest-egypt',
 ] as const;
 
 export class TenantBookingCreationClosedError extends AppError {

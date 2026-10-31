@@ -40,6 +40,12 @@ describe('tenant booking-creation closure policy', () => {
       'three-pools-dahab']) {
       expect(isTenantBookingCreationClosed({ slug })).toBe(true);
     }
+    // Batch B12's ten sites are closed the same way, until each domain is connected and the owner opens it.
+    for (const slug of ['imhotep-museum', 'serapeum-of-saqqara', 'pyramid-of-teti', 'pyramid-of-unas',
+      'pyramid-of-userkaf', 'tomb-of-nefer', 'buried-pyramid', 'pyramid-of-pepi-ii', 'pyramid-of-sahure',
+      'mangrove-forest-egypt']) {
+      expect(isTenantBookingCreationClosed({ slug })).toBe(true);
+    }
     expect(() => assertTenantBookingCreationAllowed({ slug: 'king-of-egypt-tours' }))
       .toThrow(TenantBookingCreationClosedError);
     // A look-alike slug is a different site and is not closed by this policy.
@@ -76,6 +82,9 @@ describe('tenant booking-creation closure policy', () => {
         'saqqara-necropolis', 'pyramid-of-djoser', 'red-pyramid-egypt', 'sphinx-of-memphis', 'samadai-beach',
         'hurghada-speedboat', 'makadi-bay-safari', 'cairo-tour-from-hurghada', 'luxor-tour-from-hurghada',
         'hurghada-snorkeling', 'cairo-night-cruise',
+        // Batch B12's nine monument sites and its mangrove site, closed the same way.
+        'imhotep-museum', 'serapeum-of-saqqara', 'pyramid-of-teti', 'pyramid-of-unas', 'pyramid-of-userkaf',
+        'tomb-of-nefer', 'buried-pyramid', 'pyramid-of-pepi-ii', 'pyramid-of-sahure', 'mangrove-forest-egypt',
       ] },
     });
 
