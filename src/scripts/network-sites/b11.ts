@@ -180,7 +180,7 @@ export const B11A: NetworkBatch = {
           price: P.SOUTH_SHARED,
           title: 'Sakkara, Memphis and Dahshur in a Shared Group',
           short: 'A shared day south of Giza with a guide and the entry tickets: the Saqqara necropolis, the ruins of Memphis and the pyramids of Dahshur.',
-          description: 'The day opens at Saqqara, where the guide walks you through the necropolis of the old capital and the Step Pyramid at its centre. It carries on to Memphis, the capital itself, now a field of ruins with its fallen colossus of Ramses II, and ends at Dahshur among the Bent and Red Pyramids.\n\nThe vehicle is air-conditioned and shared with other guests, the guide speaks English, and the entry tickets for the sites the day visits are in the price. Pickup from your hotel in Cairo or Giza is included, and the day leaves at eleven.',
+          description: 'The day opens at Dahshur among the Bent and Red Pyramids, then comes to Saqqara, where the guide walks you through the necropolis of the old capital and the Step Pyramid at its centre, and ends at Memphis, the capital itself, now a field of ruins with its fallen colossus of Ramses II.\n\nThe vehicle is air-conditioned and shared with other guests, the guide speaks English, and the entry tickets for the sites the day visits are in the price. Pickup from your hotel in Cairo or Giza is included, and the day leaves at eleven.',
           highlights: [
             'The Saqqara necropolis and its Step Pyramid',
             'The ruins of Memphis and its fallen colossus',
@@ -199,7 +199,7 @@ export const B11A: NetworkBatch = {
           price: P.SOUTH_PRIVATE,
           title: 'Private Day at Saqqara, Memphis and Dahshur',
           short: 'The same three places with your own guide and vehicle, an eight o’clock start and the entry tickets.',
-          description: 'This is the private way to walk the necropolis: your own guide, your own air-conditioned vehicle, and an eight o’clock start that reaches Saqqara before the shared groups. The guide takes you through the enclosure of the Step Pyramid and the tombs around it, then on to Memphis and to Dahshur.\n\nThe guide can be asked for in another language, the entry tickets for the sites the day visits are in the price, and the vehicle collects you from your hotel in Cairo or Giza and brings you back.',
+          description: 'This is the private way to walk the necropolis: your own guide, your own air-conditioned vehicle and an eight o’clock start. The day opens at Dahshur among the Bent and Red Pyramids, then the guide takes you through the enclosure of the Step Pyramid and the tombs around it, and on to Memphis.\n\nThe guide can be asked for in another language, the entry tickets for the sites the day visits are in the price, and the vehicle collects you from your hotel in Cairo or Giza and brings you back.',
           highlights: [
             'Your own guide and vehicle for the day',
             'The Step Pyramid enclosure and the tombs around it',
@@ -237,7 +237,7 @@ export const B11A: NetworkBatch = {
           price: P.GIZA_SOUTH_VIP,
           title: 'Private Day at Saqqara and Memphis with Lunch and a Nile Sail',
           short: 'A private day that takes in the plateau, the necropolis, Memphis and Dahshur, with lunch and an hour under sail on the Nile.',
-          description: 'The longest way to see the necropolis, and the slowest. Your own guide and vehicle take you from the Giza plateau to Saqqara, through the necropolis and the Step Pyramid at its heart, on to the ruins of Memphis and the pyramids of Dahshur, with lunch along the way.\n\nThe day closes on the river, an hour under the white sail of a felucca. The entry tickets for the sites the day visits are in the price, and the vehicle collects you from your hotel in Cairo or Giza.',
+          description: 'The longest way to see the necropolis, and the slowest. Your own guide and vehicle take you from the Giza plateau to the ruins of Memphis, then to Saqqara, through the necropolis and the Step Pyramid at its heart, and on to the pyramids of Dahshur, with lunch along the way.\n\nThe day closes on the river, an hour under the white sail of a felucca. The entry tickets for the sites the day visits are in the price, and the vehicle collects you from your hotel in Cairo or Giza.',
           highlights: [
             'The necropolis, Memphis and Dahshur with your own guide',
             'Lunch at a local restaurant',
@@ -301,7 +301,7 @@ export const B11A: NetworkBatch = {
           price: P.SOUTH_SHARED,
           title: 'Shared Day at the Step Pyramid, Memphis and Dahshur',
           short: 'A shared day with a guide and the entry tickets: the Step Pyramid of Djoser, the ruins of Memphis and the pyramids of Dahshur.',
-          description: 'The Step Pyramid is the first stop. The guide walks you into the enclosure Imhotep laid out around it, past the colonnade and the courts, and stands you below the six tiers themselves. From there the day goes on to Memphis, the old capital, and to the Bent and Red Pyramids at Dahshur.\n\nThe vehicle is air-conditioned and shared with other guests, the guide speaks English, and the entry tickets for the sites the day visits are in the price. Pickup from your hotel in Cairo or Giza is included, and the day leaves at eleven.',
+          description: 'The Step Pyramid is the middle stop of the day. It begins among the Bent and Red Pyramids at Dahshur; then the guide walks you into the enclosure Imhotep laid out around the Step Pyramid, past the colonnade and the courts, and stands you below the six tiers themselves; and it ends at Memphis, the old capital.\n\nThe vehicle is air-conditioned and shared with other guests, the guide speaks English, and the entry tickets for the sites the day visits are in the price. Pickup from your hotel in Cairo or Giza is included, and the day leaves at eleven.',
           highlights: [
             'The Step Pyramid of Djoser and its enclosure',
             'The ruins of Memphis and its fallen colossus',
@@ -319,8 +319,8 @@ export const B11A: NetworkBatch = {
           path: 'private-sakkara-memphis-and-dahshur',
           price: P.SOUTH_PRIVATE,
           title: 'Private Day at the Step Pyramid, Memphis and Dahshur',
-          short: 'The Step Pyramid with your own guide and vehicle, an eight o’clock start, then Memphis and Dahshur, with the entry tickets.',
-          description: 'An eight o’clock start brings you to the Step Pyramid before the shared groups reach it, and your own guide has the time to take the enclosure slowly: the colonnade, the courts of the jubilee festival, and the six tiers Djoser was buried beneath.\n\nThe day carries on to Memphis and to Dahshur. The guide can be asked for in another language, the entry tickets for the sites the day visits are in the price, and your own vehicle collects you from your hotel in Cairo or Giza.',
+          short: 'The Step Pyramid with your own guide and vehicle and an eight o’clock start, between Dahshur and Memphis, with the entry tickets.',
+          description: 'An eight o’clock start and your own guide give you the time to take the Step Pyramid’s enclosure slowly: the colonnade, the courts of the jubilee festival, and the six tiers Djoser was buried beneath.\n\nThe day starts at Dahshur and ends at Memphis, with the Step Pyramid between them. The guide can be asked for in another language, the entry tickets for the sites the day visits are in the price, and your own vehicle collects you from your hotel in Cairo or Giza.',
           highlights: [
             'The Step Pyramid before the shared groups arrive',
             'Your own guide and vehicle for the day',
@@ -384,7 +384,7 @@ export const B11A: NetworkBatch = {
           price: P.SOUTH_SHARED,
           title: 'Shared Day at the Red Pyramid, Saqqara and Memphis',
           short: 'A shared day with a guide and the entry tickets: the Saqqara necropolis, the ruins of Memphis and the Bent and Red Pyramids at Dahshur.',
-          description: 'Dahshur closes this day, and the Red Pyramid is what you come for: the smooth-sided pyramid Sneferu finished, named for the colour its stone turns in the sun, with the Bent Pyramid standing in the same field a few hundred metres away.\n\nThe day starts at Saqqara, among the necropolis and its Step Pyramid, and goes on to Memphis. The vehicle is air-conditioned and shared with other guests, the guide speaks English, and the entry tickets for the sites the day visits are in the price. Pickup from your hotel in Cairo or Giza is included.',
+          description: 'Dahshur opens this day, and the Red Pyramid is what you come for: the smooth-sided pyramid Sneferu finished, named for the colour its stone turns in the sun, with the Bent Pyramid standing in the same field a few hundred metres away.\n\nFrom Dahshur the day goes on to Saqqara, among the necropolis and its Step Pyramid, and ends at Memphis. The vehicle is air-conditioned and shared with other guests, the guide speaks English, and the entry tickets for the sites the day visits are in the price. Pickup from your hotel in Cairo or Giza is included.',
           highlights: [
             'The Red Pyramid and the Bent Pyramid at Dahshur',
             'The Saqqara necropolis and its Step Pyramid',
@@ -403,7 +403,7 @@ export const B11A: NetworkBatch = {
           price: P.SOUTH_PRIVATE,
           title: 'Private Day at the Red Pyramid, Saqqara and Memphis',
           short: 'The Red Pyramid and the Bent Pyramid with your own guide and vehicle, an eight o’clock start, and the entry tickets.',
-          description: 'The private way to reach Dahshur, and the one with time to spare at the Red Pyramid itself, where a passage runs down from the north face into the burial chambers inside. The Bent Pyramid stands in the same field, and your own guide has the day to tell you why the one explains the other.\n\nThe day begins at Saqqara and takes in Memphis on the way. The guide can be asked for in another language, the entry tickets for the sites the day visits are in the price, and your own vehicle collects you from your hotel in Cairo or Giza at eight.',
+          description: 'The private way to reach Dahshur, and the one with time to spare at the Red Pyramid itself, where a passage runs down from the north face into the burial chambers inside. The Bent Pyramid stands in the same field, and your own guide has the day to tell you why the one explains the other.\n\nFrom Dahshur the day goes on to Saqqara and ends at Memphis. The guide can be asked for in another language, the entry tickets for the sites the day visits are in the price, and your own vehicle collects you from your hotel in Cairo or Giza at eight.',
           highlights: [
             'The Red Pyramid with your own guide',
             'The Bent Pyramid in the same field',
@@ -466,7 +466,7 @@ export const B11A: NetworkBatch = {
           price: P.SOUTH_PRIVATE,
           title: 'Private Day at Memphis, Saqqara and Dahshur',
           short: 'The same three places with your own guide and vehicle, an eight o’clock start and the entry tickets.',
-          description: 'The private way to reach Mit Rahina, and the one with time to stand at the sphinx rather than pass it. Your own guide walks you round the open-air museum, the colossus of Ramses II under its roof and the alabaster sphinx in the garden, and can tell you which king’s face the carvers were working from.\n\nAn eight o’clock start puts the day ahead of the shared groups at Saqqara, and Dahshur follows. The guide can be asked for in another language, the entry tickets for the sites the day visits are in the price, and your own vehicle collects you from your hotel in Cairo or Giza.',
+          description: 'The private way to reach Mit Rahina, and the one with time to stand at the sphinx rather than pass it. Your own guide walks you round the open-air museum, the colossus of Ramses II under its roof and the alabaster sphinx in the garden, and can tell you which king’s face the carvers were working from.\n\nAn eight o’clock start takes the day to Dahshur first and then to Saqqara, so Mit Rahina comes last. The guide can be asked for in another language, the entry tickets for the sites the day visits are in the price, and your own vehicle collects you from your hotel in Cairo or Giza.',
           highlights: [
             'The alabaster sphinx with your own guide',
             'The colossus of Ramses II under its roof',
@@ -504,7 +504,7 @@ export const B11A: NetworkBatch = {
           price: P.GIZA_SOUTH_VIP,
           title: 'Private Day at Memphis and Saqqara with Lunch and a Nile Sail',
           short: 'A private day taking in the plateau, Saqqara, the open-air museum at Memphis and Dahshur, with lunch and an hour under sail.',
-          description: 'The longest way to reach the sphinx, and the slowest. Your own guide and vehicle take you from the Giza plateau to Saqqara, on to Mit Rahina for the colossus and the alabaster sphinx beside it, and out to the Bent and Red Pyramids at Dahshur, with lunch along the way.\n\nThe day closes on the river, an hour under the white sail of a felucca. The entry tickets for the sites the day visits are in the price, and the vehicle collects you from your hotel in Cairo or Giza.',
+          description: 'The longest way to reach the sphinx, and the slowest. Your own guide and vehicle take you from the Giza plateau to Mit Rahina for the colossus and the alabaster sphinx beside it, then to Saqqara, and out to the Bent and Red Pyramids at Dahshur, with lunch along the way.\n\nThe day closes on the river, an hour under the white sail of a felucca. The entry tickets for the sites the day visits are in the price, and the vehicle collects you from your hotel in Cairo or Giza.',
           highlights: [
             'The alabaster sphinx and colossus with your own guide',
             'Saqqara, Dahshur and the Giza plateau',
