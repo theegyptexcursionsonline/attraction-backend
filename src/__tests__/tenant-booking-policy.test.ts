@@ -64,6 +64,18 @@ describe('tenant booking-creation closure policy', () => {
     expect(() => assertTenantBookingCreationAllowed(undefined)).not.toThrow();
   });
 
+  it('keeps Coral request-only regardless of future gateway or catalogue configuration', async () => {
+    expect(() => assertTenantBookingCreationAllowed({ slug: 'coral-safari-hurghada' }))
+      .toThrow(TenantBookingCreationClosedError);
+    const id = new Types.ObjectId();
+    const findOne = jest.spyOn(Tenant, 'findOne').mockResolvedValue({
+      _id: id, slug: 'coral-safari-hurghada', paymentSettings: { allowPayAtLocation: true, stripe: { enabled: true } },
+    } as never);
+    await expect(assertTenantIdsBookingCreationAllowed([id])).rejects.toBeInstanceOf(TenantBookingCreationClosedError);
+    expect(findOne).toHaveBeenCalledWith({ _id: { $in: [String(id)] }, slug: { $in: expect.arrayContaining(['coral-safari-hurghada']) } });
+    expect(isTenantBookingCreationClosed({ slug: 'coral-safari-hurghada-other' })).toBe(false);
+  });
+
   it('resolves ObjectId-only create paths against the closed slug without broad tenant blocking', async () => {
     const makadiId = new Types.ObjectId();
     const otherId = new Types.ObjectId();
@@ -93,6 +105,7 @@ describe('tenant booking-creation closure policy', () => {
         // Batch B13's seven: the two pyramids of Abusir, Abu Rawash, Meidum and the three Red Sea reefs.
         'pyramid-of-neferirkare', 'pyramid-of-neferefre', 'pyramid-of-djedefre', 'meidum-pyramid',
         'shaab-sabina', 'ras-disha', 'erg-somaya',
+        'coral-safari-hurghada',
       ] },
     });
 

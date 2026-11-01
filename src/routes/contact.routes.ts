@@ -10,12 +10,15 @@ import { authenticate, requireRole } from '../middleware/auth.middleware';
 import { optionalTenant, requireTenant } from '../middleware/tenant.middleware';
 import { publicWriteLimiter } from '../middleware/rate-limit.middleware';
 import { validate, validateQuery } from '../middleware/validate.middleware';
+import { getContactRequestOptions, submitContactRequest } from '../controllers/contactRequests.controller';
 
 const router = Router();
 
 // Public: a site visitor's contact or tour enquiry. The message is stored before
 // any email is attempted; the tenant comes from X-Tenant-ID or ?tenantId only.
 router.post('/', publicWriteLimiter, optionalTenant, requireTenant, submitContactMessage);
+router.post('/requests', publicWriteLimiter, optionalTenant, requireTenant, submitContactRequest);
+router.get('/request-options', optionalTenant, requireTenant, getContactRequestOptions);
 
 // Site inbox: visitor personal data, so editor/viewer roles are excluded and the
 // caller must be assigned to the requested site (super-admin: any site).

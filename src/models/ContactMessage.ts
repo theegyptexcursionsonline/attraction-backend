@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema, Types } from 'mongoose';
+import { CORAL_EXPERIENCES, CORAL_PICKUP_AREAS, ContactRequestDetails } from '../utils/coralRequestPolicy';
 
 /**
  * A visitor enquiry sent through a site's contact or tour enquiry form.
@@ -16,7 +17,7 @@ export type ContactDeliveryStatus = (typeof CONTACT_DELIVERY_STATUSES)[number];
 // Short machine codes only — raw provider text never reaches the database.
 // `non_production_no_qa_inbox`: a staging/dev run refused to mail a real visitor because no QA
 // inbox is configured. Recorded rather than silently dropped, so an operator can see why.
-export const CONTACT_DELIVERY_REASONS = ['no_recipient', 'provider_not_configured', 'non_production_no_qa_inbox', 'provider_error'] as const;
+export const CONTACT_DELIVERY_REASONS = ['no_recipient', 'provider_not_configured', 'non_production_no_qa_inbox', 'provider_error', 'tenant_store_only'] as const;
 export type ContactDeliveryReason = (typeof CONTACT_DELIVERY_REASONS)[number];
 
 export const CONTACT_FIELD_LIMITS = {
@@ -44,6 +45,8 @@ export interface IContactMessage extends Document {
   _id: Types.ObjectId;
   tenantId: Types.ObjectId;
   requestId?: string;
+  requestFingerprint?: string;
+  requestDetails?: ContactRequestDetails;
   reference: string;
   name: string;
   email: string;
@@ -78,6 +81,19 @@ const contactMessageSchema = new Schema<IContactMessage>(
   {
     tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true },
     requestId: { type: String, trim: true, maxlength: 64 },
+    // Private retry comparison, never a public receipt or an inbox field.
+    requestFingerprint: { type: String, match: /^[a-f0-9]{64}$/, select: false },
+    requestDetails: {
+      type: new Schema<ContactRequestDetails>({
+        kind: { type: String, enum: ['booking-request'], required: true },
+        experience: { type: String, enum: CORAL_EXPERIENCES, required: true },
+        adults: { type: Number, min: 1, max: 60, required: true },
+        children: { type: Number, min: 0, max: 59, required: true },
+        pickupArea: { type: String, enum: CORAL_PICKUP_AREAS, required: true },
+        hotel: { type: String, trim: true, maxlength: 160, required: true },
+      }, { _id: false }),
+      default: undefined,
+    },
     reference: { type: String, required: true, trim: true, maxlength: 20 },
     name: { type: String, required: true, trim: true, minlength: 1, maxlength: CONTACT_FIELD_LIMITS.name },
     email: { type: String, required: true, trim: true, lowercase: true, maxlength: CONTACT_FIELD_LIMITS.email },

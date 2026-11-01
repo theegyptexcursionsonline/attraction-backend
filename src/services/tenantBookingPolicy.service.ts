@@ -1,6 +1,7 @@
 import { AppError } from '../middleware/error.middleware';
 import { Tenant } from '../models/Tenant';
 import { ITenant } from '../types';
+import { CORAL_REQUEST_TENANT_SLUG } from '../utils/coralRequestPolicy';
 
 // Stable, reversible tenant policy. The closure is keyed by tenant slug, never
 // by a deployment-specific ObjectId, custom domain, or mutable display name.
@@ -74,6 +75,8 @@ const BOOKING_CREATION_CLOSED_TENANT_SLUGS = [
   'shaab-sabina',
   'ras-disha',
   'erg-somaya',
+  // Coral starts with preference requests only; no route may create a normal booking for it.
+  CORAL_REQUEST_TENANT_SLUG,
 ] as const;
 
 export class TenantBookingCreationClosedError extends AppError {

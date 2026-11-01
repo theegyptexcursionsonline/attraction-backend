@@ -16,6 +16,7 @@ import { AuthRequest } from '../types';
 import { flattenZodIssues } from '../middleware/validate.middleware';
 import { sendError, sendSuccess } from '../utils/response';
 import { callerTenantIds, isSuperAdmin } from '../utils/tenantScope';
+import { ContactRequestDetails, isCoralRequestTenant } from '../utils/coralRequestPolicy';
 
 // ---------------------------------------------------------------------------
 // Validation
@@ -257,6 +258,7 @@ type ContactMessageRecord = Pick<
   | 'handledAt'
   | 'delivery'
   | 'createdAt'
+  | 'requestDetails'
 >;
 
 export const serializeContactMessage = (doc: ContactMessageRecord) => ({
@@ -281,6 +283,14 @@ export const serializeContactMessage = (doc: ContactMessageRecord) => ({
     sentAt: doc.delivery?.sentAt ?? null,
   },
   createdAt: doc.createdAt,
+  ...(doc.requestDetails ? { requestDetails: {
+    kind: doc.requestDetails.kind,
+    experience: doc.requestDetails.experience,
+    adults: doc.requestDetails.adults,
+    children: doc.requestDetails.children,
+    pickupArea: doc.requestDetails.pickupArea,
+    hotel: doc.requestDetails.hotel,
+  } } : {}),
 });
 
 // ---------------------------------------------------------------------------
@@ -304,9 +314,10 @@ const redactProviderError = (error: unknown): Record<string, unknown> => {
   };
 };
 
-const storeContactMessage = async (
+export const storeContactMessage = async (
   tenantId: Types.ObjectId,
-  submission: ContactSubmission
+  submission: ContactSubmission,
+  options: { delivery?: IContactDelivery; requestFingerprint?: string; requestDetails?: ContactRequestDetails } = {}
 ): Promise<{ message: IContactMessage; duplicate: boolean }> => {
   for (let attempt = 0; attempt < MAX_REFERENCE_ATTEMPTS; attempt += 1) {
     try {
@@ -315,7 +326,9 @@ const storeContactMessage = async (
         tenantId,
         reference: generateContactReference(),
         status: 'new',
-        delivery: { status: 'pending' },
+        delivery: options.delivery ?? { status: 'pending' },
+        ...(options.requestFingerprint ? { requestFingerprint: options.requestFingerprint } : {}),
+        ...(options.requestDetails ? { requestDetails: options.requestDetails } : {}),
       });
       return { message, duplicate: false };
     } catch (error) {
@@ -324,7 +337,7 @@ const storeContactMessage = async (
       // concurrent submit) or the random reference collided. Re-read by key to
       // tell them apart; a collision simply retries with a fresh reference.
       if (submission.requestId) {
-        const existing = await ContactMessage.findOne({ tenantId, requestId: submission.requestId });
+        const existing = await ContactMessage.findOne({ tenantId, requestId: submission.requestId }).select('+requestFingerprint');
         if (existing) return { message: existing, duplicate: true };
       }
     }
@@ -423,9 +436,20 @@ export const submitContactMessage = async (
 
     // The idempotency guard is the unique index; it must exist before any write.
     await ensureContactMessageIndexes();
-    const stored = await storeContactMessage(tenant._id, parsed.data);
+    const storeOnly = isCoralRequestTenant(tenant);
+    const stored = await storeContactMessage(tenant._id, parsed.data, storeOnly
+      ? { delivery: { status: 'skipped', reason: 'tenant_store_only' } }
+      : {});
     if (stored.duplicate) {
       respondReceived(res, stored.message.reference, 200);
+      return;
+    }
+
+    // Coral's request phase never sends either an operator notification or a visitor email,
+    // even through the generic contact endpoint. Neither payload nor tenant mail settings opt in.
+    if (storeOnly) {
+      console.info('[contact] enquiry stored', { tenant: tenant.slug, reference: stored.message.reference, delivery: 'skipped' });
+      respondReceived(res, stored.message.reference, 201);
       return;
     }
 
