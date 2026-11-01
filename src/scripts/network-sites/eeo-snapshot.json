@@ -31255,6 +31255,812 @@
      "required": false
     }
    ]
+  },
+  {
+   "slug": "hurghada-orange-bay-parasailing-snorkeling-lunch-adventure",
+   "id": "feecb9af1769f7cec294e22e",
+   "readAt": "2026-11-01T08:04:01Z",
+   "detail": {
+    "title": "Hurghada: Orange Bay Parasailing, Snorkeling & Lunch Adventure",
+    "duration": "7 - 7.5 hours",
+    "languages": [],
+    "whatsIncluded": [
+     "Air-conditioned transportation",
+     "2 to 4 professional guides per boat",
+     "Special guide for non-swimmers",
+     "Buffet lunch",
+     "Unlimited beverages (mineral water, tea, instant coffee, coca cola and Fanta)",
+     "4 seasonal fruits",
+     "Two snorkeling stops",
+     "1x parasailing",
+     "Snorkeling equipment",
+     "2 hours of free time on Orange Bay Island",
+     "Entrance fees to Orange Bay",
+     "2 toilets and shower on board",
+     "Private boat (if option selected)",
+     "Private transport (if option selected)"
+    ],
+    "whatsNotIncluded": [
+     "Tips (not mandatory but appreciated)",
+     "Pickup service from Makadi, Sahl Hasheesh, El Gouna, Soma Bay and Safaga (select at checkout)"
+    ],
+    "whatToBring": [
+     "Sunglasses",
+     "Swimwear",
+     "Towel",
+     "Sunscreen",
+     "Cash"
+    ],
+    "itinerary": [
+     {
+      "title": "Starting/pickup location",
+      "description": "Depends on the selected option"
+     },
+     {
+      "title": "Limousine",
+      "description": "(30 minutes)"
+     },
+     {
+      "title": "Hurghada",
+      "description": "Safety briefing (30 minutes)"
+     },
+     {
+      "title": "Hurghada",
+      "description": "Breakfast (15 minutes)"
+     },
+     {
+      "title": "Ferry",
+      "description": "(1 hour)"
+     },
+     {
+      "title": "Hurghada",
+      "description": "Snorkeling (45 minutes)\n\nOptional"
+     },
+     {
+      "title": "Hurghada",
+      "description": "Snorkeling (45 minutes)\n\nOptional"
+     },
+     {
+      "title": "Hurghada",
+      "description": "Lunch (1 hour)"
+     },
+     {
+      "title": "Orange Bay",
+      "description": "Free time (2 hours)"
+     },
+     {
+      "title": "Ferry",
+      "description": "(1 hour)"
+     },
+     {
+      "title": "Arrive back at:",
+      "description": "Hurghada"
+     }
+    ],
+    "pricingSummary": {
+     "currency": "USD"
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "orange-bay-island-with-parasailing-no-transfe-a2992947b61d",
+     "title": "Orange Bay Island with Parasailing, No Transfer",
+     "type": "Per Person",
+     "description": "Arrange your own transportation to the experience and enjoy the complete Orange Bay island program with parasailing.",
+     "duration": "7 - 7.5 hours",
+     "guestPrices": {
+      "adult": 42,
+      "child": 35,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:30",
+       "guestPrices": {
+        "adult": 42,
+        "child": 35,
+        "infant": 20
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "orange-bay-parasailing-experience-with-transf-4c627578a0f2",
+     "title": "Orange Bay Parasailing Experience with Transfer",
+     "type": "Per Person",
+     "description": "Enjoy the Orange Bay island experience with parasailing and transfer included.",
+     "duration": "7 - 7.5 hours",
+     "guestPrices": {
+      "adult": 59,
+      "child": 45,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:30",
+       "guestPrices": {
+        "adult": 59,
+        "child": 45,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "private-boat-dolphin-watching-with-snorkeling-758a22f788d7",
+     "title": "Private Boat Dolphin Watching with Snorkeling, Guide, Food & Drinks",
+     "type": "Per Family",
+     "description": "Choose this option for an adventure with friendly dolphins. It includes a breakfast buffet, lunch buffet, soft drinks throughout the day, snorkeling equipment, life jackets, and a professional guide.",
+     "duration": "7 - 7.5 hours",
+     "guestPrices": {
+      "adult": 216.67,
+      "child": 108.34,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "07:00",
+       "guestPrices": {
+        "adult": 216.67,
+        "child": 108.34,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 216.67,
+        "child": 108.34,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 216.67,
+        "child": 108.34,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-3",
+     "pricingKey": "private-boat-with-full-red-sea-program-6192d49b63cf",
+     "title": "Private Boat with Full Red Sea Program",
+     "type": "Per Family",
+     "description": "Upgrade to a private boat and customize your Red Sea experience by choosing your preferred snorkeling spots, setting your own pace, and spending more time on the island.",
+     "duration": "7 - 7.5 hours",
+     "guestPrices": {
+      "adult": 242.67,
+      "child": 121.34,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "08:30",
+       "guestPrices": {
+        "adult": 242.67,
+        "child": 121.34,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "09:30",
+       "guestPrices": {
+        "adult": 242.67,
+        "child": 121.34,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "10:30",
+       "guestPrices": {
+        "adult": 242.67,
+        "child": 121.34,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8327483d27ff5927fa87e1",
+     "title": "Pick up from Elgouna",
+     "description": "",
+     "price": 15,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "orange-bay-island-with-parasailing-no-transfe-a2992947b61d"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87e2",
+     "title": "Birthday Cake",
+     "description": "",
+     "price": 45,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "orange-bay-parasailing-experience-with-transf-4c627578a0f2"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87e3",
+     "title": "Parasailing adventure",
+     "description": "",
+     "price": 30,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "private-boat-dolphin-watching-with-snorkeling-758a22f788d7"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87e4",
+     "title": "Private Birthday Cake",
+     "description": "",
+     "price": 50,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "private-boat-with-full-red-sea-program-6192d49b63cf"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87e5",
+     "title": "Birthday Cake",
+     "description": "",
+     "price": 45,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "orange-bay-island-with-parasailing-no-transfe-a2992947b61d"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87e6",
+     "title": "Pick up from Makadi",
+     "description": "",
+     "price": 15,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "orange-bay-island-with-parasailing-no-transfe-a2992947b61d"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87e7",
+     "title": "Sahl Hasheesh Pickup/Drop-Off",
+     "description": "",
+     "price": 15,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "orange-bay-island-with-parasailing-no-transfe-a2992947b61d"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87e8",
+     "title": "Transfers from Safaga Area",
+     "description": "",
+     "price": 18,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "orange-bay-island-with-parasailing-no-transfe-a2992947b61d"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87e9",
+     "title": "Pickup & Drop-off in Soma Bay",
+     "description": "",
+     "price": 18,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "orange-bay-island-with-parasailing-no-transfe-a2992947b61d"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87ea",
+     "title": "Private Transfer (1-3 people)",
+     "description": "",
+     "price": 30,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "orange-bay-island-with-parasailing-no-transfe-a2992947b61d"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87eb",
+     "title": "Private Transfer (4-8 people)",
+     "description": "",
+     "price": 50,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "orange-bay-island-with-parasailing-no-transfe-a2992947b61d"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87ec",
+     "title": "from Hurghada transf",
+     "description": "",
+     "price": 10,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "orange-bay-island-with-parasailing-no-transfe-a2992947b61d"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87ed",
+     "title": "Pickup & Drop-off in Soma Bay",
+     "description": "",
+     "price": 15,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "orange-bay-parasailing-experience-with-transf-4c627578a0f2"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87ee",
+     "title": "Pick up from Elgouna",
+     "description": "",
+     "price": 10,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "orange-bay-parasailing-experience-with-transf-4c627578a0f2"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87ef",
+     "title": "Transfers from Safaga Area",
+     "description": "",
+     "price": 15,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "orange-bay-parasailing-experience-with-transf-4c627578a0f2"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87f0",
+     "title": "Sahl Hasheesh Pickup/Drop-Off",
+     "description": "",
+     "price": 10,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "orange-bay-parasailing-experience-with-transf-4c627578a0f2"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87f1",
+     "title": "Pick up from Makadi",
+     "description": "",
+     "price": 10,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "orange-bay-parasailing-experience-with-transf-4c627578a0f2"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87f2",
+     "title": "Private Birthday Cake",
+     "description": "",
+     "price": 50,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "private-boat-dolphin-watching-with-snorkeling-758a22f788d7"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87f3",
+     "title": "seafood Lunch",
+     "description": "",
+     "price": 40,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "private-boat-dolphin-watching-with-snorkeling-758a22f788d7"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87f4",
+     "title": "Fishing gear",
+     "description": "",
+     "price": 35,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "private-boat-dolphin-watching-with-snorkeling-758a22f788d7"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87f5",
+     "title": "Hotel transfer Safaga (round trip)",
+     "description": "",
+     "price": 15,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "private-boat-dolphin-watching-with-snorkeling-758a22f788d7"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87f6",
+     "title": "Pickup & Drop-off in Soma Bay",
+     "description": "",
+     "price": 15,
+     "perGuest": false,
+     "bookingOptionKeys": [
+      "private-boat-dolphin-watching-with-snorkeling-758a22f788d7"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87f7",
+     "title": "Transfer Makadi Bay and Sahl Hasheesh",
+     "description": "",
+     "price": 10,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "private-boat-dolphin-watching-with-snorkeling-758a22f788d7"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87f8",
+     "title": "extra charge for El Gouna Hotels",
+     "description": "",
+     "price": 10,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "private-boat-dolphin-watching-with-snorkeling-758a22f788d7"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87f9",
+     "title": "1h on Orange bay",
+     "description": "",
+     "price": 150,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "private-boat-dolphin-watching-with-snorkeling-758a22f788d7"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87fa",
+     "title": "Fishing gear",
+     "description": "",
+     "price": 35,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "private-boat-with-full-red-sea-program-6192d49b63cf"
+     ],
+     "required": false
+    },
+    {
+     "id": "6a8327483d27ff5927fa87fb",
+     "title": "seafood Lunch",
+     "description": "",
+     "price": 40,
+     "perGuest": true,
+     "bookingOptionKeys": [
+      "private-boat-with-full-red-sea-program-6192d49b63cf"
+     ],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "makadi-bay-paradise-island-day-trip-with-snorkeling-lunch",
+   "id": "1f7ef56c9f1b72116d2c6868",
+   "readAt": "2026-11-01T08:04:01Z",
+   "detail": {
+    "title": "Makadi Bay: Paradise Island Day Trip with Snorkeling & Lunch",
+    "duration": "4 - 9 hours",
+    "languages": [],
+    "whatsIncluded": [],
+    "includes": [
+     "Hotel pickup and drop-off",
+     "Air-conditioned transportation",
+     "Boat trip to Paradise Island",
+     "Entry ticket to Paradise Island",
+     "Tour guide",
+     "Buffet lunch",
+     "Snorkeling equipment",
+     "Life jacket",
+     "Transfers from Makadi Bay"
+    ],
+    "whatsNotIncluded": [
+     "Transfers from Hurghada, Sahl Hashish, Soma Bay, El Gouna, or Safaga (available as an add-on at checkout)"
+    ],
+    "whatToBring": [
+     "Sunglasses",
+     "Sun hat",
+     "Hat",
+     "Swimwear",
+     "Towel",
+     "Sunscreen"
+    ],
+    "itinerary": [
+     {
+      "title": "Starting/pickup location",
+      "description": "Depends on the selected option"
+     },
+     {
+      "title": "Van",
+      "description": "",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Yacht",
+      "description": "",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Paradise Island, Hurghada",
+      "description": "Break time, Lunch, Free time, Swimming",
+      "duration": "3 hours"
+     },
+     {
+      "title": "Red Sea (Optional)",
+      "description": "Snorkeling (Optional)",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Yacht",
+      "description": "",
+      "duration": "1 hour"
+     },
+     {
+      "title": "Van",
+      "description": "",
+      "duration": "1 hour"
+     },
+     {
+      "title": "2 drop-off locations",
+      "description": "6RMW+QP, Hurghada"
+     }
+    ],
+    "pricingSummary": {
+     "currency": "USD"
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "4-hour-speedboat-tour-from-el-gouna-soma-bay--f1431088d248",
+     "title": "4-Hour Speedboat Tour From El Gouna, Soma Bay, and Safaga",
+     "type": "Per Person",
+     "description": "Hotel pickup is included for this express island escape. Snorkel colorful coral reefs, relax on the beach, and enjoy a light lunch during a fun-filled 3-hour Red Sea adventure.",
+     "duration": "6 hours",
+     "guestPrices": {
+      "adult": 38,
+      "child": 19,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 38,
+        "child": 38,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 43,
+        "child": 43,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "7-hour-yacht-tour-without-transfers-79246418c2d6",
+     "title": "7-Hour Yacht Tour – Without Transfers",
+     "type": "Per Person",
+     "description": "Make your way to the marina and board the yacht for a relaxing Paradise Island escape. Enjoy guided snorkeling, beach time, a tasty lunch, and refreshing soft drinks throughout the trip.",
+     "duration": "8 hours",
+     "guestPrices": {
+      "adult": 52,
+      "child": 26,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 52,
+        "child": 52,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "11:30",
+       "guestPrices": {
+        "adult": 43.5,
+        "child": 43.5,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "7-hour-yacht-tour-from-hurghada-hotels-27a0011cafe3",
+     "title": "7-Hour Yacht Tour From Hurghada Hotels",
+     "type": "Per Person",
+     "description": "Enjoy a full-day cruise with convenient hotel pickup from Hurghada. Relax on Paradise Island, explore vibrant coral reefs with guided snorkeling, and savor a delicious buffet lunch surrounded by beautiful Red Sea scenery.",
+     "duration": "8 hours",
+     "guestPrices": {
+      "adult": 55,
+      "child": 27.5,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 55,
+        "child": 55,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 46.5,
+        "child": 46.5,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-3",
+     "pricingKey": "7-hour-yacht-tour-from-makadi-bay-sahl-hashee-1d8fc2a2b6d6",
+     "title": "7-Hour Yacht Tour From Makadi Bay, Sahl Hasheesh and Al Ahyaa",
+     "type": "Per Person",
+     "description": "Includes convenient hotel pickup and return from your area. Enjoy a relaxing yacht trip to Paradise Island with beach time, guided snorkeling, and a delicious lunch served onboard.",
+     "duration": "9 hours",
+     "guestPrices": {
+      "adult": 60,
+      "child": 30,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 60,
+        "child": 60,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "11:30",
+       "guestPrices": {
+        "adult": 51.5,
+        "child": 51.5,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-4",
+     "pricingKey": "7-hour-yacht-tour-from-el-gouna-soma-bay-and--945f032eb94b",
+     "title": "7-Hour Yacht Tour From El Gouna, Soma Bay, and Safaga",
+     "type": "Per Person",
+     "description": "Enjoy convenient hotel transfers and cruise across the Red Sea to Paradise Island. Snorkel vibrant coral reefs, relax on the beach, and savor a satisfying lunch with refreshing drinks on deck.",
+     "duration": "9 hours",
+     "guestPrices": {
+      "adult": 65,
+      "child": 65,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 65,
+        "child": 65,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "11:30",
+       "guestPrices": {
+        "adult": 56,
+        "child": 56,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-5",
+     "pricingKey": "4-hour-private-speedboat-tour-36cb7565237a",
+     "title": "4-Hour Private Speedboat Tour",
+     "type": "Per Group",
+     "description": "Enjoy a private Paradise Island escape tailored to your schedule. Travel with private transport, snorkel vibrant coral reefs, relax on the beach, and savor a delicious lunch, with optional transfers available.",
+     "duration": "4 hours",
+     "guestPrices": {
+      "adult": 250,
+      "child": 250,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 250,
+        "child": 250,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "13:00",
+       "guestPrices": {
+        "adult": 250,
+        "child": 250,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": []
   }
  ]
 }
