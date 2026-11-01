@@ -1,9 +1,10 @@
 /**
  * Batch B14 (1 November 2026), the ten reefs, bays and shores that take the network to 110. Two groups:
  *
- * - B14A: Shaab Abu Nugar, Fanous East, Careless Reef and Fanadir North, four reefs off Hurghada.
- * - B14B: Fanous West, the sheltered half of the same beacon reef, and three places down the Marsa Alam
- *   coast: Abu Dabbab Beach, Elphinstone Reef and the bay of Sharm El Luli.
+ * - B14A: Shaab Abu Nugar, Fanous East, North Abu Ramada, Careless Reef and Fanadir North, five reefs
+ *   off Hurghada.
+ * - B14B: Erg Sabina, the tower in the Giftun strait, Fanous West, the sheltered half of the beacon reef,
+ *   and three places down the Marsa Alam coast: Abu Dabbab Beach, Elphinstone Reef and Sharm El Luli.
  *
  * Every trip is built on the record the client publishes on its own main site, read into the dated snapshot
  * (`network-sites/eeo-snapshot.json`); prices, child rates, departures and inclusions are copied from that
@@ -34,6 +35,23 @@
  *   allocations that are equal on distance to within 30 m it takes the two dugong-and-turtle bay days at
  *   Marsa Mubarak, and Elphinstone Reef, an offshore reef reached by boat, takes the Pirates sailing day out
  *   of Port Ghalib. Either is defensible on distance; this one is right on subject.
+ * - North Abu Ramada and Erg Sabina each sell days another site already sells, because the day their own
+ *   water is nearest to cannot be built from its record (coordinator decision, 1 November). Both sit in the
+ *   same water as the days they do sell, so each still sells the nearest day the client publishes that the
+ *   seed accepts:
+ *   · North Abu Ramada is 3.06 km from the Paradise Island beach at the southern end of the larger Giftun,
+ *     but both Paradise Island records price their departures apart from the booking option, doubling the
+ *     child price at one or both of them, so the seed refuses every per-person option of both (the one
+ *     consistent option of the second is priced per group, which it also refuses). It therefore sells two of
+ *     the Orange Bay days batch B13's Shaab Sabina sells, on the same larger Giftun.
+ *   · Erg Sabina is 2.67 km from Small Giftun, but the Orange Bay day nearest it carries a price in its
+ *     length field ("$$69" on the record, "$69" on the option), and a trip that can be booked must publish a
+ *     length, so nothing can sell it without inventing one. It therefore sells the three-island yacht day
+ *     batch B13's Erg Somaya sells, which works the same islands.
+ *   Each is one field for the client to correct, and correcting it would let the site move to its own
+ *   nearest day without touching anything else. The Makadi Bay Paradise Island record read into the
+ *   snapshot for this batch stays there: it is unused but harmless, and it is the record the client's fix
+ *   would repair.
  * - Sharm El Luli is a bay with no sea day within sixty kilometres, so it sells the one day that enters its
  *   own national park: the jeep safari inland to Cleopatra's Temple and a desert spring, 32.08 km from the
  *   bay. Its pages say plainly that the day is spent inland in the desert and not at the bay. The site is an
@@ -56,29 +74,29 @@
  * - `hurghada-orange-bay-snorkeling-diving-cruise-with-massage` (B14B's Erg Sabina day) is NOT written here:
  *   see the held-back notes below.
  *
- * Held back, and why (each is a question for the coordinator and the client in the build report):
- * - North Abu Ramada, the fifth site of this group, is NOT in the batch. Both days assigned to it are
- *   refused by the seed, so the site would have no trip at all, and nothing here invents one:
- *   · `from-hurghada-paradise-island-yacht-speedboat-cruise-with-snorkeling-lunch` and
- *     `makadi-bay-paradise-island-day-trip-with-snorkeling-lunch` each price their departures apart from the
- *     booking option itself. Every per-person option of both records doubles the child price at one or both
- *     of its two departures (the Hurghada-hotel option of the first sells at 46.50 adult and 23.25 child,
- *     while its own 11:30 departure sells at 46.50 for an adult AND for a child), so the seed cannot tell
- *     which figure a family pays and refuses the record outright. Batches B09 and B11 held the first back
- *     for the same reason; the second was read into the snapshot for this batch and carries the same fault.
- *   · The second record's one clean option, the 4-hour private speedboat, is priced per group rather than
- *     per person, which the seed also refuses.
- *   Reading the record in has therefore settled the coordinator's open question: the records are complete
- *   but self-contradictory on price. One field per departure is the client's to correct; until then this
- *   site has no day, and whether it waits or is swapped is the coordinator's call.
- * - `hurghada-orange-bay-snorkeling-diving-cruise-with-massage`, the only day assigned to Erg Sabina in
- *   B14B: the client publishes a price where the day's length should be ("$$69" on the record, "$69" on the
- *   option and on the published list), so there is no length to copy and nothing here invents one. The batch
- *   brief asks for the day to be sold with no length written for it, but the attraction schema requires a
- *   length on any trip that can be booked (`duration` is `requiredWhenBookable`), so a bookable trip without
- *   one is refused before it is written. The three ways out are the client correcting the one field, the day
- *   being sold by enquiry with no price, or the coordinator naming the length; all three are decisions, so
- *   the record stays held back exactly as batch B13 held it.
+ * Held back, and why (each is a question for the client in the build report):
+ * - `from-hurghada-paradise-island-yacht-speedboat-cruise-with-snorkeling-lunch` and
+ *   `makadi-bay-paradise-island-day-trip-with-snorkeling-lunch`, the two days North Abu Ramada's own water
+ *   is nearest to. Each prices its departures apart from the booking option itself: every per-person option
+ *   of both records doubles the child price at one or both of its two departures (the Hurghada-hotel option
+ *   of the first sells at 46.50 adult and 23.25 child, while its own 11:30 departure sells at 46.50 for an
+ *   adult AND for a child), so the seed cannot tell which figure a family pays and refuses the record
+ *   outright. The second record's one consistent option, the 4-hour private speedboat, is priced per group
+ *   rather than per person, which the seed also refuses. Batches B09 and B11 held the first back for the
+ *   same reason; the second was read into the snapshot for this batch and carries the same fault.
+ * - `hurghada-orange-bay-snorkeling-diving-cruise-with-massage`, the day Erg Sabina's own water is nearest
+ *   to: the client publishes a price where the day's length should be ("$$69" on the record, "$69" on the
+ *   option and on the published list), so there is no length to copy and nothing here invents one. The
+ *   attraction schema requires a length on any trip that can be booked (`duration` is `requiredWhenBookable`),
+ *   so a bookable trip without one is refused before it is written, and batch B13 held the same record back
+ *   for the same reason.
+ * - `makadi-bay-snorkeling-and-diving-at-orange-bay` is filed by the client under Makadi Bay and titled for
+ *   it, but the booking option sold here is its "Tour from Hurghada", whose own text reads "This option
+ *   includes pickup and drop-off in Hurghada". So this trip collects in Hurghada like every other trip on
+ *   the site, and it is written the way batch B13's Shaab Sabina writes it, with no second starting town.
+ *   The Makadi Bay handling batch B13 gave Ras Disha belongs to a different record, whose own option
+ *   collects in that bay; copying it here would publish a Makadi Bay pickup for a booking that includes a
+ *   Hurghada one.
  * - `orange-island-premium-cruise-from-hurghada-with-lunch-transfer` names Orange Bay and the Orange Island
  *   entry fee and no Giftun island, which is why batch B13 could not carry it on a Giftun reef's page. It
  *   sits here on Fanous East, whose nearest named point is the larger Giftun itself, so the day is sold for
@@ -141,6 +159,9 @@ const P = {
   DOLPHIN_YACHT: B09A.HBT_DOLPHIN_YACHT,
   ORANGE_LUNCH: B09A.HBT_ORANGE_LUNCH,
   SIX_ISLANDS: B09A.HBT_SIX_ISLANDS,
+  ORANGE_DIVE: B09A.HBT_ORANGE_DIVE,
+  ORANGE_YACHT: B09A.HBT_ORANGE_YACHT,
+  THREE_ISLANDS: B09A.HBT_THREE_ISLANDS,
   MM_TURTLE: B08C.MM_TURTLE,
   MM_DUGONG: B08C.MM_DUGONG,
   MM_SAILING: B08C.MM_SAILING,
@@ -259,6 +280,9 @@ const PHOTO = {
   turtleInBlue: PHOTO_C.turtleInBlue,
   snorkellerAndSails: PHOTO_C.snorkellerAndSails,
   camelInLagoon: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788796111/tours/qlu2ucaa2kzydntyyovj.jpg',
+  diverDescending: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788292330/tours/qgmeqrxj4kngqfei9snq.jpg',
+  bowOverLagoon: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1787782233/tours/wirlheh3pj6ibboavetn.jpg',
+  yachtAtSunset: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1787781893/tours/uaguqygoeo7djujix5fy.jpg',
 };
 
 /**
@@ -277,6 +301,9 @@ const ALT: Record<keyof typeof PHOTO, string> = {
   turtleInBlue: 'A large sea turtle in deep blue water, with small fish and a reef behind it',
   snorkellerAndSails: 'A snorkeller in a mask at the surface of clear green water, with a tall sailing boat under sail behind',
   camelInLagoon: 'A camel standing in shallow water between green mangrove bushes, with a low ridge behind',
+  diverDescending: 'A scuba diver descending through blue water above a reef, with other divers below',
+  bowOverLagoon: 'The white bow of a boat heading across a turquoise lagoon towards a low sandy shore',
+  yachtAtSunset: 'A motor yacht in silhouette on the sea under an orange sunset, with hills on the horizon',
 };
 
 /**
@@ -287,9 +314,7 @@ const ALT: Record<keyof typeof PHOTO, string> = {
  * image (its `heroImages` is a list of addresses), so these stay as notes until the storefront has a field
  * for them.
  *
- * The coordinator sent twenty, two for each of the ten sites the batch was planned with. The pairs for
- * North Abu Ramada and Erg Sabina are not written here, because neither site is built: both are held back
- * on their own records' faults, above. They wait with the sites.
+ * All twenty are written here, two for each of the ten sites the batch was planned with.
  */
 const HERO: Record<string, [string, string]> = {
   'shaab-abu-nugar': [
@@ -304,6 +329,12 @@ const HERO: Record<string, [string, string]> = {
     // Two jackfish approach a dense cloud of silversides beside a sunlit coral wall.
     'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521128/attractions-network/tenant-heroes/fanous-east/site-20261101-second-cf907dec68d7.png',
   ],
+  'north-abu-ramada': [
+    // A low barren island tip rises above the waterline, with a submerged coral plateau dropping into a wall with sea fans below.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521130/attractions-network/tenant-heroes/north-abu-ramada/site-20261101-hero-6537d844b649.png',
+    // Seven barracuda hover in blue water above a coral-covered plateau.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521131/attractions-network/tenant-heroes/north-abu-ramada/site-20261101-second-12ef40a282f7.png',
+  ],
   'careless-reef': [
     // Two unequal coral towers rise side by side from a coral garden surrounded by deep blue water.
     'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521133/attractions-network/tenant-heroes/careless-reef/site-20261101-hero-f861866e0c6e.png',
@@ -315,6 +346,12 @@ const HERO: Record<string, [string, string]> = {
     'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521135/attractions-network/tenant-heroes/fanadir-north/site-20261101-hero-816a81eaab6b.png',
     // A mottled ochre octopus rests on coral rubble, with its eye, siphon and two curled arms visible against a softly blurred reef background.
     'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521136/attractions-network/tenant-heroes/fanadir-north/site-20261101-second-976f4f60438e.png',
+  ],
+  'erg-sabina': [
+    // A broad coral outcrop covered in pink and violet soft corals rises from a coral-strewn seabed, with small silvery fish sheltering in a hollow in clear turquoise water.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521138/attractions-network/tenant-heroes/erg-sabina/site-20261101-hero-7feb5853b1ea.png',
+    // A mottled crocodilefish rests head-on on pale sand and coral rubble beneath clear turquoise water.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521139/attractions-network/tenant-heroes/erg-sabina/site-20261101-second-bc8977075b35.png',
   ],
   'fanous-west': [
     // A narrow sandy underwater channel runs between low coral gardens toward clear turquoise lagoon water.
@@ -496,6 +533,69 @@ export const B14A: NetworkBatch = {
       ],
     },
     {
+      slug: 'north-abu-ramada',
+      name: 'North Abu Ramada',
+      listingPath: '/trips',
+      domain: 'northaburamadahurghada.com',
+      city: 'Hurghada',
+      area: 'Hurghada',
+      pickupDestination: 'hurghada',
+      coordinates: HURGHADA,
+      currency: 'USD',
+      slugPrefix: 'nar-',
+      foreignPlaces: NOT_HURGHADA_BOATS,
+      tagline: 'Two Orange Bay days out of Hurghada',
+      description: `North Abu Ramada is the northern site on the Sha’ab Abu Ramada reef, which rings the small island of Abu Ramada south of Small Giftun; the island is recorded in the gazetteer as Jazirat Abu Rimathi. The site is a plateau that runs out from the island’s north and tips over into a vertical wall, a coral top above a face of coral and gorgonians. The mooring sits inside a small bend in that wall, and beneath the lip, where the plateau gives way, there is a chimney. The reef’s open northern end is exposed to weather and to strong current, which is what feeds it, and it is at its liveliest as a drift when the flow comes from the north. Schools of giant barracuda, bigeye trevally and yellowfin tuna work the fusiliers sweeping across the plateau, turtles feed on the soft corals, squadrons of up to twelve eagle rays have been seen flying past in formation, and lionfish and groupers stake out glassfish in the cavities.\n\nThese days sail to Orange Bay on the larger Giftun; their programmes do not name North Abu Ramada, the plateau off the north tip of Abu Ramada island, about three kilometres south-east of that island’s southern end. Two trips are sold here: a day that snorkels and dives, and a yacht that comes at two lengths. ${CLOSING}`,
+      seo: {
+        metaTitle: 'North Abu Ramada: Two Orange Bay Days',
+        metaDescription: 'Two days on the water from Hurghada, both ashore at Orange Bay on the larger Giftun: one that dives as well as snorkels, and one yacht at two lengths.',
+        keywords: ['north abu ramada plateau', 'orange bay snorkel and dive day', 'abu ramada island reef', 'orange bay yacht five or eight hours', 'hurghada orange bay with a hotel car'],
+      },
+      theme: { primaryColor: '#0A2747', secondaryColor: '#F1E8D4', accentColor: '#2E9B7D' },
+      heroImages: [...HERO['north-abu-ramada'], PHOTO.diverDescending, PHOTO.bowOverLagoon],
+      logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/north-abu-ramada/monogram.png',
+      trips: [
+        {
+          path: 'orange-bay-snorkel-and-dive',
+          price: P.ORANGE_DIVE,
+          title: 'Snorkel First, Then a Dive, Then the Island',
+          short: 'Half past seven away, Giftun by boat, an hour and a quarter ashore at Orange Bay, and two ways into the water with the kit provided.',
+          description: 'Two ways into the water on one ticket. The boat leaves at half past seven for Giftun; an hour and a quarter is spent ashore on Orange Bay Island, and what is left of the day goes to snorkelling, mask and fins provided, and to one scuba dive with the whole kit. The programme names Orange Bay and the island it sits beside, not North Abu Ramada, the plateau three kilometres south-east of the larger island’s southern end; no boat stops there.\n\nThe meal is an open buffet aboard, with hot and cold drinks through the day, and the marine fee, the life vest and the guide need no paying for. A child is priced apart from an adult, and a car runs you to the boat from your Hurghada hotel and home again.',
+          highlights: [
+            'Two ways into the water, one ticket',
+            'An hour and a quarter on the island',
+            'A scuba dive with the whole kit',
+            'Marine fee and life vest covered',
+          ],
+          seo: {
+            metaTitle: 'Snorkel First, Then a Dive, Then the Island',
+            metaDescription: 'A boat out of Hurghada at half past seven: snorkelling with the kit, one scuba dive, an hour and a quarter ashore on Orange Bay and a buffet aboard.',
+          },
+          images: [PHOTO.diverDescending],
+          imageAlts: [ALT.diverDescending],
+        },
+        {
+          path: 'orange-bay-yacht-five-or-eight-hours',
+          price: P.ORANGE_YACHT,
+          title: 'Pick Your Length: a Short Yacht Day or a Long One',
+          short: 'The short day: breakfast, one stop in the water, an hour ashore. The long one: lunch as well, another stop and another hour on the island.',
+          description: 'One yacht, two lengths, and the choice is yours at booking. Take five hours and you get a breakfast buffet, a single stop in the water and sixty minutes on the island; take eight and lunch, another stop and another hour ashore come with it. The programme names Orange Bay and the island it sits beside, not North Abu Ramada, the plateau three kilometres south-east of the larger island’s southern end; no boat stops there.\n\nWhichever you pick, the gear, the island entry and the marine tax are in the price, and a guide sails with the boat, plus one more for guests who do not swim. A child is priced apart from an adult. The hotels are collected from first, and the yacht leaves at half past eight.',
+          highlights: [
+            'A five-hour day or an eight-hour one',
+            'Breakfast as the yacht sails out',
+            'One stop in the water, or two',
+            'A guide aboard for guests who do not swim',
+          ],
+          seo: {
+            metaTitle: 'Pick Your Length: a Short Yacht Day or a Long One',
+            metaDescription: 'One yacht day at two lengths from Hurghada: five hours with breakfast, a stop in the water and an hour ashore, or eight with lunch and twice that.',
+          },
+          images: [PHOTO.bowOverLagoon],
+          imageAlts: [ALT.bowOverLagoon],
+        },
+      ],
+    },
+    {
       slug: 'careless-reef',
       name: 'Careless Reef',
       listingPath: '/trips',
@@ -590,6 +690,50 @@ export const B14A: NetworkBatch = {
 export const B14B: NetworkBatch = {
   id: 'b14b',
   sites: [
+    {
+      slug: 'erg-sabina',
+      name: 'Erg Sabina',
+      listingPath: '/trips',
+      domain: 'ergsabina.com',
+      city: 'Hurghada',
+      area: 'Hurghada',
+      pickupDestination: 'hurghada',
+      coordinates: HURGHADA,
+      currency: 'USD',
+      slugPrefix: 'egs-',
+      foreignPlaces: NOT_HURGHADA_BOATS,
+      tagline: 'A three-island yacht day from Hurghada',
+      description: `Erg Sabina is a single coral erg standing on a coral floor in the Giftun archipelago, just east of the Shaab Sabina reef and off the eastern side of Giftun Island, and the erg itself runs tens of metres to the north. It is a shallow site — a dive register gives ten metres as its maximum and an operator ten to twelve — which is why the light on it is good and why it is reckoned one of the better spots in the archipelago for underwater photography. The erg stands about fifty metres north of the main reef and is a haven of delicate soft corals and glassfish. Current can get up here because of the shape of the Giftun passage, and the site is only partly sheltered from the wind. Butterflyfish, crocodilefish, turtles and eagle rays are recorded by both guides, along with jackfish, lionfish and scorpionfish working the schools of glassfish.\n\nThis day sails to Orange Bay, the Giftun islands and Magawish; its programme does not name Erg Sabina, the coral tower in the strait between the two Giftun islands, under three kilometres from Small Giftun. One trip is sold here: eight hours by yacht, working three islands. ${CLOSING}`,
+      seo: {
+        metaTitle: 'Erg Sabina: a Three-Island Yacht Day',
+        metaDescription: 'A yacht day out of Hurghada: Magawish, the Giftun nature reserve and Orange Bay in eight hours, with two stops in the water and seafood at midday.',
+        keywords: ['erg sabina coral tower', 'giftun strait soft corals', 'three island yacht day hurghada', 'orange bay and magawish cruise', 'hurghada yacht with a seafood lunch'],
+      },
+      theme: { primaryColor: '#7A2E3B', secondaryColor: '#EEF1F0', accentColor: '#1F9AA8' },
+      heroImages: [...HERO['erg-sabina'], PHOTO.yachtAtSunset],
+      logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/erg-sabina/monogram.png',
+      trips: [
+        {
+          path: 'three-islands-and-two-stops-in-the-water',
+          price: P.THREE_ISLANDS,
+          title: 'Three Islands, Two Stops in the Water, One Yacht',
+          short: 'Eight hours, one yacht: time ashore on two islands, forty minutes of snorkelling in the Giftun reserve, two more stops in the water and seafood.',
+          description: 'Three islands in eight hours. Sixty minutes are spent ashore on Orange Bay and sixty more at Magawish, with forty minutes in the water inside the Giftun Island nature reserve between them, and two further stops at two more sites along the route. The programme names all three islands, not Erg Sabina, the coral tower out in the strait between them; nothing stops at the tower.\n\nBreakfast comes as the yacht sails out and the midday meal is seafood; soft drinks, hot drinks, water and fruit in season are unlimited, and each island’s entrance fee is already paid. Dolphins are looked for on the way out and are never promised. A child is priced apart from an adult, and the car reaches your Hurghada hotel in time for a half past eight sailing.',
+          highlights: [
+            'Sixty minutes on Orange Bay',
+            'Forty inside the Giftun reserve',
+            'Magawish Island for an hour',
+            'Two stops in the water on the way',
+          ],
+          seo: {
+            metaTitle: 'Three Islands, Two Stops in the Water, One Yacht',
+            metaDescription: 'Eight hours by yacht out of Hurghada: time ashore on Orange Bay and Magawish, forty minutes in the Giftun reserve, and seafood served at midday.',
+          },
+          images: [PHOTO.yachtAtSunset],
+          imageAlts: [ALT.yachtAtSunset],
+        },
+      ],
+    },
     {
       slug: 'fanous-west',
       name: 'Fanous West',

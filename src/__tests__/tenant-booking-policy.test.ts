@@ -52,8 +52,8 @@ describe('tenant booking-creation closure policy', () => {
       expect(isTenantBookingCreationClosed({ slug })).toBe(true);
     }
     // Batch B14's sites are closed the same way, until each domain is connected and the owner opens it.
-    for (const slug of ['shaab-abu-nugar', 'fanous-east', 'careless-reef', 'fanadir-north',
-      'fanous-west', 'abu-dabbab-beach', 'elphinstone-reef', 'sharm-el-luli']) {
+    for (const slug of ['shaab-abu-nugar', 'fanous-east', 'north-abu-ramada', 'careless-reef', 'fanadir-north',
+      'erg-sabina', 'fanous-west', 'abu-dabbab-beach', 'elphinstone-reef', 'sharm-el-luli']) {
       expect(isTenantBookingCreationClosed({ slug })).toBe(true);
     }
     expect(() => assertTenantBookingCreationAllowed({ slug: 'king-of-egypt-tours' }))
@@ -99,8 +99,8 @@ describe('tenant booking-creation closure policy', () => {
         'pyramid-of-neferirkare', 'pyramid-of-neferefre', 'pyramid-of-djedefre', 'meidum-pyramid',
         'shaab-sabina', 'ras-disha', 'erg-somaya',
         // Batch B14's reefs off Hurghada and its three places down the Marsa Alam coast, closed the same way.
-        'shaab-abu-nugar', 'fanous-east', 'careless-reef', 'fanadir-north',
-        'fanous-west', 'abu-dabbab-beach', 'elphinstone-reef', 'sharm-el-luli',
+        'shaab-abu-nugar', 'fanous-east', 'north-abu-ramada', 'careless-reef', 'fanadir-north',
+        'erg-sabina', 'fanous-west', 'abu-dabbab-beach', 'elphinstone-reef', 'sharm-el-luli',
       ] },
     });
 

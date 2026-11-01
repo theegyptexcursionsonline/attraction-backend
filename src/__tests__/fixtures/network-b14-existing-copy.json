@@ -3,6 +3,22 @@
  "source": "network-now.json, the dated scan of the live network",
  "trips": [
   {
+   "site": "dive2egypt",
+   "pathSlug": "orange-bay-snorkelling-and-diving",
+   "record": "makadi-bay-snorkeling-and-diving-at-orange-bay",
+   "fields": [
+    "Orange Bay Snorkelling and Scuba Day from Hurghada",
+    "Eight and a half hours from Hurghada: snorkelling, a scuba dive with the equipment, Orange Bay Island and an open buffet lunch.",
+    "A day at sea with snorkelling and a scuba dive. The car collects you from your hotel in Hurghada at half past seven, and the boat sails past Giftun to Orange Bay Island.\n\nThe diving and snorkelling equipment, a life vest, the marine fee, snacks, an open buffet lunch and soft and hot drinks are in the price. Bring a hat, a towel and reef-safe sunscreen. Children have their own price.",
+    "A scuba dive with the equipment",
+    "Snorkelling by boat",
+    "Orange Bay Island",
+    "An open buffet lunch",
+    "Orange Bay Snorkelling and Scuba Day from Hurghada",
+    "Eight and a half hours from Hurghada: a scuba dive, snorkelling, Orange Bay Island, an open buffet lunch and hotel pickup."
+   ]
+  },
+  {
    "site": "giftun-beach",
    "pathSlug": "six-island-speedboat",
    "record": "hurghada-speedboat-trip-to-6-islands-with-dolphin-watching-snorkeling",
@@ -19,6 +35,38 @@
    ]
   },
   {
+   "site": "giftun-beach",
+   "pathSlug": "three-island-yacht",
+   "record": "hurghada-yacht-cruise-to-orange-bay-giftun-magawish-with-dolphins",
+   "fields": [
+    "Three Islands by Yacht: Orange Bay, Giftun and Magawish",
+    "A yacht day out of Hurghada with an hour at Orange Bay, snorkelling off Giftun, an hour at Magawish and a seafood lunch.",
+    "The yacht leaves at half past eight for a day of about eight hours. Breakfast comes first on board, eggs, cheese, butter, honey and bread, and then the boat heads for Orange Bay for an hour ashore and in the water. Giftun follows, forty minutes of swimming and snorkelling, and then Magawish for another hour of the same.\n\nEntrance fees for all three islands are covered, as are two snorkelling stops at different sites, the equipment, a life vest and a snorkelling guide. Dolphin watching is part of this option. Seafood lunch, unlimited soft and hot drinks, water and seasonal fruit are served on board, and the deck has shade and a sound system. A wetsuit, a GoPro video, photographs, a banana boat ride or an extra dive can be added. Infants are charged at the infant rate.",
+    "An hour each at Orange Bay and Magawish",
+    "Two snorkelling stops with gear and a guide",
+    "Breakfast and a seafood lunch on board",
+    "Entrance fees for all three islands covered",
+    "Three Island Yacht Day from Hurghada",
+    "Orange Bay, Giftun and Magawish in one yacht day from Hurghada, with two snorkelling stops, breakfast and a seafood lunch served on board."
+   ]
+  },
+  {
+   "site": "hurghada-boat-tour",
+   "pathSlug": "orange-bay-snorkelling-and-diving-day",
+   "record": "makadi-bay-snorkeling-and-diving-at-orange-bay",
+   "fields": [
+    "Orange Bay Snorkelling and Diving Day",
+    "Eight and a half hours from Hurghada: snorkelling with the gear, a scuba dive with the equipment, Orange Bay and an open buffet lunch.",
+    "A day that mixes snorkelling and a first look at diving. The car collects you from your hotel in Hurghada at half past seven, and the boat sails past Giftun to Orange Bay Island for an hour and a quarter.\n\nThe day includes snorkelling with the gear, a scuba dive with the diving equipment and a life vest, the marine fee, snacks, an open buffet lunch on board and soft and hot drinks. Bring a hat, a towel and reef-safe sunscreen. Children have their own price.",
+    "Snorkelling and a scuba dive",
+    "Orange Bay Island",
+    "The diving equipment included",
+    "An open buffet lunch",
+    "Hurghada Orange Bay Snorkelling and Diving Day",
+    "Eight and a half hours from Hurghada: snorkelling, a scuba dive with the equipment, Orange Bay, an open buffet lunch and hotel pickup."
+   ]
+  },
+  {
    "site": "hurghada-boat-tour",
    "pathSlug": "orange-bay-cruise-with-lunch",
    "record": "orange-island-premium-cruise-from-hurghada-with-lunch-transfer",
@@ -32,6 +80,38 @@
     "Unlimited drinks",
     "Orange Bay Cruise from Hurghada with Snorkelling and Lunch",
     "Eight hours from Hurghada: two snorkelling stops, two hours on Orange Bay Island, a buffet lunch, unlimited drinks and hotel pickup."
+   ]
+  },
+  {
+   "site": "hurghada-boat-tour",
+   "pathSlug": "orange-bay-yacht-with-breakfast",
+   "record": "hurghada-orange-bay-yacht-cruise-with-snorkeling-breakfast-lunch-drinks",
+   "fields": [
+    "Orange Bay Yacht Trip with Breakfast and Snorkelling",
+    "Five or eight hours on a yacht from Hurghada: breakfast, snorkelling and time on Orange Bay Island, with lunch on the longer day.",
+    "A yacht day to Orange Bay Island in two lengths. The car collects you from your hotel in Hurghada at half past eight, and a breakfast buffet is served as the yacht sails out.\n\nThe five-hour trip makes one snorkelling stop and spends an hour on the island; the eight-hour trip makes two stops, spends two hours there and adds lunch. Both include the snorkelling gear, the island entry and marine tax, unlimited drinks and fruit, and a guide for non-swimmers. Towels, underwater photos and tips are not included. Children have their own price.",
+    "Five or eight hours",
+    "Time on Orange Bay Island",
+    "Breakfast, and lunch on the longer trip",
+    "The island entry included",
+    "Orange Bay Yacht Trip from Hurghada with Breakfast",
+    "Five or eight hours on a yacht from Hurghada: breakfast, snorkelling and Orange Bay Island, lunch on the longer day and hotel pickup."
+   ]
+  },
+  {
+   "site": "hurghada-boat-tour",
+   "pathSlug": "three-islands-by-yacht",
+   "record": "hurghada-yacht-cruise-to-orange-bay-giftun-magawish-with-dolphins",
+   "fields": [
+    "Orange Bay, Giftun and Magawish by Yacht with a Seafood Lunch",
+    "Eight hours on a yacht from Hurghada: Orange Bay, Giftun and Magawish, two snorkelling stops, breakfast and a seafood lunch.",
+    "A yacht day to three islands. The car collects you from your hotel at half past eight, and breakfast is served as the yacht sails out; keep a look out for dolphins, which are wild and never promised.\n\nThe day spends an hour at Orange Bay, forty minutes snorkelling at Giftun Island and an hour at Magawish, with their entrance fees, two snorkelling stops with the gear and a guide, a seafood lunch, fruit and unlimited drinks. Bring a towel and a copy of your passport. Children have their own price.",
+    "Orange Bay, Giftun and Magawish",
+    "Two snorkelling stops",
+    "Breakfast and a seafood lunch",
+    "The island fees included",
+    "Hurghada Three Islands Yacht Trip with Seafood Lunch",
+    "Eight hours on a yacht from Hurghada: Orange Bay, Giftun and Magawish, two snorkelling stops, breakfast, a seafood lunch and hotel pickup."
    ]
   },
   {
@@ -256,6 +336,22 @@
     "Lunch on the island as an extra",
     "Six Islands by Speedboat from Hurghada",
     "A speedboat day from Hurghada to six islands with three snorkelling stops, a wreck, a sandbank walk, fruit and drinks, and hotel pickup."
+   ]
+  },
+  {
+   "site": "umm-gamar-hurghada",
+   "pathSlug": "three-islands-by-yacht",
+   "record": "hurghada-yacht-cruise-to-orange-bay-giftun-magawish-with-dolphins",
+   "fields": [
+    "Orange Bay, Giftun and Magawish in One Yacht Day",
+    "Breakfast on board, an hour at Orange Bay, snorkelling at Giftun, an hour at Magawish and a seafood lunch.",
+    "The yacht leaves Hurghada at half past eight for a day of about eight hours, with breakfast on board as it goes. It spends an hour at Orange Bay, forty minutes in the water at Giftun and an hour at Magawish, with two snorkelling stops at different sites, the equipment, a life vest and a snorkelling guide. Dolphin watching is part of this option. Umm Gamar is not one of the stops.\n\nEntrance fees for the three islands are covered. A seafood lunch, unlimited soft and hot drinks, water and seasonal fruit are served on board. A wetsuit, a GoPro video, photographs, a banana boat ride or an extra dive can be added when you book, and children and infants have their own prices.",
+    "An hour each at Orange Bay and Magawish",
+    "Snorkelling at Giftun with a guide",
+    "Breakfast and a seafood lunch on board",
+    "Entrance fees for the three islands",
+    "Three Islands by Yacht from Hurghada",
+    "Orange Bay, Giftun and Magawish in one eight-hour yacht day from Hurghada, with snorkelling, breakfast, a seafood lunch and hotel pickup."
    ]
   },
   {

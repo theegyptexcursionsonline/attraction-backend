@@ -79,8 +79,10 @@ const BOOKING_CREATION_CLOSED_TENANT_SLUGS = [
   // domain is connected and the owner opens it; opening a site is removing its slug.
   'shaab-abu-nugar',
   'fanous-east',
+  'north-abu-ramada',
   'careless-reef',
   'fanadir-north',
+  'erg-sabina',
   'fanous-west',
   'abu-dabbab-beach',
   'elphinstone-reef',

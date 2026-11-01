@@ -27,20 +27,23 @@ const B14 = GROUPS.flatMap((batch) => batch.sites);
 const siteOf = (slug: string) => B14.find((site) => site.slug === slug)!;
 
 /**
- * Batch B14 is the reefs, bays and shores that take the network past a hundred. Eight of the ten the
- * coordinator assigned are built: North Abu Ramada and Erg Sabina are held back on their records' own
- * faults, proved below. `--logos` must refuse each group until every site it holds has its three marks.
+ * Batch B14 is the ten reefs, bays and shores that take the network past a hundred. Two of them sell days
+ * another site already sells, because the day their own water is nearest to cannot be built from its
+ * record; both faults are proved below. `--logos` must refuse each group until every site it holds has its
+ * three marks.
  */
-const B14A_SITES = 4;
-const B14B_SITES = 4;
+const B14A_SITES = 5;
+const B14B_SITES = 5;
 const B14_SITES = B14A_SITES + B14B_SITES;
 
 /** Each new site's storefront design, from the batch concepts; the storefront picks it by slug. */
 const DESIGNS: Record<string, string> = {
   'shaab-abu-nugar': 'abunugar',
   'fanous-east': 'fanous',
+  'north-abu-ramada': 'aburamada',
   'careless-reef': 'careless',
   'fanadir-north': 'fanadirnorth',
+  'erg-sabina': 'ergsabina',
   'fanous-west': 'fanouswest',
   'abu-dabbab-beach': 'abudabbab',
   'elphinstone-reef': 'elphinstone',
@@ -51,8 +54,10 @@ const DESIGNS: Record<string, string> = {
 const DOMAINS: Record<string, string> = {
   'shaab-abu-nugar': 'shaababunugar.com',
   'fanous-east': 'fanouseasthurghada.com',
+  'north-abu-ramada': 'northaburamadahurghada.com',
   'careless-reef': 'carlessreefhurghada.com',
   'fanadir-north': 'fanadirnorthhurghada.com',
+  'erg-sabina': 'ergsabina.com',
   'fanous-west': 'fanouswesthurghada.com',
   'abu-dabbab-beach': 'abudabbabbeach.com',
   'elphinstone-reef': 'elphinstonereef.com',
@@ -63,8 +68,10 @@ const DOMAINS: Record<string, string> = {
 const THEMES: Record<string, [string, string, string]> = {
   'shaab-abu-nugar': ['#15324A', '#F2EEE3', '#C8432E'],
   'fanous-east': ['#0E3C45', '#FBF1DC', '#E8A33D'],
+  'north-abu-ramada': ['#0A2747', '#F1E8D4', '#2E9B7D'],
   'careless-reef': ['#10141F', '#E7D9B8', '#E06A4E'],
   'fanadir-north': ['#2F2A2E', '#F3EBDC', '#C77B30'],
+  'erg-sabina': ['#7A2E3B', '#EEF1F0', '#1F9AA8'],
   'fanous-west': ['#1C4E7A', '#FBFAF6', '#38B6B0'],
   'abu-dabbab-beach': ['#2E6B4E', '#F2E7D2', '#E6763D'],
   'elphinstone-reef': ['#0F4C81', '#EEF4F8', '#E2557F'],
@@ -85,6 +92,10 @@ const SITE_PICTURES: Record<string, [string, string]> = {
     'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521127/attractions-network/tenant-heroes/fanous-east/site-20261101-hero-c1da53c2c44f.png',
     'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521128/attractions-network/tenant-heroes/fanous-east/site-20261101-second-cf907dec68d7.png',
   ],
+  'north-abu-ramada': [
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521130/attractions-network/tenant-heroes/north-abu-ramada/site-20261101-hero-6537d844b649.png',
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521131/attractions-network/tenant-heroes/north-abu-ramada/site-20261101-second-12ef40a282f7.png',
+  ],
   'careless-reef': [
     'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521133/attractions-network/tenant-heroes/careless-reef/site-20261101-hero-f861866e0c6e.png',
     'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521134/attractions-network/tenant-heroes/careless-reef/site-20261101-second-d08550839e55.png',
@@ -92,6 +103,10 @@ const SITE_PICTURES: Record<string, [string, string]> = {
   'fanadir-north': [
     'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521135/attractions-network/tenant-heroes/fanadir-north/site-20261101-hero-816a81eaab6b.png',
     'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521136/attractions-network/tenant-heroes/fanadir-north/site-20261101-second-976f4f60438e.png',
+  ],
+  'erg-sabina': [
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521138/attractions-network/tenant-heroes/erg-sabina/site-20261101-hero-7feb5853b1ea.png',
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521139/attractions-network/tenant-heroes/erg-sabina/site-20261101-second-bc8977075b35.png',
   ],
   'fanous-west': [
     'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521140/attractions-network/tenant-heroes/fanous-west/site-20261101-hero-07fcc0b52403.png',
@@ -119,8 +134,13 @@ const DAYS: Record<string, string[]> = {
     'hurghada-dolphin-house-yacht-trip-with-snorkeling-lunch',
   ],
   'fanous-east': ['orange-island-premium-cruise-from-hurghada-with-lunch-transfer'],
+  'north-abu-ramada': [
+    'makadi-bay-snorkeling-and-diving-at-orange-bay',
+    'hurghada-orange-bay-yacht-cruise-with-snorkeling-breakfast-lunch-drinks',
+  ],
   'careless-reef': ['hurghada-orange-bay-parasailing-snorkeling-lunch-adventure'],
   'fanadir-north': ['hurghada-dolphin-house-yacht-cruise-with-dolphin-swim-lunch'],
+  'erg-sabina': ['hurghada-yacht-cruise-to-orange-bay-giftun-magawish-with-dolphins'],
   'fanous-west': ['hurghada-speedboat-trip-to-6-islands-with-dolphin-watching-snorkeling'],
   'abu-dabbab-beach': [
     'marsa-alam-marsa-mubarak-turtle-snorkelling-boat-trip',
@@ -136,6 +156,8 @@ const PLACE: Record<string, RegExp> = {
   'fanous-east': /Fanous East|El Fanous/i,
   'careless-reef': /Careless Reef|Carless/i,
   'fanadir-north': /Fanadir North|El.?Fanadir/i,
+  'north-abu-ramada': /North Abu Ramada|Abu Rimathi/i,
+  'erg-sabina': /Erg Sabina/i,
   'fanous-west': /Fanous West|El Fanous/i,
   'abu-dabbab-beach': /Abu Dabbab/i,
   'elphinstone-reef': /Elphinstone|Abu Hamra/i,
@@ -148,6 +170,8 @@ const NOT_A_STOP: Record<string, string> = {
   'fanous-east': ', not Fanous East, the reef about six kilometres north-west of the island\u2019s far end; nothing calls there.',
   'careless-reef': ', not Careless Reef, which stands out in the open water north of the island; no boat goes there.',
   'fanadir-north': ', not Fanadir North, which lies about thirteen kilometres short of that reef; nothing stops there.',
+  'north-abu-ramada': ', not North Abu Ramada, the plateau three kilometres south-east of the larger island\u2019s southern end; no boat stops there.',
+  'erg-sabina': ', not Erg Sabina, the coral tower out in the strait between them; nothing stops at the tower.',
   'fanous-west': ', not Fanous West, the sheltered half of the beacon reef six kilometres north of the sandbank; nothing calls there.',
   'abu-dabbab-beach': ', not Abu Dabbab Beach, the seagrass bay twenty-one kilometres down the same coast; no boat goes there.',
   'elphinstone-reef': ', not Elphinstone Reef, which stands alone twenty-five kilometres south of the second bay; nothing sails there.',
@@ -165,6 +189,8 @@ const NEAREST: Record<string, string> = {
   'fanous-east': 'This day cruises out to Orange Island on the larger Giftun; its programme does not name Fanous East, the beacon reef that lies about six kilometres north-west of the island\'s far end.',
   'careless-reef': 'This day is spent at Orange Bay on Big Giftun; its programme does not name Careless Reef, which stands in open water about ten kilometres north of the island.',
   'fanadir-north': 'This day runs up the coast from Hurghada to the Dolphin House reef; its programme does not name Fanadir North, the top of the long fringing reef that lies about thirteen kilometres short of it.',
+  'north-abu-ramada': 'These days sail to Orange Bay on the larger Giftun; their programmes do not name North Abu Ramada, the plateau off the north tip of Abu Ramada island, about three kilometres south-east of that island\u2019s southern end.',
+  'erg-sabina': 'This day sails to Orange Bay, the Giftun islands and Magawish; its programme does not name Erg Sabina, the coral tower in the strait between the two Giftun islands, under three kilometres from Small Giftun.',
   'fanous-west': 'This day runs six islands by speedboat and walks the Abu Minqar sandbank; its programme does not name Fanous West, the sheltered western half of the beacon reef about six kilometres north of that sandbank.',
   'abu-dabbab-beach': 'These days snorkel the bay at Marsa Mubarak for dugongs and green turtles; their programmes do not name Marsa Abu Dabbab, the seagrass bay about twenty-one kilometres down the same coast where most of the Red Sea\'s dugongs are seen.',
   'elphinstone-reef': 'This day sails from Port Ghalib to the bays of Marsa Mubarak and Marsa Shona; its programme does not name Elphinstone Reef, which stands alone in open water about twenty-five kilometres south of Marsa Shona and nine kilometres off the coast.',
@@ -296,8 +322,9 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
     expect(GROUPS.map((batch) => batch.id)).toEqual(['b14a', 'b14b']);
     for (const batch of GROUPS) expect(validateBatch(batch)).toEqual([]);
     expect(B14.map((site) => site.slug)).toEqual(Object.keys(DESIGNS));
-    expect(B14.map((site) => site.name)).toEqual(['Shaab Abu Nugar', 'Fanous East', 'Careless Reef', 'Fanadir North',
-      'Fanous West', 'Abu Dabbab Beach', 'Elphinstone Reef', 'Sharm El Luli']);
+    expect(B14.map((site) => site.name)).toEqual(['Shaab Abu Nugar', 'Fanous East', 'North Abu Ramada',
+      'Careless Reef', 'Fanadir North',
+      'Erg Sabina', 'Fanous West', 'Abu Dabbab Beach', 'Elphinstone Reef', 'Sharm El Luli']);
     expect(B14).toHaveLength(B14_SITES);
     expect([B14A.sites.length, B14B.sites.length]).toEqual([B14A_SITES, B14B_SITES]);
     for (const site of B14) {
@@ -318,7 +345,7 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
     for (const site of B14) {
       expect(before.has(site.slug) || before.has(site.domain) || before.has(site.slugPrefix)).toBe(false);
     }
-    expect(B14.map((site) => site.slugPrefix)).toEqual(['abn-', 'fne-', 'crf-', 'fdn-', 'fnw-', 'adb-', 'elr-', 'sll-']);
+    expect(B14.map((site) => site.slugPrefix)).toEqual(['abn-', 'fne-', 'nar-', 'crf-', 'fdn-', 'egs-', 'fnw-', 'adb-', 'elr-', 'sll-']);
     const prefixes = B14.map((site) => site.slugPrefix);
     expect(new Set(prefixes).size).toBe(prefixes.length);
     // No site across every batch shares a title or a trip slug.
@@ -330,10 +357,10 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
   });
 
   it('gives every site its own words for a record the network already sells', () => {
-    // Nine of the batch's eleven days are already sold somewhere on the network, so the one thing that must
-    // not be shared is the words. No two sites anywhere on the network carry the same trip title.
+    // Twelve of the batch's fourteen days are already sold somewhere on the network, so the one thing that
+    // must not be shared is the words. No two sites anywhere on the network carry the same trip title.
     const mine = B14.flatMap((site) => site.trips.map((trip) => trip.title));
-    expect(mine).toHaveLength(11);
+    expect(mine).toHaveLength(14);
     expect(new Set(mine).size).toBe(mine.length);
     const taken = new Set([
       ...LIVE.titles,
@@ -400,13 +427,13 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
       trip.images.forEach((url, index) => earlierAlts.set(url, trip.imageAlts[index]));
     }
     const shared = [...described.keys()].filter((url) => earlierAlts.has(url));
-    expect(shared).toHaveLength(9);
+    expect(shared).toHaveLength(12);
     for (const url of shared) expect([...described.get(url)!][0]).toBe(earlierAlts.get(url));
   });
 
   it('sells each site exactly the days the assignment gives it', () => {
     expect(Object.fromEntries(B14.map((site) => [site.slug, site.trips.map((trip) => trip.price.source)]))).toEqual(DAYS);
-    expect(B14.reduce((total, site) => total + site.trips.length, 0)).toBe(11);
+    expect(B14.reduce((total, site) => total + site.trips.length, 0)).toBe(14);
     // No two sites in the batch sell the same day.
     const sold = B14.flatMap((site) => site.trips.map((trip) => trip.price.source));
     expect(new Set(sold).size).toBe(sold.length);
@@ -430,6 +457,27 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
     for (const slug of ['fanous-east', 'careless-reef']) {
       for (const trip of siteOf(slug).trips) expect(JSON.stringify(RECORDS[trip.price.source])).toMatch(/orange (?:bay|island)/i);
     }
+    // North Abu Ramada's two days are the Orange Bay days batch B13's Shaab Sabina sells, on the same
+    // larger Giftun its own plateau lies south-east of, and Erg Sabina's is the three-island yacht day
+    // batch B13's Erg Somaya sells, which works the islands its own strait lies between.
+    const sabina = B13B.sites.find((item) => item.slug === 'shaab-sabina')!;
+    const somaya = B13B.sites.find((item) => item.slug === 'erg-somaya')!;
+    const sources = (site: NetworkSite) => new Set(site.trips.map((trip) => trip.price.source));
+    for (const trip of siteOf('north-abu-ramada').trips) expect(sources(sabina).has(trip.price.source)).toBe(true);
+    for (const trip of siteOf('erg-sabina').trips) expect(sources(somaya).has(trip.price.source)).toBe(true);
+    // Each record names the water the site sits in, so neither page is sold on a day from elsewhere.
+    for (const trip of siteOf('north-abu-ramada').trips) {
+      expect(JSON.stringify(RECORDS[trip.price.source])).toMatch(/orange bay/i);
+    }
+    // Erg Sabina's record names the Giftun islands by name, which is what its page says its day sails to.
+    const giftun = RECORDS['hurghada-yacht-cruise-to-orange-bay-giftun-magawish-with-dolphins'];
+    expect(JSON.stringify(giftun)).toMatch(/giftun/i);
+    expect(String(giftun.title)).toMatch(/Giftun/);
+    expect((giftun.included as string[]).filter((line) => /giftun/i.test(line)))
+      .toEqual(['Giftun Island Nature Reserve fees included (40min)']);
+    // It never names Small Giftun, so the page measures from that island rather than quoting a programme.
+    expect(JSON.stringify(giftun)).not.toMatch(/small giftun/i);
+    expect(NEAREST['erg-sabina']).toContain('under three kilometres from Small Giftun');
     // Fanous West keeps the day that walks the sandbank it is nearest to.
     expect(JSON.stringify(RECORDS[siteOf('fanous-west').trips[0].price.source])).toMatch(/minq/i);
     // The two Marsa Alam boat sites split the bays on subject: the seagrass bay takes the dugong and turtle
@@ -458,10 +506,9 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
       ...siteOf('careless-reef').trips[0], path: 'held-back', price,
     });
     const site = { ...siteOf('careless-reef'), slugPrefix: 'tmp-' } as NetworkSite;
-    // North Abu Ramada is not in this group: both days assigned to it price a departure apart from the
-    // booking option, so the seed refuses every per-person option of both records and the site would have
-    // no trip at all. Named here so the fault cannot be forgotten or quietly worked around.
-    expect(B14.map((item) => item.slug)).not.toContain('north-abu-ramada');
+    // North Abu Ramada's own nearest days price a departure apart from the booking option, so the seed
+    // refuses every per-person option of both records and the site sells two Orange Bay days instead.
+    // Named here so the fault cannot be forgotten or quietly worked around.
     const paradise: Array<[string, string]> = [
       ['from-hurghada-paradise-island-yacht-speedboat-cruise-with-snorkeling-lunch', '7-hour-yacht-tour-from-hurghada-hotels-990333086c06'],
       ['makadi-bay-paradise-island-day-trip-with-snorkeling-lunch', '7-hour-yacht-tour-from-hurghada-hotels-27a0011cafe3'],
@@ -481,10 +528,10 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
     // the seed refuses too, so reading the record into the snapshot did not unblock the site.
     expect(() => eeoSourceProgramme(spec('makadi-bay-paradise-island-day-trip-with-snorkeling-lunch', ['4-hour-private-speedboat-tour-36cb7565237a'])))
       .toThrow(/is priced "Per Group", not per person/);
-    // The Orange Bay cruise with a massage publishes a price where the day's length should be, on the
-    // record and on the option alike, so the length a guest would read is a sum of money. Nothing here
-    // invents one, and the attraction schema requires a length on any trip that can be booked, so the
-    // record stays held back exactly as batch B13 held it.
+    // Erg Sabina's own nearest day publishes a price where the day's length should be, on the record and
+    // on the option alike, so the length a guest would read is a sum of money. Nothing here invents one,
+    // and the attraction schema requires a length on any trip that can be booked, so the record stays held
+    // back exactly as batch B13 held it and the site sells the three-island yacht day instead.
     const noLength = tour('hurghada-orange-bay-snorkeling-diving-cruise-with-massage')!;
     expect(noLength.detail.duration).toBe('$$69');
     expect((noLength.options as Array<Record<string, any>>).map((option) => option.duration)).toEqual(['$69', '$69']);
@@ -595,7 +642,7 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
   it('builds every trip into a complete trip', () => {
     let count = 0;
     for (const site of B14) for (const document of built(site, site.trips)) { expectCompleteTrip(site, document); count += 1; }
-    expect(count).toBe(11);
+    expect(count).toBe(14);
   });
 
   it('imports every programme an earlier batch wrote, and writes only the three it must', () => {
@@ -609,6 +656,9 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
       ['two-bays-and-the-marina', B08CP.MM_DUGONG],
       ['sailing-boat-out-of-port-ghalib', B08CP.MM_SAILING],
       ['jeep-safari-with-a-bedouin-dinner', B09BP.WADI_EL_GEMAL],
+      ['orange-bay-snorkel-and-dive', B09AP.HBT_ORANGE_DIVE],
+      ['orange-bay-yacht-five-or-eight-hours', B09AP.HBT_ORANGE_YACHT],
+      ['three-islands-and-two-stops-in-the-water', B09AP.HBT_THREE_ISLANDS],
     ];
     for (const [tripPath, programme] of imported) {
       const trips = B14.flatMap((site) => site.trips).filter((trip) => trip.path === tripPath);
@@ -630,15 +680,16 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
       expect(item.price.itinerary?.length).toBeGreaterThan(2);
       expect(scheduleOf(item)).not.toMatch(/Sataya|Limousine|Ferry|pickup location|Arrive back at/i);
     }
-    // Eleven trips on eleven programmes: no site in the batch sells a day another site in it sells.
-    expect(new Set(B14.flatMap((site) => site.trips).map((trip) => trip.price)).size).toBe(11);
+    // Fourteen trips on fourteen programmes: no site in the batch sells a day another site in it sells.
+    expect(new Set(B14.flatMap((site) => site.trips).map((trip) => trip.price)).size).toBe(14);
   });
 
   it('starts each site where its own trips start', () => {
     // The five reefs follow the Hurghada boat site of batch B09: the same town, pickup area, coordinates
     // and fence.
     const boats = B09A.sites.find((item) => item.slug === 'hurghada-boat-tour')!;
-    for (const slug of ['shaab-abu-nugar', 'fanous-east', 'careless-reef', 'fanadir-north', 'fanous-west']) {
+    for (const slug of ['shaab-abu-nugar', 'fanous-east', 'north-abu-ramada', 'careless-reef', 'fanadir-north',
+      'erg-sabina', 'fanous-west']) {
       const site = siteOf(slug);
       expect([site.city, site.pickupDestination, site.area]).toEqual(['Hurghada', 'hurghada', 'Hurghada']);
       expect(site.coordinates).toEqual(boats.coordinates);
@@ -660,8 +711,20 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
     expect(siteOf('sharm-el-luli').foreignPlaces.test('Sharm El Luli')).toBe(false);
     expect(siteOf('sharm-el-luli').foreignPlaces.test('Sharm El Sheikh')).toBe(true);
     expect(siteOf('elphinstone-reef').foreignPlaces.test('Sharm El Sheikh')).toBe(true);
-    // No trip in the batch starts anywhere but where its site does.
+    // No trip in the batch starts anywhere but where its site does. One record is filed by the client under
+    // Makadi Bay and titled for it, but the booking option sold is its "Tour from Hurghada", so the trip
+    // collects in Hurghada like every other trip on its site and names no second starting town.
     for (const site of B14) for (const trip of site.trips) expect(trip.where).toBeUndefined();
+    const makadiTitled = tour('makadi-bay-snorkeling-and-diving-at-orange-bay')!;
+    expect(makadiTitled.detail.title).toMatch(/^Makadi Bay:/);
+    expect(B09AP.HBT_ORANGE_DIVE.options).toEqual(['tour-from-hurghada-5a8a06dd2db1']);
+    expect((makadiTitled.options as Array<Record<string, any>>)
+      .find((option) => option.pricingKey === 'tour-from-hurghada-5a8a06dd2db1')!.description)
+      .toBe('This option includes pickup and drop-off in Hurghada.');
+    for (const document of built(siteOf('north-abu-ramada'), siteOf('north-abu-ramada').trips)) {
+      expect(document.meetingPoint.address).toBe('Your hotel in Hurghada');
+      expect(document.destination.city).toBe('Hurghada');
+    }
   });
 
   it('takes no booking on a new site until its domain is connected and the owner opens it', () => {
@@ -756,7 +819,8 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
     // Every site counts its days out loud, so each count is held to that site's own catalogue.
     expect(statedTripCounts(siteOf('shaab-abu-nugar').description)).toEqual([3]);
     expect(statedTripCounts(siteOf('abu-dabbab-beach').description)).toEqual([2]);
-    for (const slug of ['fanous-east', 'careless-reef', 'fanadir-north', 'fanous-west', 'elphinstone-reef', 'sharm-el-luli']) {
+    expect(statedTripCounts(siteOf('north-abu-ramada').description)).toEqual([2]);
+    for (const slug of ['fanous-east', 'careless-reef', 'fanadir-north', 'erg-sabina', 'fanous-west', 'elphinstone-reef', 'sharm-el-luli']) {
       expect(statedTripCounts(siteOf(slug).description)).toEqual([1]);
     }
   });
