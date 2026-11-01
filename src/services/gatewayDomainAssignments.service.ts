@@ -26,16 +26,13 @@ export type GatewayDomainOutcome =
   | 'changed-concurrently';
 
 export async function applyGatewayDomainAssignment(slug: string, domain: string): Promise<GatewayDomainOutcome> {
-  const site = await Tenant.collection.findOne(
-    { slug, status: 'active' },
-    { projection: { _id: 1, customDomain: 1 } },
-  );
+  const site = await Tenant.findOne({ slug, status: 'active' }).select('_id customDomain').lean();
   if (!site) return 'missing-site';
   const _id = site._id as Types.ObjectId;
   const current = typeof site.customDomain === 'string' ? site.customDomain.trim().toLowerCase() : '';
   if (current && current !== domain) return 'site-has-other-domain';
 
-  const others = await Tenant.collection.countDocuments({
+  const others = await Tenant.countDocuments({
     _id: { $ne: _id },
     $or: [{ customDomain: domain }, { domain }],
   });
@@ -50,7 +47,8 @@ export async function applyGatewayDomainAssignment(slug: string, domain: string)
   }
   if (current === domain) return 'unchanged';
 
-  const result = await Tenant.collection.updateOne(
+  // A guarded model write: customDomain is not a URL-namespace path, so no transaction is needed.
+  const result = await Tenant.updateOne(
     { _id, slug, $or: [{ customDomain: { $exists: false } }, { customDomain: null }, { customDomain: '' }] },
     { $set: { customDomain: domain, customDomainStatus: 'pending_dns', customDomainLastCheckedAt: new Date() } },
   );
