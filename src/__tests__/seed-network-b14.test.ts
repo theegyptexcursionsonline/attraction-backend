@@ -10,27 +10,30 @@ import { B01_SAFARI } from '../scripts/network-sites/b01-safari';
 import { B02 } from '../scripts/network-sites/b02';
 import { B03A } from '../scripts/network-sites/b03';
 import { B03B, B03C, B03D } from '../scripts/network-sites/b03-rest';
-import { B08A, B08B, B08C, B08D } from '../scripts/network-sites/b08';
-import { B09A, B09B, B09C, PROGRAMMES_A as B09AP } from '../scripts/network-sites/b09';
+import { B08A, B08B, B08C, B08D, PROGRAMMES_C as B08CP } from '../scripts/network-sites/b08';
+import { B09A, B09B, B09C, PROGRAMMES_A as B09AP, PROGRAMMES_B as B09BP } from '../scripts/network-sites/b09';
 import { B10A, B10B, B10C, B10D } from '../scripts/network-sites/b10';
 import { B11A, B11B } from '../scripts/network-sites/b11';
 import { B12A, B12B } from '../scripts/network-sites/b12';
 import { B13A, B13B } from '../scripts/network-sites/b13';
-import { B14A } from '../scripts/network-sites/b14';
+import { B14A, B14B } from '../scripts/network-sites/b14';
 import SNAPSHOT from '../scripts/network-sites/eeo-snapshot.json';
 import { isTenantBookingCreationClosed } from '../services/tenantBookingPolicy.service';
 
 const EARLIER = [B01_SAFARI, B02, B03A, B03B, B03C, B03D, B08A, B08B, B08C, B08D, B09A, B09B, B09C,
   B10A, B10B, B10C, B10D, B11A, B11B, B12A, B12B, B13A, B13B].flatMap((batch) => batch.sites);
-const GROUPS: NetworkBatch[] = [B14A];
+const GROUPS: NetworkBatch[] = [B14A, B14B];
 const B14 = GROUPS.flatMap((batch) => batch.sites);
 const siteOf = (slug: string) => B14.find((site) => site.slug === slug)!;
 
 /**
- * Batch B14 is the reefs, bays and shores that take the network past a hundred. Four are built here; the
- * rest follow in B14B, so `--logos` must refuse this group until every site it holds has its three marks.
+ * Batch B14 is the reefs, bays and shores that take the network past a hundred. Eight of the ten the
+ * coordinator assigned are built: North Abu Ramada and Erg Sabina are held back on their records' own
+ * faults, proved below. `--logos` must refuse each group until every site it holds has its three marks.
  */
 const B14A_SITES = 4;
+const B14B_SITES = 4;
+const B14_SITES = B14A_SITES + B14B_SITES;
 
 /** Each new site's storefront design, from the batch concepts; the storefront picks it by slug. */
 const DESIGNS: Record<string, string> = {
@@ -38,6 +41,10 @@ const DESIGNS: Record<string, string> = {
   'fanous-east': 'fanous',
   'careless-reef': 'careless',
   'fanadir-north': 'fanadirnorth',
+  'fanous-west': 'fanouswest',
+  'abu-dabbab-beach': 'abudabbab',
+  'elphinstone-reef': 'elphinstone',
+  'sharm-el-luli': 'luli',
 };
 
 /** Every new site's domain, as Fouad's list gives it. */
@@ -46,6 +53,10 @@ const DOMAINS: Record<string, string> = {
   'fanous-east': 'fanouseasthurghada.com',
   'careless-reef': 'carlessreefhurghada.com',
   'fanadir-north': 'fanadirnorthhurghada.com',
+  'fanous-west': 'fanouswesthurghada.com',
+  'abu-dabbab-beach': 'abudabbabbeach.com',
+  'elphinstone-reef': 'elphinstonereef.com',
+  'sharm-el-luli': 'sharm-elluli.com',
 };
 
 /** The admin palette each site is created with, from the batch concepts (primary / secondary / accent). */
@@ -54,6 +65,10 @@ const THEMES: Record<string, [string, string, string]> = {
   'fanous-east': ['#0E3C45', '#FBF1DC', '#E8A33D'],
   'careless-reef': ['#10141F', '#E7D9B8', '#E06A4E'],
   'fanadir-north': ['#2F2A2E', '#F3EBDC', '#C77B30'],
+  'fanous-west': ['#1C4E7A', '#FBFAF6', '#38B6B0'],
+  'abu-dabbab-beach': ['#2E6B4E', '#F2E7D2', '#E6763D'],
+  'elphinstone-reef': ['#0F4C81', '#EEF4F8', '#E2557F'],
+  'sharm-el-luli': ['#2F7D4F', '#FFFDF7', '#2BB3C0'],
 };
 
 /** The days the coordinator's assignment (research/days.json) gives each site, in the order they are sold. */
@@ -66,6 +81,13 @@ const DAYS: Record<string, string[]> = {
   'fanous-east': ['orange-island-premium-cruise-from-hurghada-with-lunch-transfer'],
   'careless-reef': ['hurghada-orange-bay-parasailing-snorkeling-lunch-adventure'],
   'fanadir-north': ['hurghada-dolphin-house-yacht-cruise-with-dolphin-swim-lunch'],
+  'fanous-west': ['hurghada-speedboat-trip-to-6-islands-with-dolphin-watching-snorkeling'],
+  'abu-dabbab-beach': [
+    'marsa-alam-marsa-mubarak-turtle-snorkelling-boat-trip',
+    'marsa-mubarak-boat-trip-snorkel-with-dugongs-giant-turtles',
+  ],
+  'elphinstone-reef': ['marsa-alam-luxury-pirates-boat-snorkeling-cruise-with-lunch'],
+  'sharm-el-luli': ['marsa-alam-wadi-el-gemal-jeep-safari-bedouin-dinner'],
 };
 
 /** What each site's own place is called, so no page can be read as selling a stop there. */
@@ -74,6 +96,10 @@ const PLACE: Record<string, RegExp> = {
   'fanous-east': /Fanous East|El Fanous/i,
   'careless-reef': /Careless Reef|Carless/i,
   'fanadir-north': /Fanadir North|El.?Fanadir/i,
+  'fanous-west': /Fanous West|El Fanous/i,
+  'abu-dabbab-beach': /Abu Dabbab/i,
+  'elphinstone-reef': /Elphinstone|Abu Hamra/i,
+  'sharm-el-luli': /Sharm El Luli|Hankorab/i,
 };
 
 /** The one clause in which a site's trip copy may name its own place: to say it is not a stop. */
@@ -82,6 +108,10 @@ const NOT_A_STOP: Record<string, string> = {
   'fanous-east': ', not Fanous East, the reef about six kilometres north-west of the island\u2019s far end; nothing calls there.',
   'careless-reef': ', not Careless Reef, which stands out in the open water north of the island; no boat goes there.',
   'fanadir-north': ', not Fanadir North, which lies about thirteen kilometres short of that reef; nothing stops there.',
+  'fanous-west': ', not Fanous West, the sheltered half of the beacon reef six kilometres north of the sandbank; nothing calls there.',
+  'abu-dabbab-beach': ', not Abu Dabbab Beach, the seagrass bay twenty-one kilometres down the same coast; no boat goes there.',
+  'elphinstone-reef': ', not Elphinstone Reef, which stands alone twenty-five kilometres south of the second bay; nothing sails there.',
+  'sharm-el-luli': ', not Sharm El Luli, the bay on the coast thirty-two kilometres east of them; the jeep never reaches it.',
 };
 
 /**
@@ -95,6 +125,10 @@ const NEAREST: Record<string, string> = {
   'fanous-east': 'This day cruises out to Orange Island on the larger Giftun; its programme does not name Fanous East, the beacon reef that lies about six kilometres north-west of the island\'s far end.',
   'careless-reef': 'This day is spent at Orange Bay on Big Giftun; its programme does not name Careless Reef, which stands in open water about ten kilometres north of the island.',
   'fanadir-north': 'This day runs up the coast from Hurghada to the Dolphin House reef; its programme does not name Fanadir North, the top of the long fringing reef that lies about thirteen kilometres short of it.',
+  'fanous-west': 'This day runs six islands by speedboat and walks the Abu Minqar sandbank; its programme does not name Fanous West, the sheltered western half of the beacon reef about six kilometres north of that sandbank.',
+  'abu-dabbab-beach': 'These days snorkel the bay at Marsa Mubarak for dugongs and green turtles; their programmes do not name Marsa Abu Dabbab, the seagrass bay about twenty-one kilometres down the same coast where most of the Red Sea\'s dugongs are seen.',
+  'elphinstone-reef': 'This day sails from Port Ghalib to the bays of Marsa Mubarak and Marsa Shona; its programme does not name Elphinstone Reef, which stands alone in open water about twenty-five kilometres south of Marsa Shona and nine kilometres off the coast.',
+  'sharm-el-luli': 'This day drives inland into Wadi El Gemal to Cleopatra\u2019s Temple and a desert spring; its programme does not name Sharm El Luli, the bay in the same park about thirty-two kilometres east of that temple, on the coast.',
 };
 
 /** Verbs that would turn a mention of the site's own place into a stop the record does not publish. */
@@ -218,12 +252,14 @@ function expectCompleteTrip(site: Pick<NetworkSite, 'foreignPlaces'>, document: 
 }
 
 describe('batch B14: the reefs, bays and shores that take the network past a hundred', () => {
-  it('is a valid group of sites, none of them built before', () => {
-    expect(GROUPS.map((batch) => batch.id)).toEqual(['b14a']);
+  it('is two valid groups of sites, none of them built before', () => {
+    expect(GROUPS.map((batch) => batch.id)).toEqual(['b14a', 'b14b']);
     for (const batch of GROUPS) expect(validateBatch(batch)).toEqual([]);
     expect(B14.map((site) => site.slug)).toEqual(Object.keys(DESIGNS));
-    expect(B14.map((site) => site.name)).toEqual(['Shaab Abu Nugar', 'Fanous East', 'Careless Reef', 'Fanadir North']);
-    expect(B14).toHaveLength(B14A_SITES);
+    expect(B14.map((site) => site.name)).toEqual(['Shaab Abu Nugar', 'Fanous East', 'Careless Reef', 'Fanadir North',
+      'Fanous West', 'Abu Dabbab Beach', 'Elphinstone Reef', 'Sharm El Luli']);
+    expect(B14).toHaveLength(B14_SITES);
+    expect([B14A.sites.length, B14B.sites.length]).toEqual([B14A_SITES, B14B_SITES]);
     for (const site of B14) {
       expect(site.domain).toBe(DOMAINS[site.slug]);
       expect(DESIGNS[site.slug]).toMatch(/^[a-z]+$/);
@@ -242,7 +278,7 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
     for (const site of B14) {
       expect(before.has(site.slug) || before.has(site.domain) || before.has(site.slugPrefix)).toBe(false);
     }
-    expect(B14.map((site) => site.slugPrefix)).toEqual(['abn-', 'fne-', 'crf-', 'fdn-']);
+    expect(B14.map((site) => site.slugPrefix)).toEqual(['abn-', 'fne-', 'crf-', 'fdn-', 'fnw-', 'adb-', 'elr-', 'sll-']);
     const prefixes = B14.map((site) => site.slugPrefix);
     expect(new Set(prefixes).size).toBe(prefixes.length);
     // No site across every batch shares a title or a trip slug.
@@ -254,10 +290,10 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
   });
 
   it('gives every site its own words for a record the network already sells', () => {
-    // Five of this group's six days are already sold somewhere on the network, so the one thing that must
+    // Nine of the batch's eleven days are already sold somewhere on the network, so the one thing that must
     // not be shared is the words. No two sites anywhere on the network carry the same trip title.
     const mine = B14.flatMap((site) => site.trips.map((trip) => trip.title));
-    expect(mine).toHaveLength(6);
+    expect(mine).toHaveLength(11);
     expect(new Set(mine).size).toBe(mine.length);
     const taken = new Set([
       ...LIVE.titles,
@@ -300,13 +336,13 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
       trip.images.forEach((url, index) => earlierAlts.set(url, trip.imageAlts[index]));
     }
     const shared = [...described.keys()].filter((url) => earlierAlts.has(url));
-    expect(shared).toHaveLength(4);
+    expect(shared).toHaveLength(9);
     for (const url of shared) expect([...described.get(url)!][0]).toBe(earlierAlts.get(url));
   });
 
   it('sells each site exactly the days the assignment gives it', () => {
     expect(Object.fromEntries(B14.map((site) => [site.slug, site.trips.map((trip) => trip.price.source)]))).toEqual(DAYS);
-    expect(B14.reduce((total, site) => total + site.trips.length, 0)).toBe(6);
+    expect(B14.reduce((total, site) => total + site.trips.length, 0)).toBe(11);
     // No two sites in the batch sell the same day.
     const sold = B14.flatMap((site) => site.trips.map((trip) => trip.price.source));
     expect(new Set(sold).size).toBe(sold.length);
@@ -330,6 +366,22 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
     for (const slug of ['fanous-east', 'careless-reef']) {
       for (const trip of siteOf(slug).trips) expect(JSON.stringify(RECORDS[trip.price.source])).toMatch(/orange (?:bay|island)/i);
     }
+    // Fanous West keeps the day that walks the sandbank it is nearest to.
+    expect(JSON.stringify(RECORDS[siteOf('fanous-west').trips[0].price.source])).toMatch(/minq/i);
+    // The two Marsa Alam boat sites split the bays on subject: the seagrass bay takes the dugong and turtle
+    // days at Marsa Mubarak, and the offshore reef takes the sailing day out of Port Ghalib.
+    for (const trip of siteOf('abu-dabbab-beach').trips) {
+      expect(JSON.stringify(RECORDS[trip.price.source])).toMatch(/dugong|turtle/i);
+    }
+    expect(JSON.stringify(RECORDS[siteOf('elphinstone-reef').trips[0].price.source])).toMatch(/port ghalib|pirates/i);
+    // The bay inside the park sells the one day that enters that park, and it is a desert day inland.
+    expect(JSON.stringify(RECORDS[siteOf('sharm-el-luli').trips[0].price.source])).toMatch(/wadi el gemal/i);
+    expect(siteOf('sharm-el-luli').trips[0].description).toMatch(/a day inland in the desert, not a day at the bay/);
+    // It names no park ticket, because its record prices none.
+    const park = tour('marsa-alam-wadi-el-gemal-jeep-safari-bedouin-dinner')!;
+    expect(park.addons).toEqual([]);
+    expect(JSON.stringify(RECORDS[park.slug])).not.toMatch(/park (?:fee|ticket)/i);
+    expect(ownCopyOf(siteOf('sharm-el-luli').trips[0]) + siteOf('sharm-el-luli').description).not.toMatch(/park (?:fee|ticket)|entry fee/i);
   });
 
   it('holds back every day the seed or the record refuses, and says so', () => {
@@ -424,9 +476,17 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
     const source = whole.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
     expect(source).not.toMatch(/\bprice:\s*[\d.]/);
     expect(source).not.toMatch(/\bchildPrice\b|\bpriceFrom\b|\bcurrency:\s*'(?!USD\b)/);
-    // No trip writes a length of its own either: every one is the record's. The lengths inside a written
-    // schedule are the step durations the record's own schedule publishes, not the day's total.
-    for (const site of B14) for (const trip of site.trips) expect(trip.price.duration).toBeUndefined();
+    // No programme written here gives a trip a length of its own: each is the record's. The lengths inside
+    // a written schedule are the step durations that record's own schedule publishes, not the day's total.
+    const earlierRecords = new Set(EARLIER.flatMap((item) => item.trips.map((trip) => trip.price.source)));
+    for (const site of B14) for (const trip of site.trips) {
+      if (!earlierRecords.has(trip.price.source)) expect(trip.price.duration).toBeUndefined();
+    }
+    // One imported programme does set a length, and batch B08 says why: its record types the option's own
+    // length as "8. hours", which is not a length a page can show.
+    expect(B08CP.MM_TURTLE.duration).toBe('8 hours');
+    expect((tour('marsa-alam-marsa-mubarak-turtle-snorkelling-boat-trip')!.options as Array<Record<string, any>>)[0].duration)
+      .toBe('8. hours');
     expect(source).not.toMatch(/[$€£]\s?\d|\b\d+\s?(?:USD|EUR|EGP)\b/);
     // No sentence this batch writes names a sum of money either; a guest reads the structured price.
     const ownCopy = B14.flatMap((site) => [site.tagline, site.description, ...site.trips.map(ownCopyOf)]);
@@ -471,7 +531,7 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
   it('builds every trip into a complete trip', () => {
     let count = 0;
     for (const site of B14) for (const document of built(site, site.trips)) { expectCompleteTrip(site, document); count += 1; }
-    expect(count).toBe(6);
+    expect(count).toBe(11);
   });
 
   it('imports every programme an earlier batch wrote, and writes only the three it must', () => {
@@ -480,6 +540,11 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
       ['speedboat-run-to-dolphin-house', B09AP.HBT_DOLPHIN_SPEEDBOAT],
       ['orange-island-premium-cruise', B09AP.HBT_ORANGE_LUNCH],
       ['dolphin-house-yacht-cruise', B09AP.HBT_DOLPHIN_YACHT],
+      ['six-islands-and-the-sandbank', B09AP.HBT_SIX_ISLANDS],
+      ['a-full-day-at-marsa-mubarak', B08CP.MM_TURTLE],
+      ['two-bays-and-the-marina', B08CP.MM_DUGONG],
+      ['sailing-boat-out-of-port-ghalib', B08CP.MM_SAILING],
+      ['jeep-safari-with-a-bedouin-dinner', B09BP.WADI_EL_GEMAL],
     ];
     for (const [tripPath, programme] of imported) {
       const trips = B14.flatMap((site) => site.trips).filter((trip) => trip.path === tripPath);
@@ -501,21 +566,38 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
       expect(item.price.itinerary?.length).toBeGreaterThan(2);
       expect(scheduleOf(item)).not.toMatch(/Sataya|Limousine|Ferry|pickup location|Arrive back at/i);
     }
-    // Six trips, five programmes: the two Dolphin House yacht days are two different records, and the
-    // Dolphin House morning cruise, the speedboat and the premium cruise are one each.
-    expect(new Set(B14.flatMap((site) => site.trips).map((trip) => trip.price)).size).toBe(6);
+    // Eleven trips on eleven programmes: no site in the batch sells a day another site in it sells.
+    expect(new Set(B14.flatMap((site) => site.trips).map((trip) => trip.price)).size).toBe(11);
   });
 
   it('starts each site where its own trips start', () => {
-    // The four reefs follow the Hurghada boat site of batch B09: the same town, pickup area and coordinates.
+    // The five reefs follow the Hurghada boat site of batch B09: the same town, pickup area, coordinates
+    // and fence.
     const boats = B09A.sites.find((item) => item.slug === 'hurghada-boat-tour')!;
-    for (const site of B14) {
+    for (const slug of ['shaab-abu-nugar', 'fanous-east', 'careless-reef', 'fanadir-north', 'fanous-west']) {
+      const site = siteOf(slug);
       expect([site.city, site.pickupDestination, site.area]).toEqual(['Hurghada', 'hurghada', 'Hurghada']);
       expect(site.coordinates).toEqual(boats.coordinates);
       expect(site.foreignPlaces.source).toEqual(boats.foreignPlaces.source);
-      for (const trip of site.trips) expect(trip.where).toBeUndefined();
       for (const document of built(site, site.trips)) expect(document.meetingPoint.address).toBe('Your hotel in Hurghada');
     }
+    // The three Marsa Alam sites follow the Marsa Mubarak site of batch B08, whose records collect in the
+    // town, the Port Ghalib day included: its bus runs to the marina from the hotel it collects at.
+    const mubarak = B08C.sites.find((item) => item.slug === 'marsa-mubarak')!;
+    for (const slug of ['abu-dabbab-beach', 'elphinstone-reef', 'sharm-el-luli']) {
+      const site = siteOf(slug);
+      expect([site.city, site.pickupDestination, site.area]).toEqual(['Marsa Alam', 'marsa-alam', 'Marsa Alam']);
+      expect(site.coordinates).toEqual(mubarak.coordinates);
+      for (const document of built(site, site.trips)) expect(document.meetingPoint.address).toBe('Your hotel in Marsa Alam');
+    }
+    expect(siteOf('abu-dabbab-beach').foreignPlaces.source).toEqual(mubarak.foreignPlaces.source);
+    // The bay inside the park keeps that same fence with one change: it bars the town of Sharm El Sheikh by
+    // name rather than the bare word, which is the first word of this site's own place.
+    expect(siteOf('sharm-el-luli').foreignPlaces.test('Sharm El Luli')).toBe(false);
+    expect(siteOf('sharm-el-luli').foreignPlaces.test('Sharm El Sheikh')).toBe(true);
+    expect(siteOf('elphinstone-reef').foreignPlaces.test('Sharm El Sheikh')).toBe(true);
+    // No trip in the batch starts anywhere but where its site does.
+    for (const site of B14) for (const trip of site.trips) expect(trip.where).toBeUndefined();
   });
 
   it('takes no booking on a new site until its domain is connected and the owner opens it', () => {
@@ -538,16 +620,17 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
     });
     const complete = Object.fromEntries(B14.map((site) => [site.slug, good(site.slug)]));
     for (const batch of GROUPS) expect(logoProblems(batch, complete)).toEqual([]);
-    // Every site of the group is required: a file missing any single one refuses the whole group.
-    expect(Object.keys(complete)).toHaveLength(B14A_SITES);
+    // Every site of a group is required: a file missing any single one refuses the group that holds it.
+    expect(Object.keys(complete)).toHaveLength(B14_SITES);
     for (const site of B14) {
       const { [site.slug]: _dropped, ...withoutOne } = complete;
-      expect(logoProblems(B14A, withoutOne)).toEqual([`${site.slug}: no logo entry.`]);
+      const batch = B14A.sites.includes(site) ? B14A : B14B;
+      expect(logoProblems(batch, withoutOne)).toEqual([`${site.slug}: no logo entry.`]);
     }
     expect(logoProblems(B14A, { ...complete, 'careless-reef': { ...good('careless-reef'), favicon: '' } }))
       .toEqual(['careless-reef: favicon is missing.']);
-    expect(logoProblems(B14A, { ...complete, 'fanous-east': { ...good('fanous-east'), logoDark: 'https://example.com/logo.png' } }))
-      .toEqual(["fanous-east: logoDark must already be on the network's Cloudinary: https://example.com/logo.png"]);
+    expect(logoProblems(B14B, { ...complete, 'sharm-el-luli': { ...good('sharm-el-luli'), logoDark: 'https://example.com/logo.png' } }))
+      .toEqual(["sharm-el-luli: logoDark must already be on the network's Cloudinary: https://example.com/logo.png"]);
   });
 
   it('repeats no sentence another site on the network already publishes', () => {
@@ -608,7 +691,8 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
     }
     // Every site counts its days out loud, so each count is held to that site's own catalogue.
     expect(statedTripCounts(siteOf('shaab-abu-nugar').description)).toEqual([3]);
-    for (const slug of ['fanous-east', 'careless-reef', 'fanadir-north']) {
+    expect(statedTripCounts(siteOf('abu-dabbab-beach').description)).toEqual([2]);
+    for (const slug of ['fanous-east', 'careless-reef', 'fanadir-north', 'fanous-west', 'elphinstone-reef', 'sharm-el-luli']) {
       expect(statedTripCounts(siteOf(slug).description)).toEqual([1]);
     }
   });

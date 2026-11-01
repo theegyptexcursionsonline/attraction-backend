@@ -220,6 +220,177 @@
   ],
   "readFrom": "the dated snapshot network-sites/eeo-snapshot.json; this record was read into it on 1 Nov 2026, in its own commit"
  },
+ "hurghada-speedboat-trip-to-6-islands-with-dolphin-watching-snorkeling": {
+  "title": "Hurghada: Speedboat Trip to 6 Islands with Dolphin Watching & Snorkeling",
+  "duration": "8 hours",
+  "included": [
+   "Pick-up and drop-off from Hurghada (see Know Before You Go for details)",
+   "Pickup from Makadi, Safaga, El Gouna, Sahl Hasheesh, and Soma Bay (if add-on selected)",
+   "Speedboat tour",
+   "Three snorkeling stops",
+   "Snorkeling gear provided",
+   "Professional guide",
+   "Visit to the Giftun National Park area",
+   "Orange Bay Island entrance fees included",
+   "White Island entrance fees included",
+   "Magawish Island entrance fees included",
+   "Juzur Abu Monqar Island entry included",
+   "Visit to a Sandbank island",
+   "Wreck snorkeling stop",
+   "Soft drinks and water",
+   "Seasonal fruits",
+   "Shaded area (tenda) on the board",
+   "Life jacket",
+   "Experienced captain",
+   "5-minute parasailing (if add-on selected)",
+   "Lunch on the island (if add-on selected)"
+  ],
+  "notIncluded": [
+   "The long-range pickup service from Makadi, Safaga, El Gouna, Sahl Hasheesh, and the Soma bay areaâs is available to book in the checkout process as \"Add on\"",
+   "and it cost 10 euro per person."
+  ],
+  "options": [
+   "6 Island Small Group Tour with Dolphin Watching, Snorkeling & Fruit",
+   "Private 6 Island Tour with Dolphin Watching & Snorkeling"
+  ],
+  "optionKeys": [
+   "6-island-small-group-tour-with-dolphin-watchi-277b7487db82",
+   "private-6-island-tour-with-dolphin-watching-s-518511256754"
+  ],
+  "itinerary": [
+   "3 pickup location options",
+   "Car",
+   "Giftun Island",
+   "Nemo Bay island",
+   "Orange Bay",
+   "Magawish Island",
+   "Hurghada",
+   "Juzur AbÅ« MinqÄr",
+   "Giftun Island",
+   "Van",
+   "3 drop-off locations"
+  ],
+  "readFrom": "the dated snapshot network-sites/eeo-snapshot.json, read 24 Oct 2026; the published list re-read 1 Nov 2026, unchanged"
+ },
+ "marsa-alam-luxury-pirates-boat-snorkeling-cruise-with-lunch": {
+  "title": "Marsa Alam: Luxury Pirates Boat Snorkeling Cruise with Lunch",
+  "duration": "4.5 hours",
+  "included": [
+   "Hotel pickup and drop-off",
+   "Two daily programs",
+   "Professional and experienced guides",
+   "Delicious open buffet lunch/dinner",
+   "Unlimited fizzy drinks and tea",
+   "45-minute fully guided snorkelling stops at Marsa Mubarak and Marsa Shona",
+   "Fresh juice welcome drink"
+  ],
+  "notIncluded": [
+   "Personal expenses",
+   "Tips (optional)",
+   "Snorkelling gear available to rent from Marina shops"
+  ],
+  "options": [
+   "Marsa Alam: Pirates Premium Boat to Turtle Bay with lunch"
+  ],
+  "optionKeys": [
+   "marsa-alam-pirates-premium-boat-to-turtle-bay-d101de788b0b"
+  ],
+  "itinerary": [
+   "Pickup location: Port Ghalib",
+   "Bus/coach",
+   "Marsa Mubarak",
+   "Marsa Mubarak",
+   "Arrive back at: Port Ghalib"
+  ],
+  "readFrom": "the dated snapshot network-sites/eeo-snapshot.json, read 24 Oct 2026; the published list re-read 1 Nov 2026, unchanged"
+ },
+ "marsa-alam-marsa-mubarak-turtle-snorkelling-boat-trip": {
+  "title": "Marsa Alam: Marsa Mubarak Turtle Snorkelling & Boat Trip",
+  "duration": "8 hours",
+  "included": [
+   "Pickup and transfer to Marsa Mubarak",
+   "Snorkelling adventure",
+   "Professional instructors",
+   "Lunch and soft drinks",
+   "Snorkelling equipment (mask, fins, life jacket)",
+   "Optional diving session (if selected)",
+   "Soft drinks and water",
+   "National Park fees"
+  ],
+  "notIncluded": [
+   "Tips",
+   "Personal expenses",
+   "Transfers from hotels in North Marsa Alam (available for an extra charge)"
+  ],
+  "options": [
+   "Marsa Mubarak Sea Turtle Trip with Lunch and Transfer",
+   "With 1 Intro Dive, Snorkelling, and Lunch"
+  ],
+  "optionKeys": [
+   "marsa-mubarak-sea-turtle-trip-with-lunch-and--b9350a52e3cd",
+   "with-1-intro-dive-snorkelling-and-lunch-5d73f8d46c61"
+  ],
+  "itinerary": [],
+  "readFrom": "the dated snapshot network-sites/eeo-snapshot.json, read 24 Oct 2026; the published list re-read 1 Nov 2026, unchanged"
+ },
+ "marsa-alam-wadi-el-gemal-jeep-safari-bedouin-dinner": {
+  "title": "Marsa Alam: Wadi El Gemal Jeep Safari & Bedouin Dinner",
+  "duration": "7 hours",
+  "included": [
+   "Panorama stop",
+   "Acacia tree stop",
+   "Water spring stop",
+   "Arak tree stop",
+   "Cleopatra's Temple",
+   "Bedouin dinner",
+   "Hotel pickup and drop off"
+  ],
+  "notIncluded": [],
+  "options": [
+   "Marsa Alam: Wadi El Gemal Desert Jeep Safari & Bedouin Dinner"
+  ],
+  "optionKeys": [
+   "marsa-alam-wadi-el-gemal-desert-jeep-safari-b-f93ac389582f"
+  ],
+  "itinerary": [],
+  "readFrom": "the dated snapshot network-sites/eeo-snapshot.json, read 24 Oct 2026; the published list re-read 1 Nov 2026, unchanged"
+ },
+ "marsa-mubarak-boat-trip-snorkel-with-dugongs-giant-turtles": {
+  "title": "Marsa Mubarak Boat Trip: Snorkel with Dugongs & Giant Turtles",
+  "duration": "4.5 hours",
+  "included": [
+   "Hotel pickup and drop-off in Marsa Alam",
+   "30-minute boat cruise to Marsa Mubarak",
+   "Two guided snorkeling stops (Marsa Mubarak + Small Shenwa)",
+   "Expert snorkeling guide",
+   "Open buffet lunch OR dinner (chicken, kofta, fish, salads, soups)",
+   "45-minute marina tour and shopping time",
+   "Snorkeling gear available - select from add-ons",
+   "All boat fees and permits"
+  ],
+  "notIncluded": [
+   "Snorkeling gear ( purchase as add-on)",
+   "Hot drinks, fresh juices, ice cream, coffee onboard (available for purchase)",
+   "Personal expenses",
+   "Gratuities (optional)"
+  ],
+  "options": [
+   "Marsa Alam: Marsa Mubarak Sea Cow & Turtles Snorkeling"
+  ],
+  "optionKeys": [
+   "marsa-alam-marsa-mubarak-sea-cow-turtles-snor-79343d11386c"
+  ],
+  "itinerary": [
+   "Pickup location",
+   "Bus/coach",
+   "Marsa Mubarak",
+   "Marsa Mubarak",
+   "Port Ghalib Marina",
+   "Port Ghalib Marina",
+   "Arrive back at:"
+  ],
+  "readFrom": "the dated snapshot network-sites/eeo-snapshot.json, read 24 Oct 2026; the published list re-read 1 Nov 2026, unchanged"
+ },
  "orange-island-premium-cruise-from-hurghada-with-lunch-transfer": {
   "title": "Orange Island Premium Cruise from Hurghada with Lunch & Transfer",
   "duration": "8 hours",

@@ -2,7 +2,8 @@
  * Batch B14 (1 November 2026), the ten reefs, bays and shores that take the network to 110. Two groups:
  *
  * - B14A: Shaab Abu Nugar, Fanous East, Careless Reef and Fanadir North, four reefs off Hurghada.
- * - B14B: the rest, in the message that follows.
+ * - B14B: Fanous West, the sheltered half of the same beacon reef, and three places down the Marsa Alam
+ *   coast: Abu Dabbab Beach, Elphinstone Reef and the bay of Sharm El Luli.
  *
  * Every trip is built on the record the client publishes on its own main site, read into the dated snapshot
  * (`network-sites/eeo-snapshot.json`); prices, child rates, departures and inclusions are copied from that
@@ -26,6 +27,18 @@
  *   yacht cruise with a dolphin swim and lunch. Abu Minqar is nearer to it and Big Giftun nearer by 80 m,
  *   but the first is kept by Fanous West and the second lies the other way; this reef and this day both run
  *   north.
+ * - Fanous West is 5.68 km from the Abu Minqar sandbank, nearer than Fanous East, so it keeps the six-island
+ *   speedboat day. That day is the one record this batch sells that batch B13 sells too (Erg Somaya), which
+ *   the network allows across batches; the words here are this site's own.
+ * - Abu Dabbab Beach is a shallow seagrass bay of dugongs and green turtles, so of the two Marsa Alam
+ *   allocations that are equal on distance to within 30 m it takes the two dugong-and-turtle bay days at
+ *   Marsa Mubarak, and Elphinstone Reef, an offshore reef reached by boat, takes the Pirates sailing day out
+ *   of Port Ghalib. Either is defensible on distance; this one is right on subject.
+ * - Sharm El Luli is a bay with no sea day within sixty kilometres, so it sells the one day that enters its
+ *   own national park: the jeep safari inland to Cleopatra's Temple and a desert spring, 32.08 km from the
+ *   bay. Its pages say plainly that the day is spent inland in the desert and not at the bay. The site is an
+ *   independent seller, never the park authority, and it names no park ticket, because the record prices
+ *   none.
  *
  * Three programmes are new here, because no batch sells their records yet; the rest are imported from the
  * batch that first sold each record (`b09`), so the network says the same thing about the same trip wherever
@@ -71,10 +84,22 @@
  *   sits here on Fanous East, whose nearest named point is the larger Giftun itself, so the day is sold for
  *   what its own record says: a cruise out to Orange Island.
  *
- * The "nearest" sentence `research/days.json` gives Fanadir North reads "the long fringing reef the boat
- * passes on the way". No programme says the boat passes the reef, and the batch brief names that exact
- * phrase as one never to write, so this site's sentence states where the reef lies instead of what the boat
- * does. Nothing else in the assignment moved.
+ * Two of the "nearest" sentences `research/days.json` gives are written here with one clause changed, and
+ * nothing else in the assignment moved:
+ * - Fanadir North's reads "the long fringing reef the boat passes on the way". No programme says the boat
+ *   passes the reef, and the batch brief names that exact phrase as one never to write, so this site's
+ *   sentence states where the reef lies instead of what the boat does.
+ * - Sharm El Luli's ends "about thirty-two kilometres east of those mines", and nothing before it names a
+ *   mine; the day's own programme names Cleopatra's Temple and does not name a mine either, so the sentence
+ *   measures from that temple, which is the point the distance was measured to.
+ * - Careless Reef's "the larger Giftun" is written "Big Giftun", the name the assignment's own table uses,
+ *   so that two sites of this batch do not carry the same clause word for word.
+ *
+ * Names: one spelling per name everywhere, and the variants only where the facts give them and only once.
+ * Careless Reef is spelled Careless throughout, with Carless named once in its tenant description; the bay
+ * at Abu Dabbab is Abu Dabbab Beach throughout, with the gazetteer's Marsa Abu Dabbab named once, in the
+ * assignment's own sentence; El Fanous and El-Fanadir are each named once, where a site must say which reef
+ * it is half of.
  *
  * Photographs are the ones each record publishes, already on the network's Cloudinary, with the four
  * Hurghada boat photographs described in the words batch B09 used for the same records. Each site here still
@@ -84,7 +109,8 @@
  * `--logos=<file>` naming every site's approved logo, logoDark and favicon, for all of them.
  */
 import type { NetworkBatch, PriceSpec } from '../seed-network-sites';
-import { PROGRAMMES_A as B09A } from './b09';
+import { PHOTO_C, PROGRAMMES_C as B08C } from './b08';
+import { PROGRAMMES_A as B09A, PROGRAMMES_B as B09B } from './b09';
 
 const EEO = 'egypt-excursions-online';
 const WATER = 'water-activities';
@@ -112,6 +138,11 @@ const P = {
   DOLPHIN_SPEEDBOAT: B09A.HBT_DOLPHIN_SPEEDBOAT,
   DOLPHIN_YACHT: B09A.HBT_DOLPHIN_YACHT,
   ORANGE_LUNCH: B09A.HBT_ORANGE_LUNCH,
+  SIX_ISLANDS: B09A.HBT_SIX_ISLANDS,
+  MM_TURTLE: B08C.MM_TURTLE,
+  MM_DUGONG: B08C.MM_DUGONG,
+  MM_SAILING: B08C.MM_SAILING,
+  WADI_EL_GEMAL: B09B.WADI_EL_GEMAL,
 
   /**
    * The second Dolphin House yacht, five hours with a seafood lunch, morning or afternoon. Only the first of
@@ -206,18 +237,32 @@ const P = {
   },
 } satisfies Record<string, PriceSpec>;
 
-/** Each record's own photo, as the client publishes it. */
+/**
+ * Each record's own photo, as the client publishes it. The three Marsa Mubarak photographs are the copies
+ * batch B08 made into its own folder for the same records.
+ *
+ * The six-island day is the one exception, and batch B11's reason stands: the photograph the client
+ * publishes on that record shows a dolphin rising out of a pool beside a swimmer's raised hand, which is not
+ * a photograph of the open-sea day the record sells, so the trip carries the photograph batch B09 chose for
+ * the same record instead.
+ */
 const PHOTO = {
   dolphinPair: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788791898/tours/xnv6gdxnnn9dxzs5pdhf.jpg',
   whiteSpeedboat: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788290634/tours/bgacpsik0esq6rcwnmmq.jpg',
   dayBoatAtAnchor: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788794476/tours/smf4lqwlugbxjepjbagn.jpg',
   parasailerOverTheBay: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788290048/tours/ncyahtmagpd4boacmjfh.jpg',
   yachtAndDolphins: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788289757/tours/h8x27bcg3l2oc311wf1k.jpg',
+  snorkellerSelfie: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788291087/tours/a5hjhquanje6nm8wbsbf.jpg',
+  turtleOverReef: PHOTO_C.turtleOverReef,
+  turtleInBlue: PHOTO_C.turtleInBlue,
+  snorkellerAndSails: PHOTO_C.snorkellerAndSails,
+  camelInLagoon: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788796111/tours/qlu2ucaa2kzydntyyovj.jpg',
 };
 
 /**
- * Each photo described as it is, not as the trip it illustrates. Four are the words batch B09 wrote for the
- * same records; the parasailing photograph is new to the network and described here from the picture itself.
+ * Each photo described as it is, not as the trip it illustrates. All but one are the words the batch that
+ * first sold the record wrote; the parasailing photograph is new to the network and is described here from
+ * the picture itself.
  */
 const ALT: Record<keyof typeof PHOTO, string> = {
   dolphinPair: 'A dolphin swimming underwater in green-blue water, with a second dolphin behind it',
@@ -225,22 +270,39 @@ const ALT: Record<keyof typeof PHOTO, string> = {
   dayBoatAtAnchor: 'A white day boat at anchor in clear water near a low desert shore',
   parasailerOverTheBay: 'A parasailer under a wide striped canopy, towed by a small yellow speedboat across deep blue water, with a sandy cliff shore and moored boats behind',
   yachtAndDolphins: 'A white motor yacht on bright blue water, with a group of dolphins swimming at the surface in front of it',
+  snorkellerSelfie: 'A snorkeller in a mask taking a photo of himself underwater above a coral reef',
+  turtleOverReef: 'A sea turtle swimming just under the surface above a shallow coral reef',
+  turtleInBlue: 'A large sea turtle in deep blue water, with small fish and a reef behind it',
+  snorkellerAndSails: 'A snorkeller in a mask at the surface of clear green water, with a tall sailing boat under sail behind',
+  camelInLagoon: 'A camel standing in shallow water between green mangrove bushes, with a low ridge behind',
 };
 
 const HURGHADA = { lat: 27.2579, lng: 33.8116 };
+const MARSA_ALAM = { lat: 25.0676, lng: 34.879 };
 
 /**
  * Places these reef sites never name: their boats leave Hurghada for the water off it, exactly as the
  * Hurghada boat site of batch B09 does, so that batch's fence is the fence here.
  */
 const NOT_HURGHADA_BOATS = /Cairo|Giza|Luxor|Aswan|Sharm|Dahab|Nabq|Tiran|Ras Mohamed|Marsa Alam|Quseir|Ghalib|Safaga|Soma Bay|Gouna|Sahl|Makadi|Alexandria|Siwa|Bahariya|Fayoum|Sataya|Samadai/i;
+/**
+ * Places the two Marsa Mubarak sites never name. Their boats work the bays between Marsa Alam and Port
+ * Ghalib, exactly as the Marsa Mubarak site of batch B08 does, so that batch's fence is the fence here.
+ */
+const NOT_MARSA = /Gouna|Hurghada|Makadi|Sahl|Safaga|Soma Bay|Quseir|Sharm|Dahab|Nabq|Tiran|Ras Mohamed|Catherine|Cairo|Giza|Luxor|Aswan|Alexandria|Siwa|Bahariya|Fayoum|Saqqara|Sakkara|Memphis|Dahshur|Pyramid|Sphinx/i;
+/**
+ * The bay inside Wadi El Gemal keeps the fence batch B09's Wadi El Gemal site uses, with one change: that
+ * fence bars the word "Sharm", and this site's own place is Sharm El Luli. Sharm El Sheikh, the town the
+ * word is barred for, is barred by name instead, so nothing else is let through.
+ */
+const NOT_WADI_EL_GEMAL_BAY = /Gouna|Hurghada|Makadi|Sahl|Safaga|Soma Bay|Sharm El Sheikh|Sharm el-Sheikh|Dahab|Nabq|Tiran|Ras Mohamed|Catherine|Cairo|Giza|Luxor|Aswan|Alexandria|Siwa|Bahariya|Fayoum|Saqqara|Sakkara|Memphis|Dahshur|Pyramid|Sphinx/i;
 
 /** The closing line every B11, B12 and B13 site ends on, and every site here. */
 const CLOSING = 'Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.';
 
 /** Why each site shows fewer than three photographs of its own until its own pictures are uploaded. */
 const SHORTFALL_ONE = 'The one day this site sells publishes a single photograph, so the home page opens on it until the site’s own pictures are added; the photographs are an open question for the client.';
-const SHORTFALL_TWO = 'The three days this site sells publish two distinct photographs between them, so the home page opens on those until the site’s own pictures are added; the photographs are an open question for the client.';
+const SHORTFALL_TWO = 'The days this site sells publish two distinct photographs between them, so the home page opens on those until the site’s own pictures are added; the photographs are an open question for the client.';
 
 /** B14A: four of the reefs Hurghada's boats work, north and east of the town. */
 export const B14A: NetworkBatch = {
@@ -461,6 +523,212 @@ export const B14A: NetworkBatch = {
           },
           images: [PHOTO.yachtAndDolphins],
           imageAlts: [ALT.yachtAndDolphins],
+        },
+      ],
+    },
+  ],
+};
+
+/** B14B: the sheltered half of the beacon reef, and three places down the Marsa Alam coast. */
+export const B14B: NetworkBatch = {
+  id: 'b14b',
+  sites: [
+    {
+      slug: 'fanous-west',
+      name: 'Fanous West',
+      listingPath: '/trips',
+      domain: 'fanouswesthurghada.com',
+      city: 'Hurghada',
+      area: 'Hurghada',
+      pickupDestination: 'hurghada',
+      coordinates: HURGHADA,
+      currency: 'USD',
+      slugPrefix: 'fnw-',
+      foreignPlaces: NOT_HURGHADA_BOATS,
+      tagline: 'The six-island run out of Hurghada',
+      description: `Fanous West is the western half of El Fanous, on the far side of the natural break that divides that reef in two, off the Hurghada coast. The name means lamp, or lantern, or beacon, and it comes from the beacon standing on the reef. This side is a flat sandy bottom flanking a shallow reef wall, with two large ergs and several smaller towers rising from it, and a narrow channel leads in through a sloping garden of corals to a lagoon about nine metres deep, the garden itself running down to fourteen. It is the sheltered side: turtles feed in its coral gardens, giant moray eels roam among silversides and jackfish, European moray and lionfish are recorded, and the reef as a whole draws dolphins and answers to Dolphin Reef and to Dolphin Playground.\n\nThis day runs six islands by speedboat and walks the Abu Minqar sandbank; its programme does not name Fanous West, the sheltered western half of the beacon reef about six kilometres north of that sandbank. One trip is sold here: the speedboat that works six islands between one morning and one evening. ${CLOSING}`,
+      seo: {
+        metaTitle: 'Fanous West: the Six-Island Speedboat Day',
+        metaDescription: 'A speedboat day out of Hurghada: Giftun, Nemo Bay, Orange Bay, Magawish, a wreck and the Abu Minqar sandbank, with the island fees and the gear.',
+        keywords: ['fanous west sheltered reef', 'six island speedboat day hurghada', 'abu minqar sandbank walk', 'beacon reef lagoon channel', 'hurghada speedboat island fees'],
+      },
+      theme: { primaryColor: '#1C4E7A', secondaryColor: '#FBFAF6', accentColor: '#38B6B0' },
+      heroImages: [PHOTO.snorkellerSelfie],
+      photoShortfall: SHORTFALL_ONE,
+      logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/fanous-west/monogram.png',
+      trips: [
+        {
+          path: 'six-islands-and-the-sandbank',
+          price: P.SIX_ISLANDS,
+          title: 'Six Islands in One Day, Ending on the Sandbank',
+          short: 'A fast hull with three stops in the water, time at four islands and over a wreck, and the last call of the day on the Abu Minqar sandbank.',
+          description: 'A speedboat gets round six islands between one morning and one evening. Two hours go to the water by Giftun; after that come Nemo Bay, then Orange Bay, then Magawish, then a wreck to swim over, and the sandbank at Abu Minqar to finish. Three of the six are for snorkelling. The programme names those islands and the Giftun National Park area, not Fanous West, the sheltered half of the beacon reef six kilometres north of the sandbank; nothing calls there.\n\nThe price covers the island entrance fees, a guide and a life jacket, the snorkelling gear, water and soft drinks, fruit in season, and the shade on deck; lunch ashore it does not. Dolphins are watched for from the deck, and being wild they are never promised. Children have their own price, and a pickup from outside the town cannot be booked here.',
+          highlights: [
+            'Three of the six are for snorkelling',
+            'Two hours in the water by Giftun',
+            'A wreck to swim over',
+            'The Abu Minqar sandbank last of all',
+          ],
+          seo: {
+            metaTitle: 'Six Islands in One Day, Ending on the Sandbank',
+            metaDescription: 'A speedboat out of Hurghada with three stops in the water, four islands, a wreck to swim over and a last call on the Abu Minqar sandbank.',
+          },
+          images: [PHOTO.snorkellerSelfie],
+          imageAlts: [ALT.snorkellerSelfie],
+        },
+      ],
+    },
+    {
+      slug: 'abu-dabbab-beach',
+      name: 'Abu Dabbab Beach',
+      listingPath: '/trips',
+      domain: 'abudabbabbeach.com',
+      city: 'Marsa Alam',
+      area: 'Marsa Alam',
+      pickupDestination: 'marsa-alam',
+      coordinates: MARSA_ALAM,
+      currency: 'USD',
+      slugPrefix: 'adb-',
+      foreignPlaces: NOT_MARSA,
+      tagline: 'Dugong and turtle days at Marsa Mubarak',
+      description: `Abu Dabbab Beach is a sheltered sandy bay on the coast north of Marsa Alam, reef at both ends and sand in the middle, and that sand carries one of the largest patches of seagrass in the region. The seagrass is what the dugongs graze, and more Red Sea dugong sightings come from this bay than from anywhere else; it is a nesting site for sea turtles too, and a resident population of green turtles feeds there alongside them. One thing to know before reading about it elsewhere: the name covers two different things about four kilometres apart, this bay and a chain of six offshore reefs mapped as Abu Dabbab 1 to 6, so a page about the name may mean either.\n\nThese days snorkel the bay at Marsa Mubarak for dugongs and green turtles; their programmes do not name Marsa Abu Dabbab, the seagrass bay about twenty-one kilometres down the same coast where most of the Red Sea's dugongs are seen. Two trips are sold here, both boat days out of Marsa Alam: eight hours in the bay, and a shorter sailing that closes at Port Ghalib Marina. ${CLOSING}`,
+      seo: {
+        metaTitle: 'Abu Dabbab Beach: Marsa Mubarak Boat Days',
+        metaDescription: 'Boat days out of Marsa Alam into the bay at Marsa Mubarak: guided snorkelling where turtles and dugongs feed, a meal on board and a car from your hotel.',
+        keywords: ['abu dabbab beach seagrass bay', 'marsa mubarak dugong snorkelling', 'green turtle bay north of marsa alam', 'marsa alam boat day with lunch', 'dugongs grazing seagrass red sea'],
+      },
+      theme: { primaryColor: '#2E6B4E', secondaryColor: '#F2E7D2', accentColor: '#E6763D' },
+      heroImages: [PHOTO.turtleOverReef, PHOTO.turtleInBlue],
+      photoShortfall: SHORTFALL_TWO,
+      logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/abu-dabbab-beach/monogram.png',
+      trips: [
+        {
+          path: 'a-full-day-at-marsa-mubarak',
+          price: P.MM_TURTLE,
+          title: 'A Full Day in the Bay at Marsa Mubarak',
+          short: 'Eight hours out of Marsa Alam: a session in the water either side of the meal, with the gear and the national park fees in the price.',
+          description: 'A nine o’clock call at your hotel, then the drive down to the boat. Two sessions in the water follow, one before the meal and one after it, each led by an instructor over the coral and the shoals of the bay, which is where the turtles and the dugongs feed. The programme names Marsa Alam and Marsa Mubarak, not Abu Dabbab Beach, the seagrass bay twenty-one kilometres down the same coast; no boat goes there.\n\nBoth are wild animals and neither is ever promised. The mask, the fins, the life jacket and the park fees are all in the price; tips are not, and a hotel north of the town costs extra and is settled with the team. Children have their own price.',
+          highlights: [
+            'One session in the water, then another',
+            'Mask, fins and life jacket in the price',
+            'A meal between the two of them',
+            'The national park fees covered',
+          ],
+          seo: {
+            metaTitle: 'A Full Day in the Bay at Marsa Mubarak',
+            metaDescription: 'Eight hours out of Marsa Alam: a session in the water either side of the meal at Marsa Mubarak, with the gear, the park fees and a hotel car.',
+          },
+          images: [PHOTO.turtleOverReef],
+          imageAlts: [ALT.turtleOverReef],
+        },
+        {
+          path: 'two-bays-and-the-marina',
+          price: P.MM_DUGONG,
+          title: 'Two Bays, Then an Hour Round the Marina',
+          short: 'Four and a half hours: two guided stops in the bays of Marsa Mubarak and Small Shenwa, a buffet aboard, and the marina at Port Ghalib to close.',
+          description: 'Half an hour of sailing puts the boat in the first bay. Two guided stops follow with free time between them, at Marsa Mubarak and then at Small Shenwa, in water that turtles and dugongs live in; both are wild, and a sighting is never promised. The programme names Marsa Mubarak, Small Shenwa and the marina, not Abu Dabbab Beach, the seagrass bay twenty-one kilometres down the same coast; no boat goes there.\n\nA buffet is laid out aboard, lunch or dinner depending on the sailing, and the last call of the day is Port Ghalib Marina, for a guided walk and the shops. Snorkelling gear is not in the price, so bring a set with you or raise it with the team first. The pickup time is settled when your booking is confirmed, and children have their own price.',
+          highlights: [
+            'Marsa Mubarak, then Small Shenwa',
+            'Free time between the two stops',
+            'An open buffet lunch or dinner',
+            'A walk round Port Ghalib Marina',
+          ],
+          seo: {
+            metaTitle: 'Two Bays, Then an Hour Round the Marina',
+            metaDescription: 'Four and a half hours out of Marsa Alam: two guided stops in two bays, a buffet aboard and a walk round Port Ghalib Marina to close the day.',
+          },
+          images: [PHOTO.turtleInBlue],
+          imageAlts: [ALT.turtleInBlue],
+        },
+      ],
+    },
+    {
+      slug: 'elphinstone-reef',
+      name: 'Elphinstone Reef',
+      listingPath: '/trips',
+      domain: 'elphinstonereef.com',
+      city: 'Marsa Alam',
+      area: 'Marsa Alam',
+      pickupDestination: 'marsa-alam',
+      coordinates: MARSA_ALAM,
+      currency: 'USD',
+      slugPrefix: 'elr-',
+      foreignPlaces: NOT_MARSA,
+      tagline: 'A sailing boat out of Port Ghalib',
+      description: `Elphinstone Reef stands alone in the open sea about nine kilometres off the coast north of Marsa Alam, a spindle-shaped reef roughly six hundred metres long that is also recorded as Abu Hamra. It was named after John Elphinstone, twelfth Lord Elphinstone, and charted around 1830 by Robert Moresby while he was surveying the Red Sea. There is a plateau at each end: the northern one runs about eighty metres long and ten to twenty-five metres wide, covered in colourful soft corals and thick with life, while the deep part of the southern plateau is brown soft coral and swarms of anthias. Its east and west walls fall away past a hundred metres, and the open-sea position and the frequent current make it one of the demanding sites of southern Egypt rather than an easy one. Divers come for the chance of big fish: whitetip sharks on the southern plateau and along the western wall, with silky, hammerhead and grey reef sharks, tuna, amberjack, Napoleon wrasse and turtles, mantas and rays from July to October, and tiger sharks rarely.\n\nThis day sails from Port Ghalib to the bays of Marsa Mubarak and Marsa Shona; its programme does not name Elphinstone Reef, which stands alone in open water about twenty-five kilometres south of Marsa Shona and nine kilometres off the coast. One trip is sold here: the sailing boat out of the marina, morning or afternoon. ${CLOSING}`,
+      seo: {
+        metaTitle: 'Elphinstone Reef: the Port Ghalib Sailing Day',
+        metaDescription: 'A sailing boat out of Port Ghalib to the bays of Marsa Mubarak and Marsa Shona: two guided stops of forty-five minutes and an open buffet on deck.',
+        keywords: ['elphinstone reef marsa alam', 'port ghalib sailing boat day', 'marsa shona snorkelling stop', 'offshore spindle reef red sea', 'half day under sail marsa alam'],
+      },
+      theme: { primaryColor: '#0F4C81', secondaryColor: '#EEF4F8', accentColor: '#E2557F' },
+      heroImages: [PHOTO.snorkellerAndSails],
+      photoShortfall: SHORTFALL_ONE,
+      logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/elphinstone-reef/monogram.png',
+      trips: [
+        {
+          path: 'sailing-boat-out-of-port-ghalib',
+          price: P.MM_SAILING,
+          title: 'Under Sail from the Marina, Morning or Afternoon',
+          short: 'Four and a half hours under sail, morning or afternoon: forty-five minutes in the water in each of two bays, and a buffet served on deck.',
+          description: 'The boat casts off twice a day, once in the morning and once after noon, and a shared bus runs you down from your Marsa Alam hotel roughly an hour and a half before it goes. Thirty-five minutes of sailing brings the first bay, where forty-five minutes are spent in the water; forty-five more follow at the second, both led by a guide. The programme names Port Ghalib, Marsa Mubarak and Marsa Shona, not Elphinstone Reef, which stands alone twenty-five kilometres south of the second bay; nothing sails there.\n\nA buffet is served on deck, with fizzy drinks and tea served through the day. The snorkelling gear is not in the price. Be at the marina half an hour before the boat goes and carry an ID card or a passport. Children have their own price.',
+          highlights: [
+            'Forty-five minutes in each bay',
+            'Marsa Mubarak, then Marsa Shona',
+            'A buffet laid out on deck',
+            'A morning boat or an afternoon one',
+          ],
+          seo: {
+            metaTitle: 'Under Sail from the Marina, Morning or Afternoon',
+            metaDescription: 'A sailing boat out of Port Ghalib, morning or afternoon: forty-five minutes in the water in each of two bays, a buffet on deck and a hotel bus.',
+          },
+          images: [PHOTO.snorkellerAndSails],
+          imageAlts: [ALT.snorkellerAndSails],
+        },
+      ],
+    },
+    {
+      slug: 'sharm-el-luli',
+      name: 'Sharm El Luli',
+      listingPath: '/trips',
+      domain: 'sharm-elluli.com',
+      city: 'Marsa Alam',
+      area: 'Marsa Alam',
+      pickupDestination: 'marsa-alam',
+      coordinates: MARSA_ALAM,
+      currency: 'USD',
+      slugPrefix: 'sll-',
+      foreignPlaces: NOT_WADI_EL_GEMAL_BAY,
+      tagline: 'The jeep day inland into Wadi El Gemal',
+      description: `Sharm El Luli is a bay on the Red Sea coast about fifty-six kilometres south-south-east of Marsa Alam, roughly half way to Berenice and some six kilometres south-east of the entrance to Wadi El Gemal; its Arabic name means the al-Luli bay. It runs about twelve hundred metres from west to east and widens to seven hundred and thirty metres at its western end, and its beach is flat and white, changing width only with the tide before it carries on into a shallow sandy stretch of water that stays clear unless wind or fins stir the sand up. Outside the bay there are extensive coral reefs, more on the south side than the north, where the bottom drops to about twenty metres: hard and soft corals and anemones, with clownfish, Napoleon wrasse, pufferfish, butterflyfish and hawksbill turtles recorded. The bay lies inside Wadi El Gemal–Hamata National Park, declared in 2003, which also covers the inland wadi, its rock carvings and old mines and the islands off this coast, and nothing is built on the beach. One thing to know before you go looking for it: the bay and Ras Hankorab, a cape about seven kilometres to the south, are routinely treated as one place, and the bay is sold as Hankorab Beach as well.\n\nThis day drives inland into Wadi El Gemal to Cleopatra’s Temple and a desert spring; its programme does not name Sharm El Luli, the bay in the same park about thirty-two kilometres east of that temple, on the coast. One trip is sold here, and it is a desert day inland rather than a day at the bay: the jeep safari that ends with a Bedouin dinner. ${CLOSING}`,
+      seo: {
+        metaTitle: 'Sharm El Luli: the Wadi El Gemal Jeep Day',
+        metaDescription: 'An afternoon and evening inland by jeep in Wadi El Gemal National Park: a panorama, a desert spring, Cleopatra’s Temple and a Bedouin dinner.',
+        keywords: ['sharm el luli bay', 'wadi el gemal jeep safari', 'cleopatra temple and desert spring', 'bedouin dinner under the stars', 'wadi el gemal national park day'],
+      },
+      theme: { primaryColor: '#2F7D4F', secondaryColor: '#FFFDF7', accentColor: '#2BB3C0' },
+      heroImages: [PHOTO.camelInLagoon],
+      photoShortfall: SHORTFALL_ONE,
+      logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/sharm-el-luli/monogram.png',
+      trips: [
+        {
+          path: 'jeep-safari-with-a-bedouin-dinner',
+          price: P.WADI_EL_GEMAL,
+          title: 'Into the Valley by Jeep, and Dinner Under the Stars',
+          short: 'Seven hours from noon: inland by jeep into the national park for a high view, two desert trees, a spring and a temple ruin, then a Bedouin dinner.',
+          description: 'Noon is the pickup, and the jeep turns off the coast road inland into the national park. What it halts for: a high view over the valley, an acacia, an arak tree, water rising in the desert, and the ruins of the temple named for Cleopatra. The programme names Wadi El Gemal, the temple and the spring, not Sharm El Luli, the bay on the coast thirty-two kilometres east of them; the jeep never reaches it.\n\nDinner is Bedouin and comes at the end, before the drive home. This is a day inland in the desert, not a day at the bay. Which order the halts come in is settled with your booking, and children have their own price.',
+          highlights: [
+            'A high view over the valley',
+            'An acacia, then an arak tree',
+            'Water rising in the desert',
+            'Dinner the Bedouin way to close',
+          ],
+          seo: {
+            metaTitle: 'Into the Valley by Jeep, and Dinner Under the Stars',
+            metaDescription: 'Seven hours from noon, inland by jeep in Wadi El Gemal National Park: a high view, two desert trees, a spring, a temple ruin and a Bedouin dinner.',
+          },
+          images: [PHOTO.camelInLagoon],
+          imageAlts: [ALT.camelInLagoon],
         },
       ],
     },

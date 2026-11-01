@@ -81,6 +81,10 @@ const BOOKING_CREATION_CLOSED_TENANT_SLUGS = [
   'fanous-east',
   'careless-reef',
   'fanadir-north',
+  'fanous-west',
+  'abu-dabbab-beach',
+  'elphinstone-reef',
+  'sharm-el-luli',
 ] as const;
 
 export class TenantBookingCreationClosedError extends AppError {
