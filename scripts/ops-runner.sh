@@ -1,5 +1,5 @@
 #!/bin/sh
-# Railway "ops-runner" service (railway.ops.json): runs one maintenance script from src/scripts
+# Railway "ops-runner" service (docs/OPS_RUNNER.md): runs one maintenance script from src/scripts
 # inside Railway, where the database is reachable, then exits. It never serves traffic.
 #
 # OPS_TASK (a service variable) names the script and its arguments, for example

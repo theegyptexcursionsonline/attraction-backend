@@ -1,6 +1,6 @@
 import { spawnSync } from 'child_process';
-import fs from 'fs';
 import path from 'path';
+import { OPS_RUNNER_SERVICE, refusesApiServer } from '../utils/opsRunnerGuard';
 
 const root = path.resolve(__dirname, '../..');
 const run = (task?: string) =>
@@ -30,10 +30,8 @@ it.each([
   expect(result.stdout).toContain('refused');
 });
 
-it('never starts the API server and never restarts', () => {
-  const config = JSON.parse(fs.readFileSync(path.join(root, 'railway.ops.json'), 'utf8'));
-  expect(config.deploy).toMatchObject({ startCommand: 'sh scripts/ops-runner.sh', restartPolicyType: 'NEVER' });
-  expect(config.deploy).not.toHaveProperty('healthcheckPath');
-  // The API service keeps its own config-as-code file.
-  expect(JSON.parse(fs.readFileSync(path.join(root, 'railway.json'), 'utf8')).deploy.startCommand).toBe('npm start');
+it('the API server refuses to start in the ops-runner service only', () => {
+  expect(refusesApiServer({ RAILWAY_SERVICE_NAME: OPS_RUNNER_SERVICE })).toBe(true);
+  expect(refusesApiServer({ RAILWAY_SERVICE_NAME: 'web' })).toBe(false);
+  expect(refusesApiServer({})).toBe(false);
 });

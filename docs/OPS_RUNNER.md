@@ -5,9 +5,11 @@ The `ops-runner` service in the `attraction-backend` Railway project runs mainte
 inside Railway instead, where `MONGODB_URI` is reachable, and its logs are read back over the
 Railway API.
 
-- Built from this repository with `railway.ops.json` (not `railway.json`), so it never starts
-  the API server, has no health check or public domain, and never restarts.
-- Its start command is `sh scripts/ops-runner.sh`. With `OPS_TASK` unset it logs `idle` and
+- Built from this repository like `web`, with service settings (Railway no longer accepts a
+  per-service config file): start command `sh scripts/ops-runner.sh`, restart policy `NEVER`,
+  no health check and no public domain. As a backstop, the API server refuses to start when
+  `RAILWAY_SERVICE_NAME` is `ops-runner` (`src/utils/opsRunnerGuard.ts`).
+- The start command runs the wrapper. With `OPS_TASK` unset it logs `idle` and
   exits. `OPS_TASK` must name an existing `src/scripts/*.ts` file plus its arguments; anything
   else is refused. Scripts keep their own guards (`check` first, `--confirm`, `--database`).
 - It has no deploy trigger: a push to `main` does not run it. A run is a manual deploy of the

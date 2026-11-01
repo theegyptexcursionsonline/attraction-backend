@@ -43,6 +43,7 @@ import { sweepBookingReminders } from './services/bookingReminder.service';
 import { redactUrlForLogs } from './utils/safe-logging';
 import { startImageGenerationWorker } from './services/image-generation-job.service';
 import { applyGatewayDomainAssignments } from './services/gatewayDomainAssignments.service';
+import { refusesApiServer } from './utils/opsRunnerGuard';
 import { BookingCancellation } from './models/BookingCancellation';
 import { processPendingBookingCancellations } from './services/bookingCancellation.service';
 import { ensureBookingOperatorNotificationIndexes, processBookingOperatorNotifications } from './services/bookingOperatorNotification.service';
@@ -160,6 +161,10 @@ export const createApp = (): express.Application => {
 const app = createApp();
 
 export const startServer = async (): Promise<void> => {
+  if (refusesApiServer()) {
+    console.error('[ops-runner] refusing to start the API server in the ops-runner service');
+    process.exit(1);
+  }
   try {
     // Connect to database
     await connectDatabase();
