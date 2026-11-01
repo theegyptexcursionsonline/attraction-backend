@@ -34,4 +34,9 @@ if [ ! -f "$script" ]; then
 fi
 
 echo "[ops-runner] running: $script $*"
-exec npx ts-node --transpile-only "$script" "$@"
+status=0
+npx ts-node --transpile-only "$script" "$@" || status=$?
+echo "[ops-runner] finished: exit code $status"
+# Railway can drop the last lines of a container that exits at once; give the log time to ship.
+sleep "${OPS_LOG_FLUSH_SECONDS:-5}"
+exit "$status"
