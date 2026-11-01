@@ -51,6 +51,10 @@ describe('tenant booking-creation closure policy', () => {
       'meidum-pyramid', 'shaab-sabina', 'ras-disha', 'erg-somaya']) {
       expect(isTenantBookingCreationClosed({ slug })).toBe(true);
     }
+    // Batch B14's sites are closed the same way, until each domain is connected and the owner opens it.
+    for (const slug of ['shaab-abu-nugar', 'fanous-east', 'careless-reef', 'fanadir-north']) {
+      expect(isTenantBookingCreationClosed({ slug })).toBe(true);
+    }
     expect(() => assertTenantBookingCreationAllowed({ slug: 'king-of-egypt-tours' }))
       .toThrow(TenantBookingCreationClosedError);
     // A look-alike slug is a different site and is not closed by this policy.
@@ -93,6 +97,8 @@ describe('tenant booking-creation closure policy', () => {
         // Batch B13's seven: the two pyramids of Abusir, Abu Rawash, Meidum and the three Red Sea reefs.
         'pyramid-of-neferirkare', 'pyramid-of-neferefre', 'pyramid-of-djedefre', 'meidum-pyramid',
         'shaab-sabina', 'ras-disha', 'erg-somaya',
+        // Batch B14's reefs off Hurghada, closed the same way.
+        'shaab-abu-nugar', 'fanous-east', 'careless-reef', 'fanadir-north',
       ] },
     });
 

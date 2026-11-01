@@ -74,6 +74,13 @@ const BOOKING_CREATION_CLOSED_TENANT_SLUGS = [
   'shaab-sabina',
   'ras-disha',
   'erg-somaya',
+  // The network queue's batch B14, the reefs, bays and shores that take the network past 100: four of the
+  // reefs Hurghada's boats work, and the rest in its second group. Each is closed to real bookings until its
+  // domain is connected and the owner opens it; opening a site is removing its slug.
+  'shaab-abu-nugar',
+  'fanous-east',
+  'careless-reef',
+  'fanadir-north',
 ] as const;
 
 export class TenantBookingCreationClosedError extends AppError {
