@@ -42,6 +42,7 @@ import { processBundleOutboxBatch } from './services/bundleOutbox.service';
 import { sweepBookingReminders } from './services/bookingReminder.service';
 import { redactUrlForLogs } from './utils/safe-logging';
 import { startImageGenerationWorker } from './services/image-generation-job.service';
+import { applyGatewayDomainAssignments } from './services/gatewayDomainAssignments.service';
 import { BookingCancellation } from './models/BookingCancellation';
 import { processPendingBookingCancellations } from './services/bookingCancellation.service';
 import { ensureBookingOperatorNotificationIndexes, processBookingOperatorNotifications } from './services/bookingOperatorNotification.service';
@@ -169,6 +170,7 @@ export const startServer = async (): Promise<void> => {
     await BookingCancellation.createIndexes();
     await TenantFinanceRevision.createIndexes();
     await BookingAttendanceRevision.createIndexes();
+    await applyGatewayDomainAssignments();
     // These workers only claim new, versioned intents; rollback leaves them recoverable.
     for (const [name, enabled, work] of [
       ['paid-confirmations-v1', env.bookingPaidEffectsDeliveryEnabled, processBookingPaidEffects],
