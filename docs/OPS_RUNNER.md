@@ -12,8 +12,12 @@ Railway API.
 - The start command runs the wrapper. With `OPS_TASK` unset it logs `idle` and
   exits. `OPS_TASK` must name an existing `src/scripts/*.ts` file plus its arguments; anything
   else is refused. Scripts keep their own guards (`check` first, `--confirm`, `--database`).
-- It has no deploy trigger: a push to `main` does not run it. A run is a manual deploy of the
-  latest `main` after setting `OPS_TASK`; clear `OPS_TASK` afterwards.
+- It has no deploy trigger: a push to `main` does not run it. A run: set `OPS_TASK` with
+  `variableUpsert` (`skipDeploys: true`), start `serviceInstanceDeployV2` for the commit, read
+  `deploymentLogs` until `[ops-runner] finished: exit code N` appears, then set `OPS_TASK` to an
+  empty string the same way. Do not delete the variable mid-run.
+- Railway stores a JSON log line as structured attributes with an empty message, so read
+  `deploymentLogs { message attributes { key value } }` to see a script's JSON output.
 - Variables are references to the `web` service (`${{web.NAME}}`) for the database and the
   secrets the configuration requires in production. Email, SMS and payment credentials are
   deliberately not given to it.
