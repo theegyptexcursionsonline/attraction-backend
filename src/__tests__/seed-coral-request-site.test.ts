@@ -7,7 +7,8 @@ import { ContactMessage } from '../models/ContactMessage';
 import previewRoutes from '../routes/preview.routes';
 import request from '../test/loopbackRequest';
 import { generatePreviewAccessCode } from '../utils/hash';
-import { coralAssetManifestSchema, coralSeedFailureMessage, coralTenantFields, prepareCoralSeed, inspectCoralSeed, applyCoralSeed, retireCoralSeed } from '../scripts/seed-coral-request-site';
+import { coralAssetManifestSchema, coralSeedFailureMessage, coralTenantFields, prepareCoralSeed, inspectCoralSeed, applyCoralSeed, retireCoralSeed, attachCoralDomain } from '../scripts/seed-coral-request-site';
+import { DomainClaim } from '../models/DomainClaim';
 
 jest.setTimeout(90_000);
 const assets = { logo: 'https://res.cloudinary.com/test/image/upload/coral-logo.svg', heroImages: ['https://res.cloudinary.com/test/image/upload/coral.jpg'] };
@@ -20,7 +21,7 @@ beforeAll(async () => {
   mongo = await MongoMemoryServer.create({ binary: { version: version || '7.0.14', ...(systemBinary ? { systemBinary } : {}) } });
   await mongoose.connect(mongo.getUri('coral_seed'), { autoIndex: false });
 });
-beforeEach(async () => { await Tenant.collection.deleteMany({}); await ContactMessage.collection.deleteMany({}); });
+beforeEach(async () => { await Tenant.collection.deleteMany({}); await ContactMessage.collection.deleteMany({}); await DomainClaim.collection.deleteMany({}); });
 afterAll(async () => { await mongoose.disconnect(); await mongo?.stop(); });
 
 it('builds a protected request site without invented stock, prices, contacts or custom-domain assignment', () => {
@@ -124,6 +125,41 @@ it('refuses a supplied custom-domain collision and leaves the other tenant untou
   expect((await Tenant.findOne().lean())?.slug).toBe('existing-owner');
 });
 
+
+it('attaches coralsafarihurghada.com once, to the applied website only, without changing anything else', async () => {
+  const journal = await prepareCoralSeed(assets, previewCode);
+  await expect(attachCoralDomain(journal)).rejects.toThrow('applied');
+  await applyCoralSeed(assets, previewCode, journal);
+  const applied = { ...journal, state: 'applied' as const };
+  const before = await Tenant.collection.findOne({ slug: 'coral-safari-hurghada' });
+  expect(await attachCoralDomain(applied)).toBe('attached');
+  const after = await Tenant.collection.findOne({ slug: 'coral-safari-hurghada' });
+  expect(after).toMatchObject({ customDomain: 'coralsafarihurghada.com', customDomainStatus: 'pending_dns', domainMigrated: false });
+  const { customDomain: _d, customDomainStatus: _s, customDomainLastCheckedAt: _c, ...rest } = after!;
+  const { customDomainStatus: _bs, ...beforeRest } = before!;
+  expect(rest).toEqual(beforeRest);
+  expect(await DomainClaim.findById('coralsafarihurghada.com').lean()).toMatchObject({ tenantId: after!._id });
+  expect(await attachCoralDomain(applied)).toBe('unchanged');
+  // Replay and retirement still recognise the website as this script's own.
+  expect(await applyCoralSeed(assets, previewCode, journal)).toBe('unchanged');
+  expect(await retireCoralSeed(applied)).toBe('retired');
+});
+
+it('refuses to attach the domain when another website owns it or the record was edited', async () => {
+  const journal = await prepareCoralSeed(assets, previewCode);
+  await applyCoralSeed(assets, previewCode, journal);
+  const applied = { ...journal, state: 'applied' as const };
+  const other = { _id: new mongoose.Types.ObjectId() };
+  await Tenant.collection.insertOne({ ...other, slug: 'other-owner', name: 'Other', domain: 'other-owner.foxesnetwork.com', customDomain: 'coralsafarihurghada.com', status: 'active' });
+  await expect(attachCoralDomain(applied)).rejects.toThrow('Another website');
+  await Tenant.collection.deleteOne({ _id: other._id });
+  await DomainClaim.create({ _id: 'coralsafarihurghada.com', tenantId: other._id });
+  await expect(attachCoralDomain(applied)).rejects.toThrow('claim');
+  await DomainClaim.deleteMany({});
+  await Tenant.updateOne({ slug: 'coral-safari-hurghada' }, { $set: { tagline: 'Operator edit' } });
+  await expect(attachCoralDomain(applied)).rejects.toThrow('changed after creation');
+  expect((await Tenant.findOne({ slug: 'coral-safari-hurghada' }).lean())?.customDomain).toBeUndefined();
+});
 
 it('never formats native connection or filesystem errors with their sensitive details', () => {
   const credentialUri = ['mongodb+srv:', '//qa:', 'redaction-sentinel', '@db.invalid/site'].join('');
