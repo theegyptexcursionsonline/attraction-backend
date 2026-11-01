@@ -101,12 +101,14 @@
  * assignment's own sentence; El Fanous and El-Fanadir are each named once, where a site must say which reef
  * it is half of.
  *
- * Photographs are the ones each record publishes, already on the network's Cloudinary, with the four
- * Hurghada boat photographs described in the words batch B09 used for the same records. Each site here still
- * shows fewer than three distinct photographs of its own, so each carries a `photoShortfall` note; the two
- * pictures of each place follow in their own commit once the coordinator sends the upload results, and the
- * note goes with them. The four logos are an open question too: `--apply` refuses to run without
- * `--logos=<file>` naming every site's approved logo, logoDark and favicon, for all of them.
+ * Each site has two pictures of its own place, uploaded for this batch on 1 November, and the creation run
+ * writes them first: the home page's opening picture, then the inner pages' one. So no site opens on a
+ * photograph another site opens on, and no later picture write is needed (batch B12 had to change pictures
+ * after creation and re-stamp its Arabic rows). Behind that pair each site lists the photographs its own
+ * records publish, which the client can replace at any time without touching anything else; those are
+ * described in the words the batch that first sold each record used. The logos are still an open question:
+ * `--apply` refuses to run without `--logos=<file>` naming every site's approved logo, logoDark and
+ * favicon, for every site of the group.
  */
 import type { NetworkBatch, PriceSpec } from '../seed-network-sites';
 import { PHOTO_C, PROGRAMMES_C as B08C } from './b08';
@@ -277,6 +279,69 @@ const ALT: Record<keyof typeof PHOTO, string> = {
   camelInLagoon: 'A camel standing in shallow water between green mangrove bushes, with a low ridge behind',
 };
 
+/**
+ * Each site's own two pictures, uploaded for this batch on 1 November 2026 and written here as the upload
+ * results they are, so the creation run itself publishes them and no later picture write is needed. The
+ * first opens the home page and the second carries the inner pages; each site's record photos follow them.
+ * What each picture shows is kept beside it: the tenant record has nowhere to store a description of a hero
+ * image (its `heroImages` is a list of addresses), so these stay as notes until the storefront has a field
+ * for them.
+ *
+ * The coordinator sent twenty, two for each of the ten sites the batch was planned with. The pairs for
+ * North Abu Ramada and Erg Sabina are not written here, because neither site is built: both are held back
+ * on their own records' faults, above. They wait with the sites.
+ */
+const HERO: Record<string, [string, string]> = {
+  'shaab-abu-nugar': [
+    // Table and brain corals sit beneath a rippled waterline, with a flat desert coast on the distant horizon.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521124/attractions-network/tenant-heroes/shaab-abu-nugar/site-20261101-hero-119b31aa7dbf.png',
+    // A small cleaner wrasse tends a spotted grouper among table, brain and branching corals on pale sand.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521125/attractions-network/tenant-heroes/shaab-abu-nugar/site-20261101-second-d3a3cdaaf4b0.png',
+  ],
+  'fanous-east': [
+    // Sunlight falls across a shallow coral wall, slender pinnacles and scattered coral blocks on a sloping sandy seabed.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521127/attractions-network/tenant-heroes/fanous-east/site-20261101-hero-c1da53c2c44f.png',
+    // Two jackfish approach a dense cloud of silversides beside a sunlit coral wall.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521128/attractions-network/tenant-heroes/fanous-east/site-20261101-second-cf907dec68d7.png',
+  ],
+  'careless-reef': [
+    // Two unequal coral towers rise side by side from a coral garden surrounded by deep blue water.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521133/attractions-network/tenant-heroes/careless-reef/site-20261101-hero-f861866e0c6e.png',
+    // A mottled moray eel peers from a crevice bordered by orange and coral-coloured growth.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521134/attractions-network/tenant-heroes/careless-reef/site-20261101-second-d08550839e55.png',
+  ],
+  'fanadir-north': [
+    // A grouper and small cleaner fish wait above a coral block beside a sloping reef wall with dark cracks and small caves.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521135/attractions-network/tenant-heroes/fanadir-north/site-20261101-hero-816a81eaab6b.png',
+    // A mottled ochre octopus rests on coral rubble, with its eye, siphon and two curled arms visible against a softly blurred reef background.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521136/attractions-network/tenant-heroes/fanadir-north/site-20261101-second-976f4f60438e.png',
+  ],
+  'fanous-west': [
+    // A narrow sandy underwater channel runs between low coral gardens toward clear turquoise lagoon water.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521140/attractions-network/tenant-heroes/fanous-west/site-20261101-hero-07fcc0b52403.png',
+    // A brown mottled moray eel swims above a low coral garden while small silver fish pass overhead.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521141/attractions-network/tenant-heroes/fanous-west/site-20261101-second-95b6b8b7e34f.png',
+  ],
+  'abu-dabbab-beach': [
+    // Warm pale sand borders a calm blue bay with dark seagrass patches, low rocky edges and bare desert hills.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521142/attractions-network/tenant-heroes/abu-dabbab-beach/site-20261101-hero-3aeb8d107671.png',
+    // Green seagrass blades rise from sun-dappled sand beneath clear shallow turquoise water.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521144/attractions-network/tenant-heroes/abu-dabbab-beach/site-20261101-second-c8dfb18bafbd.png',
+  ],
+  'elphinstone-reef': [
+    // A long narrow reef lies just beneath deep blue open water, with white surf breaking along its crest and no land visible.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521145/attractions-network/tenant-heroes/elphinstone-reef/site-20261101-hero-ac79ffbded45.png',
+    // Orange anthias swim beside a steep reef wall covered in brown soft corals that descends into deep blue water.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521146/attractions-network/tenant-heroes/elphinstone-reef/site-20261101-second-1581933892df.png',
+  ],
+  'sharm-el-luli': [
+    // An empty flat white beach curves beside clear turquoise shallows with bare desert mountains in the distance.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521148/attractions-network/tenant-heroes/sharm-el-luli/site-20261101-hero-95c7332f2214.png',
+    // Two yellow-orange clownfish with white bands hover among a green anemone surrounded by pale hard corals.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521149/attractions-network/tenant-heroes/sharm-el-luli/site-20261101-second-b2c0373f7bd4.png',
+  ],
+};
+
 const HURGHADA = { lat: 27.2579, lng: 33.8116 };
 const MARSA_ALAM = { lat: 25.0676, lng: 34.879 };
 
@@ -299,10 +364,6 @@ const NOT_WADI_EL_GEMAL_BAY = /Gouna|Hurghada|Makadi|Sahl|Safaga|Soma Bay|Sharm 
 
 /** The closing line every B11, B12 and B13 site ends on, and every site here. */
 const CLOSING = 'Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.';
-
-/** Why each site shows fewer than three photographs of its own until its own pictures are uploaded. */
-const SHORTFALL_ONE = 'The one day this site sells publishes a single photograph, so the home page opens on it until the site’s own pictures are added; the photographs are an open question for the client.';
-const SHORTFALL_TWO = 'The days this site sells publish two distinct photographs between them, so the home page opens on those until the site’s own pictures are added; the photographs are an open question for the client.';
 
 /** B14A: four of the reefs Hurghada's boats work, north and east of the town. */
 export const B14A: NetworkBatch = {
@@ -328,8 +389,7 @@ export const B14A: NetworkBatch = {
         keywords: ['shaab abu nugar reef', 'dolphin house boat day hurghada', 'northernmost hurghada reefs', 'dolphin house yacht with seafood lunch', 'hurghada dolphin day hotel car'],
       },
       theme: { primaryColor: '#15324A', secondaryColor: '#F2EEE3', accentColor: '#C8432E' },
-      heroImages: [PHOTO.dolphinPair, PHOTO.whiteSpeedboat],
-      photoShortfall: SHORTFALL_TWO,
+      heroImages: [...HERO['shaab-abu-nugar'], PHOTO.dolphinPair, PHOTO.whiteSpeedboat],
       logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/shaab-abu-nugar/monogram.png',
       trips: [
         {
@@ -411,8 +471,7 @@ export const B14A: NetworkBatch = {
         keywords: ['fanous east beacon reef', 'orange island premium cruise', 'hurghada reef snorkelling cruise', 'orange island entry included', 'hurghada island day by coach'],
       },
       theme: { primaryColor: '#0E3C45', secondaryColor: '#FBF1DC', accentColor: '#E8A33D' },
-      heroImages: [PHOTO.dayBoatAtAnchor],
-      photoShortfall: SHORTFALL_ONE,
+      heroImages: [...HERO['fanous-east'], PHOTO.dayBoatAtAnchor],
       logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/fanous-east/monogram.png',
       trips: [
         {
@@ -456,8 +515,7 @@ export const B14A: NetworkBatch = {
         keywords: ['careless reef hurghada', 'orange bay day with parasailing', 'moray eel dive site hurghada', 'orange bay island entry covered', 'hurghada island day with a flight'],
       },
       theme: { primaryColor: '#10141F', secondaryColor: '#E7D9B8', accentColor: '#E06A4E' },
-      heroImages: [PHOTO.parasailerOverTheBay],
-      photoShortfall: SHORTFALL_ONE,
+      heroImages: [...HERO['careless-reef'], PHOTO.parasailerOverTheBay],
       logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/careless-reef/monogram.png',
       trips: [
         {
@@ -501,8 +559,7 @@ export const B14A: NetworkBatch = {
         keywords: ['fanadir north reef', 'el fanadir fringing reef hurghada', 'dolphin house yacht cruise', 'macro diving wall hurghada', 'five hour yacht day hurghada'],
       },
       theme: { primaryColor: '#2F2A2E', secondaryColor: '#F3EBDC', accentColor: '#C77B30' },
-      heroImages: [PHOTO.yachtAndDolphins],
-      photoShortfall: SHORTFALL_ONE,
+      heroImages: [...HERO['fanadir-north'], PHOTO.yachtAndDolphins],
       logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/fanadir-north/monogram.png',
       trips: [
         {
@@ -553,8 +610,7 @@ export const B14B: NetworkBatch = {
         keywords: ['fanous west sheltered reef', 'six island speedboat day hurghada', 'abu minqar sandbank walk', 'beacon reef lagoon channel', 'hurghada speedboat island fees'],
       },
       theme: { primaryColor: '#1C4E7A', secondaryColor: '#FBFAF6', accentColor: '#38B6B0' },
-      heroImages: [PHOTO.snorkellerSelfie],
-      photoShortfall: SHORTFALL_ONE,
+      heroImages: [...HERO['fanous-west'], PHOTO.snorkellerSelfie],
       logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/fanous-west/monogram.png',
       trips: [
         {
@@ -598,8 +654,7 @@ export const B14B: NetworkBatch = {
         keywords: ['abu dabbab beach seagrass bay', 'marsa mubarak dugong snorkelling', 'green turtle bay north of marsa alam', 'marsa alam boat day with lunch', 'dugongs grazing seagrass red sea'],
       },
       theme: { primaryColor: '#2E6B4E', secondaryColor: '#F2E7D2', accentColor: '#E6763D' },
-      heroImages: [PHOTO.turtleOverReef, PHOTO.turtleInBlue],
-      photoShortfall: SHORTFALL_TWO,
+      heroImages: [...HERO['abu-dabbab-beach'], PHOTO.turtleOverReef, PHOTO.turtleInBlue],
       logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/abu-dabbab-beach/monogram.png',
       trips: [
         {
@@ -662,8 +717,7 @@ export const B14B: NetworkBatch = {
         keywords: ['elphinstone reef marsa alam', 'port ghalib sailing boat day', 'marsa shona snorkelling stop', 'offshore spindle reef red sea', 'half day under sail marsa alam'],
       },
       theme: { primaryColor: '#0F4C81', secondaryColor: '#EEF4F8', accentColor: '#E2557F' },
-      heroImages: [PHOTO.snorkellerAndSails],
-      photoShortfall: SHORTFALL_ONE,
+      heroImages: [...HERO['elphinstone-reef'], PHOTO.snorkellerAndSails],
       logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/elphinstone-reef/monogram.png',
       trips: [
         {
@@ -707,8 +761,7 @@ export const B14B: NetworkBatch = {
         keywords: ['sharm el luli bay', 'wadi el gemal jeep safari', 'cleopatra temple and desert spring', 'bedouin dinner under the stars', 'wadi el gemal national park day'],
       },
       theme: { primaryColor: '#2F7D4F', secondaryColor: '#FFFDF7', accentColor: '#2BB3C0' },
-      heroImages: [PHOTO.camelInLagoon],
-      photoShortfall: SHORTFALL_ONE,
+      heroImages: [...HERO['sharm-el-luli'], PHOTO.camelInLagoon],
       logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/sharm-el-luli/monogram.png',
       trips: [
         {

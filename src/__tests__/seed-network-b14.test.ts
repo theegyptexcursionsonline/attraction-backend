@@ -71,6 +71,46 @@ const THEMES: Record<string, [string, string, string]> = {
   'sharm-el-luli': ['#2F7D4F', '#FFFDF7', '#2BB3C0'],
 };
 
+/**
+ * The two pictures uploaded for each site on 1 November 2026, in the order the creation run writes them:
+ * the home page's opening picture, then the inner pages' one. Held here as literals so the batch is checked
+ * against the upload result rather than against itself.
+ */
+const SITE_PICTURES: Record<string, [string, string]> = {
+  'shaab-abu-nugar': [
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521124/attractions-network/tenant-heroes/shaab-abu-nugar/site-20261101-hero-119b31aa7dbf.png',
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521125/attractions-network/tenant-heroes/shaab-abu-nugar/site-20261101-second-d3a3cdaaf4b0.png',
+  ],
+  'fanous-east': [
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521127/attractions-network/tenant-heroes/fanous-east/site-20261101-hero-c1da53c2c44f.png',
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521128/attractions-network/tenant-heroes/fanous-east/site-20261101-second-cf907dec68d7.png',
+  ],
+  'careless-reef': [
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521133/attractions-network/tenant-heroes/careless-reef/site-20261101-hero-f861866e0c6e.png',
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521134/attractions-network/tenant-heroes/careless-reef/site-20261101-second-d08550839e55.png',
+  ],
+  'fanadir-north': [
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521135/attractions-network/tenant-heroes/fanadir-north/site-20261101-hero-816a81eaab6b.png',
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521136/attractions-network/tenant-heroes/fanadir-north/site-20261101-second-976f4f60438e.png',
+  ],
+  'fanous-west': [
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521140/attractions-network/tenant-heroes/fanous-west/site-20261101-hero-07fcc0b52403.png',
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521141/attractions-network/tenant-heroes/fanous-west/site-20261101-second-95b6b8b7e34f.png',
+  ],
+  'abu-dabbab-beach': [
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521142/attractions-network/tenant-heroes/abu-dabbab-beach/site-20261101-hero-3aeb8d107671.png',
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521144/attractions-network/tenant-heroes/abu-dabbab-beach/site-20261101-second-c8dfb18bafbd.png',
+  ],
+  'elphinstone-reef': [
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521145/attractions-network/tenant-heroes/elphinstone-reef/site-20261101-hero-ac79ffbded45.png',
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521146/attractions-network/tenant-heroes/elphinstone-reef/site-20261101-second-1581933892df.png',
+  ],
+  'sharm-el-luli': [
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521148/attractions-network/tenant-heroes/sharm-el-luli/site-20261101-hero-95c7332f2214.png',
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793521149/attractions-network/tenant-heroes/sharm-el-luli/site-20261101-second-b2c0373f7bd4.png',
+  ],
+};
+
 /** The days the coordinator's assignment (research/days.json) gives each site, in the order they are sold. */
 const DAYS: Record<string, string[]> = {
   'shaab-abu-nugar': [
@@ -311,15 +351,39 @@ describe('batch B14: the reefs, bays and shores that take the network past a hun
     expect(new Set(metaTitles).size).toBe(metaTitles.length);
   });
 
-  it('shows only the photographs its own records publish, each described once', () => {
-    // The two pictures of each place follow in their own commit, so until then a site opens on the
-    // photographs of the days it sells and says why there are fewer than three.
+  it('opens every site on its own two pictures, then on its records\u2019 photographs', () => {
+    // The creation run writes each site's own pair first, so no later picture write is needed and no site
+    // opens on a photograph another site already opens on.
+    const PICTURE = /^https:\/\/res\.cloudinary\.com\/dm3sxllch\/image\/upload\/v\d+\/attractions-network\/tenant-heroes\/([a-z0-9-]+)\/site-20261101-(hero|second)-[0-9a-f]{12}\.png$/;
+    for (const site of B14) {
+      const pair = site.heroImages.slice(0, 2);
+      expect(pair).toEqual(SITE_PICTURES[site.slug]);
+      pair.forEach((url, index) => {
+        const parts = PICTURE.exec(url);
+        expect(parts).not.toBeNull();
+        // Each picture sits in its own site's folder, so no site can be opened on another's.
+        expect(parts![1]).toBe(site.slug);
+        expect(parts![2]).toBe(index === 0 ? 'hero' : 'second');
+      });
+    }
+    // No picture is shared between two sites, and none is one an earlier batch already uses.
+    const pictures = B14.flatMap((site) => site.heroImages.slice(0, 2));
+    expect(pictures).toHaveLength(2 * B14_SITES);
+    expect(new Set(pictures).size).toBe(pictures.length);
+    const earlierImages = new Set(EARLIER.flatMap((site) => site.heroImages));
+    expect(pictures.filter((url) => earlierImages.has(url))).toEqual([]);
+    // Nothing opens on a photograph another site opens on.
+    const taken = new Map<string, string>();
+    for (const site of EARLIER) if (!taken.has(site.heroImages[0])) taken.set(site.heroImages[0], site.slug);
+    expect(B14.filter((site) => taken.has(site.heroImages[0])).map((site) => site.slug)).toEqual([]);
+    // Each site shows at least three distinct pictures now, so none needs the shortfall note; the record
+    // photographs follow the site's own pair, and every one of them is a record's own.
     const recordPhotos = new Set(B14.flatMap((site) => site.trips.flatMap((trip) => trip.images)));
     for (const site of B14) {
-      expect(site.heroImages.length).toBeGreaterThanOrEqual(1);
+      expect(site.photoShortfall).toBeUndefined();
+      expect(site.heroImages.length).toBeGreaterThanOrEqual(3);
       expect(new Set(site.heroImages).size).toBe(site.heroImages.length);
-      for (const url of site.heroImages) expect(recordPhotos.has(url)).toBe(true);
-      if (site.heroImages.length < 3) expect(site.photoShortfall?.trim()).toBeTruthy();
+      for (const url of site.heroImages.slice(2)) expect(recordPhotos.has(url)).toBe(true);
     }
     // Each photo is described once across the batch, so none is described two ways.
     const described = new Map<string, Set<string>>();
