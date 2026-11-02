@@ -1,0 +1,410 @@
+{
+  "version": 1,
+  "batch": "b14a",
+  "locale": "ar",
+  "tenant": {
+    "id": "6ae8236b4960cd119df0c05f",
+    "slug": "careless-reef",
+    "domain": "careless-reef.foxesnetwork.com"
+  },
+  "presentationSha256": "dc004085cb81502a9a52a4b591f4f1f48184b68a806934f07348cb0726168a23",
+  "presentation": [
+    {
+      "kind": "tenant",
+      "sourceId": "6ae8236b4960cd119df0c05f",
+      "sourceDigest": "a8afc9abe1c9f1cc306e72ec31a83d820c31f52d2fb39af73b0bb3eb3c360246",
+      "english": {
+        "tagline": "An Orange Bay day with a flight over it",
+        "description": "Careless Reef stands in open water north-east of Hurghada, in the gap that separates the Umm Gamar reefs from Giftun Island, and runs roughly two hundred metres. Its spelling is disputed: the national register of dive sites and one guide print Carless, while another prints the longer form and calls that the right one, so this site uses Careless throughout. The reef rises from deep water as though pushed up from the abyss, with two large coral towers standing on a plateau of coral gardens and a smaller pinnacle at the southern end; the plateau tilts towards an edge that drops straight down, coral forests on the northern drop-off and small coral towers on the southern side. It is known above all for a large resident group of unusually tolerant moray eels of several species, which the guides put down to years of fish-feeding and which will hold still for a camera. It has no shelter of its own and the current is strong and not reliably northerly, so boats reach it only in good weather — and that same current carries in the food that makes it so rich. Nudibranchs, turtles, whitetip reef sharks, tuna, big groupers and giant trevallies are all recorded, with a resident school of bannerfish to the north.\n\nThis day is spent at Orange Bay on Big Giftun; its programme does not name Careless Reef, which stands in open water about ten kilometres north of the island. One trip is sold here: the island day with two snorkelling stops, a buffet lunch and one parasailing flight for every guest. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+        "seoSettings": {
+          "metaTitle": "Careless Reef: an Orange Bay Day with Parasailing",
+          "metaDescription": "A day out of Hurghada to Orange Bay: two guided stops in the water, time ashore with the entry covered, a buffet lunch and one parasailing flight each.",
+          "keywords": [
+            "careless reef hurghada",
+            "orange bay day with parasailing",
+            "moray eel dive site hurghada",
+            "orange bay island entry covered",
+            "hurghada island day with a flight"
+          ]
+        },
+        "pageSeo": [],
+        "navigation": [
+          {
+            "label": "Home",
+            "columns": []
+          },
+          {
+            "label": "Trips",
+            "columns": []
+          },
+          {
+            "label": "About",
+            "columns": []
+          },
+          {
+            "label": "FAQ",
+            "columns": []
+          },
+          {
+            "label": "Contact",
+            "columns": []
+          }
+        ]
+      },
+      "arabic": {
+        "tagline": "يوم في أورانج باي وتحليقة فوقه",
+        "description": "يقف شعب كيرلس في المياه المفتوحة شمال شرق الغردقة، في الفجوة التي تفصل شعاب أم قمر عن جزيرة جفتون، ويمتد نحو مئتي متر. ويُختلف في كتابة اسمه بالحروف اللاتينية: فالسجل الوطني لمواقع الغوص وأحد الأدلة يكتبانه Carless، بينما يكتب دليل آخر الصيغة الأطول ويعدّها الصحيحة، ولذلك يكتبه هذا الموقع Careless في كل موضع. ويرتفع الشعب من المياه العميقة كأنما دُفع من الأعماق، ويقوم برجان مرجانيان كبيران على هضبة من الحدائق المرجانية، مع قمة مرجانية أصغر في الطرف الجنوبي؛ وتميل الهضبة نحو حافة تهوي عمودياً، وعلى المنحدر الشمالي غابات مرجانية، وعلى الجانب الجنوبي أبراج مرجانية صغيرة. ويُعرف قبل كل شيء بمجموعة كبيرة مقيمة من ثعابين الموراي من أنواع عدة، تتقبل الغواصين على نحو غير معتاد، ويعزو الأدلة ذلك إلى سنوات من إطعام الأسماك، وهي تثبت في مكانها أمام الكاميرا. ولا مأوى له من الريح، والتيار قوي ولا يأتي من الشمال دائماً، فلا تبلغه المراكب إلا في الطقس الجيد — والتيار نفسه يحمل إليه الغذاء الذي يجعله غنياً إلى هذا الحد. وقد سُجّلت عليه الرخويات العارية والسلاحف وقروش الشعاب بيضاء الطرف والتونة والهامور الكبير وأسماك الجاك العملاقة، مع سرب مقيم من أسماك الراية في الشمال. يُقضى هذا اليوم في أورانج باي على جفتون الكبيرة، ولا يذكر برنامجه شعب كيرلس، الذي يقف في المياه المفتوحة على بعد نحو عشرة كيلومترات شمال الجزيرة. وتُعرض هنا رحلة واحدة: يوم الجزيرة مع وقفتين للسنوركلينغ وغداء بوفيه وتحليقة باراسيلينغ واحدة لكل ضيف. وتبدأ كل رحلة بالاصطحاب من فندقك وتنتهي بالعودة إليه، وتوضح كل صفحة ما يشمله سعرها. يمكنك حجز مكانك عبر الإنترنت والدفع لاحقاً، أو سؤال الفريق أولاً عن موعد الاصطحاب.",
+        "seoSettings": {
+          "metaTitle": "شعب كيرلس: يوم أورانج باي مع الباراسيلينغ",
+          "metaDescription": "يوم من الغردقة إلى أورانج باي: وقفتان في الماء بصحبة مرشد، ووقت على البر مع رسوم الدخول، وغداء بوفيه، وتحليقة باراسيلينغ واحدة لكل ضيف.",
+          "keywords": [
+            "شعب كيرلس في الغردقة",
+            "يوم أورانج باي مع الباراسيلينغ",
+            "موقع غوص ثعابين الموراي في الغردقة",
+            "دخول جزيرة أورانج باي مشمول",
+            "يوم جزيرة من الغردقة مع تحليقة"
+          ]
+        },
+        "pageSeo": [],
+        "navigation": [
+          {
+            "label": "الرئيسية",
+            "columns": []
+          },
+          {
+            "label": "الرحلات",
+            "columns": []
+          },
+          {
+            "label": "من نحن",
+            "columns": []
+          },
+          {
+            "label": "الأسئلة الشائعة",
+            "columns": []
+          },
+          {
+            "label": "اتصل بنا",
+            "columns": []
+          }
+        ]
+      }
+    }
+  ],
+  "tours": [
+    {
+      "id": "6ae8236b9f07414c57e60b15",
+      "sourceSlug": "crf-orange-bay-day-with-parasailing",
+      "slug": "crf-orange-bay-day-with-parasailing-ar",
+      "sourceUpdatedAt": "2026-11-02T05:45:15.468Z",
+      "sourceDigest": "e957f53026d01aa4c2c89b20f28aefbc7dd75cfe998719ba0f745f1a7e9ff1a9",
+      "english": {
+        "title": "A Day at Orange Bay, and One Flight Over It",
+        "shortDescription": "Two snorkelling stops, two hours on Orange Bay with the entry covered, a buffet lunch and one parasailing flight for every guest aboard.",
+        "description": "The car comes round early and the boat is away by half past eight, after a safety briefing and breakfast on deck. The day holds two guided snorkelling stops of forty-five minutes with the gear and a life jacket, a buffet lunch, and two hours on Orange Bay Island with the entry covered and one parasailing flight for every guest. The programme names Hurghada and Orange Bay, not Careless Reef, which stands out in the open water north of the island; no boat goes there.\n\nWater, tea, coffee and soft drinks are unlimited and seasonal fruit comes with them. There are two to four guides on each boat and one for guests who do not swim, with toilets and a shower on board. Children have their own price, and pickup from outside Hurghada is not something this page can book.",
+        "duration": "7 - 7.5 hours",
+        "cancellationPolicy": "",
+        "highlights": [
+          "One parasailing flight for each guest",
+          "Two hours ashore, entry covered",
+          "Two guided stops of forty-five minutes",
+          "A guide for guests who do not swim"
+        ],
+        "inclusions": [
+          "Air-conditioned transportation",
+          "2 to 4 professional guides per boat",
+          "Special guide for non-swimmers",
+          "Buffet lunch",
+          "Unlimited beverages (mineral water, tea, instant coffee, coca cola and Fanta)",
+          "4 seasonal fruits",
+          "Two snorkeling stops",
+          "1x parasailing",
+          "Snorkeling equipment",
+          "2 hours of free time on Orange Bay Island",
+          "Entrance fees to Orange Bay",
+          "2 toilets and shower on board",
+          "Pickup and drop-off at your hotel in Hurghada"
+        ],
+        "exclusions": [
+          "Tips (not mandatory but appreciated)"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [
+          "Sunglasses",
+          "Swimwear",
+          "Towel",
+          "Sunscreen",
+          "Cash"
+        ],
+        "needToKnow": [
+          "Pickup from outside Hurghada costs extra and cannot be booked on this site. Ask the team before you book if your hotel is further out.",
+          "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "orange-bay-parasailing-experience-with-transf-4c627578a0f2",
+            "name": "Orange Bay with parasailing and the transfer",
+            "description": "The whole island day with one parasailing flight each, and the car from your hotel and back.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "08:30"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "Hotel pickup",
+            "description": "The car collects you from your hotel in Hurghada.",
+            "duration": "30 minutes"
+          },
+          {
+            "index": 1,
+            "title": "Safety briefing",
+            "description": "The crew run through the day and the safety rules before the boat leaves.",
+            "duration": "30 minutes"
+          },
+          {
+            "index": 2,
+            "title": "Breakfast on board",
+            "description": "Breakfast as the boat sails out.",
+            "duration": "15 minutes"
+          },
+          {
+            "index": 3,
+            "title": "First snorkelling stop",
+            "description": "A guided stop with the snorkelling gear and a life jacket.",
+            "duration": "45 minutes"
+          },
+          {
+            "index": 4,
+            "title": "Second snorkelling stop",
+            "description": "A second guided stop, with a guide on hand for anyone who does not swim.",
+            "duration": "45 minutes"
+          },
+          {
+            "index": 5,
+            "title": "Lunch on board",
+            "description": "A buffet lunch, with water, tea, coffee and soft drinks.",
+            "duration": "1 hour"
+          },
+          {
+            "index": 6,
+            "title": "Orange Bay Island",
+            "description": "Free time ashore with the entry covered, and one parasailing flight for every guest.",
+            "duration": "2 hours"
+          },
+          {
+            "index": 7,
+            "title": "Back to Hurghada",
+            "description": "The boat returns and the car takes you back to your hotel.",
+            "duration": "1 hour"
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "Hotel pickup",
+            "description": "Pickup and drop-off at your hotel in Hurghada."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "The team confirms your pickup time when it confirms your booking."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788290048/tours/ncyahtmagpd4boacmjfh.jpg",
+            "alt": "A parasailer under a wide striped canopy, towed by a small yellow speedboat across deep blue water, with a sandy cliff shore and moored boats behind"
+          }
+        ],
+        "seo": {
+          "metaTitle": "A Day at Orange Bay, and One Flight Over It",
+          "metaDescription": "Out of Hurghada by half past eight: two guided snorkelling stops, two hours on Orange Bay with the entry covered, a buffet lunch and a flight each.",
+          "keywords": []
+        }
+      },
+      "arabic": {
+        "title": "يوم في أورانج باي، وتحليقة واحدة فوقه",
+        "shortDescription": "وقفتان للسنوركلينغ، وساعتان في أورانج باي مع رسوم الدخول، وغداء بوفيه، وتحليقة باراسيلينغ واحدة لكل ضيف على المتن.",
+        "description": "تمر السيارة باكراً، ويكون المركب قد أبحر بحلول الثامنة والنصف، بعد شرح السلامة والإفطار على السطح. ويضم اليوم وقفتين للسنوركلينغ بصحبة مرشد مدة كل منهما خمس وأربعون دقيقة مع العدة وسترة النجاة، وغداء بوفيه، وساعتين على جزيرة أورانج باي مع رسوم الدخول وتحليقة باراسيلينغ واحدة لكل ضيف. ويسمي البرنامج الغردقة وأورانج باي، لا شعب كيرلس، الذي يقف في المياه المفتوحة شمال الجزيرة؛ ولا يذهب إليه أي مركب.\n\nوالماء والشاي والقهوة والمشروبات الغازية بلا حدود، ومعها فاكهة الموسم. وعلى كل مركب من مرشدين اثنين إلى أربعة، ومرشد لمن لا يسبح، وعلى المتن دورات مياه ودُش. وللأطفال سعرهم الخاص، والاصطحاب من خارج الغردقة لا يمكن حجزه من هذه الصفحة.",
+        "duration": "7 - 7.5 ساعات",
+        "cancellationPolicy": "",
+        "highlights": [
+          "تحليقة باراسيلينغ واحدة لكل ضيف",
+          "ساعتان على البر، والدخول مشمول",
+          "وقفتان بصحبة مرشد مدة كل منهما خمس وأربعون دقيقة",
+          "مرشد لمن لا يسبح"
+        ],
+        "inclusions": [
+          "نقل مكيّف",
+          "من 2 إلى 4 مرشدين محترفين لكل مركب",
+          "مرشد خاص لغير السابحين",
+          "غداء بوفيه",
+          "مشروبات بلا حدود (مياه معدنية وشاي وقهوة سريعة التحضير وكوكا كولا وفانتا)",
+          "4 أنواع من فاكهة الموسم",
+          "توقفان للسنوركلينغ",
+          "باراسيلينغ × 1",
+          "معدات السنوركلينغ",
+          "2 ساعات من الوقت الحر على جزيرة أورانج باي",
+          "رسوم دخول أورانج باي",
+          "دورتا مياه (2) ودُش على متن المركب",
+          "الاصطحاب من فندقك في الغردقة والعودة إليه"
+        ],
+        "exclusions": [
+          "البقشيش (غير إلزامي لكنه موضع تقدير)"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [
+          "نظارات شمسية",
+          "ملابس سباحة",
+          "منشفة",
+          "واقي شمس",
+          "نقود"
+        ],
+        "needToKnow": [
+          "الاصطحاب من خارج الغردقة بتكلفة إضافية ولا يمكن حجزه عبر هذا الموقع. اسأل الفريق قبل الحجز إذا كان فندقك أبعد من ذلك.",
+          "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "orange-bay-parasailing-experience-with-transf-4c627578a0f2",
+            "name": "أورانج باي مع الباراسيلينغ والنقل",
+            "description": "يوم الجزيرة كاملاً مع تحليقة باراسيلينغ واحدة لكل ضيف، والسيارة من فندقك وإليه.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "الساعة 08:30"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "الاصطحاب من الفندق",
+            "description": "تصطحبك السيارة من فندقك في الغردقة.",
+            "duration": "30 دقيقة"
+          },
+          {
+            "index": 1,
+            "title": "شرح السلامة",
+            "description": "يشرح الطاقم برنامج اليوم وقواعد السلامة قبل أن يغادر المركب.",
+            "duration": "30 دقيقة"
+          },
+          {
+            "index": 2,
+            "title": "إفطار على متن المركب",
+            "description": "الإفطار أثناء إبحار المركب.",
+            "duration": "15 دقيقة"
+          },
+          {
+            "index": 3,
+            "title": "التوقف الأول للسنوركلينغ",
+            "description": "وقفة بصحبة مرشد مع عدة السنوركلينغ وسترة النجاة.",
+            "duration": "45 دقيقة"
+          },
+          {
+            "index": 4,
+            "title": "التوقف الثاني للسنوركلينغ",
+            "description": "وقفة ثانية بصحبة مرشد، مع مرشد حاضر لمن لا يسبح.",
+            "duration": "45 دقيقة"
+          },
+          {
+            "index": 5,
+            "title": "الغداء على متن المركب",
+            "description": "غداء بوفيه، مع الماء والشاي والقهوة والمشروبات الغازية.",
+            "duration": "1 ساعة"
+          },
+          {
+            "index": 6,
+            "title": "جزيرة أورانج باي",
+            "description": "وقت حر على البر مع رسوم الدخول، وتحليقة باراسيلينغ واحدة لكل ضيف.",
+            "duration": "2 ساعات"
+          },
+          {
+            "index": 7,
+            "title": "العودة إلى الغردقة",
+            "description": "يعود المركب وتعيدك السيارة إلى فندقك.",
+            "duration": "1 ساعة"
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "الاصطحاب من الفندق",
+            "description": "الاصطحاب من فندقك في الغردقة والعودة إليه."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788290048/tours/ncyahtmagpd4boacmjfh.jpg",
+            "alt": "ممارس باراسيلينغ تحت مظلة واسعة مخططة، يجره قارب سريع أصفر صغير فوق ماء أزرق عميق، وخلفه شاطئ بمنحدرات رملية ومراكب راسية"
+          }
+        ],
+        "seo": {
+          "metaTitle": "يوم في أورانج باي، وتحليقة واحدة فوقه",
+          "metaDescription": "من الغردقة بحلول الثامنة والنصف: وقفتان للسنوركلينغ بصحبة مرشد، وساعتان في أورانج باي مع رسوم الدخول، وغداء بوفيه، وتحليقة لكل ضيف.",
+          "keywords": []
+        }
+      }
+    }
+  ],
+  "destinations": [
+    {
+      "id": "699895e47169d9820932b9a3",
+      "sourceSlug": "hurghada",
+      "slug": "hurghada-ar",
+      "sourceUpdatedAt": "2026-04-05T23:15:20.775Z",
+      "sourceDigest": "111acca5fa242e38932f013e0fbb66e4bafd26bd529ebf11740d6c5d2779a75c",
+      "english": {
+        "name": "Hurghada",
+        "country": "Egypt",
+        "description": "Hurghada is a premier Red Sea resort destination known for its pristine beaches, world-class diving, and water sports.",
+        "shortDescription": "Red Sea paradise for diving and water sports",
+        "highlights": [
+          "Coral Reefs",
+          "Snorkeling",
+          "Desert Safaris",
+          "Nightlife"
+        ],
+        "bestTimeToVisit": "October to April",
+        "tags": [
+          "beach",
+          "water-sports",
+          "diving",
+          "resort"
+        ]
+      },
+      "arabic": {
+        "name": "الغردقة",
+        "country": "مصر",
+        "description": "الغردقة وجهة رائدة للمنتجعات على البحر الأحمر، تشتهر بشواطئها النقية والغوص ذي المستوى العالمي والرياضات المائية.",
+        "shortDescription": "جنة على البحر الأحمر للغوص والرياضات المائية",
+        "highlights": [
+          "الشعاب المرجانية",
+          "السنوركلينغ",
+          "رحلات سفاري الصحراء",
+          "الحياة الليلية"
+        ],
+        "bestTimeToVisit": "من أكتوبر إلى أبريل",
+        "tags": [
+          "شاطئ",
+          "رياضات مائية",
+          "غوص",
+          "منتجع"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,400 @@
+{
+  "version": 1,
+  "batch": "b14a",
+  "locale": "ar",
+  "tenant": {
+    "id": "6ae8236b4960cd119df0c060",
+    "slug": "fanadir-north",
+    "domain": "fanadir-north.foxesnetwork.com"
+  },
+  "presentationSha256": "f7fb41c6a04c694a9a997219b3f20cebbaa9cacd5b6481969ed9cf903afb1b7c",
+  "presentation": [
+    {
+      "kind": "tenant",
+      "sourceId": "6ae8236b4960cd119df0c060",
+      "sourceDigest": "83ac9896a68d40616553cfa4536da06f79882cd99d81381780e91aff3d554c8a",
+      "english": {
+        "tagline": "A yacht day north, with lunch aboard",
+        "description": "Fanadir North is the northern end of El Fanadir, a long narrow fringing reef that runs up the coast directly north of Hurghada and encloses a shallow lagoon; the name is printed El-Fanadir as well. The reef leads to a sheer drop-off at twenty to twenty-five metres which carries on far down into deeper water, and the wall below twelve metres gives on to a plateau that runs to about twenty. It is a long sloping face of coral, and what makes it worth the dive are the cracks and caves along it: one prominent coral block works as a busy cleaning station, and the trail of cleaning stations along the reef is described as almost endless. Its shape invites a drift along the wall, and in good weather the very north tip can be dived too. It is a macro hunting ground — scorpionfish, stonefish and lionfish lie up for the abundant pipefish, camouflaged octopuses are common, blue-spotted rays rest at the foot of the main wall, moray eels of several kinds come and go, and the schools of goatfish and sweetlips are large — while near the surface it teems with silversides, with packs of tuna and jacks cruising through.\n\nThis day runs up the coast from Hurghada to the Dolphin House reef; its programme does not name Fanadir North, the top of the long fringing reef that lies about thirteen kilometres short of it. One trip is sold here: five hours by yacht, with time at the reef, two snorkelling stops and a seafood lunch. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+        "seoSettings": {
+          "metaTitle": "Fanadir North: a Yacht Day to Dolphin House",
+          "metaDescription": "Five hours by yacht from Hurghada to the Dolphin House reef: time in the water at the reef, two snorkelling stops and a seafood lunch served on board.",
+          "keywords": [
+            "fanadir north reef",
+            "el fanadir fringing reef hurghada",
+            "dolphin house yacht cruise",
+            "macro diving wall hurghada",
+            "five hour yacht day hurghada"
+          ]
+        },
+        "pageSeo": [],
+        "navigation": [
+          {
+            "label": "Home",
+            "columns": []
+          },
+          {
+            "label": "Trips",
+            "columns": []
+          },
+          {
+            "label": "About",
+            "columns": []
+          },
+          {
+            "label": "FAQ",
+            "columns": []
+          },
+          {
+            "label": "Contact",
+            "columns": []
+          }
+        ]
+      },
+      "arabic": {
+        "tagline": "يوم يخت شمالاً، والغداء على المتن",
+        "description": "الفنادير الشمالية هي الطرف الشمالي من الفنادير، الشعب الهامشي الطويل الضيق الذي يمتد على الساحل شمال الغردقة مباشرة ويحيط ببحيرة ضحلة؛ ويُكتب الاسم بالحروف اللاتينية El-Fanadir أيضاً. ويفضي الشعب إلى منحدر حاد عند عشرين إلى خمسة وعشرين متراً يستمر نزولاً بعيداً إلى المياه الأعمق، والجدار تحت اثني عشر متراً ينفتح على هضبة تمتد إلى نحو عشرين. وهو واجهة مرجانية طويلة مائلة، وما يجعلها جديرة بالغطس الشقوق والكهوف على امتدادها: كتلة مرجانية بارزة تعمل محطة تنظيف مزدحمة، وسلسلة محطات التنظيف على طول الشعب توصف بأنها تكاد لا تنتهي. ويغري شكله بالانسياق مع التيار على طول الجدار، وفي الطقس الجيد يمكن الغطس عند طرفه الشمالي الأقصى أيضاً. وهو ميدان صيد للكائنات الدقيقة — تكمن أسماك العقرب وأسماك الحجر وأسماك الأسد لأسماك الأنبوب الوفيرة، والأخطبوطات المتخفية شائعة، وأسماك الشفنين المنقّطة بالأزرق تستريح عند أسفل الجدار الرئيسي، وثعابين الموراي من أنواع عدة تجيء وتذهب، وأسراب أسماك الماعز وأسماك الشفاه الحلوة كبيرة — بينما يعجّ قرب السطح بأسماك الفضة، وتعبره جماعات من التونة وأسماك الجاك. يتجه هذا اليوم شمالاً على الساحل من الغردقة إلى شعب بيت الدلافين، ولا يذكر برنامجه الفنادير الشمالية، أعلى الشعب الهامشي الطويل الذي يقع قبله بنحو ثلاثة عشر كيلومتراً. وتُعرض هنا رحلة واحدة: خمس ساعات باليخت، مع وقت عند الشعب ووقفتين للسنوركلينغ وغداء مأكولات بحرية. وتبدأ كل رحلة بالاصطحاب من فندقك وتنتهي بالعودة إليه، وتوضح كل صفحة ما يشمله سعرها. يمكنك حجز مكانك عبر الإنترنت والدفع لاحقاً، أو سؤال الفريق أولاً عن موعد الاصطحاب.",
+        "seoSettings": {
+          "metaTitle": "الفنادير الشمالية: يوم يخت إلى بيت الدلافين",
+          "metaDescription": "خمس ساعات باليخت من الغردقة إلى شعب بيت الدلافين: وقت في الماء عند الشعب، ووقفتان للسنوركلينغ، وغداء مأكولات بحرية يُقدَّم على متن اليخت.",
+          "keywords": [
+            "شعب الفنادير الشمالية",
+            "شعب الفنادير الهامشي في الغردقة",
+            "رحلة يخت إلى بيت الدلافين",
+            "جدار لغوص الكائنات الدقيقة في الغردقة",
+            "يوم يخت لخمس ساعات في الغردقة"
+          ]
+        },
+        "pageSeo": [],
+        "navigation": [
+          {
+            "label": "الرئيسية",
+            "columns": []
+          },
+          {
+            "label": "الرحلات",
+            "columns": []
+          },
+          {
+            "label": "من نحن",
+            "columns": []
+          },
+          {
+            "label": "الأسئلة الشائعة",
+            "columns": []
+          },
+          {
+            "label": "اتصل بنا",
+            "columns": []
+          }
+        ]
+      }
+    }
+  ],
+  "tours": [
+    {
+      "id": "6ae8236b9f07414c57e60b42",
+      "sourceSlug": "fdn-dolphin-house-yacht-cruise",
+      "slug": "fdn-dolphin-house-yacht-cruise-ar",
+      "sourceUpdatedAt": "2026-11-02T05:45:15.897Z",
+      "sourceDigest": "1dafd7e0aaa8031b975a9facbebc13667733978c5184878c85175f9942ce5977",
+      "english": {
+        "title": "A Yacht Run North, and Five Hours to Fill It",
+        "shortDescription": "Five hours out of Hurghada by yacht: an hour at the Dolphin House reef, two snorkelling stops, a breakfast buffet and a seafood lunch aboard.",
+        "description": "The yacht takes the whole run north and gives five hours to it. An hour is spent at the Dolphin House reef watching for dolphins and swimming, then thirty minutes of guided snorkelling at the reef and thirty more at a smaller one nearby, with a breakfast buffet before and a seafood lunch after. The programme names Hurghada and the Dolphin House reef, not Fanadir North, which lies about thirteen kilometres short of that reef; nothing stops there.\n\nThe crew are with you through the day and the drinks are hot and cold; the banana and sofa rides are not part of this price. Dolphins are wild, so nobody aboard can promise one. Children have their own price, and a pickup from outside the town is not part of this price.",
+        "duration": "5 hours",
+        "cancellationPolicy": "",
+        "highlights": [
+          "An hour in the water at the reef",
+          "Thirty minutes of guided snorkelling",
+          "A second, smaller reef nearby",
+          "Breakfast first, seafood after"
+        ],
+        "inclusions": [
+          "Dolphin-watch & swim experience",
+          "Snorkeling gear (mask, fins, snorkel)",
+          "2 snorkeling stops",
+          "Guided snorkeling session",
+          "Breakfast buffet",
+          "Fresh lunch onboard ( Fish fillet, Calamari, etc)",
+          "Hot drinks",
+          "Soft drinks",
+          "Refreshments and water",
+          "Guide and snorkeling instructor",
+          "Professional guides on each boat",
+          "Pickup and drop-off at your hotel in Hurghada",
+          "The crew’s help through the day"
+        ],
+        "exclusions": [
+          "Towels",
+          "Underwater photos",
+          "Gratuities (optional)",
+          "Banana and sofa rides"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [
+          "Swimwear",
+          "Towel",
+          "Camera",
+          "Sunscreen"
+        ],
+        "needToKnow": [
+          "Dolphins are wild animals, so no boat can promise a sighting, and swimming near them depends on the sea and on how many boats are there.",
+          "Pickup from outside Hurghada costs extra and cannot be booked on this site. Ask the team before you book if your hotel is further out.",
+          "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "hurghada-dolphin-house-yacht-cruise-with-snor-de457a266747",
+            "name": "Yacht to Dolphin House with a seafood lunch",
+            "description": "Five hours on a yacht: dolphin watching and swimming at Dolphin House, two snorkelling stops, a breakfast buffet and a seafood lunch.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "08:30"
+          },
+          {
+            "index": 1,
+            "label": "14:30"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "Hotel pickup",
+            "description": "The car collects you from your hotel in Hurghada.",
+            "duration": ""
+          },
+          {
+            "index": 1,
+            "title": "Dolphin House",
+            "description": "Dolphin watching and a swim at the reef, where dolphins often feed and rest.",
+            "duration": "1 hour"
+          },
+          {
+            "index": 2,
+            "title": "Snorkelling at Dolphin House",
+            "description": "A guided snorkelling stop on the reef.",
+            "duration": "30 minutes"
+          },
+          {
+            "index": 3,
+            "title": "The small reef",
+            "description": "A second snorkelling stop nearby.",
+            "duration": "30 minutes"
+          },
+          {
+            "index": 4,
+            "title": "Lunch on board",
+            "description": "A seafood lunch, with hot and soft drinks.",
+            "duration": ""
+          },
+          {
+            "index": 5,
+            "title": "Back to Hurghada",
+            "description": "The yacht returns to the marina, and the car takes you back to your hotel.",
+            "duration": ""
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "Hotel pickup",
+            "description": "Pickup and drop-off at your hotel in Hurghada."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "The team confirms your pickup time when it confirms your booking."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788289757/tours/h8x27bcg3l2oc311wf1k.jpg",
+            "alt": "A white motor yacht on bright blue water, with a group of dolphins swimming at the surface in front of it"
+          }
+        ],
+        "seo": {
+          "metaTitle": "A Yacht Run North, and Five Hours to Fill It",
+          "metaDescription": "Five hours by yacht out of Hurghada: an hour at the Dolphin House reef, two guided snorkelling stops, a breakfast buffet and a seafood lunch aboard.",
+          "keywords": []
+        }
+      },
+      "arabic": {
+        "title": "رحلة يخت شمالاً، وخمس ساعات لملئها",
+        "shortDescription": "خمس ساعات من الغردقة باليخت: ساعة عند شعب بيت الدلافين، ووقفتان للسنوركلينغ، وبوفيه إفطار، وغداء مأكولات بحرية على المتن.",
+        "description": "يقطع اليخت الطريق كله شمالاً ويمنحه خمس ساعات. تُقضى ساعة عند شعب بيت الدلافين في ترقب الدلافين والسباحة، ثم ثلاثون دقيقة من السنوركلينغ بصحبة مرشد عند الشعب وثلاثون أخرى عند شعب أصغر قريب، مع بوفيه إفطار قبلها وغداء مأكولات بحرية بعدها. ويسمي البرنامج الغردقة وشعب بيت الدلافين، لا الفنادير الشمالية، التي تقع قبل ذلك الشعب بنحو ثلاثة عشر كيلومتراً؛ ولا تتوقف هناك أي رحلة.\n\nويرافقك الطاقم طوال اليوم، والمشروبات ساخنة وباردة؛ أما جولتا قارب الموز والصوفا فليستا ضمن هذا السعر. والدلافين فطرية، فلا يستطيع أحد على المتن أن يعد برؤيتها. وللأطفال سعرهم الخاص، والاصطحاب من خارج المدينة ليس ضمن هذا السعر.",
+        "duration": "5 ساعات",
+        "cancellationPolicy": "",
+        "highlights": [
+          "ساعة في الماء عند الشعب",
+          "ثلاثون دقيقة من السنوركلينغ بصحبة مرشد",
+          "شعب ثانٍ أصغر قريب",
+          "الإفطار أولاً، ثم المأكولات البحرية"
+        ],
+        "inclusions": [
+          "تجربة مشاهدة الدلافين والسباحة",
+          "عدة السنوركلينغ (قناع وزعانف وأنبوب تنفس)",
+          "2 توقف للسنوركلينغ",
+          "جلسة سنوركلينغ بصحبة مرشد",
+          "بوفيه إفطار",
+          "غداء طازج على متن المركب (فيليه سمك وكلماري وغيرها)",
+          "مشروبات ساخنة",
+          "مشروبات غازية",
+          "مرطبات وماء",
+          "مرشد ومدرب سنوركلينغ",
+          "مرشدون محترفون على كل مركب",
+          "الاصطحاب من فندقك في الغردقة والعودة إليه",
+          "مساعدة الطاقم طوال اليوم"
+        ],
+        "exclusions": [
+          "المناشف",
+          "الصور تحت الماء",
+          "الإكراميات (غير إلزامية)",
+          "جولتا قارب الموز والصوفا"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [
+          "ملابس سباحة",
+          "منشفة",
+          "كاميرا",
+          "واقي شمس"
+        ],
+        "needToKnow": [
+          "الدلافين حيوانات فطرية، فلا يمكن لأي مركب أن يضمن رؤيتها، والسباحة قربها تتوقف على حال البحر وعلى عدد المراكب الموجودة.",
+          "الاصطحاب من خارج الغردقة بتكلفة إضافية ولا يمكن حجزه عبر هذا الموقع. اسأل الفريق قبل الحجز إذا كان فندقك أبعد من ذلك.",
+          "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "hurghada-dolphin-house-yacht-cruise-with-snor-de457a266747",
+            "name": "يخت إلى بيت الدلافين مع غداء مأكولات بحرية",
+            "description": "خمس ساعات على يخت: مشاهدة الدلافين والسباحة في بيت الدلافين، ووقفتان للسنوركلينغ، وبوفيه فطور، وغداء مأكولات بحرية.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "الساعة 08:30"
+          },
+          {
+            "index": 1,
+            "label": "الساعة 14:30"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "الاصطحاب من الفندق",
+            "description": "تصطحبك السيارة من فندقك في الغردقة.",
+            "duration": ""
+          },
+          {
+            "index": 1,
+            "title": "بيت الدلافين",
+            "description": "مشاهدة الدلافين وسباحة عند الشعاب، حيث كثيراً ما تتغذى الدلافين وترتاح.",
+            "duration": "1 ساعة"
+          },
+          {
+            "index": 2,
+            "title": "سنوركلينغ عند بيت الدلافين",
+            "description": "وقفة سنوركلينغ بصحبة مرشد على الشعاب.",
+            "duration": "30 دقيقة"
+          },
+          {
+            "index": 3,
+            "title": "الشعاب الصغيرة",
+            "description": "وقفة سنوركلينغ ثانية في مكان قريب.",
+            "duration": "30 دقيقة"
+          },
+          {
+            "index": 4,
+            "title": "الغداء على متن المركب",
+            "description": "غداء مأكولات بحرية، مع مشروبات ساخنة وغازية.",
+            "duration": ""
+          },
+          {
+            "index": 5,
+            "title": "العودة إلى الغردقة",
+            "description": "يعود اليخت إلى المارينا، وتعيدك السيارة إلى فندقك.",
+            "duration": ""
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "الاصطحاب من الفندق",
+            "description": "الاصطحاب من فندقك في الغردقة والعودة إليه."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788289757/tours/h8x27bcg3l2oc311wf1k.jpg",
+            "alt": "يخت أبيض بمحرك على ماء أزرق ساطع، ومجموعة من الدلافين تسبح عند السطح أمامه"
+          }
+        ],
+        "seo": {
+          "metaTitle": "رحلة يخت شمالاً، وخمس ساعات لملئها",
+          "metaDescription": "خمس ساعات باليخت من الغردقة: ساعة عند شعب بيت الدلافين، ووقفتان للسنوركلينغ بصحبة مرشد، وبوفيه إفطار، وغداء مأكولات بحرية على المتن.",
+          "keywords": []
+        }
+      }
+    }
+  ],
+  "destinations": [
+    {
+      "id": "699895e47169d9820932b9a3",
+      "sourceSlug": "hurghada",
+      "slug": "hurghada-ar",
+      "sourceUpdatedAt": "2026-04-05T23:15:20.775Z",
+      "sourceDigest": "111acca5fa242e38932f013e0fbb66e4bafd26bd529ebf11740d6c5d2779a75c",
+      "english": {
+        "name": "Hurghada",
+        "country": "Egypt",
+        "description": "Hurghada is a premier Red Sea resort destination known for its pristine beaches, world-class diving, and water sports.",
+        "shortDescription": "Red Sea paradise for diving and water sports",
+        "highlights": [
+          "Coral Reefs",
+          "Snorkeling",
+          "Desert Safaris",
+          "Nightlife"
+        ],
+        "bestTimeToVisit": "October to April",
+        "tags": [
+          "beach",
+          "water-sports",
+          "diving",
+          "resort"
+        ]
+      },
+      "arabic": {
+        "name": "الغردقة",
+        "country": "مصر",
+        "description": "الغردقة وجهة رائدة للمنتجعات على البحر الأحمر، تشتهر بشواطئها النقية والغوص ذي المستوى العالمي والرياضات المائية.",
+        "shortDescription": "جنة على البحر الأحمر للغوص والرياضات المائية",
+        "highlights": [
+          "الشعاب المرجانية",
+          "السنوركلينغ",
+          "رحلات سفاري الصحراء",
+          "الحياة الليلية"
+        ],
+        "bestTimeToVisit": "من أكتوبر إلى أبريل",
+        "tags": [
+          "شاطئ",
+          "رياضات مائية",
+          "غوص",
+          "منتجع"
+        ]
+      }
+    }
+  ]
+}

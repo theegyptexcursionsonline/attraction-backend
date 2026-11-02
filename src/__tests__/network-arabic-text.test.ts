@@ -77,9 +77,12 @@ describe('network Arabic source export', () => {
     expect(presentationSources(tenant)).toEqual([{ kind: 'tenant', id: '0123456789abcdef01234567' }, { kind: 'page', id: 'aaaaaaaaaaaaaaaaaaaaaaaa' }]);
   });
 
-  it('contains no database write and connects without creating indexes or collections', () => {
-    const source = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'export-network-arabic-sources.ts'), 'utf8');
-    expect(source).toContain('autoIndex: false, autoCreate: false');
-    expect(source).not.toMatch(/\.(insert(One|Many)?|update(One|Many)?|replaceOne|delete(One|Many)?|findOneAnd\w+|bulkWrite|save|create|drop\w*)\(/);
+  it('the export and the apply check contain no database write and create no index or collection', () => {
+    for (const file of ['export-network-arabic-sources.ts', 'check-network-arabic-apply.ts']) {
+      const source = fs.readFileSync(path.join(__dirname, '..', 'scripts', file), 'utf8');
+      expect(source).toContain('autoIndex: false, autoCreate: false');
+      expect(source).not.toMatch(/\.(insert(One|Many)?|update(One|Many)?|replaceOne|delete(One|Many)?|findOneAnd\w+|bulkWrite|save|create|drop\w*)\(/);
+      expect(source).not.toMatch(/executeSitePlan|applyLanguages/);
+    }
   });
 });

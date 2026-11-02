@@ -1,0 +1,854 @@
+{
+  "version": 1,
+  "batch": "b14a",
+  "locale": "ar",
+  "tenant": {
+    "id": "6ae823694960cd119df0c05c",
+    "slug": "shaab-abu-nugar",
+    "domain": "shaab-abu-nugar.foxesnetwork.com"
+  },
+  "presentationSha256": "3bf8a65ed890a2e45a06f33c317e058f036d86b1a9b80f6bf58a8646b865de33",
+  "presentation": [
+    {
+      "kind": "tenant",
+      "sourceId": "6ae823694960cd119df0c05c",
+      "sourceDigest": "304952696fdc2c123d4ef2e76dcf4a63e2dc32aea7115daa2538544a4307237a",
+      "english": {
+        "tagline": "Dolphin House days out of Hurghada",
+        "description": "Shaab Abu Nugar is the northernmost of the reefs Hurghada’s boats work, and the sites on it are grouped around one long reef shaped like a T; the short form Abu Nugar is used for it as well. The main reef rises from a sandy floor scattered with coral gardens and pinnacles and runs out into a sheer drop-off, and three more sites ring it: Torfa Abu Nugar to the north, which runs east to west and holds a fine coral garden; Gota Abu Nugar to the east, an oval reef that reaches the surface and can be covered end to end in a single dive; and Erug Abu Nugar to the south, a chain of pinnacles standing on sand. The coral is the reason to come — table corals, big brain corals, horn corals and gorgonian gardens, with cleaning stations where wrasses and shrimps tend groupers and snappers — and turtles are a particular draw, with eagle rays, broomtail wrasse, parrotfish and nudibranchs all recorded; the guides who describe it say the fish numbers are modest and the coral is what makes the reef.\n\nThese days cruise north from Hurghada to the Dolphin House reef; their programmes do not name Shaab Abu Nugar, the northernmost of the Hurghada reefs, which lies about eight kilometres south of it. Three trips are sold here: a morning cruise with breakfast, the same water reached by speedboat, and five hours by yacht with a seafood lunch. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+        "seoSettings": {
+          "metaTitle": "Shaab Abu Nugar: Dolphin House Boat Days",
+          "metaDescription": "Boat days north from Hurghada to the Dolphin House reef: a morning cruise, a speedboat run and a five-hour yacht with lunch, with a car from your hotel.",
+          "keywords": [
+            "shaab abu nugar reef",
+            "dolphin house boat day hurghada",
+            "northernmost hurghada reefs",
+            "dolphin house yacht with seafood lunch",
+            "hurghada dolphin day hotel car"
+          ]
+        },
+        "pageSeo": [],
+        "navigation": [
+          {
+            "label": "Home",
+            "columns": []
+          },
+          {
+            "label": "Trips",
+            "columns": []
+          },
+          {
+            "label": "About",
+            "columns": []
+          },
+          {
+            "label": "FAQ",
+            "columns": []
+          },
+          {
+            "label": "Contact",
+            "columns": []
+          }
+        ]
+      },
+      "arabic": {
+        "tagline": "أيام بيت الدلافين من الغردقة",
+        "description": "شعب أبو نقر أقصى الشعاب التي تعمل عليها مراكب الغردقة شمالاً، وتتجمع المواقع عليه حول شعب واحد طويل على هيئة حرف T؛ ويُعرف أيضاً بالصيغة المختصرة أبو نقر. ويرتفع الشعب الرئيسي من قاع رملي تتناثر فيه حدائق مرجانية وقمم مرجانية، وينتهي إلى منحدر حاد، وتحيط به ثلاثة مواقع أخرى: طرفة أبو نقر في الشمال، التي تمتد من الشرق إلى الغرب وتضم حديقة مرجانية جميلة؛ وقوطة أبو نقر في الشرق، شعب بيضوي يبلغ السطح ويمكن تغطيته من طرف إلى طرف في غطسة واحدة؛ وعروق أبو نقر في الجنوب، سلسلة من القمم المرجانية القائمة على الرمل. والمرجان هو سبب المجيء — مرجان الطاولة والمرجان الدماغي الكبير والمرجان القرني وحدائق مراوح البحر (الغورغونيا)، مع محطات تنظيف تعتني فيها أسماك الراس والجمبري بالهامور وأسماك النهاش — والسلاحف من أبرز ما يجذب إليه، وقد سُجّلت عليه أيضاً أسماك الشفنين النسري وأسماك الراس ذات الذيل المكنسي والأسماك الببغائية والرخويات العارية؛ ويقول الأدلة الذين يصفونه إن أعداد الأسماك متواضعة وإن المرجان هو ما يصنع هذا الشعب. تبحر هذه الأيام شمالاً من الغردقة إلى شعب بيت الدلافين، ولا تذكر برامجها شعب أبو نقر، أقصى شعاب الغردقة شمالاً، الذي يقع على بعد نحو ثمانية كيلومترات جنوبه. وتُعرض هنا ثلاث رحلات: رحلة بحرية صباحية مع الإفطار، والماء نفسه بالقارب السريع، وخمس ساعات باليخت مع غداء مأكولات بحرية. وتبدأ كل رحلة بالاصطحاب من فندقك وتنتهي بالعودة إليه، وتوضح كل صفحة ما يشمله سعرها. يمكنك حجز مكانك عبر الإنترنت والدفع لاحقاً، أو سؤال الفريق أولاً عن موعد الاصطحاب.",
+        "seoSettings": {
+          "metaTitle": "شعب أبو نقر: أيام بالمركب إلى بيت الدلافين",
+          "metaDescription": "أيام بالمركب شمالاً من الغردقة إلى شعب بيت الدلافين: رحلة بحرية صباحية، وجولة بالقارب السريع، ويخت لخمس ساعات مع الغداء، وسيارة من فندقك.",
+          "keywords": [
+            "شعب أبو نقر",
+            "يوم بالمركب إلى بيت الدلافين من الغردقة",
+            "أقصى شعاب الغردقة شمالاً",
+            "يخت إلى بيت الدلافين مع غداء مأكولات بحرية",
+            "يوم الدلافين من الغردقة مع سيارة من الفندق"
+          ]
+        },
+        "pageSeo": [],
+        "navigation": [
+          {
+            "label": "الرئيسية",
+            "columns": []
+          },
+          {
+            "label": "الرحلات",
+            "columns": []
+          },
+          {
+            "label": "من نحن",
+            "columns": []
+          },
+          {
+            "label": "الأسئلة الشائعة",
+            "columns": []
+          },
+          {
+            "label": "اتصل بنا",
+            "columns": []
+          }
+        ]
+      }
+    }
+  ],
+  "tours": [
+    {
+      "id": "6ae823699f07414c57e60a4e",
+      "sourceSlug": "abn-morning-cruise-to-dolphin-house",
+      "slug": "abn-morning-cruise-to-dolphin-house-ar",
+      "sourceUpdatedAt": "2026-11-02T05:45:13.333Z",
+      "sourceDigest": "42873c08d5e0daa9a369c2e88ed9a72a68400e5b5d65759a6357e2c515801a0e",
+      "english": {
+        "title": "A Morning Cruise North to the Dolphin House",
+        "shortDescription": "Breakfast on board and two sessions of forty minutes in the water at the Dolphin House reef, with the gear handed out and the drinks included.",
+        "description": "The boat leaves at half past eight and runs north up the coast. Two sessions of forty minutes are spent in the water at the Dolphin House reef, where dolphins often feed and rest, with breakfast and the drinks on board between them and the mask, fins and snorkel handed out. The programme names Hurghada and the Dolphin House reef, not Shaab Abu Nugar, the reef about eight kilometres south of it; no boat calls there.\n\nDolphins are wild, so nobody aboard can promise one. A car collects you in Hurghada and brings you back, children have their own price, and a pickup from further out than the town cannot be booked here.",
+        "duration": "5 hours",
+        "cancellationPolicy": "",
+        "highlights": [
+          "Two sessions of forty minutes",
+          "Breakfast served between them",
+          "Mask, fins and snorkel handed out",
+          "Away at half past eight"
+        ],
+        "inclusions": [
+          "Yacht cruise to Dolphin House",
+          "Breakfast on board",
+          "Unlimited hot drinks (tea and coffee)",
+          "Unlimited soft drinks (Coca-Cola, Sprite, Fanta)",
+          "Unlimited bottled water",
+          "All snorkeling equipment (mask, snorkel, fins, life jacket)",
+          "Professional crew and professional guides on each boat",
+          "Dedicated guide for non-swimmers",
+          "Pickup and drop-off at your hotel in Hurghada",
+          "Two snorkelling and swimming sessions of forty minutes"
+        ],
+        "exclusions": [
+          "Towels",
+          "Underwater photos",
+          "Gratuities (optional)",
+          "Nature Reserve Fee: €5 per person (adult/child), not included. Pay by cash, Visa, or payment link"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [
+          "Swimwear",
+          "Towel"
+        ],
+        "needToKnow": [
+          "Dolphins are wild animals, so no boat can promise a sighting, and swimming near them depends on the sea and on how many boats are there.",
+          "Pickup from outside Hurghada costs extra and cannot be booked on this site. Ask the team before you book if your hotel is further out.",
+          "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "hurghada-dolphin-house-cruise-dolphin-swim-8b90321d0aa0",
+            "name": "Morning cruise to Dolphin House",
+            "description": "Breakfast on board, two forty-minute snorkelling and swimming sessions at the Dolphin House reef, drinks and the gear.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "08:30"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "Hotel pickup",
+            "description": "The car collects you from your hotel in Hurghada.",
+            "duration": ""
+          },
+          {
+            "index": 1,
+            "title": "Out to Dolphin House",
+            "description": "The boat sails from Hurghada to the Dolphin House reef.",
+            "duration": "1 hour"
+          },
+          {
+            "index": 2,
+            "title": "First session",
+            "description": "Snorkelling at the reef, where dolphins often feed and rest.",
+            "duration": "40 minutes"
+          },
+          {
+            "index": 3,
+            "title": "Breakfast on board",
+            "description": "Breakfast with tea, coffee and soft drinks.",
+            "duration": "20 minutes"
+          },
+          {
+            "index": 4,
+            "title": "Second session",
+            "description": "Swimming and snorkelling at the reef, with a guide for non-swimmers.",
+            "duration": "40 minutes"
+          },
+          {
+            "index": 5,
+            "title": "Back to Hurghada",
+            "description": "The sail back to the marina, and the car to your hotel.",
+            "duration": "1 hour"
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "Hotel pickup",
+            "description": "Pickup and drop-off at your hotel in Hurghada."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "The team confirms your pickup time when it confirms your booking."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788791898/tours/xnv6gdxnnn9dxzs5pdhf.jpg",
+            "alt": "A dolphin swimming underwater in green-blue water, with a second dolphin behind it"
+          }
+        ],
+        "seo": {
+          "metaTitle": "A Morning Cruise North to the Dolphin House Reef",
+          "metaDescription": "A morning boat from Hurghada to the Dolphin House reef: two sessions of forty minutes in the water, breakfast on board and the gear, with a hotel car.",
+          "keywords": []
+        }
+      },
+      "arabic": {
+        "title": "رحلة بحرية صباحية شمالاً إلى بيت الدلافين",
+        "shortDescription": "إفطار على متن المركب وجلستان في الماء مدة كل منهما أربعون دقيقة عند شعب بيت الدلافين، مع توزيع العدة والمشروبات مشمولة.",
+        "description": "يغادر المركب في الثامنة والنصف ويتجه شمالاً على طول الساحل. وتُقضى جلستان مدة كل منهما أربعون دقيقة في الماء عند شعب بيت الدلافين، حيث تتغذى الدلافين وتستريح كثيراً، وبينهما الإفطار والمشروبات على متن المركب، مع توزيع القناع والزعانف وأنبوب التنفس. ويسمي البرنامج الغردقة وشعب بيت الدلافين، لا شعب أبو نقر، الشعب الواقع على بعد نحو ثمانية كيلومترات جنوبه؛ ولا يتوقف هناك أي مركب.\n\nوالدلافين فطرية، فلا يستطيع أحد على المتن أن يعد برؤيتها. وتصطحبك سيارة في الغردقة وتعيدك، وللأطفال سعرهم الخاص، والاصطحاب من أبعد من المدينة لا يمكن حجزه هنا.",
+        "duration": "5 ساعات",
+        "cancellationPolicy": "",
+        "highlights": [
+          "جلستان مدة كل منهما أربعون دقيقة",
+          "الإفطار يُقدَّم بينهما",
+          "توزيع القناع والزعانف وأنبوب التنفس",
+          "الإبحار في الثامنة والنصف"
+        ],
+        "inclusions": [
+          "رحلة باليخت إلى بيت الدلافين",
+          "إفطار على متن المركب",
+          "مشروبات ساخنة بلا حدود (شاي وقهوة)",
+          "مشروبات غازية بلا حدود (كوكا كولا وسبرايت وفانتا)",
+          "مياه معبأة بلا حدود",
+          "كل معدات السنوركلينغ (قناع وأنبوب تنفس وزعانف وسترة نجاة)",
+          "طاقم محترف ومرشدون محترفون على كل مركب",
+          "مرشد مخصص لغير السابحين",
+          "الاصطحاب من فندقك في الغردقة والعودة إليه",
+          "جلستان للسنوركلينغ والسباحة مدة كل منهما أربعون دقيقة"
+        ],
+        "exclusions": [
+          "المناشف",
+          "الصور تحت الماء",
+          "الإكراميات (غير إلزامية)",
+          "رسوم المحمية الطبيعية: 5 يورو للشخص (بالغ/طفل)، غير مشمولة. تُدفع نقداً أو بفيزا أو عبر رابط دفع"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [
+          "ملابس سباحة",
+          "منشفة"
+        ],
+        "needToKnow": [
+          "الدلافين حيوانات فطرية، فلا يمكن لأي مركب أن يضمن رؤيتها، والسباحة قربها تتوقف على حال البحر وعلى عدد المراكب الموجودة.",
+          "الاصطحاب من خارج الغردقة بتكلفة إضافية ولا يمكن حجزه عبر هذا الموقع. اسأل الفريق قبل الحجز إذا كان فندقك أبعد من ذلك.",
+          "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "hurghada-dolphin-house-cruise-dolphin-swim-8b90321d0aa0",
+            "name": "رحلة بحرية صباحية إلى بيت الدلافين",
+            "description": "فطور على متن المركب، وجلستان للسنوركلينغ والسباحة مدة كل منهما أربعون دقيقة عند شعب بيت الدلافين، ومشروبات، والعدة.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "الساعة 08:30"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "الاصطحاب من الفندق",
+            "description": "تصطحبك السيارة من فندقك في الغردقة.",
+            "duration": ""
+          },
+          {
+            "index": 1,
+            "title": "إلى بيت الدلافين",
+            "description": "يبحر المركب من الغردقة إلى شعاب بيت الدلافين.",
+            "duration": "1 ساعة"
+          },
+          {
+            "index": 2,
+            "title": "الجلسة الأولى",
+            "description": "سنوركلينغ عند الشعاب، حيث كثيراً ما تتغذى الدلافين وترتاح.",
+            "duration": "40 دقيقة"
+          },
+          {
+            "index": 3,
+            "title": "إفطار على متن المركب",
+            "description": "إفطار مع شاي وقهوة ومشروبات غازية.",
+            "duration": "20 دقيقة"
+          },
+          {
+            "index": 4,
+            "title": "الجلسة الثانية",
+            "description": "سباحة وسنوركلينغ عند الشعاب، مع مرشد لمن لا يعرفون السباحة.",
+            "duration": "40 دقيقة"
+          },
+          {
+            "index": 5,
+            "title": "العودة إلى الغردقة",
+            "description": "الإبحار عائداً إلى المارينا، والسيارة إلى فندقك.",
+            "duration": "1 ساعة"
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "الاصطحاب من الفندق",
+            "description": "الاصطحاب من فندقك في الغردقة والعودة إليه."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788791898/tours/xnv6gdxnnn9dxzs5pdhf.jpg",
+            "alt": "دلفين يسبح تحت الماء في ماء أزرق مخضر، ودلفين ثانٍ خلفه"
+          }
+        ],
+        "seo": {
+          "metaTitle": "رحلة بحرية صباحية شمالاً إلى شعب بيت الدلافين",
+          "metaDescription": "مركب صباحي من الغردقة إلى شعب بيت الدلافين: جلستان في الماء مدة كل منهما أربعون دقيقة، وإفطار على المتن، والعدة، مع سيارة من الفندق.",
+          "keywords": []
+        }
+      }
+    },
+    {
+      "id": "6ae823699f07414c57e60a68",
+      "sourceSlug": "abn-speedboat-run-to-dolphin-house",
+      "slug": "abn-speedboat-run-to-dolphin-house-ar",
+      "sourceUpdatedAt": "2026-11-02T05:45:13.628Z",
+      "sourceDigest": "43c5fbc60049fabdbe5071d1d422520f7141a64e0cabd1ea1ac7a3590c36235a",
+      "english": {
+        "title": "The Same Water, Reached by Speedboat",
+        "shortDescription": "A fast hull out to the Dolphin House reef and two guided stops in the water, with the snorkelling gear, the drinks and the fruit aboard.",
+        "description": "A speedboat covers the run in about an hour, with shade on deck, and leaves ninety minutes at the reef: two guided stops for snorkelling and for swimming where dolphins often feed and rest. The programme names Hurghada and the Dolphin House reef, not Shaab Abu Nugar, the reef about eight kilometres south of it; no boat calls there.\n\nWater, soft drinks and fruit are served aboard and the gear is handed out. Dolphins are wild, so nobody aboard can promise one. The car runs both ways from your Hurghada hotel, children have their own price, and pickup from beyond the town is not on this page.",
+        "duration": "4 hours",
+        "cancellationPolicy": "",
+        "highlights": [
+          "About an hour out by fast hull",
+          "Two guided stops at the reef",
+          "Shade on deck for the run",
+          "Water, soft drinks and fruit"
+        ],
+        "inclusions": [
+          "Speedboat cruise",
+          "Snorkeling equipment",
+          "2 snorkeling/swimming stops at Dolphin House",
+          "Guided snorkeling",
+          "Mineral water & Soft drinks",
+          "Fresh seasonal fruits",
+          "Shaded area on the boat (Taneda)",
+          "Life jackets",
+          "Pickup and drop-off at your hotel in Hurghada"
+        ],
+        "exclusions": [
+          "Nature Reserve Fee: €5 per person (adult/child), not included. Pay by cash, Visa, or payment link"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [],
+        "needToKnow": [
+          "Dolphins are wild animals, so no boat can promise a sighting, and swimming near them depends on the sea and on how many boats are there.",
+          "Pickup from outside Hurghada costs extra and cannot be booked on this site. Ask the team before you book if your hotel is further out.",
+          "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "hurghada-dolphin-house-speedboat-trip-dolphin-00c7455b2b05",
+            "name": "Speedboat to Dolphin House",
+            "description": "Two snorkelling and swimming stops at Dolphin House by speedboat, with the gear, water, soft drinks and fruit.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "08:30"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "Hotel pickup",
+            "description": "The car collects you from your hotel in Hurghada.",
+            "duration": ""
+          },
+          {
+            "index": 1,
+            "title": "By speedboat to Dolphin House",
+            "description": "The speedboat runs out to the reef, with shade on board.",
+            "duration": "1 hour"
+          },
+          {
+            "index": 2,
+            "title": "Dolphin House",
+            "description": "Two guided snorkelling and swimming stops at the reef, where dolphins often feed and rest.",
+            "duration": "1.5 hours"
+          },
+          {
+            "index": 3,
+            "title": "Back to Hurghada",
+            "description": "The speedboat returns to the marina, and the car takes you back to your hotel.",
+            "duration": "1 hour"
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "Hotel pickup",
+            "description": "Pickup and drop-off at your hotel in Hurghada."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "The team confirms your pickup time when it confirms your booking."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788290634/tours/bgacpsik0esq6rcwnmmq.jpg",
+            "alt": "A white speedboat with a blue stripe cutting across open water, leaving a wake"
+          }
+        ],
+        "seo": {
+          "metaTitle": "Dolphin House by Speedboat: Two Stops at the Reef",
+          "metaDescription": "A speedboat from Hurghada to the Dolphin House reef: about an hour out, two guided stops for snorkelling and swimming, the gear and drinks aboard.",
+          "keywords": []
+        }
+      },
+      "arabic": {
+        "title": "الماء نفسه، بالقارب السريع",
+        "shortDescription": "قارب سريع إلى شعب بيت الدلافين ووقفتان في الماء بصحبة مرشد، مع عدة السنوركلينغ والمشروبات والفاكهة على المتن.",
+        "description": "يقطع قارب سريع المسافة في نحو ساعة، مع ظل على السطح، ويترك تسعين دقيقة عند الشعب: وقفتان بصحبة مرشد للسنوركلينغ والسباحة حيث تتغذى الدلافين وتستريح كثيراً. ويسمي البرنامج الغردقة وشعب بيت الدلافين، لا شعب أبو نقر، الشعب الواقع على بعد نحو ثمانية كيلومترات جنوبه؛ ولا يتوقف هناك أي مركب.\n\nويُقدَّم الماء والمشروبات الغازية والفاكهة على المتن، وتُوزَّع العدة. والدلافين فطرية، فلا يستطيع أحد على المتن أن يعد برؤيتها. وتعمل السيارة في الاتجاهين من فندقك في الغردقة، وللأطفال سعرهم الخاص، والاصطحاب من خارج المدينة ليس على هذه الصفحة.",
+        "duration": "4 ساعات",
+        "cancellationPolicy": "",
+        "highlights": [
+          "نحو ساعة ذهاباً بالقارب السريع",
+          "وقفتان بصحبة مرشد عند الشعب",
+          "ظل على السطح طوال الطريق",
+          "الماء والمشروبات الغازية والفاكهة"
+        ],
+        "inclusions": [
+          "رحلة بقارب سريع",
+          "معدات السنوركلينغ",
+          "2 توقف للسنوركلينغ/السباحة في بيت الدلافين",
+          "سنوركلينغ بصحبة مرشد",
+          "مياه معدنية ومشروبات غازية",
+          "فاكهة موسمية طازجة",
+          "منطقة مظللة على متن المركب (تنيدة)",
+          "سترات نجاة",
+          "الاصطحاب من فندقك في الغردقة والعودة إليه"
+        ],
+        "exclusions": [
+          "رسوم المحمية الطبيعية: 5 يورو للشخص (بالغ/طفل)، غير مشمولة. تُدفع نقداً أو بفيزا أو عبر رابط دفع"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [],
+        "needToKnow": [
+          "الدلافين حيوانات فطرية، فلا يمكن لأي مركب أن يضمن رؤيتها، والسباحة قربها تتوقف على حال البحر وعلى عدد المراكب الموجودة.",
+          "الاصطحاب من خارج الغردقة بتكلفة إضافية ولا يمكن حجزه عبر هذا الموقع. اسأل الفريق قبل الحجز إذا كان فندقك أبعد من ذلك.",
+          "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "hurghada-dolphin-house-speedboat-trip-dolphin-00c7455b2b05",
+            "name": "قارب سريع إلى بيت الدلافين",
+            "description": "وقفتان للسنوركلينغ والسباحة في بيت الدلافين بقارب سريع، مع العدة، وماء، ومشروبات غازية، وفاكهة.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "الساعة 08:30"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "الاصطحاب من الفندق",
+            "description": "تصطحبك السيارة من فندقك في الغردقة.",
+            "duration": ""
+          },
+          {
+            "index": 1,
+            "title": "بقارب سريع إلى بيت الدلافين",
+            "description": "ينطلق القارب السريع إلى الشعاب، مع ظل على متنه.",
+            "duration": "1 ساعة"
+          },
+          {
+            "index": 2,
+            "title": "بيت الدلافين",
+            "description": "وقفتان للسنوركلينغ والسباحة بصحبة مرشد عند الشعاب، حيث كثيراً ما تتغذى الدلافين وترتاح.",
+            "duration": "1.5 ساعة"
+          },
+          {
+            "index": 3,
+            "title": "العودة إلى الغردقة",
+            "description": "يعود القارب السريع إلى المارينا، وتعيدك السيارة إلى فندقك.",
+            "duration": "1 ساعة"
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "الاصطحاب من الفندق",
+            "description": "الاصطحاب من فندقك في الغردقة والعودة إليه."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788290634/tours/bgacpsik0esq6rcwnmmq.jpg",
+            "alt": "قارب سريع أبيض بخط أزرق يشق المياه المفتوحة، ويترك أثراً خلفه"
+          }
+        ],
+        "seo": {
+          "metaTitle": "بيت الدلافين بالقارب السريع: وقفتان عند الشعب",
+          "metaDescription": "قارب سريع من الغردقة إلى شعب بيت الدلافين: نحو ساعة ذهاباً، ووقفتان بصحبة مرشد للسنوركلينغ والسباحة، والعدة والمشروبات على المتن.",
+          "keywords": []
+        }
+      }
+    },
+    {
+      "id": "6ae823699f07414c57e60a7e",
+      "sourceSlug": "abn-yacht-day-with-a-seafood-lunch",
+      "slug": "abn-yacht-day-with-a-seafood-lunch-ar",
+      "sourceUpdatedAt": "2026-11-02T05:45:13.893Z",
+      "sourceDigest": "9ba5ec27e18d06e727797b62a9feb35fe3e5e48a204341abb70e607017320dfb",
+      "english": {
+        "title": "Five Hours by Yacht, Morning or Afternoon",
+        "shortDescription": "Five hours on a yacht: an hour at the Dolphin House reef, two snorkelling stops, a breakfast buffet as you sail and a seafood lunch after.",
+        "description": "Five hours on a yacht, and you pick the morning or the afternoon when you book. An hour goes to dolphin watching and a swim at the Dolphin House reef, then half an hour of snorkelling there and half an hour at the small reef beside it, with a breakfast buffet as the yacht sails out. The programme names Hurghada and the Dolphin House reef, not Shaab Abu Nugar, the reef about eight kilometres south of it; no boat calls there.\n\nA seafood lunch follows, with hot drinks, soft drinks and water; the banana and sofa rides are not part of it. Dolphins are wild, so nobody aboard can promise one. Children have their own price, and a pickup from outside the town has to be settled with the team.",
+        "duration": "5 hours",
+        "cancellationPolicy": "",
+        "highlights": [
+          "Morning or afternoon, five hours",
+          "An hour at the Dolphin House reef",
+          "Snorkelling at the reef and the small one",
+          "A breakfast buffet, then seafood"
+        ],
+        "inclusions": [
+          "Dolphin-watch & swim experience",
+          "Snorkeling gear (mask, fins, snorkel)",
+          "2 snorkeling stops",
+          "Guided snorkeling session",
+          "Breakfast buffet",
+          "Fresh lunch onboard ( Fish fillet, Calamari, etc)",
+          "Hot drinks",
+          "Soft drinks",
+          "Refreshments and water",
+          "Guide and snorkeling instructor",
+          "Professional guides on each boat",
+          "Pickup and drop-off at your hotel in Hurghada",
+          "The crew beside you through the day"
+        ],
+        "exclusions": [
+          "Towels",
+          "Underwater photos",
+          "Gratuities (optional)",
+          "Nature Reserve Fee: €5 per person (adult/child), not included. Pay by cash, Visa, or payment link",
+          "Banana and sofa rides"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [
+          "Swimwear",
+          "Towel",
+          "Camera",
+          "Sunscreen"
+        ],
+        "needToKnow": [
+          "Dolphins are wild animals, so no boat can promise a sighting, and swimming near them depends on the sea and on how many boats are there.",
+          "Pickup from outside Hurghada costs extra and cannot be booked on this site. Ask the team before you book if your hotel is further out.",
+          "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "hurghada-dolphin-house-yacht-trip-snorkel-sea-b14d3e5761d2",
+            "name": "Yacht to Dolphin House with snorkelling and a seafood lunch",
+            "description": "Five hours under way: dolphin watching and a swim at the reef, two snorkelling stops, a breakfast buffet and a seafood lunch on board.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "08:30"
+          },
+          {
+            "index": 1,
+            "label": "14:30"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "Hotel pickup",
+            "description": "The car collects you from your hotel in Hurghada.",
+            "duration": ""
+          },
+          {
+            "index": 1,
+            "title": "Out to Dolphin House",
+            "description": "The yacht sails north from Hurghada, with a breakfast buffet on the way.",
+            "duration": ""
+          },
+          {
+            "index": 2,
+            "title": "Dolphin House",
+            "description": "Swimming at the reef, where dolphins often feed and rest.",
+            "duration": "1 hour"
+          },
+          {
+            "index": 3,
+            "title": "Snorkelling at the reef",
+            "description": "A guided snorkelling stop with the mask, fins and snorkel provided.",
+            "duration": "30 minutes"
+          },
+          {
+            "index": 4,
+            "title": "The small reef",
+            "description": "A second guided snorkelling stop at the small reef beside it.",
+            "duration": "30 minutes"
+          },
+          {
+            "index": 5,
+            "title": "A seafood lunch",
+            "description": "Lunch on board, with hot drinks, soft drinks and water.",
+            "duration": ""
+          },
+          {
+            "index": 6,
+            "title": "Back to Hurghada",
+            "description": "The yacht returns to the marina, and the car takes you back to your hotel.",
+            "duration": ""
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "Hotel pickup",
+            "description": "Pickup and drop-off at your hotel in Hurghada."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "The team confirms your pickup time when it confirms your booking."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788791898/tours/xnv6gdxnnn9dxzs5pdhf.jpg",
+            "alt": "A dolphin swimming underwater in green-blue water, with a second dolphin behind it"
+          }
+        ],
+        "seo": {
+          "metaTitle": "Five Hours by Yacht to Dolphin House, Lunch Aboard",
+          "metaDescription": "Five hours by yacht from Hurghada: an hour at the Dolphin House reef, two snorkelling stops, a breakfast buffet as you sail and a seafood lunch after.",
+          "keywords": []
+        }
+      },
+      "arabic": {
+        "title": "خمس ساعات باليخت، صباحاً أو بعد الظهر",
+        "shortDescription": "خمس ساعات على يخت: ساعة عند شعب بيت الدلافين، ووقفتان للسنوركلينغ، وبوفيه إفطار أثناء الإبحار، وغداء مأكولات بحرية بعده.",
+        "description": "خمس ساعات على يخت، وتختار الصباح أو بعد الظهر عند الحجز. تذهب ساعة إلى مشاهدة الدلافين والسباحة عند شعب بيت الدلافين، ثم نصف ساعة من السنوركلينغ هناك ونصف ساعة عند الشعب الصغير المجاور، مع بوفيه إفطار أثناء إبحار اليخت. ويسمي البرنامج الغردقة وشعب بيت الدلافين، لا شعب أبو نقر، الشعب الواقع على بعد نحو ثمانية كيلومترات جنوبه؛ ولا يتوقف هناك أي مركب.\n\nويليها غداء مأكولات بحرية، مع مشروبات ساخنة ومشروبات غازية وماء؛ أما جولتا قارب الموز والصوفا فليستا منه. والدلافين فطرية، فلا يستطيع أحد على المتن أن يعد برؤيتها. وللأطفال سعرهم الخاص، والاصطحاب من خارج المدينة يجب الاتفاق عليه مع الفريق.",
+        "duration": "5 ساعات",
+        "cancellationPolicy": "",
+        "highlights": [
+          "صباحاً أو بعد الظهر، خمس ساعات",
+          "ساعة عند شعب بيت الدلافين",
+          "السنوركلينغ عند الشعب وعند الشعب الصغير",
+          "بوفيه إفطار، ثم مأكولات بحرية"
+        ],
+        "inclusions": [
+          "تجربة مشاهدة الدلافين والسباحة",
+          "عدة السنوركلينغ (قناع وزعانف وأنبوب تنفس)",
+          "2 توقف للسنوركلينغ",
+          "جلسة سنوركلينغ بصحبة مرشد",
+          "بوفيه إفطار",
+          "غداء طازج على متن المركب (فيليه سمك وكلماري وغيرها)",
+          "مشروبات ساخنة",
+          "مشروبات غازية",
+          "مرطبات وماء",
+          "مرشد ومدرب سنوركلينغ",
+          "مرشدون محترفون على كل مركب",
+          "الاصطحاب من فندقك في الغردقة والعودة إليه",
+          "الطاقم إلى جانبك طوال اليوم"
+        ],
+        "exclusions": [
+          "المناشف",
+          "الصور تحت الماء",
+          "الإكراميات (غير إلزامية)",
+          "رسوم المحمية الطبيعية: 5 يورو للشخص (بالغ/طفل)، غير مشمولة. تُدفع نقداً أو بفيزا أو عبر رابط دفع",
+          "جولتا قارب الموز والصوفا"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [
+          "ملابس سباحة",
+          "منشفة",
+          "كاميرا",
+          "واقي شمس"
+        ],
+        "needToKnow": [
+          "الدلافين حيوانات فطرية، فلا يمكن لأي مركب أن يضمن رؤيتها، والسباحة قربها تتوقف على حال البحر وعلى عدد المراكب الموجودة.",
+          "الاصطحاب من خارج الغردقة بتكلفة إضافية ولا يمكن حجزه عبر هذا الموقع. اسأل الفريق قبل الحجز إذا كان فندقك أبعد من ذلك.",
+          "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "hurghada-dolphin-house-yacht-trip-snorkel-sea-b14d3e5761d2",
+            "name": "يخت إلى بيت الدلافين مع السنوركلينغ وغداء مأكولات بحرية",
+            "description": "خمس ساعات في الإبحار: مشاهدة الدلافين والسباحة عند الشعب، ووقفتان للسنوركلينغ، وبوفيه إفطار، وغداء مأكولات بحرية على المتن.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "الساعة 08:30"
+          },
+          {
+            "index": 1,
+            "label": "الساعة 14:30"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "الاصطحاب من الفندق",
+            "description": "تصطحبك السيارة من فندقك في الغردقة.",
+            "duration": ""
+          },
+          {
+            "index": 1,
+            "title": "إلى بيت الدلافين",
+            "description": "يبحر اليخت شمالاً من الغردقة، مع بوفيه إفطار في الطريق.",
+            "duration": ""
+          },
+          {
+            "index": 2,
+            "title": "بيت الدلافين",
+            "description": "السباحة عند الشعب، حيث تتغذى الدلافين وتستريح كثيراً.",
+            "duration": "1 ساعة"
+          },
+          {
+            "index": 3,
+            "title": "السنوركلينغ عند الشعب",
+            "description": "وقفة سنوركلينغ بصحبة مرشد مع توفير القناع والزعانف وأنبوب التنفس.",
+            "duration": "30 دقيقة"
+          },
+          {
+            "index": 4,
+            "title": "الشعاب الصغيرة",
+            "description": "وقفة سنوركلينغ ثانية بصحبة مرشد عند الشعب الصغير المجاور.",
+            "duration": "30 دقيقة"
+          },
+          {
+            "index": 5,
+            "title": "غداء مأكولات بحرية",
+            "description": "الغداء على متن المركب، مع مشروبات ساخنة ومشروبات غازية وماء.",
+            "duration": ""
+          },
+          {
+            "index": 6,
+            "title": "العودة إلى الغردقة",
+            "description": "يعود اليخت إلى المارينا، وتعيدك السيارة إلى فندقك.",
+            "duration": ""
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "الاصطحاب من الفندق",
+            "description": "الاصطحاب من فندقك في الغردقة والعودة إليه."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788791898/tours/xnv6gdxnnn9dxzs5pdhf.jpg",
+            "alt": "دلفين يسبح تحت الماء في ماء أزرق مخضر، ودلفين ثانٍ خلفه"
+          }
+        ],
+        "seo": {
+          "metaTitle": "خمس ساعات باليخت إلى بيت الدلافين، والغداء على المتن",
+          "metaDescription": "خمس ساعات باليخت من الغردقة: ساعة عند شعب بيت الدلافين، ووقفتان للسنوركلينغ، وبوفيه إفطار أثناء الإبحار، وغداء مأكولات بحرية بعد ذلك.",
+          "keywords": []
+        }
+      }
+    }
+  ],
+  "destinations": [
+    {
+      "id": "699895e47169d9820932b9a3",
+      "sourceSlug": "hurghada",
+      "slug": "hurghada-ar",
+      "sourceUpdatedAt": "2026-04-05T23:15:20.775Z",
+      "sourceDigest": "111acca5fa242e38932f013e0fbb66e4bafd26bd529ebf11740d6c5d2779a75c",
+      "english": {
+        "name": "Hurghada",
+        "country": "Egypt",
+        "description": "Hurghada is a premier Red Sea resort destination known for its pristine beaches, world-class diving, and water sports.",
+        "shortDescription": "Red Sea paradise for diving and water sports",
+        "highlights": [
+          "Coral Reefs",
+          "Snorkeling",
+          "Desert Safaris",
+          "Nightlife"
+        ],
+        "bestTimeToVisit": "October to April",
+        "tags": [
+          "beach",
+          "water-sports",
+          "diving",
+          "resort"
+        ]
+      },
+      "arabic": {
+        "name": "الغردقة",
+        "country": "مصر",
+        "description": "الغردقة وجهة رائدة للمنتجعات على البحر الأحمر، تشتهر بشواطئها النقية والغوص ذي المستوى العالمي والرياضات المائية.",
+        "shortDescription": "جنة على البحر الأحمر للغوص والرياضات المائية",
+        "highlights": [
+          "الشعاب المرجانية",
+          "السنوركلينغ",
+          "رحلات سفاري الصحراء",
+          "الحياة الليلية"
+        ],
+        "bestTimeToVisit": "من أكتوبر إلى أبريل",
+        "tags": [
+          "شاطئ",
+          "رياضات مائية",
+          "غوص",
+          "منتجع"
+        ]
+      }
+    }
+  ]
+}

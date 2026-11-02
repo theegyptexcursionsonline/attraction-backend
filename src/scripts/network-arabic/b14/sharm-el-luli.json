@@ -1,0 +1,358 @@
+{
+  "version": 1,
+  "batch": "b14b",
+  "locale": "ar",
+  "tenant": {
+    "id": "6ae823804960cd119df0c065",
+    "slug": "sharm-el-luli",
+    "domain": "sharm-el-luli.foxesnetwork.com"
+  },
+  "presentationSha256": "8955eb73f861545069c6385d264685f2b5bb28137120969edd6d13bbd7eb8727",
+  "presentation": [
+    {
+      "kind": "tenant",
+      "sourceId": "6ae823804960cd119df0c065",
+      "sourceDigest": "60ab41d122628ce928962f422bc53d6787e36ae4c128382b1b833fb9af7d5e56",
+      "english": {
+        "tagline": "The jeep day inland into Wadi El Gemal",
+        "description": "Sharm El Luli is a bay on the Red Sea coast about fifty-six kilometres south-south-east of Marsa Alam, roughly half way to Berenice and some six kilometres south-east of the entrance to Wadi El Gemal; its Arabic name means the al-Luli bay. It runs about twelve hundred metres from west to east and widens to seven hundred and thirty metres at its western end, and its beach is flat and white, changing width only with the tide before it carries on into a shallow sandy stretch of water that stays clear unless wind or fins stir the sand up. Outside the bay there are extensive coral reefs, more on the south side than the north, where the bottom drops to about twenty metres: hard and soft corals and anemones, with clownfish, Napoleon wrasse, pufferfish, butterflyfish and hawksbill turtles recorded. The bay lies inside Wadi El Gemal–Hamata National Park, declared in 2003, which also covers the inland wadi, its rock carvings and old mines and the islands off this coast, and nothing is built on the beach. One thing to know before you go looking for it: the bay and Ras Hankorab, a cape about seven kilometres to the south, are routinely treated as one place, and the bay is sold as Hankorab Beach as well.\n\nThis day drives inland into Wadi El Gemal to Cleopatra’s Temple and a desert spring; its programme does not name Sharm El Luli, the bay in the same park about thirty-two kilometres east of that temple, on the coast. One trip is sold here, and it is a desert day inland rather than a day at the bay: the jeep safari that ends with a Bedouin dinner. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+        "seoSettings": {
+          "metaTitle": "Sharm El Luli: the Wadi El Gemal Jeep Day",
+          "metaDescription": "An afternoon and evening inland by jeep in Wadi El Gemal National Park: a panorama, a desert spring, Cleopatra’s Temple and a Bedouin dinner.",
+          "keywords": [
+            "sharm el luli bay",
+            "wadi el gemal jeep safari",
+            "cleopatra temple and desert spring",
+            "bedouin dinner under the stars",
+            "wadi el gemal national park day"
+          ]
+        },
+        "pageSeo": [],
+        "navigation": [
+          {
+            "label": "Home",
+            "columns": []
+          },
+          {
+            "label": "Trips",
+            "columns": []
+          },
+          {
+            "label": "About",
+            "columns": []
+          },
+          {
+            "label": "FAQ",
+            "columns": []
+          },
+          {
+            "label": "Contact",
+            "columns": []
+          }
+        ]
+      },
+      "arabic": {
+        "tagline": "يوم الجيب إلى داخل وادي الجمال",
+        "description": "شرم اللولي خليج على ساحل البحر الأحمر يقع على بعد نحو ستة وخمسين كيلومتراً جنوب جنوب شرق مرسى علم، في منتصف الطريق تقريباً إلى برنيس، وعلى بعد نحو ستة كيلومترات جنوب شرق مدخل وادي الجمال؛ واسمه العربي يعني خليج اللولي. ويمتد نحو ألف ومئتي متر من الغرب إلى الشرق، ويتسع إلى سبعمئة وثلاثين متراً عند طرفه الغربي، وشاطئه مستوٍ وأبيض، لا يتغير عرضه إلا مع المد والجزر، ثم يمتد إلى رقعة ضحلة رملية من الماء تبقى صافية ما لم تُثر الريح أو الزعانف الرمل. وخارج الخليج شعاب مرجانية واسعة، أكثر في الجانب الجنوبي منها في الشمالي، حيث ينحدر القاع إلى نحو عشرين متراً: مرجان صلب ورخو وشقائق نعمان بحرية، وقد سُجّلت فيها أسماك المهرج وأسماك نابليون وأسماك النفيخة وأسماك الفراشة وسلاحف منقار الصقر. ويقع الخليج داخل محمية وادي الجمال – حماطة الوطنية، التي أُعلنت سنة 2003، وتشمل كذلك الوادي في الداخل ونقوشه الصخرية ومناجمه القديمة والجزر قبالة هذا الساحل، ولا بناء على الشاطئ. وأمر ينبغي معرفته قبل أن تبحث عنه: يُعامل الخليج ورأس حنكوراب، وهو رأس يقع على بعد نحو سبعة كيلومترات إلى الجنوب، في العادة على أنهما مكان واحد، ويُباع الخليج أيضاً باسم شاطئ حنكوراب. يتجه هذا اليوم إلى داخل وادي الجمال نحو معبد كليوباترا ونبع صحراوي، ولا يذكر برنامجه شرم اللولي، الخليج الواقع في المحمية نفسها على الساحل، على بعد نحو اثنين وثلاثين كيلومتراً شرق ذلك المعبد. وتُعرض هنا رحلة واحدة، وهي يوم في الصحراء في الداخل لا يوم على الخليج: سفاري الجيب الذي يُختتم بعشاء بدوي. وتبدأ كل رحلة بالاصطحاب من فندقك وتنتهي بالعودة إليه، وتوضح كل صفحة ما يشمله سعرها. يمكنك حجز مكانك عبر الإنترنت والدفع لاحقاً، أو سؤال الفريق أولاً عن موعد الاصطحاب.",
+        "seoSettings": {
+          "metaTitle": "شرم اللولي: يوم الجيب في وادي الجمال",
+          "metaDescription": "ظهيرة ومساء في الداخل بالجيب في محمية وادي الجمال الوطنية: مطل، ونبع صحراوي، ومعبد كليوباترا، وعشاء بدوي.",
+          "keywords": [
+            "خليج شرم اللولي",
+            "سفاري بالجيب في وادي الجمال",
+            "معبد كليوباترا ونبع صحراوي",
+            "عشاء بدوي تحت النجوم",
+            "يوم في محمية وادي الجمال الوطنية"
+          ]
+        },
+        "pageSeo": [],
+        "navigation": [
+          {
+            "label": "الرئيسية",
+            "columns": []
+          },
+          {
+            "label": "الرحلات",
+            "columns": []
+          },
+          {
+            "label": "من نحن",
+            "columns": []
+          },
+          {
+            "label": "الأسئلة الشائعة",
+            "columns": []
+          },
+          {
+            "label": "اتصل بنا",
+            "columns": []
+          }
+        ]
+      }
+    }
+  ],
+  "tours": [
+    {
+      "id": "6ae82380180de809431c1207",
+      "sourceSlug": "sll-jeep-safari-with-a-bedouin-dinner",
+      "slug": "sll-jeep-safari-with-a-bedouin-dinner-ar",
+      "sourceUpdatedAt": "2026-11-02T05:45:36.270Z",
+      "sourceDigest": "2f2b5d413b7cac27ecf04a1e852a3cee5c263ec6030e0192319ea04e9c99d876",
+      "english": {
+        "title": "Into the Valley by Jeep, and Dinner Under the Stars",
+        "shortDescription": "Seven hours from noon: inland by jeep into the national park for a high view, two desert trees, a spring and a temple ruin, then a Bedouin dinner.",
+        "description": "Noon is the pickup, and the jeep turns off the coast road inland into the national park. What it halts for: a high view over the valley, an acacia, an arak tree, water rising in the desert, and the ruins of the temple named for Cleopatra. The programme names Wadi El Gemal, the temple and the spring, not Sharm El Luli, the bay on the coast thirty-two kilometres east of them; the jeep never reaches it.\n\nDinner is Bedouin and comes at the end, before the drive home. This is a day inland in the desert, not a day at the bay. Which order the halts come in is settled with your booking, and children have their own price.",
+        "duration": "7 hours",
+        "cancellationPolicy": "",
+        "highlights": [
+          "A high view over the valley",
+          "An acacia, then an arak tree",
+          "Water rising in the desert",
+          "Dinner the Bedouin way to close"
+        ],
+        "inclusions": [
+          "Panorama stop",
+          "Acacia tree stop",
+          "Water spring stop",
+          "Arak tree stop",
+          "Cleopatra's Temple",
+          "Bedouin dinner",
+          "Hotel pickup and drop off"
+        ],
+        "exclusions": [],
+        "participantRequirements": [],
+        "whatToBring": [],
+        "needToKnow": [
+          "The team confirms the order of the stops when it confirms your booking.",
+          "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "marsa-alam-wadi-el-gemal-desert-jeep-safari-b-f93ac389582f",
+            "name": "Jeep safari with a Bedouin dinner",
+            "description": "Wadi El Gemal National Park by jeep: a panorama, an acacia, a water spring, an arak tree, Cleopatra’s Temple and a Bedouin dinner.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "12:00"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "Hotel pickup",
+            "description": "The jeep collects you from your hotel in Marsa Alam.",
+            "duration": ""
+          },
+          {
+            "index": 1,
+            "title": "Into Wadi El Gemal",
+            "description": "The drive into the national park, with a stop at a panorama over the valley.",
+            "duration": ""
+          },
+          {
+            "index": 2,
+            "title": "Acacia and arak trees",
+            "description": "Stops at an acacia and an arak tree in the valley.",
+            "duration": ""
+          },
+          {
+            "index": 3,
+            "title": "The water spring",
+            "description": "A stop at a desert spring.",
+            "duration": ""
+          },
+          {
+            "index": 4,
+            "title": "Cleopatra’s Temple",
+            "description": "A visit to the temple ruins in the park.",
+            "duration": ""
+          },
+          {
+            "index": 5,
+            "title": "Bedouin dinner",
+            "description": "Dinner in the Bedouin way before the drive back to your hotel.",
+            "duration": ""
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "Hotel pickup",
+            "description": "Pickup and drop-off at your hotel in Marsa Alam."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "The team confirms your pickup time when it confirms your booking."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788796111/tours/qlu2ucaa2kzydntyyovj.jpg",
+            "alt": "A camel standing in shallow water between green mangrove bushes, with a low ridge behind"
+          }
+        ],
+        "seo": {
+          "metaTitle": "Into the Valley by Jeep, and Dinner Under the Stars",
+          "metaDescription": "Seven hours from noon, inland by jeep in Wadi El Gemal National Park: a high view, two desert trees, a spring, a temple ruin and a Bedouin dinner.",
+          "keywords": []
+        }
+      },
+      "arabic": {
+        "title": "إلى الوادي بالجيب، وعشاء تحت النجوم",
+        "shortDescription": "سبع ساعات من الظهر: إلى الداخل بالجيب نحو المحمية الوطنية لمطل مرتفع، وشجرتين صحراويتين، ونبع، وأطلال معبد، ثم عشاء بدوي.",
+        "description": "الاصطحاب عند الظهر، وتنعطف سيارة الجيب عن الطريق الساحلي إلى الداخل نحو المحمية الوطنية. وما تتوقف عنده: مطل مرتفع على الوادي، وشجرة سنط، وشجرة أراك، وماء ينبع في الصحراء، وأطلال المعبد المنسوب إلى كليوباترا. ويسمي البرنامج وادي الجمال والمعبد والنبع، لا شرم اللولي، الخليج الواقع على الساحل على بعد اثنين وثلاثين كيلومتراً شرقها؛ ولا تبلغه سيارة الجيب أبداً.\n\nوالعشاء بدوي ويأتي في الختام، قبل طريق العودة. وهذا يوم في الصحراء في الداخل، لا يوم على الخليج. ويُحدَّد ترتيب التوقفات مع حجزك، وللأطفال سعرهم الخاص.",
+        "duration": "7 ساعات",
+        "cancellationPolicy": "",
+        "highlights": [
+          "مطل مرتفع على الوادي",
+          "شجرة سنط، ثم شجرة أراك",
+          "ماء ينبع في الصحراء",
+          "عشاء على الطريقة البدوية في الختام"
+        ],
+        "inclusions": [
+          "توقف عند نقطة البانوراما",
+          "توقف عند شجرة السنط",
+          "توقف عند نبع الماء",
+          "توقف عند شجرة الأراك",
+          "معبد كليوباترا",
+          "عشاء بدوي",
+          "النقل من الفندق وإليه"
+        ],
+        "exclusions": [],
+        "participantRequirements": [],
+        "whatToBring": [],
+        "needToKnow": [
+          "يؤكد الفريق ترتيب التوقفات عند تأكيد حجزك.",
+          "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "marsa-alam-wadi-el-gemal-desert-jeep-safari-b-f93ac389582f",
+            "name": "سفاري بالجيب مع عشاء بدوي",
+            "description": "محمية وادي الجمال الوطنية بالجيب: مطل، وشجرة سنط، وعين ماء، وشجرة أراك، ومعبد كليوباترا، وعشاء بدوي.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "الساعة 12:00"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "الاصطحاب من الفندق",
+            "description": "يصطحبك الجيب من فندقك في مرسى علم.",
+            "duration": ""
+          },
+          {
+            "index": 1,
+            "title": "إلى وادي الجمال",
+            "description": "الطريق إلى داخل المحمية الوطنية، مع وقفة عند مطل على الوادي.",
+            "duration": ""
+          },
+          {
+            "index": 2,
+            "title": "شجرتا السنط والأراك",
+            "description": "وقفات عند شجرة سنط وشجرة أراك في الوادي.",
+            "duration": ""
+          },
+          {
+            "index": 3,
+            "title": "عين الماء",
+            "description": "وقفة عند عين ماء في الصحراء.",
+            "duration": ""
+          },
+          {
+            "index": 4,
+            "title": "معبد كليوباترا",
+            "description": "زيارة أطلال المعبد داخل المحمية.",
+            "duration": ""
+          },
+          {
+            "index": 5,
+            "title": "عشاء بدوي",
+            "description": "عشاء على الطريقة البدوية قبل طريق العودة إلى فندقك.",
+            "duration": ""
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "الاصطحاب من الفندق",
+            "description": "الاصطحاب من فندقك في مرسى علم والعودة إليه."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788796111/tours/qlu2ucaa2kzydntyyovj.jpg",
+            "alt": "جمل يقف في مياه ضحلة بين شجيرات مانغروف خضراء، وتلة منخفضة في الخلف"
+          }
+        ],
+        "seo": {
+          "metaTitle": "إلى الوادي بالجيب، وعشاء تحت النجوم",
+          "metaDescription": "سبع ساعات من الظهر، في الداخل بالجيب في محمية وادي الجمال الوطنية: مطل مرتفع، وشجرتان صحراويتان، ونبع، وأطلال معبد، وعشاء بدوي.",
+          "keywords": []
+        }
+      }
+    }
+  ],
+  "destinations": [
+    {
+      "id": "699895e47169d9820932b9ab",
+      "sourceSlug": "marsa-alam",
+      "slug": "marsa-alam-ar",
+      "sourceUpdatedAt": "2026-04-09T16:34:09.828Z",
+      "sourceDigest": "745ca25bbadf20dc3b858537c46c7a94626e45331e3ebe4f53c03911f9f9e264",
+      "english": {
+        "name": "Marsa Alam",
+        "country": "Egypt",
+        "description": "A pristine diving destination on the Red Sea, Marsa Alam is known for its untouched coral reefs and marine wildlife.",
+        "shortDescription": "Pristine Red Sea diving destination",
+        "highlights": [
+          "Coral Reefs",
+          "Dolphin Encounters",
+          "Undiscovered Wrecks",
+          "Tranquility"
+        ],
+        "bestTimeToVisit": "October to April",
+        "tags": [
+          "diving",
+          "marine-life",
+          "beach",
+          "adventure"
+        ]
+      },
+      "arabic": {
+        "name": "مرسى علم",
+        "country": "مصر",
+        "description": "مرسى علم وجهة غوص بكر على البحر الأحمر، تشتهر بشعابها المرجانية التي لم تمسها يد وبحياتها البحرية.",
+        "shortDescription": "وجهة غوص بكر على البحر الأحمر",
+        "highlights": [
+          "الشعاب المرجانية",
+          "لقاءات الدلافين",
+          "حطام سفن لم يُكتشف بعد",
+          "الهدوء"
+        ],
+        "bestTimeToVisit": "من أكتوبر إلى أبريل",
+        "tags": [
+          "غوص",
+          "الحياة البحرية",
+          "شاطئ",
+          "مغامرة"
+        ]
+      }
+    }
+  ]
+}
