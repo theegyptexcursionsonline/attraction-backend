@@ -107,7 +107,7 @@ const NOT_A_STOP: Record<string, string> = {
   'shabruhr-umm-gamar': ', not Shabruhr Umm Gamar, the reef about ten kilometres south-east of the Dolphin House; the yacht turns for home well north of it.',
   hamda: ', not Hamda, the plateau off the north-east shore of the larger Giftun island; it does not say where at Giftun the boat stops, and nothing calls at the plateau.',
   'ras-hankorab': ', not Ras Hankorab, the beach on the park’s shore about thirty-seven kilometres east-south-east of that temple; the jeep goes the other way and stops nowhere on the coast.',
-  qulaan: ', not Qulaan, the mangrove bay and Ababda village about sixty kilometres east-south-east of that temple; nothing on this day goes near the bay.',
+  qulaan: ', not Qulaan, the bay and Ababda village about sixty kilometres east-south-east of that temple; nothing on this day goes near the bay.',
   'wadi-lahmy': ', not Wadi Lahmy, where the Wadi Lahmi valley meets the sea below Hamata, about eighty kilometres south-east of that temple; nothing on the day comes down to the coast.',
 };
 
@@ -128,7 +128,7 @@ const NEAREST: Record<string, string> = {
   'shabruhr-umm-gamar': 'This yacht day runs north out of Hurghada to the Dolphin House reef, and its programme does not name Shabruhr Umm Gamar, the small reef south of Umm Gamar island, about ten kilometres south-east of the Dolphin House.',
   hamda: 'This afternoon yacht stops to snorkel at Giftun; its programme does not say where at Giftun, and it does not name Hamda, the plateau off the north-east shore of the larger Giftun island.',
   'ras-hankorab': 'This day drives inland by jeep to Cleopatra’s Temple and a desert spring in Wadi El Gemal; its programme names no stop on the coast and does not name Ras Hankorab, the beach on the park’s shore about thirty-seven kilometres east-south-east of that temple.',
-  qulaan: 'This is an inland day by jeep, to Cleopatra’s Temple and a spring in the Wadi El Gemal desert, with no stop named on the coast; its programme does not name Qulaan, the mangrove bay and Ababda village on the shore about sixty kilometres east-south-east of that temple.',
+  qulaan: 'This is an inland day by jeep, to Cleopatra’s Temple and a spring in the Wadi El Gemal desert, with no stop named on the coast; its programme does not name Qulaan, the bay and Ababda village on the shore about sixty kilometres east-south-east of that temple.',
   'wadi-lahmy': 'This jeep day goes inland into Wadi El Gemal, to a desert spring and to Cleopatra’s Temple, and its programme does not name Wadi Lahmy, where the Wadi Lahmi valley meets the sea below Hamata, about eighty kilometres south-east of that temple.',
 };
 
@@ -362,8 +362,9 @@ describe('batch B15: three reefs off Hurghada and three places on the southern c
     for (const site of B15B.sites) {
       expect(site.heroImages).toEqual(SITE_PICTURES[site.slug]);
       expect(site.photoShortfall).toMatch(/may not show/);
-      // Its day's card carries the site's own inner-pages picture, described as it is.
-      expect(site.trips[0].images).toEqual([SITE_PICTURES[site.slug][1]]);
+      // Its day's card carries the one picture of the inland day's own country, Wadi Lahmy's dry valley: the
+      // other five pictures show the shore, mangroves or reef the day never reaches.
+      expect(site.trips[0].images).toEqual([SITE_PICTURES['wadi-lahmy'][1]]);
       expect(site.trips[0].imageAlts[0].length).toBeGreaterThan(30);
     }
     // Each photo is described once across the batch, so none is described two ways, and the three photographs

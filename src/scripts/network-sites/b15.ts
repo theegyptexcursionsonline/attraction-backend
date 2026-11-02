@@ -4,8 +4,7 @@
  * - B15A: three reefs off Hurghada — Erg Abu Ramada on the south-east flank of Abu Ramada island, Shabruhr Umm
  *   Gamar two kilometres south of its island, and Hamda on the north-east shore of the larger Giftun.
  * - B15B: three places on the coast south of Marsa Alam — Ras Hankorab and Qulaan inside Wadi El Gemal National
- *   Park, and Wadi Lahmy, where the valley of that name meets the sea below Hamata. Not in this file yet: see
- *   below.
+ *   Park, and Wadi Lahmy, where the valley of that name meets the sea below Hamata.
  *
  * Every trip is built on the record the client publishes on its own main site, read into the dated snapshot
  * (`network-sites/eeo-snapshot.json`); prices, child rates, departures and inclusions are copied from that
@@ -166,12 +165,12 @@ const HERO: Record<string, [string, string]> = {
 /**
  * What each of the three southern sites shows on its day's card and on its trip page. The day they sell is the
  * one record on the network whose only photograph those pages may not show, and no photograph of the inland day
- * exists, so each shows its own inner-pages picture instead, which is what the batch concepts allow. Of the
- * three, only Wadi Lahmy's is a picture of the day's own country, a dry valley running inland; the other two
- * show the place the day never reaches, which is a gap the coordinator must close with a picture of the inland
- * day before these three go live.
+ * exists. Of the six pictures this batch made for the three, only one shows the day's own country: Wadi Lahmy's
+ * dry valley running inland between desert hills. The other five show the shore, the mangroves or the reef the
+ * day never reaches, so all three day cards carry that one inland picture, and each site keeps its own two
+ * pictures for its home and inner pages.
  */
-const INLAND_PICTURE = (slug: string): string => HERO[slug][1];
+const INLAND_PICTURE = (): string => HERO['wadi-lahmy'][1];
 
 const HURGHADA = { lat: 27.2579, lng: 33.8116 };
 const MARSA_ALAM = { lat: 25.0676, lng: 34.879 };
@@ -377,8 +376,8 @@ export const B15B: NetworkBatch = {
             metaTitle: 'Up the Valley by Jeep, and a Bedouin Dinner',
             metaDescription: 'Seven hours from midday in the park’s inland valley: the temple ruin, water rising in the desert, a lookout, two desert trees and dinner.',
           },
-          images: [INLAND_PICTURE('ras-hankorab')],
-          imageAlts: ['Dark coral patches show through clear shallow water beside clean white sand, with low bare desert ground on the horizon.'],
+          images: [INLAND_PICTURE()],
+          imageAlts: ['A broad stony gravel wash with scattered scrub runs inland between low dark desert hills under a clear blue sky.'],
         },
       ],
     },
@@ -395,7 +394,7 @@ export const B15B: NetworkBatch = {
       slugPrefix: 'qln-',
       foreignPlaces: NOT_WADI_EL_GEMAL_COAST,
       tagline: 'An inland jeep day, sixty kilometres away',
-      description: `Qulaan — also written Qula’an, Qulan, El Qulaan and Al-Qula’an — is a small bay at the mouth of Wadi Qulaan, within Wadi El Gemal National Park on the Red Sea shore, ninety kilometres or so below Marsa Alam and about eleven kilometres north-west of Hamata. Grey mangroves grow in the bay’s lagoon, standing in the water: a survey of the Egyptian Red Sea’s mangroves counts the Wadi Qulaan delta among its thirteen mangrove sites, and the trees shelter young fish and birds. A fringing coral reef rings the lagoon, and about nine kilometres offshore lie the Qulaan islands, a small archipelago named after the same wadi. A village of the Ababda, the park’s indigenous people, stands beside the bay: it lived by small-scale fishing, the park’s plan chose it as one of the places where the Ababda’s own culture and the mangroves would be shown to visitors, and it now lives partly from low-impact tourism.\n\nThis is an inland day by jeep, to Cleopatra’s Temple and a spring in the Wadi El Gemal desert, with no stop named on the coast; its programme does not name Qulaan, the mangrove bay and Ababda village on the shore about sixty kilometres east-south-east of that temple. Just one trip is sold here, and the day stays inland: the jeep safari into the park’s dry interior, ending with dinner. ${CLOSING}`,
+      description: `Qulaan — also written Qula’an, Qulan, El Qulaan and Al-Qula’an — is a small bay at the mouth of Wadi Qulaan, within Wadi El Gemal National Park on the Red Sea shore, ninety kilometres or so below Marsa Alam and about eleven kilometres north-west of Hamata. Grey mangroves grow in the bay’s lagoon, standing in the water: a survey of the Egyptian Red Sea’s mangroves counts the Wadi Qulaan delta among its thirteen mangrove sites, and the trees shelter young fish and birds. A fringing coral reef rings the lagoon, and about nine kilometres offshore lie the Qulaan islands, a small archipelago named after the same wadi. A village of the Ababda, the park’s indigenous people, stands beside the bay: it lived by small-scale fishing, the park’s plan chose it as one of the places where the Ababda’s own culture and the mangroves would be shown to visitors, and it now lives partly from low-impact tourism.\n\nThis is an inland day by jeep, to Cleopatra’s Temple and a spring in the Wadi El Gemal desert, with no stop named on the coast; its programme does not name Qulaan, the bay and Ababda village on the shore about sixty kilometres east-south-east of that temple. Just one trip is sold here, and the day stays inland: the jeep safari into the park’s dry interior, ending with dinner. ${CLOSING}`,
       seo: {
         metaTitle: 'Qulaan: the Inland Jeep Day in Wadi El Gemal',
         metaDescription: 'A jeep day in the dry interior of Wadi El Gemal National Park: an acacia, an arak, water in dry ground, the temple ruin and dinner to finish.',
@@ -411,7 +410,7 @@ export const B15B: NetworkBatch = {
           price: P.WADI_EL_GEMAL,
           title: 'Inland All Day: the Jeep Run to the Temple',
           short: 'Seven hours away from the coast: an acacia and an arak, water in dry ground, a viewpoint, the temple ruin and dinner to finish the day.',
-          description: 'The jeep collects you at midday and turns inland, away from the shore. It stops at an acacia and at an arak, at water in dry ground, at a viewpoint above the valley and at the temple ruin that carries Cleopatra’s name. The programme behind it names Wadi El Gemal, that temple and the desert spring, not Qulaan, the mangrove bay and Ababda village about sixty kilometres east-south-east of that temple; nothing on this day goes near the bay.\n\nThe dinner is the last thing on it, served before the road back, and the halts are put in order when the booking is confirmed. The whole of it happens in the desert: no part of this day is spent at the bay or among its mangroves. Children have a price of their own.',
+          description: 'The jeep collects you at midday and turns inland, away from the shore. It stops at an acacia and at an arak, at water in dry ground, at a viewpoint above the valley and at the temple ruin that carries Cleopatra’s name. The programme behind it names Wadi El Gemal, that temple and the desert spring, not Qulaan, the bay and Ababda village about sixty kilometres east-south-east of that temple; nothing on this day goes near the bay.\n\nThe dinner is the last thing on it, served before the road back, and the halts are put in order when the booking is confirmed. The whole of it happens in the desert: no part of this day is spent at the bay or on its shore. Children have a price of their own.',
           highlights: [
             'An acacia, then an arak',
             'Water in dry ground',
@@ -422,8 +421,8 @@ export const B15B: NetworkBatch = {
             metaTitle: 'Inland All Day: the Jeep Run to the Temple',
             metaDescription: 'Seven hours inland from Marsa Alam: an acacia and an arak, water in dry ground, a viewpoint above the valley, the temple ruin and dinner.',
           },
-          images: [INLAND_PICTURE('qulaan')],
-          imageAlts: ['A grey mangrove clump fills the right foreground beside a pale-green lagoon, with an irregular fringing reef line and blue open sea beyond.'],
+          images: [INLAND_PICTURE()],
+          imageAlts: ['A broad stony gravel wash with scattered scrub runs inland between low dark desert hills under a clear blue sky.'],
         },
       ],
     },
@@ -467,7 +466,7 @@ export const B15B: NetworkBatch = {
             metaTitle: 'Eighty Kilometres Inland, and Dinner at the End',
             metaDescription: 'A jeep day in Wadi El Gemal, eighty kilometres from this valley’s mouth: a spring, the temple ruin, a viewpoint and two desert trees.',
           },
-          images: [INLAND_PICTURE('wadi-lahmy')],
+          images: [INLAND_PICTURE()],
           imageAlts: ['A broad stony gravel wash with scattered scrub runs inland between low dark desert hills under a clear blue sky.'],
         },
       ],
