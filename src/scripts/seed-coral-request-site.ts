@@ -171,9 +171,11 @@ export async function attachCoralDomain(rawJournal: CoralSeedJournal): Promise<'
     if (!claim || String(claim.tenantId) !== String(_id)) throw new CoralSeedRefusal('Another website holds the claim on this domain; nothing was changed.');
   }
   if (existing.customDomain === CORAL_CUSTOM_DOMAIN) return 'unchanged';
-  const result = await Tenant.collection.updateOne(
+  // A guarded model write: customDomain is not a URL-namespace path, and the journal fingerprint must not move.
+  const result = await Tenant.updateOne(
     { _id, slug: CORAL_REQUEST_TENANT_SLUG, customDomain: { $exists: false } },
     { $set: { customDomain: CORAL_CUSTOM_DOMAIN, customDomainStatus: 'pending_dns', customDomainLastCheckedAt: new Date() } },
+    { timestamps: false },
   );
   if (result.modifiedCount !== 1) throw new CoralSeedRefusal('The website changed while attaching the domain; review it before retrying.');
   return 'attached';
