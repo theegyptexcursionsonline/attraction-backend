@@ -117,9 +117,9 @@ describe('batch B08 group 1: Nabq National Park, Khan el Khalili Market and Moez
     expect(slugs[0]).toBe('sharm-ras-mohamed-white-island-snorkeling-adventure-with-lunch');
     expect(slugs[43]).toBe('sharm-el-sheikh-colored-canyon-blue-hole-dahab-jeep-adventure');
     // B08's own entries: the twenty-nine after B02's and B03's. Every later batch appends its own reads after
-    // them, each on the day it read them (B09 on 28 October, B10 on 30 October), and leaves these where they are.
+    // them, each on the day it read them (B09 on 28 October, B10 on 30 October, B14 on 1 November), and leaves these where they are.
     const added = SNAPSHOT.tours.slice(44, 73);
-    expect(SNAPSHOT.tours.slice(73).every((tour) => /^2026-10-(28|30)T/.test(String((tour as { readAt?: string }).readAt)))).toBe(true);
+    expect(SNAPSHOT.tours.slice(73).every((tour) => /^2026-(10-28|10-30|11-01)T/.test(String((tour as { readAt?: string }).readAt)))).toBe(true);
     // B08 read its programmes on its own day, each with the time its record was read.
     for (const tour of added) expect(tour.readAt).toMatch(/^2026-10-27T/);
     const sold = new Set(B08.flatMap((site) => site.trips.map((trip) => trip.price.source)));

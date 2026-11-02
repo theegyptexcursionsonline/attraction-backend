@@ -39,7 +39,13 @@ describe('admin write route contracts', () => {
   it('keeps every site inbox route behind authentication and the operational role gate', () => {
     const routes = source('contact.routes.ts');
     expect(routes).toMatch(/router\.post\(\s*['"]\/['"],\s*publicWriteLimiter,\s*optionalTenant,\s*requireTenant,\s*submitContactMessage\)/s);
-    const inboxRoutes = routes.match(/router\.(get|patch|put|delete)\([^;]+;/gs) || [];
+    expect(routes).toMatch(/router\.post\(\s*['"]\/requests['"],\s*publicWriteLimiter,\s*optionalTenant,\s*requireTenant,\s*submitContactRequest\)/s);
+    // The only public read is a tenant-scoped form definition, never the visitor-message inbox.
+    const publicOptions = /router\.get\(\s*['"]\/request-options['"],\s*optionalTenant,\s*requireTenant,\s*getContactRequestOptions\)/s;
+    const readAndChangeRoutes = routes.match(/router\.(get|patch|put|delete)\([^;]+;/gs) || [];
+    expect(readAndChangeRoutes).toHaveLength(3);
+    expect(readAndChangeRoutes.filter(route => publicOptions.test(route))).toHaveLength(1);
+    const inboxRoutes = readAndChangeRoutes.filter(route => !publicOptions.test(route));
     expect(inboxRoutes).toHaveLength(2);
     for (const route of inboxRoutes) {
       expect(route).toMatch(/['"]\/messages[^'"]*['"],\s*authenticate,\s*requireRole\('super-admin', 'brand-admin', 'manager'\),/s);
