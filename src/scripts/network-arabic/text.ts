@@ -79,6 +79,17 @@ export const GLOSSARY_TERMS: readonly string[] = [
   'jeep', 'desert', 'spring', 'temple', 'safety briefing', 'guide', 'crew', 'Children have their own price',
   'costs extra', 'cannot be booked', 'Dolphins are wild', 'Hold a place online', 'pay later', 'each page says',
   'soft drinks', 'water', 'scuba', 'dive', 'diving', 'glass', 'Home', 'Trips', 'About', 'FAQ', 'Contact',
+  // Places and features the B14 facts name
+  'Umm Gamar', 'Berenice', 'Hankorab', 'Abu Hamra', 'Moresby', 'Torfa', 'Gota', 'Erug', 'Magawish', 'Nemo Bay', 'Shenwa',
+  'Marsa Shona', 'national park', 'nature reserve', 'Wadi El Gemal National Park', 'El Gouna', 'Hamata', 'gazetteer',
+  'plateau', 'drop-off', 'pinnacle', 'erg', 'lagoon', 'drift', 'chimney', 'cleaning station', 'macro', 'wall', 'wreck',
+  'soft coral', 'hard coral', 'coral garden', 'gorgonian', 'brain coral', 'table coral', 'anemone',
+  // Species the B14 facts name
+  'barracuda', 'trevally', 'tuna', 'fusilier', 'eagle ray', 'manta', 'shark', 'moray', 'lionfish', 'glassfish',
+  'silverside', 'jackfish', 'snapper', 'grouper', 'wrasse', 'Napoleon', 'parrotfish', 'nudibranch', 'crocodilefish',
+  'scorpionfish', 'stonefish', 'pipefish', 'octopus', 'goatfish', 'sweetlips', 'bannerfish', 'anthias', 'amberjack',
+  'clownfish', 'pufferfish', 'butterflyfish', 'surgeonfish', 'unicornfish', 'hawksbill', 'green turtle', 'blue-spotted',
+  'shrimp', 'kofta', 'nuggets', 'spaghetti', 'acacia', 'arak', 'rock carving', 'mine',
 ];
 
 export function containsTerm(text: string, term: string): boolean {
