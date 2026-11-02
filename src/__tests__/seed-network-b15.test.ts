@@ -11,36 +11,40 @@ import { B02 } from '../scripts/network-sites/b02';
 import { B03A } from '../scripts/network-sites/b03';
 import { B03B, B03C, B03D } from '../scripts/network-sites/b03-rest';
 import { B08A, B08B, B08C, B08D } from '../scripts/network-sites/b08';
-import { B09A, B09B, B09C, PROGRAMMES_A as B09AP } from '../scripts/network-sites/b09';
+import { B09A, B09B, B09C, PROGRAMMES_A as B09AP, PROGRAMMES_B as B09BP } from '../scripts/network-sites/b09';
 import { B10A, B10B, B10C, B10D } from '../scripts/network-sites/b10';
 import { B11A, B11B } from '../scripts/network-sites/b11';
 import { B12A, B12B } from '../scripts/network-sites/b12';
 import { B13A, B13B } from '../scripts/network-sites/b13';
 import { B14A, B14B, PROGRAMMES_B14 } from '../scripts/network-sites/b14';
-import { B15A } from '../scripts/network-sites/b15';
+import { B15A, B15B } from '../scripts/network-sites/b15';
 import SNAPSHOT from '../scripts/network-sites/eeo-snapshot.json';
 import { isTenantBookingCreationClosed } from '../services/tenantBookingPolicy.service';
 
 const EARLIER = [B01_SAFARI, B02, B03A, B03B, B03C, B03D, B08A, B08B, B08C, B08D, B09A, B09B, B09C,
   B10A, B10B, B10C, B10D, B11A, B11B, B12A, B12B, B13A, B13B, B14A, B14B].flatMap((batch) => batch.sites);
-const GROUPS: NetworkBatch[] = [B15A];
+const GROUPS: NetworkBatch[] = [B15A, B15B];
 const B15 = GROUPS.flatMap((batch) => batch.sites);
 const siteOf = (slug: string) => B15.find((site) => site.slug === slug)!;
 
 /**
  * Batch B15 is six sites: three reefs off Hurghada, each on its own day, and three places on the coast south of
- * Marsa Alam, all three on the one day the client publishes that enters their national park. Only the three
- * reefs are built here; the other three follow in their own group, because the single day they sell publishes
- * only the one photograph they must not show, so they cannot be created until their own pictures exist.
+ * Marsa Alam, all three on the one day the client publishes that enters their national park. Sharing that day
+ * between three sites of one batch is the owner's decision of 2 November, and the tests below hold each of the
+ * three to saying how far it is and that the day stops nowhere on the coast.
  */
 const B15A_SITES = 3;
-const B15_SITES = B15A_SITES;
+const B15B_SITES = 3;
+const B15_SITES = B15A_SITES + B15B_SITES;
 
 /** Each new site's storefront design, from the batch concepts; the storefront picks it by slug. */
 const DESIGNS: Record<string, string> = {
   'erg-abu-ramada': 'ergaburamada',
   'shabruhr-umm-gamar': 'shabruhr',
   hamda: 'hamda',
+  'ras-hankorab': 'hankorab',
+  qulaan: 'qulaan',
+  'wadi-lahmy': 'lahmy',
 };
 
 /** Every new site's domain, as Fouad's list gives it. */
@@ -48,6 +52,9 @@ const DOMAINS: Record<string, string> = {
   'erg-abu-ramada': 'ergaburamadahurghada.com',
   'shabruhr-umm-gamar': 'shabruhrummgamar.com',
   hamda: 'hamdahurghada.com',
+  'ras-hankorab': 'rashankorabbeach.com',
+  qulaan: 'qulaanmangrovebeach.com',
+  'wadi-lahmy': 'wadilahmyredsea.com',
 };
 
 /** The admin palette each site is created with, from the batch concepts (primary / secondary / accent). */
@@ -55,6 +62,23 @@ const THEMES: Record<string, [string, string, string]> = {
   'erg-abu-ramada': ['#1E1846', '#FBF1EC', '#A63E0E'],
   'shabruhr-umm-gamar': ['#2F3532', '#F3F3EE', '#5A3DB5'],
   hamda: ['#2E3A3F', '#F4F1EA', '#0B2D48'],
+  'ras-hankorab': ['#1A2A33', '#F6F1E7', '#22325F'],
+  qulaan: ['#18231F', '#F2F3EE', '#1E5B57'],
+  'wadi-lahmy': ['#3A2E24', '#F1EEE7', '#0F6680'],
+};
+
+/**
+ * The two pictures uploaded for each site on 2 November 2026, in the order the creation run writes them: the
+ * home page's opening picture, then the inner pages' one. Held here as literals so the batch is checked
+ * against the upload result rather than against itself.
+ */
+const SITE_PICTURES: Record<string, [string, string]> = {
+  'erg-abu-ramada': ['https://res.cloudinary.com/dm3sxllch/image/upload/v1793636412/attractions-network/tenant-heroes/erg-abu-ramada/site-20261102-hero-8f06a430f66e.png', 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793636415/attractions-network/tenant-heroes/erg-abu-ramada/site-20261102-second-e3665c65d549.png'],
+  'shabruhr-umm-gamar': ['https://res.cloudinary.com/dm3sxllch/image/upload/v1793636416/attractions-network/tenant-heroes/shabruhr-umm-gamar/site-20261102-hero-29c6f4f878aa.png', 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793636419/attractions-network/tenant-heroes/shabruhr-umm-gamar/site-20261102-second-d35eb1d55bb1.png'],
+  hamda: ['https://res.cloudinary.com/dm3sxllch/image/upload/v1793636421/attractions-network/tenant-heroes/hamda/site-20261102-hero-b6d8084c9db4.png', 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793636423/attractions-network/tenant-heroes/hamda/site-20261102-second-07246dc681d1.png'],
+  'ras-hankorab': ['https://res.cloudinary.com/dm3sxllch/image/upload/v1793636425/attractions-network/tenant-heroes/ras-hankorab/site-20261102-hero-9500e18ea46d.png', 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793636426/attractions-network/tenant-heroes/ras-hankorab/site-20261102-second-537d08d08878.png'],
+  qulaan: ['https://res.cloudinary.com/dm3sxllch/image/upload/v1793636428/attractions-network/tenant-heroes/qulaan/site-20261102-hero-012a11f3bec4.png', 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793636430/attractions-network/tenant-heroes/qulaan/site-20261102-second-74d97298ed37.png'],
+  'wadi-lahmy': ['https://res.cloudinary.com/dm3sxllch/image/upload/v1793636433/attractions-network/tenant-heroes/wadi-lahmy/site-20261102-hero-4f5a45caa162.png', 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793636436/attractions-network/tenant-heroes/wadi-lahmy/site-20261102-second-52648bf9f037.png'],
 };
 
 /** The day the coordinator's assignment (research/days.json) gives each site. */
@@ -62,6 +86,9 @@ const DAYS: Record<string, string[]> = {
   'erg-abu-ramada': ['hurghada-yacht-cruise-to-orange-bay-giftun-magawish-with-dolphins'],
   'shabruhr-umm-gamar': ['hurghada-dolphin-house-yacht-trip-with-snorkeling-lunch'],
   hamda: ['sunset-yacht-and-snorkeling-cruise-in-hurghada-5-hour-excursion'],
+  'ras-hankorab': ['marsa-alam-wadi-el-gemal-jeep-safari-bedouin-dinner'],
+  qulaan: ['marsa-alam-wadi-el-gemal-jeep-safari-bedouin-dinner'],
+  'wadi-lahmy': ['marsa-alam-wadi-el-gemal-jeep-safari-bedouin-dinner'],
 };
 
 /** What each site's own place is called, so no page can be read as selling a stop there. */
@@ -69,6 +96,9 @@ const PLACE: Record<string, RegExp> = {
   'erg-abu-ramada': /Erg Abu Ramada|Camel Reef/i,
   'shabruhr-umm-gamar': /Shabruhr|Shabrur|Shaab Rur|Sha.ab Ruhr/i,
   hamda: /Hamda|Stone Beach|Umm Dum|Lion.s Head/i,
+  'ras-hankorab': /Ras Hankorab|Ras Honkorab|Hankorab/i,
+  qulaan: /Qulaan|Qula.an|Qulan/i,
+  'wadi-lahmy': /Wadi Lahmy|Wadi Lahmi|Lahami|Lehama/i,
 };
 
 /** The one clause in which a site's trip copy may name its own place: to say it is not a stop. */
@@ -76,6 +106,9 @@ const NOT_A_STOP: Record<string, string> = {
   'erg-abu-ramada': ', not Erg Abu Ramada, the erg off the south-east side of Abu Ramada island about four kilometres south of Small Giftun; no boat stops at the erg.',
   'shabruhr-umm-gamar': ', not Shabruhr Umm Gamar, the reef about ten kilometres south-east of the Dolphin House; the yacht turns for home well north of it.',
   hamda: ', not Hamda, the plateau off the north-east shore of the larger Giftun island; it does not say where at Giftun the boat stops, and nothing calls at the plateau.',
+  'ras-hankorab': ', not Ras Hankorab, the beach on the park’s shore about thirty-seven kilometres east-south-east of that temple; the jeep goes the other way and stops nowhere on the coast.',
+  qulaan: ', not Qulaan, the mangrove bay and Ababda village about sixty kilometres east-south-east of that temple; nothing on this day goes near the bay.',
+  'wadi-lahmy': ', not Wadi Lahmy, where the Wadi Lahmi valley meets the sea below Hamata, about eighty kilometres south-east of that temple; nothing on the day comes down to the coast.',
 };
 
 /**
@@ -94,6 +127,9 @@ const NEAREST: Record<string, string> = {
   'erg-abu-ramada': 'This yacht day calls at Orange Bay, Giftun and Magawish, and its programme does not name Erg Abu Ramada, the three-peaked coral erg off the south-east side of Abu Ramada island, about four kilometres south of Small Giftun.',
   'shabruhr-umm-gamar': 'This yacht day runs north out of Hurghada to the Dolphin House reef, and its programme does not name Shabruhr Umm Gamar, the small reef south of Umm Gamar island, about ten kilometres south-east of the Dolphin House.',
   hamda: 'This afternoon yacht stops to snorkel at Giftun; its programme does not say where at Giftun, and it does not name Hamda, the plateau off the north-east shore of the larger Giftun island.',
+  'ras-hankorab': 'This day drives inland by jeep to Cleopatra’s Temple and a desert spring in Wadi El Gemal; its programme names no stop on the coast and does not name Ras Hankorab, the beach on the park’s shore about thirty-seven kilometres east-south-east of that temple.',
+  qulaan: 'This is an inland day by jeep, to Cleopatra’s Temple and a spring in the Wadi El Gemal desert, with no stop named on the coast; its programme does not name Qulaan, the mangrove bay and Ababda village on the shore about sixty kilometres east-south-east of that temple.',
+  'wadi-lahmy': 'This jeep day goes inland into Wadi El Gemal, to a desert spring and to Cleopatra’s Temple, and its programme does not name Wadi Lahmy, where the Wadi Lahmi valley meets the sea below Hamata, about eighty kilometres south-east of that temple.',
 };
 
 /**
@@ -103,7 +139,11 @@ const NEAREST: Record<string, string> = {
 const ASSIGNMENT_CLAUSE: Record<string, string> = {
   'shabruhr-umm-gamar': 'from Hurghada to the Dolphin House reef; its programme does not name',
   'erg-abu-ramada': 'and Magawish; its programme does not name Erg',
+  'wadi-lahmy': 'to Cleopatra’s Temple and a desert spring; its programme does not name',
 };
+
+/** The three sites whose one day drives inland, away from the shore each is named for. */
+const INLAND = ['ras-hankorab', 'qulaan', 'wadi-lahmy'];
 
 /** Verbs that would turn a mention of the site's own place into a stop the record does not publish. */
 const VISIT = 'visits?|visiting|visited|enter(?:s|ing|ed)?|inside|into|explore[sd]?|exploring|tour of|'
@@ -226,12 +266,13 @@ function expectCompleteTrip(site: Pick<NetworkSite, 'foreignPlaces'>, document: 
 
 describe('batch B15: three reefs off Hurghada and three places on the southern coast', () => {
   it('is two valid groups of sites, none of them built before', () => {
-    expect(GROUPS.map((batch) => batch.id)).toEqual(['b15a']);
+    expect(GROUPS.map((batch) => batch.id)).toEqual(['b15a', 'b15b']);
     for (const batch of GROUPS) expect(validateBatch(batch)).toEqual([]);
     expect(B15.map((site) => site.slug)).toEqual(Object.keys(DESIGNS));
-    expect(B15.map((site) => site.name)).toEqual(['Erg Abu Ramada', 'Shabruhr Umm Gamar', 'Hamda']);
+    expect(B15.map((site) => site.name)).toEqual(['Erg Abu Ramada', 'Shabruhr Umm Gamar', 'Hamda',
+      'Ras Hankorab', 'Qulaan', 'Wadi Lahmy']);
     expect(B15).toHaveLength(B15_SITES);
-    expect(B15A.sites).toHaveLength(B15A_SITES);
+    expect([B15A.sites.length, B15B.sites.length]).toEqual([B15A_SITES, B15B_SITES]);
     for (const site of B15) {
       expect(site.domain).toBe(DOMAINS[site.slug]);
       expect(DESIGNS[site.slug]).toMatch(/^[a-z]+$/);
@@ -250,7 +291,7 @@ describe('batch B15: three reefs off Hurghada and three places on the southern c
     for (const site of B15) {
       expect(before.has(site.slug) || before.has(site.domain) || before.has(site.slugPrefix)).toBe(false);
     }
-    expect(B15.map((site) => site.slugPrefix)).toEqual(['ear-', 'shu-', 'hmd-']);
+    expect(B15.map((site) => site.slugPrefix)).toEqual(['ear-', 'shu-', 'hmd-', 'rhk-', 'qln-', 'wlh-']);
     const prefixes = B15.map((site) => site.slugPrefix);
     expect(new Set(prefixes).size).toBe(prefixes.length);
     // No site across every batch shares a title or a trip slug.
@@ -283,6 +324,86 @@ describe('batch B15: three reefs off Hurghada and three places on the southern c
     expect(new Set(metaTitles).size).toBe(metaTitles.length);
   });
 
+  it('opens every site on its own two pictures, written at creation', () => {
+    // The creation run writes each site's own pair first, so no later picture write is needed and no site opens
+    // on a photograph another site already opens on.
+    const PICTURE = /^https:\/\/res\.cloudinary\.com\/dm3sxllch\/image\/upload\/v\d+\/attractions-network\/tenant-heroes\/([a-z0-9-]+)\/site-20261102-(hero|second)-[0-9a-f]{12}\.png$/;
+    for (const site of B15) {
+      const pair = site.heroImages.slice(0, 2);
+      expect(pair).toEqual(SITE_PICTURES[site.slug]);
+      pair.forEach((url, index) => {
+        const parts = PICTURE.exec(url);
+        expect(parts).not.toBeNull();
+        // Each picture sits in its own site's folder, so no site can be opened on another's.
+        expect(parts![1]).toBe(site.slug);
+        expect(parts![2]).toBe(index === 0 ? 'hero' : 'second');
+      });
+    }
+    // No picture is shared between two sites, and none is one an earlier batch already uses.
+    const pictures = B15.flatMap((site) => site.heroImages.slice(0, 2));
+    expect(pictures).toHaveLength(2 * B15_SITES);
+    expect(new Set(pictures).size).toBe(pictures.length);
+    const earlierImages = new Set(EARLIER.flatMap((site) => site.heroImages));
+    expect(pictures.filter((url) => earlierImages.has(url))).toEqual([]);
+    // Nothing opens on a photograph another site opens on.
+    const taken = new Map<string, string>();
+    for (const site of EARLIER) if (!taken.has(site.heroImages[0])) taken.set(site.heroImages[0], site.slug);
+    expect(B15.filter((site) => taken.has(site.heroImages[0])).map((site) => site.slug)).toEqual([]);
+    // The three reefs show three distinct pictures each, their own pair and their record's own photograph, so
+    // none of them needs a shortfall note. The three southern sites show their own two and nothing else: the
+    // one day they sell publishes a single photograph, and it is the one they may not show, so each says why.
+    for (const site of B15A.sites) {
+      expect(site.photoShortfall).toBeUndefined();
+      expect(site.heroImages).toHaveLength(3);
+      expect(new Set(site.heroImages).size).toBe(site.heroImages.length);
+      const recordPhotos = new Set(site.trips.flatMap((trip) => trip.images));
+      for (const url of site.heroImages.slice(2)) expect(recordPhotos.has(url)).toBe(true);
+    }
+    for (const site of B15B.sites) {
+      expect(site.heroImages).toEqual(SITE_PICTURES[site.slug]);
+      expect(site.photoShortfall).toMatch(/may not show/);
+      // Its day's card carries the site's own inner-pages picture, described as it is.
+      expect(site.trips[0].images).toEqual([SITE_PICTURES[site.slug][1]]);
+      expect(site.trips[0].imageAlts[0].length).toBeGreaterThan(30);
+    }
+    // Each photo is described once across the batch, so none is described two ways, and the three photographs
+    // an earlier batch already describes keep that batch's words.
+    const described = new Map<string, Set<string>>();
+    for (const site of B15) for (const trip of site.trips) {
+      trip.images.forEach((url, index) => {
+        if (!described.has(url)) described.set(url, new Set());
+        described.get(url)!.add(trip.imageAlts[index]);
+      });
+    }
+    for (const [, alts] of described) expect(alts.size).toBe(1);
+    const earlierAlts = new Map<string, string>();
+    for (const site of EARLIER) for (const trip of site.trips) {
+      trip.images.forEach((url, index) => earlierAlts.set(url, trip.imageAlts[index]));
+    }
+    const shared = [...described.keys()].filter((url) => earlierAlts.has(url));
+    expect(shared).toHaveLength(3);
+    for (const url of shared) expect([...described.get(url)!][0]).toBe(earlierAlts.get(url));
+  });
+
+  it('shows no site the one photograph its inland day publishes', () => {
+    // The Wadi El Gemal jeep day publishes a single photograph: a camel standing in shallow water between
+    // mangrove bushes. On a mangrove bay, a nesting beach and a valley mouth with mangroves along its shore
+    // that photograph reads as the place itself, and the day never goes near any of them, so none of the three
+    // sites shows it anywhere. It is named here through the batch that already carries it, so this test cannot
+    // drift from the address B14's Sharm El Luli publishes for the same record.
+    const luli = B14B.sites.find((site) => site.slug === 'sharm-el-luli')!;
+    const camel = luli.trips[0].images[0];
+    expect(luli.trips[0].price.source).toBe('marsa-alam-wadi-el-gemal-jeep-safari-bedouin-dinner');
+    expect(luli.trips[0].imageAlts[0]).toMatch(/camel standing in shallow water between green mangrove bushes/);
+    const everyAddress = B15.flatMap((site) => [...site.heroImages, ...site.trips.flatMap((trip) => trip.images)]);
+    expect(everyAddress.filter((url) => url === camel)).toEqual([]);
+    // And no page of those three describes a camel, mangroves or shallow water either.
+    for (const slug of INLAND) {
+      const site = siteOf(slug);
+      const everyWord = [site.tagline, ...site.trips.map(ownCopyOf), ...site.trips.flatMap((trip) => trip.imageAlts)].join('\n');
+      expect(everyWord).not.toMatch(/camel|mangrove/i);
+    }
+  });
 
   it('sells each site exactly the day the assignment gives it', () => {
     expect(Object.fromEntries(B15.map((site) => [site.slug, site.trips.map((trip) => trip.price.source)]))).toEqual(DAYS);
@@ -291,6 +412,9 @@ describe('batch B15: three reefs off Hurghada and three places on the southern c
     // day between them, which is the owner's decision of 2 November and the only such sharing in the batch.
     const hurghadaDays = B15A.sites.flatMap((site) => site.trips.map((trip) => trip.price.source));
     expect(new Set(hurghadaDays).size).toBe(hurghadaDays.length);
+    const southern = B15B.sites.flatMap((site) => site.trips.map((trip) => trip.price.source));
+    expect(new Set(southern)).toEqual(new Set(['marsa-alam-wadi-el-gemal-jeep-safari-bedouin-dinner']));
+    expect(new Set(hurghadaDays).size + 1).toBe(4);
     // What each record the batch sells says about itself, kept beside this test: its published title, its
     // booking options and its schedule, from the dated snapshot.
     for (const [slug, record] of Object.entries(RECORDS)) {
@@ -301,9 +425,7 @@ describe('batch B15: three reefs off Hurghada and three places on the southern c
       expect((found.detail.itinerary as Array<{ title: string }> | null || []).map((step) => step.title)).toEqual(record.itinerary);
     }
     // Every record the batch sells is one the fixture records, and every one of those is sold.
-    // The fixture also records the southern group's day, which the other group sells.
-    expect(Object.keys(RECORDS)).toHaveLength(4);
-    expect(hurghadaDays.every((record) => Object.keys(RECORDS).includes(record))).toBe(true);
+    expect([...new Set([...hurghadaDays, ...southern])].sort()).toEqual(Object.keys(RECORDS).sort());
     // Erg Abu Ramada's record names the three islands its page says the day calls at, Small Giftun among
     // them nowhere: the page measures from that island rather than quoting a programme.
     const threeIslands = RECORDS['hurghada-yacht-cruise-to-orange-bay-giftun-magawish-with-dolphins'];
@@ -321,9 +443,39 @@ describe('batch B15: three reefs off Hurghada and three places on the southern c
     expect((sunset.itinerary as string[]).filter((step) => /giftun/i.test(step))).toEqual(['Giftun Island']);
     expect(NEAREST.hamda).toContain('does not say where at Giftun');
     expect(NEAREST.hamda).not.toMatch(/kilometre/);
-
+    // The one southern day is the jeep safari inland, and it names no park ticket, because its record prices
+    // none and publishes no exclusion at all.
+    const park = tour('marsa-alam-wadi-el-gemal-jeep-safari-bedouin-dinner')!;
+    expect(JSON.stringify(RECORDS[park.slug])).toMatch(/wadi el gemal/i);
+    expect(park.addons).toEqual([]);
+    expect(RECORDS[park.slug].notIncluded).toEqual([]);
+    for (const slug of INLAND) {
+      const site = siteOf(slug);
+      expect(ownCopyOf(site.trips[0]) + site.description).not.toMatch(/park (?:fee|ticket)|entry fee/i);
+      // Each of the three says plainly that the day is inland and that it reaches no part of the coast.
+      expect(site.trips[0].description).toMatch(/inland/);
+      expect(site.trips[0].description + site.description).toMatch(/no part of (?:this day|it)|none of it on the shore|stops nowhere on the coast|goes near the bay|comes down to the coast/);
+    }
   });
 
+  it('says nothing about Ras Hankorab that no source settles', () => {
+    // Every source on the beach's access, its fees, what stands there, who runs it and the unresolved
+    // development dispute contradicts another or stops in September 2025, so the site says none of it, and it
+    // never calls the beach untouched either.
+    const site = siteOf('ras-hankorab');
+    const everyWord = [site.tagline, site.description, site.seo.metaTitle, site.seo.metaDescription,
+      ...site.seo.keywords, ...site.trips.map(ownCopyOf)].join('\n');
+    expect(everyWord).not.toMatch(/untouched|unspoil|entrance fee|entry fee|ticket|opening hours|closed|fenced|hotel project|bulldozer|dispute|protest|managed by|run by|authority|concession|resort|parasol|facilit/i);
+    // Wadi Lahmy's membership of the national park is unsettled in every source, so its pages never claim it.
+    const lahmy = siteOf('wadi-lahmy');
+    const lahmyWords = [lahmy.tagline, lahmy.description, lahmy.seo.metaTitle, lahmy.seo.metaDescription,
+      ...lahmy.seo.keywords, ...lahmy.trips.map(ownCopyOf)].join('\n');
+    expect(lahmyWords).not.toMatch(/Wadi Lahmy[^.]*national park|national park[^.]*Wadi Lahmy/i);
+    // Qulaan's village is Ababda, never Bedouin, and the batch never photographs or describes its people.
+    const qulaan = siteOf('qulaan');
+    expect(qulaan.description).toContain('Ababda');
+    expect([qulaan.tagline, qulaan.description, qulaan.seo.metaDescription, ...qulaan.seo.keywords].join('\n')).not.toMatch(/bedouin/i);
+  });
 
   it('says on every page what the programme names, and never that the place is a stop', () => {
     for (const site of B15) {
@@ -350,7 +502,7 @@ describe('batch B15: three reefs off Hurghada and three places on the southern c
     }
     // Three of the assignment's own sentences carry a clause a batch B14 site already publishes about the same
     // day, so those three say the same thing in their own words and nothing else in the assignment moved.
-    expect(Object.keys(ASSIGNMENT_CLAUSE).sort()).toEqual(['erg-abu-ramada', 'shabruhr-umm-gamar']);
+    expect(Object.keys(ASSIGNMENT_CLAUSE).sort()).toEqual(['erg-abu-ramada', 'shabruhr-umm-gamar', 'wadi-lahmy']);
     for (const [slug, clause] of Object.entries(ASSIGNMENT_CLAUSE)) {
       // The assignment's clause is one a B14 site publishes, and no B15 site carries it.
       expect(EARLIER.filter((site) => site.description.includes(clause)).length).toBeGreaterThan(0);
@@ -360,6 +512,7 @@ describe('batch B15: three reefs off Hurghada and three places on the southern c
     // What each changed sentence still says is the assignment's own fact, word for word.
     expect(NEAREST['shabruhr-umm-gamar']).toContain('the small reef south of Umm Gamar island, about ten kilometres south-east of the Dolphin House');
     expect(NEAREST['erg-abu-ramada']).toContain('the three-peaked coral erg off the south-east side of Abu Ramada island, about four kilometres south of Small Giftun');
+    expect(NEAREST['wadi-lahmy']).toContain('where the Wadi Lahmi valley meets the sea below Hamata, about eighty kilometres south-east of that temple');
   });
 
   it('builds every trip from the dated snapshot, never from a price typed here', () => {
@@ -434,6 +587,9 @@ describe('batch B15: three reefs off Hurghada and three places on the southern c
       ['three-islands-in-one-sailing', B09AP.HBT_THREE_ISLANDS],
       ['afternoon-yacht-and-a-stop-at-giftun', B09AP.HBT_SUNSET],
       ['five-hours-north-with-lunch-aboard', PROGRAMMES_B14.DOLPHIN_YACHT_LUNCH],
+      ['a-jeep-day-inland-from-the-beach', B09BP.WADI_EL_GEMAL],
+      ['the-day-that-stays-inland', B09BP.WADI_EL_GEMAL],
+      ['the-valley-and-not-the-shore', B09BP.WADI_EL_GEMAL],
     ];
     for (const [tripPath, programme] of imported) {
       const trips = B15.flatMap((site) => site.trips).filter((trip) => trip.path === tripPath);
@@ -445,8 +601,8 @@ describe('batch B15: three reefs off Hurghada and three places on the southern c
     // its own. Every earlier batch is searched, so a programme written here would fail this.
     const earlier = new Set(EARLIER.flatMap((site) => site.trips.map((trip) => trip.price.source)));
     expect(B15.flatMap((site) => site.trips).filter((trip) => !earlier.has(trip.price.source))).toEqual([]);
-    // Three programmes behind three trips: no site in this group sells a day another site in it sells.
-    expect(new Set(B15.flatMap((site) => site.trips).map((trip) => trip.price)).size).toBe(B15_SITES);
+    // Four programmes behind six trips: the three southern sites share one, and nothing else is shared.
+    expect(new Set(B15.flatMap((site) => site.trips).map((trip) => trip.price)).size).toBe(4);
     // The second Dolphin House yacht's programme is batch B14's own, and it carries the schedule B14 wrote
     // rather than the record's, whose schedule names a reef far to the south.
     expect(PROGRAMMES_B14.DOLPHIN_YACHT_LUNCH.itinerary.length).toBeGreaterThan(2);
@@ -464,6 +620,19 @@ describe('batch B15: three reefs off Hurghada and three places on the southern c
       expect(site.foreignPlaces.source).toEqual(boats.foreignPlaces.source);
       for (const document of built(site, site.trips)) expect(document.meetingPoint.address).toBe('Your hotel in Hurghada');
     }
+    // The three southern sites follow the bay inside the same park that batch B14 built: the same town, pickup
+    // area, coordinates and fence, so that Ras Hankorab can name the bay it is not without letting a town
+    // through. The fence bars Sharm El Sheikh by name rather than the bare word.
+    const luli = B14B.sites.find((item) => item.slug === 'sharm-el-luli')!;
+    for (const site of B15B.sites) {
+      expect([site.city, site.pickupDestination, site.area]).toEqual(['Marsa Alam', 'marsa-alam', 'Marsa Alam']);
+      expect(site.coordinates).toEqual(luli.coordinates);
+      expect(site.foreignPlaces.source).toEqual(luli.foreignPlaces.source);
+      expect(site.foreignPlaces.test('Sharm El Sheikh')).toBe(true);
+      for (const document of built(site, site.trips)) expect(document.meetingPoint.address).toBe('Your hotel in Marsa Alam');
+    }
+    expect(siteOf('ras-hankorab').foreignPlaces.test('Sharm El Luli')).toBe(false);
+    expect(siteOf('ras-hankorab').description).toContain('this is not Sharm El Luli');
     // No trip in the batch starts anywhere but where its site does.
     for (const site of B15) for (const trip of site.trips) expect(trip.where).toBeUndefined();
   });
@@ -492,13 +661,13 @@ describe('batch B15: three reefs off Hurghada and three places on the southern c
     expect(Object.keys(complete)).toHaveLength(B15_SITES);
     for (const site of B15) {
       const { [site.slug]: _dropped, ...withoutOne } = complete;
-      const batch = B15A;
+      const batch = B15A.sites.includes(site) ? B15A : B15B;
       expect(logoProblems(batch, withoutOne)).toEqual([`${site.slug}: no logo entry.`]);
     }
     expect(logoProblems(B15A, { ...complete, hamda: { ...good('hamda'), favicon: '' } }))
       .toEqual(['hamda: favicon is missing.']);
-    expect(logoProblems(B15A, { ...complete, 'erg-abu-ramada': { ...good('erg-abu-ramada'), logoDark: 'https://example.com/logo.png' } }))
-      .toEqual(["erg-abu-ramada: logoDark must already be on the network's Cloudinary: https://example.com/logo.png"]);
+    expect(logoProblems(B15B, { ...complete, qulaan: { ...good('qulaan'), logoDark: 'https://example.com/logo.png' } }))
+      .toEqual(["qulaan: logoDark must already be on the network's Cloudinary: https://example.com/logo.png"]);
   });
 
   it('repeats no sentence another site on the network already publishes', () => {

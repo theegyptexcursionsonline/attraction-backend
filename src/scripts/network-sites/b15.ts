@@ -88,7 +88,7 @@
  * approved logo, logoDark and favicon, for every site of the group.
  */
 import type { NetworkBatch, PriceSpec } from '../seed-network-sites';
-import { PROGRAMMES_A as B09A } from './b09';
+import { PROGRAMMES_A as B09A, PROGRAMMES_B as B09B } from './b09';
 import { PROGRAMMES_B14 as B14P } from './b14';
 
 /** Every programme this batch sells; each is the batch that first sold the record. */
@@ -96,6 +96,7 @@ const P = {
   THREE_ISLANDS: B09A.HBT_THREE_ISLANDS,
   SUNSET: B09A.HBT_SUNSET,
   DOLPHIN_YACHT_LUNCH: B14P.DOLPHIN_YACHT_LUNCH,
+  WADI_EL_GEMAL: B09B.WADI_EL_GEMAL,
 } satisfies Record<string, PriceSpec>;
 
 /**
@@ -116,6 +117,62 @@ const ALT: Record<keyof typeof PHOTO, string> = {
   sailboatAtSunset: 'A sailing boat on calm water with the sun setting low behind it',
 };
 
+/**
+ * Each site's own two pictures, uploaded for this batch on 2 November 2026 and written here as the upload
+ * results they are, so the creation run itself publishes them and no later picture write is needed. The first
+ * opens the home page and the second carries the inner pages, the trip page among them. What each picture
+ * shows is kept beside it: the tenant record has nowhere to store a description of a hero image (its
+ * `heroImages` is a list of addresses), so these stay as notes until the storefront has a field for them.
+ */
+const HERO: Record<string, [string, string]> = {
+  'erg-abu-ramada': [
+    // A single soft-coral-covered outcrop rises from pale sand in violet-blue water while small orange fish circle it.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793636412/attractions-network/tenant-heroes/erg-abu-ramada/site-20261102-hero-8f06a430f66e.png',
+    // Rounded pink, violet and apricot soft corals fill the frame with a few hard corals and small orange fish in the gaps.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793636415/attractions-network/tenant-heroes/erg-abu-ramada/site-20261102-second-e3665c65d549.png',
+  ],
+  'shabruhr-umm-gamar': [
+    // A dark vertical reef wall with several cave-like recesses, sparse hard corals and lilac soft corals borders deep blue water.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793636416/attractions-network/tenant-heroes/shabruhr-umm-gamar/site-20261102-hero-29c6f4f878aa.png',
+    // A steep dark reef wall descends through deep blue water with many small fish near the rock and three larger silver fish farther out.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793636419/attractions-network/tenant-heroes/shabruhr-umm-gamar/site-20261102-second-d35eb1d55bb1.png',
+  ],
+  hamda: [
+    // Schools of small silver and yellow fish sweep over a sunlit hard-coral plateau that drops into deep blue water.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793636421/attractions-network/tenant-heroes/hamda/site-20261102-hero-b6d8084c9db4.png',
+    // A curved hard-coral wall with layered cabbage corals rises from pale sand in clear green-blue water with a few small fish.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793636423/attractions-network/tenant-heroes/hamda/site-20261102-second-07246dc681d1.png',
+  ],
+  'ras-hankorab': [
+    // A low dark rocky headland extends into a calm blue bay above a short curve of white sand in warm late-afternoon light.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793636425/attractions-network/tenant-heroes/ras-hankorab/site-20261102-hero-9500e18ea46d.png',
+    // Dark coral patches show through clear shallow water beside clean white sand, with low bare desert ground on the horizon.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793636426/attractions-network/tenant-heroes/ras-hankorab/site-20261102-second-537d08d08878.png',
+  ],
+  qulaan: [
+    // Five separate low grey-green mangrove clumps stand in calm pale-green shallows before a pale sand bar, a dark fringing reef line, and open sea.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793636428/attractions-network/tenant-heroes/qulaan/site-20261102-hero-012a11f3bec4.png',
+    // A grey mangrove clump fills the right foreground beside a pale-green lagoon, with an irregular fringing reef line and blue open sea beyond.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793636430/attractions-network/tenant-heroes/qulaan/site-20261102-second-74d97298ed37.png',
+  ],
+  'wadi-lahmy': [
+    // A broad pale gravel valley opens between dark desert hills onto a calm blue lagoon, with low mangroves along the right shore and open sea beyond.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793636433/attractions-network/tenant-heroes/wadi-lahmy/site-20261102-hero-4f5a45caa162.png',
+    // A broad stony gravel wash with scattered scrub runs inland between low dark desert hills under a clear blue sky.
+    'https://res.cloudinary.com/dm3sxllch/image/upload/v1793636436/attractions-network/tenant-heroes/wadi-lahmy/site-20261102-second-52648bf9f037.png',
+  ],
+};
+
+/**
+ * What each of the three southern sites shows on its day's card and on its trip page. The day they sell is the
+ * one record on the network whose only photograph those pages may not show, and no photograph of the inland day
+ * exists, so each shows its own inner-pages picture instead, which is what the batch concepts allow. Of the
+ * three, only Wadi Lahmy's is a picture of the day's own country, a dry valley running inland; the other two
+ * show the place the day never reaches, which is a gap the coordinator must close with a picture of the inland
+ * day before these three go live.
+ */
+const INLAND_PICTURE = (slug: string): string => HERO[slug][1];
+
 const HURGHADA = { lat: 27.2579, lng: 33.8116 };
 const MARSA_ALAM = { lat: 25.0676, lng: 34.879 };
 
@@ -126,6 +183,13 @@ const MARSA_ALAM = { lat: 25.0676, lng: 34.879 };
  * schedule batch B14 wrote for it rather than its record's own.
  */
 const NOT_HURGHADA_BOATS = /Cairo|Giza|Luxor|Aswan|Sharm|Dahab|Nabq|Tiran|Ras Mohamed|Marsa Alam|Quseir|Ghalib|Safaga|Soma Bay|Gouna|Sahl|Makadi|Alexandria|Siwa|Bahariya|Fayoum|Sataya|Samadai/i;
+/**
+ * Places the three park and coast sites never name. It is the fence batch B14 gave the bay inside Wadi El
+ * Gemal: batch B09's Wadi El Gemal fence with the bare word "Sharm" replaced by the town it is barred for, so
+ * that Ras Hankorab can say which place it is not — Sharm El Luli, the bay seven kilometres up the same shore
+ * that is routinely sold under this beach's name — without letting anything else through.
+ */
+const NOT_WADI_EL_GEMAL_COAST = /Gouna|Hurghada|Makadi|Sahl|Safaga|Soma Bay|Sharm El Sheikh|Sharm el-Sheikh|Dahab|Nabq|Tiran|Ras Mohamed|Catherine|Cairo|Giza|Luxor|Aswan|Alexandria|Siwa|Bahariya|Fayoum|Saqqara|Sakkara|Memphis|Dahshur|Pyramid|Sphinx/i;
 
 /** The closing line every B11 to B14 site ends on, and every site here. */
 const CLOSING = 'Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.';
@@ -154,8 +218,7 @@ export const B15A: NetworkBatch = {
         keywords: ['erg abu ramada camel reef', 'three island yacht out of hurghada', 'orange bay giftun and magawish day', 'abu ramada island soft coral erg', 'hurghada yacht day with a hotel car'],
       },
       theme: { primaryColor: '#1E1846', secondaryColor: '#FBF1EC', accentColor: '#A63E0E' },
-      heroImages: [PHOTO.yachtAtSunset],
-      photoShortfall: 'The one day this site sells publishes a single photograph, so the site opens on its own pictures as soon as they are uploaded; until then it shows that photograph alone. More photographs of the day are an open question for the client.',
+      heroImages: [...HERO['erg-abu-ramada'], PHOTO.yachtAtSunset],
       logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/erg-abu-ramada/monogram.png',
       trips: [
         {
@@ -199,8 +262,7 @@ export const B15A: NetworkBatch = {
         keywords: ['shabruhr umm gamar reef', 'dolphin house yacht five hours', 'umm gamar island lighthouse', 'drift wall diving north of hurghada', 'patrol boat wreck on the reef'],
       },
       theme: { primaryColor: '#2F3532', secondaryColor: '#F3F3EE', accentColor: '#5A3DB5' },
-      heroImages: [PHOTO.dolphinPair],
-      photoShortfall: 'The one day this site sells publishes a single photograph, so the site opens on its own pictures as soon as they are uploaded; until then that photograph stands alone. Whether the client adds more to the record is an open question for it.',
+      heroImages: [...HERO['shabruhr-umm-gamar'], PHOTO.dolphinPair],
       logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/shabruhr-umm-gamar/monogram.png',
       trips: [
         {
@@ -244,8 +306,7 @@ export const B15A: NetworkBatch = {
         keywords: ['hamda stone beach giftun', 'umm dum dive site big giftun', 'afternoon snorkelling yacht hurghada', 'giftun national park plateau', 'five hour yacht trip from hurghada'],
       },
       theme: { primaryColor: '#2E3A3F', secondaryColor: '#F4F1EA', accentColor: '#0B2D48' },
-      heroImages: [PHOTO.sailboatAtSunset],
-      photoShortfall: 'This site sells one day, and that day publishes one photograph, so it opens on its own pictures as soon as they are uploaded and shows that one in the meantime. Further photographs are for the client to add.',
+      heroImages: [...HERO['hamda'], PHOTO.sailboatAtSunset],
       logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/hamda/monogram.png',
       trips: [
         {
@@ -266,6 +327,148 @@ export const B15A: NetworkBatch = {
           },
           images: [PHOTO.sailboatAtSunset],
           imageAlts: [ALT.sailboatAtSunset],
+        },
+      ],
+    },
+  ],
+};
+
+/** B15B: the nesting beach, the mangrove bay and the valley mouth, on the coast south of Marsa Alam. */
+export const B15B: NetworkBatch = {
+  id: 'b15b',
+  sites: [
+    {
+      slug: 'ras-hankorab',
+      name: 'Ras Hankorab',
+      listingPath: '/trips',
+      domain: 'rashankorabbeach.com',
+      city: 'Marsa Alam',
+      area: 'Marsa Alam',
+      pickupDestination: 'marsa-alam',
+      coordinates: MARSA_ALAM,
+      currency: 'USD',
+      slugPrefix: 'rhk-',
+      foreignPlaces: NOT_WADI_EL_GEMAL_COAST,
+      tagline: 'The jeep day inland, thirty-seven kilometres off',
+      description: `Ras Hankorab, written Ras Honkorab as well and sold as Hankorab Beach, is a headland inside Wadi El Gemal National Park, standing on the Red Sea shore some sixty kilometres from Marsa Alam as a line is drawn, south-south-east of the town; its beach lies in the bay at the headland’s south-west foot, and the cape’s tip is a little under two kilometres away to the east-north-east. One thing to settle before reading about it elsewhere: this is not Sharm El Luli. That bay lies about seven kilometres to the north-north-west, and the two are routinely treated as one place — the map pin labelled Sharm El Luli sits on this beach, and in 2017 it read Sharm El Luli aka Hankorab beach. The beach is white sand on a calm, shallow bay, coral reefs lie just off it, and swimmers share the bay with sea turtles; endangered green turtles nest on the sand, coming ashore at night in the nesting season. The park’s own plan puts the beach at one position, and a map pin placed on the same shore in 2017 lies five hundred and seventy-three metres along it.\n\nThis day drives inland by jeep to Cleopatra’s Temple and a desert spring in Wadi El Gemal; its programme names no stop on the coast and does not name Ras Hankorab, the beach on the park’s shore about thirty-seven kilometres east-south-east of that temple. The whole of the one trip sold here is spent inland: the jeep safari up the valley, taking in the temple, the spring, two desert trees and a Bedouin dinner. ${CLOSING}`,
+      seo: {
+        metaTitle: 'Ras Hankorab: a Jeep Day Inland from the Beach',
+        metaDescription: 'Seven hours from midday, by jeep into Wadi El Gemal National Park: the temple ruin, a desert spring, a lookout over the valley and dinner to close.',
+        keywords: ['ras hankorab beach', 'hankorab beach wadi el gemal', 'green turtle nesting beach red sea', 'jeep safari inland from the coast', 'wadi el gemal day from marsa alam'],
+      },
+      theme: { primaryColor: '#1A2A33', secondaryColor: '#F6F1E7', accentColor: '#22325F' },
+      heroImages: [...HERO['ras-hankorab']],
+      photoShortfall: 'The one day this site sells publishes a single photograph, and it is the one photograph these pages may not show, so the site shows its own two pictures and no photograph of that record at all.',
+      logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/ras-hankorab/monogram.png',
+      trips: [
+        {
+          path: 'a-jeep-day-inland-from-the-beach',
+          price: P.WADI_EL_GEMAL,
+          title: 'Up the Valley by Jeep, and a Bedouin Dinner',
+          short: 'Seven hours from midday, every one of them inland: the temple that carries Cleopatra’s name, water rising in the desert, two desert trees and dinner.',
+          description: 'Midday is the pickup, and the jeep leaves the coast road for the park’s inland valley. It halts at the temple that carries Cleopatra’s name, at water rising in the desert, at an acacia and an arak, and at a lookout high over the valley floor. Its programme names the valley, the spring and the temple, not Ras Hankorab, the beach on the park’s shore about thirty-seven kilometres east-south-east of that temple; the jeep goes the other way and stops nowhere on the coast.\n\nA Bedouin dinner closes the day before the drive back, and the halts fall in whichever order the team confirms with your booking. Every hour of this day is spent inland in the desert, and none of it on the shore this site is named for. A child is priced apart from an adult.',
+          highlights: [
+            'The temple ruin in the valley',
+            'Water coming up in dry desert',
+            'A lookout high over the valley floor',
+            'A Bedouin dinner to close',
+          ],
+          seo: {
+            metaTitle: 'Up the Valley by Jeep, and a Bedouin Dinner',
+            metaDescription: 'Seven hours from midday in the park’s inland valley: the temple ruin, water rising in the desert, a lookout, two desert trees and dinner.',
+          },
+          images: [INLAND_PICTURE('ras-hankorab')],
+          imageAlts: ['Dark coral patches show through clear shallow water beside clean white sand, with low bare desert ground on the horizon.'],
+        },
+      ],
+    },
+    {
+      slug: 'qulaan',
+      name: 'Qulaan',
+      listingPath: '/trips',
+      domain: 'qulaanmangrovebeach.com',
+      city: 'Marsa Alam',
+      area: 'Marsa Alam',
+      pickupDestination: 'marsa-alam',
+      coordinates: MARSA_ALAM,
+      currency: 'USD',
+      slugPrefix: 'qln-',
+      foreignPlaces: NOT_WADI_EL_GEMAL_COAST,
+      tagline: 'An inland jeep day, sixty kilometres away',
+      description: `Qulaan — also written Qula’an, Qulan, El Qulaan and Al-Qula’an — is a small bay at the mouth of Wadi Qulaan, within Wadi El Gemal National Park on the Red Sea shore, ninety kilometres or so below Marsa Alam and about eleven kilometres north-west of Hamata. Grey mangroves grow in the bay’s lagoon, standing in the water: a survey of the Egyptian Red Sea’s mangroves counts the Wadi Qulaan delta among its thirteen mangrove sites, and the trees shelter young fish and birds. A fringing coral reef rings the lagoon, and about nine kilometres offshore lie the Qulaan islands, a small archipelago named after the same wadi. A village of the Ababda, the park’s indigenous people, stands beside the bay: it lived by small-scale fishing, the park’s plan chose it as one of the places where the Ababda’s own culture and the mangroves would be shown to visitors, and it now lives partly from low-impact tourism.\n\nThis is an inland day by jeep, to Cleopatra’s Temple and a spring in the Wadi El Gemal desert, with no stop named on the coast; its programme does not name Qulaan, the mangrove bay and Ababda village on the shore about sixty kilometres east-south-east of that temple. Just one trip is sold here, and the day stays inland: the jeep safari into the park’s dry interior, ending with dinner. ${CLOSING}`,
+      seo: {
+        metaTitle: 'Qulaan: the Inland Jeep Day in Wadi El Gemal',
+        metaDescription: 'A jeep day in the dry interior of Wadi El Gemal National Park: an acacia, an arak, water in dry ground, the temple ruin and dinner to finish.',
+        keywords: ['qulaan mangrove bay', 'ababda village wadi el gemal', 'grey mangroves red sea lagoon', 'qulaan islands archipelago', 'inland jeep day from marsa alam'],
+      },
+      theme: { primaryColor: '#18231F', secondaryColor: '#F2F3EE', accentColor: '#1E5B57' },
+      heroImages: [...HERO['qulaan']],
+      photoShortfall: 'The one day this site sells publishes a single photograph, and it is the one photograph these pages may not show, so the site shows its own two pictures and no photograph of that record at all.',
+      logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/qulaan/monogram.png',
+      trips: [
+        {
+          path: 'the-day-that-stays-inland',
+          price: P.WADI_EL_GEMAL,
+          title: 'Inland All Day: the Jeep Run to the Temple',
+          short: 'Seven hours away from the coast: an acacia and an arak, water in dry ground, a viewpoint, the temple ruin and dinner to finish the day.',
+          description: 'The jeep collects you at midday and turns inland, away from the shore. It stops at an acacia and at an arak, at water in dry ground, at a viewpoint above the valley and at the temple ruin that carries Cleopatra’s name. The programme behind it names Wadi El Gemal, that temple and the desert spring, not Qulaan, the mangrove bay and Ababda village about sixty kilometres east-south-east of that temple; nothing on this day goes near the bay.\n\nThe dinner is the last thing on it, served before the road back, and the halts are put in order when the booking is confirmed. The whole of it happens in the desert: no part of this day is spent at the bay or among its mangroves. Children have a price of their own.',
+          highlights: [
+            'An acacia, then an arak',
+            'Water in dry ground',
+            'A viewpoint above the valley',
+            'Dinner to finish the day',
+          ],
+          seo: {
+            metaTitle: 'Inland All Day: the Jeep Run to the Temple',
+            metaDescription: 'Seven hours inland from Marsa Alam: an acacia and an arak, water in dry ground, a viewpoint above the valley, the temple ruin and dinner.',
+          },
+          images: [INLAND_PICTURE('qulaan')],
+          imageAlts: ['A grey mangrove clump fills the right foreground beside a pale-green lagoon, with an irregular fringing reef line and blue open sea beyond.'],
+        },
+      ],
+    },
+    {
+      slug: 'wadi-lahmy',
+      name: 'Wadi Lahmy',
+      listingPath: '/trips',
+      domain: 'wadilahmyredsea.com',
+      city: 'Marsa Alam',
+      area: 'Marsa Alam',
+      pickupDestination: 'marsa-alam',
+      coordinates: MARSA_ALAM,
+      currency: 'USD',
+      slugPrefix: 'wlh-',
+      foreignPlaces: NOT_WADI_EL_GEMAL_COAST,
+      tagline: 'Eighty kilometres inland, by jeep',
+      description: `Wadi Lahmy is where the desert valley of Wadi Lahmi reaches the Red Sea, about nine kilometres south-east of Hamata; the gazetteer records the anchorage at the valley’s mouth as Marsa Wadi Lahmi and the valley itself as Wadi Lahmi, written Wadi Lahami and Wadi Lehama too, and the bay just to the south is known as Lahami Bay. The watercourse is seasonal, and its mapped course runs some fifty kilometres down from the interior before it reaches the sea here. About eight kilometres up the valley stood a station of the ancient road from Berenike to Edfu: a university survey of the Eastern Desert roads lists Wadi Lahma among that road’s stations, and an archaeological atlas places a fort there, beside the watercourse. Mangroves grow along the shore just north of the mouth, and Lahami Bay is listed for its mangroves as well. The bay is sheltered, with a sandy, gently sloping beach giving on to a shallow sandy lagoon and a fringing house reef, and the Fury Shoals lie offshore to the east, the nearest of them ten to twelve kilometres out.\n\nThis jeep day goes inland into Wadi El Gemal, to a desert spring and to Cleopatra’s Temple, and its programme does not name Wadi Lahmy, where the Wadi Lahmi valley meets the sea below Hamata, about eighty kilometres south-east of that temple. Only one trip is sold here, and the valley is where it goes, not the shore: the jeep safari to that spring and that temple, with dinner before the drive back. ${CLOSING}`,
+      seo: {
+        metaTitle: 'Wadi Lahmy: a Jeep Day Up the Valley',
+        metaDescription: 'Eighty kilometres inland by jeep, into Wadi El Gemal: a spring in the desert, the temple ruin, a viewpoint, two desert trees and dinner.',
+        keywords: ['wadi lahmy red sea', 'marsa wadi lahmi anchorage', 'berenike to edfu road station', 'mangroves below hamata', 'jeep day up the valley from marsa alam'],
+      },
+      theme: { primaryColor: '#3A2E24', secondaryColor: '#F1EEE7', accentColor: '#0F6680' },
+      heroImages: [...HERO['wadi-lahmy']],
+      photoShortfall: 'The one day this site sells publishes a single photograph, and it is the one photograph these pages may not show, so the site shows its own two pictures and no photograph of that record at all.',
+      logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/wadi-lahmy/monogram.png',
+      trips: [
+        {
+          path: 'the-valley-and-not-the-shore',
+          price: P.WADI_EL_GEMAL,
+          title: 'Eighty Kilometres Inland, and Dinner at the End',
+          short: 'Seven hours by jeep, eighty kilometres up the country: a spring in the desert, the temple ruin, a viewpoint, two desert trees and dinner at dusk.',
+          description: 'The jeep calls at midday and heads inland into the park’s valley. It stops at a spring in the desert, at the temple the maps call Cleopatra’s, at a viewpoint and at two desert trees, an acacia and an arak. What its programme names is the valley, its spring and the temple, not Wadi Lahmy, where the Wadi Lahmi valley meets the sea below Hamata, about eighty kilometres south-east of that temple; nothing on the day comes down to the coast.\n\nDinner is served before the road home, and the running order is fixed when the booking is confirmed. This is a desert day eighty kilometres from the valley’s mouth, and no part of it is spent at the sea. A child’s price is not an adult’s.',
+          highlights: [
+            'A spring in the desert',
+            'The temple the maps call Cleopatra’s',
+            'An acacia and an arak',
+            'Dinner before the road home',
+          ],
+          seo: {
+            metaTitle: 'Eighty Kilometres Inland, and Dinner at the End',
+            metaDescription: 'A jeep day in Wadi El Gemal, eighty kilometres from this valley’s mouth: a spring, the temple ruin, a viewpoint and two desert trees.',
+          },
+          images: [INLAND_PICTURE('wadi-lahmy')],
+          imageAlts: ['A broad stony gravel wash with scattered scrub runs inland between low dark desert hills under a clear blue sky.'],
         },
       ],
     },
