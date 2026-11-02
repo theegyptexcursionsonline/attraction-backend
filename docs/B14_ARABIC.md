@@ -72,11 +72,11 @@ Payloads: `src/scripts/network-arabic/b14/<slug>.json`, each record with its Eng
 version and digest. Glossary: `src/scripts/network-arabic/b14/glossary.json`.
 
 Readings, in order of precedence: the network's published Arabic, the facts' own Arabic spelling, the brief's list.
-Erg Sabina = عرق صابينا; Shaab Abu Nugar = شعب أبو نقر; Fanous East / West = فانوس الشرقية / الغربية;
+Erg Sabina = عرق سابينا; Shaab Abu Nugar = شعب أبو نقر; Fanous East / West = فانوس الشرقية / الغربية;
 North Abu Ramada = شمال أبو رمادة; Careless Reef = شعب كيرلس; Fanadir North = الفنادير الشمالية;
 Abu Dabbab Beach = شاطئ أبو دباب; **Elphinstone Reef = شعاب الفينستون** (the facts record this Arabic name, so it
 replaces the brief's شعب إلفنستون, as the brief's own rule says); Sharm El Luli = شرم اللولي. Network readings kept:
-Orange Bay = أورانج باي, Giftun = جفتون, Big/larger Giftun = جفتون الكبيرة, Shaab Sabina = شعب صابينا,
+Orange Bay = أورانج باي, Giftun = جفتون, Big/larger Giftun = جفتون الكبيرة, Shaab Sabina = شعب سابينا,
 Umm Gamar = أم قمر, Magawish = ماجاويش, Dolphin House = بيت الدلافين, snorkelling = سنوركلينغ.
 
 ## 4. Checker
@@ -139,13 +139,14 @@ merged; Railway accepts a branch commit), read `deploymentLogs` until `[ops-runn
 
 ## 7. For the owner or coordinator to decide
 
-- **Storefront readings differ from these records.** The brand files on `feat/b14-integration` write Shaab Abu Nugar
-  شعب أبو نجار (the brief and the network's own "Umm Gamar = أم قمر" read the g as ق: أبو نقر) and Careless Reef
-  شعاب كيرلس (brief: شعب كيرلس); they also write some network terms differently: خليج أورانج (network أورانج باي),
-  شعب سابينا (network شعب صابينا), أم جمار (network أم قمر), مجاويش (network ماجاويش), الجفتون / جفتون الكبرى
-  (network جفتون / جفتون الكبيرة), شعبة بيت الدلافين, السنوركل. One side must change before release so a page shows
-  one reading. Changing these records is mechanical: edit the Arabic in the payload files and `glossary.json`, then
-  rerun the checker and the apply check.
+- **Spellings: decided by the owner on 2 November.** One reading per name across the records and the brand files,
+  following what the live network sites already show in Arabic (read on 2 November: Giftun Beach and Umm Gamar Hurghada
+  show جفتون, أم قمر, أورانج باي and ماجاويش; Shaab Sabina shows سابينا). The records keep شعب أبو نقر, شعب كيرلس,
+  شعاب الفينستون, أورانج باي, أم قمر, جفتون / جفتون الكبيرة and ماجاويش, and the brand files on `feat/b14-integration`
+  were changed to match. Sabina changed here, from صابينا to سابينا (عرق سابينا, شعب سابينا), in `erg-sabina.json` and
+  `glossary.json`. Shaab Abu Nugar and Careless Reef have no published Arabic name; they follow the network's pattern
+  (شعب for one named reef; the g read as ق, as in أم قمر). Elphinstone keeps Arabic Wikipedia's شعاب الفينستون. Take
+  the approval digests from a fresh check run: the Sabina change alters `erg-sabina`'s rows.
 - **Destination rows** for Hurghada and Marsa Alam reuse the network's existing Arabic, which translates the English
   destination records' own wording ("premier", "world-class", "pristine", "paradise"). Changing those English records
   would make every network site's destination rows stale.
