@@ -261,6 +261,17 @@ const P = {
 } satisfies Record<string, PriceSpec>;
 
 /**
+ * The two programmes this batch writes itself, exported for the later batches that sell the same records, so the
+ * network says the same thing about the same trip wherever it is sold. Batch B15's Shabruhr Umm Gamar sells the
+ * second Dolphin House yacht and imports `DOLPHIN_YACHT_LUNCH` from here; the earlier batches export their own
+ * programmes the same way (`b08` and `b09`).
+ */
+export const PROGRAMMES_B14 = {
+  DOLPHIN_YACHT_LUNCH: P.DOLPHIN_YACHT_LUNCH,
+  ORANGE_PARASAILING: P.ORANGE_PARASAILING,
+};
+
+/**
  * Each record's own photo, as the client publishes it. The three Marsa Mubarak photographs are the copies
  * batch B08 made into its own folder for the same records.
  *

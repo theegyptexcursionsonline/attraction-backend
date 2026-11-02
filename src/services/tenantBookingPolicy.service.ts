@@ -88,6 +88,15 @@ const BOOKING_CREATION_CLOSED_TENANT_SLUGS = [
   'abu-dabbab-beach',
   'elphinstone-reef',
   'sharm-el-luli',
+  // The network queue's batch B15: three reefs off Hurghada, and three places on the coast south of Marsa
+  // Alam. Each is closed to real bookings until its domain is connected and the owner opens it; opening a
+  // site is removing its slug.
+  'erg-abu-ramada',
+  'shabruhr-umm-gamar',
+  'hamda',
+  'ras-hankorab',
+  'qulaan',
+  'wadi-lahmy',
   // Coral starts with preference requests only; no route may create a normal booking for it.
   CORAL_REQUEST_TENANT_SLUG,
 ] as const;

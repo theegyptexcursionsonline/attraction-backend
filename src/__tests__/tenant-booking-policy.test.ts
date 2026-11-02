@@ -56,6 +56,11 @@ describe('tenant booking-creation closure policy', () => {
       'erg-sabina', 'fanous-west', 'abu-dabbab-beach', 'elphinstone-reef', 'sharm-el-luli']) {
       expect(isTenantBookingCreationClosed({ slug })).toBe(true);
     }
+    // Batch B15's six sites are closed the same way, until each domain is connected and the owner opens it.
+    for (const slug of ['erg-abu-ramada', 'shabruhr-umm-gamar', 'hamda', 'ras-hankorab', 'qulaan',
+      'wadi-lahmy']) {
+      expect(isTenantBookingCreationClosed({ slug })).toBe(true);
+    }
     expect(() => assertTenantBookingCreationAllowed({ slug: 'king-of-egypt-tours' }))
       .toThrow(TenantBookingCreationClosedError);
     // A look-alike slug is a different site and is not closed by this policy.
@@ -113,6 +118,8 @@ describe('tenant booking-creation closure policy', () => {
         // Batch B14's reefs off Hurghada and its three places down the Marsa Alam coast, closed the same way.
         'shaab-abu-nugar', 'fanous-east', 'north-abu-ramada', 'careless-reef', 'fanadir-north',
         'erg-sabina', 'fanous-west', 'abu-dabbab-beach', 'elphinstone-reef', 'sharm-el-luli',
+        // Batch B15's three reefs off Hurghada and its three places on the southern coast, closed the same way.
+        'erg-abu-ramada', 'shabruhr-umm-gamar', 'hamda', 'ras-hankorab', 'qulaan', 'wadi-lahmy',
         'coral-safari-hurghada',
       ] },
     });
