@@ -1,15 +1,14 @@
 /**
- * Batch B16 (3 November 2026), the last ten sites of Fouad's 140-domain list. One group:
+ * Batch B16 (3 November 2026), the last eight sites of Fouad's 140-domain list. One group:
  *
  * - B16: the six places batch B15 held back in its own group C — the lagoon north of Dahab beyond Ras Abu Galum,
  *   the oasis where the two halves of the Sinai Trail meet, the snorkelling stop the trade calls Seven Pools
  *   inside Ras Mohammed, the lower reach of Wadi Zaghara, the bay below the mount of lead north of Marsa Alam
- *   and the sheltered inlet in the Abu Galawa reefs north of Hurghada — and four businesses on the client's own
- *   list: a Cairo car-with-driver service, a tour-package agency, a Makadi Bay desert-safari seller and a
- *   Hurghada speedboat seller.
+ *   and the sheltered inlet in the Abu Galawa reefs north of Hurghada — and two businesses on the client's own
+ *   list: a Cairo car-with-driver service and a tour-package agency.
  *
  * Sources: `docs/network-batches/b15/b16/places-facts.json` (every fact about a place, and every fact about a
- * business written as what that business states on its own site), `SELECTION.md` (which ten, which day, which
+ * business written as what that business states on its own site), `SELECTION.md` (which sites, which day, which
  * pictures) and `CONCEPTS.md` (one idea per site). Every price, child rate, departure, inclusion and schedule is
  * copied from the client's own published record at apply time, read through the dated snapshot
  * (`network-sites/eeo-snapshot.json`); not one of them is typed here.
@@ -37,44 +36,34 @@
  *   Gouna whose programme names no dive site at all — which is why it was chosen: nothing in the record
  *   contradicts the reef and nothing implies the boat calls there.
  *
- * The four business sites carry no price, telephone number, rating, count, tenure, licence or address of the
+ * Both business sites carry no price, telephone number, rating, count, tenure, licence or address of the
  * business: each sells a single day from the client's own catalogue, at the catalogue's own price, and says in
- * one plain sentence what it does not sell. None of their wording, pictures or marks is reused, and none of
- * their domains is touched by this work.
+ * one plain sentence what it does not sell. Neither reuses the business's wording, pictures or marks, and
+ * neither of their domains is touched by this work.
  *
- * THE MAKADI BAY DAY COULD NOT BE SOLD, AND A NEARER ONE IS. `SELECTION.md` assigns Makadi Bay Safari the
- * record `sunrise-buggy-safari-in-makadi-bay-with-breakfast`. Every one of that record's six booking options is
- * published "Per Group", and its family option prices its 05:00 departure at half its afternoon departures, so
- * the seed refuses it twice over: it sells per-person options only, and it refuses an option whose slot is
- * priced apart from the option. Rather than write a per-guest price the client does not publish, the site sells
- * `golden-sunset-quad-safari-in-makadi-bay`, which is the nearest record the client does publish per guest: a
- * Makadi Bay desert safari of the business's own kind (a quad, one of the three vehicles its own site sells),
- * with hotel pickup inside Makadi Bay, a camel ride and Bedouin tea, sold by no network site today. The one
- * programme this batch writes is that day's. If the client republishes the sunrise buggy day per guest, that
- * record replaces this one and one line here does it.
- *
- * TWO SLUGS ARE NOT THE SLUGS `SELECTION.md` NAMES, because the network already holds them:
- * - `hurghada-speedboat` is a live tenant, so this site is `hurghada-speedboat-day`, named apart from it, as
- *   `SELECTION.md` § 8 requires.
- * - `makadi-bay-safari` is an existing tenant too, inactive since May awaiting its deduplication with
- *   `makadi-bay-safari-center`, so this site is `makadi-bay-safari-day`. That tenant also holds the custom
- *   domain `makadibaysafari.com`, which this site's record names: until the owner releases it from that
- *   tenant, an apply of this batch stops on that site's namespace and writes nothing. Nothing here changes
- *   the existing tenant, which must stay exactly as it is.
+ * TWO OF THE SELECTION'S TEN DOMAINS ARE ALREADY HELD, AND THE COORDINATOR'S DECISION OF 3 NOVEMBER DROPS
+ * BOTH FROM THIS BATCH, so it is eight sites rather than ten:
+ * - `hurghadaspeedboat.com` is already papered: batch B11 built the live tenant `hurghada-speedboat` on it.
+ * - `makadibaysafari.com` belongs to the tenant `makadi-bay-safari`, inactive since May awaiting its
+ *   deduplication with `makadi-bay-safari-center`, and holding that domain as its custom domain. That tenant
+ *   stays exactly as it is; nothing here touches it.
+ * Dropping the Makadi Bay site also drops the one programme this batch had written. The record `SELECTION.md`
+ * named for that site, `sunrise-buggy-safari-in-makadi-bay-with-breakfast`, could not have been sold in any
+ * case: every one of its six booking options is published "Per Group" and its family option prices four of its
+ * six departures apart from the option, so the source reader refuses it twice over. The finding is kept here in
+ * case the domain is released later and the site is built then.
  *
  * PICTURES: NO NEW ONES WERE MADE. The image account is out of credit, so every site shows two photographs the
  * network already publishes, chosen in `SELECTION.md` and described here in the exact words the batch that first
  * published each one carries, so the network never describes one photograph two ways. Not one of them is a
  * photograph of the place the site is named for, and every site therefore carries a `photoShortfall` note
- * saying so in its own words. Each trip carries the photograph the client publishes on the record it sells,
- * where the batch that first sold that record has one; the Makadi Bay day has no earlier seller, so its trip
- * carries the quad photograph the site itself shows.
+ * saying so in its own words. Each trip carries the photograph the client publishes on the record
+ * it sells, in the words the batch that first sold that record carries for it.
  *
- * Three of `SELECTION.md`'s picture descriptions were written from an incomplete read and are corrected here
- * against `b03-rest.ts`'s own `ALT` strings, which are the words the network publishes: `twoBuggiesInDust`,
- * `buggyOnTheShore` and `riderOnACamel`. `twoBuggiesInDust` is not used at all: the Makadi Bay day sold here is
- * a quad ride, and a photograph of two buggies on a quad day would be a false record. The quad photograph
- * `quadOnTheDunes`, from the same already-uploaded group, stands in its place.
+ * One of `SELECTION.md`'s picture descriptions is corrected here against `b03-rest.ts`'s own `ALT` string,
+ * which is the wording the network publishes: `riderOnACamel` reads "A rider in a blue shirt and red headscarf
+ * sitting on a camel with a hand raised, red desert cliffs behind". The two desert-vehicle pictures it names,
+ * `twoBuggiesInDust` and `buggyOnTheShore`, belonged to the Makadi Bay site and are not used here.
  *
  * The logos are supplied at apply time: `--apply` refuses to run without `--logos=<file>` naming every site's
  * approved logo, logoDark and favicon.
@@ -85,58 +74,7 @@ import { PROGRAMMES as B03RP } from './b03-rest';
 import { PROGRAMMES_A as B09A, PROGRAMMES_B as B09B } from './b09';
 import { NEW_PROGRAMMES as B10P } from './b10';
 
-const EEO = 'egypt-excursions-online';
-const DESERT = 'adventure';
-
-/** The child terms every network trip writes for a record that publishes a child price of its own. */
-const CHILD_NOTE = 'Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking.';
-
-/**
- * The one programme this batch writes: the Makadi Bay quad safari the site sells in place of the per-group
- * sunrise buggy record the seed refuses (see this file's opening note). The record publishes a bare schedule of
- * three unnamed legs, so the day's own stages are written here from the option's published text and from the
- * record's own list of what is included, and nothing else.
- */
-export const PROGRAMMES = {
-  MKD_QUAD_SUNSET: {
-    provider: 'eeo',
-    tenant: EEO,
-    source: 'golden-sunset-quad-safari-in-makadi-bay',
-    category: DESERT,
-    options: ['quad-sunset-6faa56b781a9'],
-    addons: [],
-    departures: ['18:00'],
-    departureLabels: { '18:00': 'Late afternoon' },
-    rename: {
-      'quad-sunset-6faa56b781a9': {
-        name: 'The late ride',
-        description: 'A guided quad ride on the desert tracks behind the bay, with a camel ride, Bedouin tea and time at the shore.',
-      },
-    },
-    childNote: CHILD_NOTE,
-    omit: {
-      // The record's own line is mistyped ("All ocal taxes"), and its pickup line holds for one area only; both
-      // are written plainly below instead of being published as they stand.
-      inclusions: ['All ocal taxes, fees and handling charges'],
-      exclusions: ['Hotel pickup and drop-off (if outside Makadi Bay)'],
-    },
-    add: {
-      inclusions: ['Local taxes, fees and handling charges'],
-      exclusions: ['Pickup from a hotel outside Makadi Bay'],
-      needToKnow: ['The pickup is from a hotel in Makadi Bay; the team confirms the time when it confirms your booking.'],
-    },
-    itinerary: [
-      { time: '18:00', title: 'Hotel pickup', description: 'The car collects you from your hotel in Makadi Bay.' },
-      { title: 'The briefing', description: 'The guide hands out the helmets and takes the group through the route before the quads are started.' },
-      { title: 'The ride', duration: '2 hours', description: 'A guided ride on the desert tracks behind the bay, with stops along the way.' },
-      { title: 'The camel and the tea', description: 'A camel ride and Bedouin tea at the stop the day makes.' },
-      { title: 'The shore', description: 'Time at the beach the day visits before the ride back.' },
-      { title: 'Back to your hotel', description: 'The car returns you to your hotel in Makadi Bay.' },
-    ],
-  },
-} satisfies Record<string, PriceSpec>;
-
-/** Every programme this batch sells: nine imported from the batch that first sold the record, and one written above. */
+/** Every programme this batch sells; each is imported from the batch that first sold its record. */
 const P = {
   COLOURED_CANYON: B03RP.SSS_COLOURED_CANYON,
   SINAI_EVENING: B03RP.SSS_FIVE_IN_ONE,
@@ -146,12 +84,10 @@ const P = {
   GOUNA_TWO_TANK: B09A.D2E_GOUNA_TWO_TANK,
   TWO_DAY_CAIRO: B10P.TWO_DAY_PRIVATE,
   CUSTOM_CAIRO: B10P.CUSTOM_DAY,
-  MAKADI_QUAD: PROGRAMMES.MKD_QUAD_SUNSET,
-  SPEEDBOAT: B09A.HBT_SPEEDBOAT_SNORKEL,
 } satisfies Record<string, PriceSpec>;
 
 /**
- * The twenty photographs this batch shows, every one of them already published on the network, at the exact
+ * The photographs this batch shows, every one of them already published on the network, at the exact
  * address the batch that first published it carries. No upload is made for this batch.
  */
 const PHOTO = {
@@ -161,19 +97,14 @@ const PHOTO = {
   diverRedCoral: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788528182/tours/xpacckqybvfyq4vbnas1.jpg',
   diveBoatFromAbove: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788212485/tours/c3syeyx758xwhljxpfqk.jpg',
   whiteDiveYacht: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788292140/tours/od1x6rhlyxx6fz6atv12.jpg',
-  speedboatAtSpeed: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1787782177/tours/tpfuorpe6kgzzx78smwe.jpg',
-  snorkellerByReef: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1787781999/tours/n4iiykztyszzlhk5mavf.jpg',
   dolphinsAndSwimmer: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788795260/tours/fs65spccs0uncfww6z9k.jpg',
-  snorkellerThumbsUp: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1788290961/tours/pxb310hq6keozafoaqdx.jpg',
-  // b03-rest: the Sharm El Sheikh and Hurghada desert records.
+  // b03-rest: the Sharm El Sheikh day-trip and desert records.
   jeepBelowTheRocks: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1792936173/attractions-network/network-b03/sharm-tour-guide/xvskdnp6simwnlxvry6x.jpg',
   riderOnACamel: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1792936195/attractions-network/network-b03/safari-sharm-el-sheikh/qqo25k0p0m1qtvfzz3hd.jpg',
   whiteIslandFromTheAir: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1792936158/attractions-network/network-b03/sharm-tour-guide/mn1pbadyiqwld8zrsne6.jpg',
   snorkellerOverCoral: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1792936160/attractions-network/network-b03/sharm-tour-guide/jarhqtfzkmkjlqh8mdiz.jpg',
   camelInTheCanyon: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1792936174/attractions-network/network-b03/sharm-tour-guide/wpygg5o9iwxlr8lxp9q4.jpg',
   jeepOnStonyGround: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1792936198/attractions-network/network-b03/safari-sharm-el-sheikh/ihzuvhkpdyzmh1dguahw.jpg',
-  quadOnTheDunes: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1792936187/attractions-network/network-b03/quad-safari-hurghada/p8fqna6unqcyjvvl9s86.jpg',
-  buggyOnTheShore: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1792936184/attractions-network/network-b03/quad-safari-hurghada/unpa2hggou46q91yae5q.jpg',
   // b08 and b10: the Dahab canyon and the Cairo records.
   canyonWalls: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1793085619/attractions-network/network-b08/coral-reefs-dahab/lfsrxdbnyahmgcgfn9zl.jpg',
   threePyramids: 'https://res.cloudinary.com/dm3sxllch/image/upload/v1787780674/tours/cyqhwwakyack600gfghk.jpg',
@@ -197,18 +128,13 @@ const ALT: Record<keyof typeof PHOTO, string> = {
   diverRedCoral: 'A scuba diver beside a reef wall with long red whip coral in the foreground',
   diveBoatFromAbove: 'A small dive boat on turquoise water seen from above, with a diver and a coral head nearby',
   whiteDiveYacht: 'A large white diving yacht moored in clear shallow water',
-  speedboatAtSpeed: 'A white and blue speedboat at speed on calm blue sea, with spray at its stern',
-  snorkellerByReef: 'A snorkeller in a mask and wetsuit swimming beside a coral wall',
   dolphinsAndSwimmer: 'Three dolphins swimming above a coral reef, with a snorkeller in a yellow top swimming nearby',
-  snorkellerThumbsUp: 'A snorkeller in a mask giving a thumbs-up underwater in deep blue water',
   jeepBelowTheRocks: 'A white four-wheel-drive parked on open desert gravel in front of a low red rock outcrop under a pale sky',
   riderOnACamel: 'A rider in a blue shirt and red headscarf sitting on a camel with a hand raised, red desert cliffs behind',
   whiteIslandFromTheAir: 'A pale sandbar island seen from the air in turquoise water, with dark patches of coral scattered across the shallows',
   snorkellerOverCoral: 'A snorkeller in a mask and snorkel swimming just under the surface above a coral reef, with a green and pink parrotfish below',
   camelInTheCanyon: 'A rider on a camel in the narrow floor of a sandstone canyon, with smooth red and orange walls rising on both sides',
   jeepOnStonyGround: 'A white four-wheel-drive standing on stony desert ground with bare brown hills behind it',
-  quadOnTheDunes: 'A quad bike with a helmet strapped to it, parked on a dune with rolling red sand stretching away behind',
-  buggyOnTheShore: 'A buggy standing on a flat shore at sunset with its riders aboard, a headland and a small tower on the point behind',
   canyonWalls: 'Weathered red rock walls above a sandy canyon floor, with a green shrub in the shade and blue sky over the ridge',
   threePyramids: 'The three Giza pyramids under a blue sky with white cloud, the smaller queens’ pyramids and loose blocks in front and rippled sand in the foreground',
   museumHall: 'A long museum hall of arched stone galleries on two floors, with statues and display cases down the middle',
@@ -233,9 +159,6 @@ const SITE_PICTURES: Record<string, string[]> = {
   'marsa-abu-galawa': [PHOTO.diveBoatFromAbove, PHOTO.whiteDiveYacht],
   'skar-transport-cairo': [PHOTO.threePyramids, PHOTO.museumHall],
   'future-travel-egypt': [PHOTO.sphinxAndPyramid, PHOTO.plateauAtLowSun],
-  // The quad, not `SELECTION.md`'s two buggies: the day sold here is a quad ride (see this file's opening note).
-  'makadi-bay-safari-day': [PHOTO.quadOnTheDunes, PHOTO.buggyOnTheShore],
-  'hurghada-speedboat-day': [PHOTO.speedboatAtSpeed, PHOTO.snorkellerByReef],
 };
 
 /**
@@ -252,15 +175,11 @@ const SHORTFALL: Record<string, string> = {
   'marsa-abu-galawa': 'No photograph of this reef could be made for the site, so it shows two the client publishes of a two-dive day on this coast, and neither of them is a photograph of the reef.',
   'skar-transport-cairo': 'No photograph of this company could be made for the site, and none of its own is reused, so it shows two the client publishes of the day it sells: the pyramids of Giza and a museum hall.',
   'future-travel-egypt': 'No photograph of this company could be made for the site, and none of its own is reused, so it shows two the client publishes of the day it sells, the Sphinx and the Giza plateau.',
-  'makadi-bay-safari-day': 'No photograph of this company could be made for the site, and none of its own is reused, so it shows two the client publishes of the desert riding it sells, a quad and a buggy.',
-  'hurghada-speedboat-day': 'No photograph of this company could be made for the site, and none of its own is reused, so it shows two the client publishes of the day it sells, a speedboat under way and a snorkeller at a reef.',
 };
 
 const SHARM = { lat: 27.7369, lng: 34.3394 };
 const MARSA_ALAM = { lat: 25.0676, lng: 34.879 };
 const EL_GOUNA = { lat: 27.3942, lng: 33.6782 };
-const MAKADI = { lat: 26.9806, lng: 33.9056 };
-const HURGHADA = { lat: 27.2579, lng: 33.8116 };
 const CAIRO = { lat: 30.0444, lng: 31.2357 };
 
 /**
@@ -305,22 +224,11 @@ const NOT_GIZA_WIDE = /Hurghada|Dahab|Nabq|Tiran|Ras Mohamed|Ras Muhammad|Marsa 
  * neither that list nor the record names.
  */
 const NOT_FUTURE_TRAVEL = /Dahab|Nuweiba|Taba|Marsa Alam|Quseir|Ghalib|Safaga|Soma Bay|Makadi|Gouna|Sahl|Nabq|Tiran|Ras Mohamed|Ras Muhammad|Siwa|Fayoum|Dahshur/i;
-/**
- * Makadi Bay Safari's fence: the five places the business's own destination pages cover are the five it may
- * name, and the day it sells stays inside the first of them.
- */
-const NOT_MAKADI = /Cairo|Giza|pyramid|Luxor|Aswan|Sharm|Dahab|Nabq|Tiran|Ras Mohamed|Ras Muhammad|Marsa Alam|Quseir|Ghalib|Alexandria|Siwa|Bahariya|Fayoum|Sataya|Samadai|Giftun|Orange Bay|Dolphin House/i;
-/**
- * Hurghada Speedboat's fence: the Hurghada boat fence of batches B09 and B13 to B15, with the three places the
- * business's own pages name barred outright. The day's own programme names no island and no reef, so no page of
- * this site names one.
- */
-const NOT_HURGHADA_BOATS = /Cairo|Giza|Luxor|Aswan|Sharm|Dahab|Nabq|Tiran|Ras Mohamed|Ras Muhammad|Marsa Alam|Quseir|Ghalib|Safaga|Soma Bay|Gouna|Sahl|Makadi|Alexandria|Siwa|Bahariya|Fayoum|Sataya|Samadai|Giftun|Orange Bay|Dolphin House/i;
 
 /** The closing line every B11 to B15C site ends on, and every site here. */
 const CLOSING = 'Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.';
 
-/** B16: six places the client's days do not reach, and four businesses selling one of its days each. */
+/** B16: six places the client's days do not reach, and two businesses selling one of its days each. */
 export const B16: NetworkBatch = {
   id: 'b16',
   sites: [
@@ -681,96 +589,6 @@ export const B16: NetworkBatch = {
           },
           images: [PHOTO.sphinxAndPyramid],
           imageAlts: [ALT.sphinxAndPyramid],
-        },
-      ],
-    },
-    {
-      slug: 'makadi-bay-safari-day',
-      name: 'Makadi Bay Safari Day',
-      listingPath: '/trips',
-      domain: 'makadibaysafari.com',
-      city: 'Makadi Bay',
-      area: 'Makadi Bay',
-      pickupDestination: 'makadi-bay',
-      coordinates: MAKADI,
-      currency: 'USD',
-      slugPrefix: 'mbs-',
-      foreignPlaces: NOT_MAKADI,
-      tagline: 'A quad ride in the desert behind the bay',
-      description: `Makadi Bay Safari sells desert safaris from Makadi Bay by quad bike, dune buggy and jeep, in morning, sunset and private forms, and a combined safari among them; its own destination pages cover Makadi Bay, Hurghada, El Gouna, Sahl Hasheesh and Soma Bay. It states its own booking terms as well: a booking cancelled more than twenty-four hours ahead is refunded in whole, and payment is half by card with the balance in cash, or in whole by card. Each of those is the operator's own statement, and not one of them is confirmed by anybody else: no separate listing was found under the name. The link its own site offers for what its guests think of it points at a listing under a different brand, so nothing of that kind is attributed to it here. It publishes no prices at all, and the telephone number on its own site does not connect, so it is not reproduced here. It claims no licence, no tally of vehicles and no span of trading, because its own site states none. Prices here are the trip record's own, and a booking made through this site keeps that record's terms wherever the two part company.\n\nThe day sold here is a late-afternoon quad safari that starts and ends at a Makadi Bay hotel and rides the desert behind the bay; its programme names no other place, and nothing on this site promises a route it does not carry. One trip is sold here: three hours, with a guided ride on the desert tracks, a camel ride, Bedouin tea and time at the shore. ${CLOSING}`,
-      seo: {
-        metaTitle: 'Makadi Bay Safari: a Late Quad Ride Behind the Bay',
-        metaDescription: 'A three-hour quad safari from a Makadi Bay hotel: a guided ride on the desert tracks behind the bay, a camel ride, Bedouin tea and time at the shore.',
-        keywords: ['makadi bay safari quad ride', 'desert tracks behind makadi bay', 'quad safari with camel ride and bedouin tea', 'makadi bay hotel pickup desert safari', 'late afternoon quad safari red sea coast'],
-      },
-      theme: { primaryColor: '#27221B', secondaryColor: '#F7F4EF', accentColor: '#8A4312' },
-      heroImages: [...SITE_PICTURES['makadi-bay-safari-day']],
-      photoShortfall: SHORTFALL['makadi-bay-safari-day'],
-      logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/makadi-bay-safari-day/monogram.png',
-      trips: [
-        {
-          path: 'a-late-quad-ride-behind-makadi-bay',
-          price: P.MAKADI_QUAD,
-          title: 'A Late Quad Ride Behind Makadi Bay',
-          short: 'Three hours from your hotel: a guided quad ride on the desert tracks behind the bay, a camel ride, Bedouin tea and time at the shore before the ride back.',
-          description: 'The car collects you from your hotel in Makadi Bay in the late afternoon. The guide hands out the helmets and takes the group through the route before the quads are started, and the riding itself runs about two hours on the desert tracks behind the bay, with stops along the way. A camel ride and Bedouin tea come at the stop the day makes, and there is time at the beach before the ride back. What the programme names is the bay and that desert: it names no other place, and no page here promises a route it does not carry.\n\nA guide, the helmet and the local taxes and fees are inside the price. Drinks beyond the ones handed round, a scarf and glasses are not, and a pickup from a hotel outside the bay is not sold on this page. A child carries a price of its own, and the team confirms the pickup time when it confirms your booking.',
-          highlights: [
-            'A guided ride on the desert tracks',
-            'About two hours in the saddle',
-            'A turn on a camel, and tea',
-            'Time at the shore before the return',
-          ],
-          seo: {
-            metaTitle: 'A Late Quad Ride in the Desert Behind Makadi Bay',
-            metaDescription: 'Three hours from a Makadi Bay hotel: a guided quad ride on the desert tracks behind the bay, a camel ride, Bedouin tea and time at the shore.',
-          },
-          images: [PHOTO.quadOnTheDunes],
-          imageAlts: [ALT.quadOnTheDunes],
-        },
-      ],
-    },
-    {
-      slug: 'hurghada-speedboat-day',
-      name: 'Hurghada Speedboat Day',
-      listingPath: '/trips',
-      domain: 'hurghadaspeedboat.com',
-      city: 'Hurghada',
-      area: 'Hurghada',
-      pickupDestination: 'hurghada',
-      coordinates: HURGHADA,
-      currency: 'USD',
-      slugPrefix: 'hsd-',
-      foreignPlaces: NOT_HURGHADA_BOATS,
-      tagline: 'Four hours out of Hurghada, gear aboard',
-      description: `Hurghada Speedboat sells speedboat and Red Sea day trips out of Hurghada: island runs, a dolphin-swim trip, water sports, a private charter, a sunset cruise, a snorkelling safari and a glass-bottom boat trip. It states that snorkelling gear and life jackets are provided and that a booking can be cancelled at no charge up to twenty-four hours ahead, and its own site is published with alternates for English, Arabic, German, French, Spanish and Russian. All of it is the seller's own account, and it is uncorroborated: nothing published anywhere else answers to this name. Its own site gives two accounts of how long it has traded which cannot both hold, so no length of trading is written anywhere here. The figures its front page puts up for how well it is thought of carry no source and its own trip cards contradict them, so none of those figures appears. The telephone number it publishes is not a working number and is not repeated. It gives no licence and no address, so this site claims neither. Its own prices are left where they are: the price on these pages is the trip record's, and a booking here follows that record wherever its terms and the seller's differ.\n\nThe day sold here is a four-hour speedboat snorkelling trip with a car from your hotel; its programme names no island and no reef, so no page on this site names one either. One trip is sold here, at two starting times: four hours, with the gear, a guide, the nature reserve fees, fruit and drinks aboard. ${CLOSING}`,
-      seo: {
-        metaTitle: 'Hurghada Speedboat Day: Four Hours Snorkelling',
-        metaDescription: 'A four-hour speedboat snorkelling trip out of Hurghada with a car from your hotel: the gear, a guide, the reserve fees, fruit and drinks aboard.',
-        keywords: ['hurghada speedboat snorkelling trip', 'four hour speedboat trip with hotel car', 'speedboat day with gear and guide aboard', 'red sea snorkelling out of hurghada marina', 'nature reserve fees inside the price'],
-      },
-      theme: { primaryColor: '#1E231D', secondaryColor: '#F2F3F1', accentColor: '#4A5A14' },
-      heroImages: [...SITE_PICTURES['hurghada-speedboat-day']],
-      photoShortfall: SHORTFALL['hurghada-speedboat-day'],
-      logo: 'https://res.cloudinary.com/dm3sxllch/image/upload/attractions-network/tenant-logos/hurghada-speedboat-day/monogram.png',
-      trips: [
-        {
-          path: 'four-hours-by-speedboat-with-the-gear-aboard',
-          price: P.SPEEDBOAT,
-          title: 'Four Hours by Speedboat with the Gear Aboard',
-          short: 'Four hours out of the marina by speedboat: snorkelling with a guide, the gear and life jackets aboard, the reserve fees, fruit and drinks included.',
-          description: 'A car comes for you at your hotel and runs down to the marina, and the speedboat goes out with shade and music on board. The snorkelling is done with the guide, the gear and the life jackets are handed out aboard, and fruit and drinks go round between the stops. What the programme names is the town and the water off it: it names no island and no reef at all, so no page here names one either, and where the boat stops on the day is for the crew and the sea to decide.\n\nThere are two starting times, morning and early afternoon. The nature reserve fees are inside the price. A pickup from outside the town costs extra and cannot be booked on this page, so ask the team first if your hotel is further out. A child carries a price of its own.',
-          highlights: [
-            'Four hours out of the marina',
-            'A guide in the water with you',
-            'The gear and life jackets aboard',
-            'The nature reserve fees in the price',
-          ],
-          seo: {
-            metaTitle: 'Four Hours by Speedboat Out of Hurghada Marina',
-            metaDescription: 'A four-hour speedboat snorkelling trip from Hurghada with a car both ways: a guide, the gear and life jackets aboard, and the reserve fees paid.',
-          },
-          images: [PHOTO.snorkellerThumbsUp],
-          imageAlts: [ALT.snorkellerThumbsUp],
         },
       ],
     },

@@ -19,7 +19,7 @@ import { B13A, B13B } from '../scripts/network-sites/b13';
 import { B14A, B14B } from '../scripts/network-sites/b14';
 import { B15A, B15B } from '../scripts/network-sites/b15';
 import { B15C } from '../scripts/network-sites/b15c';
-import { B16, PROGRAMMES as B16P } from '../scripts/network-sites/b16';
+import { B16 } from '../scripts/network-sites/b16';
 import SNAPSHOT from '../scripts/network-sites/eeo-snapshot.json';
 import { isTenantBookingCreationClosed } from '../services/tenantBookingPolicy.service';
 
@@ -30,13 +30,21 @@ const SITES = B16.sites;
 const siteOf = (slug: string) => SITES.find((site) => site.slug === slug)!;
 
 /**
- * Batch B16 is the last ten sites of Fouad's domain list: the six places batch B15 held back in its group C,
- * and four businesses from the client's own list. Three of the six have no published position at all, and the
- * tests below hold every one of the ten to saying what its day actually names, to saying how far its place is
- * or that the distance cannot be given, and — for the four businesses — to claiming nothing about the business
- * that the business does not publish itself.
+ * Batch B16 is the last of Fouad's domain list: the six places batch B15 held back in its group C, and two
+ * businesses from the client's own list. The selection named ten; the coordinator dropped two of them on
+ * 3 November because their domains are already held, `hurghadaspeedboat.com` by batch B11's live
+ * `hurghada-speedboat` and `makadibaysafari.com` by the inactive `makadi-bay-safari`, and neither of those
+ * tenants is touched. Three of the six places have no published position at all, and the tests below hold
+ * every one of the eight to saying what its day actually names, to saying how far its place is or that the
+ * distance cannot be given, and — for the two businesses — to claiming nothing about the business that the
+ * business does not publish itself.
  */
-const B16_SITES = 10;
+const B16_SITES = 8;
+/** The two the selection named and the coordinator dropped, with the site that already holds each domain. */
+const DROPPED: Record<string, string> = {
+  'hurghadaspeedboat.com': 'hurghada-speedboat',
+  'makadibaysafari.com': 'makadi-bay-safari',
+};
 
 /** Each new site's storefront design, from the group concepts; the storefront picks it by slug. */
 const DESIGNS: Record<string, string> = {
@@ -48,8 +56,6 @@ const DESIGNS: Record<string, string> = {
   'marsa-abu-galawa': 'galawa',
   'skar-transport-cairo': 'skarcairo',
   'future-travel-egypt': 'futuretravel',
-  'makadi-bay-safari-day': 'makadibay',
-  'hurghada-speedboat-day': 'fasthull',
 };
 
 /** Every new site's domain, as Fouad's list gives it. */
@@ -62,18 +68,6 @@ const DOMAINS: Record<string, string> = {
   'marsa-abu-galawa': 'marsaabugalawahurghada.com',
   'skar-transport-cairo': 'skartransportcairo.com',
   'future-travel-egypt': 'futuretravelegypt.com',
-  'makadi-bay-safari-day': 'makadibaysafari.com',
-  'hurghada-speedboat-day': 'hurghadaspeedboat.com',
-};
-
-/**
- * The two slugs the selection named that the network already holds, and the slug each site carries instead.
- * `hurghada-speedboat` is a live tenant and `makadi-bay-safari` an inactive one awaiting its own
- * deduplication; neither is touched by this batch.
- */
-const RENAMED: Record<string, string> = {
-  'hurghada-speedboat': 'hurghada-speedboat-day',
-  'makadi-bay-safari': 'makadi-bay-safari-day',
 };
 
 /** The admin palette each site is created with, from the group concepts (primary / secondary / accent). */
@@ -86,8 +80,6 @@ const THEMES: Record<string, [string, string, string]> = {
   'marsa-abu-galawa': ['#17251C', '#F0F4F1', '#17584A'],
   'skar-transport-cairo': ['#23211C', '#F4F3F0', '#8A2F4C'],
   'future-travel-egypt': ['#1F1E2A', '#F3F2F6', '#3C3A8A'],
-  'makadi-bay-safari-day': ['#27221B', '#F7F4EF', '#8A4312'],
-  'hurghada-speedboat-day': ['#1E231D', '#F2F3F1', '#4A5A14'],
 };
 
 /**
@@ -129,14 +121,6 @@ const SITE_PICTURES: Record<string, string[]> = {
     'https://res.cloudinary.com/dm3sxllch/image/upload/v1788796912/tours/mhbnyzl0vhwyxopd4hzk.jpg',
     'https://res.cloudinary.com/dm3sxllch/image/upload/v1787781847/tours/ira2tyqp7tp0acwe6ztd.jpg',
   ],
-  'makadi-bay-safari-day': [
-    'https://res.cloudinary.com/dm3sxllch/image/upload/v1792936187/attractions-network/network-b03/quad-safari-hurghada/p8fqna6unqcyjvvl9s86.jpg',
-    'https://res.cloudinary.com/dm3sxllch/image/upload/v1792936184/attractions-network/network-b03/quad-safari-hurghada/unpa2hggou46q91yae5q.jpg',
-  ],
-  'hurghada-speedboat-day': [
-    'https://res.cloudinary.com/dm3sxllch/image/upload/v1787782177/tours/tpfuorpe6kgzzx78smwe.jpg',
-    'https://res.cloudinary.com/dm3sxllch/image/upload/v1787781999/tours/n4iiykztyszzlhk5mavf.jpg',
-  ],
 };
 
 /** The day the selection gives each site. */
@@ -149,15 +133,7 @@ const DAYS: Record<string, string[]> = {
   'marsa-abu-galawa': ['el-gouna-2-tank-guided-boat-dives-for-certified-divers'],
   'skar-transport-cairo': ['secrets-of-cairo-2-day-private-sightseeing-tour'],
   'future-travel-egypt': ['giza-pyramids-sphinx-custom-cairo-sightseeing-tour'],
-  // Not the selection's `sunrise-buggy-safari-in-makadi-bay-with-breakfast`: every one of that record's
-  // booking options is published per group, and its family option prices two of its departures apart from the
-  // option, so the seed refuses it. This is the nearest Makadi Bay desert day the client publishes per guest.
-  'makadi-bay-safari-day': ['golden-sunset-quad-safari-in-makadi-bay'],
-  'hurghada-speedboat-day': ['hurghada-speedboat-snorkeling-trip-with-hotel-pickup'],
 };
-
-/** The record the selection named for the Makadi Bay site, and which the seed cannot sell. */
-const REFUSED_RECORD = 'sunrise-buggy-safari-in-makadi-bay-with-breakfast';
 
 /**
  * How far each site's own place is from the point its day's programme names, as the selection measures it. A
@@ -173,8 +149,6 @@ const DISTANCE_KM: Record<string, number | null> = {
   'marsa-abu-galawa': null,
   'skar-transport-cairo': null,
   'future-travel-egypt': null,
-  'makadi-bay-safari-day': null,
-  'hurghada-speedboat-day': null,
 };
 
 /** The six places, and what each is called, so no page can be read as selling a stop there. */
@@ -199,8 +173,7 @@ const NOT_A_STOP: Record<string, string> = {
 
 /**
  * The "nearest days" sentence every site's description carries, word for word from the facts file's own
- * `nearest` field. The Makadi Bay site's is the one that is not verbatim: its record changed (see `DAYS`), so
- * the sentence says what the day it now sells actually is, in the facts file's own shape.
+ * `nearest` field.
  */
 const NEAREST: Record<string, string> = {
   'blue-lagoon-dahab': 'This jeep day stops at the Colored Canyon, in Dahab and at the Blue Hole; its programme does not name the Blue Lagoon, the shallow lagoon about eight kilometres further north up the coast, beyond Ras Abu Galum.',
@@ -211,12 +184,10 @@ const NEAREST: Record<string, string> = {
   'marsa-abu-galawa': 'This is a two-dive boat day out of El Gouna; its programme names neither of the sites it dives and does not name Marsa Abu Galawa, and because only one map record publishes a position for that reef, how far the boat passes from it cannot be said.',
   'skar-transport-cairo': 'The day sold here is a two-day private sightseeing tour of Cairo and Giza by car, which can be collected from and returned to Cairo International Airport; it is not an airport transfer, and no page on this site sells one.',
   'future-travel-egypt': 'The day sold here is a Cairo sightseeing day built to order around the Giza pyramids and the Sphinx; the multi-day packages the business advertises elsewhere are not sold on this site.',
-  'makadi-bay-safari-day': 'The day sold here is a late-afternoon quad safari that starts and ends at a Makadi Bay hotel and rides the desert behind the bay; its programme names no other place, and nothing on this site promises a route it does not carry.',
-  'hurghada-speedboat-day': 'The day sold here is a four-hour speedboat snorkelling trip with a car from your hotel; its programme names no island and no reef, so no page on this site names one either.',
 };
 
-/** The four sites that stand for a business the client's list carries, rather than for a place. */
-const BUSINESS_SITES = ['skar-transport-cairo', 'future-travel-egypt', 'makadi-bay-safari-day', 'hurghada-speedboat-day'];
+/** The two sites that stand for a business the client's list carries, rather than for a place. */
+const BUSINESS_SITES = ['skar-transport-cairo', 'future-travel-egypt'];
 /** The three places with no published position: no coordinate, no map, no pin, no bearing and no distance. */
 const NO_POSITION = ['ein-kid', 'seven-pools', 'marsa-abu-galawa'];
 
@@ -371,8 +342,7 @@ describe('batch B16: the last ten sites, six places and four of the client’s b
     expect(B16.id).toBe('b16');
     expect(SITES.map((site) => site.slug)).toEqual(Object.keys(DESIGNS));
     expect(SITES.map((site) => site.name)).toEqual(['Blue Lagoon Dahab', 'Ein Kid', 'Seven Pools', 'Wadi Zaghara',
-      'Gebel El Rosas Bay', 'Marsa Abu Galawa', 'SKAR Transport Cairo', 'Future Travel Egypt',
-      'Makadi Bay Safari Day', 'Hurghada Speedboat Day']);
+      'Gebel El Rosas Bay', 'Marsa Abu Galawa', 'SKAR Transport Cairo', 'Future Travel Egypt']);
     expect(SITES).toHaveLength(B16_SITES);
     for (const site of SITES) {
       expect(site.domain).toBe(DOMAINS[site.slug]);
@@ -393,21 +363,17 @@ describe('batch B16: the last ten sites, six places and four of the client’s b
     for (const site of SITES) {
       expect(slugsBefore.has(site.slug) || prefixesBefore.has(site.slugPrefix)).toBe(false);
     }
-    // One domain of the ten is already papered by an earlier batch, and it is named here rather than left to be
-    // found at apply time: batch B11 built `hurghada-speedboat` on `hurghadaspeedboat.com`, so this batch's
-    // tenth site cannot take that domain while that site holds it. The owner's decision, with the inactive
-    // tenant holding `makadibaysafari.com`, is recorded with the batch's dry run.
+    // No domain of the batch is one an earlier batch already papered. The two the selection named that are
+    // already held were dropped on 3 November, and one of their holders is a site of batch B11, so this also
+    // proves that neither is back in the batch by another name.
     const domainsBefore = new Map(EARLIER.map((site) => [site.domain, site.slug]));
-    expect(SITES.filter((site) => domainsBefore.has(site.domain)).map((site) => [site.slug, site.domain, domainsBefore.get(site.domain)]))
-      .toEqual([['hurghada-speedboat-day', 'hurghadaspeedboat.com', 'hurghada-speedboat']]);
-    expect(SITES.map((site) => site.slugPrefix)).toEqual(['bld-', 'ekd-', 'svp-', 'wzg-', 'grb-', 'mag-', 'skr-', 'fte-', 'mbs-', 'hsd-']);
-    // The two sites whose selection slug the network already holds carry a slug of their own instead, and the
-    // tenant that holds the original is not in this batch at all.
-    for (const [taken, used] of Object.entries(RENAMED)) {
-      expect(SITES.map((site) => site.slug)).toContain(used);
-      expect(SITES.map((site) => site.slug)).not.toContain(taken);
-      expect(SITES.map((site) => site.name)).not.toContain(taken.split('-').join(' '));
+    expect(SITES.filter((site) => domainsBefore.has(site.domain))).toEqual([]);
+    for (const [domain, holder] of Object.entries(DROPPED)) {
+      expect(SITES.map((site) => site.domain)).not.toContain(domain);
+      expect(isTenantBookingCreationClosed({ slug: holder })).toBe(true);
     }
+    expect(domainsBefore.get('hurghadaspeedboat.com')).toBe('hurghada-speedboat');
+    expect(SITES.map((site) => site.slugPrefix)).toEqual(['bld-', 'ekd-', 'svp-', 'wzg-', 'grb-', 'mag-', 'skr-', 'fte-']);
     // No site across every batch shares a title or a trip slug.
     const every = [...EARLIER, ...SITES];
     const titles = every.map((site) => site.seo.metaTitle.trim().toLowerCase());
@@ -433,10 +399,14 @@ describe('batch B16: the last ten sites, six places and four of the client’s b
       expect(site.photoShortfall).toMatch(/could be made/);
       expect(site.photoShortfall).toMatch(/neither (?:of them )?is a photograph of|[Nn]either is a photograph of|none of its own is reused/);
     }
-    // The buggy photograph the selection named for the Makadi Bay site is not used anywhere in the batch: the
-    // day sold there is a quad ride, and the quad photograph of the same already-uploaded group stands instead.
-    const twoBuggiesInDust = 'https://res.cloudinary.com/dm3sxllch/image/upload/v1792936182/attractions-network/network-b03/quad-safari-hurghada/p3ozvi49kz39eaxrkudb.jpg';
-    expect(SITES.flatMap((site) => [...site.heroImages, ...site.trips.flatMap((trip) => trip.images)])).not.toContain(twoBuggiesInDust);
+    // The two desert-vehicle photographs the selection chose belonged to the site that was dropped, so neither
+    // appears anywhere in the batch.
+    for (const url of [
+      'https://res.cloudinary.com/dm3sxllch/image/upload/v1792936182/attractions-network/network-b03/quad-safari-hurghada/p3ozvi49kz39eaxrkudb.jpg',
+      'https://res.cloudinary.com/dm3sxllch/image/upload/v1792936184/attractions-network/network-b03/quad-safari-hurghada/unpa2hggou46q91yae5q.jpg',
+    ]) {
+      expect(SITES.flatMap((site) => [...site.heroImages, ...site.trips.flatMap((trip) => trip.images)])).not.toContain(url);
+    }
     // Nothing is waiting to be filled in: the group is valid as it stands.
     expect(validateBatch(B16)).toEqual([]);
   });
@@ -453,18 +423,16 @@ describe('batch B16: the last ten sites, six places and four of the client’s b
       expect(trip.imageAlts).toHaveLength(1);
       expect(earlierAlts.get(trip.images[0])).toBe(trip.imageAlts[0]);
     }
-    // Nine of the ten trips carry the photograph the client publishes on the record they sell, as the batch
-    // that first sold that record carries it. The Makadi Bay day has no earlier seller, so its trip carries
-    // the quad photograph its own site shows.
+    // Every trip carries the photograph the client publishes on the record it sells, as the batch that first
+    // sold that record carries it.
     const ownRecordPhoto = SITES.filter((site) => {
       const sellers = EARLIER.filter((other) => other.trips.some((trip) => trip.price.source === site.trips[0].price.source));
       return sellers.some((other) => other.trips.some((trip) => trip.images.includes(site.trips[0].images[0])));
     });
-    expect(ownRecordPhoto.map((site) => site.slug)).toEqual(SITES.map((site) => site.slug).filter((slug) => slug !== 'makadi-bay-safari-day'));
-    expect(siteOf('makadi-bay-safari-day').trips[0].images).toEqual([siteOf('makadi-bay-safari-day').heroImages[0]]);
+    expect(ownRecordPhoto.map((site) => site.slug)).toEqual(SITES.map((site) => site.slug));
   });
 
-  it('sells each site exactly the day the selection gives it, and the Makadi record the seed refuses to none', () => {
+  it('sells each site exactly the day the selection gives it', () => {
     expect(Object.fromEntries(SITES.map((site) => [site.slug, site.trips.map((trip) => trip.price.source)]))).toEqual(DAYS);
     expect(SITES.reduce((total, site) => total + site.trips.length, 0)).toBe(B16_SITES);
     // Each of the ten sells a different day: inside this batch no record is shared.
@@ -479,20 +447,11 @@ describe('batch B16: the last ten sites, six places and four of the client’s b
       expect((found.options as Array<{ pricingKey: string }>).map((option) => option.pricingKey)).toEqual(record.optionKeys);
       expect((found.detail.itinerary as Array<{ title: string }> | null || []).map((step) => step.title)).toEqual(record.itinerary);
     }
-    // The selection's own Makadi Bay record is in the snapshot, and the seed refuses it: every one of its
-    // booking options is published per group, and its family option prices four of its six departures at twice
-    // the option's own price. Both are refusals the source reader makes before any write.
-    expect(Object.keys(RECORDS)).toContain(REFUSED_RECORD);
-    expect(days).not.toContain(REFUSED_RECORD);
-    expect(RECORDS[REFUSED_RECORD].optionTypes).toEqual(['Per Group']);
-    const refused = tour(REFUSED_RECORD)!;
-    expect(() => eeoSourceProgramme({ provider: 'eeo', tenant: 'egypt-excursions-online', source: REFUSED_RECORD, options: [String((refused.options as Array<{ pricingKey: string }>)[0].pricingKey)], addons: [], departures: [] }))
-      .toThrow(/not per person/);
-    // The day sold instead is a Makadi Bay desert day the client publishes per guest, and no network site sells it.
-    const makadi = tour(DAYS['makadi-bay-safari-day'][0])!;
-    expect((makadi.options as Array<{ type: string }>).map((option) => option.type)).toEqual(['Per Person']);
-    expect(String(makadi.detail.title)).toMatch(/Makadi Bay/);
-    expect(EARLIER.filter((site) => site.trips.some((trip) => trip.price.source === DAYS['makadi-bay-safari-day'][0]))).toEqual([]);
+    // Every record the batch sells is published per guest, which is what the source reader will sell: the one
+    // record of the selection's that is not, the Makadi Bay sunrise buggy day, left the batch with its site.
+    for (const slug of Object.keys(RECORDS)) {
+      expect(RECORDS[slug].optionTypes).toEqual(['Per Person']);
+    }
     // Gebel El Rosas shares the Shaab Samadai record with three sites built before it, which is allowed across
     // batches, and this site is much the nearer of the sellers that have a place of their own to disclaim.
     const alsoSellSamadai = EARLIER.filter((site) => site.trips.some((trip) => trip.price.source === DAYS['gebel-el-rosas-bay'][0]));
@@ -582,17 +541,12 @@ describe('batch B16: the last ten sites, six places and four of the client’s b
       // Nothing in the site's own words is a process note about how it was built.
       expect(words).not.toMatch(/\bpreview\b|\bplaceholder\b|\bstaging\b/i);
     }
-    // The two whose live sites publish a number that does not work say so without repeating it.
-    for (const slug of ['makadi-bay-safari-day', 'hurghada-speedboat-day']) {
-      expect(siteOf(slug).description).toMatch(/not a working number|does not connect/);
-    }
     // The agency's other trading name and its own prices are nowhere on its site.
     const future = wordsOf('future-travel-egypt');
     expect(future).toMatch(/trades under a different name from this domain/);
     expect(future).toMatch(/one identical price on four different packages/);
-    // And the speedboat site writes no length of trading at all, because its own two accounts cannot both hold.
-    expect(siteOf('hurghada-speedboat-day').description).toMatch(/two accounts of how long it has traded which cannot both hold/);
-    expect(siteOf('hurghada-speedboat-day').description).toMatch(/no length of trading is written anywhere here/);
+    // And the transport site claims none of the things its own site does not publish.
+    expect(siteOf('skar-transport-cairo').description).toMatch(/are claimed nowhere on these pages/);
   });
 
   it('writes none of the facts the sources contradict each other on', () => {
@@ -690,7 +644,7 @@ describe('batch B16: the last ten sites, six places and four of the client’s b
     expect(count).toBe(B16_SITES);
   });
 
-  it('imports nine programmes from the batch that first sold the record, and writes one', () => {
+  it('imports every programme from the batch that first sold its record, and writes none', () => {
     const imported: Array<[string, unknown]> = [
       ['ten-hours-to-the-coloured-canyon-and-the-dahab-shore', B03RP.SSS_COLOURED_CANYON],
       ['an-evening-on-a-quad-in-the-sinai-desert', B03RP.SSS_FIVE_IN_ONE],
@@ -700,7 +654,6 @@ describe('batch B16: the last ten sites, six places and four of the client’s b
       ['two-guided-boat-dives-out-of-el-gouna', B09AP.D2E_GOUNA_TWO_TANK],
       ['two-private-days-in-cairo-and-giza-by-car', B10P.TWO_DAY_PRIVATE],
       ['a-cairo-day-around-the-pyramids-and-the-sphinx', B10P.CUSTOM_DAY],
-      ['four-hours-by-speedboat-with-the-gear-aboard', B09AP.HBT_SPEEDBOAT_SNORKEL],
     ];
     for (const [tripPath, programme] of imported) {
       const trips = SITES.flatMap((site) => site.trips).filter((trip) => trip.path === tripPath);
@@ -708,16 +661,11 @@ describe('batch B16: the last ten sites, six places and four of the client’s b
       // The same object, so the network says the same thing about the same trip wherever it is sold.
       for (const item of trips) expect(item.price).toBe(programme);
     }
-    expect(imported).toHaveLength(B16_SITES - 1);
-    // The one programme this batch writes is the Makadi Bay day no network site sells.
-    const makadi = SITES.flatMap((site) => site.trips).filter((trip) => trip.price === B16P.MKD_QUAD_SUNSET);
-    expect(makadi.map((trip) => trip.path)).toEqual(['a-late-quad-ride-behind-makadi-bay']);
-    expect(B16P.MKD_QUAD_SUNSET.source).toBe(DAYS['makadi-bay-safari-day'][0]);
-    expect((B16P.MKD_QUAD_SUNSET as { duration?: string }).duration).toBeUndefined();
-    // Every other record this batch sells is one an earlier batch already sells, so only that one is written.
+    expect(imported).toHaveLength(B16_SITES);
+    // Every record this batch sells is one an earlier batch already sells, so the batch writes no programme of
+    // its own at all. Every earlier batch is searched, so a programme written here would fail this.
     const earlier = new Set(EARLIER.flatMap((site) => site.trips.map((trip) => trip.price.source)));
-    expect(SITES.flatMap((site) => site.trips).filter((trip) => !earlier.has(trip.price.source)).map((trip) => trip.price.source))
-      .toEqual([DAYS['makadi-bay-safari-day'][0]]);
+    expect(SITES.flatMap((site) => site.trips).filter((trip) => !earlier.has(trip.price.source))).toEqual([]);
     expect(new Set(SITES.flatMap((site) => site.trips).map((trip) => trip.price)).size).toBe(B16_SITES);
   });
 
@@ -731,8 +679,6 @@ describe('batch B16: the last ten sites, six places and four of the client’s b
       'marsa-abu-galawa': ['El Gouna', 'el-gouna', 'El Gouna'],
       'skar-transport-cairo': ['Cairo', 'cairo', 'Cairo or Giza'],
       'future-travel-egypt': ['Cairo', 'cairo', 'Cairo or Giza'],
-      'makadi-bay-safari-day': ['Makadi Bay', 'makadi-bay', 'Makadi Bay'],
-      'hurghada-speedboat-day': ['Hurghada', 'hurghada', 'Hurghada'],
     };
     for (const site of SITES) {
       expect([site.city, site.pickupDestination, site.area]).toEqual(where[site.slug]);
@@ -753,28 +699,24 @@ describe('batch B16: the last ten sites, six places and four of the client’s b
     const galawa = siteOf('marsa-abu-galawa');
     expect([galawa.foreignPlaces.test('El Gouna'), galawa.foreignPlaces.test('Hurghada'), galawa.foreignPlaces.test('Hamata')]).toEqual([false, false, false]);
     expect([galawa.foreignPlaces.test('Marsa Alam'), galawa.foreignPlaces.test('Sharm El Sheikh')]).toEqual([true, true]);
-    // The Makadi Bay site may name the five places the business's own pages cover, and no island or reef.
-    const makadi = siteOf('makadi-bay-safari-day');
-    for (const place of ['Makadi Bay', 'Hurghada', 'El Gouna', 'Sahl Hasheesh', 'Soma Bay']) {
-      expect(makadi.foreignPlaces.test(place)).toBe(false);
+    // The two Cairo sites keep the fence batch B10 gave its own Giza and Cairo sites, which lets the plateau,
+    // Sakkara and Memphis through; the agency's own fence lets its ten published destinations through as well.
+    for (const place of ['Giza', 'Saqqara', 'Memphis']) {
+      expect(siteOf('skar-transport-cairo').foreignPlaces.test(place)).toBe(false);
     }
-    for (const place of ['Giftun', 'Orange Bay', 'Dolphin House', 'Sharm El Sheikh']) {
-      expect(makadi.foreignPlaces.test(place)).toBe(true);
+    for (const place of ['Luxor', 'Aswan', 'Alexandria', 'Hurghada', 'Bahariya']) {
+      expect(siteOf('skar-transport-cairo').foreignPlaces.test(place)).toBe(true);
+      expect(siteOf('future-travel-egypt').foreignPlaces.test(place)).toBe(false);
     }
-    // The speedboat site names none of the three places its live original advertises, because its day's own
-    // programme names no stop at all.
-    const speedboat = siteOf('hurghada-speedboat-day');
-    for (const place of ['Giftun', 'Orange Bay', 'Dolphin House']) {
-      expect(speedboat.foreignPlaces.test(place)).toBe(true);
-    }
-    expect(speedboat.foreignPlaces.test('Hurghada')).toBe(false);
   });
 
   it('takes no booking on a new site until its domain is connected and the owner opens it', () => {
     for (const site of SITES) expect(isTenantBookingCreationClosed({ slug: site.slug })).toBe(true);
-    // The two tenants whose slugs this batch had to step around stay closed as they already were, and neither
-    // is a site of this batch.
-    for (const taken of Object.keys(RENAMED)) expect(isTenantBookingCreationClosed({ slug: taken })).toBe(true);
+    // The slugs the two dropped sites would have carried are closed to nothing, because no such site exists.
+    for (const slug of ['makadi-bay-safari-day', 'hurghada-speedboat-day']) {
+      expect(isTenantBookingCreationClosed({ slug })).toBe(false);
+      expect(SITES.map((site) => site.slug)).not.toContain(slug);
+    }
     for (const site of SITES) {
       const record = tenantRecord(site);
       expect(record.customDomain).toBeUndefined();
@@ -856,7 +798,7 @@ describe('batch B16: the last ten sites, six places and four of the client’s b
     expect(LIVE.titles.length).toBeGreaterThan(600);
     expect(LIVE.tenants).toHaveLength(121);
     expect(CORPUS.length).toBeGreaterThan(3000);
-    expect(mine.length).toBeGreaterThan(90);
+    expect(mine.length).toBeGreaterThan(70);
   });
 
   it('counts the trips its copy names', () => {
