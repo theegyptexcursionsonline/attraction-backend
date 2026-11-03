@@ -119,9 +119,13 @@ export const errorHandler = (
 
   // App errors
   if (err instanceof AppError) {
+    // A fixed machine code (e.g. TENANT_BOOKING_CREATION_CLOSED) lets the storefront tell a deliberate state
+    // from an outage; only string constants declared on the error class are sent.
+    const code = (err as { code?: unknown }).code;
     res.status(err.statusCode).json({
       success: false,
       error: err.message,
+      ...(typeof code === 'string' ? { code } : {}),
     });
     return;
   }
