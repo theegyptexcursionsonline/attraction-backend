@@ -1,0 +1,376 @@
+{
+  "version": 1,
+  "batch": "b14a",
+  "locale": "ar",
+  "tenant": {
+    "id": "6ae8236a4960cd119df0c05d",
+    "slug": "fanous-east",
+    "domain": "fanous-east.foxesnetwork.com"
+  },
+  "presentationSha256": "2cc1cb0aad920b0066653ff4a8b555dcb37cac073280e1ceb90ef865aa084bb3",
+  "presentation": [
+    {
+      "kind": "tenant",
+      "sourceId": "6ae8236a4960cd119df0c05d",
+      "sourceDigest": "6f8dd48e5fd3ac0a73578a109b9abdb05ec4ffcb7a0e93abce53366002feee87",
+      "english": {
+        "tagline": "The Orange Island cruise from Hurghada",
+        "description": "Fanous East is the eastern and busier half of El Fanous, a reef about three hundred metres long that runs east to west off the Hurghada coast; a natural break in it is what divides the two halves. Fanous means lamp, lantern or beacon in local speech, and the reef takes its name from the beacon standing on top of it. On this side a shallow wall rises from a sloping sandy bottom littered with coral blocks and fine pinnacles, and it is at its finest where it is shallowest; two striking ergs stand about twenty metres off the main reef, split by cavities and cracks and densely carpeted with soft and hard corals, a set-up the guides single out for photographers. The whole reef is known for drawing dolphins and is recorded under the names Dolphin Reef and Dolphin Playground as well, and on this side jackfish and lionfish hunt clouds of glassfish and silversides around the pinnacles, among surgeonfish, tangs and unicornfish.\n\nThis day cruises out to Orange Island on the larger Giftun; its programme does not name Fanous East, the beacon reef that lies about six kilometres north-west of the island's far end. One trip is sold here: the premium cruise, with two snorkelling stops, the island entry and a buffet lunch. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+        "seoSettings": {
+          "metaTitle": "Fanous East: the Orange Island Premium Cruise",
+          "metaDescription": "A premium cruise out of Hurghada to Orange Island: two snorkelling stops with the gear, two hours ashore with the entry covered and a buffet lunch aboard.",
+          "keywords": [
+            "fanous east beacon reef",
+            "orange island premium cruise",
+            "hurghada reef snorkelling cruise",
+            "orange island entry included",
+            "hurghada island day by coach"
+          ]
+        },
+        "pageSeo": [],
+        "navigation": [
+          {
+            "label": "Home",
+            "columns": []
+          },
+          {
+            "label": "Trips",
+            "columns": []
+          },
+          {
+            "label": "About",
+            "columns": []
+          },
+          {
+            "label": "FAQ",
+            "columns": []
+          },
+          {
+            "label": "Contact",
+            "columns": []
+          }
+        ]
+      },
+      "arabic": {
+        "tagline": "رحلة جزيرة أورانج البحرية من الغردقة",
+        "description": "فانوس الشرقية هي النصف الشرقي والأكثر ازدحاماً من الفانوس، شعب يبلغ طوله نحو ثلاثمئة متر ويمتد من الشرق إلى الغرب قبالة ساحل الغردقة؛ وفجوة طبيعية فيه هي ما يقسمه إلى نصفين. وتعني كلمة فانوس في الكلام المحلي المصباح أو القنديل أو المنارة، وقد أخذ الشعب اسمه من المنارة القائمة فوقه. وعلى هذا الجانب يرتفع جدار ضحل من قاع رملي مائل تتناثر فيه كتل مرجانية وقمم مرجانية دقيقة، وهو في أجمل حالاته حيث يكون أقل عمقاً؛ ويقف عرقان لافتان على بعد نحو عشرين متراً من الشعب الرئيسي، تشقّهما تجاويف وشقوق ويكسوهما المرجان الرخو والصلب بكثافة، وهو مشهد يخصّه الأدلة بالذكر للمصوّرين. ويُعرف الشعب كله باجتذاب الدلافين، ويُسجَّل أيضاً باسمي شعب الدلافين وملعب الدلافين، وعلى هذا الجانب تصطاد أسماك الجاك وأسماك الأسد سحباً من أسماك الزجاج وأسماك الفضة حول القمم المرجانية، بين أسماك الجراح والتانغ وأسماك وحيد القرن. يُبحر هذا اليوم إلى جزيرة أورانج في جفتون الكبيرة، ولا يذكر برنامجه فانوس الشرقية، شعب المنارة الذي يقع على بعد نحو ستة كيلومترات شمال غرب الطرف البعيد للجزيرة. وتُعرض هنا رحلة واحدة: الرحلة البحرية المميزة، مع وقفتين للسنوركلينغ ودخول الجزيرة وغداء بوفيه. وتبدأ كل رحلة بالاصطحاب من فندقك وتنتهي بالعودة إليه، وتوضح كل صفحة ما يشمله سعرها. يمكنك حجز مكانك عبر الإنترنت والدفع لاحقاً، أو سؤال الفريق أولاً عن موعد الاصطحاب.",
+        "seoSettings": {
+          "metaTitle": "فانوس الشرقية: رحلة جزيرة أورانج البحرية المميزة",
+          "metaDescription": "رحلة بحرية مميزة من الغردقة إلى جزيرة أورانج: وقفتان للسنوركلينغ مع العدة، وساعتان على البر مع رسوم الدخول، وغداء بوفيه على المتن.",
+          "keywords": [
+            "فانوس الشرقية شعب المنارة",
+            "رحلة جزيرة أورانج البحرية المميزة",
+            "رحلة بحرية للسنوركلينغ في شعاب الغردقة",
+            "دخول جزيرة أورانج مشمول",
+            "يوم جزيرة من الغردقة بالحافلة"
+          ]
+        },
+        "pageSeo": [],
+        "navigation": [
+          {
+            "label": "الرئيسية",
+            "columns": []
+          },
+          {
+            "label": "الرحلات",
+            "columns": []
+          },
+          {
+            "label": "من نحن",
+            "columns": []
+          },
+          {
+            "label": "الأسئلة الشائعة",
+            "columns": []
+          },
+          {
+            "label": "اتصل بنا",
+            "columns": []
+          }
+        ]
+      }
+    }
+  ],
+  "tours": [
+    {
+      "id": "6ae8236a9f07414c57e60aab",
+      "sourceSlug": "fne-orange-island-premium-cruise",
+      "slug": "fne-orange-island-premium-cruise-ar",
+      "sourceUpdatedAt": "2026-11-02T05:45:14.331Z",
+      "sourceDigest": "393e7d9de95759c8803e9437d938eb6cbee20f75f4ed7071f9fd5f3f38382208",
+      "english": {
+        "title": "Out to Orange Island, Two Stops in the Water",
+        "shortDescription": "Eight in the morning for the island: two snorkelling stops with the gear, two hours ashore with the entry covered and a buffet lunch on board.",
+        "description": "The coach is round by eight and the boat is away for its first snorkelling stop. Two hours are spent on the island with the guide and the entry covered, and the buffet lunch and the second stop fall on the way back: chips, spaghetti, rice, roast potatoes, chicken nuggets and kofta. The programme names Hurghada and Orange Island, not Fanous East, the reef about six kilometres north-west of the island’s far end; nothing calls there.\n\nThe snorkelling gear and the drinks on board are in the price. Children have their own price, and a coach takes you from your Hurghada hotel in the morning and returns you there once the day is done.",
+        "duration": "8 hours",
+        "cancellationPolicy": "",
+        "highlights": [
+          "Two hours ashore on the island",
+          "The island entry counted in",
+          "A snorkelling stop either side of lunch",
+          "Chips, spaghetti, rice and kofta"
+        ],
+        "inclusions": [
+          "Hotel pickup and drop-off",
+          "Professional guide and snorkeling instructor",
+          "Snorkeling equipment",
+          "2 Snorkeling Stops",
+          "Life vests",
+          "Entry fees to Orange Island",
+          "Unlimited Juice , Cola & Mineral Water",
+          "Unlimited Tea and coffee",
+          "4 kind of Salads",
+          "Seasonal Fruits",
+          "2 Toilets & 4 Showers",
+          "National Park Fees",
+          "A buffet lunch of chips, spaghetti, rice, roast potatoes, chicken nuggets and kofta"
+        ],
+        "exclusions": [
+          "Drinks on island",
+          "Videos and photos (available for purchase)"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [
+          "Beachwear",
+          "Sunglasses",
+          "Sun hat",
+          "Sunscreen",
+          "Swimwear",
+          "Towel"
+        ],
+        "needToKnow": [
+          "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "premium-hurghada-orange-island-cruise-with-lu-39540c37238c",
+            "name": "Orange Bay cruise with lunch",
+            "description": "Two snorkelling stops with the gear, the entry to Orange Bay, a buffet lunch and drinks on board.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "08:00"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "Hotel pickup",
+            "description": "The car collects you from your hotel in Hurghada.",
+            "duration": "30 minutes"
+          },
+          {
+            "index": 1,
+            "title": "Out to sea",
+            "description": "The boat sails out for the first snorkelling stop.",
+            "duration": ""
+          },
+          {
+            "index": 2,
+            "title": "Orange Bay",
+            "description": "Time on the island with the guide, the entry covered.",
+            "duration": "2 hours"
+          },
+          {
+            "index": 3,
+            "title": "Lunch and the second stop",
+            "description": "The buffet lunch on board and a second snorkelling stop.",
+            "duration": ""
+          },
+          {
+            "index": 4,
+            "title": "Back to your hotel",
+            "description": "The boat returns and the coach takes you back to your hotel.",
+            "duration": "30 minutes"
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "Hotel pickup",
+            "description": "Pickup and drop-off at your hotel in Hurghada."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "The team confirms your pickup time when it confirms your booking."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788794476/tours/smf4lqwlugbxjepjbagn.jpg",
+            "alt": "A white day boat at anchor in clear water near a low desert shore"
+          }
+        ],
+        "seo": {
+          "metaTitle": "Out to Orange Island, Two Stops in the Water",
+          "metaDescription": "A cruise from Hurghada at eight: two snorkelling stops with the gear, two hours on Orange Island with the entry covered and a buffet lunch on board.",
+          "keywords": []
+        }
+      },
+      "arabic": {
+        "title": "إلى جزيرة أورانج، ووقفتان في الماء",
+        "shortDescription": "الثامنة صباحاً إلى الجزيرة: وقفتان للسنوركلينغ مع العدة، وساعتان على البر مع رسوم الدخول، وغداء بوفيه على متن المركب.",
+        "description": "تمر الحافلة بحلول الثامنة، ويبحر المركب إلى وقفته الأولى للسنوركلينغ. وتُقضى ساعتان على الجزيرة مع المرشد ورسوم الدخول، ويأتي غداء البوفيه والوقفة الثانية في طريق العودة: البطاطس المقلية والسباغيتي والأرز والبطاطس المشوية وقطع الدجاج والكفتة. ويسمي البرنامج الغردقة وجزيرة أورانج، لا فانوس الشرقية، الشعب الواقع على بعد نحو ستة كيلومترات شمال غرب الطرف البعيد للجزيرة؛ ولا تتوقف هناك أي رحلة.\n\nوعدة السنوركلينغ والمشروبات على متن المركب في السعر. وللأطفال سعرهم الخاص، وتأخذك حافلة من فندقك في الغردقة صباحاً وتعيدك إليه حين ينتهي اليوم.",
+        "duration": "8 ساعات",
+        "cancellationPolicy": "",
+        "highlights": [
+          "ساعتان على البر في الجزيرة",
+          "دخول الجزيرة محسوب",
+          "وقفة سنوركلينغ قبل الغداء وأخرى بعده",
+          "البطاطس المقلية والسباغيتي والأرز والكفتة"
+        ],
+        "inclusions": [
+          "النقل من الفندق وإليه",
+          "مرشد محترف ومدرب سنوركلينغ",
+          "معدات السنوركلينغ",
+          "2 توقف للسنوركلينغ",
+          "سترات نجاة",
+          "رسوم دخول جزيرة أورانج",
+          "عصير وكولا ومياه معدنية بلا حدود",
+          "شاي وقهوة بلا حدود",
+          "4 أنواع من السلطات",
+          "فاكهة موسمية",
+          "2 حمّام و4 دشات",
+          "رسوم المحمية الوطنية",
+          "غداء بوفيه من البطاطس المقلية والسباغيتي والأرز والبطاطس المشوية وقطع الدجاج والكفتة"
+        ],
+        "exclusions": [
+          "المشروبات في الجزيرة",
+          "مقاطع الفيديو والصور (متاحة للشراء)"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [
+          "ملابس الشاطئ",
+          "نظارات شمسية",
+          "قبعة شمسية",
+          "واقي شمس",
+          "ملابس سباحة",
+          "منشفة"
+        ],
+        "needToKnow": [
+          "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "premium-hurghada-orange-island-cruise-with-lu-39540c37238c",
+            "name": "رحلة بحرية إلى أورانج باي مع غداء",
+            "description": "وقفتان للسنوركلينغ مع العدة، ودخول أورانج باي، وغداء بوفيه، ومشروبات على متن المركب.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "الساعة 08:00"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "الاصطحاب من الفندق",
+            "description": "تصطحبك السيارة من فندقك في الغردقة.",
+            "duration": "30 دقيقة"
+          },
+          {
+            "index": 1,
+            "title": "الانطلاق إلى البحر",
+            "description": "يبحر المركب إلى أول وقفة سنوركلينغ.",
+            "duration": ""
+          },
+          {
+            "index": 2,
+            "title": "أورانج باي",
+            "description": "وقت في الجزيرة بصحبة المرشد، والدخول مغطى.",
+            "duration": "2 ساعات"
+          },
+          {
+            "index": 3,
+            "title": "الغداء والوقفة الثانية",
+            "description": "غداء البوفيه على متن المركب ووقفة سنوركلينغ ثانية.",
+            "duration": ""
+          },
+          {
+            "index": 4,
+            "title": "العودة إلى فندقك",
+            "description": "يعود المركب وتعيدك الحافلة إلى فندقك.",
+            "duration": "30 دقيقة"
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "الاصطحاب من الفندق",
+            "description": "الاصطحاب من فندقك في الغردقة والعودة إليه."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788794476/tours/smf4lqwlugbxjepjbagn.jpg",
+            "alt": "قارب نهاري أبيض راسٍ في ماء صافٍ قرب شاطئ صحراوي منخفض"
+          }
+        ],
+        "seo": {
+          "metaTitle": "إلى جزيرة أورانج، ووقفتان في الماء",
+          "metaDescription": "رحلة بحرية من الغردقة في الثامنة: وقفتان للسنوركلينغ مع العدة، وساعتان في جزيرة أورانج مع رسوم الدخول، وغداء بوفيه على متن المركب.",
+          "keywords": []
+        }
+      }
+    }
+  ],
+  "destinations": [
+    {
+      "id": "699895e47169d9820932b9a3",
+      "sourceSlug": "hurghada",
+      "slug": "hurghada-ar",
+      "sourceUpdatedAt": "2026-04-05T23:15:20.775Z",
+      "sourceDigest": "111acca5fa242e38932f013e0fbb66e4bafd26bd529ebf11740d6c5d2779a75c",
+      "english": {
+        "name": "Hurghada",
+        "country": "Egypt",
+        "description": "Hurghada is a premier Red Sea resort destination known for its pristine beaches, world-class diving, and water sports.",
+        "shortDescription": "Red Sea paradise for diving and water sports",
+        "highlights": [
+          "Coral Reefs",
+          "Snorkeling",
+          "Desert Safaris",
+          "Nightlife"
+        ],
+        "bestTimeToVisit": "October to April",
+        "tags": [
+          "beach",
+          "water-sports",
+          "diving",
+          "resort"
+        ]
+      },
+      "arabic": {
+        "name": "الغردقة",
+        "country": "مصر",
+        "description": "الغردقة وجهة رائدة للمنتجعات على البحر الأحمر، تشتهر بشواطئها النقية والغوص ذي المستوى العالمي والرياضات المائية.",
+        "shortDescription": "جنة على البحر الأحمر للغوص والرياضات المائية",
+        "highlights": [
+          "الشعاب المرجانية",
+          "السنوركلينغ",
+          "رحلات سفاري الصحراء",
+          "الحياة الليلية"
+        ],
+        "bestTimeToVisit": "من أكتوبر إلى أبريل",
+        "tags": [
+          "شاطئ",
+          "رياضات مائية",
+          "غوص",
+          "منتجع"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,609 @@
+{
+  "version": 1,
+  "batch": "b14a",
+  "locale": "ar",
+  "tenant": {
+    "id": "6ae8236a4960cd119df0c05e",
+    "slug": "north-abu-ramada",
+    "domain": "north-abu-ramada.foxesnetwork.com"
+  },
+  "presentationSha256": "dfcf5561acaf93d0b04d4220fb564752ab7034f2b91a1147c5091eb8f5141c8e",
+  "presentation": [
+    {
+      "kind": "tenant",
+      "sourceId": "6ae8236a4960cd119df0c05e",
+      "sourceDigest": "1e317fe1335cce4a73637793fd0634bf4cfd42a3ed4c846f2f8ac280f4e355e1",
+      "english": {
+        "tagline": "Two Orange Bay days out of Hurghada",
+        "description": "North Abu Ramada is the northern site on the Sha’ab Abu Ramada reef, which rings the small island of Abu Ramada south of Small Giftun; the island is recorded in the gazetteer as Jazirat Abu Rimathi. The site is a plateau that runs out from the island’s north and tips over into a vertical wall, a coral top above a face of coral and gorgonians. The mooring sits inside a small bend in that wall, and beneath the lip, where the plateau gives way, there is a chimney. The reef’s open northern end is exposed to weather and to strong current, which is what feeds it, and it is at its liveliest as a drift when the flow comes from the north. Schools of giant barracuda, bigeye trevally and yellowfin tuna work the fusiliers sweeping across the plateau, turtles feed on the soft corals, squadrons of up to twelve eagle rays have been seen flying past in formation, and lionfish and groupers stake out glassfish in the cavities.\n\nThese days sail to Orange Bay on the larger Giftun; their programmes do not name North Abu Ramada, the plateau off the north tip of Abu Ramada island, about three kilometres south-east of that island’s southern end. Two trips are sold here: a day that snorkels and dives, and a yacht that comes at two lengths. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+        "seoSettings": {
+          "metaTitle": "North Abu Ramada: Two Orange Bay Days",
+          "metaDescription": "Two days on the water from Hurghada, both ashore at Orange Bay on the larger Giftun: one that dives as well as snorkels, and one yacht at two lengths.",
+          "keywords": [
+            "north abu ramada plateau",
+            "orange bay snorkel and dive day",
+            "abu ramada island reef",
+            "orange bay yacht five or eight hours",
+            "hurghada orange bay with a hotel car"
+          ]
+        },
+        "pageSeo": [],
+        "navigation": [
+          {
+            "label": "Home",
+            "columns": []
+          },
+          {
+            "label": "Trips",
+            "columns": []
+          },
+          {
+            "label": "About",
+            "columns": []
+          },
+          {
+            "label": "FAQ",
+            "columns": []
+          },
+          {
+            "label": "Contact",
+            "columns": []
+          }
+        ]
+      },
+      "arabic": {
+        "tagline": "يومان في أورانج باي من الغردقة",
+        "description": "شمال أبو رمادة هو الموقع الشمالي على شعب أبو رمادة، الذي يحيط بجزيرة أبو رمادة الصغيرة جنوب جفتون الصغيرة؛ وتُسجَّل الجزيرة في المعجم الجغرافي باسم جزيرة أبو رماثي. والموقع هضبة تمتد من شمال الجزيرة ثم تنقلب إلى جدار رأسي، قمة مرجانية فوق واجهة من المرجان ومراوح البحر (الغورغونيا). ويقع المرسى داخل انحناءة صغيرة في ذلك الجدار، وتحت الحافة، حيث تنتهي الهضبة، توجد مدخنة. والطرف الشمالي المفتوح من الشعب معرّض للطقس وللتيار القوي، وهو ما يغذيه، ويكون في أوج حيويته عند الانسياق مع التيار حين يأتي التدفق من الشمال. وتطارد أسراب الباراكودا العملاقة وأسماك الجاك كبيرة العين والتونة صفراء الزعانف أسماك الفوسيلير التي تجتاح الهضبة، وتتغذى السلاحف على المرجان الرخو، وقد شوهدت أسراب تضم ما يصل إلى اثني عشر من أسماك الشفنين النسري تمرّ في تشكيل، وتترصد أسماك الأسد والهامور أسماك الزجاج في التجاويف. تبحر هذه الأيام إلى أورانج باي في جفتون الكبيرة، ولا تذكر برامجها شمال أبو رمادة، الهضبة قبالة الطرف الشمالي لجزيرة أبو رمادة، على بعد نحو ثلاثة كيلومترات جنوب شرق الطرف الجنوبي لجفتون الكبيرة. وتُعرض هنا رحلتان: يوم للسنوركلينغ والغوص، ويخت بمدتين. وتبدأ كل رحلة بالاصطحاب من فندقك وتنتهي بالعودة إليه، وتوضح كل صفحة ما يشمله سعرها. يمكنك حجز مكانك عبر الإنترنت والدفع لاحقاً، أو سؤال الفريق أولاً عن موعد الاصطحاب.",
+        "seoSettings": {
+          "metaTitle": "شمال أبو رمادة: يومان في أورانج باي",
+          "metaDescription": "يومان على الماء من الغردقة، وكلاهما يرسو في أورانج باي على جفتون الكبيرة: أحدهما للغوص والسنوركلينغ معاً، والآخر يخت بمدتين.",
+          "keywords": [
+            "هضبة شمال أبو رمادة",
+            "يوم سنوركلينغ وغوص في أورانج باي",
+            "شعب جزيرة أبو رمادة",
+            "يخت أورانج باي لخمس ساعات أو ثمان",
+            "أورانج باي من الغردقة مع سيارة من الفندق"
+          ]
+        },
+        "pageSeo": [],
+        "navigation": [
+          {
+            "label": "الرئيسية",
+            "columns": []
+          },
+          {
+            "label": "الرحلات",
+            "columns": []
+          },
+          {
+            "label": "من نحن",
+            "columns": []
+          },
+          {
+            "label": "الأسئلة الشائعة",
+            "columns": []
+          },
+          {
+            "label": "اتصل بنا",
+            "columns": []
+          }
+        ]
+      }
+    }
+  ],
+  "tours": [
+    {
+      "id": "6ae8236a9f07414c57e60ad2",
+      "sourceSlug": "nar-orange-bay-snorkel-and-dive",
+      "slug": "nar-orange-bay-snorkel-and-dive-ar",
+      "sourceUpdatedAt": "2026-11-02T05:45:14.762Z",
+      "sourceDigest": "30ee0d9743e875f6009c27cb635e635c2efe8e0d011f09587f9e8d1bb30be8f7",
+      "english": {
+        "title": "Snorkel First, Then a Dive, Then the Island",
+        "shortDescription": "Half past seven away, Giftun by boat, an hour and a quarter ashore at Orange Bay, and two ways into the water with the kit provided.",
+        "description": "Two ways into the water on one ticket. The boat leaves at half past seven for Giftun; an hour and a quarter is spent ashore on Orange Bay Island, and what is left of the day goes to snorkelling, mask and fins provided, and to one scuba dive with the whole kit. The programme names Orange Bay and the island it sits beside, not North Abu Ramada, the plateau three kilometres south-east of the larger island’s southern end; no boat stops there.\n\nThe meal is an open buffet aboard, with hot and cold drinks through the day, and the marine fee, the life vest and the guide need no paying for. A child is priced apart from an adult, and a car runs you to the boat from your Hurghada hotel and home again.",
+        "duration": "8.5 hours",
+        "cancellationPolicy": "",
+        "highlights": [
+          "Two ways into the water, one ticket",
+          "An hour and a quarter on the island",
+          "A scuba dive with the whole kit",
+          "Marine fee and life vest covered"
+        ],
+        "inclusions": [
+          "Guide",
+          "Unlimited water",
+          "Snorkeling trip by boat with snorkeling gear",
+          "Orange Bay Island stop",
+          "Scuba Diving",
+          "Diving equipment",
+          "Marine fee",
+          "Snacks",
+          "Life vest",
+          "Soft drinks on boat",
+          "Hot drinks on boat",
+          "Lunch open buffet on boat",
+          "Pickup and drop-off at your hotel in Hurghada"
+        ],
+        "exclusions": [],
+        "participantRequirements": [],
+        "whatToBring": [
+          "Hat",
+          "Towel",
+          "Waterproof camera",
+          "Biodegradable sunscreen"
+        ],
+        "needToKnow": [
+          "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "tour-from-hurghada-5a8a06dd2db1",
+            "name": "Snorkelling and diving day to Orange Bay",
+            "description": "Pickup in Hurghada, snorkelling by boat with the gear, a dive with the equipment, Orange Bay and an open buffet lunch.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "07:30"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "Hotel pickup",
+            "description": "The car collects you from your hotel in Hurghada.",
+            "duration": ""
+          },
+          {
+            "index": 1,
+            "title": "Out to Giftun",
+            "description": "The boat sails from the marina.",
+            "duration": "45 minutes"
+          },
+          {
+            "index": 2,
+            "title": "Orange Bay",
+            "description": "A stop at Orange Bay Island.",
+            "duration": "75 minutes"
+          },
+          {
+            "index": 3,
+            "title": "Snorkelling and a dive",
+            "description": "Snorkelling with the gear, and a scuba dive with the diving equipment.",
+            "duration": ""
+          },
+          {
+            "index": 4,
+            "title": "Lunch on board",
+            "description": "An open buffet lunch with soft and hot drinks.",
+            "duration": "45 minutes"
+          },
+          {
+            "index": 5,
+            "title": "Back to your hotel",
+            "description": "The boat returns and the car takes you back to your hotel.",
+            "duration": "45 minutes"
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "Hotel pickup",
+            "description": "Pickup and drop-off at your hotel in Hurghada."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "The team confirms your pickup time when it confirms your booking."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788292330/tours/qgmeqrxj4kngqfei9snq.jpg",
+            "alt": "A scuba diver descending through blue water above a reef, with other divers below"
+          }
+        ],
+        "seo": {
+          "metaTitle": "Snorkel First, Then a Dive, Then the Island",
+          "metaDescription": "A boat out of Hurghada at half past seven: snorkelling with the kit, one scuba dive, an hour and a quarter ashore on Orange Bay and a buffet aboard.",
+          "keywords": []
+        }
+      },
+      "arabic": {
+        "title": "السنوركلينغ أولاً، ثم غطسة، ثم الجزيرة",
+        "shortDescription": "الإبحار في السابعة والنصف، وجفتون بالمركب، وساعة وربع على البر في أورانج باي، وطريقان إلى الماء مع توفير العدة.",
+        "description": "طريقان إلى الماء بتذكرة واحدة. يغادر المركب في السابعة والنصف نحو جفتون؛ وتُقضى ساعة وربع على البر في جزيرة أورانج باي، ويذهب ما تبقى من اليوم إلى السنوركلينغ، مع توفير القناع والزعانف، وإلى غطسة واحدة بأجهزة التنفس مع المعدات الكاملة. ويسمي البرنامج أورانج باي والجزيرة التي يقع بجوارها، لا شمال أبو رمادة، الهضبة الواقعة على بعد ثلاثة كيلومترات جنوب شرق الطرف الجنوبي للجزيرة الأكبر؛ ولا يتوقف هناك أي مركب.\n\nوالوجبة بوفيه مفتوح على متن المركب، مع مشروبات ساخنة وباردة طوال اليوم، ولا يُدفع شيء مقابل الرسم البحري وسترة النجاة والمرشد. وللطفل سعر منفصل عن سعر البالغ، وتنقلك سيارة من فندقك في الغردقة إلى المركب ثم تعيدك.",
+        "duration": "8.5 ساعة",
+        "cancellationPolicy": "",
+        "highlights": [
+          "طريقان إلى الماء، وتذكرة واحدة",
+          "ساعة وربع على الجزيرة",
+          "غطسة بأجهزة التنفس مع المعدات الكاملة",
+          "الرسم البحري وسترة النجاة مشمولان"
+        ],
+        "inclusions": [
+          "مرشد",
+          "ماء بلا حدود",
+          "رحلة سنوركلينغ بالمركب مع عدة السنوركلينغ",
+          "توقف في جزيرة أورانج باي",
+          "الغوص بالأسطوانات",
+          "معدات الغوص",
+          "الرسوم البحرية",
+          "وجبات خفيفة",
+          "سترة نجاة للسباحة",
+          "مشروبات غازية على متن المركب",
+          "مشروبات ساخنة على متن المركب",
+          "غداء بوفيه مفتوح على متن المركب",
+          "الاصطحاب من فندقك في الغردقة والعودة إليه"
+        ],
+        "exclusions": [],
+        "participantRequirements": [],
+        "whatToBring": [
+          "قبعة",
+          "منشفة",
+          "كاميرا مقاومة للماء",
+          "واقي شمس قابل للتحلل الحيوي"
+        ],
+        "needToKnow": [
+          "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "tour-from-hurghada-5a8a06dd2db1",
+            "name": "يوم سنوركلينغ وغوص إلى أورانج باي",
+            "description": "الاصطحاب من الغردقة، وسنوركلينغ بالمركب مع العدة، وغطسة مع المعدات، وأورانج باي، وغداء بوفيه مفتوح.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "الساعة 07:30"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "الاصطحاب من الفندق",
+            "description": "تصطحبك السيارة من فندقك في الغردقة.",
+            "duration": ""
+          },
+          {
+            "index": 1,
+            "title": "إلى جفتون",
+            "description": "يبحر المركب من المارينا.",
+            "duration": "45 دقيقة"
+          },
+          {
+            "index": 2,
+            "title": "أورانج باي",
+            "description": "وقفة في جزيرة أورانج باي.",
+            "duration": "75 دقيقة"
+          },
+          {
+            "index": 3,
+            "title": "سنوركلينغ وغطسة",
+            "description": "سنوركلينغ مع المعدات، وغطسة سكوبا مع معدات الغوص.",
+            "duration": ""
+          },
+          {
+            "index": 4,
+            "title": "الغداء على متن المركب",
+            "description": "غداء بوفيه مفتوح مع مشروبات غازية وساخنة.",
+            "duration": "45 دقيقة"
+          },
+          {
+            "index": 5,
+            "title": "العودة إلى فندقك",
+            "description": "يعود المركب وتعيدك السيارة إلى فندقك.",
+            "duration": "45 دقيقة"
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "الاصطحاب من الفندق",
+            "description": "الاصطحاب من فندقك في الغردقة والعودة إليه."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788292330/tours/qgmeqrxj4kngqfei9snq.jpg",
+            "alt": "غواص ينزل في ماء أزرق فوق شعاب مرجانية، وغواصون آخرون تحته"
+          }
+        ],
+        "seo": {
+          "metaTitle": "السنوركلينغ أولاً، ثم غطسة، ثم الجزيرة",
+          "metaDescription": "مركب من الغردقة في السابعة والنصف: سنوركلينغ مع العدة، وغطسة واحدة بأجهزة التنفس، وساعة وربع على البر في أورانج باي، وبوفيه على المتن.",
+          "keywords": []
+        }
+      }
+    },
+    {
+      "id": "6ae8236a9f07414c57e60aec",
+      "sourceSlug": "nar-orange-bay-yacht-five-or-eight-hours",
+      "slug": "nar-orange-bay-yacht-five-or-eight-hours-ar",
+      "sourceUpdatedAt": "2026-11-02T05:45:15.022Z",
+      "sourceDigest": "498dda9ef82e1405c2434197b6df308c5d53b83e7ddd44e6ca5feab1549ffb6d",
+      "english": {
+        "title": "Pick Your Length: a Short Yacht Day or a Long One",
+        "shortDescription": "The short day: breakfast, one stop in the water, an hour ashore. The long one: lunch as well, another stop and another hour on the island.",
+        "description": "One yacht, two lengths, and the choice is yours at booking. Take five hours and you get a breakfast buffet, a single stop in the water and sixty minutes on the island; take eight and lunch, another stop and another hour ashore come with it. The programme names Orange Bay and the island it sits beside, not North Abu Ramada, the plateau three kilometres south-east of the larger island’s southern end; no boat stops there.\n\nWhichever you pick, the gear, the island entry and the marine tax are in the price, and a guide sails with the boat, plus one more for guests who do not swim. A child is priced apart from an adult. The hotels are collected from first, and the yacht leaves at half past eight.",
+        "duration": "5 to 8 hours",
+        "cancellationPolicy": "",
+        "highlights": [
+          "A five-hour day or an eight-hour one",
+          "Breakfast as the yacht sails out",
+          "One stop in the water, or two",
+          "A guide aboard for guests who do not swim"
+        ],
+        "inclusions": [
+          "Unlimited drinks (tea, coffee, soft drinks, water) & Fresh seasonal fruits",
+          "Equipment & Fees: Snorkeling equipment, Island entry fees & Marine tax",
+          "Guides & Crew: Professional guides on each boat, Special guide for non-swimmers & Professional crew",
+          "Pickup and drop-off at your hotel in Hurghada",
+          "A breakfast buffet, and lunch on the eight-hour trip",
+          "One snorkelling stop on the five-hour trip, two on the eight-hour trip",
+          "Time at Orange Bay Island"
+        ],
+        "exclusions": [
+          "Towels",
+          "Underwater photos",
+          "Gratuities (optional)"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [
+          "Sunglasses",
+          "Towel",
+          "Sunscreen"
+        ],
+        "needToKnow": [
+          "Pickup from outside Hurghada costs extra and cannot be booked on this site. Ask the team before you book if your hotel is further out.",
+          "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "5-hour-orange-bay-trip-with-breakfast-c611b52197e1",
+            "name": "Five hours with breakfast",
+            "description": "A breakfast buffet, one snorkelling stop and an hour at Orange Bay, with drinks and fruit.",
+            "timeSlots": []
+          },
+          {
+            "id": "8-hour-orange-bay-trip-with-breakfast-lunch-5ca8942ae903",
+            "name": "Eight hours with breakfast and lunch",
+            "description": "Breakfast and lunch, two snorkelling stops and two hours at Orange Bay, with drinks and fruit.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "08:30"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "Hotel pickup",
+            "description": "The car collects you from your hotel in Hurghada.",
+            "duration": "25 minutes"
+          },
+          {
+            "index": 1,
+            "title": "Breakfast on board",
+            "description": "A breakfast buffet as the yacht sails out.",
+            "duration": ""
+          },
+          {
+            "index": 2,
+            "title": "Snorkelling",
+            "description": "One stop on the five-hour trip and two on the eight-hour trip, with the gear and a guide for non-swimmers.",
+            "duration": ""
+          },
+          {
+            "index": 3,
+            "title": "Orange Bay",
+            "description": "One hour on the island on the five-hour trip, two on the eight-hour trip, with lunch on the longer day.",
+            "duration": ""
+          },
+          {
+            "index": 4,
+            "title": "Back to your hotel",
+            "description": "The yacht returns to the marina and the car takes you back to your hotel.",
+            "duration": "25 minutes"
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "Hotel pickup",
+            "description": "Pickup and drop-off at your hotel in Hurghada."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "The team confirms your pickup time when it confirms your booking."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1787782233/tours/wirlheh3pj6ibboavetn.jpg",
+            "alt": "The white bow of a boat heading across a turquoise lagoon towards a low sandy shore"
+          }
+        ],
+        "seo": {
+          "metaTitle": "Pick Your Length: a Short Yacht Day or a Long One",
+          "metaDescription": "One yacht day at two lengths from Hurghada: five hours with breakfast, a stop in the water and an hour ashore, or eight with lunch and twice that.",
+          "keywords": []
+        }
+      },
+      "arabic": {
+        "title": "اختر المدة: يوم يخت قصير أو طويل",
+        "shortDescription": "اليوم القصير: إفطار، ووقفة واحدة في الماء، وساعة على البر. والطويل: الغداء أيضاً، ووقفة أخرى، وساعة أخرى على الجزيرة.",
+        "description": "يخت واحد، ومدتان، والاختيار لك عند الحجز. اختر خمس ساعات فتحصل على بوفيه إفطار ووقفة واحدة في الماء وستين دقيقة على الجزيرة؛ واختر ثماني ساعات فيأتي معها الغداء ووقفة أخرى وساعة أخرى على البر. ويسمي البرنامج أورانج باي والجزيرة التي يقع بجوارها، لا شمال أبو رمادة، الهضبة الواقعة على بعد ثلاثة كيلومترات جنوب شرق الطرف الجنوبي للجزيرة الأكبر؛ ولا يتوقف هناك أي مركب.\n\nوأياً كان اختيارك، فالعدة ودخول الجزيرة والضريبة البحرية في السعر، ويبحر مرشد مع المركب، ومعه آخر لمن لا يسبح. وللطفل سعر منفصل عن سعر البالغ. ويبدأ اليوم بالمرور على الفنادق، ويقلع اليخت في الثامنة والنصف.",
+        "duration": "5 إلى 8 ساعات",
+        "cancellationPolicy": "",
+        "highlights": [
+          "يوم من خمس ساعات أو من ثمان",
+          "الإفطار أثناء إبحار اليخت",
+          "وقفة واحدة في الماء، أو اثنتان",
+          "مرشد على المتن لمن لا يسبح"
+        ],
+        "inclusions": [
+          "مشروبات بلا حدود (شاي وقهوة ومشروبات غازية وماء) وفاكهة موسمية طازجة",
+          "المعدات والرسوم: معدات السنوركلينغ، ورسوم دخول الجزيرة، والضريبة البحرية",
+          "المرشدون والطاقم: مرشدون محترفون على كل مركب، ومرشد خاص لغير السابحين، وطاقم محترف",
+          "الاصطحاب من فندقك في الغردقة والعودة إليه",
+          "بوفيه إفطار، وغداء في الرحلة التي تستمر ثماني ساعات",
+          "توقف واحد للسنوركلينغ في الرحلة التي تستمر خمس ساعات، وتوقفان في الرحلة التي تستمر ثماني ساعات",
+          "وقت في جزيرة أورانج باي"
+        ],
+        "exclusions": [
+          "المناشف",
+          "الصور تحت الماء",
+          "الإكراميات (غير إلزامية)"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [
+          "نظارات شمسية",
+          "منشفة",
+          "واقي شمس"
+        ],
+        "needToKnow": [
+          "الاصطحاب من خارج الغردقة بتكلفة إضافية ولا يمكن حجزه عبر هذا الموقع. اسأل الفريق قبل الحجز إذا كان فندقك أبعد من ذلك.",
+          "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "5-hour-orange-bay-trip-with-breakfast-c611b52197e1",
+            "name": "خمس ساعات مع إفطار",
+            "description": "بوفيه فطور، ووقفة سنوركلينغ واحدة، وساعة في أورانج باي، مع مشروبات وفاكهة.",
+            "timeSlots": []
+          },
+          {
+            "id": "8-hour-orange-bay-trip-with-breakfast-lunch-5ca8942ae903",
+            "name": "ثماني ساعات مع إفطار وغداء",
+            "description": "الفطور والغداء، ووقفتان للسنوركلينغ، وساعتان في أورانج باي، مع مشروبات وفاكهة.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "الساعة 08:30"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "الاصطحاب من الفندق",
+            "description": "تصطحبك السيارة من فندقك في الغردقة.",
+            "duration": "25 دقيقة"
+          },
+          {
+            "index": 1,
+            "title": "إفطار على متن المركب",
+            "description": "بوفيه إفطار أثناء إبحار اليخت.",
+            "duration": ""
+          },
+          {
+            "index": 2,
+            "title": "السنوركلينغ",
+            "description": "وقفة واحدة في رحلة الخمس ساعات ووقفتان في رحلة الثماني ساعات، مع المعدات ومرشد لمن لا يعرفون السباحة.",
+            "duration": ""
+          },
+          {
+            "index": 3,
+            "title": "أورانج باي",
+            "description": "ساعة واحدة في الجزيرة في رحلة الخمس ساعات، وساعتان في رحلة الثماني ساعات، مع غداء في اليوم الأطول.",
+            "duration": ""
+          },
+          {
+            "index": 4,
+            "title": "العودة إلى فندقك",
+            "description": "يعود اليخت إلى المارينا وتعيدك السيارة إلى فندقك.",
+            "duration": "25 دقيقة"
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "الاصطحاب من الفندق",
+            "description": "الاصطحاب من فندقك في الغردقة والعودة إليه."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1787782233/tours/wirlheh3pj6ibboavetn.jpg",
+            "alt": "مقدمة قارب بيضاء تتجه عبر بحيرة شاطئية فيروزية نحو شاطئ رملي منخفض"
+          }
+        ],
+        "seo": {
+          "metaTitle": "اختر المدة: يوم يخت قصير أو طويل",
+          "metaDescription": "يوم يخت واحد بمدتين من الغردقة: خمس ساعات مع الإفطار ووقفة في الماء وساعة على البر، أو ثمان مع الغداء وضعف ذلك.",
+          "keywords": []
+        }
+      }
+    }
+  ],
+  "destinations": [
+    {
+      "id": "699895e47169d9820932b9a3",
+      "sourceSlug": "hurghada",
+      "slug": "hurghada-ar",
+      "sourceUpdatedAt": "2026-04-05T23:15:20.775Z",
+      "sourceDigest": "111acca5fa242e38932f013e0fbb66e4bafd26bd529ebf11740d6c5d2779a75c",
+      "english": {
+        "name": "Hurghada",
+        "country": "Egypt",
+        "description": "Hurghada is a premier Red Sea resort destination known for its pristine beaches, world-class diving, and water sports.",
+        "shortDescription": "Red Sea paradise for diving and water sports",
+        "highlights": [
+          "Coral Reefs",
+          "Snorkeling",
+          "Desert Safaris",
+          "Nightlife"
+        ],
+        "bestTimeToVisit": "October to April",
+        "tags": [
+          "beach",
+          "water-sports",
+          "diving",
+          "resort"
+        ]
+      },
+      "arabic": {
+        "name": "الغردقة",
+        "country": "مصر",
+        "description": "الغردقة وجهة رائدة للمنتجعات على البحر الأحمر، تشتهر بشواطئها النقية والغوص ذي المستوى العالمي والرياضات المائية.",
+        "shortDescription": "جنة على البحر الأحمر للغوص والرياضات المائية",
+        "highlights": [
+          "الشعاب المرجانية",
+          "السنوركلينغ",
+          "رحلات سفاري الصحراء",
+          "الحياة الليلية"
+        ],
+        "bestTimeToVisit": "من أكتوبر إلى أبريل",
+        "tags": [
+          "شاطئ",
+          "رياضات مائية",
+          "غوص",
+          "منتجع"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,585 @@
+{
+  "version": 1,
+  "batch": "b14b",
+  "locale": "ar",
+  "tenant": {
+    "id": "6ae8237f4960cd119df0c063",
+    "slug": "abu-dabbab-beach",
+    "domain": "abu-dabbab-beach.foxesnetwork.com"
+  },
+  "presentationSha256": "df4dacc3de469c01e4c36d21c1953f61f4d934d8a9820665a9c22b39ef9dcfd9",
+  "presentation": [
+    {
+      "kind": "tenant",
+      "sourceId": "6ae8237f4960cd119df0c063",
+      "sourceDigest": "e142fc4186b13b3775b66bc2b8fa61b6e26298ca07b24ace6e6f76fc3be8800c",
+      "english": {
+        "tagline": "Dugong and turtle days at Marsa Mubarak",
+        "description": "Abu Dabbab Beach is a sheltered sandy bay on the coast north of Marsa Alam, reef at both ends and sand in the middle, and that sand carries one of the largest patches of seagrass in the region. The seagrass is what the dugongs graze, and more Red Sea dugong sightings come from this bay than from anywhere else; it is a nesting site for sea turtles too, and a resident population of green turtles feeds there alongside them. One thing to know before reading about it elsewhere: the name covers two different things about four kilometres apart, this bay and a chain of six offshore reefs mapped as Abu Dabbab 1 to 6, so a page about the name may mean either.\n\nThese days snorkel the bay at Marsa Mubarak for dugongs and green turtles; their programmes do not name Marsa Abu Dabbab, the seagrass bay about twenty-one kilometres down the same coast where most of the Red Sea's dugongs are seen. Two trips are sold here, both boat days out of Marsa Alam: eight hours in the bay, and a shorter sailing that closes at Port Ghalib Marina. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+        "seoSettings": {
+          "metaTitle": "Abu Dabbab Beach: Marsa Mubarak Boat Days",
+          "metaDescription": "Boat days out of Marsa Alam into the bay at Marsa Mubarak: guided snorkelling where turtles and dugongs feed, a meal on board and a car from your hotel.",
+          "keywords": [
+            "abu dabbab beach seagrass bay",
+            "marsa mubarak dugong snorkelling",
+            "green turtle bay north of marsa alam",
+            "marsa alam boat day with lunch",
+            "dugongs grazing seagrass red sea"
+          ]
+        },
+        "pageSeo": [],
+        "navigation": [
+          {
+            "label": "Home",
+            "columns": []
+          },
+          {
+            "label": "Trips",
+            "columns": []
+          },
+          {
+            "label": "About",
+            "columns": []
+          },
+          {
+            "label": "FAQ",
+            "columns": []
+          },
+          {
+            "label": "Contact",
+            "columns": []
+          }
+        ]
+      },
+      "arabic": {
+        "tagline": "أيام أبقار البحر والسلاحف في مرسى مبارك",
+        "description": "شاطئ أبو دباب خليج رملي محمي على الساحل شمال مرسى علم، تقوم الشعاب عند طرفيه ويمتد الرمل في وسطه، ويحمل هذا الرمل واحدة من أكبر مساحات أعشاب البحر في المنطقة. وأعشاب البحر هي ما ترعاه أبقار البحر، ومن هذا الخليج تأتي مشاهدات لأبقار البحر في البحر الأحمر أكثر مما تأتي من أي مكان آخر؛ وهو أيضاً موقع لتعشيش السلاحف البحرية، وتتغذى فيه إلى جانبها مجموعة مقيمة من السلاحف الخضراء. وأمر ينبغي معرفته قبل القراءة عنه في مكان آخر: يُطلق الاسم على شيئين مختلفين يفصل بينهما نحو أربعة كيلومترات، هذا الخليج وسلسلة من ست شعاب في عرض البحر مرسومة باسم أبو دباب 1 إلى 6، فقد تعني صفحة عن هذا الاسم أياً منهما. تمضي هذه الأيام إلى خليج مرسى مبارك للسنوركلينغ بحثاً عن أبقار البحر والسلاحف الخضراء، ولا تذكر برامجها مرسى أبو دباب، خليج أعشاب البحر الذي يقع على بعد نحو واحد وعشرين كيلومتراً على الساحل نفسه، حيث تُرى معظم أبقار البحر في البحر الأحمر. وتُعرض هنا رحلتان، كلتاهما يوم بالمركب من مرسى علم: ثماني ساعات في الخليج، ورحلة إبحار أقصر تُختتم في مارينا بورت غالب. وتبدأ كل رحلة بالاصطحاب من فندقك وتنتهي بالعودة إليه، وتوضح كل صفحة ما يشمله سعرها. يمكنك حجز مكانك عبر الإنترنت والدفع لاحقاً، أو سؤال الفريق أولاً عن موعد الاصطحاب.",
+        "seoSettings": {
+          "metaTitle": "شاطئ أبو دباب: أيام بالمركب إلى مرسى مبارك",
+          "metaDescription": "أيام بالمركب من مرسى علم إلى خليج مرسى مبارك: سنوركلينغ بصحبة مرشد حيث تتغذى السلاحف وأبقار البحر، ووجبة على متن المركب، وسيارة من فندقك.",
+          "keywords": [
+            "شاطئ أبو دباب خليج أعشاب البحر",
+            "سنوركلينغ مع أبقار البحر في مرسى مبارك",
+            "خليج السلاحف الخضراء شمال مرسى علم",
+            "يوم بالمركب من مرسى علم مع الغداء",
+            "أبقار البحر ترعى أعشاب البحر في البحر الأحمر"
+          ]
+        },
+        "pageSeo": [],
+        "navigation": [
+          {
+            "label": "الرئيسية",
+            "columns": []
+          },
+          {
+            "label": "الرحلات",
+            "columns": []
+          },
+          {
+            "label": "من نحن",
+            "columns": []
+          },
+          {
+            "label": "الأسئلة الشائعة",
+            "columns": []
+          },
+          {
+            "label": "اتصل بنا",
+            "columns": []
+          }
+        ]
+      }
+    }
+  ],
+  "tours": [
+    {
+      "id": "6ae8237f180de809431c119d",
+      "sourceSlug": "adb-a-full-day-at-marsa-mubarak",
+      "slug": "adb-a-full-day-at-marsa-mubarak-ar",
+      "sourceUpdatedAt": "2026-11-02T05:45:35.145Z",
+      "sourceDigest": "2ca4fe1f06a448e1d77292a47ac6182b1c46ce8aebb1cb8118fbdbaa69afa465",
+      "english": {
+        "title": "A Full Day in the Bay at Marsa Mubarak",
+        "shortDescription": "Eight hours out of Marsa Alam: a session in the water either side of the meal, with the gear and the national park fees in the price.",
+        "description": "A nine o’clock call at your hotel, then the drive down to the boat. Two sessions in the water follow, one before the meal and one after it, each led by an instructor over the coral and the shoals of the bay, which is where the turtles and the dugongs feed. The programme names Marsa Alam and Marsa Mubarak, not Abu Dabbab Beach, the seagrass bay twenty-one kilometres down the same coast; no boat goes there.\n\nBoth are wild animals and neither is ever promised. The mask, the fins, the life jacket and the park fees are all in the price; tips are not, and a hotel north of the town costs extra and is settled with the team. Children have their own price.",
+        "duration": "8 hours",
+        "cancellationPolicy": "",
+        "highlights": [
+          "One session in the water, then another",
+          "Mask, fins and life jacket in the price",
+          "A meal between the two of them",
+          "The national park fees covered"
+        ],
+        "inclusions": [
+          "Professional instructors",
+          "Lunch and soft drinks",
+          "Snorkelling equipment (mask, fins, life jacket)",
+          "Soft drinks and water",
+          "National Park fees",
+          "Pickup and drop-off at your hotel in Marsa Alam",
+          "Guided snorkelling at Marsa Mubarak"
+        ],
+        "exclusions": [
+          "Tips",
+          "Personal expenses",
+          "Transfers from hotels in North Marsa Alam (available for an extra charge)"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [],
+        "needToKnow": [
+          "Pickup from a hotel in North Marsa Alam costs extra and cannot be booked on this site. Ask the team before you book if your hotel is north of the town.",
+          "Turtles and dugongs are wild animals, so no boat can promise a sighting.",
+          "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "marsa-mubarak-sea-turtle-trip-with-lunch-and--b9350a52e3cd",
+            "name": "Boat day at Marsa Mubarak with lunch",
+            "description": "The boat from Marsa Alam to Marsa Mubarak, guided snorkelling, the gear and lunch on board.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "09:00"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "Hotel pickup",
+            "description": "The transfer collects you from your hotel in Marsa Alam and takes you to the boat.",
+            "duration": ""
+          },
+          {
+            "index": 1,
+            "title": "Marsa Mubarak",
+            "description": "The boat sails into the bay for the first guided snorkelling session, among the coral reefs and the fish, where you can look for sea turtles and dugongs.",
+            "duration": ""
+          },
+          {
+            "index": 2,
+            "title": "Lunch on board",
+            "description": "Lunch and soft drinks on the boat between the snorkelling sessions.",
+            "duration": ""
+          },
+          {
+            "index": 3,
+            "title": "More snorkelling",
+            "description": "A second session with the instructors; the mask, fins and life jacket are in the price.",
+            "duration": ""
+          },
+          {
+            "index": 4,
+            "title": "Back to your hotel",
+            "description": "The boat returns and the transfer takes you back to your hotel in Marsa Alam.",
+            "duration": ""
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "Hotel pickup",
+            "description": "Pickup and drop-off at your hotel in Marsa Alam."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "The team confirms your pickup time when it confirms your booking."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793085624/attractions-network/network-b08/marsa-mubarak/hua97b4rgydbu8xtuked.jpg",
+            "alt": "A sea turtle swimming just under the surface above a shallow coral reef"
+          }
+        ],
+        "seo": {
+          "metaTitle": "A Full Day in the Bay at Marsa Mubarak",
+          "metaDescription": "Eight hours out of Marsa Alam: a session in the water either side of the meal at Marsa Mubarak, with the gear, the park fees and a hotel car.",
+          "keywords": []
+        }
+      },
+      "arabic": {
+        "title": "يوم كامل في خليج مرسى مبارك",
+        "shortDescription": "ثماني ساعات من مرسى علم: جلسة في الماء قبل الوجبة وأخرى بعدها، والعدة ورسوم المحمية الوطنية في السعر.",
+        "description": "تمر السيارة على فندقك في التاسعة، ثم الطريق إلى المركب. وتليها جلستان في الماء، واحدة قبل الوجبة وأخرى بعدها، يقود كلاً منهما مدرب فوق المرجان وأسراب الأسماك في الخليج، حيث تتغذى السلاحف وأبقار البحر. ويسمي البرنامج مرسى علم ومرسى مبارك، لا شاطئ أبو دباب، خليج أعشاب البحر الذي يقع على بعد واحد وعشرين كيلومتراً على الساحل نفسه؛ ولا يذهب إليه أي مركب.\n\nوكلاهما حيوان فطري، ولا يُوعد برؤية أي منهما أبداً. والقناع والزعانف وسترة النجاة ورسوم المحمية كلها في السعر؛ أما البقشيش فلا، والفندق الواقع شمال المدينة بتكلفة إضافية يُتفق عليها مع الفريق. وللأطفال سعرهم الخاص.",
+        "duration": "8 ساعات",
+        "cancellationPolicy": "",
+        "highlights": [
+          "جلسة في الماء، ثم أخرى",
+          "القناع والزعانف وسترة النجاة في السعر",
+          "وجبة بين الجلستين",
+          "رسوم المحمية الوطنية مشمولة"
+        ],
+        "inclusions": [
+          "مدرّبون محترفون",
+          "غداء ومشروبات غازية",
+          "عدة السنوركلينغ (قناع وزعانف وسترة نجاة)",
+          "مشروبات غازية وماء",
+          "رسوم المحمية الوطنية",
+          "الاصطحاب من فندقك في مرسى علم والعودة إليه",
+          "سنوركلينغ بصحبة مرشد في مرسى مبارك"
+        ],
+        "exclusions": [
+          "الإكراميات",
+          "المصروفات الشخصية",
+          "المواصلات من فنادق شمال مرسى علم (متاحة مقابل رسم إضافي)"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [],
+        "needToKnow": [
+          "الاصطحاب من فندق في شمال مرسى علم بتكلفة إضافية ولا يمكن حجزه عبر هذا الموقع. اسأل الفريق قبل الحجز إن كان فندقك شمال البلدة.",
+          "السلاحف وأبقار البحر حيوانات فطرية، فلا يمكن لأي مركب أن يضمن رؤيتها.",
+          "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "marsa-mubarak-sea-turtle-trip-with-lunch-and--b9350a52e3cd",
+            "name": "يوم بحري في مرسى مبارك مع غداء",
+            "description": "المركب من مرسى علم إلى مرسى مبارك، وسنوركلينغ بصحبة مرشد، والعدة، والغداء على متن المركب.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "الساعة 09:00"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "الاصطحاب من الفندق",
+            "description": "تصطحبك المواصلات من فندقك في مرسى علم وتأخذك إلى المركب.",
+            "duration": ""
+          },
+          {
+            "index": 1,
+            "title": "مرسى مبارك",
+            "description": "يبحر المركب إلى داخل الخليج لجلسة السنوركلينغ الأولى بصحبة مرشد، بين الشعاب المرجانية والأسماك، حيث يمكنك البحث عن السلاحف البحرية وأبقار البحر.",
+            "duration": ""
+          },
+          {
+            "index": 2,
+            "title": "الغداء على متن المركب",
+            "description": "غداء ومشروبات غازية على متن المركب بين جلستي السنوركلينغ.",
+            "duration": ""
+          },
+          {
+            "index": 3,
+            "title": "سنوركلينغ إضافي",
+            "description": "جلسة ثانية مع المدرّبين؛ والقناع والزعانف وسترة النجاة في السعر.",
+            "duration": ""
+          },
+          {
+            "index": 4,
+            "title": "العودة إلى فندقك",
+            "description": "يعود المركب وتعيدك المواصلات إلى فندقك في مرسى علم.",
+            "duration": ""
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "الاصطحاب من الفندق",
+            "description": "الاصطحاب من فندقك في مرسى علم والعودة إليه."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793085624/attractions-network/network-b08/marsa-mubarak/hua97b4rgydbu8xtuked.jpg",
+            "alt": "سلحفاة بحرية تسبح أسفل السطح مباشرة فوق شعاب مرجانية ضحلة"
+          }
+        ],
+        "seo": {
+          "metaTitle": "يوم كامل في خليج مرسى مبارك",
+          "metaDescription": "ثماني ساعات من مرسى علم: جلسة في الماء قبل الوجبة وأخرى بعدها في مرسى مبارك، مع العدة ورسوم المحمية وسيارة من الفندق.",
+          "keywords": []
+        }
+      }
+    },
+    {
+      "id": "6ae8237f180de809431c11b5",
+      "sourceSlug": "adb-two-bays-and-the-marina",
+      "slug": "adb-two-bays-and-the-marina-ar",
+      "sourceUpdatedAt": "2026-11-02T05:45:35.407Z",
+      "sourceDigest": "5416b2e495a269e65d7d758374b674a67f16987f292507a3fc02f64e59512a81",
+      "english": {
+        "title": "Two Bays, Then an Hour Round the Marina",
+        "shortDescription": "Four and a half hours: two guided stops in the bays of Marsa Mubarak and Small Shenwa, a buffet aboard, and the marina at Port Ghalib to close.",
+        "description": "Half an hour of sailing puts the boat in the first bay. Two guided stops follow with free time between them, at Marsa Mubarak and then at Small Shenwa, in water that turtles and dugongs live in; both are wild, and a sighting is never promised. The programme names Marsa Mubarak, Small Shenwa and the marina, not Abu Dabbab Beach, the seagrass bay twenty-one kilometres down the same coast; no boat goes there.\n\nA buffet is laid out aboard, lunch or dinner depending on the sailing, and the last call of the day is Port Ghalib Marina, for a guided walk and the shops. Snorkelling gear is not in the price, so bring a set with you or raise it with the team first. The pickup time is settled when your booking is confirmed, and children have their own price.",
+        "duration": "4.5 hours",
+        "cancellationPolicy": "",
+        "highlights": [
+          "Marsa Mubarak, then Small Shenwa",
+          "Free time between the two stops",
+          "An open buffet lunch or dinner",
+          "A walk round Port Ghalib Marina"
+        ],
+        "inclusions": [
+          "Hotel pickup and drop-off in Marsa Alam",
+          "30-minute boat cruise to Marsa Mubarak",
+          "Two guided snorkeling stops (Marsa Mubarak + Small Shenwa)",
+          "45-minute marina tour and shopping time",
+          "All boat fees and permits",
+          "A snorkelling guide on board",
+          "An open buffet lunch or dinner on board: chicken, kofta, fish, salads and soups"
+        ],
+        "exclusions": [
+          "Hot drinks, fresh juices, ice cream, coffee onboard (available for purchase)",
+          "Personal expenses",
+          "Gratuities (optional)",
+          "Snorkelling gear"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [
+          "Swimwear",
+          "Towel",
+          "Sunscreen"
+        ],
+        "needToKnow": [
+          "The trip is sold by the day; the team confirms your pickup time when it confirms your booking.",
+          "Snorkelling gear is not included and cannot be added on this site. Bring your own, or ask the team before you book.",
+          "Some snorkelling experience helps.",
+          "Turtles and dugongs are wild animals, so no boat can promise a sighting.",
+          "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "marsa-alam-marsa-mubarak-sea-cow-turtles-snor-79343d11386c",
+            "name": "Snorkelling day at Marsa Mubarak and Small Shenwa",
+            "description": "Two guided snorkelling stops where you can look for turtles and dugongs, an open buffet meal and time at the marina.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "Hotel pickup",
+            "description": "The bus collects you from your hotel in Marsa Alam and drives to the boat.",
+            "duration": "1 hour"
+          },
+          {
+            "index": 1,
+            "title": "Sailing to Marsa Mubarak",
+            "description": "The boat leaves for the bay.",
+            "duration": "30 minutes"
+          },
+          {
+            "index": 2,
+            "title": "Marsa Mubarak and Small Shenwa",
+            "description": "Two guided snorkelling stops with free time between them, where you can look for turtles and dugongs among the reef fish.",
+            "duration": "2.5 hours"
+          },
+          {
+            "index": 3,
+            "title": "A meal on board",
+            "description": "An open buffet lunch or dinner on the boat.",
+            "duration": ""
+          },
+          {
+            "index": 4,
+            "title": "Port Ghalib Marina",
+            "description": "A guided walk around the marina and time for the shops.",
+            "duration": "45 minutes"
+          },
+          {
+            "index": 5,
+            "title": "Back to your hotel",
+            "description": "The bus returns you to your hotel in Marsa Alam.",
+            "duration": ""
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "Hotel pickup",
+            "description": "Pickup and drop-off at your hotel in Marsa Alam."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "The team confirms your pickup time when it confirms your booking."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793085626/attractions-network/network-b08/marsa-mubarak/xaeglheldpkpkqkrjtg7.jpg",
+            "alt": "A large sea turtle in deep blue water, with small fish and a reef behind it"
+          }
+        ],
+        "seo": {
+          "metaTitle": "Two Bays, Then an Hour Round the Marina",
+          "metaDescription": "Four and a half hours out of Marsa Alam: two guided stops in two bays, a buffet aboard and a walk round Port Ghalib Marina to close the day.",
+          "keywords": []
+        }
+      },
+      "arabic": {
+        "title": "خليجان، ثم ساعة في المارينا",
+        "shortDescription": "أربع ساعات ونصف: وقفتان بصحبة مرشد في خليجي مرسى مبارك وشنوة الصغيرة، وبوفيه على متن المركب، ومارينا بورت غالب في الختام.",
+        "description": "نصف ساعة من الإبحار تبلغ بالمركب الخليج الأول. وتليها وقفتان بصحبة مرشد بينهما وقت حر، في مرسى مبارك ثم في شنوة الصغيرة، في ماء تعيش فيه السلاحف وأبقار البحر؛ وكلاهما فطري، ولا يُوعد برؤيتهما أبداً. ويسمي البرنامج مرسى مبارك وشنوة الصغيرة والمارينا، لا شاطئ أبو دباب، خليج أعشاب البحر الذي يقع على بعد واحد وعشرين كيلومتراً على الساحل نفسه؛ ولا يذهب إليه أي مركب.\n\nويُفرش بوفيه على متن المركب، غداءً أو عشاءً بحسب موعد الإبحار، والمحطة الأخيرة في اليوم مارينا بورت غالب، لجولة مشي بصحبة مرشد وللمتاجر. وعدة السنوركلينغ ليست في السعر، فأحضر معك عدة أو اسأل الفريق عنها أولاً. ويُحدَّد موعد الاصطحاب عند تأكيد حجزك، وللأطفال سعرهم الخاص.",
+        "duration": "4.5 ساعة",
+        "cancellationPolicy": "",
+        "highlights": [
+          "مرسى مبارك، ثم شنوة الصغيرة",
+          "وقت حر بين الوقفتين",
+          "غداء أو عشاء بوفيه مفتوح",
+          "جولة مشي في مارينا بورت غالب"
+        ],
+        "inclusions": [
+          "الاصطحاب من الفندق والعودة إليه في مرسى علم",
+          "رحلة بحرية مدتها 30 دقيقة إلى مرسى مبارك",
+          "وقفتان للسنوركلينغ بصحبة مرشد (مرسى مبارك + شنوة الصغيرة)",
+          "جولة في المارينا ووقت للتسوق مدتها 45 دقيقة",
+          "جميع رسوم المركب والتصاريح",
+          "مرشد سنوركلينغ على متن المركب",
+          "غداء أو عشاء بوفيه مفتوح على متن المركب: دجاج وكفتة وسمك وسلطات وشوربات"
+        ],
+        "exclusions": [
+          "المشروبات الساخنة والعصائر الطازجة والآيس كريم والقهوة على متن المركب (متاحة للشراء)",
+          "المصروفات الشخصية",
+          "الإكراميات (غير إلزامية)",
+          "عدة السنوركلينغ"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [
+          "ملابس سباحة",
+          "منشفة",
+          "واقي شمس"
+        ],
+        "needToKnow": [
+          "تُباع الرحلة باليوم؛ ويؤكد الفريق موعد اصطحابك عند تأكيد حجزك.",
+          "عدة السنوركلينغ غير مشمولة ولا يمكن إضافتها عبر هذا الموقع. أحضر عدتك، أو اسأل الفريق قبل الحجز.",
+          "بعض الخبرة في السنوركلينغ تساعد.",
+          "السلاحف وأبقار البحر حيوانات فطرية، فلا يمكن لأي مركب أن يضمن رؤيتها.",
+          "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "marsa-alam-marsa-mubarak-sea-cow-turtles-snor-79343d11386c",
+            "name": "يوم سنوركلينغ في مرسى مبارك وشنوة الصغيرة",
+            "description": "وقفتان للسنوركلينغ بصحبة مرشد يمكنك فيهما البحث عن السلاحف وأبقار البحر، ووجبة بوفيه مفتوح، ووقت في المارينا.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "الاصطحاب من الفندق",
+            "description": "تصطحبك الحافلة من فندقك في مرسى علم وتتجه إلى المركب.",
+            "duration": "1 ساعة"
+          },
+          {
+            "index": 1,
+            "title": "الإبحار إلى مرسى مبارك",
+            "description": "ينطلق المركب إلى الخليج.",
+            "duration": "30 دقيقة"
+          },
+          {
+            "index": 2,
+            "title": "مرسى مبارك وشنوة الصغيرة",
+            "description": "وقفتان للسنوركلينغ بصحبة مرشد بينهما وقت حر، حيث يمكنك البحث عن السلاحف وأبقار البحر بين أسماك الشعاب.",
+            "duration": "2.5 ساعة"
+          },
+          {
+            "index": 3,
+            "title": "وجبة على متن المركب",
+            "description": "غداء أو عشاء بوفيه مفتوح على متن المركب.",
+            "duration": ""
+          },
+          {
+            "index": 4,
+            "title": "مارينا بورت غالب",
+            "description": "تمشية بصحبة مرشد حول المارينا ووقت للمتاجر.",
+            "duration": "45 دقيقة"
+          },
+          {
+            "index": 5,
+            "title": "العودة إلى فندقك",
+            "description": "تعيدك الحافلة إلى فندقك في مرسى علم.",
+            "duration": ""
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "الاصطحاب من الفندق",
+            "description": "الاصطحاب من فندقك في مرسى علم والعودة إليه."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793085626/attractions-network/network-b08/marsa-mubarak/xaeglheldpkpkqkrjtg7.jpg",
+            "alt": "سلحفاة بحرية كبيرة في ماء أزرق عميق، وأسماك صغيرة وشعاب من خلفها"
+          }
+        ],
+        "seo": {
+          "metaTitle": "خليجان، ثم ساعة في المارينا",
+          "metaDescription": "أربع ساعات ونصف من مرسى علم: وقفتان بصحبة مرشد في خليجين، وبوفيه على متن المركب، وجولة مشي في مارينا بورت غالب في ختام اليوم.",
+          "keywords": []
+        }
+      }
+    }
+  ],
+  "destinations": [
+    {
+      "id": "699895e47169d9820932b9ab",
+      "sourceSlug": "marsa-alam",
+      "slug": "marsa-alam-ar",
+      "sourceUpdatedAt": "2026-04-09T16:34:09.828Z",
+      "sourceDigest": "745ca25bbadf20dc3b858537c46c7a94626e45331e3ebe4f53c03911f9f9e264",
+      "english": {
+        "name": "Marsa Alam",
+        "country": "Egypt",
+        "description": "A pristine diving destination on the Red Sea, Marsa Alam is known for its untouched coral reefs and marine wildlife.",
+        "shortDescription": "Pristine Red Sea diving destination",
+        "highlights": [
+          "Coral Reefs",
+          "Dolphin Encounters",
+          "Undiscovered Wrecks",
+          "Tranquility"
+        ],
+        "bestTimeToVisit": "October to April",
+        "tags": [
+          "diving",
+          "marine-life",
+          "beach",
+          "adventure"
+        ]
+      },
+      "arabic": {
+        "name": "مرسى علم",
+        "country": "مصر",
+        "description": "مرسى علم وجهة غوص بكر على البحر الأحمر، تشتهر بشعابها المرجانية التي لم تمسها يد وبحياتها البحرية.",
+        "shortDescription": "وجهة غوص بكر على البحر الأحمر",
+        "highlights": [
+          "الشعاب المرجانية",
+          "لقاءات الدلافين",
+          "حطام سفن لم يُكتشف بعد",
+          "الهدوء"
+        ],
+        "bestTimeToVisit": "من أكتوبر إلى أبريل",
+        "tags": [
+          "غوص",
+          "الحياة البحرية",
+          "شاطئ",
+          "مغامرة"
+        ]
+      }
+    }
+  ]
+}

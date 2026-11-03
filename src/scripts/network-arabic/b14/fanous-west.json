@@ -1,0 +1,404 @@
+{
+  "version": 1,
+  "batch": "b14b",
+  "locale": "ar",
+  "tenant": {
+    "id": "6ae8237e4960cd119df0c062",
+    "slug": "fanous-west",
+    "domain": "fanous-west.foxesnetwork.com"
+  },
+  "presentationSha256": "c0bef1d157dfae5289f6987e7d645c03172e535c350d8b7df28ec951f4a64a74",
+  "presentation": [
+    {
+      "kind": "tenant",
+      "sourceId": "6ae8237e4960cd119df0c062",
+      "sourceDigest": "ec54178aa91c7a35556da4733c42f7bc327f5695eb2f68b68606dbb6ba5ba49a",
+      "english": {
+        "tagline": "The six-island run out of Hurghada",
+        "description": "Fanous West is the western half of El Fanous, on the far side of the natural break that divides that reef in two, off the Hurghada coast. The name means lamp, or lantern, or beacon, and it comes from the beacon standing on the reef. This side is a flat sandy bottom flanking a shallow reef wall, with two large ergs and several smaller towers rising from it, and a narrow channel leads in through a sloping garden of corals to a lagoon about nine metres deep, the garden itself running down to fourteen. It is the sheltered side: turtles feed in its coral gardens, giant moray eels roam among silversides and jackfish, European moray and lionfish are recorded, and the reef as a whole draws dolphins and answers to Dolphin Reef and to Dolphin Playground.\n\nThis day runs six islands by speedboat and walks the Abu Minqar sandbank; its programme does not name Fanous West, the sheltered western half of the beacon reef about six kilometres north of that sandbank. One trip is sold here: the speedboat that works six islands between one morning and one evening. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+        "seoSettings": {
+          "metaTitle": "Fanous West: the Six-Island Speedboat Day",
+          "metaDescription": "A speedboat day out of Hurghada: Giftun, Nemo Bay, Orange Bay, Magawish, a wreck and the Abu Minqar sandbank, with the island fees and the gear.",
+          "keywords": [
+            "fanous west sheltered reef",
+            "six island speedboat day hurghada",
+            "abu minqar sandbank walk",
+            "beacon reef lagoon channel",
+            "hurghada speedboat island fees"
+          ]
+        },
+        "pageSeo": [],
+        "navigation": [
+          {
+            "label": "Home",
+            "columns": []
+          },
+          {
+            "label": "Trips",
+            "columns": []
+          },
+          {
+            "label": "About",
+            "columns": []
+          },
+          {
+            "label": "FAQ",
+            "columns": []
+          },
+          {
+            "label": "Contact",
+            "columns": []
+          }
+        ]
+      },
+      "arabic": {
+        "tagline": "جولة الجزر الست من الغردقة",
+        "description": "فانوس الغربية هي النصف الغربي من الفانوس، على الجانب الآخر من الفجوة الطبيعية التي تقسم ذلك الشعب إلى نصفين، قبالة ساحل الغردقة. ويعني الاسم المصباح أو القنديل أو المنارة، وهو مأخوذ من المنارة القائمة على الشعب. وهذا الجانب قاع رملي مستوٍ يحاذي جداراً مرجانياً ضحلاً، يرتفع منه عرقان كبيران وعدة أبراج أصغر، وتقود قناة ضيقة عبر حديقة مرجانية مائلة إلى بحيرة يبلغ عمقها نحو تسعة أمتار، وتنحدر الحديقة نفسها إلى أربعة عشر متراً. وهو الجانب المحمي: تتغذى السلاحف في حدائقه المرجانية، وتجول ثعابين الموراي العملاقة بين أسماك الفضة وأسماك الجاك، وقد سُجّل الموراي الأوروبي وأسماك الأسد، والشعب كله يجتذب الدلافين ويُعرف باسمي شعب الدلافين وملعب الدلافين. يزور هذا اليوم ست جزر بالقارب السريع ويسير على ضفة أبو منقار الرملية، ولا يذكر برنامجه فانوس الغربية، النصف الغربي المحمي من شعب المنارة على بعد نحو ستة كيلومترات شمال تلك الضفة الرملية. وتُعرض هنا رحلة واحدة: القارب السريع الذي يمرّ على ست جزر بين صباح ومساء. وتبدأ كل رحلة بالاصطحاب من فندقك وتنتهي بالعودة إليه، وتوضح كل صفحة ما يشمله سعرها. يمكنك حجز مكانك عبر الإنترنت والدفع لاحقاً، أو سؤال الفريق أولاً عن موعد الاصطحاب.",
+        "seoSettings": {
+          "metaTitle": "فانوس الغربية: يوم القارب السريع إلى ست جزر",
+          "metaDescription": "يوم بالقارب السريع من الغردقة: جفتون وخليج نيمو وأورانج باي وماجاويش وحطام سفينة وضفة أبو منقار الرملية، مع رسوم الجزر والعدة.",
+          "keywords": [
+            "فانوس الغربية الشعب المحمي",
+            "يوم بالقارب السريع إلى ست جزر من الغردقة",
+            "السير على ضفة أبو منقار الرملية",
+            "قناة بحيرة شعب المنارة",
+            "رسوم الجزر في يوم القارب السريع من الغردقة"
+          ]
+        },
+        "pageSeo": [],
+        "navigation": [
+          {
+            "label": "الرئيسية",
+            "columns": []
+          },
+          {
+            "label": "الرحلات",
+            "columns": []
+          },
+          {
+            "label": "من نحن",
+            "columns": []
+          },
+          {
+            "label": "الأسئلة الشائعة",
+            "columns": []
+          },
+          {
+            "label": "اتصل بنا",
+            "columns": []
+          }
+        ]
+      }
+    }
+  ],
+  "tours": [
+    {
+      "id": "6ae8237e180de809431c1172",
+      "sourceSlug": "fnw-six-islands-and-the-sandbank",
+      "slug": "fnw-six-islands-and-the-sandbank-ar",
+      "sourceUpdatedAt": "2026-11-02T05:45:34.699Z",
+      "sourceDigest": "b40937dcb03b37d37dea92cc42538ad2d8ad8d9dc26e634bcd25540a7b4a2ab7",
+      "english": {
+        "title": "Six Islands in One Day, Ending on the Sandbank",
+        "shortDescription": "A fast hull with three stops in the water, time at four islands and over a wreck, and the last call of the day on the Abu Minqar sandbank.",
+        "description": "A speedboat gets round six islands between one morning and one evening. Two hours go to the water by Giftun; after that come Nemo Bay, then Orange Bay, then Magawish, then a wreck to swim over, and the sandbank at Abu Minqar to finish. Three of the six are for snorkelling. The programme names those islands and the Giftun National Park area, not Fanous West, the sheltered half of the beacon reef six kilometres north of the sandbank; nothing calls there.\n\nThe price covers the island entrance fees, a guide and a life jacket, the snorkelling gear, water and soft drinks, fruit in season, and the shade on deck; lunch ashore it does not. Dolphins are watched for from the deck, and being wild they are never promised. Children have their own price, and a pickup from outside the town cannot be booked here.",
+        "duration": "8 hours",
+        "cancellationPolicy": "",
+        "highlights": [
+          "Three of the six are for snorkelling",
+          "Two hours in the water by Giftun",
+          "A wreck to swim over",
+          "The Abu Minqar sandbank last of all"
+        ],
+        "inclusions": [
+          "Speedboat tour",
+          "Three snorkeling stops",
+          "Snorkeling gear provided",
+          "Professional guide",
+          "Visit to the Giftun National Park area",
+          "Orange Bay Island entrance fees included",
+          "White Island entrance fees included",
+          "Magawish Island entrance fees included",
+          "Juzur Abu Monqar Island entry included",
+          "Visit to a Sandbank island",
+          "Wreck snorkeling stop",
+          "Soft drinks and water",
+          "Seasonal fruits",
+          "Shaded area (tenda) on the board",
+          "Life jacket",
+          "Experienced captain",
+          "Pickup and drop-off at your hotel in Hurghada"
+        ],
+        "exclusions": [
+          "Lunch"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [
+          "Towel",
+          "Sunscreen",
+          "Cash"
+        ],
+        "needToKnow": [
+          "Dolphins are wild animals, so no boat can promise a sighting, and swimming near them depends on the sea and on how many boats are there.",
+          "Pickup from outside Hurghada costs extra and cannot be booked on this site. Ask the team before you book if your hotel is further out.",
+          "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "6-island-small-group-tour-with-dolphin-watchi-277b7487db82",
+            "name": "Six islands by speedboat",
+            "description": "Dolphin watching, three snorkelling stops including a wreck, and the island entrance fees, with drinks and fruit.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "08:30"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "Hotel pickup",
+            "description": "The car collects you from your hotel in Hurghada.",
+            "duration": "20 minutes"
+          },
+          {
+            "index": 1,
+            "title": "Giftun",
+            "description": "Dolphin watching and snorkelling in the Giftun National Park area.",
+            "duration": "2 hours"
+          },
+          {
+            "index": 2,
+            "title": "Nemo Bay",
+            "description": "A stop at the island.",
+            "duration": "1 hour"
+          },
+          {
+            "index": 3,
+            "title": "Orange Bay",
+            "description": "Time on the beach, the entrance fee covered.",
+            "duration": "1 hour"
+          },
+          {
+            "index": 4,
+            "title": "Magawish Island",
+            "description": "Swimming and snorkelling, the entrance fee covered.",
+            "duration": "1 hour"
+          },
+          {
+            "index": 5,
+            "title": "Wreck snorkelling and Abu Minqar",
+            "description": "A snorkelling stop at a wreck, then a stop at Abu Minqar Island.",
+            "duration": "1 hour"
+          },
+          {
+            "index": 6,
+            "title": "Back to your hotel",
+            "description": "The speedboat returns and the car takes you back to your hotel.",
+            "duration": "25 minutes"
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "Hotel pickup",
+            "description": "Pickup and drop-off at your hotel in Hurghada."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "The team confirms your pickup time when it confirms your booking."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788291087/tours/a5hjhquanje6nm8wbsbf.jpg",
+            "alt": "A snorkeller in a mask taking a photo of himself underwater above a coral reef"
+          }
+        ],
+        "seo": {
+          "metaTitle": "Six Islands in One Day, Ending on the Sandbank",
+          "metaDescription": "A speedboat out of Hurghada with three stops in the water, four islands, a wreck to swim over and a last call on the Abu Minqar sandbank.",
+          "keywords": []
+        }
+      },
+      "arabic": {
+        "title": "ست جزر في يوم واحد، والختام على الضفة الرملية",
+        "shortDescription": "قارب سريع مع ثلاث وقفات في الماء، ووقت عند أربع جزر وفوق حطام سفينة، والمحطة الأخيرة في اليوم على ضفة أبو منقار الرملية.",
+        "description": "يمرّ قارب سريع على ست جزر بين صباح ومساء. تذهب ساعتان إلى الماء عند جفتون؛ ثم يأتي خليج نيمو، ثم أورانج باي، ثم ماجاويش، ثم حطام سفينة للسباحة فوقه، والضفة الرملية عند أبو منقار في الختام. وثلاث من الست للسنوركلينغ. ويسمي البرنامج تلك الجزر ومنطقة محمية جفتون الوطنية، لا فانوس الغربية، النصف المحمي من شعب المنارة على بعد ستة كيلومترات شمال الضفة الرملية؛ ولا تتوقف هناك أي رحلة.\n\nويشمل السعر رسوم دخول الجزر ومرشداً وسترة نجاة وعدة السنوركلينغ والماء والمشروبات الغازية وفاكهة الموسم والظل على السطح؛ أما الغداء على البر فلا. ويُترقب ظهور الدلافين من السطح، وهي فطرية فلا يُوعد برؤيتها أبداً. وللأطفال سعرهم الخاص، والاصطحاب من خارج المدينة لا يمكن حجزه هنا.",
+        "duration": "8 ساعات",
+        "cancellationPolicy": "",
+        "highlights": [
+          "ثلاث من الست للسنوركلينغ",
+          "ساعتان في الماء عند جفتون",
+          "حطام سفينة للسباحة فوقه",
+          "ضفة أبو منقار الرملية في الختام"
+        ],
+        "inclusions": [
+          "جولة بقارب سريع",
+          "ثلاثة توقفات للسنوركلينغ",
+          "توفير عدة السنوركلينغ",
+          "مرشد محترف",
+          "زيارة منطقة محمية جفتون الوطنية",
+          "رسوم دخول جزيرة أورانج باي مشمولة",
+          "رسوم دخول الجزيرة البيضاء مشمولة",
+          "رسوم دخول جزيرة ماجاويش مشمولة",
+          "دخول جزيرة أبو منقار مشمول",
+          "زيارة جزيرة من ضفة رملية",
+          "توقف للسنوركلينغ عند حطام سفينة",
+          "مشروبات غازية وماء",
+          "فاكهة موسمية",
+          "منطقة مظللة (تندة) على متن المركب",
+          "سترة نجاة",
+          "قبطان ذو خبرة",
+          "الاصطحاب من فندقك في الغردقة والعودة إليه"
+        ],
+        "exclusions": [
+          "الغداء"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [
+          "منشفة",
+          "واقي شمس",
+          "نقود"
+        ],
+        "needToKnow": [
+          "الدلافين حيوانات فطرية، فلا يمكن لأي مركب أن يضمن رؤيتها، والسباحة قربها تتوقف على حال البحر وعلى عدد المراكب الموجودة.",
+          "الاصطحاب من خارج الغردقة بتكلفة إضافية ولا يمكن حجزه عبر هذا الموقع. اسأل الفريق قبل الحجز إذا كان فندقك أبعد من ذلك.",
+          "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "6-island-small-group-tour-with-dolphin-watchi-277b7487db82",
+            "name": "ست جزر بقارب سريع",
+            "description": "مشاهدة الدلافين، وثلاث وقفات للسنوركلينغ منها حطام سفينة، ورسوم دخول الجزر، مع مشروبات وفاكهة.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "الساعة 08:30"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "الاصطحاب من الفندق",
+            "description": "تصطحبك السيارة من فندقك في الغردقة.",
+            "duration": "20 دقيقة"
+          },
+          {
+            "index": 1,
+            "title": "جفتون",
+            "description": "مشاهدة الدلافين والسنوركلينغ في منطقة محمية جفتون الوطنية.",
+            "duration": "2 ساعات"
+          },
+          {
+            "index": 2,
+            "title": "خليج نيمو",
+            "description": "وقفة في الجزيرة.",
+            "duration": "1 ساعة"
+          },
+          {
+            "index": 3,
+            "title": "أورانج باي",
+            "description": "وقت على الشاطئ، ورسم الدخول مغطى.",
+            "duration": "1 ساعة"
+          },
+          {
+            "index": 4,
+            "title": "جزيرة ماجاويش",
+            "description": "سباحة وسنوركلينغ، ورسم الدخول مغطى.",
+            "duration": "1 ساعة"
+          },
+          {
+            "index": 5,
+            "title": "سنوركلينغ عند حطام سفينة وأبو منقار",
+            "description": "وقفة سنوركلينغ عند حطام سفينة، ثم وقفة في جزيرة أبو منقار.",
+            "duration": "1 ساعة"
+          },
+          {
+            "index": 6,
+            "title": "العودة إلى فندقك",
+            "description": "يعود القارب السريع وتعيدك السيارة إلى فندقك.",
+            "duration": "25 دقيقة"
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "الاصطحاب من الفندق",
+            "description": "الاصطحاب من فندقك في الغردقة والعودة إليه."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788291087/tours/a5hjhquanje6nm8wbsbf.jpg",
+            "alt": "ممارس سنوركلينغ بقناع يصور نفسه تحت الماء فوق شعاب مرجانية"
+          }
+        ],
+        "seo": {
+          "metaTitle": "ست جزر في يوم واحد، والختام على الضفة الرملية",
+          "metaDescription": "قارب سريع من الغردقة مع ثلاث وقفات في الماء، وأربع جزر، وحطام سفينة للسباحة فوقه، ومحطة أخيرة على ضفة أبو منقار الرملية.",
+          "keywords": []
+        }
+      }
+    }
+  ],
+  "destinations": [
+    {
+      "id": "699895e47169d9820932b9a3",
+      "sourceSlug": "hurghada",
+      "slug": "hurghada-ar",
+      "sourceUpdatedAt": "2026-04-05T23:15:20.775Z",
+      "sourceDigest": "111acca5fa242e38932f013e0fbb66e4bafd26bd529ebf11740d6c5d2779a75c",
+      "english": {
+        "name": "Hurghada",
+        "country": "Egypt",
+        "description": "Hurghada is a premier Red Sea resort destination known for its pristine beaches, world-class diving, and water sports.",
+        "shortDescription": "Red Sea paradise for diving and water sports",
+        "highlights": [
+          "Coral Reefs",
+          "Snorkeling",
+          "Desert Safaris",
+          "Nightlife"
+        ],
+        "bestTimeToVisit": "October to April",
+        "tags": [
+          "beach",
+          "water-sports",
+          "diving",
+          "resort"
+        ]
+      },
+      "arabic": {
+        "name": "الغردقة",
+        "country": "مصر",
+        "description": "الغردقة وجهة رائدة للمنتجعات على البحر الأحمر، تشتهر بشواطئها النقية والغوص ذي المستوى العالمي والرياضات المائية.",
+        "shortDescription": "جنة على البحر الأحمر للغوص والرياضات المائية",
+        "highlights": [
+          "الشعاب المرجانية",
+          "السنوركلينغ",
+          "رحلات سفاري الصحراء",
+          "الحياة الليلية"
+        ],
+        "bestTimeToVisit": "من أكتوبر إلى أبريل",
+        "tags": [
+          "شاطئ",
+          "رياضات مائية",
+          "غوص",
+          "منتجع"
+        ]
+      }
+    }
+  ]
+}

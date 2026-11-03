@@ -1,0 +1,396 @@
+{
+  "version": 1,
+  "batch": "b14b",
+  "locale": "ar",
+  "tenant": {
+    "id": "6ae8237f4960cd119df0c064",
+    "slug": "elphinstone-reef",
+    "domain": "elphinstone-reef.foxesnetwork.com"
+  },
+  "presentationSha256": "12d9242f183fc772b154795a3664edaebca5ccc05e630faab2685f44e2648b5b",
+  "presentation": [
+    {
+      "kind": "tenant",
+      "sourceId": "6ae8237f4960cd119df0c064",
+      "sourceDigest": "9e9635ab885464e1ee52121ee17e47fedca70dfe04ba22b134b9d4fe6b7a1e3a",
+      "english": {
+        "tagline": "A sailing boat out of Port Ghalib",
+        "description": "Elphinstone Reef stands alone in the open sea about nine kilometres off the coast north of Marsa Alam, a spindle-shaped reef roughly six hundred metres long that is also recorded as Abu Hamra. It was named after John Elphinstone, twelfth Lord Elphinstone, and charted around 1830 by Robert Moresby while he was surveying the Red Sea. There is a plateau at each end: the northern one runs about eighty metres long and ten to twenty-five metres wide, covered in colourful soft corals and thick with life, while the deep part of the southern plateau is brown soft coral and swarms of anthias. Its east and west walls fall away past a hundred metres, and the open-sea position and the frequent current make it one of the demanding sites of southern Egypt rather than an easy one. Divers come for the chance of big fish: whitetip sharks on the southern plateau and along the western wall, with silky, hammerhead and grey reef sharks, tuna, amberjack, Napoleon wrasse and turtles, mantas and rays from July to October, and tiger sharks rarely.\n\nThis day sails from Port Ghalib to the bays of Marsa Mubarak and Marsa Shona; its programme does not name Elphinstone Reef, which stands alone in open water about twenty-five kilometres south of Marsa Shona and nine kilometres off the coast. One trip is sold here: the sailing boat out of the marina, morning or afternoon. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+        "seoSettings": {
+          "metaTitle": "Elphinstone Reef: the Port Ghalib Sailing Day",
+          "metaDescription": "A sailing boat out of Port Ghalib to the bays of Marsa Mubarak and Marsa Shona: two guided stops of forty-five minutes and an open buffet on deck.",
+          "keywords": [
+            "elphinstone reef marsa alam",
+            "port ghalib sailing boat day",
+            "marsa shona snorkelling stop",
+            "offshore spindle reef red sea",
+            "half day under sail marsa alam"
+          ]
+        },
+        "pageSeo": [],
+        "navigation": [
+          {
+            "label": "Home",
+            "columns": []
+          },
+          {
+            "label": "Trips",
+            "columns": []
+          },
+          {
+            "label": "About",
+            "columns": []
+          },
+          {
+            "label": "FAQ",
+            "columns": []
+          },
+          {
+            "label": "Contact",
+            "columns": []
+          }
+        ]
+      },
+      "arabic": {
+        "tagline": "مركب شراعي من بورت غالب",
+        "description": "تقف شعاب الفينستون وحدها في عرض البحر على بعد نحو تسعة كيلومترات من الساحل شمال مرسى علم، وهي شعاب مغزلية الشكل يبلغ طولها نحو ستمئة متر، وتُسجَّل أيضاً باسم أبو حمرة. وقد سُمّيت باسم جون الفينستون، اللورد الفينستون الثاني عشر، ورسم خريطتها روبرت مورسبي نحو سنة 1830 أثناء مسحه البحر الأحمر. وفي كل طرف منها هضبة: الشمالية يبلغ طولها نحو ثمانين متراً وعرضها من عشرة إلى خمسة وعشرين متراً، يكسوها مرجان رخو ملوّن وتعجّ بالحياة، أما الجزء العميق من الهضبة الجنوبية فمرجان رخو بني وأسراب من الأنثياس. ويهوي جداراها الشرقي والغربي إلى ما يتجاوز مئة متر، ويجعلها موقعها في عرض البحر وتيارها المتكرر من المواقع الصعبة في جنوب مصر لا من السهلة. ويأتيها الغواصون أملاً في الأسماك الكبيرة: قروش بيضاء الطرف على الهضبة الجنوبية وعلى طول الجدار الغربي، ومعها القروش الحريرية وقروش رأس المطرقة وقروش الشعاب الرمادية والتونة وأسماك السيريولا وأسماك نابليون والسلاحف، وأسماك المانتا والشفنين من يوليو إلى أكتوبر، وقروش النمر نادراً. يُبحر هذا اليوم من بورت غالب إلى خليجي مرسى مبارك ومرسى شونة، ولا يذكر برنامجه شعاب الفينستون، التي تقف وحدها في المياه المفتوحة على بعد نحو خمسة وعشرين كيلومتراً جنوب مرسى شونة وتسعة كيلومترات من الساحل. وتُعرض هنا رحلة واحدة: المركب الشراعي من المارينا، صباحاً أو بعد الظهر. وتبدأ كل رحلة بالاصطحاب من فندقك وتنتهي بالعودة إليه، وتوضح كل صفحة ما يشمله سعرها. يمكنك حجز مكانك عبر الإنترنت والدفع لاحقاً، أو سؤال الفريق أولاً عن موعد الاصطحاب.",
+        "seoSettings": {
+          "metaTitle": "شعاب الفينستون: يوم الإبحار من بورت غالب",
+          "metaDescription": "مركب شراعي من بورت غالب إلى خليجي مرسى مبارك ومرسى شونة: وقفتان بصحبة مرشد مدة كل منهما خمس وأربعون دقيقة، وبوفيه مفتوح على السطح.",
+          "keywords": [
+            "شعاب الفينستون مرسى علم",
+            "يوم بالمركب الشراعي من بورت غالب",
+            "وقفة سنوركلينغ في مرسى شونة",
+            "شعاب مغزلية في عرض البحر الأحمر",
+            "نصف يوم بالشراع في مرسى علم"
+          ]
+        },
+        "pageSeo": [],
+        "navigation": [
+          {
+            "label": "الرئيسية",
+            "columns": []
+          },
+          {
+            "label": "الرحلات",
+            "columns": []
+          },
+          {
+            "label": "من نحن",
+            "columns": []
+          },
+          {
+            "label": "الأسئلة الشائعة",
+            "columns": []
+          },
+          {
+            "label": "اتصل بنا",
+            "columns": []
+          }
+        ]
+      }
+    }
+  ],
+  "tours": [
+    {
+      "id": "6ae8237f180de809431c11dc",
+      "sourceSlug": "elr-sailing-boat-out-of-port-ghalib",
+      "slug": "elr-sailing-boat-out-of-port-ghalib-ar",
+      "sourceUpdatedAt": "2026-11-02T05:45:35.831Z",
+      "sourceDigest": "df56384b2b7aafb94f6b03fbe88bf6e174b935435e07f3aac1367851cacadc8a",
+      "english": {
+        "title": "Under Sail from the Marina, Morning or Afternoon",
+        "shortDescription": "Four and a half hours under sail, morning or afternoon: forty-five minutes in the water in each of two bays, and a buffet served on deck.",
+        "description": "The boat casts off twice a day, once in the morning and once after noon, and a shared bus runs you down from your Marsa Alam hotel roughly an hour and a half before it goes. Thirty-five minutes of sailing brings the first bay, where forty-five minutes are spent in the water; forty-five more follow at the second, both led by a guide. The programme names Port Ghalib, Marsa Mubarak and Marsa Shona, not Elphinstone Reef, which stands alone twenty-five kilometres south of the second bay; nothing sails there.\n\nA buffet is served on deck, with fizzy drinks and tea served through the day. The snorkelling gear is not in the price. Be at the marina half an hour before the boat goes and carry an ID card or a passport. Children have their own price.",
+        "duration": "4.5 hours",
+        "cancellationPolicy": "",
+        "highlights": [
+          "Forty-five minutes in each bay",
+          "Marsa Mubarak, then Marsa Shona",
+          "A buffet laid out on deck",
+          "A morning boat or an afternoon one"
+        ],
+        "inclusions": [
+          "Hotel pickup and drop-off",
+          "Professional and experienced guides",
+          "Unlimited fizzy drinks and tea",
+          "45-minute fully guided snorkelling stops at Marsa Mubarak and Marsa Shona",
+          "Fresh juice welcome drink",
+          "An open buffet meal on board"
+        ],
+        "exclusions": [
+          "Personal expenses",
+          "Tips (optional)",
+          "Snorkelling gear available to rent from Marina shops"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [
+          "Hat",
+          "Swimwear",
+          "Towel",
+          "Camera",
+          "Snacks",
+          "Sunscreen",
+          "Water"
+        ],
+        "needToKnow": [
+          "The time you choose is when the boat leaves Port Ghalib. The shared bus collects you from your hotel roughly ninety minutes earlier, and the exact time depends on where your hotel is.",
+          "Be at Port Ghalib Marina thirty minutes before the boat leaves.",
+          "Bring a valid ID card or passport.",
+          "Touching marine life and plants is not allowed.",
+          "Use biodegradable sunscreen to protect the reef.",
+          "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "marsa-alam-pirates-premium-boat-to-turtle-bay-d101de788b0b",
+            "name": "Sailing boat to Marsa Mubarak and Marsa Shona",
+            "description": "The sailing boat from Port Ghalib, two guided snorkelling stops and an open buffet meal on board.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "Boat leaves at 09:00"
+          },
+          {
+            "index": 1,
+            "label": "Boat leaves at 14:00"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "Hotel pickup",
+            "description": "A shared bus collects you from your hotel in Marsa Alam and drives to Port Ghalib Marina.",
+            "duration": "50 minutes"
+          },
+          {
+            "index": 1,
+            "title": "Sailing to Marsa Mubarak",
+            "description": "The boat leaves the marina and sails up the coast.",
+            "duration": "35 minutes"
+          },
+          {
+            "index": 2,
+            "title": "Marsa Mubarak",
+            "description": "The first guided snorkelling stop, among the reefs and the fish of the bay.",
+            "duration": "45 minutes"
+          },
+          {
+            "index": 3,
+            "title": "Marsa Shona",
+            "description": "The second guided snorkelling stop.",
+            "duration": "45 minutes"
+          },
+          {
+            "index": 4,
+            "title": "A meal on board",
+            "description": "An open buffet meal on deck, with fizzy drinks and tea through the day.",
+            "duration": ""
+          },
+          {
+            "index": 5,
+            "title": "Back to your hotel",
+            "description": "The boat returns to Port Ghalib Marina and the bus takes you back to your hotel.",
+            "duration": ""
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "Hotel pickup",
+            "description": "Pickup and drop-off at your hotel in Marsa Alam."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "The team confirms your pickup time when it confirms your booking."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793085622/attractions-network/network-b08/marsa-mubarak/vqybfirbk4vtbiqdtv70.jpg",
+            "alt": "A snorkeller in a mask at the surface of clear green water, with a tall sailing boat under sail behind"
+          }
+        ],
+        "seo": {
+          "metaTitle": "Under Sail from the Marina, Morning or Afternoon",
+          "metaDescription": "A sailing boat out of Port Ghalib, morning or afternoon: forty-five minutes in the water in each of two bays, a buffet on deck and a hotel bus.",
+          "keywords": []
+        }
+      },
+      "arabic": {
+        "title": "بالشراع من المارينا، صباحاً أو بعد الظهر",
+        "shortDescription": "أربع ساعات ونصف بالشراع، صباحاً أو بعد الظهر: خمس وأربعون دقيقة في الماء في كل من خليجين، وبوفيه يُقدَّم على السطح.",
+        "description": "يقلع المركب مرتين في اليوم، مرة في الصباح ومرة بعد الظهر، وتنقلك حافلة مشتركة من فندقك في مرسى علم قبل إقلاعه بنحو ساعة ونصف. ويبلغ المركب الخليج الأول بعد خمس وثلاثين دقيقة من الإبحار، حيث تُقضى خمس وأربعون دقيقة في الماء؛ وتليها خمس وأربعون أخرى في الخليج الثاني، وكلتاهما بقيادة مرشد. ويسمي البرنامج بورت غالب ومرسى مبارك ومرسى شونة، لا شعاب الفينستون، التي تقف وحدها على بعد خمسة وعشرين كيلومتراً جنوب الخليج الثاني؛ ولا تبحر إليها أي رحلة.\n\nويُقدَّم بوفيه على السطح، مع مشروبات غازية وشاي طوال اليوم. وعدة السنوركلينغ ليست في السعر. كن في المارينا قبل إقلاع المركب بنصف ساعة واحمل بطاقة هوية أو جواز سفر. وللأطفال سعرهم الخاص.",
+        "duration": "4.5 ساعة",
+        "cancellationPolicy": "",
+        "highlights": [
+          "خمس وأربعون دقيقة في كل خليج",
+          "مرسى مبارك، ثم مرسى شونة",
+          "بوفيه يُفرش على السطح",
+          "مركب صباحي أو آخر بعد الظهر"
+        ],
+        "inclusions": [
+          "النقل من الفندق وإليه",
+          "مرشدون محترفون وذوو خبرة",
+          "مشروبات غازية وشاي بلا حدود",
+          "وقفات سنوركلينغ بصحبة مرشد مدة كل منها 45 دقيقة في مرسى مبارك ومرسى شونة",
+          "مشروب ترحيب من العصير الطازج",
+          "وجبة بوفيه مفتوح على متن المركب"
+        ],
+        "exclusions": [
+          "المصروفات الشخصية",
+          "الإكراميات (اختيارية)",
+          "عدة السنوركلينغ متاحة للإيجار من متاجر المارينا"
+        ],
+        "participantRequirements": [],
+        "whatToBring": [
+          "قبعة",
+          "ملابس سباحة",
+          "منشفة",
+          "كاميرا",
+          "وجبات خفيفة",
+          "واقي شمس",
+          "ماء"
+        ],
+        "needToKnow": [
+          "الوقت الذي تختاره هو موعد انطلاق المركب من بورت غالب. وتصطحبك الحافلة الجماعية من فندقك قبل ذلك بنحو تسعين دقيقة، ويتوقف الموعد الدقيق على موقع فندقك.",
+          "كن في مارينا بورت غالب قبل انطلاق المركب بثلاثين دقيقة.",
+          "أحضر بطاقة هوية سارية أو جواز سفر.",
+          "لا يُسمح بلمس الكائنات البحرية والنباتات.",
+          "استخدم واقي شمس قابلاً للتحلل الحيوي لحماية الشعاب.",
+          "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+        ],
+        "accessibility": [],
+        "pricingOptions": [
+          {
+            "id": "marsa-alam-pirates-premium-boat-to-turtle-bay-d101de788b0b",
+            "name": "مركب شراعي إلى مرسى مبارك ومرسى شونة",
+            "description": "المركب الشراعي من بورت غالب، ووقفتان للسنوركلينغ بصحبة مرشد، ووجبة بوفيه مفتوح على متن المركب.",
+            "timeSlots": []
+          }
+        ],
+        "addons": [],
+        "entryWindows": [
+          {
+            "index": 0,
+            "label": "ينطلق المركب الساعة 09:00"
+          },
+          {
+            "index": 1,
+            "label": "ينطلق المركب الساعة 14:00"
+          }
+        ],
+        "itinerary": [
+          {
+            "index": 0,
+            "title": "الاصطحاب من الفندق",
+            "description": "تصطحبك حافلة جماعية من فندقك في مرسى علم وتتجه إلى مارينا بورت غالب.",
+            "duration": "50 دقيقة"
+          },
+          {
+            "index": 1,
+            "title": "الإبحار إلى مرسى مبارك",
+            "description": "يترك المركب المارينا ويبحر صعوداً بالساحل.",
+            "duration": "35 دقيقة"
+          },
+          {
+            "index": 2,
+            "title": "مرسى مبارك",
+            "description": "أول وقفة سنوركلينغ بصحبة مرشد، بين شعاب الخليج وأسماكه.",
+            "duration": "45 دقيقة"
+          },
+          {
+            "index": 3,
+            "title": "مرسى شونة",
+            "description": "وقفة السنوركلينغ الثانية بصحبة مرشد.",
+            "duration": "45 دقيقة"
+          },
+          {
+            "index": 4,
+            "title": "وجبة على متن المركب",
+            "description": "وجبة بوفيه مفتوح على سطح المركب، مع مشروبات غازية وشاي على مدار اليوم.",
+            "duration": ""
+          },
+          {
+            "index": 5,
+            "title": "العودة إلى فندقك",
+            "description": "يعود المركب إلى مارينا بورت غالب وتعيدك الحافلة إلى فندقك.",
+            "duration": ""
+          }
+        ],
+        "gettingThere": [
+          {
+            "index": 0,
+            "mode": "الاصطحاب من الفندق",
+            "description": "الاصطحاب من فندقك في مرسى علم والعودة إليه."
+          }
+        ],
+        "meetingPoint": {
+          "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+        },
+        "imageAltTexts": [
+          {
+            "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793085622/attractions-network/network-b08/marsa-mubarak/vqybfirbk4vtbiqdtv70.jpg",
+            "alt": "ممارس سنوركلينغ بقناع على سطح ماء أخضر صافٍ، ومركب شراعي عالٍ مبحر من خلفه"
+          }
+        ],
+        "seo": {
+          "metaTitle": "بالشراع من المارينا، صباحاً أو بعد الظهر",
+          "metaDescription": "مركب شراعي من بورت غالب، صباحاً أو بعد الظهر: خمس وأربعون دقيقة في الماء في كل من خليجين، وبوفيه على السطح، وحافلة من الفندق.",
+          "keywords": []
+        }
+      }
+    }
+  ],
+  "destinations": [
+    {
+      "id": "699895e47169d9820932b9ab",
+      "sourceSlug": "marsa-alam",
+      "slug": "marsa-alam-ar",
+      "sourceUpdatedAt": "2026-04-09T16:34:09.828Z",
+      "sourceDigest": "745ca25bbadf20dc3b858537c46c7a94626e45331e3ebe4f53c03911f9f9e264",
+      "english": {
+        "name": "Marsa Alam",
+        "country": "Egypt",
+        "description": "A pristine diving destination on the Red Sea, Marsa Alam is known for its untouched coral reefs and marine wildlife.",
+        "shortDescription": "Pristine Red Sea diving destination",
+        "highlights": [
+          "Coral Reefs",
+          "Dolphin Encounters",
+          "Undiscovered Wrecks",
+          "Tranquility"
+        ],
+        "bestTimeToVisit": "October to April",
+        "tags": [
+          "diving",
+          "marine-life",
+          "beach",
+          "adventure"
+        ]
+      },
+      "arabic": {
+        "name": "مرسى علم",
+        "country": "مصر",
+        "description": "مرسى علم وجهة غوص بكر على البحر الأحمر، تشتهر بشعابها المرجانية التي لم تمسها يد وبحياتها البحرية.",
+        "shortDescription": "وجهة غوص بكر على البحر الأحمر",
+        "highlights": [
+          "الشعاب المرجانية",
+          "لقاءات الدلافين",
+          "حطام سفن لم يُكتشف بعد",
+          "الهدوء"
+        ],
+        "bestTimeToVisit": "من أكتوبر إلى أبريل",
+        "tags": [
+          "غوص",
+          "الحياة البحرية",
+          "شاطئ",
+          "مغامرة"
+        ]
+      }
+    }
+  ]
+}
