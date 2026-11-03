@@ -1,0 +1,374 @@
+{
+ "version": 1,
+ "batch": "b17b",
+ "locale": "ar",
+ "tenant": {
+  "id": "6ae9896af5e4742051b2bd35",
+  "slug": "hebat-allah-wreck",
+  "domain": "hebat-allah-wreck.foxesnetwork.com"
+ },
+ "presentationSha256": "8bb1a59573fdd85c1988e4f6bd1da09e66c9287007de264a7dc06c56fb236a41",
+ "presentation": [
+  {
+   "kind": "tenant",
+   "sourceId": "6ae9896af5e4742051b2bd35",
+   "sourceDigest": "16c1e8f9f805ee310f8b1ed714f77f6745d7d4014552a2b838b1092161cf8023",
+   "english": {
+    "tagline": "A snorkelling yacht day, and no dive at all",
+    "description": "The Hebat Allah was a small coastal freighter of four hundred and ninety-four gross tons, built in France in 1985. It was sunk on purpose on 7 November 2004, in a joint undertaking of the Red Sea Diving Association, the Egyptian Navy and the Red Sea Governor, and opened to divers in December 2005; the organisations of record describe it as the first artificial reef made on purpose for diving in the Red Sea. The point of sinking it was to take pressure off the natural reefs by making a site away from established coral, and the ship was bought from its owner and cleaned of harmful substances before it went down. It was meant to settle at about thirty metres, a depth recreational divers can reach, and it came to rest upright on sand at about forty-six metres instead, its masts and superstructure reaching up to about twenty-five metres below the surface, so every dive on it is a decompression dive, made only by divers trained and equipped for that. In 2009 the Hurghada Environmental Protection and Conservation Association, Global Underwater Explorers Egypt and Colona Divers secured the wreck with mooring lines, earlier lines having been lost, and it serves as a research site for how reef life settles on a structure below thirty-five metres. It lies between Giftun island and Gota Abu Ramada, off Hurghada, but its position has never been published: no buoy marks it, it cannot be seen from the surface, and the published accounts say it can only be found by knowing coordinates that none of them gives.\n\nThis yacht day is spent snorkelling at Orange Bay, off Hurghada. The Hebat Allah is not in its programme, and no day sold here dives the wreck: it lies deeper than recreational diving allows, and because its position has never been published, how far the boat passes from it cannot be said. One trip is sold here, at two lengths: a breakfast buffet under way, time ashore on the island, and lunch on the longer of them. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+    "seoSettings": {
+     "metaTitle": "M/V Hebat Allah: an Orange Bay Yacht Day",
+     "metaDescription": "A yacht day out of Hurghada at two lengths: a breakfast buffet under way, a stop or two in the water, time ashore at Orange Bay, and lunch on the longer.",
+     "keywords": [
+      "hebat allah wreck hurghada",
+      "freighter sunk on purpose 2004",
+      "artificial reef made for diving",
+      "decompression dive at forty-six metres",
+      "orange bay yacht day from hurghada"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "Home",
+      "columns": []
+     },
+     {
+      "label": "Trips",
+      "columns": []
+     },
+     {
+      "label": "About",
+      "columns": []
+     },
+     {
+      "label": "FAQ",
+      "columns": []
+     },
+     {
+      "label": "Contact",
+      "columns": []
+     }
+    ]
+   },
+   "arabic": {
+    "tagline": "يوم يخت للسنوركلينغ، ولا غطس فيه البتّة",
+    "description": "كانت Hebat Allah سفينة شحن ساحلية صغيرة حمولتها الإجمالية أربعمئة وأربع وتسعون طنًا، بُنيت في فرنسا سنة 1985. وأُغرقت عمدًا في 7 نوفمبر 2004، في عمل مشترك بين جمعية الغوص في البحر الأحمر والقوات البحرية المصرية ومحافظ البحر الأحمر، وفُتحت للغواصين في ديسمبر 2005؛ وتصفها الجهات صاحبة السجلّ بأنها أول شعبة اصطناعية صُنعت عمدًا للغوص في البحر الأحمر. وكان الغرض من إغراقها تخفيف الضغط عن الشعاب الطبيعية بإيجاد موقع بعيد عن المرجان القائم، واشتُريت السفينة من مالكها ونُظّفت من المواد الضارّة قبل أن تنزل. وكان مقصودًا أن تستقرّ عند نحو ثلاثين مترًا، وهو عمق يبلغه غواصو الترفيه، فاستقرّت معتدلة على الرمل عند نحو ستة وأربعين مترًا بدلًا من ذلك، وترتفع صواريها وبُنيتها العلوية إلى نحو خمسة وعشرين مترًا تحت السطح، فكل غطسة عليها غطسة تخفيف ضغط لا يقوم بها إلا غواصون مدرَّبون ومجهَّزون لذلك. وفي 2009 ثبّتت جمعية الغردقة لحماية البيئة والحفاظ عليها وGlobal Underwater Explorers Egypt وColona Divers الحطام بحبال إرساء بعد ضياع حبال سابقة، وهو يُستخدم موقعًا بحثيًا لكيفية استقرار حياة الشعاب على بنية تحت خمسة وثلاثين مترًا. ويرقد بين جزيرة جفتون وقوطة أبو رمادة، قبالة الغردقة، لكن موضعه لم يُنشر قط: لا عوّامة تعلّمه، ولا يُرى من السطح، وتقول الروايات المنشورة إنه لا يُعثر عليه إلا بمعرفة إحداثيات لا يعطيها أيٌّ منها. ويُقضى هذا اليوم باليخت في السنوركلينغ عند أورانج باي، قبالة الغردقة. وHebat Allah ليست في برنامجه، ولا يغطس أي يوم يُباع هنا على الحطام: فهو أعمق مما يسمح به غوص الترفيه، ولأن موضعه لم يُنشر قط لا يمكن القول كم يبعد القارب عنه. ورحلة واحدة تُباع هنا بطولين: بوفيه إفطار في الطريق، ووقت على شاطئ الجزيرة، وغداء في الأطول منهما. وكل رحلة تقلّك من فندقك وتعيدك إليه، وتذكر كل صفحة ما يشمله سعرها. احجز مكانك عبر الإنترنت وادفع لاحقًا، أو اسأل الفريق أولًا عن موعد الاستلام.",
+    "seoSettings": {
+     "metaTitle": "M/V Hebat Allah: يوم باليخت إلى أورانج باي",
+     "metaDescription": "يوم باليخت من الغردقة بطولين: بوفيه إفطار في الطريق، وتوقف أو توقفان في الماء، ووقت على شاطئ أورانج باي، وغداء في الأطول.",
+     "keywords": [
+      "حطام Hebat Allah في الغردقة",
+      "سفينة شحن أُغرقت عمدًا 2004",
+      "شعبة اصطناعية صُنعت للغوص",
+      "غطسة تخفيف ضغط عند ستة وأربعين مترًا",
+      "يوم باليخت إلى أورانج باي من الغردقة"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "الرئيسية",
+      "columns": []
+     },
+     {
+      "label": "الرحلات",
+      "columns": []
+     },
+     {
+      "label": "من نحن",
+      "columns": []
+     },
+     {
+      "label": "الأسئلة الشائعة",
+      "columns": []
+     },
+     {
+      "label": "اتصل بنا",
+      "columns": []
+     }
+    ]
+   }
+  }
+ ],
+ "tours": [
+  {
+   "id": "6ae9896b624cd49f356f0f49",
+   "sourceSlug": "hba-a-short-day-ashore-or-a-long-one",
+   "slug": "hba-a-short-day-ashore-or-a-long-one-ar",
+   "sourceUpdatedAt": "2026-11-03T07:12:43.563Z",
+   "sourceDigest": "82ce4359fdb895fa1b2aea94c7edfa89fb0b18dd93ac5f56b8edf1f6a0827f21",
+   "english": {
+    "title": "A Short Day Ashore at Orange Bay, or a Long One",
+    "shortDescription": "One yacht at two lengths: breakfast and sixty minutes ashore on the island, or lunch too, a further stop in the water and a further hour there.",
+    "description": "Which length you want is settled at booking. The shorter day brings a breakfast buffet, a single stop for snorkelling and sixty minutes ashore on the island; the longer puts lunch, one more stop and one more hour there on top of that. What the programme names is Orange Bay and the island it lies on, not the Hebat Allah, the freighter put on the sea floor off Hurghada in 2004, whose position has never been published; no day sold here dives it, and nothing on this one goes under the surface at all.\n\nBoth lengths carry the snorkelling equipment, the entry to the island and the marine tax, with a guide aboard and a second one for anyone who cannot swim. Towels, photographs taken under water and tips stay outside the price. Children carry a price of their own. The cars make their rounds of the hotels before the yacht goes at half past eight.",
+    "duration": "5 to 8 hours",
+    "cancellationPolicy": "",
+    "highlights": [
+     "A shorter day or a longer one",
+     "A breakfast buffet while under way",
+     "Sixty minutes ashore, or twice that",
+     "Lunch on the longer of the two"
+    ],
+    "inclusions": [
+     "Unlimited drinks (tea, coffee, soft drinks, water) & Fresh seasonal fruits",
+     "Equipment & Fees: Snorkeling equipment, Island entry fees & Marine tax",
+     "Guides & Crew: Professional guides on each boat, Special guide for non-swimmers & Professional crew",
+     "Pickup and drop-off at your hotel in Hurghada",
+     "A breakfast buffet, and lunch on the eight-hour trip",
+     "One snorkelling stop on the five-hour trip, two on the eight-hour trip",
+     "Time at Orange Bay Island"
+    ],
+    "exclusions": [
+     "Towels",
+     "Underwater photos",
+     "Gratuities (optional)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Sunglasses",
+     "Towel",
+     "Sunscreen"
+    ],
+    "needToKnow": [
+     "Pickup from outside Hurghada costs extra and cannot be booked on this site. Ask the team before you book if your hotel is further out.",
+     "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "5-hour-orange-bay-trip-with-breakfast-c611b52197e1",
+      "name": "Five hours with breakfast",
+      "description": "A breakfast buffet, one snorkelling stop and an hour at Orange Bay, with drinks and fruit.",
+      "timeSlots": []
+     },
+     {
+      "id": "8-hour-orange-bay-trip-with-breakfast-lunch-5ca8942ae903",
+      "name": "Eight hours with breakfast and lunch",
+      "description": "Breakfast and lunch, two snorkelling stops and two hours at Orange Bay, with drinks and fruit.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "08:30"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel pickup",
+      "description": "The car collects you from your hotel in Hurghada.",
+      "duration": "25 minutes"
+     },
+     {
+      "index": 1,
+      "title": "Breakfast on board",
+      "description": "A breakfast buffet as the yacht sails out.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "Snorkelling",
+      "description": "One stop on the five-hour trip and two on the eight-hour trip, with the gear and a guide for non-swimmers.",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "Orange Bay",
+      "description": "One hour on the island on the five-hour trip, two on the eight-hour trip, with lunch on the longer day.",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "Back to your hotel",
+      "description": "The yacht returns to the marina and the car takes you back to your hotel.",
+      "duration": "25 minutes"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel pickup",
+      "description": "Pickup and drop-off at your hotel in Hurghada."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "The team confirms your pickup time when it confirms your booking."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1787782233/tours/wirlheh3pj6ibboavetn.jpg",
+      "alt": "The white bow of a boat heading across a turquoise lagoon towards a low sandy shore"
+     }
+    ],
+    "seo": {
+     "metaTitle": "A Short Day Ashore at Orange Bay, or a Long One",
+     "metaDescription": "One Hurghada yacht at two lengths: a breakfast buffet, time in the water and sixty minutes ashore, or lunch too and twice as long on the island.",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "يوم قصير على شاطئ أورانج باي، أو يوم طويل",
+    "shortDescription": "يخت واحد بطولين: إفطار وستون دقيقة على شاطئ الجزيرة، أو غداء كذلك وتوقف آخر في الماء وساعة أخرى هناك.",
+    "description": "الطول الذي تريده يُحسم عند الحجز. فاليوم الأقصر يأتي ببوفيه إفطار وتوقف واحد للسنوركلينغ وستين دقيقة على شاطئ الجزيرة؛ ويضيف الأطول إلى ذلك الغداء وتوقفًا آخر وساعة أخرى هناك. وما يذكره البرنامج هو أورانج باي والجزيرة التي يقع عليها، لا Hebat Allah، سفينة الشحن التي وُضعت على قاع البحر قبالة الغردقة سنة 2004 والتي لم يُنشر موضعها قط؛ ولا يغطس أي يوم يُباع هنا عليها، ولا شيء في هذا اليوم ينزل تحت السطح أصلًا.\n\nويحمل الطولان معدّات السنوركلينغ ودخول الجزيرة والضريبة البحرية، مع مرشد على متن اليخت وآخر لمن لا يُحسن السباحة. وتبقى المناشف والصور الملتقطة تحت الماء والبقشيش خارج السعر. وللأطفال سعر خاص بهم. وتدور السيارات على الفنادق قبل انطلاق اليخت في الثامنة والنصف.",
+    "duration": "5 إلى 8 ساعات",
+    "cancellationPolicy": "",
+    "highlights": [
+     "يوم أقصر أو يوم أطول",
+     "بوفيه إفطار في أثناء الطريق",
+     "ستون دقيقة على الشاطئ، أو ضعفها",
+     "غداء في الأطول منهما"
+    ],
+    "inclusions": [
+     "مشروبات بلا حدود (شاي وقهوة ومشروبات غازية وماء) وفاكهة موسمية طازجة",
+     "المعدات والرسوم: معدات السنوركلينغ، ورسوم دخول الجزيرة، والضريبة البحرية",
+     "المرشدون والطاقم: مرشدون محترفون على كل مركب، ومرشد خاص لغير السابحين، وطاقم محترف",
+     "الاصطحاب من فندقك في الغردقة والعودة إليه",
+     "بوفيه إفطار، وغداء في الرحلة التي تستمر ثماني ساعات",
+     "توقف واحد للسنوركلينغ في الرحلة التي تستمر خمس ساعات، وتوقفان في الرحلة التي تستمر ثماني ساعات",
+     "وقت في جزيرة أورانج باي"
+    ],
+    "exclusions": [
+     "المناشف",
+     "الصور تحت الماء",
+     "الإكراميات (غير إلزامية)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "نظارات شمسية",
+     "منشفة",
+     "واقي شمس"
+    ],
+    "needToKnow": [
+     "الاصطحاب من خارج الغردقة بتكلفة إضافية ولا يمكن حجزه عبر هذا الموقع. اسأل الفريق قبل الحجز إذا كان فندقك أبعد من ذلك.",
+     "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "5-hour-orange-bay-trip-with-breakfast-c611b52197e1",
+      "name": "خمس ساعات مع إفطار",
+      "description": "بوفيه فطور، ووقفة سنوركلينغ واحدة، وساعة في أورانج باي، مع مشروبات وفاكهة.",
+      "timeSlots": []
+     },
+     {
+      "id": "8-hour-orange-bay-trip-with-breakfast-lunch-5ca8942ae903",
+      "name": "ثماني ساعات مع إفطار وغداء",
+      "description": "الفطور والغداء، ووقفتان للسنوركلينغ، وساعتان في أورانج باي، مع مشروبات وفاكهة.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "الساعة 08:30"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "تصطحبك السيارة من فندقك في الغردقة.",
+      "duration": "25 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "إفطار على متن المركب",
+      "description": "بوفيه إفطار أثناء إبحار اليخت.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "السنوركلينغ",
+      "description": "وقفة واحدة في رحلة الخمس ساعات ووقفتان في رحلة الثماني ساعات، مع المعدات ومرشد لمن لا يعرفون السباحة.",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "أورانج باي",
+      "description": "ساعة واحدة في الجزيرة في رحلة الخمس ساعات، وساعتان في رحلة الثماني ساعات، مع غداء في اليوم الأطول.",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "العودة إلى فندقك",
+      "description": "يعود اليخت إلى المارينا وتعيدك السيارة إلى فندقك.",
+      "duration": "25 دقيقة"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك في الغردقة والعودة إليه."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1787782233/tours/wirlheh3pj6ibboavetn.jpg",
+      "alt": "مقدمة قارب بيضاء تتجه عبر بحيرة شاطئية فيروزية نحو شاطئ رملي منخفض"
+     }
+    ],
+    "seo": {
+     "metaTitle": "يوم قصير على شاطئ أورانج باي، أو يوم طويل",
+     "metaDescription": "يخت واحد من الغردقة بطولين: بوفيه إفطار، ووقت في الماء، وستون دقيقة على الشاطئ، أو غداء كذلك وضعف المدة على الجزيرة.",
+     "keywords": []
+    }
+   }
+  }
+ ],
+ "destinations": [
+  {
+   "id": "699895e47169d9820932b9a3",
+   "sourceSlug": "hurghada",
+   "slug": "hurghada-ar",
+   "sourceUpdatedAt": "2026-04-05T23:15:20.775Z",
+   "sourceDigest": "111acca5fa242e38932f013e0fbb66e4bafd26bd529ebf11740d6c5d2779a75c",
+   "english": {
+    "name": "Hurghada",
+    "country": "Egypt",
+    "description": "Hurghada is a premier Red Sea resort destination known for its pristine beaches, world-class diving, and water sports.",
+    "shortDescription": "Red Sea paradise for diving and water sports",
+    "highlights": [
+     "Coral Reefs",
+     "Snorkeling",
+     "Desert Safaris",
+     "Nightlife"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "beach",
+     "water-sports",
+     "diving",
+     "resort"
+    ]
+   },
+   "arabic": {
+    "name": "الغردقة",
+    "country": "مصر",
+    "description": "الغردقة وجهة رائدة للمنتجعات على البحر الأحمر، تشتهر بشواطئها النقية والغوص ذي المستوى العالمي والرياضات المائية.",
+    "shortDescription": "جنة على البحر الأحمر للغوص والرياضات المائية",
+    "highlights": [
+     "الشعاب المرجانية",
+     "السنوركلينغ",
+     "رحلات سفاري الصحراء",
+     "الحياة الليلية"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "شاطئ",
+     "رياضات مائية",
+     "غوص",
+     "منتجع"
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,358 @@
+{
+ "version": 1,
+ "batch": "b17a",
+ "locale": "ar",
+ "tenant": {
+  "id": "6ae8df8df5e4742051b2bd30",
+  "slug": "qulaan",
+  "domain": "qulaan.foxesnetwork.com"
+ },
+ "presentationSha256": "4b6feebf1cd6e50c230e9522326d27f0dd5ddf768f88ae1b8d9e3eb016869af5",
+ "presentation": [
+  {
+   "kind": "tenant",
+   "sourceId": "6ae8df8df5e4742051b2bd30",
+   "sourceDigest": "57885eb3c0f1d237ae8e65cf78514066999bd4e79a5f3601a8fa3d366abaa9a5",
+   "english": {
+    "tagline": "An inland jeep day, sixty kilometres away",
+    "description": "Qulaan — also written Qula’an, Qulan, El Qulaan and Al-Qula’an — is a small bay at the mouth of Wadi Qulaan, within Wadi El Gemal National Park on the Red Sea shore, ninety kilometres or so below Marsa Alam and about eleven kilometres north-west of Hamata. Grey mangroves grow in the bay’s lagoon, standing in the water: a survey of the Egyptian Red Sea’s mangroves counts the Wadi Qulaan delta among its thirteen mangrove sites, and the trees shelter young fish and birds. A fringing coral reef rings the lagoon, and about nine kilometres offshore lie the Qulaan islands, a small archipelago named after the same wadi. A village of the Ababda, the park’s indigenous people, stands beside the bay: it lived by small-scale fishing, the park’s plan chose it as one of the places where the Ababda’s own culture and the mangroves would be shown to visitors, and it now lives partly from low-impact tourism.\n\nThis is an inland day by jeep, to Cleopatra’s Temple and a spring in the Wadi El Gemal desert, with no stop named on the coast; its programme does not name Qulaan, the bay and Ababda village on the shore about sixty kilometres east-south-east of that temple. Just one trip is sold here, and the day stays inland: the jeep safari into the park’s dry interior, ending with dinner. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+    "seoSettings": {
+     "metaTitle": "Qulaan: the Inland Jeep Day in Wadi El Gemal",
+     "metaDescription": "A jeep day in the dry interior of Wadi El Gemal National Park: an acacia, an arak, water in dry ground, the temple ruin and dinner to finish.",
+     "keywords": [
+      "qulaan mangrove bay",
+      "ababda village wadi el gemal",
+      "grey mangroves red sea lagoon",
+      "qulaan islands archipelago",
+      "inland jeep day from marsa alam"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "Home",
+      "columns": []
+     },
+     {
+      "label": "Trips",
+      "columns": []
+     },
+     {
+      "label": "About",
+      "columns": []
+     },
+     {
+      "label": "FAQ",
+      "columns": []
+     },
+     {
+      "label": "Contact",
+      "columns": []
+     }
+    ]
+   },
+   "arabic": {
+    "tagline": "يوم داخلي بسيارات الجيب، على بُعد ستين كيلومترًا",
+    "description": "قلعان — ويُكتب أيضًا Qula’an وQulan وEl Qulaan وAl-Qula’an — خليج صغير عند مصبّ وادي قلعان، داخل حديقة وادي الجمال الوطنية على ساحل البحر الأحمر، على نحو تسعين كيلومترًا جنوب مرسى علم وعلى نحو أحد عشر كيلومترًا إلى الشمال الغربي من حماطة. وينمو المانغروف الرمادي في بحيرة الخليج قائمًا في الماء: يَعدّ مسحٌ لأشجار المانغروف في البحر الأحمر المصري دلتا وادي قلعان من مواقعه الثلاثة عشر، وتُؤوي الأشجار صغار الأسماك والطيور. وتحيط بالبحيرة شعبة مرجانية هدبية، وعلى نحو تسعة كيلومترات في عرض البحر تقع جزر قلعان، أرخبيل صغير يحمل اسم الوادي نفسه. وتقوم إلى جوار الخليج قرية للعبابدة، سكان الحديقة الأصليين: عاشت على صيد السمك على نطاق صغير، واختارتها خطة الحديقة أحد المواضع التي تُعرض فيها ثقافة العبابدة وأشجار المانغروف على الزوّار، وهي تعيش اليوم في جانب منها على سياحة خفيفة الأثر. وهذا يوم داخلي بسيارات الجيب، إلى معبد كليوباترا ونبع في صحراء وادي الجمال، دون توقف مذكور على الساحل؛ ولا يذكر برنامجه قلعان، الخليج وقرية العبابدة على الساحل على نحو ستين كيلومترًا إلى الشرق الجنوبي الشرقي من ذلك المعبد. ورحلة واحدة فقط تُباع هنا، ويبقى اليوم في الداخل: سفاري بسيارات الجيب إلى باطن الحديقة الجافّ، ينتهي بالعشاء. وكل رحلة تقلّك من فندقك وتعيدك إليه، وتذكر كل صفحة ما يشمله سعرها. احجز مكانك عبر الإنترنت وادفع لاحقًا، أو اسأل الفريق أولًا عن موعد الاستلام.",
+    "seoSettings": {
+     "metaTitle": "قلعان: اليوم الداخلي بسيارات الجيب في وادي الجمال",
+     "metaDescription": "يوم بسيارات الجيب في باطن حديقة وادي الجمال الوطنية الجافّ: شجرة سنط، وشجرة أراك، وماء في أرض جافة، وأطلال المعبد، وعشاء في الختام.",
+     "keywords": [
+      "خليج مانغروف قلعان",
+      "قرية العبابدة وادي الجمال",
+      "المانغروف الرمادي في بحيرة البحر الأحمر",
+      "أرخبيل جزر قلعان",
+      "يوم داخلي بسيارات الجيب من مرسى علم"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "الرئيسية",
+      "columns": []
+     },
+     {
+      "label": "الرحلات",
+      "columns": []
+     },
+     {
+      "label": "من نحن",
+      "columns": []
+     },
+     {
+      "label": "الأسئلة الشائعة",
+      "columns": []
+     },
+     {
+      "label": "اتصل بنا",
+      "columns": []
+     }
+    ]
+   }
+  }
+ ],
+ "tours": [
+  {
+   "id": "6ae8df8d5aeee024ae3b2ed0",
+   "sourceSlug": "qln-the-day-that-stays-inland",
+   "slug": "qln-the-day-that-stays-inland-ar",
+   "sourceUpdatedAt": "2026-11-02T19:07:57.390Z",
+   "sourceDigest": "eab13e0335b0b2ec56717a62f99be0092ba680fa8b5b485517c878df8d215610",
+   "english": {
+    "title": "Inland All Day: the Jeep Run to the Temple",
+    "shortDescription": "Seven hours away from the coast: an acacia and an arak, water in dry ground, a viewpoint, the temple ruin and dinner to finish the day.",
+    "description": "The jeep collects you at midday and turns inland, away from the shore. It stops at an acacia and at an arak, at water in dry ground, at a viewpoint above the valley and at the temple ruin that carries Cleopatra’s name. The programme behind it names Wadi El Gemal, that temple and the desert spring, not Qulaan, the bay and Ababda village about sixty kilometres east-south-east of that temple; nothing on this day goes near the bay.\n\nThe dinner is the last thing on it, served before the road back, and the halts are put in order when the booking is confirmed. The whole of it happens in the desert: no part of this day is spent at the bay or on its shore. Children have a price of their own.",
+    "duration": "7 hours",
+    "cancellationPolicy": "",
+    "highlights": [
+     "An acacia, then an arak",
+     "Water in dry ground",
+     "A viewpoint above the valley",
+     "Dinner to finish the day"
+    ],
+    "inclusions": [
+     "Panorama stop",
+     "Acacia tree stop",
+     "Water spring stop",
+     "Arak tree stop",
+     "Cleopatra's Temple",
+     "Bedouin dinner",
+     "Hotel pickup and drop off"
+    ],
+    "exclusions": [],
+    "participantRequirements": [],
+    "whatToBring": [],
+    "needToKnow": [
+     "The team confirms the order of the stops when it confirms your booking.",
+     "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "marsa-alam-wadi-el-gemal-desert-jeep-safari-b-f93ac389582f",
+      "name": "Jeep safari with a Bedouin dinner",
+      "description": "Wadi El Gemal National Park by jeep: a panorama, an acacia, a water spring, an arak tree, Cleopatra’s Temple and a Bedouin dinner.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "12:00"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel pickup",
+      "description": "The jeep collects you from your hotel in Marsa Alam.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "Into Wadi El Gemal",
+      "description": "The drive into the national park, with a stop at a panorama over the valley.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "Acacia and arak trees",
+      "description": "Stops at an acacia and an arak tree in the valley.",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "The water spring",
+      "description": "A stop at a desert spring.",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "Cleopatra’s Temple",
+      "description": "A visit to the temple ruins in the park.",
+      "duration": ""
+     },
+     {
+      "index": 5,
+      "title": "Bedouin dinner",
+      "description": "Dinner in the Bedouin way before the drive back to your hotel.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel pickup",
+      "description": "Pickup and drop-off at your hotel in Marsa Alam."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "The team confirms your pickup time when it confirms your booking."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793636436/attractions-network/tenant-heroes/wadi-lahmy/site-20261102-second-52648bf9f037.png",
+      "alt": "A broad stony gravel wash with scattered scrub runs inland between low dark desert hills under a clear blue sky."
+     }
+    ],
+    "seo": {
+     "metaTitle": "Inland All Day: the Jeep Run to the Temple",
+     "metaDescription": "Seven hours inland from Marsa Alam: an acacia and an arak, water in dry ground, a viewpoint above the valley, the temple ruin and dinner.",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "في الداخل طوال اليوم: رحلة الجيب إلى المعبد",
+    "shortDescription": "سبع ساعات بعيدًا عن الساحل: شجرة سنط وشجرة أراك، وماء في أرض جافة، ومطلّ، وأطلال المعبد، وعشاء يختم اليوم.",
+    "description": "تمرّ سيارة الجيب لاستلامك عند منتصف النهار وتتّجه إلى الداخل بعيدًا عن الشاطئ. وتتوقف عند شجرة سنط وعند شجرة أراك، وعند ماء في أرض جافة، وعند مطلّ فوق الوادي، وعند أطلال المعبد الذي يحمل اسم كليوباترا. ويذكر البرنامج الذي تقوم عليه وادي الجمال وذلك المعبد والنبع الصحراوي، لا قلعان، الخليج وقرية العبابدة على نحو ستين كيلومترًا إلى الشرق الجنوبي الشرقي من ذلك المعبد؛ ولا شيء في هذا اليوم يقترب من الخليج.\n\nوالعشاء آخر ما فيه، يُقدَّم قبل طريق العودة، وتُرتَّب المحطات عند تأكيد الحجز. ويجري اليوم كله في الصحراء: لا يُقضى أي جزء منه عند الخليج ولا على شاطئه. وللأطفال سعر خاص بهم.",
+    "duration": "7 ساعات",
+    "cancellationPolicy": "",
+    "highlights": [
+     "شجرة سنط، ثم شجرة أراك",
+     "ماء في أرض جافة",
+     "مطلّ فوق الوادي",
+     "عشاء يختم اليوم"
+    ],
+    "inclusions": [
+     "توقف عند نقطة البانوراما",
+     "توقف عند شجرة السنط",
+     "توقف عند نبع الماء",
+     "توقف عند شجرة الأراك",
+     "معبد كليوباترا",
+     "عشاء بدوي",
+     "النقل من الفندق وإليه"
+    ],
+    "exclusions": [],
+    "participantRequirements": [],
+    "whatToBring": [],
+    "needToKnow": [
+     "يؤكد الفريق ترتيب التوقفات عند تأكيد حجزك.",
+     "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "marsa-alam-wadi-el-gemal-desert-jeep-safari-b-f93ac389582f",
+      "name": "سفاري بالجيب مع عشاء بدوي",
+      "description": "محمية وادي الجمال الوطنية بالجيب: مطل، وشجرة سنط، وعين ماء، وشجرة أراك، ومعبد كليوباترا، وعشاء بدوي.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "الساعة 12:00"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "يصطحبك الجيب من فندقك في مرسى علم.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "إلى وادي الجمال",
+      "description": "الطريق إلى داخل المحمية الوطنية، مع وقفة عند مطل على الوادي.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "شجرتا السنط والأراك",
+      "description": "وقفات عند شجرة سنط وشجرة أراك في الوادي.",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "عين الماء",
+      "description": "وقفة عند عين ماء في الصحراء.",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "معبد كليوباترا",
+      "description": "زيارة أطلال المعبد داخل المحمية.",
+      "duration": ""
+     },
+     {
+      "index": 5,
+      "title": "عشاء بدوي",
+      "description": "عشاء على الطريقة البدوية قبل طريق العودة إلى فندقك.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك في مرسى علم والعودة إليه."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793636436/attractions-network/tenant-heroes/wadi-lahmy/site-20261102-second-52648bf9f037.png",
+      "alt": "مجرى حصوي عريض تتناثر فيه الشجيرات يمتدّ إلى الداخل بين تلال صحراوية داكنة منخفضة تحت سماء زرقاء صافية."
+     }
+    ],
+    "seo": {
+     "metaTitle": "في الداخل طوال اليوم: رحلة الجيب إلى المعبد",
+     "metaDescription": "سبع ساعات في الداخل من مرسى علم: شجرة سنط وشجرة أراك، وماء في أرض جافة، ومطلّ فوق الوادي، وأطلال المعبد، وعشاء.",
+     "keywords": []
+    }
+   }
+  }
+ ],
+ "destinations": [
+  {
+   "id": "699895e47169d9820932b9ab",
+   "sourceSlug": "marsa-alam",
+   "slug": "marsa-alam-ar",
+   "sourceUpdatedAt": "2026-04-09T16:34:09.828Z",
+   "sourceDigest": "745ca25bbadf20dc3b858537c46c7a94626e45331e3ebe4f53c03911f9f9e264",
+   "english": {
+    "name": "Marsa Alam",
+    "country": "Egypt",
+    "description": "A pristine diving destination on the Red Sea, Marsa Alam is known for its untouched coral reefs and marine wildlife.",
+    "shortDescription": "Pristine Red Sea diving destination",
+    "highlights": [
+     "Coral Reefs",
+     "Dolphin Encounters",
+     "Undiscovered Wrecks",
+     "Tranquility"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "diving",
+     "marine-life",
+     "beach",
+     "adventure"
+    ]
+   },
+   "arabic": {
+    "name": "مرسى علم",
+    "country": "مصر",
+    "description": "مرسى علم وجهة غوص بكر على البحر الأحمر، تشتهر بشعابها المرجانية التي لم تمسها يد وبحياتها البحرية.",
+    "shortDescription": "وجهة غوص بكر على البحر الأحمر",
+    "highlights": [
+     "الشعاب المرجانية",
+     "لقاءات الدلافين",
+     "حطام سفن لم يُكتشف بعد",
+     "الهدوء"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "غوص",
+     "الحياة البحرية",
+     "شاطئ",
+     "مغامرة"
+    ]
+   }
+  }
+ ]
+}

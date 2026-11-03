@@ -1,0 +1,384 @@
+{
+ "version": 1,
+ "batch": "b17a",
+ "locale": "ar",
+ "tenant": {
+  "id": "6ae8df7ff5e4742051b2bd2c",
+  "slug": "erg-abu-ramada",
+  "domain": "erg-abu-ramada.foxesnetwork.com"
+ },
+ "presentationSha256": "56330bd73f7f5e82e80feb6d913153f798f446a73d43917aa5e5500df8abc4ef",
+ "presentation": [
+  {
+   "kind": "tenant",
+   "sourceId": "6ae8df7ff5e4742051b2bd2c",
+   "sourceDigest": "14fe43548ccf81ace042b48c7878b938ada49785b03e69c43d263da10ca67393",
+   "english": {
+    "tagline": "Orange Bay, Giftun and Magawish by yacht",
+    "description": "Erg Abu Ramada, also called Camel Reef, is a coral erg off the south-east side of the small island of Abu Ramada, which lies south of Small Giftun. The guides list it on its own, apart from North Abu Ramada at the island’s north tip, from Abu Ramada South, and from Gota Abu Ramada, the reef they call the Aquarium about four kilometres to the south-west. It is one big erg with three peaks: they stand on a plateau above a sandy shelf and rise almost to the surface, and north of them the sand gives way to a coral garden. The site is open to the weather and its current is often strong, so it is dived less often than its neighbours — depending on the current, one guide writes, it can be heaven or hell — and that same current and exposure are what have kept it thickly covered in soft corals, with hard corals among them and clouds of small orange anthias over it. Caverns and small caves open in the erg, and moray eels are seen around the peaks. Two published positions for it lie forty metres apart, about a hundred and ninety metres off the island’s south-south-east shore.\n\nThis yacht day calls at Orange Bay, Giftun and Magawish, and its programme does not name Erg Abu Ramada, the three-peaked coral erg off the south-east side of Abu Ramada island, about four kilometres south of Small Giftun. Just the one trip is sold here: eight hours under way, with an island at either end of the day and the reserve between them. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+    "seoSettings": {
+     "metaTitle": "Erg Abu Ramada: Orange Bay, Giftun and Magawish",
+     "metaDescription": "A yacht day out of Hurghada: an hour on Orange Bay, forty minutes in the Giftun reserve, an hour at Magawish and a seafood lunch served on board.",
+     "keywords": [
+      "erg abu ramada camel reef",
+      "three island yacht out of hurghada",
+      "orange bay giftun and magawish day",
+      "abu ramada island soft coral erg",
+      "hurghada yacht day with a hotel car"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "Home",
+      "columns": []
+     },
+     {
+      "label": "Trips",
+      "columns": []
+     },
+     {
+      "label": "About",
+      "columns": []
+     },
+     {
+      "label": "FAQ",
+      "columns": []
+     },
+     {
+      "label": "Contact",
+      "columns": []
+     }
+    ]
+   },
+   "arabic": {
+    "tagline": "أورانج باي وجفتون وماجاويش باليخت",
+    "description": "عرق أبو رمادة، ويُسمّى أيضًا Camel Reef، عرق مرجاني قبالة الجانب الجنوبي الشرقي من جزيرة أبو رمادة الصغيرة، التي تقع جنوب جفتون الصغيرة. وتُدرجه الأدلّة موقعًا قائمًا بذاته، منفصلًا عن شمال أبو رمادة عند الطرف الشمالي للجزيرة، وعن جنوب أبو رمادة، وعن قوطة أبو رمادة، الشعبة التي يسمّونها الأكواريوم على نحو أربعة كيلومترات إلى الجنوب الغربي. وهو عرق واحد كبير بثلاث قمم: تقف على هضبة فوق رفّ رملي وترتفع حتى تكاد تبلغ السطح، وإلى الشمال منها يفسح الرمل المجال لحديقة مرجانية. والموقع مكشوف للأحوال الجوية وتيّاره قويّ في الغالب، فيُغطس فيه أقلّ من جيرانه — ويكتب أحد الأدلّة أنّه، حسب التيار، قد يكون جنّة أو جحيمًا — وهذا التيار نفسه وهذا الانكشاف هما ما أبقياه مغطًّى بكثافة بالمرجان الرخو، وبينه مرجان صلب، وفوقه سحب من أسماك الأنثياس البرتقالية الصغيرة. وتنفتح في العرق كهوف ومغارات صغيرة، وتُرى أسماك الموراي حول القمم. ويفصل بين موضعين منشورين له أربعون مترًا، على نحو مئة وتسعين مترًا من ساحل الجزيرة الجنوبي الجنوبي الشرقي. يتوقف هذا اليوم باليخت عند أورانج باي وجفتون وماجاويش، ولا يذكر برنامجه عرق أبو رمادة، العرق المرجاني ذا القمم الثلاث قبالة الجانب الجنوبي الشرقي من جزيرة أبو رمادة، على نحو أربعة كيلومترات جنوب جفتون الصغيرة. ورحلة واحدة فقط تُباع هنا: ثماني ساعات في البحر، بجزيرة عند كل طرف من اليوم والمحمية بينهما. وكل رحلة تقلّك من فندقك وتعيدك إليه، وتذكر كل صفحة ما يشمله سعرها. احجز مكانك عبر الإنترنت وادفع لاحقًا، أو اسأل الفريق أولًا عن موعد الاستلام.",
+    "seoSettings": {
+     "metaTitle": "عرق أبو رمادة: أورانج باي وجفتون وماجاويش",
+     "metaDescription": "يوم باليخت من الغردقة: ساعة في أورانج باي، وأربعون دقيقة داخل محمية جفتون، وساعة في ماجاويش، وغداء من المأكولات البحرية يُقدَّم على متن اليخت.",
+     "keywords": [
+      "عرق أبو رمادة شعبة الجمل",
+      "يخت ثلاث جزر من الغردقة",
+      "يوم أورانج باي وجفتون وماجاويش",
+      "عرق المرجان الرخو في جزيرة أبو رمادة",
+      "يوم باليخت من الغردقة مع سيارة من الفندق"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "الرئيسية",
+      "columns": []
+     },
+     {
+      "label": "الرحلات",
+      "columns": []
+     },
+     {
+      "label": "من نحن",
+      "columns": []
+     },
+     {
+      "label": "الأسئلة الشائعة",
+      "columns": []
+     },
+     {
+      "label": "اتصل بنا",
+      "columns": []
+     }
+    ]
+   }
+  }
+ ],
+ "tours": [
+  {
+   "id": "6ae8df80d6540ad6cc0f555e",
+   "sourceSlug": "ear-three-islands-in-one-sailing",
+   "slug": "ear-three-islands-in-one-sailing-ar",
+   "sourceUpdatedAt": "2026-11-02T19:07:44.150Z",
+   "sourceDigest": "62d26cea4c8f528b79b4c0fda398c5d7290685e2cc8cb244c1b700e769b4c33b",
+   "english": {
+    "title": "Orange Bay, Giftun and Magawish in One Sailing",
+    "shortDescription": "Eight hours by yacht: an hour on Orange Bay, forty minutes in the Giftun reserve, an hour at Magawish and two snorkelling stops on the route.",
+    "description": "Eight hours and three islands. An hour goes to Orange Bay, forty minutes to snorkelling inside the Giftun Island reserve and an hour to Magawish, with two stops in the water along the route and every island fee already settled. Its programme names those three islands, not Erg Abu Ramada, the erg off the south-east side of Abu Ramada island about four kilometres south of Small Giftun; no boat stops at the erg.\n\nA breakfast buffet is laid out while the yacht is still under way, and the main meal of the day is seafood; water, soft drinks, hot drinks and seasonal fruit are poured and passed round at no charge. Dolphins are wild, so the crew watch for them and nobody aboard promises one. A child pays a child’s price, and the car calls at your hotel in Hurghada in good time for a half past eight departure.",
+    "duration": "8 hours",
+    "cancellationPolicy": "",
+    "highlights": [
+     "An hour ashore on Orange Bay",
+     "Forty minutes inside the Giftun reserve",
+     "Magawish for the last hour",
+     "Two snorkelling stops along the route"
+    ],
+    "inclusions": [
+     "Boat cruise with a shaded seating area and stereo sound system",
+     "Snorkeling equipment and life vest provided",
+     "Professional snorkeling guide",
+     "Two snorkeling stops at different sites",
+     "Orange Island entrance fees included (1h)",
+     "Giftun Island Nature Reserve fees included (40min)",
+     "Magawish Island entrance fees included (1h)",
+     "Breakfast served onboard (eggs, cheese, butter, honey, and bread)",
+     "Seafood lunch",
+     "Unlimited soft drinks, hot drinks, and water",
+     "Seasonal fruits",
+     "Professional guide throughout the trip",
+     "Pickup and drop-off at your hotel in Hurghada"
+    ],
+    "exclusions": [],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Towel",
+     "Sunscreen",
+     "Jacket",
+     "Cash",
+     "Passport, copy accepted"
+    ],
+    "needToKnow": [
+     "Dolphins are wild animals, so no boat can promise a sighting, and swimming near them depends on the sea and on how many boats are there.",
+     "Pickup from outside Hurghada costs extra and cannot be booked on this site. Ask the team before you book if your hotel is further out.",
+     "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "hurghada-3-island-yacht-adventure-with-dolphi-324f544a94cc",
+      "name": "Three islands by yacht",
+      "description": "Orange Bay, Giftun and Magawish with their fees, two snorkelling stops, breakfast, a seafood lunch and drinks.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "08:30"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel pickup",
+      "description": "The car collects you from your hotel in Hurghada.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "Breakfast on board",
+      "description": "Breakfast as the yacht sails out, keeping a look out for dolphins.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "Orange Bay",
+      "description": "Swimming and time on the beach.",
+      "duration": "1 hour"
+     },
+     {
+      "index": 3,
+      "title": "Giftun Island",
+      "description": "Swimming and snorkelling in the nature reserve.",
+      "duration": "40 minutes"
+     },
+     {
+      "index": 4,
+      "title": "Magawish Island",
+      "description": "Swimming and snorkelling, then a seafood lunch on board.",
+      "duration": "1 hour"
+     },
+     {
+      "index": 5,
+      "title": "Back to your hotel",
+      "description": "The car returns you to your hotel in Hurghada.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel pickup",
+      "description": "Pickup and drop-off at your hotel in Hurghada."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "The team confirms your pickup time when it confirms your booking."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1787781893/tours/uaguqygoeo7djujix5fy.jpg",
+      "alt": "A motor yacht in silhouette on the sea under an orange sunset, with hills on the horizon"
+     }
+    ],
+    "seo": {
+     "metaTitle": "A Yacht Day to Orange Bay, Giftun and Magawish",
+     "metaDescription": "Eight hours by yacht from Hurghada: an hour on Orange Bay, forty minutes in the Giftun reserve, an hour at Magawish and two stops in the water.",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "أورانج باي وجفتون وماجاويش في إبحار واحد",
+    "shortDescription": "ثماني ساعات باليخت: ساعة في أورانج باي، وأربعون دقيقة داخل محمية جفتون، وساعة في ماجاويش، وتوقفان للسنوركلينغ على الطريق.",
+    "description": "ثماني ساعات وثلاث جزر. ساعة في أورانج باي، وأربعون دقيقة للسنوركلينغ داخل محمية جزيرة جفتون، وساعة في ماجاويش، مع توقفين في الماء على الطريق ورسوم كل جزيرة مدفوعة سلفًا. ويذكر برنامجه تلك الجزر الثلاث، لا عرق أبو رمادة، العرق القائم قبالة الجانب الجنوبي الشرقي من جزيرة أبو رمادة على نحو أربعة كيلومترات جنوب جفتون الصغيرة؛ ولا يتوقف أي قارب عند العرق.\n\nويُمدّ بوفيه الإفطار واليخت لا يزال في طريقه، والوجبة الرئيسية في اليوم من المأكولات البحرية؛ ويُقدَّم الماء والمشروبات الغازية والمشروبات الساخنة والفاكهة الموسمية دون مقابل. والدلافين حيوانات برية، فيترقّبها الطاقم ولا يَعِد بها أحد على متن اليخت. وللطفل سعره الخاص، وتمرّ السيارة على فندقك في الغردقة في وقت يسع انطلاقًا في الثامنة والنصف.",
+    "duration": "8 ساعات",
+    "cancellationPolicy": "",
+    "highlights": [
+     "ساعة على شاطئ أورانج باي",
+     "أربعون دقيقة داخل محمية جفتون",
+     "ماجاويش في الساعة الأخيرة",
+     "توقفان للسنوركلينغ على الطريق"
+    ],
+    "inclusions": [
+     "رحلة بحرية مع منطقة جلوس مظللة ونظام صوت ستيريو",
+     "توفير معدات السنوركلينغ وسترة نجاة",
+     "مرشد سنوركلينغ محترف",
+     "توقفان للسنوركلينغ في موقعين مختلفين",
+     "رسوم دخول جزيرة أورانج مشمولة (1 ساعة)",
+     "رسوم محمية جزيرة جفتون الطبيعية مشمولة (40 دقيقة)",
+     "رسوم دخول جزيرة ماجاويش مشمولة (1 ساعة)",
+     "إفطار يُقدَّم على متن المركب (بيض وجبن وزبدة وعسل وخبز)",
+     "غداء مأكولات بحرية",
+     "مشروبات غازية ومشروبات ساخنة وماء بلا حدود",
+     "فاكهة موسمية",
+     "مرشد محترف طوال الرحلة",
+     "الاصطحاب من فندقك في الغردقة والعودة إليه"
+    ],
+    "exclusions": [],
+    "participantRequirements": [],
+    "whatToBring": [
+     "منشفة",
+     "واقي شمس",
+     "جاكيت",
+     "نقود",
+     "جواز السفر، وتُقبل نسخة"
+    ],
+    "needToKnow": [
+     "الدلافين حيوانات فطرية، فلا يمكن لأي مركب أن يضمن رؤيتها، والسباحة قربها تتوقف على حال البحر وعلى عدد المراكب الموجودة.",
+     "الاصطحاب من خارج الغردقة بتكلفة إضافية ولا يمكن حجزه عبر هذا الموقع. اسأل الفريق قبل الحجز إذا كان فندقك أبعد من ذلك.",
+     "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "hurghada-3-island-yacht-adventure-with-dolphi-324f544a94cc",
+      "name": "ثلاث جزر باليخت",
+      "description": "أورانج باي وجفتون وماجاويش مع رسومها، ووقفتان للسنوركلينغ، وفطور، وغداء مأكولات بحرية، ومشروبات.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "الساعة 08:30"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "تصطحبك السيارة من فندقك في الغردقة.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "إفطار على متن المركب",
+      "description": "إفطار أثناء إبحار اليخت، مع ترقّب الدلافين.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "أورانج باي",
+      "description": "سباحة ووقت على الشاطئ.",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 3,
+      "title": "جزيرة جفتون",
+      "description": "سباحة وسنوركلينغ في المحمية الطبيعية.",
+      "duration": "40 دقيقة"
+     },
+     {
+      "index": 4,
+      "title": "جزيرة ماجاويش",
+      "description": "سباحة وسنوركلينغ، ثم غداء مأكولات بحرية على متن المركب.",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 5,
+      "title": "العودة إلى فندقك",
+      "description": "تعيدك السيارة إلى فندقك في الغردقة.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك في الغردقة والعودة إليه."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1787781893/tours/uaguqygoeo7djujix5fy.jpg",
+      "alt": "يخت بمحرك يظهر كظل أسود على البحر تحت غروب برتقالي، وتلال عند الأفق"
+     }
+    ],
+    "seo": {
+     "metaTitle": "يوم باليخت إلى أورانج باي وجفتون وماجاويش",
+     "metaDescription": "ثماني ساعات باليخت من الغردقة: ساعة في أورانج باي، وأربعون دقيقة داخل محمية جفتون، وساعة في ماجاويش، وتوقفان في الماء.",
+     "keywords": []
+    }
+   }
+  }
+ ],
+ "destinations": [
+  {
+   "id": "699895e47169d9820932b9a3",
+   "sourceSlug": "hurghada",
+   "slug": "hurghada-ar",
+   "sourceUpdatedAt": "2026-04-05T23:15:20.775Z",
+   "sourceDigest": "111acca5fa242e38932f013e0fbb66e4bafd26bd529ebf11740d6c5d2779a75c",
+   "english": {
+    "name": "Hurghada",
+    "country": "Egypt",
+    "description": "Hurghada is a premier Red Sea resort destination known for its pristine beaches, world-class diving, and water sports.",
+    "shortDescription": "Red Sea paradise for diving and water sports",
+    "highlights": [
+     "Coral Reefs",
+     "Snorkeling",
+     "Desert Safaris",
+     "Nightlife"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "beach",
+     "water-sports",
+     "diving",
+     "resort"
+    ]
+   },
+   "arabic": {
+    "name": "الغردقة",
+    "country": "مصر",
+    "description": "الغردقة وجهة رائدة للمنتجعات على البحر الأحمر، تشتهر بشواطئها النقية والغوص ذي المستوى العالمي والرياضات المائية.",
+    "shortDescription": "جنة على البحر الأحمر للغوص والرياضات المائية",
+    "highlights": [
+     "الشعاب المرجانية",
+     "السنوركلينغ",
+     "رحلات سفاري الصحراء",
+     "الحياة الليلية"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "شاطئ",
+     "رياضات مائية",
+     "غوص",
+     "منتجع"
+    ]
+   }
+  }
+ ]
+}

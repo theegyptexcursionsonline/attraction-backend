@@ -1,0 +1,368 @@
+{
+ "version": 1,
+ "batch": "b17c",
+ "locale": "ar",
+ "tenant": {
+  "id": "6ae9a6f5f5e4742051b2bd3c",
+  "slug": "skar-transport-cairo",
+  "domain": "skar-transport-cairo.foxesnetwork.com"
+ },
+ "presentationSha256": "6b0f33606e045e5d0da5225693cc12b3a5ca58908509ba942c0448905266a7bd",
+ "presentation": [
+  {
+   "kind": "tenant",
+   "sourceId": "6ae9a6f5f5e4742051b2bd3c",
+   "sourceDigest": "5c95a7af7ac850f5709f849fa77d1562931a0c2ea3b31162d6e680cf2c0116fc",
+   "english": {
+    "tagline": "Two private days in Cairo and Giza by car",
+    "description": "SKAR Transport Cairo presents itself as a private airport-transfer and car-with-driver service in Cairo, with transfers to and from Cairo and Giza, business transfers and a tours section. Its own site gives its service area as Cairo, Giza, New Cairo and 6th of October, and names Cairo International Airport and the pyramids of Giza; it offers three vehicle classes sorted by how many passengers and bags they take rather than by make or model; and it is published in English and Arabic, as this site is. Every one of those statements is what the company publishes about itself: no independent listing of it was found, so nothing here is written as corroborated, and the things its own site does not publish — a licence or registration number, a street address, a telephone number, an e-mail, any count of drivers or vehicles and any number of years in business — are claimed nowhere on these pages. Its own fares are not reproduced either: every price here comes from the trip record this site sells.\n\nThe day sold here is a two-day private sightseeing tour of Cairo and Giza by car, which can be collected from and returned to Cairo International Airport; it is not an airport transfer, and no page on this site sells one. One trip is sold here: two days with a private vehicle, a guide and lunch on each of them, and the entry fees for the sites they visit. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+    "seoSettings": {
+     "metaTitle": "SKAR Transport Cairo: Two Private Days by Car",
+     "metaDescription": "A two-day private sightseeing tour of Cairo and Giza by car: the plateau, Sakkara and Memphis on day one, the two great museums on day two.",
+     "keywords": [
+      "skar transport cairo car with driver",
+      "private sightseeing day cairo and giza by car",
+      "two day private tour with guide and lunch",
+      "collected from cairo international airport",
+      "vehicle classes by passengers and luggage"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "Home",
+      "columns": []
+     },
+     {
+      "label": "Trips",
+      "columns": []
+     },
+     {
+      "label": "About",
+      "columns": []
+     },
+     {
+      "label": "FAQ",
+      "columns": []
+     },
+     {
+      "label": "Contact",
+      "columns": []
+     }
+    ]
+   },
+   "arabic": {
+    "tagline": "يومان خاصان في القاهرة والجيزة بالسيارة",
+    "description": "يعرّف SKAR Transport Cairo نفسه بوصفه خدمة نقل خاص من المطار وإليه وسيارة مع سائق في القاهرة، مع نقل من القاهرة والجيزة وإليهما، ونقل لرجال الأعمال، وقسم للجولات. ويذكر موقعه الخاص نطاق خدمته: القاهرة والجيزة والقاهرة الجديدة ومدينة 6 أكتوبر، ويسمّي مطار القاهرة الدولي وأهرامات الجيزة؛ ويعرض ثلاث فئات للمركبات مرتّبة بعدد المسافرين والحقائب التي تحملها لا بالماركة أو الطراز؛ ويُنشر بالإنجليزية والعربية، كما يُنشر هذا الموقع. وكل عبارة من تلك العبارات هي ما تنشره الشركة عن نفسها: فلم يُوجد لها أي إدراج مستقل، ولذلك لا شيء هنا مكتوب على أنه مؤكَّد من جهة أخرى، وما لا ينشره موقعها الخاص — رقم ترخيص أو تسجيل، وعنوان شارع، ورقم هاتف، وبريد إلكتروني، وأي عدد للسائقين أو المركبات، وأي عدد لسنوات العمل — لا يُدّعى في أي موضع من هذه الصفحات. ولا تُستنسخ أسعارها الخاصة كذلك: فكل سعر هنا مأخوذ من سجلّ الرحلة الذي يبيعه هذا الموقع. واليوم المعروض هنا جولة خاصة لمدة يومين لمشاهدة معالم القاهرة والجيزة بالسيارة، ويمكن الانطلاق فيها من مطار القاهرة الدولي والعودة إليه؛ وهي ليست نقلًا من المطار، ولا تبيع أي صفحة في هذا الموقع نقلًا من المطار. ورحلة واحدة تُباع هنا: يومان بمركبة خاصة ومرشد وغداء في كلٍّ منهما، ورسوم الدخول إلى المواقع التي يزورانها. وكل رحلة تقلّك من فندقك وتعيدك إليه، وتذكر كل صفحة ما يشمله سعرها. احجز مكانك عبر الإنترنت وادفع لاحقًا، أو اسأل الفريق أولًا عن موعد الاستلام.",
+    "seoSettings": {
+     "metaTitle": "SKAR Transport Cairo: يومان خاصان بالسيارة",
+     "metaDescription": "جولة خاصة لمدة يومين لمشاهدة معالم القاهرة والجيزة بالسيارة: الهضبة وسقارة وممفيس في اليوم الأول، والمتحفان الكبيران في اليوم الثاني.",
+     "keywords": [
+      "SKAR Transport Cairo سيارة مع سائق",
+      "يوم خاص لمشاهدة معالم القاهرة والجيزة بالسيارة",
+      "جولة خاصة ليومين مع مرشد وغداء",
+      "الانطلاق من مطار القاهرة الدولي",
+      "فئات المركبات بعدد المسافرين والحقائب"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "الرئيسية",
+      "columns": []
+     },
+     {
+      "label": "الرحلات",
+      "columns": []
+     },
+     {
+      "label": "من نحن",
+      "columns": []
+     },
+     {
+      "label": "الأسئلة الشائعة",
+      "columns": []
+     },
+     {
+      "label": "اتصل بنا",
+      "columns": []
+     }
+    ]
+   }
+  }
+ ],
+ "tours": [
+  {
+   "id": "6ae9a6f5226b91979e22a082",
+   "sourceSlug": "skr-two-private-days-in-cairo-and-giza-by-car",
+   "slug": "skr-two-private-days-in-cairo-and-giza-by-car-ar",
+   "sourceUpdatedAt": "2026-11-03T09:18:45.480Z",
+   "sourceDigest": "c60fb62da382a1a1835c13b2ca12818824ffc53eb22948c84e4f46747de6abb0",
+   "english": {
+    "title": "Two Private Days in Cairo and Giza by Car",
+    "shortDescription": "Two days by private car with a guide and a meal: Giza, Sakkara and Memphis on day one; the two great museums of the city on day two.",
+    "description": "A private air-conditioned car stands at your hotel for eight on both mornings. The first day works the Giza plateau — its pyramids, the Valley Temple, the Sphinx itself — before turning south to Sakkara for the Step Pyramid and ending at Memphis, where the old capital lies in ruins with a fallen colossus of Ramses II and an alabaster sphinx laid out beside it. Indoors on the second: the museum on Tahrir Square, then the national museum of Egyptian civilization and its royal mummies. What the programme names is those stops, by car, with a guide; it is not an airport transfer, and no page on this site sells one.\n\nThe guide speaks English. A meal is eaten on each of the two days, and the entry to every site the pair of them takes in is settled inside the price. The car comes for you both mornings and brings you back both evenings. A child carries a price of its own.",
+    "duration": "2 days",
+    "cancellationPolicy": "",
+    "highlights": [
+     "The plateau, then Sakkara and Memphis",
+     "A fallen colossus and an alabaster sphinx",
+     "Both museums on the second day",
+     "A car and a guide of your own throughout"
+    ],
+    "inclusions": [
+     "Bottle Of Water",
+     "Hotel pickup and drop-off in Cairo or Giza",
+     "A private air-conditioned vehicle on both days",
+     "An English-speaking guide on both days",
+     "Lunch on both days",
+     "The entry fees for the sites the two days visit"
+    ],
+    "exclusions": [],
+    "participantRequirements": [],
+    "whatToBring": [],
+    "needToKnow": [
+     "The trip runs over two days, and the vehicle collects you from your hotel on each of them.",
+     "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "secrets-of-cairo-a-2-day-private-magical-adve-b8969b9ddc98",
+      "name": "Two private days in Cairo",
+      "description": "Day one at the Giza plateau, Sakkara and Memphis; day two at the Egyptian Museum and the National Museum of Egyptian Civilization.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Day one, hotel pickup",
+      "description": "A private air-conditioned vehicle collects you from your hotel in Cairo or Giza.",
+      "duration": "1 hour"
+     },
+     {
+      "index": 1,
+      "title": "Day one, the Giza plateau",
+      "description": "The pyramids with the guide, then the Valley Temple and the Great Sphinx.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "Day one, Sakkara",
+      "description": "The Step Pyramid of Djoser.",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "Day one, Memphis",
+      "description": "The ruins of the old capital, its colossal statue of Ramses II and the alabaster sphinx beside it.",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "Day two, the Egyptian Museum",
+      "description": "The museum on Tahrir Square with the guide.",
+      "duration": ""
+     },
+     {
+      "index": 5,
+      "title": "Day two, the Museum of Egyptian Civilization",
+      "description": "The national museum and its hall of royal mummies.",
+      "duration": ""
+     },
+     {
+      "index": 6,
+      "title": "Back to your hotel",
+      "description": "The vehicle returns you to your hotel at the end of each day.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel pickup",
+      "description": "Pickup and drop-off at your hotel in Cairo or Giza."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "The team confirms your pickup time when it confirms your booking."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1787781377/tours/wkmxhvoiwvc36jaxfrr6.jpg",
+      "alt": "The stepped pyramid of Djoser rising in six tiers of worn stone above flat open sand, under a hazy sky at the end of the day"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Two Private Days by Car: Giza, Sakkara and the Museums",
+     "metaDescription": "Two days by private car with a guide and a meal: the plateau, Sakkara and Memphis, then the museum on Tahrir Square and the national museum.",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "يومان خاصان في القاهرة والجيزة بالسيارة",
+    "shortDescription": "يومان بسيارة خاصة مع مرشد ووجبة: الجيزة وسقارة وممفيس في اليوم الأول؛ والمتحفان الكبيران في المدينة في اليوم الثاني.",
+    "description": "تقف سيارة خاصة مكيّفة عند فندقك في الثامنة في كلا الصباحين. ويعمل اليوم الأول على هضبة الجيزة — أهراماتها ومعبد الوادي وأبو الهول نفسه — قبل أن يتّجه جنوبًا إلى سقارة لرؤية الهرم المدرج، وينتهي في ممفيس، حيث ترقد العاصمة القديمة أطلالًا وفيها تمثال ضخم ساقط لرمسيس الثاني وأبو هول من المرمر مبسوط إلى جواره. وفي اليوم الثاني يكون المسار داخل المباني: المتحف في ميدان التحرير، ثم المتحف القومي للحضارة المصرية ومومياواته الملكية. وما يذكره البرنامج هو تلك المحطات، بالسيارة، مع مرشد؛ وهو ليس نقلًا من المطار، ولا تبيع أي صفحة في هذا الموقع نقلًا من المطار.\n\nويتحدث المرشد الإنجليزية. وتُؤكل وجبة في كلٍّ من اليومين، والدخول إلى كل موقع يشمله اليومان مسوّى داخل السعر. وتأتي السيارة إليك في كلا الصباحين وتعيدك في كلا المسائين. وللطفل سعر خاص به.",
+    "duration": "2 أيام",
+    "cancellationPolicy": "",
+    "highlights": [
+     "الهضبة، ثم سقارة وممفيس",
+     "تمثال ضخم ساقط وأبو هول من المرمر",
+     "المتحفان في اليوم الثاني",
+     "سيارة ومرشد لك وحدك طوال الوقت"
+    ],
+    "inclusions": [
+     "زجاجة ماء",
+     "الاصطحاب من الفندق والعودة إليه في القاهرة أو الجيزة",
+     "سيارة خاصة مكيّفة في اليومين",
+     "مرشد يتحدث الإنجليزية في اليومين",
+     "الغداء في اليومين",
+     "رسوم الدخول للمواقع التي يزورها اليومان"
+    ],
+    "exclusions": [],
+    "participantRequirements": [],
+    "whatToBring": [],
+    "needToKnow": [
+     "تمتد الرحلة على يومين، وتصطحبك المركبة من فندقك في كل منهما.",
+     "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "secrets-of-cairo-a-2-day-private-magical-adve-b8969b9ddc98",
+      "name": "يومان خاصان في القاهرة",
+      "description": "اليوم الأول في هضبة الجيزة وسقارة وممفيس؛ واليوم الثاني في المتحف المصري والمتحف القومي للحضارة المصرية.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "صباحاً"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "اليوم الأول، الاصطحاب من الفندق",
+      "description": "تصطحبك سيارة خاصة مكيّفة من فندقك في القاهرة أو الجيزة.",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 1,
+      "title": "اليوم الأول، هضبة الجيزة",
+      "description": "الأهرامات بصحبة المرشد، ثم معبد الوادي وأبو الهول العظيم.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "اليوم الأول، سقارة",
+      "description": "هرم زوسر المدرج.",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "اليوم الأول، ممفيس",
+      "description": "أطلال العاصمة القديمة والتمثال الضخم لرمسيس الثاني وأبو الهول المرمري بجواره.",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "اليوم الثاني، المتحف المصري",
+      "description": "المتحف في ميدان التحرير بصحبة المرشد.",
+      "duration": ""
+     },
+     {
+      "index": 5,
+      "title": "اليوم الثاني، متحف الحضارة المصرية",
+      "description": "المتحف القومي وقاعة المومياوات الملكية فيه.",
+      "duration": ""
+     },
+     {
+      "index": 6,
+      "title": "العودة إلى فندقك",
+      "description": "تعيدك المركبة إلى فندقك في ختام كل يوم.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك في القاهرة أو الجيزة والعودة إليه."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1787781377/tours/wkmxhvoiwvc36jaxfrr6.jpg",
+      "alt": "هرم زوسر المدرج يرتفع في ستة مصاطب من الحجر المتآكل فوق رمل منبسط مكشوف، تحت سماء ضبابية في آخر النهار"
+     }
+    ],
+    "seo": {
+     "metaTitle": "يومان خاصان بالسيارة: الجيزة وسقارة والمتاحف",
+     "metaDescription": "يومان بسيارة خاصة مع مرشد ووجبة: الهضبة وسقارة وممفيس، ثم المتحف في ميدان التحرير والمتحف القومي.",
+     "keywords": []
+    }
+   }
+  }
+ ],
+ "destinations": [
+  {
+   "id": "699895e47169d9820932b9a5",
+   "sourceSlug": "cairo",
+   "slug": "cairo-ar",
+   "sourceUpdatedAt": "2026-04-05T23:15:20.957Z",
+   "sourceDigest": "b2944970eac7f367dda5e99e05239b2f9a44bedbb78a60a40c157f469e183ce9",
+   "english": {
+    "name": "Cairo",
+    "country": "Egypt",
+    "description": "Cairo, the capital of Egypt, is home to the iconic Pyramids of Giza, the Egyptian Museum, and vibrant Islamic architecture.",
+    "shortDescription": "Home to the Pyramids of Giza and ancient wonders",
+    "highlights": [
+     "Pyramids of Giza",
+     "Sphinx",
+     "Egyptian Museum",
+     "Khan el-Khalili"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "historical",
+     "ancient",
+     "monuments",
+     "culture"
+    ]
+   },
+   "arabic": {
+    "name": "القاهرة",
+    "country": "مصر",
+    "description": "القاهرة، عاصمة مصر، موطن أهرامات الجيزة الشهيرة والمتحف المصري والعمارة الإسلامية النابضة بالحياة.",
+    "shortDescription": "موطن أهرامات الجيزة والعجائب القديمة",
+    "highlights": [
+     "أهرامات الجيزة",
+     "أبو الهول",
+     "المتحف المصري",
+     "خان الخليلي"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "تاريخي",
+     "آثار قديمة",
+     "آثار",
+     "ثقافة"
+    ]
+   }
+  }
+ ]
+}

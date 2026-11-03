@@ -1,0 +1,569 @@
+{
+  "about": "One Arabic reading per term across the network. Each entry: where the English names the term, the Arabic must carry `ar` (or one of `forms`, its inflected or longer forms, or the Latin name itself where the storefront brand file keeps a name in Latin on an Arabic page) and none of `avoid` (second readings seen elsewhere). Readings come from the network's published Arabic first, then the storefront brand files, then the place's own recorded Arabic spelling.",
+  "terms": [
+    {
+      "en": "Hurghada",
+      "ar": "الغردقة"
+    },
+    {
+      "en": "Marsa Alam",
+      "ar": "مرسى علم"
+    },
+    {
+      "en": "El Gouna",
+      "ar": "الجونة"
+    },
+    {
+      "en": "Sharm El Sheikh",
+      "ar": "شرم الشيخ"
+    },
+    {
+      "en": "Dahab",
+      "ar": "دهب"
+    },
+    {
+      "en": "Cairo",
+      "ar": "القاهرة",
+      "forms": [
+        "القاهرة",
+        "قاهري",
+        "قاهريًا",
+        "Cairo"
+      ]
+    },
+    {
+      "en": "Giza",
+      "ar": "الجيزة"
+    },
+    {
+      "en": "El Quseir",
+      "ar": "القصير"
+    },
+    {
+      "en": "Port Ghalib",
+      "ar": "بورت غالب"
+    },
+    {
+      "en": "Marsa Mubarak",
+      "ar": "مرسى مبارك"
+    },
+    {
+      "en": "Marsa Shona",
+      "ar": "مرسى شونة"
+    },
+    {
+      "en": "Hamata",
+      "ar": "حماطة"
+    },
+    {
+      "en": "Red Sea",
+      "ar": "البحر الأحمر"
+    },
+    {
+      "en": "Egypt",
+      "ar": "مصر",
+      "forms": [
+        "مصر",
+        "المصري",
+        "المصرية",
+        "Egypt"
+      ]
+    },
+    {
+      "en": "Sinai",
+      "ar": "سيناء"
+    },
+    {
+      "en": "Gulf of Aqaba",
+      "ar": "خليج العقبة"
+    },
+    {
+      "en": "Nuweiba",
+      "ar": "نويبع"
+    },
+    {
+      "en": "St Katherine",
+      "ar": "سانت كاترين"
+    },
+    {
+      "en": "St Catherine",
+      "ar": "سانت كاترين"
+    },
+    {
+      "en": "Ras Shetan",
+      "ar": "رأس شيطان"
+    },
+    {
+      "en": "Eastern Desert",
+      "ar": "الصحراء الشرقية"
+    },
+    {
+      "en": "White Desert",
+      "ar": "الصحراء البيضاء"
+    },
+    {
+      "en": "Bahariya Oasis",
+      "ar": "واحة البحرية"
+    },
+    {
+      "en": "Aswan",
+      "ar": "أسوان"
+    },
+    {
+      "en": "Luxor",
+      "ar": "الأقصر"
+    },
+    {
+      "en": "Alexandria",
+      "ar": "الإسكندرية"
+    },
+    {
+      "en": "Nile",
+      "ar": "النيل"
+    },
+    {
+      "en": "Erg Abu Ramada",
+      "ar": "عرق أبو رمادة"
+    },
+    {
+      "en": "Abu Ramada",
+      "ar": "أبو رمادة"
+    },
+    {
+      "en": "North Abu Ramada",
+      "ar": "شمال أبو رمادة"
+    },
+    {
+      "en": "Gota Abu Ramada",
+      "ar": "قوطة أبو رمادة"
+    },
+    {
+      "en": "Giftun",
+      "ar": "جفتون"
+    },
+    {
+      "en": "Small Giftun",
+      "ar": "جفتون الصغيرة"
+    },
+    {
+      "en": "Big Giftun",
+      "ar": "جفتون الكبيرة"
+    },
+    {
+      "en": "Orange Bay",
+      "ar": "أورانج باي"
+    },
+    {
+      "en": "Magawish",
+      "ar": "ماجاويش",
+      "avoid": [
+        "مجاويش"
+      ]
+    },
+    {
+      "en": "Shabruhr Umm Gamar",
+      "ar": "شعب رهر أم قمر"
+    },
+    {
+      "en": "Umm Gamar",
+      "ar": "أم قمر"
+    },
+    {
+      "en": "Dolphin House",
+      "ar": "بيت الدلافين"
+    },
+    {
+      "en": "Hamda",
+      "ar": "حمدة"
+    },
+    {
+      "en": "Stone Beach",
+      "ar": "ستون بيتش"
+    },
+    {
+      "en": "Umm Dum",
+      "ar": "أم دوم"
+    },
+    {
+      "en": "Ras Hankorab",
+      "ar": "رأس حنكوراب"
+    },
+    {
+      "en": "Hankorab",
+      "ar": "حنكوراب"
+    },
+    {
+      "en": "Sharm El Luli",
+      "ar": "شرم اللولي"
+    },
+    {
+      "en": "Wadi El Gemal",
+      "ar": "وادي الجمال"
+    },
+    {
+      "en": "Cleopatra",
+      "ar": "كليوباترا"
+    },
+    {
+      "en": "Qulaan",
+      "ar": "قلعان"
+    },
+    {
+      "en": "Ababda",
+      "ar": "العبابدة",
+      "forms": [
+        "العبابدة",
+        "عبابدة"
+      ]
+    },
+    {
+      "en": "Wadi Lahmy",
+      "ar": "وادي لحمي"
+    },
+    {
+      "en": "Wadi Lahmi",
+      "ar": "وادي لحمي"
+    },
+    {
+      "en": "Lahami Bay",
+      "ar": "خليج لحمي"
+    },
+    {
+      "en": "Berenike",
+      "ar": "برنيكي"
+    },
+    {
+      "en": "Edfu",
+      "ar": "إدفو"
+    },
+    {
+      "en": "Fury Shoals",
+      "ar": "فيوري شولز"
+    },
+    {
+      "en": "Daedalus Reef",
+      "ar": "شعب ديدالوس"
+    },
+    {
+      "en": "Daedalus",
+      "ar": "ديدالوس"
+    },
+    {
+      "en": "Abu el-Kizan",
+      "ar": "أبو الكيزان"
+    },
+    {
+      "en": "Shaab Samadai",
+      "ar": "شعب سمداي"
+    },
+    {
+      "en": "El Ikhwa",
+      "ar": "جزر الإخوة",
+      "forms": [
+        "جزر الإخوة",
+        "الإخوة"
+      ],
+      "avoid": [
+        "الإخوان",
+        "الأخوين"
+      ]
+    },
+    {
+      "en": "Big Brother",
+      "ar": "الأخ الأكبر"
+    },
+    {
+      "en": "Little Brother",
+      "ar": "الأخ الأصغر"
+    },
+    {
+      "en": "Suez Canal",
+      "ar": "قناة السويس"
+    },
+    {
+      "en": "Zabargad",
+      "ar": "الزبرجد"
+    },
+    {
+      "en": "Ras Banas",
+      "ar": "رأس بناس"
+    },
+    {
+      "en": "Elba National Park",
+      "ar": "محمية علبة الوطنية"
+    },
+    {
+      "en": "Blue Lagoon",
+      "ar": "البحيرة الزرقاء"
+    },
+    {
+      "en": "Ras Abu Galum",
+      "ar": "رأس أبو جالوم"
+    },
+    {
+      "en": "Abu Galum",
+      "ar": "أبو جالوم"
+    },
+    {
+      "en": "Blue Hole",
+      "ar": "الثقب الأزرق"
+    },
+    {
+      "en": "Coloured Canyon",
+      "ar": "الوادي الملون",
+      "forms": [
+        "الوادي الملون",
+        "الملون"
+      ]
+    },
+    {
+      "en": "Colored Canyon",
+      "ar": "الوادي الملون",
+      "forms": [
+        "الوادي الملون",
+        "الملون"
+      ]
+    },
+    {
+      "en": "Sinai Trail",
+      "ar": "مسار سيناء"
+    },
+    {
+      "en": "Wadi Zaghara",
+      "ar": "وادي زغرة"
+    },
+    {
+      "en": "Wadi Hamam",
+      "ar": "وادي حمام"
+    },
+    {
+      "en": "Salama",
+      "ar": "سلامة"
+    },
+    {
+      "en": "Ras Mohammed",
+      "ar": "رأس محمد"
+    },
+    {
+      "en": "White Island",
+      "ar": "الجزيرة البيضاء"
+    },
+    {
+      "en": "Gebel El Rosas",
+      "ar": "جبل الرصاص"
+    },
+    {
+      "en": "Marsa Abu Galawa",
+      "ar": "مرسى أبو جلاوة"
+    },
+    {
+      "en": "Abu Galawa",
+      "ar": "أبو جلاوة"
+    },
+    {
+      "en": "Careless Reef",
+      "ar": "شعب كيرلس",
+      "avoid": [
+        "شعاب كيرلس"
+      ]
+    },
+    {
+      "en": "Sakkara",
+      "ar": "سقارة"
+    },
+    {
+      "en": "Memphis",
+      "ar": "ممفيس"
+    },
+    {
+      "en": "Sphinx",
+      "ar": "أبو الهول",
+      "forms": [
+        "أبو الهول",
+        "أبو هول"
+      ]
+    },
+    {
+      "en": "Step Pyramid",
+      "ar": "الهرم المدرج",
+      "forms": [
+        "الهرم المدرج",
+        "المدرج"
+      ]
+    },
+    {
+      "en": "Khufu",
+      "ar": "خوفو"
+    },
+    {
+      "en": "Khafre",
+      "ar": "خفرع"
+    },
+    {
+      "en": "Menkaure",
+      "ar": "منقرع"
+    },
+    {
+      "en": "Ramses II",
+      "ar": "رمسيس الثاني"
+    },
+    {
+      "en": "Valley Temple",
+      "ar": "معبد الوادي"
+    },
+    {
+      "en": "Tahrir Square",
+      "ar": "ميدان التحرير"
+    },
+    {
+      "en": "Egyptian Museum",
+      "ar": "المتحف المصري"
+    },
+    {
+      "en": "Old Cairo",
+      "ar": "القاهرة القديمة"
+    },
+    {
+      "en": "Cairo International Airport",
+      "ar": "مطار القاهرة الدولي"
+    },
+    {
+      "en": "New Cairo",
+      "ar": "القاهرة الجديدة"
+    },
+    {
+      "en": "Bedouin",
+      "ar": "بدوي",
+      "forms": [
+        "بدوي",
+        "بدوية",
+        "البدوية",
+        "البدو",
+        "بدو",
+        "البدوي"
+      ]
+    },
+    {
+      "en": "snorkel",
+      "ar": "سنوركلينغ",
+      "forms": [
+        "سنوركلينغ",
+        "السنوركلينغ"
+      ]
+    },
+    {
+      "en": "snorkelling",
+      "ar": "سنوركلينغ",
+      "forms": [
+        "سنوركلينغ",
+        "السنوركلينغ"
+      ]
+    },
+    {
+      "en": "snorkeling",
+      "ar": "سنوركلينغ",
+      "forms": [
+        "سنوركلينغ",
+        "السنوركلينغ"
+      ]
+    },
+    {
+      "en": "Nitrox",
+      "ar": "نيتروكس",
+      "forms": [
+        "نيتروكس",
+        "النيتروكس"
+      ]
+    },
+    {
+      "en": "dugong",
+      "ar": "أبقار البحر"
+    },
+    {
+      "en": "dugongs",
+      "ar": "أبقار البحر"
+    },
+    {
+      "en": "seagrass",
+      "ar": "أعشاب البحر"
+    },
+    {
+      "en": "moray",
+      "ar": "الموراي"
+    },
+    {
+      "en": "anthias",
+      "ar": "الأنثياس"
+    },
+    {
+      "en": "yacht",
+      "ar": "يخت",
+      "forms": [
+        "يخت",
+        "اليخت",
+        "باليخت"
+      ]
+    },
+    {
+      "en": "buffet",
+      "ar": "بوفيه"
+    },
+    {
+      "en": "jeep",
+      "ar": "الجيب",
+      "forms": [
+        "الجيب",
+        "بالجيب",
+        "جيب"
+      ]
+    },
+    {
+      "en": "quad",
+      "ar": "الكواد",
+      "forms": [
+        "الكواد",
+        "كواد"
+      ]
+    },
+    {
+      "en": "acacia",
+      "ar": "السنط",
+      "forms": [
+        "السنط",
+        "سنط"
+      ]
+    },
+    {
+      "en": "arak",
+      "ar": "الأراك",
+      "forms": [
+        "الأراك",
+        "أراك"
+      ]
+    },
+    {
+      "en": "mangrove",
+      "ar": "المانغروف",
+      "forms": [
+        "المانغروف",
+        "مانغروف"
+      ]
+    },
+    {
+      "en": "telescope",
+      "ar": "التلسكوب",
+      "forms": [
+        "التلسكوب",
+        "التلسكوبات"
+      ]
+    },
+    {
+      "en": "peridot",
+      "ar": "البريدوت",
+      "forms": [
+        "البريدوت",
+        "الزبرجد"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,376 @@
+{
+ "version": 1,
+ "batch": "b17c",
+ "locale": "ar",
+ "tenant": {
+  "id": "6ae9a6f4f5e4742051b2bd3a",
+  "slug": "gebel-el-rosas-bay",
+  "domain": "gebel-el-rosas-bay.foxesnetwork.com"
+ },
+ "presentationSha256": "fd3c9e785495f3fcae560511f252f240f42ec4ed0f342dd18a2d82d0d4ed732e",
+ "presentation": [
+  {
+   "kind": "tenant",
+   "sourceId": "6ae9a6f4f5e4742051b2bd3a",
+   "sourceDigest": "c9f1049d6ae4db7a110d015d25bb133a5f9db95d9e565df5e218a45ada4fd8af",
+   "english": {
+    "tagline": "A reef day thirty kilometres down the coast",
+    "description": "Gebel El Rosas is a bay and anchorage on the Red Sea coast north of Marsa Alam, carried in the gazetteers under that name and also as Marsa Gabal Elrosas and Marsa Jabal ar Rasas. Two independent sources publish its position a hundred and seventy-eight metres apart, at 25.2054 N, 34.8093 E, with an anchorage entry for the same feature three hundred and fourteen metres away, and it lies roughly fifteen to seventeen kilometres north of the town along the coast. A wadi and a named mountain ridge stand directly behind it, both recorded under the same name, and the name itself is lead: جبل الرصاص, the mount of lead. The mine of that name is a different, inland place, and no distance to it is given anywhere on this site, because its own two published positions disagree by thirteen kilometres. Dive guides list the bay as a boat-dive location and describe a narrow sandy-bottomed entrance and a coral garden. Hotels along the surrounding stretch of coast are marketed under the bay's name; none is named here and nothing on this site is a recommendation.\n\nThis cruise snorkels at Shaab Samadai, the dolphin reef off Marsa Alam; its programme does not name Gebel El Rosas, the bay about thirty kilometres north-west of that reef on the coast above the town. One trip is sold here, and all seven hours of it stay at that reef: two guided sessions in the water and a buffet lunch between them. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+    "seoSettings": {
+     "metaTitle": "Gebel El Rosas Bay: the Shaab Samadai Cruise",
+     "metaDescription": "A boat day at the dolphin reef of Shaab Samadai from a Marsa Alam hotel: one led session in its inner water, one on the coral outside it, a buffet.",
+     "keywords": [
+      "gebel el rosas bay anchorage",
+      "marsa jabal ar rasas red sea coast",
+      "the bay below the mount of lead",
+      "shaab samadai reef cruise marsa alam",
+      "boat dive location north of marsa alam"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "Home",
+      "columns": []
+     },
+     {
+      "label": "Trips",
+      "columns": []
+     },
+     {
+      "label": "About",
+      "columns": []
+     },
+     {
+      "label": "FAQ",
+      "columns": []
+     },
+     {
+      "label": "Contact",
+      "columns": []
+     }
+    ]
+   },
+   "arabic": {
+    "tagline": "يوم على الشعاب على بُعد ثلاثين كيلومترًا على الساحل",
+    "description": "جبل الرصاص خليج ومرسى على ساحل البحر الأحمر شمال مرسى علم، تحمله المعاجم الجغرافية بذلك الاسم وكذلك باسم Marsa Gabal Elrosas وMarsa Jabal ar Rasas. وينشر مصدران مستقلان موضعه بفارق مئة وثمانية وسبعين مترًا، عند 25.2054 شمالًا و34.8093 شرقًا، مع مدخل مرسى للمَعلَم نفسه على بُعد ثلاثمئة وأربعة عشر مترًا، ويقع على نحو خمسة عشر إلى سبعة عشر كيلومترًا شمال البلدة بمحاذاة الساحل. ويقف وراءه مباشرة وادٍ وحرف جبلي يحمل اسمًا، وكلاهما مسجَّل بالاسم نفسه، والاسم نفسه معناه الرصاص: جبل الرصاص. ومنجم ذلك الاسم مكان آخر في الداخل، ولا تُعطى مسافة إليه في أي موضع من هذا الموقع، لأن موضعيه المنشورين يختلفان بثلاثة عشر كيلومترًا. وتُدرج أدلّة الغوص الخليج موقعًا للغوص من القارب وتصف مدخلًا ضيّقًا رملي القاع وحديقة مرجانية. وتُسوَّق الفنادق على امتداد هذا الساحل باسم الخليج؛ ولا يُذكر أيٌّ منها هنا ولا شيء في هذا الموقع توصية. وتمارس هذه الرحلة البحرية السنوركلينغ عند شعب سمداي، شعب الدلافين قبالة مرسى علم؛ ولا يذكر برنامجها جبل الرصاص، الخليج الذي يقع على نحو ثلاثين كيلومترًا إلى الشمال الغربي من تلك الشعبة على الساحل شمال البلدة. ورحلة واحدة تُباع هنا، وساعاتها السبع كلها تبقى عند تلك الشعبة: جلستان في الماء بصحبة مرشد وغداء بوفيه بينهما. وكل رحلة تقلّك من فندقك وتعيدك إليه، وتذكر كل صفحة ما يشمله سعرها. احجز مكانك عبر الإنترنت وادفع لاحقًا، أو اسأل الفريق أولًا عن موعد الاستلام.",
+    "seoSettings": {
+     "metaTitle": "خليج جبل الرصاص: رحلة شعب سمداي",
+     "metaDescription": "يوم بحري عند شعب الدلافين في شعب سمداي من فندق في مرسى علم: جلسة بصحبة مرشد في مياهه الداخلية، وأخرى على المرجان خارجها، وبوفيه.",
+     "keywords": [
+      "مرسى خليج جبل الرصاص",
+      "Marsa Jabal ar Rasas ساحل البحر الأحمر",
+      "الخليج الواقع تحت جبل الرصاص",
+      "رحلة شعب سمداي مرسى علم",
+      "موقع غوص من القارب شمال مرسى علم"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "الرئيسية",
+      "columns": []
+     },
+     {
+      "label": "الرحلات",
+      "columns": []
+     },
+     {
+      "label": "من نحن",
+      "columns": []
+     },
+     {
+      "label": "الأسئلة الشائعة",
+      "columns": []
+     },
+     {
+      "label": "اتصل بنا",
+      "columns": []
+     }
+    ]
+   }
+  }
+ ],
+ "tours": [
+  {
+   "id": "6ae9a6f4226b91979e22a02e",
+   "sourceSlug": "grb-seven-hours-at-the-dolphin-reef-off-the-town",
+   "slug": "grb-seven-hours-at-the-dolphin-reef-off-the-town-ar",
+   "sourceUpdatedAt": "2026-11-03T09:18:44.629Z",
+   "sourceDigest": "19ceb9fe0a3557af1b86f8f8b34f945c757c35d7faa79cceedbebaa6017eba22",
+   "english": {
+    "title": "Seven Hours at the Dolphin Reef off the Town",
+    "shortDescription": "Seven hours at Shaab Samadai: one led session in the quiet water the reef encloses, another along the coral outside it, and a buffet set out aboard.",
+    "description": "Pickup is from your hotel, and the boat heads for Shaab Samadai, a reef bent into a horseshoe whose quiet inner water spinner dolphins hold through the day for their rest. Two sessions in the water, each of them led, carry the whole day: one inside that quiet water, one along the coral on the open side, with masks, fins and a jacket for whoever asks. The programme holds to that reef alone, not Gebel El Rosas, the bay lying about thirty kilometres north-west of it on the coast above the town; the boat spends the day at the reef and nowhere else.\n\nBetween the two a buffet is set out on board with soft drinks to go round. The dolphins are wild and in open water, so the crew keep watch and nobody will tell you that you are certain to see one. A wetsuit, the park fee itself and a pickup from the far ends of the coast road are each charged on top, and a child has a price of its own.",
+    "duration": "7 hours",
+    "cancellationPolicy": "",
+    "highlights": [
+     "A reef bent into a horseshoe",
+     "One session in the quiet inner water",
+     "One along the coral outside it",
+     "A buffet set out between them"
+    ],
+    "inclusions": [
+     "Hotel pickup and drop-off in Marsa Alam",
+     "Full-day boat trip to Shaab Samadai Reef",
+     "Two guided snorkelling sessions (equipment included)",
+     "Professional snorkelling guide",
+     "Refreshments and soft drinks on board",
+     "Buffet lunch on the boat",
+     "Life jackets and safety equipment"
+    ],
+    "exclusions": [
+     "Personal expenses",
+     "National park/environmental entrance fee (10€/Person)",
+     "Transfers from hotels in North & South Marsa Alam (available for an extra charge)",
+     "A wetsuit, which can be hired on the day"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Swimwear",
+     "Towel",
+     "Camera",
+     "Sunscreen"
+    ],
+    "needToKnow": [
+     "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "national-park-fee-adult-d39334dec233",
+      "name": "Shaab Samadai snorkelling boat day",
+      "description": "Hotel pickup in Marsa Alam, two guided snorkelling sessions at Shaab Samadai and a buffet lunch on board.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel pickup",
+      "description": "The car collects you from your hotel in Marsa Alam and drives to the boat.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "Out to Shaab Samadai",
+      "description": "The boat sails to the horseshoe reef of Shaab Samadai.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "First snorkelling session",
+      "description": "A guided session with the equipment, in the lagoon where spinner dolphins often rest.",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "Lunch on board",
+      "description": "A buffet lunch with soft drinks.",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "Second snorkelling session",
+      "description": "A second guided session over the coral gardens.",
+      "duration": ""
+     },
+     {
+      "index": 5,
+      "title": "Back to your hotel",
+      "description": "The boat returns and the car takes you back to your hotel in Marsa Alam.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel pickup",
+      "description": "Pickup and drop-off at your hotel in Marsa Alam."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "The team confirms your pickup time when it confirms your booking."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788795260/tours/fs65spccs0uncfww6z9k.jpg",
+      "alt": "Three dolphins swimming above a coral reef, with a snorkeller in a yellow top swimming nearby"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Seven Hours at the Horseshoe of Shaab Samadai",
+     "metaDescription": "Seven hours afloat at Shaab Samadai: a led session in the quiet water the reef encloses, another along the coral outside it, and a buffet aboard.",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "سبع ساعات عند شعب الدلافين قبالة البلدة",
+    "shortDescription": "سبع ساعات عند شعب سمداي: جلسة بصحبة مرشد في الماء الهادئ الذي تحيط به الشعبة، وأخرى بمحاذاة المرجان خارجها، وبوفيه يُمدّ على متن القارب.",
+    "description": "الاستلام من فندقك، ويتّجه القارب إلى شعب سمداي، شعبة منثنية على شكل حدوة حصان تحتفظ دلافين السبينر بماؤها الداخلي الهادئ طوال النهار لراحتها. وتحمل اليومَ كلَّه جلستان في الماء، كلٌّ منهما بصحبة مرشد: واحدة داخل ذلك الماء الهادئ، وواحدة بمحاذاة المرجان على الجانب المكشوف، مع أقنعة وزعانف وسترة لمن يطلبها. ويقتصر البرنامج على تلك الشعبة وحدها، لا جبل الرصاص، الخليج الذي يقع على نحو ثلاثين كيلومترًا إلى الشمال الغربي منها على الساحل شمال البلدة؛ ويقضي القارب اليوم عند الشعبة لا في مكان آخر.\n\nوبين الجلستين يُمدّ بوفيه على متن القارب ومعه مشروبات غازية تدور. والدلافين برية وفي مياه مفتوحة، فيراقب الطاقم ولن يقول لك أحد إنك ستراها يقينًا. وتُحتسب بدلة الغطس ورسوم المحمية نفسها والاستلام من طرفَي طريق الساحل كلٌّ منها زيادةً على السعر، وللطفل سعر خاص به.",
+    "duration": "7 ساعات",
+    "cancellationPolicy": "",
+    "highlights": [
+     "شعبة منثنية على شكل حدوة حصان",
+     "جلسة في الماء الداخلي الهادئ",
+     "وأخرى بمحاذاة المرجان خارجها",
+     "بوفيه يُمدّ بينهما"
+    ],
+    "inclusions": [
+     "الاصطحاب من الفندق والعودة إليه في مرسى علم",
+     "رحلة بحرية ليوم كامل إلى شعب سمداي",
+     "جلستان للسنوركلينغ بصحبة مرشد (المعدات مشمولة)",
+     "مرشد سنوركلينغ محترف",
+     "مرطبات ومشروبات غازية على متن المركب",
+     "غداء بوفيه على متن المركب",
+     "سترات نجاة ومعدات سلامة"
+    ],
+    "exclusions": [
+     "المصروفات الشخصية",
+     "رسوم دخول المحمية الوطنية/البيئية (10 يورو للشخص)",
+     "النقل من فنادق شمال مرسى علم وجنوبها (متاح مقابل رسم إضافي)",
+     "بدلة غوص، ويمكن استئجارها في اليوم نفسه"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "ملابس سباحة",
+     "منشفة",
+     "كاميرا",
+     "واقي شمس"
+    ],
+    "needToKnow": [
+     "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "national-park-fee-adult-d39334dec233",
+      "name": "يوم بحري للسنوركلينغ في شعب سمداي",
+      "description": "الاصطحاب من الفندق في مرسى علم، وجلستان للسنوركلينغ بصحبة مرشد في شعب سمداي، وغداء بوفيه على متن المركب.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "صباحاً"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "تصطحبك السيارة من فندقك في مرسى علم وتتجه إلى المركب.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "إلى شعب سمداي",
+      "description": "يبحر المركب إلى شعب سمداي، الشعاب التي على شكل حافر الفرس.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "جلسة السنوركلينغ الأولى",
+      "description": "جلسة بصحبة مرشد مع المعدات، في البحيرة التي كثيراً ما ترتاح فيها الدلافين الدوّارة.",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "الغداء على متن المركب",
+      "description": "غداء بوفيه مع مشروبات غازية.",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "جلسة السنوركلينغ الثانية",
+      "description": "جلسة ثانية بصحبة مرشد فوق حدائق الشعاب المرجانية.",
+      "duration": ""
+     },
+     {
+      "index": 5,
+      "title": "العودة إلى فندقك",
+      "description": "يعود المركب وتعيدك السيارة إلى فندقك في مرسى علم.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك في مرسى علم والعودة إليه."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788795260/tours/fs65spccs0uncfww6z9k.jpg",
+      "alt": "ثلاثة دلافين تسبح فوق شعاب مرجانية، وممارس سنوركلينغ بقميص أصفر يسبح قريباً منها"
+     }
+    ],
+    "seo": {
+     "metaTitle": "سبع ساعات عند حدوة شعب سمداي",
+     "metaDescription": "سبع ساعات في البحر عند شعب سمداي: جلسة بصحبة مرشد في الماء الهادئ الذي تحيط به الشعبة، وأخرى بمحاذاة المرجان خارجها، وبوفيه على متن القارب.",
+     "keywords": []
+    }
+   }
+  }
+ ],
+ "destinations": [
+  {
+   "id": "699895e47169d9820932b9ab",
+   "sourceSlug": "marsa-alam",
+   "slug": "marsa-alam-ar",
+   "sourceUpdatedAt": "2026-04-09T16:34:09.828Z",
+   "sourceDigest": "745ca25bbadf20dc3b858537c46c7a94626e45331e3ebe4f53c03911f9f9e264",
+   "english": {
+    "name": "Marsa Alam",
+    "country": "Egypt",
+    "description": "A pristine diving destination on the Red Sea, Marsa Alam is known for its untouched coral reefs and marine wildlife.",
+    "shortDescription": "Pristine Red Sea diving destination",
+    "highlights": [
+     "Coral Reefs",
+     "Dolphin Encounters",
+     "Undiscovered Wrecks",
+     "Tranquility"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "diving",
+     "marine-life",
+     "beach",
+     "adventure"
+    ]
+   },
+   "arabic": {
+    "name": "مرسى علم",
+    "country": "مصر",
+    "description": "مرسى علم وجهة غوص بكر على البحر الأحمر، تشتهر بشعابها المرجانية التي لم تمسها يد وبحياتها البحرية.",
+    "shortDescription": "وجهة غوص بكر على البحر الأحمر",
+    "highlights": [
+     "الشعاب المرجانية",
+     "لقاءات الدلافين",
+     "حطام سفن لم يُكتشف بعد",
+     "الهدوء"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "غوص",
+     "الحياة البحرية",
+     "شاطئ",
+     "مغامرة"
+    ]
+   }
+  }
+ ]
+}

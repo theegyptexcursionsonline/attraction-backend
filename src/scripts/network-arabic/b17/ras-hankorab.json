@@ -1,0 +1,358 @@
+{
+ "version": 1,
+ "batch": "b17a",
+ "locale": "ar",
+ "tenant": {
+  "id": "6ae8df8cf5e4742051b2bd2f",
+  "slug": "ras-hankorab",
+  "domain": "ras-hankorab.foxesnetwork.com"
+ },
+ "presentationSha256": "8b76629f9c783d32b12a5ceb431197d4942ae350455f315b97b4e52a7d0629f3",
+ "presentation": [
+  {
+   "kind": "tenant",
+   "sourceId": "6ae8df8cf5e4742051b2bd2f",
+   "sourceDigest": "f3c5f5179d22eadef4ced680a1eaed0f943a585b1ec16bc4eb4620f9be396f59",
+   "english": {
+    "tagline": "The jeep day inland, thirty-seven kilometres off",
+    "description": "Ras Hankorab, written Ras Honkorab as well and sold as Hankorab Beach, is a headland inside Wadi El Gemal National Park, standing on the Red Sea shore some sixty kilometres from Marsa Alam as a line is drawn, south-south-east of the town; its beach lies in the bay at the headland’s south-west foot, and the cape’s tip is a little under two kilometres away to the east-north-east. One thing to settle before reading about it elsewhere: this is not Sharm El Luli. That bay lies about seven kilometres to the north-north-west, and the two are routinely treated as one place — the map pin labelled Sharm El Luli sits on this beach, and in 2017 it read Sharm El Luli aka Hankorab beach. The beach is white sand on a calm, shallow bay, coral reefs lie just off it, and swimmers share the bay with sea turtles; endangered green turtles nest on the sand, coming ashore at night in the nesting season. The park’s own plan puts the beach at one position, and a map pin placed on the same shore in 2017 lies five hundred and seventy-three metres along it.\n\nThis day drives inland by jeep to Cleopatra’s Temple and a desert spring in Wadi El Gemal; its programme names no stop on the coast and does not name Ras Hankorab, the beach on the park’s shore about thirty-seven kilometres east-south-east of that temple. The whole of the one trip sold here is spent inland: the jeep safari up the valley, taking in the temple, the spring, two desert trees and a Bedouin dinner. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+    "seoSettings": {
+     "metaTitle": "Ras Hankorab: a Jeep Day Inland from the Beach",
+     "metaDescription": "Seven hours from midday, by jeep into Wadi El Gemal National Park: the temple ruin, a desert spring, a lookout over the valley and dinner to close.",
+     "keywords": [
+      "ras hankorab beach",
+      "hankorab beach wadi el gemal",
+      "green turtle nesting beach red sea",
+      "jeep safari inland from the coast",
+      "wadi el gemal day from marsa alam"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "Home",
+      "columns": []
+     },
+     {
+      "label": "Trips",
+      "columns": []
+     },
+     {
+      "label": "About",
+      "columns": []
+     },
+     {
+      "label": "FAQ",
+      "columns": []
+     },
+     {
+      "label": "Contact",
+      "columns": []
+     }
+    ]
+   },
+   "arabic": {
+    "tagline": "يوم بسيارات الجيب في الداخل، على بُعد سبعة وثلاثين كيلومترًا",
+    "description": "رأس حنكوراب، ويُكتب كذلك Ras Honkorab ويُباع باسم شاطئ حنكوراب، رأس داخل حديقة وادي الجمال الوطنية، يقف على ساحل البحر الأحمر على نحو ستين كيلومترًا من مرسى علم بخط مستقيم، إلى الجنوب الجنوبي الشرقي من البلدة؛ ويقع شاطئه في الخليج عند السفح الجنوبي الغربي للرأس، وطرف الرأس على أقلّ قليلًا من كيلومترين إلى الشرق الشمالي الشرقي. وثمة أمر يُحسم قبل القراءة عنه في مكان آخر: هذا ليس شرم اللولي. فذلك الخليج يقع نحو سبعة كيلومترات إلى الشمال الشمالي الغربي، ويُعامَل الموضعان عادةً وكأنهما مكان واحد — فعلامة الخريطة التي تحمل اسم شرم اللولي موضوعة على هذا الشاطئ، وكانت تقرأ في 2017 ”شرم اللولي المعروف بشاطئ حنكوراب“. والشاطئ رمل أبيض على خليج هادئ ضحل، وتقع الشعاب المرجانية قبالته مباشرة، ويتقاسم السابحون الخليج مع السلاحف البحرية؛ وتعشّش السلاحف الخضراء المهدّدة بالانقراض في الرمل، فتخرج إلى الشاطئ ليلًا في موسم التعشيش. وتضع خطة الحديقة نفسها الشاطئَ عند موضع، وتقع علامة خريطة وُضعت على الشاطئ نفسه في 2017 على بُعد خمسمئة وثلاثة وسبعين مترًا منه بمحاذاة الشاطئ. يمضي هذا اليوم إلى الداخل بسيارات الجيب إلى معبد كليوباترا ونبع صحراوي في وادي الجمال؛ ولا يذكر برنامجه أي توقف على الساحل ولا يذكر رأس حنكوراب، الشاطئ على ساحل الحديقة على نحو سبعة وثلاثين كيلومترًا إلى الشرق الجنوبي الشرقي من ذلك المعبد. والرحلة الواحدة التي تُباع هنا تُقضى كلها في الداخل: سفاري بسيارات الجيب صعودًا في الوادي، يشمل المعبد والنبع وشجرتين صحراويتين وعشاءً بدويًا. وكل رحلة تقلّك من فندقك وتعيدك إليه، وتذكر كل صفحة ما يشمله سعرها. احجز مكانك عبر الإنترنت وادفع لاحقًا، أو اسأل الفريق أولًا عن موعد الاستلام.",
+    "seoSettings": {
+     "metaTitle": "رأس حنكوراب: يوم بسيارات الجيب إلى الداخل بعيدًا عن الشاطئ",
+     "metaDescription": "سبع ساعات من منتصف النهار، بسيارات الجيب إلى حديقة وادي الجمال الوطنية: أطلال المعبد، ونبع صحراوي، ومطلّ على الوادي، وعشاء في الختام.",
+     "keywords": [
+      "شاطئ رأس حنكوراب",
+      "شاطئ حنكوراب وادي الجمال",
+      "شاطئ تعشيش السلاحف الخضراء في البحر الأحمر",
+      "سفاري بسيارات الجيب إلى الداخل بعيدًا عن الساحل",
+      "يوم وادي الجمال من مرسى علم"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "الرئيسية",
+      "columns": []
+     },
+     {
+      "label": "الرحلات",
+      "columns": []
+     },
+     {
+      "label": "من نحن",
+      "columns": []
+     },
+     {
+      "label": "الأسئلة الشائعة",
+      "columns": []
+     },
+     {
+      "label": "اتصل بنا",
+      "columns": []
+     }
+    ]
+   }
+  }
+ ],
+ "tours": [
+  {
+   "id": "6ae8df8c5aeee024ae3b2ea7",
+   "sourceSlug": "rhk-a-jeep-day-inland-from-the-beach",
+   "slug": "rhk-a-jeep-day-inland-from-the-beach-ar",
+   "sourceUpdatedAt": "2026-11-02T19:07:56.618Z",
+   "sourceDigest": "9ae2a8249d87de01c1685b54cb587ef7ab203705298263d93148071ce4d6a405",
+   "english": {
+    "title": "Up the Valley by Jeep, and a Bedouin Dinner",
+    "shortDescription": "Seven hours from midday, every one of them inland: the temple that carries Cleopatra’s name, water rising in the desert, two desert trees and dinner.",
+    "description": "Midday is the pickup, and the jeep leaves the coast road for the park’s inland valley. It halts at the temple that carries Cleopatra’s name, at water rising in the desert, at an acacia and an arak, and at a lookout high over the valley floor. Its programme names the valley, the spring and the temple, not Ras Hankorab, the beach on the park’s shore about thirty-seven kilometres east-south-east of that temple; the jeep goes the other way and stops nowhere on the coast.\n\nA Bedouin dinner closes the day before the drive back, and the halts fall in whichever order the team confirms with your booking. Every hour of this day is spent inland in the desert, and none of it on the shore this site is named for. A child is priced apart from an adult.",
+    "duration": "7 hours",
+    "cancellationPolicy": "",
+    "highlights": [
+     "The temple ruin in the valley",
+     "Water coming up in dry desert",
+     "A lookout high over the valley floor",
+     "A Bedouin dinner to close"
+    ],
+    "inclusions": [
+     "Panorama stop",
+     "Acacia tree stop",
+     "Water spring stop",
+     "Arak tree stop",
+     "Cleopatra's Temple",
+     "Bedouin dinner",
+     "Hotel pickup and drop off"
+    ],
+    "exclusions": [],
+    "participantRequirements": [],
+    "whatToBring": [],
+    "needToKnow": [
+     "The team confirms the order of the stops when it confirms your booking.",
+     "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "marsa-alam-wadi-el-gemal-desert-jeep-safari-b-f93ac389582f",
+      "name": "Jeep safari with a Bedouin dinner",
+      "description": "Wadi El Gemal National Park by jeep: a panorama, an acacia, a water spring, an arak tree, Cleopatra’s Temple and a Bedouin dinner.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "12:00"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel pickup",
+      "description": "The jeep collects you from your hotel in Marsa Alam.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "Into Wadi El Gemal",
+      "description": "The drive into the national park, with a stop at a panorama over the valley.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "Acacia and arak trees",
+      "description": "Stops at an acacia and an arak tree in the valley.",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "The water spring",
+      "description": "A stop at a desert spring.",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "Cleopatra’s Temple",
+      "description": "A visit to the temple ruins in the park.",
+      "duration": ""
+     },
+     {
+      "index": 5,
+      "title": "Bedouin dinner",
+      "description": "Dinner in the Bedouin way before the drive back to your hotel.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel pickup",
+      "description": "Pickup and drop-off at your hotel in Marsa Alam."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "The team confirms your pickup time when it confirms your booking."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793636436/attractions-network/tenant-heroes/wadi-lahmy/site-20261102-second-52648bf9f037.png",
+      "alt": "A broad stony gravel wash with scattered scrub runs inland between low dark desert hills under a clear blue sky."
+     }
+    ],
+    "seo": {
+     "metaTitle": "Up the Valley by Jeep, and a Bedouin Dinner",
+     "metaDescription": "Seven hours from midday in the park’s inland valley: the temple ruin, water rising in the desert, a lookout, two desert trees and dinner.",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "صعودًا في الوادي بسيارات الجيب، وعشاء بدوي",
+    "shortDescription": "سبع ساعات من منتصف النهار، كلها في الداخل: المعبد الذي يحمل اسم كليوباترا، وماء ينبع في الصحراء، وشجرتان صحراويتان، وعشاء.",
+    "description": "منتصف النهار موعد الاستلام، وتترك سيارة الجيب طريق الساحل إلى وادي الحديقة الداخلي. وتتوقف عند المعبد الذي يحمل اسم كليوباترا، وعند ماء ينبع في الصحراء، وعند شجرة سنط وشجرة أراك، وعند مطلّ عالٍ فوق قاع الوادي. ويذكر برنامجها الوادي والنبع والمعبد، لا رأس حنكوراب، الشاطئ على ساحل الحديقة على نحو سبعة وثلاثين كيلومترًا إلى الشرق الجنوبي الشرقي من ذلك المعبد؛ فسيارة الجيب تمضي في الاتجاه الآخر ولا تتوقف في أي موضع على الساحل.\n\nويختم عشاء بدوي اليوم قبل العودة، وتأتي المحطات بالترتيب الذي يؤكده الفريق مع حجزك. وكل ساعة من هذا اليوم تُقضى في الداخل في الصحراء، ولا شيء منها على الشاطئ الذي يحمل هذا الموقع اسمه. وللطفل سعر منفصل عن سعر البالغ.",
+    "duration": "7 ساعات",
+    "cancellationPolicy": "",
+    "highlights": [
+     "أطلال المعبد في الوادي",
+     "ماء يخرج في صحراء جافة",
+     "مطلّ عالٍ فوق قاع الوادي",
+     "عشاء بدوي في الختام"
+    ],
+    "inclusions": [
+     "توقف عند نقطة البانوراما",
+     "توقف عند شجرة السنط",
+     "توقف عند نبع الماء",
+     "توقف عند شجرة الأراك",
+     "معبد كليوباترا",
+     "عشاء بدوي",
+     "النقل من الفندق وإليه"
+    ],
+    "exclusions": [],
+    "participantRequirements": [],
+    "whatToBring": [],
+    "needToKnow": [
+     "يؤكد الفريق ترتيب التوقفات عند تأكيد حجزك.",
+     "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "marsa-alam-wadi-el-gemal-desert-jeep-safari-b-f93ac389582f",
+      "name": "سفاري بالجيب مع عشاء بدوي",
+      "description": "محمية وادي الجمال الوطنية بالجيب: مطل، وشجرة سنط، وعين ماء، وشجرة أراك، ومعبد كليوباترا، وعشاء بدوي.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "الساعة 12:00"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "يصطحبك الجيب من فندقك في مرسى علم.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "إلى وادي الجمال",
+      "description": "الطريق إلى داخل المحمية الوطنية، مع وقفة عند مطل على الوادي.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "شجرتا السنط والأراك",
+      "description": "وقفات عند شجرة سنط وشجرة أراك في الوادي.",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "عين الماء",
+      "description": "وقفة عند عين ماء في الصحراء.",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "معبد كليوباترا",
+      "description": "زيارة أطلال المعبد داخل المحمية.",
+      "duration": ""
+     },
+     {
+      "index": 5,
+      "title": "عشاء بدوي",
+      "description": "عشاء على الطريقة البدوية قبل طريق العودة إلى فندقك.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك في مرسى علم والعودة إليه."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793636436/attractions-network/tenant-heroes/wadi-lahmy/site-20261102-second-52648bf9f037.png",
+      "alt": "مجرى حصوي عريض تتناثر فيه الشجيرات يمتدّ إلى الداخل بين تلال صحراوية داكنة منخفضة تحت سماء زرقاء صافية."
+     }
+    ],
+    "seo": {
+     "metaTitle": "صعودًا في الوادي بسيارات الجيب، وعشاء بدوي",
+     "metaDescription": "سبع ساعات من منتصف النهار في وادي الحديقة الداخلي: أطلال المعبد، وماء ينبع في الصحراء، ومطلّ، وشجرتان صحراويتان، وعشاء.",
+     "keywords": []
+    }
+   }
+  }
+ ],
+ "destinations": [
+  {
+   "id": "699895e47169d9820932b9ab",
+   "sourceSlug": "marsa-alam",
+   "slug": "marsa-alam-ar",
+   "sourceUpdatedAt": "2026-04-09T16:34:09.828Z",
+   "sourceDigest": "745ca25bbadf20dc3b858537c46c7a94626e45331e3ebe4f53c03911f9f9e264",
+   "english": {
+    "name": "Marsa Alam",
+    "country": "Egypt",
+    "description": "A pristine diving destination on the Red Sea, Marsa Alam is known for its untouched coral reefs and marine wildlife.",
+    "shortDescription": "Pristine Red Sea diving destination",
+    "highlights": [
+     "Coral Reefs",
+     "Dolphin Encounters",
+     "Undiscovered Wrecks",
+     "Tranquility"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "diving",
+     "marine-life",
+     "beach",
+     "adventure"
+    ]
+   },
+   "arabic": {
+    "name": "مرسى علم",
+    "country": "مصر",
+    "description": "مرسى علم وجهة غوص بكر على البحر الأحمر، تشتهر بشعابها المرجانية التي لم تمسها يد وبحياتها البحرية.",
+    "shortDescription": "وجهة غوص بكر على البحر الأحمر",
+    "highlights": [
+     "الشعاب المرجانية",
+     "لقاءات الدلافين",
+     "حطام سفن لم يُكتشف بعد",
+     "الهدوء"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "غوص",
+     "الحياة البحرية",
+     "شاطئ",
+     "مغامرة"
+    ]
+   }
+  }
+ ]
+}

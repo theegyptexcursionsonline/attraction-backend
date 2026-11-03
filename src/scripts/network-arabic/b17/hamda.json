@@ -1,0 +1,374 @@
+{
+ "version": 1,
+ "batch": "b17a",
+ "locale": "ar",
+ "tenant": {
+  "id": "6ae8df81f5e4742051b2bd2e",
+  "slug": "hamda",
+  "domain": "hamda.foxesnetwork.com"
+ },
+ "presentationSha256": "d735c71ec541f559e013e3241264eb55e03f7a3a899b5ea2f65ebb4734fab04a",
+ "presentation": [
+  {
+   "kind": "tenant",
+   "sourceId": "6ae8df81f5e4742051b2bd2e",
+   "sourceDigest": "f3aa1b3e675ec4a2b41d1ec21ae03a6543c437c70316fbefcbdde435f056ca1b",
+   "english": {
+    "tagline": "An afternoon yacht out of Hurghada",
+    "description": "Hamda, also called Stone Beach and Umm Dum, and Lion’s Head by one guide, is a dive site on the north-east side of Big Giftun, the larger of the two Giftun islands, inside Giftun National Park. It is a plateau attached to the island’s reef wall: it begins at about fifteen metres and ends in steep walls that drop away into deep water, and a small bend in the island’s shore gives it some shelter from the wind. Most of the life is in the shallows above the plateau, where the schools of reef fish gather; moray eels are seen on the plateau and below it, turtles and sharks come by, and whale sharks have been seen here. Two dive registers publish its position twenty-one metres apart, about fifty metres off the island’s shore, and a third register’s own distances to its neighbours agree to within a hundred and fifty metres.\n\nThis afternoon yacht stops to snorkel at Giftun; its programme does not say where at Giftun, and it does not name Hamda, the plateau off the north-east shore of the larger Giftun island. One trip is sold here: the afternoon sailing, five hours with forty minutes in the water and a meal on the way home. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+    "seoSettings": {
+     "metaTitle": "Hamda: the Afternoon Yacht and Snorkelling Day",
+     "metaDescription": "Five hours out of Hurghada on an afternoon yacht: an hour and a half under sail each way, forty minutes snorkelling at Giftun and a meal aboard.",
+     "keywords": [
+      "hamda stone beach giftun",
+      "umm dum dive site big giftun",
+      "afternoon snorkelling yacht hurghada",
+      "giftun national park plateau",
+      "five hour yacht trip from hurghada"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "Home",
+      "columns": []
+     },
+     {
+      "label": "Trips",
+      "columns": []
+     },
+     {
+      "label": "About",
+      "columns": []
+     },
+     {
+      "label": "FAQ",
+      "columns": []
+     },
+     {
+      "label": "Contact",
+      "columns": []
+     }
+    ]
+   },
+   "arabic": {
+    "tagline": "يخت بعد الظهر من الغردقة",
+    "description": "حمدة، ويُسمّى كذلك ستون بيتش وأم دوم، ورأس الأسد عند أحد الأدلّة، موقع غوص على الجانب الشمالي الشرقي من جفتون الكبيرة، كبرى جزيرتي جفتون، داخل محمية جفتون الوطنية. وهو هضبة ملتصقة بجدار شعاب الجزيرة: تبدأ عند نحو خمسة عشر مترًا وتنتهي بجدران شديدة الانحدار تهوي إلى المياه العميقة، ويمنحها انحناء صغير في شاطئ الجزيرة بعض الحماية من الريح. ومعظم الحياة في المياه الضحلة فوق الهضبة، حيث تتجمّع أسراب أسماك الشعاب؛ وتُرى أسماك الموراي على الهضبة وتحتها، وتمرّ السلاحف وأسماك القرش، وقد شوهدت هنا أسماك قرش الحوت. ويضع دليلان للغوص موضعه بفارق واحد وعشرين مترًا، على نحو خمسين مترًا من شاطئ الجزيرة، وتتوافق مسافات دليل ثالث إلى جيرانه في حدود مئة وخمسين مترًا. يتوقّف هذا اليخت بعد الظهر للسنوركلينغ عند جفتون؛ ولا يذكر برنامجه أين عند جفتون، ولا يذكر حمدة، الهضبة قبالة الشاطئ الشمالي الشرقي من جزيرة جفتون الكبرى. ورحلة واحدة تُباع هنا: إبحار بعد الظهر، خمس ساعات منها أربعون دقيقة في الماء ووجبة في طريق العودة. وكل رحلة تقلّك من فندقك وتعيدك إليه، وتذكر كل صفحة ما يشمله سعرها. احجز مكانك عبر الإنترنت وادفع لاحقًا، أو اسأل الفريق أولًا عن موعد الاستلام.",
+    "seoSettings": {
+     "metaTitle": "حمدة: يوم اليخت والسنوركلينغ بعد الظهر",
+     "metaDescription": "خمس ساعات من الغردقة على يخت بعد الظهر: ساعة ونصف في الإبحار في كل اتجاه، وأربعون دقيقة للسنوركلينغ عند جفتون، ووجبة على متن اليخت.",
+     "keywords": [
+      "حمدة ستون بيتش جفتون",
+      "أم دوم موقع غوص جفتون الكبيرة",
+      "يخت سنوركلينغ بعد الظهر في الغردقة",
+      "هضبة محمية جفتون الوطنية",
+      "رحلة يخت خمس ساعات من الغردقة"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "الرئيسية",
+      "columns": []
+     },
+     {
+      "label": "الرحلات",
+      "columns": []
+     },
+     {
+      "label": "من نحن",
+      "columns": []
+     },
+     {
+      "label": "الأسئلة الشائعة",
+      "columns": []
+     },
+     {
+      "label": "اتصل بنا",
+      "columns": []
+     }
+    ]
+   }
+  }
+ ],
+ "tours": [
+  {
+   "id": "6ae8df81d6540ad6cc0f55b4",
+   "sourceSlug": "hmd-afternoon-yacht-and-a-stop-at-giftun",
+   "slug": "hmd-afternoon-yacht-and-a-stop-at-giftun-ar",
+   "sourceUpdatedAt": "2026-11-02T19:07:45.603Z",
+   "sourceDigest": "4d7d5c5ad3078460214b77237c27929000abb03f85cce11f4c58b1044f7626dd",
+   "english": {
+    "title": "Out at Half Past Three, Snorkelling at Giftun",
+    "shortDescription": "Five hours from half past three: an hour and a half under sail each way, forty minutes snorkelling at Giftun and calamari with chips aboard.",
+    "description": "The car comes round at half past three, and the yacht works out along the coast for ninety minutes. Forty minutes go to snorkelling at Giftun, with the gear handed out and a guide on hand for anyone who does not swim, and then the yacht turns for home as the light drops. Its programme names the Red Sea and Giftun Island, not Hamda, the plateau off the north-east shore of the larger Giftun island; it does not say where at Giftun the boat stops, and nothing calls at the plateau.\n\nCalamari with fish and chips is served on the way back and the drinks keep coming. The nature reserve fee is paid on the day and is not part of this price, and neither are towels or underwater photographs. A child has a price of its own, and a pickup from beyond the town cannot be booked on this page.",
+    "duration": "5 hours",
+    "cancellationPolicy": "",
+    "highlights": [
+     "An hour and a half under sail",
+     "Forty minutes of snorkelling at Giftun",
+     "A guide on hand for non-swimmers",
+     "Calamari, fish and chips on the way back"
+    ],
+    "inclusions": [
+     "Professional guides on each boat",
+     "Special guide for non-swimmers",
+     "3-hour yacht cruise on the Red Sea (excluding the pick-up and drop-off time)",
+     "40-minute snorkeling session",
+     "Unlimited hot drinks (tea and coffee)",
+     "Unlimited soft drinks (Coca-Cola, Sprite, Fanta)",
+     "Unlimited bottled water",
+     "All snorkeling equipment (mask, snorkel, fins, life jacket)",
+     "Professional crew",
+     "Pickup and drop-off at your hotel in Hurghada",
+     "Calamari, fish and chips"
+    ],
+    "exclusions": [
+     "Towels",
+     "Underwater photos",
+     "Gratuities (optional)",
+     "Nature Reserve Fee: €5 per person (adult/child), not included. Pay by cash, Visa, or payment link"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Sun hat",
+     "Hat",
+     "Towel",
+     "Sunscreen"
+    ],
+    "needToKnow": [
+     "Pickup from outside Hurghada costs extra and cannot be booked on this site. Ask the team before you book if your hotel is further out.",
+     "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "5-hour-sunset-yacht-and-snorkeling-trip-from--35ee79105ac6",
+      "name": "Afternoon yacht and snorkelling",
+      "description": "Three hours on the water, forty minutes of snorkelling, a fish and chips meal and unlimited drinks.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "15:30"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel pickup",
+      "description": "The car collects you from your hotel in Hurghada.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "Sailing",
+      "description": "The yacht sails out along the coast.",
+      "duration": "1.5 hours"
+     },
+     {
+      "index": 2,
+      "title": "Snorkelling at Giftun",
+      "description": "A snorkelling session with the gear, and a guide for non-swimmers.",
+      "duration": "40 minutes"
+     },
+     {
+      "index": 3,
+      "title": "Sailing back",
+      "description": "Calamari, fish and chips on board as the yacht returns towards evening.",
+      "duration": "1.5 hours"
+     },
+     {
+      "index": 4,
+      "title": "Back to your hotel",
+      "description": "The car returns you to your hotel in Hurghada.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel pickup",
+      "description": "Pickup and drop-off at your hotel in Hurghada."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "The team confirms your pickup time when it confirms your booking."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788796522/tours/jxzuelgfb5r9vdl36xoa.jpg",
+      "alt": "A sailing boat on calm water with the sun setting low behind it"
+     }
+    ],
+    "seo": {
+     "metaTitle": "An Afternoon Yacht from Hurghada, Snorkelling at Giftun",
+     "metaDescription": "Out of Hurghada at half past three: an hour and a half under sail each way, forty minutes snorkelling at Giftun and calamari with chips aboard.",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "الانطلاق في الثالثة والنصف، وسنوركلينغ عند جفتون",
+    "shortDescription": "خمس ساعات من الثالثة والنصف: ساعة ونصف في الإبحار في كل اتجاه، وأربعون دقيقة للسنوركلينغ عند جفتون، وكلماري مع بطاطس مقلية على متن اليخت.",
+    "description": "تمرّ السيارة في الثالثة والنصف، ويشقّ اليخت طريقه بمحاذاة الساحل تسعين دقيقة. وتُعطى أربعون دقيقة للسنوركلينغ عند جفتون، مع توزيع المعدّات ومرشد في المتناول لمن لا يُحسن السباحة، ثم يعود اليخت أدراجه مع انخفاض الضوء. ويذكر برنامجه البحر الأحمر وجزيرة جفتون، لا حمدة، الهضبة قبالة الشاطئ الشمالي الشرقي من جزيرة جفتون الكبرى؛ ولا يقول أين عند جفتون يتوقف القارب، ولا شيء يمرّ بالهضبة.\n\nويُقدَّم الكلماري مع السمك والبطاطس المقلية في طريق العودة، وتتوالى المشروبات. وتُدفع رسوم المحمية الطبيعية في يوم الرحلة وليست جزءًا من هذا السعر، وكذلك المناشف والصور تحت الماء. وللطفل سعر خاص به، ولا يمكن حجز استلام من خارج المدينة على هذه الصفحة.",
+    "duration": "5 ساعات",
+    "cancellationPolicy": "",
+    "highlights": [
+     "ساعة ونصف في الإبحار",
+     "أربعون دقيقة من السنوركلينغ عند جفتون",
+     "مرشد في المتناول لمن لا يُحسن السباحة",
+     "كلماري وسمك وبطاطس مقلية في طريق العودة"
+    ],
+    "inclusions": [
+     "مرشدون محترفون على كل مركب",
+     "مرشد خاص لغير السابحين",
+     "رحلة باليخت في البحر الأحمر مدتها 3 ساعات (لا تشمل وقت الاصطحاب والعودة)",
+     "جلسة سنوركلينغ مدتها 40 دقيقة",
+     "مشروبات ساخنة بلا حدود (شاي وقهوة)",
+     "مشروبات غازية بلا حدود (كوكا كولا وسبرايت وفانتا)",
+     "مياه معبأة بلا حدود",
+     "كل معدات السنوركلينغ (قناع وأنبوب تنفس وزعانف وسترة نجاة)",
+     "طاقم محترف",
+     "الاصطحاب من فندقك في الغردقة والعودة إليه",
+     "كلماري وسمك وبطاطس مقلية"
+    ],
+    "exclusions": [
+     "المناشف",
+     "الصور تحت الماء",
+     "الإكراميات (غير إلزامية)",
+     "رسوم المحمية الطبيعية: 5 يورو للشخص (بالغ/طفل)، غير مشمولة. تُدفع نقداً أو بفيزا أو عبر رابط دفع"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "قبعة شمسية",
+     "قبعة",
+     "منشفة",
+     "واقي شمس"
+    ],
+    "needToKnow": [
+     "الاصطحاب من خارج الغردقة بتكلفة إضافية ولا يمكن حجزه عبر هذا الموقع. اسأل الفريق قبل الحجز إذا كان فندقك أبعد من ذلك.",
+     "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "5-hour-sunset-yacht-and-snorkeling-trip-from--35ee79105ac6",
+      "name": "يخت وسنوركلينغ بعد الظهر",
+      "description": "ثلاث ساعات على الماء، وأربعون دقيقة من السنوركلينغ، ووجبة سمك وبطاطس مقلية، ومشروبات بلا حدود.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "الساعة 15:30"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "تصطحبك السيارة من فندقك في الغردقة.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "الإبحار",
+      "description": "يبحر اليخت بمحاذاة الساحل.",
+      "duration": "1.5 ساعة"
+     },
+     {
+      "index": 2,
+      "title": "سنوركلينغ عند جفتون",
+      "description": "جلسة سنوركلينغ مع المعدات، ومرشد لمن لا يعرفون السباحة.",
+      "duration": "40 دقيقة"
+     },
+     {
+      "index": 3,
+      "title": "الإبحار عائداً",
+      "description": "كاليماري وسمك وبطاطس مقلية على متن اليخت أثناء عودته نحو المساء.",
+      "duration": "1.5 ساعة"
+     },
+     {
+      "index": 4,
+      "title": "العودة إلى فندقك",
+      "description": "تعيدك السيارة إلى فندقك في الغردقة.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك في الغردقة والعودة إليه."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788796522/tours/jxzuelgfb5r9vdl36xoa.jpg",
+      "alt": "مركب شراعي على ماء هادئ والشمس تغيب منخفضة خلفه"
+     }
+    ],
+    "seo": {
+     "metaTitle": "يخت بعد الظهر من الغردقة، وسنوركلينغ عند جفتون",
+     "metaDescription": "الانطلاق من الغردقة في الثالثة والنصف: ساعة ونصف في الإبحار في كل اتجاه، وأربعون دقيقة للسنوركلينغ عند جفتون، وكلماري مع بطاطس مقلية على متن اليخت.",
+     "keywords": []
+    }
+   }
+  }
+ ],
+ "destinations": [
+  {
+   "id": "699895e47169d9820932b9a3",
+   "sourceSlug": "hurghada",
+   "slug": "hurghada-ar",
+   "sourceUpdatedAt": "2026-04-05T23:15:20.775Z",
+   "sourceDigest": "111acca5fa242e38932f013e0fbb66e4bafd26bd529ebf11740d6c5d2779a75c",
+   "english": {
+    "name": "Hurghada",
+    "country": "Egypt",
+    "description": "Hurghada is a premier Red Sea resort destination known for its pristine beaches, world-class diving, and water sports.",
+    "shortDescription": "Red Sea paradise for diving and water sports",
+    "highlights": [
+     "Coral Reefs",
+     "Snorkeling",
+     "Desert Safaris",
+     "Nightlife"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "beach",
+     "water-sports",
+     "diving",
+     "resort"
+    ]
+   },
+   "arabic": {
+    "name": "الغردقة",
+    "country": "مصر",
+    "description": "الغردقة وجهة رائدة للمنتجعات على البحر الأحمر، تشتهر بشواطئها النقية والغوص ذي المستوى العالمي والرياضات المائية.",
+    "shortDescription": "جنة على البحر الأحمر للغوص والرياضات المائية",
+    "highlights": [
+     "الشعاب المرجانية",
+     "السنوركلينغ",
+     "رحلات سفاري الصحراء",
+     "الحياة الليلية"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "شاطئ",
+     "رياضات مائية",
+     "غوص",
+     "منتجع"
+    ]
+   }
+  }
+ ]
+}

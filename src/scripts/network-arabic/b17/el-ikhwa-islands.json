@@ -1,0 +1,356 @@
+{
+ "version": 1,
+ "batch": "b17b",
+ "locale": "ar",
+ "tenant": {
+  "id": "6ae98967f5e4742051b2bd33",
+  "slug": "el-ikhwa-islands",
+  "domain": "el-ikhwa-islands.foxesnetwork.com"
+ },
+ "presentationSha256": "141994d6fe055c2cd23f0170473e27d3be7131dd6fbdef1665f114a92901b8c8",
+ "presentation": [
+  {
+   "kind": "tenant",
+   "sourceId": "6ae98967f5e4742051b2bd33",
+   "sourceDigest": "329e38f2a63dd43bfdd2429ea97e110c744197c4e8ba1aff0584ba0f20247ec2",
+   "english": {
+    "tagline": "The coastal bay day, ninety-one kilometres off",
+    "description": "El Ikhwa, read in English as The Brothers, is a pair of islands in open sea: Big Brother to the north and Little Brother about a kilometre to its south, with Al Ikhwān and Akhaween among the published forms of the name. Big Brother is a narrow rocky island roughly four hundred metres long that rises to the surface out of deep water, and the pair lie about sixty-five to sixty-seven kilometres off El Quseir, within Egypt’s Red Sea marine protected areas, and only a vessel several days out from the coast reaches them. Two sources publish the group’s position twenty-six metres apart, at 26.30684 N, 34.85562 E; no coordinate is given here for the lighthouse itself, because the published figures for that tower differ by two hundred and forty-eight metres. The British built that lighthouse on Big Brother in 1883, to mark the islands for the ships passing to and from the Suez Canal: unpainted stone, thirty-one metres tall, its light thirty-six metres above the sea and showing a single white flash every five seconds. It was renovated in 1993, it is staffed, and visitors are usually allowed up the tower. Its lamp still turns on the original Chance Brothers lens and clockwork drive, which the keepers wind by hand every four hours. The British cargo steamer Numidia, carrying railway material, struck the island in 1901; the crew and most of the cargo were taken off, and the ship was lost on its north point.\n\nThis boat day stays in the coastal bay of Marsa Mubarak. The Brothers are not in its programme: the two islands lie roughly ninety kilometres out from that bay, in open sea off El Quseir. The one trip sold here runs eight hours out of Marsa Alam: a guided session in the water on each side of the meal, over the coral of that bay. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+    "seoSettings": {
+     "metaTitle": "El Ikhwa Islands: the Marsa Mubarak Bay Day",
+     "metaDescription": "Eight hours out of Marsa Alam in the bay at Marsa Mubarak: a guided session in the water on either side of the meal, with the gear and the park fees.",
+     "keywords": [
+      "el ikhwa islands the brothers",
+      "big brother island lighthouse 1883",
+      "hand-wound lighthouse lens red sea",
+      "marsa mubarak turtle snorkelling day",
+      "islands in open sea off el quseir"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "Home",
+      "columns": []
+     },
+     {
+      "label": "Trips",
+      "columns": []
+     },
+     {
+      "label": "About",
+      "columns": []
+     },
+     {
+      "label": "FAQ",
+      "columns": []
+     },
+     {
+      "label": "Contact",
+      "columns": []
+     }
+    ]
+   },
+   "arabic": {
+    "tagline": "يوم الخليج الساحلي، على بُعد واحد وتسعين كيلومترًا",
+    "description": "جزر الإخوة، وتُقرأ بالإنجليزية The Brothers، جزيرتان في عرض البحر: الأخ الأكبر إلى الشمال والأخ الأصغر على نحو كيلومتر إلى جنوبه، ومن صور الاسم المنشورة Al Ikhwān وAkhaween. والأخ الأكبر جزيرة صخرية ضيّقة طولها نحو أربعمئة متر تنهض إلى السطح من مياه عميقة، وتقع الجزيرتان على نحو خمسة وستين إلى سبعة وستين كيلومترًا من القصير، داخل المحميات البحرية في البحر الأحمر بمصر، ولا يبلغهما إلا مركب يقضي أيامًا بعيدًا عن الساحل. وينشر مصدران موضع المجموعة بفارق ستة وعشرين مترًا، عند 26.30684 شمالًا و34.85562 شرقًا؛ ولا يُعطى هنا إحداثي للمنارة نفسها، لأن الأرقام المنشورة لذلك البرج تختلف بمئتين وثمانية وأربعين مترًا. وقد بنى البريطانيون تلك المنارة على الأخ الأكبر سنة 1883 لتعليم الجزيرتين للسفن المارّة من قناة السويس وإليها: حجر غير مدهون، بارتفاع واحد وثلاثين مترًا، وضوؤها على ستة وثلاثين مترًا فوق سطح البحر يُظهر ومضة بيضاء واحدة كل خمس ثوان. ورُمّمت سنة 1993، وعليها طاقم، ويُسمح للزوّار عادةً بصعود البرج. ولا يزال مصباحها يدور على عدسة Chance Brothers الأصلية وآلية الساعة التي يلفّها الحرّاس بأيديهم كل أربع ساعات. وقد ارتطمت الباخرة البريطانية Numidia، وكانت تحمل مواد سكك حديدية، بالجزيرة سنة 1901؛ ونُقل الطاقم ومعظم الحمولة، وفُقدت السفينة عند طرفها الشمالي. ويبقى هذا اليوم البحري في خليج مرسى مبارك الساحلي. وجزر الإخوة ليست في برنامجه: فالجزيرتان تقعان على نحو تسعين كيلومترًا من ذلك الخليج، في عرض البحر قبالة القصير. والرحلة الواحدة التي تُباع هنا تستغرق ثماني ساعات من مرسى علم: جلسة في الماء بصحبة مرشد على كل جانب من الوجبة، فوق مرجان ذلك الخليج. وكل رحلة تقلّك من فندقك وتعيدك إليه، وتذكر كل صفحة ما يشمله سعرها. احجز مكانك عبر الإنترنت وادفع لاحقًا، أو اسأل الفريق أولًا عن موعد الاستلام.",
+    "seoSettings": {
+     "metaTitle": "جزر الإخوة: يوم خليج مرسى مبارك",
+     "metaDescription": "ثماني ساعات من مرسى علم في خليج مرسى مبارك: جلسة في الماء بصحبة مرشد على كل جانب من الوجبة، مع المعدّات ورسوم المحمية.",
+     "keywords": [
+      "جزر الإخوة The Brothers",
+      "منارة جزيرة الأخ الأكبر 1883",
+      "عدسة منارة تُلفّ باليد في البحر الأحمر",
+      "يوم سنوركلينغ مع السلاحف في مرسى مبارك",
+      "جزر في عرض البحر قبالة القصير"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "الرئيسية",
+      "columns": []
+     },
+     {
+      "label": "الرحلات",
+      "columns": []
+     },
+     {
+      "label": "من نحن",
+      "columns": []
+     },
+     {
+      "label": "الأسئلة الشائعة",
+      "columns": []
+     },
+     {
+      "label": "اتصل بنا",
+      "columns": []
+     }
+    ]
+   }
+  }
+ ],
+ "tours": [
+  {
+   "id": "6ae98967624cd49f356f0ef7",
+   "sourceSlug": "eik-a-day-in-the-bay-either-side-of-the-meal",
+   "slug": "eik-a-day-in-the-bay-either-side-of-the-meal-ar",
+   "sourceUpdatedAt": "2026-11-03T07:12:39.717Z",
+   "sourceDigest": "99a0fd8bde00193602203fdde14c58f2abde51a1d94355641c363e680372ac95",
+   "english": {
+    "title": "A Day in the Bay, a Session Either Side of the Meal",
+    "shortDescription": "Eight hours out of Marsa Alam: a guided session in the water before the meal and a second after it, the gear and the park fees covered.",
+    "description": "The transfer comes round at nine and runs you down to the boat, which works into the bay at Marsa Mubarak. A guided session in the water falls on each side of the meal, every minute of it over the coral and the fish of that bay, where green turtles graze the seagrass and dugongs come in to feed; the animals are wild and no boat ever promises one. What the programme names is Marsa Alam and that bay, not El Ikhwa, the two islands in open sea roughly ninety kilometres out from it; no boat on this day leaves the coast.\n\nInstructors, the snorkelling equipment and the national park fees all sit inside the price; tips and your own spending do not. A hotel at the north end of the town carries a surcharge, which is arranged with the team rather than booked on this page. Children are priced on their own.",
+    "duration": "8 hours",
+    "cancellationPolicy": "",
+    "highlights": [
+     "A session in the water, then another",
+     "The meal on board between them",
+     "Instructors over the coral of the bay",
+     "The national park fees inside the price"
+    ],
+    "inclusions": [
+     "Professional instructors",
+     "Lunch and soft drinks",
+     "Snorkelling equipment (mask, fins, life jacket)",
+     "Soft drinks and water",
+     "National Park fees",
+     "Pickup and drop-off at your hotel in Marsa Alam",
+     "Guided snorkelling at Marsa Mubarak"
+    ],
+    "exclusions": [
+     "Tips",
+     "Personal expenses",
+     "Transfers from hotels in North Marsa Alam (available for an extra charge)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [],
+    "needToKnow": [
+     "Pickup from a hotel in North Marsa Alam costs extra and cannot be booked on this site. Ask the team before you book if your hotel is north of the town.",
+     "Turtles and dugongs are wild animals, so no boat can promise a sighting.",
+     "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "marsa-mubarak-sea-turtle-trip-with-lunch-and--b9350a52e3cd",
+      "name": "Boat day at Marsa Mubarak with lunch",
+      "description": "The boat from Marsa Alam to Marsa Mubarak, guided snorkelling, the gear and lunch on board.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "09:00"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel pickup",
+      "description": "The transfer collects you from your hotel in Marsa Alam and takes you to the boat.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "Marsa Mubarak",
+      "description": "The boat sails into the bay for the first guided snorkelling session, among the coral reefs and the fish, where you can look for sea turtles and dugongs.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "Lunch on board",
+      "description": "Lunch and soft drinks on the boat between the snorkelling sessions.",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "More snorkelling",
+      "description": "A second session with the instructors; the mask, fins and life jacket are in the price.",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "Back to your hotel",
+      "description": "The boat returns and the transfer takes you back to your hotel in Marsa Alam.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel pickup",
+      "description": "Pickup and drop-off at your hotel in Marsa Alam."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "The team confirms your pickup time when it confirms your booking."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793085624/attractions-network/network-b08/marsa-mubarak/hua97b4rgydbu8xtuked.jpg",
+      "alt": "A sea turtle swimming just under the surface above a shallow coral reef"
+     }
+    ],
+    "seo": {
+     "metaTitle": "A Day in the Bay, a Session Either Side of the Meal",
+     "metaDescription": "Eight hours from Marsa Alam at Marsa Mubarak: a guided session in the water before the meal and another after it, with the gear and the park fees.",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "يوم في الخليج، وجلسة على كل جانب من الوجبة",
+    "shortDescription": "ثماني ساعات من مرسى علم: جلسة في الماء بصحبة مرشد قبل الوجبة وثانية بعدها، والمعدّات ورسوم المحمية مشمولة.",
+    "description": "يأتي النقل في التاسعة وينزل بك إلى القارب، الذي يشقّ طريقه إلى خليج مرسى مبارك. وتقع جلسة في الماء بصحبة مرشد على كل جانب من الوجبة، كل دقيقة منها فوق مرجان ذلك الخليج وأسماكه، حيث ترعى السلاحف الخضراء أعشاب البحر وتأتي أبقار البحر لتتغذّى؛ والحيوانات برية ولا يَعِد أي قارب برؤية واحد منها. وما يذكره البرنامج هو مرسى علم وذلك الخليج، لا جزر الإخوة، الجزيرتان في عرض البحر على نحو تسعين كيلومترًا منه؛ ولا يغادر أي قارب في هذا اليوم الساحل.\n\nوالمدرّبون ومعدّات السنوركلينغ ورسوم المحمية الوطنية كلها داخل السعر؛ أما البقشيش ومصروفك الخاص فلا. والفندق في الطرف الشمالي من البلدة عليه رسم إضافي يُرتَّب مع الفريق لا يُحجز على هذه الصفحة. وللأطفال سعر خاص بهم.",
+    "duration": "8 ساعات",
+    "cancellationPolicy": "",
+    "highlights": [
+     "جلسة في الماء، ثم أخرى",
+     "الوجبة على متن القارب بينهما",
+     "مدرّبون فوق مرجان الخليج",
+     "رسوم المحمية الوطنية داخل السعر"
+    ],
+    "inclusions": [
+     "مدرّبون محترفون",
+     "غداء ومشروبات غازية",
+     "عدة السنوركلينغ (قناع وزعانف وسترة نجاة)",
+     "مشروبات غازية وماء",
+     "رسوم المحمية الوطنية",
+     "الاصطحاب من فندقك في مرسى علم والعودة إليه",
+     "سنوركلينغ بصحبة مرشد في مرسى مبارك"
+    ],
+    "exclusions": [
+     "الإكراميات",
+     "المصروفات الشخصية",
+     "المواصلات من فنادق شمال مرسى علم (متاحة مقابل رسم إضافي)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [],
+    "needToKnow": [
+     "الاصطحاب من فندق في شمال مرسى علم بتكلفة إضافية ولا يمكن حجزه عبر هذا الموقع. اسأل الفريق قبل الحجز إن كان فندقك شمال البلدة.",
+     "السلاحف وأبقار البحر حيوانات فطرية، فلا يمكن لأي مركب أن يضمن رؤيتها.",
+     "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "marsa-mubarak-sea-turtle-trip-with-lunch-and--b9350a52e3cd",
+      "name": "يوم بحري في مرسى مبارك مع غداء",
+      "description": "المركب من مرسى علم إلى مرسى مبارك، وسنوركلينغ بصحبة مرشد، والعدة، والغداء على متن المركب.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "الساعة 09:00"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "تصطحبك المواصلات من فندقك في مرسى علم وتأخذك إلى المركب.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "مرسى مبارك",
+      "description": "يبحر المركب إلى داخل الخليج لجلسة السنوركلينغ الأولى بصحبة مرشد، بين الشعاب المرجانية والأسماك، حيث يمكنك البحث عن السلاحف البحرية وأبقار البحر.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "الغداء على متن المركب",
+      "description": "غداء ومشروبات غازية على متن المركب بين جلستي السنوركلينغ.",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "سنوركلينغ إضافي",
+      "description": "جلسة ثانية مع المدرّبين؛ والقناع والزعانف وسترة النجاة في السعر.",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "العودة إلى فندقك",
+      "description": "يعود المركب وتعيدك المواصلات إلى فندقك في مرسى علم.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك في مرسى علم والعودة إليه."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793085624/attractions-network/network-b08/marsa-mubarak/hua97b4rgydbu8xtuked.jpg",
+      "alt": "سلحفاة بحرية تسبح أسفل السطح مباشرة فوق شعاب مرجانية ضحلة"
+     }
+    ],
+    "seo": {
+     "metaTitle": "يوم في الخليج، وجلسة على كل جانب من الوجبة",
+     "metaDescription": "ثماني ساعات من مرسى علم عند مرسى مبارك: جلسة في الماء بصحبة مرشد قبل الوجبة وأخرى بعدها، مع المعدّات ورسوم المحمية.",
+     "keywords": []
+    }
+   }
+  }
+ ],
+ "destinations": [
+  {
+   "id": "699895e47169d9820932b9ab",
+   "sourceSlug": "marsa-alam",
+   "slug": "marsa-alam-ar",
+   "sourceUpdatedAt": "2026-04-09T16:34:09.828Z",
+   "sourceDigest": "745ca25bbadf20dc3b858537c46c7a94626e45331e3ebe4f53c03911f9f9e264",
+   "english": {
+    "name": "Marsa Alam",
+    "country": "Egypt",
+    "description": "A pristine diving destination on the Red Sea, Marsa Alam is known for its untouched coral reefs and marine wildlife.",
+    "shortDescription": "Pristine Red Sea diving destination",
+    "highlights": [
+     "Coral Reefs",
+     "Dolphin Encounters",
+     "Undiscovered Wrecks",
+     "Tranquility"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "diving",
+     "marine-life",
+     "beach",
+     "adventure"
+    ]
+   },
+   "arabic": {
+    "name": "مرسى علم",
+    "country": "مصر",
+    "description": "مرسى علم وجهة غوص بكر على البحر الأحمر، تشتهر بشعابها المرجانية التي لم تمسها يد وبحياتها البحرية.",
+    "shortDescription": "وجهة غوص بكر على البحر الأحمر",
+    "highlights": [
+     "الشعاب المرجانية",
+     "لقاءات الدلافين",
+     "حطام سفن لم يُكتشف بعد",
+     "الهدوء"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "غوص",
+     "الحياة البحرية",
+     "شاطئ",
+     "مغامرة"
+    ]
+   }
+  }
+ ]
+}

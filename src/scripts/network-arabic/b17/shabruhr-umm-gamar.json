@@ -1,0 +1,414 @@
+{
+ "version": 1,
+ "batch": "b17a",
+ "locale": "ar",
+ "tenant": {
+  "id": "6ae8df80f5e4742051b2bd2d",
+  "slug": "shabruhr-umm-gamar",
+  "domain": "shabruhr-umm-gamar.foxesnetwork.com"
+ },
+ "presentationSha256": "b9af1f22b38b021b59134f947c51719e3363020e76514cda17afb92f6a014f15",
+ "presentation": [
+  {
+   "kind": "tenant",
+   "sourceId": "6ae8df80f5e4742051b2bd2d",
+   "sourceDigest": "132e0eaf3c0c83c59681643d4e9b30eea36381724a80e1e2597901e3f3519b9a",
+   "english": {
+    "tagline": "The Dolphin House by yacht, five hours",
+    "description": "Shabruhr Umm Gamar — written Sha’ab Ruhr, Shabrur, Shaab Rur and Shabrur Oum Gamar as well — is a small outlying reef lying south of Umm Gamar island, north-east of Hurghada. One atlas calls it an extension of the Umm Gamar reef and the guides list it as a site in its own right; its northern edge is about two kilometres south of the island, and the reef as mapped runs some five hundred metres across. Umm Gamar means mother of the moon, said to be for the island’s crescent shape, and a lighthouse stands on the island. Egypt’s national diving chamber counts this reef among the sites Hurghada is known for and calls it a sort of encyclopedia of the Red Sea: a relatively small reef crowded with reef species and open-water fish, badly damaged some years ago by an outbreak of crown-of-thorns starfish and once again a favourite of experienced divers. The reef is the top of an underwater mountain, its east side falling to great depths and its west side a wall pocked with small caves, and it is dived as a drift along those walls. The wreck of a small patrol boat lies on it: it struck the reef while anchoring, and part of it rests on the reef with the rest on a deeper ledge.\n\nThis yacht day runs north out of Hurghada to the Dolphin House reef, and its programme does not name Shabruhr Umm Gamar, the small reef south of Umm Gamar island, about ten kilometres south-east of the Dolphin House. One trip is sold here, and it runs five hours: an hour in the water at that reef, two guided snorkelling stops and a seafood lunch. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+    "seoSettings": {
+     "metaTitle": "Shabruhr Umm Gamar: a Dolphin House Yacht Day",
+     "metaDescription": "Five hours by yacht out of Hurghada: an hour in the water at the Dolphin House reef, two guided snorkelling stops and a seafood lunch served aboard.",
+     "keywords": [
+      "shabruhr umm gamar reef",
+      "dolphin house yacht five hours",
+      "umm gamar island lighthouse",
+      "drift wall diving north of hurghada",
+      "patrol boat wreck on the reef"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "Home",
+      "columns": []
+     },
+     {
+      "label": "Trips",
+      "columns": []
+     },
+     {
+      "label": "About",
+      "columns": []
+     },
+     {
+      "label": "FAQ",
+      "columns": []
+     },
+     {
+      "label": "Contact",
+      "columns": []
+     }
+    ]
+   },
+   "arabic": {
+    "tagline": "بيت الدلافين باليخت، خمس ساعات",
+    "description": "شعب رهر أم قمر — ويُكتب أيضًا Sha’ab Ruhr وShabrur وShaab Rur وShabrur Oum Gamar — شعبة صغيرة منفصلة تقع جنوب جزيرة أم قمر، إلى الشمال الشرقي من الغردقة. يسمّيه أحد الأطالس امتدادًا لشعبة أم قمر، وتذكره الأدلّة موقعًا مستقلًا بذاته؛ ويبعد طرفه الشمالي نحو كيلومترين جنوب الجزيرة، ويمتدّ الشعب كما يُرسم على الخريطة نحو خمسمئة متر عرضًا. ويعني اسم أم قمر ”أم القمر“، ويُقال إنه يشير إلى شكل الجزيرة الهلالي، ويقوم على الجزيرة فنار. وتَعدّ الغرفة المصرية للغوص والرياضات المائية هذه الشعبة من مواقع الغردقة المعروفة وتسمّيها ما يشبه موسوعة البحر الأحمر: شعبة صغيرة نسبيًا تزدحم بأنواع الشعاب والأسماك السطحية، أُصيبت بأذى بالغ قبل سنوات من تكاثر نجم البحر تاج الشوك، وعادت موقعًا مفضّلًا لدى الغواصين المتمرّسين. والشعبة قمة جبل تحت الماء، ينحدر جانبها الشرقي إلى أعماق كبيرة وجانبها الغربي جدار مثقوب بكهوف صغيرة، ويُغطس الموقع انسياقًا بطول هذين الجدارين. ويرقد عليها حطام قارب شرطة صغير: ارتطم بالشعبة أثناء الإرساء، فاستقرّ جزء منه عليها وبقي الباقي على حافة أعمق. يبحر هذا اليوم باليخت شمالًا من الغردقة إلى شعبة بيت الدلافين، ولا يذكر برنامجه شعب رهر أم قمر، الشعبة الصغيرة جنوب جزيرة أم قمر، على نحو عشرة كيلومترات إلى الجنوب الشرقي من بيت الدلافين. ورحلة واحدة تُباع هنا، تستغرق خمس ساعات: ساعة في الماء عند تلك الشعبة، وتوقفان للسنوركلينغ بصحبة مرشد، وغداء من المأكولات البحرية. وكل رحلة تقلّك من فندقك وتعيدك إليه، وتذكر كل صفحة ما يشمله سعرها. احجز مكانك عبر الإنترنت وادفع لاحقًا، أو اسأل الفريق أولًا عن موعد الاستلام.",
+    "seoSettings": {
+     "metaTitle": "شعب رهر أم قمر: يوم باليخت إلى بيت الدلافين",
+     "metaDescription": "خمس ساعات باليخت من الغردقة: ساعة في الماء عند شعبة بيت الدلافين، وتوقفان للسنوركلينغ بصحبة مرشد، وغداء من المأكولات البحرية يُقدَّم على متن اليخت.",
+     "keywords": [
+      "شعب رهر أم قمر",
+      "بيت الدلافين باليخت خمس ساعات",
+      "فنار جزيرة أم قمر",
+      "الغوص انسياقًا على الجدران شمال الغردقة",
+      "حطام قارب شرطة على الشعبة"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "الرئيسية",
+      "columns": []
+     },
+     {
+      "label": "الرحلات",
+      "columns": []
+     },
+     {
+      "label": "من نحن",
+      "columns": []
+     },
+     {
+      "label": "الأسئلة الشائعة",
+      "columns": []
+     },
+     {
+      "label": "اتصل بنا",
+      "columns": []
+     }
+    ]
+   }
+  }
+ ],
+ "tours": [
+  {
+   "id": "6ae8df80d6540ad6cc0f5587",
+   "sourceSlug": "shu-five-hours-north-with-lunch-aboard",
+   "slug": "shu-five-hours-north-with-lunch-aboard-ar",
+   "sourceUpdatedAt": "2026-11-02T19:07:44.915Z",
+   "sourceDigest": "a4c22c02c36088c04a6d04b8b6672a35c44946259c7e6e756a03c20069cc26c0",
+   "english": {
+    "title": "Five Hours North, and Lunch Where the Boat Lies",
+    "shortDescription": "Five hours afloat, morning or afternoon: sixty minutes where the dolphins rest, two guided stops in the water and a seafood meal on the way back.",
+    "description": "Five hours afloat, and the sailing you want is chosen at booking: one leaves in the morning and the other after midday. Sixty minutes are given to the reef where dolphins feed and rest, with a swim; thirty more go to guided snorkelling on that reef, and thirty to the smaller one next door. Breakfast is laid on while the yacht is still heading out. Its programme names that reef and the smaller one by it, not Shabruhr Umm Gamar, the reef about ten kilometres south-east of the Dolphin House; the yacht turns for home well north of it.\n\nThe main meal is seafood, and the drinks that come with it are hot and cold; the banana ride and the sofa ride belong to a different option and are not in this price. A sighting is never promised, because these are wild animals in open water. Children are priced on their own, and a hotel beyond the town is something to raise with the team before booking.",
+    "duration": "5 hours",
+    "cancellationPolicy": "",
+    "highlights": [
+     "A morning sailing or an afternoon one",
+     "Sixty minutes in the water at the reef",
+     "A smaller reef next door to it",
+     "Breakfast under way, seafood later"
+    ],
+    "inclusions": [
+     "Dolphin-watch & swim experience",
+     "Snorkeling gear (mask, fins, snorkel)",
+     "2 snorkeling stops",
+     "Guided snorkeling session",
+     "Breakfast buffet",
+     "Fresh lunch onboard ( Fish fillet, Calamari, etc)",
+     "Hot drinks",
+     "Soft drinks",
+     "Refreshments and water",
+     "Guide and snorkeling instructor",
+     "Professional guides on each boat",
+     "Pickup and drop-off at your hotel in Hurghada",
+     "The crew beside you through the day"
+    ],
+    "exclusions": [
+     "Towels",
+     "Underwater photos",
+     "Gratuities (optional)",
+     "Nature Reserve Fee: €5 per person (adult/child), not included. Pay by cash, Visa, or payment link",
+     "Banana and sofa rides"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Swimwear",
+     "Towel",
+     "Camera",
+     "Sunscreen"
+    ],
+    "needToKnow": [
+     "Dolphins are wild animals, so no boat can promise a sighting, and swimming near them depends on the sea and on how many boats are there.",
+     "Pickup from outside Hurghada costs extra and cannot be booked on this site. Ask the team before you book if your hotel is further out.",
+     "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "hurghada-dolphin-house-yacht-trip-snorkel-sea-b14d3e5761d2",
+      "name": "Yacht to Dolphin House with snorkelling and a seafood lunch",
+      "description": "Five hours under way: dolphin watching and a swim at the reef, two snorkelling stops, a breakfast buffet and a seafood lunch on board.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "08:30"
+     },
+     {
+      "index": 1,
+      "label": "14:30"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel pickup",
+      "description": "The car collects you from your hotel in Hurghada.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "Out to Dolphin House",
+      "description": "The yacht sails north from Hurghada, with a breakfast buffet on the way.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "Dolphin House",
+      "description": "Swimming at the reef, where dolphins often feed and rest.",
+      "duration": "1 hour"
+     },
+     {
+      "index": 3,
+      "title": "Snorkelling at the reef",
+      "description": "A guided snorkelling stop with the mask, fins and snorkel provided.",
+      "duration": "30 minutes"
+     },
+     {
+      "index": 4,
+      "title": "The small reef",
+      "description": "A second guided snorkelling stop at the small reef beside it.",
+      "duration": "30 minutes"
+     },
+     {
+      "index": 5,
+      "title": "A seafood lunch",
+      "description": "Lunch on board, with hot drinks, soft drinks and water.",
+      "duration": ""
+     },
+     {
+      "index": 6,
+      "title": "Back to Hurghada",
+      "description": "The yacht returns to the marina, and the car takes you back to your hotel.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel pickup",
+      "description": "Pickup and drop-off at your hotel in Hurghada."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "The team confirms your pickup time when it confirms your booking."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788791898/tours/xnv6gdxnnn9dxzs5pdhf.jpg",
+      "alt": "A dolphin swimming underwater in green-blue water, with a second dolphin behind it"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Five Hours North, and Lunch Where the Boat Lies",
+     "metaDescription": "Five hours afloat from Hurghada, morning or afternoon: an hour where the dolphins rest, two guided stops in the water and seafood on the way home.",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "خمس ساعات شمالًا، والغداء حيث يرقد القارب",
+    "shortDescription": "خمس ساعات في البحر، صباحًا أو بعد الظهر: ستون دقيقة حيث تستريح الدلافين، وتوقفان في الماء بصحبة مرشد، ووجبة من المأكولات البحرية في طريق العودة.",
+    "description": "خمس ساعات في البحر، والإبحار الذي تريده يُختار عند الحجز: أحدهما ينطلق صباحًا والآخر بعد الظهر. تُعطى ستون دقيقة للشعبة التي تتغذّى الدلافين وتستريح عندها، مع سباحة؛ وثلاثون دقيقة أخرى للسنوركلينغ بصحبة مرشد على تلك الشعبة، وثلاثون للشعبة الأصغر المجاورة لها. ويُقدَّم الإفطار واليخت لا يزال في طريقه إلى الخارج. ويذكر برنامجه تلك الشعبة والأصغر التي بجوارها، لا شعب رهر أم قمر، الشعبة التي تبعد نحو عشرة كيلومترات إلى الجنوب الشرقي من بيت الدلافين؛ فاليخت يعود أدراجه إلى الشمال منها بكثير.\n\nوالوجبة الرئيسية من المأكولات البحرية، والمشروبات التي تصحبها ساخنة وباردة؛ أما ركوب الموزة وركوب الكنبة فيتبعان خيارًا آخر وليسا في هذا السعر. ولا يُوعَد برؤية الدلافين أبدًا، فهذه حيوانات برية في مياه مفتوحة. وللأطفال سعرهم الخاص، والفندق خارج المدينة أمر يُطرح على الفريق قبل الحجز.",
+    "duration": "5 ساعات",
+    "cancellationPolicy": "",
+    "highlights": [
+     "إبحار صباحي أو إبحار بعد الظهر",
+     "ستون دقيقة في الماء عند الشعبة",
+     "شعبة أصغر مجاورة لها",
+     "إفطار في الطريق، ومأكولات بحرية بعده"
+    ],
+    "inclusions": [
+     "تجربة مشاهدة الدلافين والسباحة",
+     "عدة السنوركلينغ (قناع وزعانف وأنبوب تنفس)",
+     "2 توقف للسنوركلينغ",
+     "جلسة سنوركلينغ بصحبة مرشد",
+     "بوفيه إفطار",
+     "غداء طازج على متن المركب (فيليه سمك وكلماري وغيرها)",
+     "مشروبات ساخنة",
+     "مشروبات غازية",
+     "مرطبات وماء",
+     "مرشد ومدرب سنوركلينغ",
+     "مرشدون محترفون على كل مركب",
+     "الاصطحاب من فندقك في الغردقة والعودة إليه",
+     "الطاقم إلى جانبك طوال اليوم"
+    ],
+    "exclusions": [
+     "المناشف",
+     "الصور تحت الماء",
+     "الإكراميات (غير إلزامية)",
+     "رسوم المحمية الطبيعية: 5 يورو للشخص (بالغ/طفل)، غير مشمولة. تُدفع نقداً أو بفيزا أو عبر رابط دفع",
+     "جولتا قارب الموز والصوفا"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "ملابس سباحة",
+     "منشفة",
+     "كاميرا",
+     "واقي شمس"
+    ],
+    "needToKnow": [
+     "الدلافين حيوانات فطرية، فلا يمكن لأي مركب أن يضمن رؤيتها، والسباحة قربها تتوقف على حال البحر وعلى عدد المراكب الموجودة.",
+     "الاصطحاب من خارج الغردقة بتكلفة إضافية ولا يمكن حجزه عبر هذا الموقع. اسأل الفريق قبل الحجز إذا كان فندقك أبعد من ذلك.",
+     "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "hurghada-dolphin-house-yacht-trip-snorkel-sea-b14d3e5761d2",
+      "name": "يخت إلى بيت الدلافين مع السنوركلينغ وغداء مأكولات بحرية",
+      "description": "خمس ساعات في الإبحار: مشاهدة الدلافين والسباحة عند الشعب، ووقفتان للسنوركلينغ، وبوفيه إفطار، وغداء مأكولات بحرية على المتن.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "الساعة 08:30"
+     },
+     {
+      "index": 1,
+      "label": "الساعة 14:30"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "تصطحبك السيارة من فندقك في الغردقة.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "إلى بيت الدلافين",
+      "description": "يبحر اليخت شمالاً من الغردقة، مع بوفيه إفطار في الطريق.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "بيت الدلافين",
+      "description": "السباحة عند الشعب، حيث تتغذى الدلافين وتستريح كثيراً.",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 3,
+      "title": "السنوركلينغ عند الشعب",
+      "description": "وقفة سنوركلينغ بصحبة مرشد مع توفير القناع والزعانف وأنبوب التنفس.",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 4,
+      "title": "الشعاب الصغيرة",
+      "description": "وقفة سنوركلينغ ثانية بصحبة مرشد عند الشعب الصغير المجاور.",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 5,
+      "title": "غداء مأكولات بحرية",
+      "description": "الغداء على متن المركب، مع مشروبات ساخنة ومشروبات غازية وماء.",
+      "duration": ""
+     },
+     {
+      "index": 6,
+      "title": "العودة إلى الغردقة",
+      "description": "يعود اليخت إلى المارينا، وتعيدك السيارة إلى فندقك.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك في الغردقة والعودة إليه."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788791898/tours/xnv6gdxnnn9dxzs5pdhf.jpg",
+      "alt": "دلفين يسبح تحت الماء في ماء أزرق مخضر، ودلفين ثانٍ خلفه"
+     }
+    ],
+    "seo": {
+     "metaTitle": "خمس ساعات شمالًا، والغداء حيث يرقد القارب",
+     "metaDescription": "خمس ساعات باليخت من الغردقة، صباحًا أو بعد الظهر: ساعة حيث تستريح الدلافين، وتوقفان في الماء بصحبة مرشد، ومأكولات بحرية في طريق العودة.",
+     "keywords": []
+    }
+   }
+  }
+ ],
+ "destinations": [
+  {
+   "id": "699895e47169d9820932b9a3",
+   "sourceSlug": "hurghada",
+   "slug": "hurghada-ar",
+   "sourceUpdatedAt": "2026-04-05T23:15:20.775Z",
+   "sourceDigest": "111acca5fa242e38932f013e0fbb66e4bafd26bd529ebf11740d6c5d2779a75c",
+   "english": {
+    "name": "Hurghada",
+    "country": "Egypt",
+    "description": "Hurghada is a premier Red Sea resort destination known for its pristine beaches, world-class diving, and water sports.",
+    "shortDescription": "Red Sea paradise for diving and water sports",
+    "highlights": [
+     "Coral Reefs",
+     "Snorkeling",
+     "Desert Safaris",
+     "Nightlife"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "beach",
+     "water-sports",
+     "diving",
+     "resort"
+    ]
+   },
+   "arabic": {
+    "name": "الغردقة",
+    "country": "مصر",
+    "description": "الغردقة وجهة رائدة للمنتجعات على البحر الأحمر، تشتهر بشواطئها النقية والغوص ذي المستوى العالمي والرياضات المائية.",
+    "shortDescription": "جنة على البحر الأحمر للغوص والرياضات المائية",
+    "highlights": [
+     "الشعاب المرجانية",
+     "السنوركلينغ",
+     "رحلات سفاري الصحراء",
+     "الحياة الليلية"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "شاطئ",
+     "رياضات مائية",
+     "غوص",
+     "منتجع"
+    ]
+   }
+  }
+ ]
+}

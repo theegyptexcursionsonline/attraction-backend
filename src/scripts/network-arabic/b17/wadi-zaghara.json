@@ -1,0 +1,406 @@
+{
+ "version": 1,
+ "batch": "b17c",
+ "locale": "ar",
+ "tenant": {
+  "id": "6ae9a6f4f5e4742051b2bd39",
+  "slug": "wadi-zaghara",
+  "domain": "wadi-zaghara.foxesnetwork.com"
+ },
+ "presentationSha256": "42ed1d348c283e69a06608dfad39f2e1be3033b016a0ffe8baae25b32dfa7c61",
+ "presentation": [
+  {
+   "kind": "tenant",
+   "sourceId": "6ae9a6f4f5e4742051b2bd39",
+   "sourceDigest": "d0d3bb4cec908e77e55ae6d2a3f2d650bea4c946ed3f250566b2a9c97b4b4ec3",
+   "english": {
+    "tagline": "A Dahab day twelve kilometres off",
+    "description": "Wadi Zaghara lies north-west of Dahab, inland of the Dahab to Nuweiba road, and the mouth of its mapped lower reach is about ten kilometres from the town. Its name is written four ways — وادي زغرة on the map, Wadi Zaghrah as the gazetteer transliterates it, and Wadi Zaghra and Wadi Zaghara in common use — and all four belong to one corridor, of which this site is about the lower reach, the one the town's own camel safaris use. It is an intermittent desert wadi, a watercourse dry for most of the year rather than a running stream, and it is the corridor by which the inland route from the town reaches the St Catherine area, climbing substantially on the way from near sea level at the coast road to several hundred metres inland. Guided Bedouin camel safaris work it and carry on to Wadi Hamam and the El Hadudah dune. The way in is a sand track open to vehicles as well as to walkers, horses and bicycles, with a police checkpoint on the way out of the town.\n\nThis day drives up to Dahab for a camel ride and snorkelling and takes a jeep out to the Colored Canyon; its programme does not name Wadi Zaghara, the sand-floored valley inland of the coast road whose mouth lies about ten kilometres from the town. One trip is sold here: ten and a half hours, with a guided walk in the Salama canyon, a camel ride along the shore, a stretch of snorkelling and lunch by the sea. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+    "seoSettings": {
+     "metaTitle": "Wadi Zaghara: the Dahab and Salama Canyon Day",
+     "metaDescription": "A ten-and-a-half-hour day from Sharm El Sheikh: the Salama canyon by jeep, a camel ride on the Dahab shore, snorkelling and lunch by the sea.",
+     "keywords": [
+      "wadi zaghara lower reach dahab",
+      "wadi zaghrah intermittent desert wadi",
+      "inland route from dahab to st catherine",
+      "bedouin camel safari wadi hamam el hadudah",
+      "salama canyon and dahab day from sharm"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "Home",
+      "columns": []
+     },
+     {
+      "label": "Trips",
+      "columns": []
+     },
+     {
+      "label": "About",
+      "columns": []
+     },
+     {
+      "label": "FAQ",
+      "columns": []
+     },
+     {
+      "label": "Contact",
+      "columns": []
+     }
+    ]
+   },
+   "arabic": {
+    "tagline": "يوم في دهب على بُعد اثني عشر كيلومترًا",
+    "description": "يقع وادي زغرة إلى الشمال الغربي من دهب، داخل البرّ من طريق دهب إلى نويبع، ويبعد مصبّ مجراه الأسفل المرسوم نحو عشرة كيلومترات عن البلدة. ويُكتب اسمه بأربع صور — وادي زغرة على الخريطة، وWadi Zaghrah كما ينقله المعجم الجغرافي بالحروف اللاتينية، وWadi Zaghra وWadi Zaghara في الاستعمال الشائع — وكلها تخصّ ممرًا واحدًا، وهذا الموقع عن مجراه الأسفل، المجرى الذي تستخدمه سفاري الجمال التابعة للبلدة نفسها. وهو وادٍ صحراوي متقطّع، مجرى جافّ معظم السنة لا نهر جارٍ، وهو الممرّ الذي يبلغ به الطريق الداخلي من البلدة منطقة سانت كاترين، صاعدًا صعودًا كبيرًا في الطريق من قرب مستوى سطح البحر عند طريق الساحل إلى عدة مئات من الأمتار في الداخل. وتعمل فيه سفاري الجمال البدوية بصحبة مرشدين وتمضي إلى وادي حمام وكثيب الحدودة. والمدخل درب رملي مفتوح للمركبات كما للمشاة والخيل والدرّاجات، وعليه نقطة تفتيش للشرطة عند الخروج من البلدة. ويصعد هذا اليوم إلى دهب لركوب جمل وسنوركلينغ، ويخرج بسيارة جيب إلى الوادي الملون؛ ولا يذكر برنامجه وادي زغرة، الوادي الرملي القاع داخل البرّ من طريق الساحل والذي يبعد مصبّه نحو عشرة كيلومترات عن البلدة. ورحلة واحدة تُباع هنا: عشر ساعات ونصف، مع سير بصحبة مرشد في وادي سلامة، وركوب جمل بمحاذاة الشاطئ، ومدّة من السنوركلينغ، وغداء بجوار البحر. وكل رحلة تقلّك من فندقك وتعيدك إليه، وتذكر كل صفحة ما يشمله سعرها. احجز مكانك عبر الإنترنت وادفع لاحقًا، أو اسأل الفريق أولًا عن موعد الاستلام.",
+    "seoSettings": {
+     "metaTitle": "وادي زغرة: يوم دهب ووادي سلامة",
+     "metaDescription": "يوم من عشر ساعات ونصف من شرم الشيخ: وادي سلامة بسيارة جيب، وركوب جمل على شاطئ دهب، وسنوركلينغ، وغداء بجوار البحر.",
+     "keywords": [
+      "وادي زغرة المجرى الأسفل دهب",
+      "Wadi Zaghrah وادٍ صحراوي متقطّع",
+      "الطريق الداخلي من دهب إلى سانت كاترين",
+      "سفاري جمال بدوي وادي حمام الحدودة",
+      "يوم وادي سلامة ودهب من شرم"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "الرئيسية",
+      "columns": []
+     },
+     {
+      "label": "الرحلات",
+      "columns": []
+     },
+     {
+      "label": "من نحن",
+      "columns": []
+     },
+     {
+      "label": "الأسئلة الشائعة",
+      "columns": []
+     },
+     {
+      "label": "اتصل بنا",
+      "columns": []
+     }
+    ]
+   }
+  }
+ ],
+ "tours": [
+  {
+   "id": "6ae9a6f4226b91979e22a001",
+   "sourceSlug": "wzg-the-salama-canyon-and-a-day-on-the-dahab-coast",
+   "slug": "wzg-the-salama-canyon-and-a-day-on-the-dahab-coast-ar",
+   "sourceUpdatedAt": "2026-11-03T09:18:44.201Z",
+   "sourceDigest": "c2caa812388e7f14d53fa5d6e90404dbd11a7f9bd65f2fc1be0e9fb4095e59a9",
+   "english": {
+    "title": "The Salama Canyon and a Day on the Dahab Coast",
+    "shortDescription": "Ten and a half hours: the Salama canyon by jeep with a guide, a short camel ride on the shore, forty minutes in the water and lunch by the sea.",
+    "description": "A minivan is at the hotel at half past seven; the road north runs a little under two hours. A jeep carries the group into the Salama canyon, and the walk through it is guided, with its entry and the government fees already covered. The coast takes the rest of the day: a short camel ride along the shore, forty minutes in the water, a long lunch and time in the town for the shops. What the programme names is the town, the canyon and the water, not Wadi Zaghara, the sand valley inland of the coast road whose mouth lies about ten kilometres from that town; no part of this day turns inland to it.\n\nThere are two ways to book it: the day with its snorkelling at the canyon site, or the same day with the entry to the Blue Hole instead. A child carries a price of its own, and the team confirms which ages count as children when it confirms the booking.",
+    "duration": "10.5 hours",
+    "cancellationPolicy": "",
+    "highlights": [
+     "The Salama canyon by jeep, walked with a guide",
+     "A camel ride along the shore",
+     "Forty minutes in the water",
+     "A long lunch and time in the town"
+    ],
+    "inclusions": [
+     "Air-conditioned minivan",
+     "Guide",
+     "Lunch",
+     "Salama Colored Canyon",
+     "Governmental fees and entry for Canyon",
+     "Camel Ride",
+     "Pickup and drop-off at your hotel in Sharm el-Sheikh"
+    ],
+    "exclusions": [
+     "Snorkel gear",
+     "Photos and videos (available to purchase)",
+     "Drinks in restaurant"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Passport",
+     "Sun hat",
+     "Hat",
+     "Towel",
+     "Hiking shoes",
+     "Sunscreen",
+     "Cash"
+    ],
+    "needToKnow": [
+     "The Blue Hole entry is included on the option that names it; the other option snorkels at the canyon site.",
+     "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "salama-colored-canyon-snorkeling-camel-ride-w-28aa36d10889",
+      "name": "Canyon, camel and the shore",
+      "description": "The jeep safari, the walk through the canyon, the camel ride and lunch.",
+      "timeSlots": []
+     },
+     {
+      "id": "salama-colored-canyon-blue-hole-snorkeling-wi-bed8134f9971",
+      "name": "Canyon, camel and the Blue Hole",
+      "description": "The same day, snorkelling at the Blue Hole instead of the shore.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel pickup",
+      "description": "A minivan collects you from your hotel in Sharm el-Sheikh for the drive north to Dahab.",
+      "duration": "1.75 hours"
+     },
+     {
+      "index": 1,
+      "title": "The camel ride",
+      "description": "A short ride along the shore.",
+      "duration": "10 minutes"
+     },
+     {
+      "index": 2,
+      "title": "In the water",
+      "description": "Snorkelling at the canyon site, or at the Blue Hole on the option that includes its entry.",
+      "duration": "40 minutes"
+     },
+     {
+      "index": 3,
+      "title": "Lunch",
+      "description": "Lunch and time by the sea.",
+      "duration": "1.75 hours"
+     },
+     {
+      "index": 4,
+      "title": "Dahab",
+      "description": "Time in the town for the shops.",
+      "duration": "45 minutes"
+     },
+     {
+      "index": 5,
+      "title": "Salama Coloured Canyon",
+      "description": "A jeep takes the group in, and the walk through the canyon is guided, with the entry and the government fees covered.",
+      "duration": "45 minutes"
+     },
+     {
+      "index": 6,
+      "title": "Back to your hotel",
+      "description": "The drive back to Sharm el-Sheikh.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel pickup",
+      "description": "Pickup and drop-off at your hotel in Sharm El Sheikh."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "The team confirms your pickup time when it confirms your booking."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1792936173/attractions-network/network-b03/sharm-tour-guide/xvskdnp6simwnlxvry6x.jpg",
+      "alt": "A white four-wheel-drive parked on open desert gravel in front of a low red rock outcrop under a pale sky"
+     }
+    ],
+    "seo": {
+     "metaTitle": "The Salama Canyon and the Dahab Coast in a Day",
+     "metaDescription": "Ten and a half hours from Sharm El Sheikh: a guided walk in the Salama canyon, a camel ride on the shore, snorkelling and lunch by the sea.",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "وادي سلامة ويوم على ساحل دهب",
+    "shortDescription": "عشر ساعات ونصف: وادي سلامة بسيارة جيب بصحبة مرشد، وركوب جمل قصير على الشاطئ، وأربعون دقيقة في الماء، وغداء بجوار البحر.",
+    "description": "تكون حافلة صغيرة عند الفندق في السابعة والنصف؛ ويمتدّ الطريق شمالًا أقلّ قليلًا من ساعتين. وتحمل سيارة جيب المجموعةَ إلى وادي سلامة، والسير فيه بصحبة مرشد، ودخوله والرسوم الحكومية مشمولة سلفًا. ويأخذ الساحل بقية اليوم: ركوب جمل قصير بمحاذاة الشاطئ، وأربعون دقيقة في الماء، وغداء طويل، ووقت في البلدة للمتاجر. وما يذكره البرنامج هو البلدة والوادي والماء، لا وادي زغرة، الوادي الرملي داخل البرّ من طريق الساحل والذي يبعد مصبّه نحو عشرة كيلومترات عن تلك البلدة؛ ولا جزء من هذا اليوم ينعطف إلى الداخل نحوه.\n\nوثمة طريقتان لحجزه: اليوم بسنوركلينغه عند موقع الوادي، أو اليوم نفسه مع دخول الثقب الأزرق بدلًا منه. وللطفل سعر خاص به، ويؤكّد الفريق أي الأعمار تُحسب أطفالًا حين يؤكّد الحجز.",
+    "duration": "10.5 ساعة",
+    "cancellationPolicy": "",
+    "highlights": [
+     "وادي سلامة بسيارة جيب، ويُسار فيه بصحبة مرشد",
+     "ركوب جمل بمحاذاة الشاطئ",
+     "أربعون دقيقة في الماء",
+     "غداء طويل ووقت في البلدة"
+    ],
+    "inclusions": [
+     "حافلة صغيرة مكيّفة",
+     "مرشد",
+     "الغداء",
+     "وادي سلامة الملون",
+     "الرسوم الحكومية ودخول الوادي",
+     "ركوب الجمل",
+     "الاصطحاب من فندقك في شرم الشيخ والعودة إليه"
+    ],
+    "exclusions": [
+     "معدات السنوركلينغ",
+     "الصور ومقاطع الفيديو (متاحة للشراء)",
+     "المشروبات في المطعم"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "جواز السفر",
+     "قبعة شمسية",
+     "قبعة",
+     "منشفة",
+     "أحذية مشي جبلي",
+     "واقي شمس",
+     "نقود"
+    ],
+    "needToKnow": [
+     "دخول الثقب الأزرق مشمول في الخيار الذي يذكره؛ أما الخيار الآخر فيمارس السنوركلينغ في موقع الوادي.",
+     "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "salama-colored-canyon-snorkeling-camel-ride-w-28aa36d10889",
+      "name": "الوادي والجمل والشاطئ",
+      "description": "سفاري الجيب، والمشي في الوادي، وركوب الجمل، والغداء.",
+      "timeSlots": []
+     },
+     {
+      "id": "salama-colored-canyon-blue-hole-snorkeling-wi-bed8134f9971",
+      "name": "الوادي والجمل والثقب الأزرق",
+      "description": "اليوم نفسه، مع السنوركلينغ في الثقب الأزرق بدلاً من الشاطئ.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "صباحاً"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "تصطحبك حافلة صغيرة من فندقك في شرم الشيخ للتوجه شمالاً إلى دهب.",
+      "duration": "1.75 ساعة"
+     },
+     {
+      "index": 1,
+      "title": "ركوب الجمل",
+      "description": "جولة قصيرة على امتداد الشاطئ.",
+      "duration": "10 دقائق"
+     },
+     {
+      "index": 2,
+      "title": "في الماء",
+      "description": "سنوركلينغ في موقع الوادي، أو في الثقب الأزرق في الخيار الذي يشمل دخوله.",
+      "duration": "40 دقيقة"
+     },
+     {
+      "index": 3,
+      "title": "الغداء",
+      "description": "غداء ووقت على البحر.",
+      "duration": "1.75 ساعة"
+     },
+     {
+      "index": 4,
+      "title": "دهب",
+      "description": "وقت في المدينة للمتاجر.",
+      "duration": "45 دقيقة"
+     },
+     {
+      "index": 5,
+      "title": "وادي سلامة الملون",
+      "description": "يأخذ جيب المجموعة إلى الداخل، والمشي في الوادي يكون بصحبة مرشد، مع تغطية رسوم الدخول والرسوم الحكومية.",
+      "duration": "45 دقيقة"
+     },
+     {
+      "index": 6,
+      "title": "العودة إلى فندقك",
+      "description": "طريق العودة إلى شرم الشيخ.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك في شرم الشيخ والعودة إليه."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1792936173/attractions-network/network-b03/sharm-tour-guide/xvskdnp6simwnlxvry6x.jpg",
+      "alt": "سيارة دفع رباعي بيضاء واقفة على حصى صحراوي مكشوف أمام نتوء صخري أحمر منخفض تحت سماء شاحبة"
+     }
+    ],
+    "seo": {
+     "metaTitle": "وادي سلامة وساحل دهب في يوم واحد",
+     "metaDescription": "عشر ساعات ونصف من شرم الشيخ: سير بصحبة مرشد في وادي سلامة، وركوب جمل على الشاطئ، وسنوركلينغ، وغداء بجوار البحر.",
+     "keywords": []
+    }
+   }
+  }
+ ],
+ "destinations": [
+  {
+   "id": "699895e47169d9820932b9a4",
+   "sourceSlug": "sharm-el-sheikh",
+   "slug": "sharm-el-sheikh-ar",
+   "sourceUpdatedAt": "2026-04-09T16:31:18.356Z",
+   "sourceDigest": "05c986dc8b6a6b3e8412fe767586084a5b89af41fd1d4e95cac1b445eb8d6567",
+   "english": {
+    "name": "Sharm El Sheikh",
+    "country": "Egypt",
+    "description": "Located at the tip of the Sinai Peninsula, Sharm El Sheikh offers stunning Red Sea views and world-renowned diving spots.",
+    "shortDescription": "Luxurious Red Sea resort at the Sinai Peninsula",
+    "highlights": [
+     "Diving",
+     "Snorkeling",
+     "Naama Bay",
+     "Restaurants & Bars"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "beach",
+     "luxury",
+     "diving",
+     "water-sports"
+    ]
+   },
+   "arabic": {
+    "name": "شرم الشيخ",
+    "country": "مصر",
+    "description": "تقع شرم الشيخ عند طرف شبه جزيرة سيناء، وتوفر إطلالات خلابة على البحر الأحمر ومواقع غوص ذائعة الصيت عالمياً.",
+    "shortDescription": "منتجع فاخر على البحر الأحمر في شبه جزيرة سيناء",
+    "highlights": [
+     "الغوص",
+     "السنوركلينغ",
+     "خليج نعمة",
+     "المطاعم والحانات"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "شاطئ",
+     "فخامة",
+     "غوص",
+     "رياضات مائية"
+    ]
+   }
+  }
+ ]
+}

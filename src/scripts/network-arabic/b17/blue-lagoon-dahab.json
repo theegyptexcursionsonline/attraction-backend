@@ -1,0 +1,440 @@
+{
+ "version": 1,
+ "batch": "b17b",
+ "locale": "ar",
+ "tenant": {
+  "id": "6ae9a6f2f5e4742051b2bd36",
+  "slug": "blue-lagoon-dahab",
+  "domain": "blue-lagoon-dahab.foxesnetwork.com"
+ },
+ "presentationSha256": "bf222a1aae99b7cfbecb6fabc97662913d73ad8959a0c071ab9edb549c1336ae",
+ "presentation": [
+  {
+   "kind": "tenant",
+   "sourceId": "6ae9a6f2f5e4742051b2bd36",
+   "sourceDigest": "7cc297532ca23f3eb1ceae3c6dcefe73eeb8fd7e02fc61315e9fb58ab3ab0d1c",
+   "english": {
+    "tagline": "A jeep day eight kilometres short of it",
+    "description": "The Blue Lagoon is a shallow, sheltered lagoon on the Gulf of Aqaba coast north of Dahab, beyond Ras Abu Galum. It is not the Laguna in Dahab town, and it is not the lagoon of the same name far down the Red Sea coast. Two independent registers publish it a hundred and seventeen metres apart, at about 28.638 N, 34.578 E, and it stands at a sandspit the gazetteers carry as Al Qurdud, or El Gardud, القردود. No road reaches it: it is reached by boat, on foot or by camel along the coast path from the Blue Hole, or by four-wheel drive from the north. It lies inside the Abu Galum protected area, declared in 1992, where building is restricted to traditional Bedouin structures, so camps of simple huts stand on its shore and serve meals and there is no hotel development. It is shallow and sheltered, listed as a wind and kite spot rather than as a dive site, and no dive register for the town lists it at all.\n\nThis jeep day stops at the Colored Canyon, in Dahab and at the Blue Hole; its programme does not name the Blue Lagoon, the shallow lagoon about eight kilometres further north up the coast, beyond Ras Abu Galum. One trip is sold here, and the furthest north it goes is that Blue Hole: ten hours by road and four-wheel drive, with two hours walking the canyon, a camel ride by the sea and lunch in a Bedouin tent on the beach. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+    "seoSettings": {
+     "metaTitle": "Blue Lagoon Dahab: the Coloured Canyon Jeep Day",
+     "metaDescription": "A ten-hour jeep day from Sharm El Sheikh: two hours walking the Coloured Canyon, a camel ride by the sea and lunch in a Bedouin tent at Dahab.",
+     "keywords": [
+      "blue lagoon dahab beyond ras abu galum",
+      "shallow lagoon with no road to it",
+      "abu galum protected area bedouin huts",
+      "coloured canyon jeep day from sharm",
+      "al qurdud sandspit gulf of aqaba"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "Home",
+      "columns": []
+     },
+     {
+      "label": "Trips",
+      "columns": []
+     },
+     {
+      "label": "About",
+      "columns": []
+     },
+     {
+      "label": "FAQ",
+      "columns": []
+     },
+     {
+      "label": "Contact",
+      "columns": []
+     }
+    ]
+   },
+   "arabic": {
+    "tagline": "يوم بسيارات الجيب يقف على بُعد ثمانية كيلومترات منها",
+    "description": "البحيرة الزرقاء بحيرة ضحلة محمية على ساحل خليج العقبة شمال دهب، وراء رأس أبو جالوم. وهي ليست اللاجونا في بلدة دهب، وليست البحيرة التي تحمل الاسم نفسه بعيدًا في أسفل ساحل البحر الأحمر. وينشر سجلّان مستقلان موضعها بفارق مئة وسبعة عشر مترًا، عند نحو 28.638 شمالًا و34.578 شرقًا، وتقوم عند لسان رملي تحمله المعاجم الجغرافية باسم Al Qurdud أو El Gardud، القردود. ولا طريق يصل إليها: يُؤتى إليها بالقارب أو سيرًا على الأقدام أو على الجمل بمحاذاة درب الساحل من الثقب الأزرق، أو بسيارة الدفع الرباعي من الشمال. وتقع داخل محمية أبو جالوم، التي أُعلنت سنة 1992، حيث يقتصر البناء على المنشآت البدوية التقليدية، فتقوم على شاطئها مخيّمات من أكواخ بسيطة تقدّم الطعام ولا يوجد عمران فندقي. وهي ضحلة محمية، تُدرج موقعًا للرياح والطائرات الورقية لا موقع غوص، ولا يُدرجها أي سجلّ غوص للبلدة أصلًا. ويتوقف هذا اليوم بسيارات الجيب عند الوادي الملون، وفي دهب، وعند الثقب الأزرق؛ ولا يذكر برنامجه البحيرة الزرقاء، البحيرة الضحلة التي تبعد نحو ثمانية كيلومترات أبعد شمالًا على الساحل، وراء رأس أبو جالوم. ورحلة واحدة تُباع هنا، وأقصى ما تبلغه شمالًا هو ذلك الثقب الأزرق: عشر ساعات بالطريق وسيارة الدفع الرباعي، مع ساعتين سيرًا في الوادي، وركوب جمل بجوار البحر، وغداء في خيمة بدوية على الشاطئ. وكل رحلة تقلّك من فندقك وتعيدك إليه، وتذكر كل صفحة ما يشمله سعرها. احجز مكانك عبر الإنترنت وادفع لاحقًا، أو اسأل الفريق أولًا عن موعد الاستلام.",
+    "seoSettings": {
+     "metaTitle": "البحيرة الزرقاء دهب: يوم الوادي الملون بسيارات الجيب",
+     "metaDescription": "يوم من عشر ساعات بسيارات الجيب من شرم الشيخ: ساعتان سيرًا في الوادي الملون، وركوب جمل بجوار البحر، وغداء في خيمة بدوية في دهب.",
+     "keywords": [
+      "البحيرة الزرقاء دهب وراء رأس أبو جالوم",
+      "بحيرة ضحلة لا طريق يصل إليها",
+      "محمية أبو جالوم أكواخ بدوية",
+      "يوم الوادي الملون بسيارات الجيب من شرم",
+      "لسان القردود الرملي خليج العقبة"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "الرئيسية",
+      "columns": []
+     },
+     {
+      "label": "الرحلات",
+      "columns": []
+     },
+     {
+      "label": "من نحن",
+      "columns": []
+     },
+     {
+      "label": "الأسئلة الشائعة",
+      "columns": []
+     },
+     {
+      "label": "اتصل بنا",
+      "columns": []
+     }
+    ]
+   }
+  }
+ ],
+ "tours": [
+  {
+   "id": "6ae9a6f2226b91979e229f76",
+   "sourceSlug": "bld-ten-hours-to-the-coloured-canyon-and-the-dahab-shore",
+   "slug": "bld-ten-hours-to-the-coloured-canyon-and-the-dahab-shore-ar",
+   "sourceUpdatedAt": "2026-11-03T09:18:42.921Z",
+   "sourceDigest": "13147669a62bcd162466549b4738cb87980ddf20df10be318e2bab2692967120",
+   "english": {
+    "title": "Ten Hours to the Coloured Canyon and the Dahab Shore",
+    "shortDescription": "Ten hours inland and back: the canyon on foot with a guide, a four-wheel drive down to the water, a swim, a camel and a meal under canvas.",
+    "description": "The minibus is at your hotel for eight, and the road north runs an hour before a four-wheel drive takes over for the climb. The canyon is the long stop of the morning, led on foot by a guide who reads the banded rock back to you. Then the day drops to the water: time to walk the town, a stretch in the sea with a mask, a camel waiting on the sand and a meal served under canvas. What the programme names is the Colored Canyon, Dahab and the Blue Hole, not the Blue Lagoon, the shallow lagoon about eight kilometres further north up the coast beyond Ras Abu Galum; nothing on this day goes past the Blue Hole.\n\nThree ways of taking it are published: the walk and a swim off the shore; the same with a quad run added along the water and up between the hills; or that pair again with the two protected-area entries settled for you. A mask and fins, anything bought at the restaurant and whatever you tip are yours to pay. Everyone needs an original passport on the day, and a child carries a price of its own.",
+    "duration": "10 hours",
+    "cancellationPolicy": "",
+    "highlights": [
+     "The canyon read back to you on foot",
+     "A four-wheel drive down to the water",
+     "A swim and a camel on the sand",
+     "A meal served under canvas"
+    ],
+    "inclusions": [
+     "Professional canyon and snorkeling guide",
+     "Jeep adventure safari",
+     "Visit to Colored Canyon and canyon history description",
+     "Lunch in a Bedouin Tent on the beach in Dahab",
+     "Camel ride along the sea",
+     "Shopping stop at Dahab city",
+     "Bottle of water",
+     "Hotel pickup and drop-off in an air-conditioned vehicle"
+    ],
+    "exclusions": [
+     "Gratuities",
+     "Snorkeling Equipment",
+     "Drinks at the Restaurant"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Comfortable shoes",
+     "Sunglasses",
+     "Sun hat",
+     "Camera",
+     "Sunscreen",
+     "Comfortable clothes",
+     "Cash",
+     "Snorkeling gear"
+    ],
+    "needToKnow": [
+     "The Blue Hole and Abu Galum are included on the option that names them. On the other two the Blue Hole entry costs twenty euros a person, paid on site.",
+     "The quad ride along the shore is part of the two options that name it.",
+     "Guests who are not going into the Blue Hole wait at the Bedouin camp after lunch until the group comes back.",
+     "Original passports are needed for everyone on the day.",
+     "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "colored-canyon-without-blue-hole-abu-galum-fdc52dfcca40",
+      "name": "Canyon, lunch and the camel ride",
+      "description": "The jeep safari, the walk through the canyon and snorkelling from the shore.",
+      "timeSlots": []
+     },
+     {
+      "id": "colored-canyon-with-atv-quad-without-blue-hol-14d86f6dd20a",
+      "name": "The same day with a quad ride",
+      "description": "A quad along the shore and into the hills added to the day.",
+      "timeSlots": []
+     },
+     {
+      "id": "colored-canyon-blue-hole-abu-galum-with-atv-q-c9913ca7db12",
+      "name": "With the Blue Hole, Abu Galum and the quad",
+      "description": "The entry fees for the Blue Hole and Abu Galum included, with the quad ride.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel pickup",
+      "description": "An air-conditioned vehicle collects you from your hotel in Sharm el-Sheikh for the drive north.",
+      "duration": "1 hour"
+     },
+     {
+      "index": 1,
+      "title": "The Coloured Canyon",
+      "description": "The walk through the canyon with a guide, who explains how it was formed, with a safety briefing first.",
+      "duration": "2 hours"
+     },
+     {
+      "index": 2,
+      "title": "The jeep safari",
+      "description": "By four-wheel drive out of the hills and down to the coast.",
+      "duration": "1 hour"
+     },
+     {
+      "index": 3,
+      "title": "Dahab",
+      "description": "Free time in the town, and the shops.",
+      "duration": "1 hour"
+     },
+     {
+      "index": 4,
+      "title": "In the water",
+      "description": "Snorkelling from the shore, or at the Blue Hole on the option that includes its entry.",
+      "duration": "1 hour"
+     },
+     {
+      "index": 5,
+      "title": "The camel and the quad",
+      "description": "A camel ride along the sea, with a quad ride as well on the two options that include one.",
+      "duration": "30 minutes"
+     },
+     {
+      "index": 6,
+      "title": "Lunch",
+      "description": "Lunch in a Bedouin tent on the beach at Dahab.",
+      "duration": "45 minutes"
+     },
+     {
+      "index": 7,
+      "title": "Back to your hotel",
+      "description": "The drive back to Sharm el-Sheikh.",
+      "duration": "1 hour"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel pickup",
+      "description": "Pickup and drop-off at your hotel in Sharm El Sheikh."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "The team confirms your pickup time when it confirms your booking."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1792936198/attractions-network/network-b03/safari-sharm-el-sheikh/ihzuvhkpdyzmh1dguahw.jpg",
+      "alt": "A white four-wheel-drive standing on stony desert ground with bare brown hills behind it"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Coloured Canyon and the Dahab Shore: a Ten-Hour Jeep Day",
+     "metaDescription": "Ten hours from the hotel door: the canyon on foot with a guide, a four-wheel drive down to the water, a swim, a camel and a meal under canvas.",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "عشر ساعات إلى الوادي الملون وشاطئ دهب",
+    "shortDescription": "عشر ساعات إلى الداخل وعودة: الوادي سيرًا بصحبة مرشد، وسيارة دفع رباعي نزولًا إلى الماء، وسباحة، وجمل، ووجبة تحت القماش.",
+    "description": "تكون الحافلة الصغيرة عند فندقك في الثامنة، ويمتدّ الطريق شمالًا ساعة قبل أن تتولّى سيارة الدفع الرباعي الصعود. والوادي هو محطة الصباح الطويلة، يُقاد سيرًا بصحبة مرشد يقرأ لك الصخر المخطّط. ثم ينزل اليوم إلى الماء: وقت للسير في البلدة، ومدّة في البحر بقناع، وجمل ينتظر على الرمل، ووجبة تُقدَّم تحت القماش. وما يذكره البرنامج هو الوادي الملون ودهب والثقب الأزرق، لا البحيرة الزرقاء، البحيرة الضحلة التي تبعد نحو ثمانية كيلومترات أبعد شمالًا على الساحل وراء رأس أبو جالوم؛ ولا شيء في هذا اليوم يتجاوز الثقب الأزرق.\n\nوتُنشر ثلاث طرق لأخذه: السير وسباحة من الشاطئ؛ أو ذلك نفسه مع إضافة جولة بدراجة الكواد بمحاذاة الماء وصعودًا بين التلال؛ أو ذانك معًا مع تسوية دخول المحميتين نيابة عنك. أما القناع والزعانف وما تشتريه في المطعم وما تدفعه بقشيشًا فعليك أنت. ويحتاج الجميع إلى جواز سفر أصلي في يوم الرحلة، وللطفل سعر خاص به.",
+    "duration": "10 ساعات",
+    "cancellationPolicy": "",
+    "highlights": [
+     "الوادي يُقرأ لك سيرًا على الأقدام",
+     "سيارة دفع رباعي نزولًا إلى الماء",
+     "سباحة وجمل على الرمل",
+     "وجبة تُقدَّم تحت القماش"
+    ],
+    "inclusions": [
+     "مرشد محترف للوادي والسنوركلينغ",
+     "سفاري مغامرة بالجيب",
+     "زيارة الوادي الملون وشرح تاريخ الوادي",
+     "غداء في خيمة بدوية على الشاطئ في دهب",
+     "ركوب الجمل على امتداد البحر",
+     "وقفة للتسوق في مدينة دهب",
+     "زجاجة ماء",
+     "الاصطحاب من الفندق والعودة إليه بسيارة مكيّفة"
+    ],
+    "exclusions": [
+     "الإكراميات",
+     "معدات السنوركلينغ",
+     "المشروبات في المطعم"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "أحذية مريحة",
+     "نظارات شمسية",
+     "قبعة شمسية",
+     "كاميرا",
+     "واقي شمس",
+     "ملابس مريحة",
+     "نقود",
+     "عدة السنوركلينغ"
+    ],
+    "needToKnow": [
+     "الثقب الأزرق وأبو جالوم مشمولان في الخيار الذي يذكرهما. أما في الخيارين الآخرين فسعر دخول الثقب الأزرق عشرون يورو للشخص، تُدفع في الموقع.",
+     "الجولة بالكواد على طول الشاطئ جزء من الخيارين اللذين يذكرانها.",
+     "ينتظر الضيوف الذين لن يدخلوا الثقب الأزرق في المخيم البدوي بعد الغداء حتى تعود المجموعة.",
+     "تلزم جوازات السفر الأصلية لجميع المشاركين في يوم الرحلة.",
+     "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "colored-canyon-without-blue-hole-abu-galum-fdc52dfcca40",
+      "name": "الوادي والغداء وركوب الجمل",
+      "description": "سفاري الجيب، والمشي في الوادي، والسنوركلينغ من الشاطئ.",
+      "timeSlots": []
+     },
+     {
+      "id": "colored-canyon-with-atv-quad-without-blue-hol-14d86f6dd20a",
+      "name": "اليوم نفسه مع جولة بالكواد",
+      "description": "جولة بالكواد على طول الشاطئ وإلى التلال تُضاف إلى اليوم.",
+      "timeSlots": []
+     },
+     {
+      "id": "colored-canyon-blue-hole-abu-galum-with-atv-q-c9913ca7db12",
+      "name": "مع الثقب الأزرق وأبو جالوم والكواد",
+      "description": "رسوم دخول الثقب الأزرق وأبو جالوم مشمولة، مع الجولة بالكواد.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "صباحاً"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "تصطحبك سيارة مكيّفة من فندقك في شرم الشيخ للتوجه شمالاً.",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 1,
+      "title": "الوادي الملون",
+      "description": "المشي في الوادي بصحبة مرشد يشرح كيف تكوَّن، مع شرح للسلامة أولاً.",
+      "duration": "2 ساعات"
+     },
+     {
+      "index": 2,
+      "title": "سفاري الجيب",
+      "description": "بسيارة دفع رباعي خارجاً من التلال ونزولاً إلى الساحل.",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 3,
+      "title": "دهب",
+      "description": "وقت حر في المدينة وفي المتاجر.",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 4,
+      "title": "في الماء",
+      "description": "سنوركلينغ من الشاطئ، أو في الثقب الأزرق في الخيار الذي يشمل دخوله.",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 5,
+      "title": "الجمل والكواد",
+      "description": "ركوب الجمل على امتداد البحر، مع جولة بالكواد أيضاً في الخيارين اللذين يشملانها.",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 6,
+      "title": "الغداء",
+      "description": "غداء في خيمة بدوية على شاطئ دهب.",
+      "duration": "45 دقيقة"
+     },
+     {
+      "index": 7,
+      "title": "العودة إلى فندقك",
+      "description": "طريق العودة إلى شرم الشيخ.",
+      "duration": "1 ساعة"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك في شرم الشيخ والعودة إليه."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1792936198/attractions-network/network-b03/safari-sharm-el-sheikh/ihzuvhkpdyzmh1dguahw.jpg",
+      "alt": "سيارة دفع رباعي بيضاء تقف على أرض صحراوية حجرية وخلفها تلال بنية جرداء"
+     }
+    ],
+    "seo": {
+     "metaTitle": "الوادي الملون وشاطئ دهب: يوم من عشر ساعات بسيارات الجيب",
+     "metaDescription": "عشر ساعات من باب الفندق: الوادي سيرًا بصحبة مرشد، وسيارة دفع رباعي نزولًا إلى الماء، وسباحة، وجمل، ووجبة تحت القماش.",
+     "keywords": []
+    }
+   }
+  }
+ ],
+ "destinations": [
+  {
+   "id": "699895e47169d9820932b9a4",
+   "sourceSlug": "sharm-el-sheikh",
+   "slug": "sharm-el-sheikh-ar",
+   "sourceUpdatedAt": "2026-04-09T16:31:18.356Z",
+   "sourceDigest": "05c986dc8b6a6b3e8412fe767586084a5b89af41fd1d4e95cac1b445eb8d6567",
+   "english": {
+    "name": "Sharm El Sheikh",
+    "country": "Egypt",
+    "description": "Located at the tip of the Sinai Peninsula, Sharm El Sheikh offers stunning Red Sea views and world-renowned diving spots.",
+    "shortDescription": "Luxurious Red Sea resort at the Sinai Peninsula",
+    "highlights": [
+     "Diving",
+     "Snorkeling",
+     "Naama Bay",
+     "Restaurants & Bars"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "beach",
+     "luxury",
+     "diving",
+     "water-sports"
+    ]
+   },
+   "arabic": {
+    "name": "شرم الشيخ",
+    "country": "مصر",
+    "description": "تقع شرم الشيخ عند طرف شبه جزيرة سيناء، وتوفر إطلالات خلابة على البحر الأحمر ومواقع غوص ذائعة الصيت عالمياً.",
+    "shortDescription": "منتجع فاخر على البحر الأحمر في شبه جزيرة سيناء",
+    "highlights": [
+     "الغوص",
+     "السنوركلينغ",
+     "خليج نعمة",
+     "المطاعم والحانات"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "شاطئ",
+     "فخامة",
+     "غوص",
+     "رياضات مائية"
+    ]
+   }
+  }
+ ]
+}

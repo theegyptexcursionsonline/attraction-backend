@@ -1,0 +1,396 @@
+{
+ "version": 1,
+ "batch": "b17b",
+ "locale": "ar",
+ "tenant": {
+  "id": "6ae98968f5e4742051b2bd34",
+  "slug": "zabargad-island",
+  "domain": "zabargad-island.foxesnetwork.com"
+ },
+ "presentationSha256": "0367256e37a4f94bfd4e0c217cb55c00027467e59253236ab54df35adfdaf740",
+ "presentation": [
+  {
+   "kind": "tenant",
+   "sourceId": "6ae98968f5e4742051b2bd34",
+   "sourceDigest": "e2aca47f843af70496c9d35dd420ff925baf2ad168fd88e3136a6821332b73fe",
+   "english": {
+    "tagline": "Two hundred and fifty-seven kilometres off",
+    "description": "Zabargad is the Arabic word for peridot, the olive-green gem, and the island carries the stone’s name; in antiquity it was called Topazos, and on later charts it appears as St John’s Island. It is one of the few places on earth where upper-mantle rock stands above the sea: its peridotite is exposed in three separate hills, and the published studies read the island as a piece of the mantle beneath the Red Sea lifted to the surface. Two sources publish its position a hundred and twenty metres apart, at 23.61025 N, 36.19597 E, and a third, the mapped outline of the island, falls within two hundred and forty metres of both, which is a difference between centre points on an island some kilometres across rather than a disagreement. It lies about sixty kilometres from the Ras Banas peninsula, at the edge of the Red Sea’s central trough, and and a boat several days under way out of Port Ghalib or Marsa Alam is the only means to it, with the permit arranged by the licensed operator. Peridot was worked here in classical antiquity and the island is regarded as the gem’s first known source; the workings were then lost for centuries before nineteenth-century geologists went over the old ground again. The island is part of Elba National Park, and it has been closed to visitors for about a year at a time, after damage to the reefs and disturbance to breeding birds.\n\nThis day sails out of Port Ghalib to snorkel the inshore bays of Marsa Mubarak and Marsa Shona. Zabargad is not among its stops, and could not be: the island lies about two hundred and sixty kilometres south-east of Marsa Shona, far beyond a day boat’s reach. One trip is sold here: that coastal sailing, four and a half hours of it, with two guided stops in the water and an open buffet on deck. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+    "seoSettings": {
+     "metaTitle": "Zabargad Island: the Port Ghalib Sailing Day",
+     "metaDescription": "A sailing day out of Port Ghalib, four and a half hours: guided stops in the water at Marsa Mubarak and then at Marsa Shona, and a buffet on deck.",
+     "keywords": [
+      "zabargad island peridot",
+      "upper mantle rock above the sea",
+      "st johns island topazos",
+      "port ghalib sailing boat snorkelling",
+      "elba national park red sea island"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "Home",
+      "columns": []
+     },
+     {
+      "label": "Trips",
+      "columns": []
+     },
+     {
+      "label": "About",
+      "columns": []
+     },
+     {
+      "label": "FAQ",
+      "columns": []
+     },
+     {
+      "label": "Contact",
+      "columns": []
+     }
+    ]
+   },
+   "arabic": {
+    "tagline": "على بُعد مئتين وسبعة وخمسين كيلومترًا",
+    "description": "الزبرجد هو الاسم العربي للحجر الأخضر الزيتوني، وتحمل الجزيرة اسم الحجر؛ وكانت تُسمّى في العصور القديمة Topazos، وتظهر على الخرائط المتأخرة باسم St John’s Island. وهي من المواضع القليلة على الأرض التي يقف فيها صخر الوشاح العلوي فوق سطح البحر: فصخر البريدوتيت مكشوف فيها في ثلاث تلال منفصلة، وتقرأ الدراسات المنشورة الجزيرة بوصفها قطعة من الوشاح تحت البحر الأحمر رُفعت إلى السطح. وينشر مصدران موضعها بفارق مئة وعشرين مترًا، عند 23.61025 شمالًا و36.19597 شرقًا، ويقع مصدر ثالث، وهو الخطّ المرسوم لحدود الجزيرة، في حدود مئتين وأربعين مترًا من كليهما، وهو فارق بين نقطتَي مركز على جزيرة يبلغ عرضها كيلومترات لا خلاف بين المصادر. وتبعد نحو ستين كيلومترًا عن شبه جزيرة رأس بناس، عند حافة الأخدود الأوسط للبحر الأحمر، ولا سبيل إليها إلا بمركب يمضي أيامًا من بورت غالب أو مرسى علم، بتصريح يرتّبه المشغّل المرخّص. وقد استُخرج الزبرجد هنا في العصور الكلاسيكية القديمة وتُعدّ الجزيرة أول مصدر معروف للحجر؛ ثم ضاعت المواضع قرونًا قبل أن يعاود جيولوجيو القرن التاسع عشر المرور على الأرض القديمة. والجزيرة جزء من محمية علبة الوطنية، وقد أُغلقت أمام الزوّار نحو سنة كاملة في المرة الواحدة، بعد أضرار لحقت بالشعاب وإزعاج للطيور في موسم تكاثرها. ويُبحر هذا اليوم من بورت غالب للسنوركلينغ في خليجَي مرسى مبارك ومرسى شونة القريبين من الساحل. والزبرجد ليست بين محطاته، ولا يمكن أن تكون: فالجزيرة تقع على نحو مئتين وستين كيلومترًا إلى الجنوب الشرقي من مرسى شونة، أبعد كثيرًا من مدى قارب اليوم الواحد. ورحلة واحدة تُباع هنا: ذلك الإبحار الساحلي، أربع ساعات ونصف منه، مع توقفين في الماء بصحبة مرشد وبوفيه مفتوح على سطح المركب. وكل رحلة تقلّك من فندقك وتعيدك إليه، وتذكر كل صفحة ما يشمله سعرها. احجز مكانك عبر الإنترنت وادفع لاحقًا، أو اسأل الفريق أولًا عن موعد الاستلام.",
+    "seoSettings": {
+     "metaTitle": "جزيرة الزبرجد: يوم الإبحار من بورت غالب",
+     "metaDescription": "يوم إبحار من بورت غالب، أربع ساعات ونصف: توقفان في الماء بصحبة مرشد في مرسى مبارك ثم في مرسى شونة، وبوفيه على سطح المركب.",
+     "keywords": [
+      "جزيرة الزبرجد البريدوت",
+      "صخر الوشاح العلوي فوق سطح البحر",
+      "جزيرة St John’s Island توبازوس",
+      "سنوركلينغ بمركب شراعي من بورت غالب",
+      "جزيرة محمية علبة الوطنية في البحر الأحمر"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "الرئيسية",
+      "columns": []
+     },
+     {
+      "label": "الرحلات",
+      "columns": []
+     },
+     {
+      "label": "من نحن",
+      "columns": []
+     },
+     {
+      "label": "الأسئلة الشائعة",
+      "columns": []
+     },
+     {
+      "label": "اتصل بنا",
+      "columns": []
+     }
+    ]
+   }
+  }
+ ],
+ "tours": [
+  {
+   "id": "6ae98968624cd49f356f0f1e",
+   "sourceSlug": "zbg-four-and-a-half-hours-under-sail",
+   "slug": "zbg-four-and-a-half-hours-under-sail-ar",
+   "sourceUpdatedAt": "2026-11-03T07:12:41.207Z",
+   "sourceDigest": "8c1e6d638accd108d1dd3b24ad76506622b524634b165530cf2ca7591e8e90ad",
+   "english": {
+    "title": "Four and a Half Hours Under Sail, Two Bays",
+    "shortDescription": "A half day under sail from the marina: three quarters of an hour in the water at one bay, as long again at the next, and an open buffet on deck.",
+    "description": "The boat leaves the marina twice a day, and the sailing you want is chosen at booking; a shared bus runs down from your Marsa Alam hotel about an hour and a half beforehand. Half an hour or so of sailing brings the first of the two bays, where three quarters of an hour goes to a guided stop in the water, and as long again follows at the second. What the programme names is Port Ghalib and those two bays, not Zabargad, the island of the green stone lying about two hundred and sixty kilometres south-east of the further one; nothing of this day goes out to it.\n\nThe buffet is open and it is laid on deck, and fizzy drinks and tea go round all day long. Snorkelling gear sits outside this price and can be hired from the marina shops. Stand at the marina thirty minutes ahead of the sailing, with an ID card or a passport on you, and expect a child to carry a price of its own.",
+    "duration": "4.5 hours",
+    "cancellationPolicy": "",
+    "highlights": [
+     "Three quarters of an hour in each bay",
+     "A guide in the water at both stops",
+     "An open buffet served on deck",
+     "A boat each day and one after noon"
+    ],
+    "inclusions": [
+     "Hotel pickup and drop-off",
+     "Professional and experienced guides",
+     "Unlimited fizzy drinks and tea",
+     "45-minute fully guided snorkelling stops at Marsa Mubarak and Marsa Shona",
+     "Fresh juice welcome drink",
+     "An open buffet meal on board"
+    ],
+    "exclusions": [
+     "Personal expenses",
+     "Tips (optional)",
+     "Snorkelling gear available to rent from Marina shops"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Hat",
+     "Swimwear",
+     "Towel",
+     "Camera",
+     "Snacks",
+     "Sunscreen",
+     "Water"
+    ],
+    "needToKnow": [
+     "The time you choose is when the boat leaves Port Ghalib. The shared bus collects you from your hotel roughly ninety minutes earlier, and the exact time depends on where your hotel is.",
+     "Be at Port Ghalib Marina thirty minutes before the boat leaves.",
+     "Bring a valid ID card or passport.",
+     "Touching marine life and plants is not allowed.",
+     "Use biodegradable sunscreen to protect the reef.",
+     "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "marsa-alam-pirates-premium-boat-to-turtle-bay-d101de788b0b",
+      "name": "Sailing boat to Marsa Mubarak and Marsa Shona",
+      "description": "The sailing boat from Port Ghalib, two guided snorkelling stops and an open buffet meal on board.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Boat leaves at 09:00"
+     },
+     {
+      "index": 1,
+      "label": "Boat leaves at 14:00"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel pickup",
+      "description": "A shared bus collects you from your hotel in Marsa Alam and drives to Port Ghalib Marina.",
+      "duration": "50 minutes"
+     },
+     {
+      "index": 1,
+      "title": "Sailing to Marsa Mubarak",
+      "description": "The boat leaves the marina and sails up the coast.",
+      "duration": "35 minutes"
+     },
+     {
+      "index": 2,
+      "title": "Marsa Mubarak",
+      "description": "The first guided snorkelling stop, among the reefs and the fish of the bay.",
+      "duration": "45 minutes"
+     },
+     {
+      "index": 3,
+      "title": "Marsa Shona",
+      "description": "The second guided snorkelling stop.",
+      "duration": "45 minutes"
+     },
+     {
+      "index": 4,
+      "title": "A meal on board",
+      "description": "An open buffet meal on deck, with fizzy drinks and tea through the day.",
+      "duration": ""
+     },
+     {
+      "index": 5,
+      "title": "Back to your hotel",
+      "description": "The boat returns to Port Ghalib Marina and the bus takes you back to your hotel.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel pickup",
+      "description": "Pickup and drop-off at your hotel in Marsa Alam."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "The team confirms your pickup time when it confirms your booking."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793085622/attractions-network/network-b08/marsa-mubarak/vqybfirbk4vtbiqdtv70.jpg",
+      "alt": "A snorkeller in a mask at the surface of clear green water, with a tall sailing boat under sail behind"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Four and a Half Hours Under Sail, Two Bays",
+     "metaDescription": "Under sail from the marina at Port Ghalib: three quarters of an hour in the water at each of two bays, and an open buffet laid out on deck.",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "أربع ساعات ونصف تحت الشراع، وخليجان",
+    "shortDescription": "نصف يوم تحت الشراع من المارينا: ثلاثة أرباع الساعة في الماء عند خليج، ومثلها عند الخليج التالي، وبوفيه مفتوح على سطح المركب.",
+    "description": "يغادر المركب المارينا مرتين في اليوم، والإبحار الذي تريده يُختار عند الحجز؛ وتنزل حافلة مشتركة من فندقك في مرسى علم قبل ذلك بنحو ساعة ونصف. ويبلغ نصف ساعة من الإبحار تقريبًا أول الخليجين، حيث تُعطى ثلاثة أرباع الساعة لتوقف في الماء بصحبة مرشد، ويتبعها مثلها عند الثاني. وما يذكره البرنامج هو بورت غالب وذانك الخليجان، لا الزبرجد، جزيرة الحجر الأخضر التي تقع على نحو مئتين وستين كيلومترًا إلى الجنوب الشرقي من أبعدهما؛ ولا شيء من هذا اليوم يخرج إليها.\n\nوالبوفيه مفتوح ويُمدّ على سطح المركب، وتدور المشروبات الغازية والشاي طوال اليوم. ومعدّات السنوركلينغ خارج هذا السعر ويمكن استئجارها من متاجر المارينا. كن في المارينا قبل الإبحار بثلاثين دقيقة، ومعك بطاقة هوية أو جواز سفر، وتوقّع أن يحمل الطفل سعرًا خاصًا به.",
+    "duration": "4.5 ساعة",
+    "cancellationPolicy": "",
+    "highlights": [
+     "ثلاثة أرباع الساعة في كل خليج",
+     "مرشد في الماء عند التوقفين",
+     "بوفيه مفتوح يُقدَّم على سطح المركب",
+     "مركب كل يوم وآخر بعد الظهر"
+    ],
+    "inclusions": [
+     "النقل من الفندق وإليه",
+     "مرشدون محترفون وذوو خبرة",
+     "مشروبات غازية وشاي بلا حدود",
+     "وقفات سنوركلينغ بصحبة مرشد مدة كل منها 45 دقيقة في مرسى مبارك ومرسى شونة",
+     "مشروب ترحيب من العصير الطازج",
+     "وجبة بوفيه مفتوح على متن المركب"
+    ],
+    "exclusions": [
+     "المصروفات الشخصية",
+     "الإكراميات (اختيارية)",
+     "عدة السنوركلينغ متاحة للإيجار من متاجر المارينا"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "قبعة",
+     "ملابس سباحة",
+     "منشفة",
+     "كاميرا",
+     "وجبات خفيفة",
+     "واقي شمس",
+     "ماء"
+    ],
+    "needToKnow": [
+     "الوقت الذي تختاره هو موعد انطلاق المركب من بورت غالب. وتصطحبك الحافلة الجماعية من فندقك قبل ذلك بنحو تسعين دقيقة، ويتوقف الموعد الدقيق على موقع فندقك.",
+     "كن في مارينا بورت غالب قبل انطلاق المركب بثلاثين دقيقة.",
+     "أحضر بطاقة هوية سارية أو جواز سفر.",
+     "لا يُسمح بلمس الكائنات البحرية والنباتات.",
+     "استخدم واقي شمس قابلاً للتحلل الحيوي لحماية الشعاب.",
+     "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "marsa-alam-pirates-premium-boat-to-turtle-bay-d101de788b0b",
+      "name": "مركب شراعي إلى مرسى مبارك ومرسى شونة",
+      "description": "المركب الشراعي من بورت غالب، ووقفتان للسنوركلينغ بصحبة مرشد، ووجبة بوفيه مفتوح على متن المركب.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "ينطلق المركب الساعة 09:00"
+     },
+     {
+      "index": 1,
+      "label": "ينطلق المركب الساعة 14:00"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "تصطحبك حافلة جماعية من فندقك في مرسى علم وتتجه إلى مارينا بورت غالب.",
+      "duration": "50 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "الإبحار إلى مرسى مبارك",
+      "description": "يترك المركب المارينا ويبحر صعوداً بالساحل.",
+      "duration": "35 دقيقة"
+     },
+     {
+      "index": 2,
+      "title": "مرسى مبارك",
+      "description": "أول وقفة سنوركلينغ بصحبة مرشد، بين شعاب الخليج وأسماكه.",
+      "duration": "45 دقيقة"
+     },
+     {
+      "index": 3,
+      "title": "مرسى شونة",
+      "description": "وقفة السنوركلينغ الثانية بصحبة مرشد.",
+      "duration": "45 دقيقة"
+     },
+     {
+      "index": 4,
+      "title": "وجبة على متن المركب",
+      "description": "وجبة بوفيه مفتوح على سطح المركب، مع مشروبات غازية وشاي على مدار اليوم.",
+      "duration": ""
+     },
+     {
+      "index": 5,
+      "title": "العودة إلى فندقك",
+      "description": "يعود المركب إلى مارينا بورت غالب وتعيدك الحافلة إلى فندقك.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك في مرسى علم والعودة إليه."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793085622/attractions-network/network-b08/marsa-mubarak/vqybfirbk4vtbiqdtv70.jpg",
+      "alt": "ممارس سنوركلينغ بقناع على سطح ماء أخضر صافٍ، ومركب شراعي عالٍ مبحر من خلفه"
+     }
+    ],
+    "seo": {
+     "metaTitle": "أربع ساعات ونصف تحت الشراع، وخليجان",
+     "metaDescription": "تحت الشراع من مارينا بورت غالب: ثلاثة أرباع الساعة في الماء عند كل من خليجين، وبوفيه مفتوح يُمدّ على سطح المركب.",
+     "keywords": []
+    }
+   }
+  }
+ ],
+ "destinations": [
+  {
+   "id": "699895e47169d9820932b9ab",
+   "sourceSlug": "marsa-alam",
+   "slug": "marsa-alam-ar",
+   "sourceUpdatedAt": "2026-04-09T16:34:09.828Z",
+   "sourceDigest": "745ca25bbadf20dc3b858537c46c7a94626e45331e3ebe4f53c03911f9f9e264",
+   "english": {
+    "name": "Marsa Alam",
+    "country": "Egypt",
+    "description": "A pristine diving destination on the Red Sea, Marsa Alam is known for its untouched coral reefs and marine wildlife.",
+    "shortDescription": "Pristine Red Sea diving destination",
+    "highlights": [
+     "Coral Reefs",
+     "Dolphin Encounters",
+     "Undiscovered Wrecks",
+     "Tranquility"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "diving",
+     "marine-life",
+     "beach",
+     "adventure"
+    ]
+   },
+   "arabic": {
+    "name": "مرسى علم",
+    "country": "مصر",
+    "description": "مرسى علم وجهة غوص بكر على البحر الأحمر، تشتهر بشعابها المرجانية التي لم تمسها يد وبحياتها البحرية.",
+    "shortDescription": "وجهة غوص بكر على البحر الأحمر",
+    "highlights": [
+     "الشعاب المرجانية",
+     "لقاءات الدلافين",
+     "حطام سفن لم يُكتشف بعد",
+     "الهدوء"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "غوص",
+     "الحياة البحرية",
+     "شاطئ",
+     "مغامرة"
+    ]
+   }
+  }
+ ]
+}

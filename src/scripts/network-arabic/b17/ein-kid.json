@@ -1,0 +1,412 @@
+{
+ "version": 1,
+ "batch": "b17b",
+ "locale": "ar",
+ "tenant": {
+  "id": "6ae9a6f3f5e4742051b2bd37",
+  "slug": "ein-kid",
+  "domain": "ein-kid.foxesnetwork.com"
+ },
+ "presentationSha256": "bd8bc2f8edc5e596df7798979ffcbce5b79a80a42acb3a058bcb49c4ab05ce9c",
+ "presentation": [
+  {
+   "kind": "tenant",
+   "sourceId": "6ae9a6f3f5e4742051b2bd37",
+   "sourceDigest": "cd74f1ff1d72169885069ca73dcca155cdd305c3780e2174d82a451ff64c5429",
+   "english": {
+    "tagline": "A desert evening, and no distance to give",
+    "description": "Ein Kid, also written Ein Kidd, is a desert oasis of palm trees and bamboo, inland in South Sinai. It is the junction of the two halves of the Sinai Trail: the first part runs from Ras Shetan on the Gulf of Aqaba coast to Ein Kidd, and the second carries on from there towards St Katherine. No road reaches it. Visitors go by four-wheel drive to a trailhead and continue on foot, by camel or by donkey, walking with Bedouin guides on a trail the Bedouin run themselves, and the approach is a wadi and mountain walk of several days, usually taken as part of a longer trek rather than as a day out. No public source publishes a position for it: there is no coordinate in the mapping records, the gazetteers, Wikidata or the encyclopaedias, and the trail's own pages give none either. So this site shows no coordinates, no map, no pin and no bearing, and it gives no distance from anywhere.\n\nThis day goes inland into the Sinai desert behind Sharm El Sheikh for a quad ride, a camel ride and a Bedouin dinner; its programme does not name Ein Kid, and because no position for the oasis has ever been published, how far that desert camp lies from it cannot be said. One trip is sold here: five hours in stages, the riding broken by tea, a camel and a buffet dinner at a camp, with telescopes and an astronomy guide at the end of it. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+    "seoSettings": {
+     "metaTitle": "Ein Kid: a Sinai Desert Evening from Sharm",
+     "metaDescription": "A five-hour Sinai desert evening from Sharm El Sheikh: quad riding in stages, Bedouin tea, a camel ride, a buffet dinner and telescopes after dark.",
+     "keywords": [
+      "ein kid ein kidd sinai oasis",
+      "where the sinai trail halves meet",
+      "palms and bamboo oasis south sinai",
+      "no published position for ein kid",
+      "sinai desert quad and bedouin dinner evening"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "Home",
+      "columns": []
+     },
+     {
+      "label": "Trips",
+      "columns": []
+     },
+     {
+      "label": "About",
+      "columns": []
+     },
+     {
+      "label": "FAQ",
+      "columns": []
+     },
+     {
+      "label": "Contact",
+      "columns": []
+     }
+    ]
+   },
+   "arabic": {
+    "tagline": "أمسية صحراوية، ولا مسافة تُعطى",
+    "description": "Ein Kid، ويُكتب كذلك Ein Kidd، واحة صحراوية من النخل والبامبو في داخل جنوب سيناء. وهي ملتقى شطرَي مسار سيناء: يمتدّ الشطر الأول من رأس شيطان على ساحل خليج العقبة إلى Ein Kidd، ويمضي الثاني من هناك نحو سانت كاترين. ولا طريق يصل إليها. يذهب الزوّار بسيارة الدفع الرباعي إلى مبدأ الدرب ويواصلون سيرًا على الأقدام أو على الجمل أو على الحمار، يمشون بصحبة مرشدين بدو على درب يديره البدو أنفسهم، والوصول إليها سير في الأودية والجبال يدوم أيامًا، ويُؤخذ عادةً ضمن رحلة أطول لا بوصفه نزهة يوم واحد. ولا مصدر عام ينشر موضعًا لها: لا إحداثي في سجلّات الخرائط ولا في المعاجم الجغرافية ولا في Wikidata ولا في الموسوعات، ولا تعطي صفحات الدرب نفسه شيئًا منه. ولذلك لا يعرض هذا الموقع إحداثيات ولا خريطة ولا علامة ولا اتجاهًا، ولا يعطي مسافة من أي مكان. ويمضي هذا اليوم إلى الداخل في صحراء سيناء خلف شرم الشيخ لجولة بدراجة الكواد وركوب جمل وعشاء بدوي؛ ولا يذكر برنامجه Ein Kid، ولأن موضع الواحة لم يُنشر قط لا يمكن القول كم يبعد ذلك المخيّم الصحراوي عنها. ورحلة واحدة تُباع هنا: خمس ساعات على مراحل، تتخلّل القيادةَ استراحةُ شاي وجملٌ وعشاء بوفيه في مخيّم، مع تلسكوبات ومرشد فلكي في ختامها. وكل رحلة تقلّك من فندقك وتعيدك إليه، وتذكر كل صفحة ما يشمله سعرها. احجز مكانك عبر الإنترنت وادفع لاحقًا، أو اسأل الفريق أولًا عن موعد الاستلام.",
+    "seoSettings": {
+     "metaTitle": "Ein Kid: أمسية في صحراء سيناء من شرم",
+     "metaDescription": "أمسية من خمس ساعات في صحراء سيناء من شرم الشيخ: قيادة دراجة الكواد على مراحل، وشاي بدوي، وركوب جمل، وعشاء بوفيه، وتلسكوبات بعد حلول الظلام.",
+     "keywords": [
+      "Ein Kid Ein Kidd واحة سيناء",
+      "حيث يلتقي شطرا مسار سيناء",
+      "واحة النخل والبامبو في جنوب سيناء",
+      "لا موضع منشور لـ Ein Kid",
+      "أمسية دراجة الكواد والعشاء البدوي في صحراء سيناء"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "الرئيسية",
+      "columns": []
+     },
+     {
+      "label": "الرحلات",
+      "columns": []
+     },
+     {
+      "label": "من نحن",
+      "columns": []
+     },
+     {
+      "label": "الأسئلة الشائعة",
+      "columns": []
+     },
+     {
+      "label": "اتصل بنا",
+      "columns": []
+     }
+    ]
+   }
+  }
+ ],
+ "tours": [
+  {
+   "id": "6ae9a6f3226b91979e229fa7",
+   "sourceSlug": "ekd-an-evening-on-a-quad-in-the-sinai-desert",
+   "slug": "ekd-an-evening-on-a-quad-in-the-sinai-desert-ar",
+   "sourceUpdatedAt": "2026-11-03T09:18:43.352Z",
+   "sourceDigest": "b476f0c366b500bbeae38eb05d75908bfb50fcfdf2bcd2727fd34fe232c0bb23",
+   "english": {
+    "title": "An Evening on a Quad in the Sinai Desert",
+    "shortDescription": "Five hours taken in stages: a run out, a halt for tea and a camel, a buffet and a show at the camp, then an astronomer with telescopes.",
+    "description": "A van collects the group and drives out to the desert base, where half an hour goes on the safety talk before anyone takes a machine out. The crossing is made in stages rather than in one run: a stretch away from the base, a halt for tea and a turn on a camel, a second stretch, and the camp at the end of it. What the programme names is the Sinai desert behind the town and the safari centre, not Ein Kid, the inland oasis where the two halves of the Sinai Trail meet; and because no position for that oasis is published, how far this camp lies from it cannot be said.\n\nAt the camp a buffet is laid out with an oriental show, and when that is done the telescopes are set up and an astronomer walks you round the sky. A short final leg brings you back to the van. Two starts are published, one in the late afternoon and one late at night. Riders may have a machine each or pair up on one and take turns at the wheel. A desert conservation fee of a dollar a head is handed over in cash at the gate, under-sixteens may ride behind an adult but may not drive, and a meatless plate can be arranged.",
+    "duration": "5 hours",
+    "cancellationPolicy": "",
+    "highlights": [
+     "The crossing made in stages, not one run",
+     "A halt for tea and a turn on a camel",
+     "A buffet and an oriental show",
+     "An astronomer and the telescopes"
+    ],
+    "inclusions": [
+     "Hotel pickup and drop-off",
+     "Quad bike ride",
+     "Camel ride",
+     "Bedouin tea and bread",
+     "Buffet dinner",
+     "Oriental entertainment program",
+     "Stargazing session with professional telescopes",
+     "Experienced astronomy guide"
+    ],
+    "exclusions": [
+     "National Park / Desert Conservation Fee: US$1 per person, payable in cash on the spot in US dollars, euros, British pounds, or Egyptian pounds at the equivalent exchange rate"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Sunglasses",
+     "Camera",
+     "Sunscreen",
+     "Comfortable clothes"
+    ],
+    "needToKnow": [
+     "A desert conservation fee of one US dollar per person is paid in cash on the day.",
+     "Children under sixteen may ride as passengers with an adult but may not drive.",
+     "No driving licence is needed for the quad.",
+     "Vegetarian meals are available.",
+     "Children have their own price on the options that publish one; on the others they pay the adult price. The team confirms which ages count as children when it confirms your booking."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "shared-double-quad-bike-experience-a52d71783324",
+      "name": "Two sharing one quad",
+      "description": "One drives and one rides behind, and you can swap during the ride.",
+      "timeSlots": []
+     },
+     {
+      "id": "5-in-1-quad-camel-dinner-stargazing-tour-c24ec77fbaf5",
+      "name": "A quad of your own",
+      "description": "The same evening with a quad bike each.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Late afternoon"
+     },
+     {
+      "index": 1,
+      "label": "Late evening"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel pickup",
+      "description": "A van collects you from your hotel in Sharm el-Sheikh for the drive to the safari centre.",
+      "duration": "30 minutes"
+     },
+     {
+      "index": 1,
+      "title": "The briefing",
+      "description": "The safety briefing before the quads are handed over.",
+      "duration": "30 minutes"
+     },
+     {
+      "index": 2,
+      "title": "The first ride",
+      "description": "Out into the Sinai desert with the guide.",
+      "duration": "15 minutes"
+     },
+     {
+      "index": 3,
+      "title": "Tea and the camel",
+      "description": "A break for Bedouin tea and bread, and a camel ride.",
+      "duration": "30 minutes"
+     },
+     {
+      "index": 4,
+      "title": "Dinner and the show",
+      "description": "A buffet dinner at the camp with an oriental entertainment programme.",
+      "duration": "1 hour"
+     },
+     {
+      "index": 5,
+      "title": "The telescopes",
+      "description": "A guided look at the night sky with an experienced astronomy guide.",
+      "duration": "30 minutes"
+     },
+     {
+      "index": 6,
+      "title": "Back to your hotel",
+      "description": "A last short ride, then the van back to Sharm el-Sheikh.",
+      "duration": "50 minutes"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel pickup",
+      "description": "Pickup and drop-off at your hotel in Sharm El Sheikh."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "The team confirms your pickup time when it confirms your booking."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1792936195/attractions-network/network-b03/safari-sharm-el-sheikh/qqo25k0p0m1qtvfzz3hd.jpg",
+      "alt": "A rider in a blue shirt and red headscarf sitting on a camel with a hand raised, red desert cliffs behind"
+     }
+    ],
+    "seo": {
+     "metaTitle": "A Sinai Desert Quad Evening with Dinner and Telescopes",
+     "metaDescription": "Five hours in the Sinai desert from Sharm El Sheikh, taken in stages: a halt for tea and a camel, a buffet and a show, then the telescopes.",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "أمسية على دراجة كواد في صحراء سيناء",
+    "shortDescription": "خمس ساعات تُؤخذ على مراحل: جولة إلى الخارج، واستراحة شاي وجمل، وبوفيه وعرض في المخيّم، ثم فلكي مع التلسكوبات.",
+    "description": "تجمع حافلة المجموعةَ وتخرج بها إلى القاعدة الصحراوية، حيث تُعطى نصف ساعة لحديث السلامة قبل أن يأخذ أحد مركبة. ويُقطع العبور على مراحل لا في جولة واحدة: مسافة بعيدًا عن القاعدة، واستراحة شاي ودورة على جمل، ومسافة ثانية، والمخيّم في ختامها. وما يذكره البرنامج هو صحراء سيناء خلف البلدة ومركز السفاري، لا Ein Kid، الواحة الداخلية التي يلتقي عندها شطرا مسار سيناء؛ ولأن موضع تلك الواحة غير منشور لا يمكن القول كم يبعد هذا المخيّم عنها.\n\nوفي المخيّم يُمدّ بوفيه مع عرض شرقي، وحين ينتهي ذلك تُنصب التلسكوبات ويطوف بك فلكي في السماء. وتعيدك مرحلة أخيرة قصيرة إلى الحافلة. وتُنشر بدايتان، واحدة في آخر العصر وأخرى في وقت متأخر من الليل. وقد يأخذ كل راكب مركبة وحده أو يتشارك اثنان مركبة واحدة ويتناوبان القيادة. وتُسلَّم رسوم حماية الصحراء، وقدرها دولار للفرد، نقدًا عند البوابة، ويجوز لمن دون السادسة عشرة الركوب خلف بالغ دون القيادة، ويمكن ترتيب طبق خالٍ من اللحم.",
+    "duration": "5 ساعات",
+    "cancellationPolicy": "",
+    "highlights": [
+     "العبور على مراحل، لا في جولة واحدة",
+     "استراحة شاي ودورة على جمل",
+     "بوفيه وعرض شرقي",
+     "فلكي والتلسكوبات"
+    ],
+    "inclusions": [
+     "النقل من الفندق وإليه",
+     "جولة بدراجة الكواد",
+     "ركوب الجمل",
+     "شاي بدوي وخبز",
+     "عشاء بوفيه",
+     "برنامج ترفيهي شرقي",
+     "جلسة مراقبة النجوم بتلسكوبات احترافية",
+     "مرشد فلكي ذو خبرة"
+    ],
+    "exclusions": [
+     "رسم المحمية الوطنية / الحفاظ على الصحراء: US$1 للشخص، يُدفع نقداً في الموقع بالدولار الأمريكي أو اليورو أو الجنيه الإسترليني أو الجنيه المصري بسعر الصرف المعادل"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "نظارات شمسية",
+     "كاميرا",
+     "واقي شمس",
+     "ملابس مريحة"
+    ],
+    "needToKnow": [
+     "يُدفع رسم حفاظ على الصحراء قدره دولار أمريكي واحد للشخص نقداً في يوم الرحلة.",
+     "يمكن لمن هم دون السادسة عشرة الركوب كمرافقين مع شخص بالغ، لكن لا يُسمح لهم بالقيادة.",
+     "لا تلزم رخصة قيادة لدراجة الكواد.",
+     "تتوفر وجبات نباتية.",
+     "للأطفال سعرهم الخاص في الخيارات التي تعلن سعراً لهم؛ وفي الخيارات الأخرى يدفعون سعر البالغين. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "shared-double-quad-bike-experience-a52d71783324",
+      "name": "راكبان على دراجة كواد واحدة",
+      "description": "واحد يقود والآخر يركب خلفه، ويمكنكما التبديل أثناء الجولة.",
+      "timeSlots": []
+     },
+     {
+      "id": "5-in-1-quad-camel-dinner-stargazing-tour-c24ec77fbaf5",
+      "name": "دراجة كواد خاصة بك",
+      "description": "الأمسية نفسها مع دراجة كواد لكل واحد.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "آخر بعد الظهر"
+     },
+     {
+      "index": 1,
+      "label": "آخر المساء"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "تصطحبك حافلة صغيرة من فندقك في شرم الشيخ للتوجه إلى مركز السفاري.",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "الشرح التمهيدي",
+      "description": "شرح السلامة قبل تسليم دراجات الكواد.",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 2,
+      "title": "الجولة الأولى",
+      "description": "إلى صحراء سيناء مع المرشد.",
+      "duration": "15 دقيقة"
+     },
+     {
+      "index": 3,
+      "title": "الشاي والجمل",
+      "description": "استراحة لشاي بدوي وخبز، وركوب الجمل.",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 4,
+      "title": "العشاء والعرض",
+      "description": "عشاء بوفيه في المخيم مع برنامج ترفيهي شرقي.",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 5,
+      "title": "التلسكوبات",
+      "description": "نظرة إلى سماء الليل بصحبة مرشد فلكي ذي خبرة.",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 6,
+      "title": "العودة إلى فندقك",
+      "description": "جولة قصيرة أخيرة، ثم الحافلة الصغيرة عائدة إلى شرم الشيخ.",
+      "duration": "50 دقيقة"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك في شرم الشيخ والعودة إليه."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1792936195/attractions-network/network-b03/safari-sharm-el-sheikh/qqo25k0p0m1qtvfzz3hd.jpg",
+      "alt": "راكب بقميص أزرق وغطاء رأس أحمر يجلس على جمل رافعاً يده، وخلفه جروف صحراوية حمراء"
+     }
+    ],
+    "seo": {
+     "metaTitle": "أمسية دراجة كواد في صحراء سيناء مع عشاء وتلسكوبات",
+     "metaDescription": "خمس ساعات في صحراء سيناء من شرم الشيخ، تُؤخذ على مراحل: استراحة شاي وجمل، وبوفيه وعرض، ثم التلسكوبات.",
+     "keywords": []
+    }
+   }
+  }
+ ],
+ "destinations": [
+  {
+   "id": "699895e47169d9820932b9a4",
+   "sourceSlug": "sharm-el-sheikh",
+   "slug": "sharm-el-sheikh-ar",
+   "sourceUpdatedAt": "2026-04-09T16:31:18.356Z",
+   "sourceDigest": "05c986dc8b6a6b3e8412fe767586084a5b89af41fd1d4e95cac1b445eb8d6567",
+   "english": {
+    "name": "Sharm El Sheikh",
+    "country": "Egypt",
+    "description": "Located at the tip of the Sinai Peninsula, Sharm El Sheikh offers stunning Red Sea views and world-renowned diving spots.",
+    "shortDescription": "Luxurious Red Sea resort at the Sinai Peninsula",
+    "highlights": [
+     "Diving",
+     "Snorkeling",
+     "Naama Bay",
+     "Restaurants & Bars"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "beach",
+     "luxury",
+     "diving",
+     "water-sports"
+    ]
+   },
+   "arabic": {
+    "name": "شرم الشيخ",
+    "country": "مصر",
+    "description": "تقع شرم الشيخ عند طرف شبه جزيرة سيناء، وتوفر إطلالات خلابة على البحر الأحمر ومواقع غوص ذائعة الصيت عالمياً.",
+    "shortDescription": "منتجع فاخر على البحر الأحمر في شبه جزيرة سيناء",
+    "highlights": [
+     "الغوص",
+     "السنوركلينغ",
+     "خليج نعمة",
+     "المطاعم والحانات"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "شاطئ",
+     "فخامة",
+     "غوص",
+     "رياضات مائية"
+    ]
+   }
+  }
+ ]
+}

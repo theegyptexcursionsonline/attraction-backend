@@ -1,0 +1,376 @@
+{
+ "version": 1,
+ "batch": "b17b",
+ "locale": "ar",
+ "tenant": {
+  "id": "6ae98965f5e4742051b2bd32",
+  "slug": "daedalus-reef",
+  "domain": "daedalus-reef.foxesnetwork.com"
+ },
+ "presentationSha256": "c29e36382f4d2384edb09565b19669c34e795f20d921d1677d175c0cc29f27be",
+ "presentation": [
+  {
+   "kind": "tenant",
+   "sourceId": "6ae98965f5e4742051b2bd32",
+   "sourceDigest": "652e3bd3e21a883985ec18cf9f089a480f23af37f34aa99f72e7888992791858",
+   "english": {
+    "tagline": "A boat day eighty-nine kilometres short of it",
+    "description": "Daedalus Reef, which the lighthouse registers enter as Abu el-Kizan, is an isolated reef standing alone in open sea about ninety kilometres east of Marsa Alam. It is small and steep-sided: under a kilometre long, barely breaking the surface, with the ground falling away all round it, and the one fixed structure on it is a lighthouse. A light station was established there in 1863 and the tower standing today was built in 1931; it was refurbished in 1993 and is staffed. That tower is round stone, thirty metres tall, painted in black and white horizontal bands, and it shows three white flashes every twelve seconds in a one-then-two pattern, with a nominal range of fifteen nautical miles. Two sources publish the tower’s own position eleven metres apart, at 24.93285 N, 35.87025 E, and two more publish the reef body thirty-six metres apart, about three hundred and ten metres north-west of the light. The reef lies inside Egypt’s Red Sea marine protected areas, and nothing comes to it but a boat on a voyage of several days out of Port Ghalib or Marsa Alam.\n\nThe reef this boat day snorkels is Shaab Samadai, off Marsa Alam; its programme does not name Daedalus Reef, the lighthouse reef that stands alone in open sea some ninety kilometres further out to the south-east. One trip is sold here, and every hour of it is spent inshore: seven hours by boat, two guided sessions in the water at that reef, and a buffet lunch laid out between them. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+    "seoSettings": {
+     "metaTitle": "Daedalus Reef: the Shaab Samadai Boat Day",
+     "metaDescription": "Seven hours by boat out of Marsa Alam: two guided sessions in the water at the reef of Shaab Samadai, a buffet lunch aboard and a car from your hotel.",
+     "keywords": [
+      "daedalus reef abu el-kizan",
+      "lighthouse reef alone in open sea",
+      "shaab samadai boat day marsa alam",
+      "banded stone light tower red sea",
+      "marsa alam snorkelling day with lunch"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "Home",
+      "columns": []
+     },
+     {
+      "label": "Trips",
+      "columns": []
+     },
+     {
+      "label": "About",
+      "columns": []
+     },
+     {
+      "label": "FAQ",
+      "columns": []
+     },
+     {
+      "label": "Contact",
+      "columns": []
+     }
+    ]
+   },
+   "arabic": {
+    "tagline": "يوم بحري يقف على بُعد تسعة وثمانين كيلومترًا منه",
+    "description": "شعب ديدالوس، الذي تُدخله سجلّات المنارات باسم أبو الكيزان، شعبة منعزلة تقف وحدها في عرض البحر على نحو تسعين كيلومترًا شرق مرسى علم. وهي صغيرة شديدة الانحدار: أقلّ من كيلومتر طولًا، تكاد لا تخرق السطح، والقاع يهوي من حولها في كل اتجاه، والبناء الثابت الوحيد عليها منارة. أُنشئت محطة ضوء هناك سنة 1863 وبُني البرج القائم اليوم سنة 1931؛ ورُمّم سنة 1993 وعليه طاقم. والبرج حجري مستدير بارتفاع ثلاثين مترًا، مدهون بأشرطة أفقية سوداء وبيضاء، ويُظهر ثلاث ومضات بيضاء كل اثنتي عشرة ثانية بنسق واحدة ثم اثنتين، ومداه الاسمي خمسة عشر ميلًا بحريًا. وينشر مصدران موضع البرج نفسه بفارق أحد عشر مترًا، عند 24.93285 شمالًا و35.87025 شرقًا، وينشر مصدران آخران جسم الشعبة بفارق ستة وثلاثين مترًا، على نحو ثلاثمئة وعشرة أمتار إلى الشمال الغربي من الضوء. وتقع الشعبة داخل المحميات البحرية في البحر الأحمر بمصر، ولا يصلها إلا قارب في رحلة تدوم أيامًا من بورت غالب أو مرسى علم. والشعبة التي يمارس هذا اليوم البحري السنوركلينغ فيها هي شعب سمداي، قبالة مرسى علم؛ ولا يذكر برنامجه شعب ديدالوس، شعب المنارة الذي يقف وحده في عرض البحر على نحو تسعين كيلومترًا أبعد إلى الجنوب الشرقي. ورحلة واحدة تُباع هنا، وكل ساعة منها تُقضى قرب الساحل: سبع ساعات بالقارب، وجلستان في الماء بصحبة مرشد عند تلك الشعبة، وغداء بوفيه يُمدّ بينهما. وكل رحلة تقلّك من فندقك وتعيدك إليه، وتذكر كل صفحة ما يشمله سعرها. احجز مكانك عبر الإنترنت وادفع لاحقًا، أو اسأل الفريق أولًا عن موعد الاستلام.",
+    "seoSettings": {
+     "metaTitle": "شعب ديدالوس: يوم القارب إلى شعب سمداي",
+     "metaDescription": "سبع ساعات بالقارب من مرسى علم: جلستان في الماء بصحبة مرشد عند شعب سمداي، وغداء بوفيه على متن القارب، وسيارة من فندقك.",
+     "keywords": [
+      "شعب ديدالوس أبو الكيزان",
+      "شعب منارة وحده في عرض البحر",
+      "يوم القارب إلى شعب سمداي مرسى علم",
+      "برج ضوء حجري مخطّط في البحر الأحمر",
+      "يوم سنوركلينغ في مرسى علم مع غداء"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "الرئيسية",
+      "columns": []
+     },
+     {
+      "label": "الرحلات",
+      "columns": []
+     },
+     {
+      "label": "من نحن",
+      "columns": []
+     },
+     {
+      "label": "الأسئلة الشائعة",
+      "columns": []
+     },
+     {
+      "label": "اتصل بنا",
+      "columns": []
+     }
+    ]
+   }
+  }
+ ],
+ "tours": [
+  {
+   "id": "6ae98965624cd49f356f0ece",
+   "sourceSlug": "drf-seven-hours-at-the-horseshoe-reef",
+   "slug": "drf-seven-hours-at-the-horseshoe-reef-ar",
+   "sourceUpdatedAt": "2026-11-03T07:12:38.148Z",
+   "sourceDigest": "b603a9e7fc7459544bff9fa1daccfa391ba70d32bf43ca9aa416ca1916b0cf38",
+   "english": {
+    "title": "Seven Hours at the Horseshoe Reef of Shaab Samadai",
+    "shortDescription": "Seven hours afloat: two guided sessions in the water at the horseshoe reef of Shaab Samadai, with a buffet lunch set out between them.",
+    "description": "The car comes to your Marsa Alam hotel, and the boat works out to Shaab Samadai, a horseshoe of reef whose sheltered middle spinner dolphins use through the daylight hours to rest. Two guided sessions in the water are what the day is built on, the first inside the lagoon and the second over the coral outside it, with the equipment handed out and a life jacket for anyone who wants one. What the programme names is that one reef, not Daedalus Reef, the lighthouse reef lying about ninety kilometres further out to the south-east; nothing on this day sails anywhere near it.\n\nA buffet lunch comes with soft drinks, served on board between the two sessions. Dolphins are wild animals in open water, so the crew watch for them and no one aboard promises a sighting. The national park fee, a wetsuit and a pickup from north or south of the town are each settled apart from this price, and a child is priced apart from an adult.",
+    "duration": "7 hours",
+    "cancellationPolicy": "",
+    "highlights": [
+     "The horseshoe reef of Shaab Samadai",
+     "A session inside the lagoon",
+     "A second session over the coral",
+     "A buffet lunch between the two"
+    ],
+    "inclusions": [
+     "Hotel pickup and drop-off in Marsa Alam",
+     "Full-day boat trip to Shaab Samadai Reef",
+     "Two guided snorkelling sessions (equipment included)",
+     "Professional snorkelling guide",
+     "Refreshments and soft drinks on board",
+     "Buffet lunch on the boat",
+     "Life jackets and safety equipment"
+    ],
+    "exclusions": [
+     "Personal expenses",
+     "National park/environmental entrance fee (10€/Person)",
+     "Transfers from hotels in North & South Marsa Alam (available for an extra charge)",
+     "A wetsuit, which can be hired on the day"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Swimwear",
+     "Towel",
+     "Camera",
+     "Sunscreen"
+    ],
+    "needToKnow": [
+     "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "national-park-fee-adult-d39334dec233",
+      "name": "Shaab Samadai snorkelling boat day",
+      "description": "Hotel pickup in Marsa Alam, two guided snorkelling sessions at Shaab Samadai and a buffet lunch on board.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel pickup",
+      "description": "The car collects you from your hotel in Marsa Alam and drives to the boat.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "Out to Shaab Samadai",
+      "description": "The boat sails to the horseshoe reef of Shaab Samadai.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "First snorkelling session",
+      "description": "A guided session with the equipment, in the lagoon where spinner dolphins often rest.",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "Lunch on board",
+      "description": "A buffet lunch with soft drinks.",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "Second snorkelling session",
+      "description": "A second guided session over the coral gardens.",
+      "duration": ""
+     },
+     {
+      "index": 5,
+      "title": "Back to your hotel",
+      "description": "The boat returns and the car takes you back to your hotel in Marsa Alam.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel pickup",
+      "description": "Pickup and drop-off at your hotel in Marsa Alam."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "The team confirms your pickup time when it confirms your booking."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788795260/tours/fs65spccs0uncfww6z9k.jpg",
+      "alt": "Three dolphins swimming above a coral reef, with a snorkeller in a yellow top swimming nearby"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Seven Hours at the Horseshoe Reef of Shaab Samadai",
+     "metaDescription": "A boat day out of Marsa Alam: a guided session inside the lagoon of Shaab Samadai, a second over the coral outside it, and a buffet lunch between them.",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "سبع ساعات عند شعب سمداي ذي شكل حدوة الحصان",
+    "shortDescription": "سبع ساعات في البحر: جلستان في الماء بصحبة مرشد عند شعب سمداي ذي شكل حدوة الحصان، مع غداء بوفيه يُمدّ بينهما.",
+    "description": "تمرّ السيارة على فندقك في مرسى علم، ويشقّ القارب طريقه إلى شعب سمداي، حدوة من الشعاب يستخدم دلافين السبينر وسطها المحمي خلال ساعات النهار للراحة. وتقوم جلستان في الماء بصحبة مرشد عليهما بناء اليوم، الأولى داخل البحيرة والثانية فوق المرجان خارجها، مع توزيع المعدّات وسترة نجاة لمن يريدها. وما يذكره البرنامج هو تلك الشعبة وحدها، لا شعب ديدالوس، شعب المنارة الذي يقع على نحو تسعين كيلومترًا أبعد إلى الجنوب الشرقي؛ ولا شيء في هذا اليوم يبحر قريبًا منه.\n\nويأتي غداء البوفيه ومعه المشروبات الغازية، ويُقدَّم على متن القارب بين الجلستين. والدلافين حيوانات برية في مياه مفتوحة، فيترقّبها الطاقم ولا يَعِد أحد على متن القارب برؤيتها. وتُسوّى رسوم المحمية الوطنية وبدلة الغطس والاستلام من شمال البلدة أو جنوبها كلٌّ منها خارج هذا السعر، وللطفل سعر منفصل عن سعر البالغ.",
+    "duration": "7 ساعات",
+    "cancellationPolicy": "",
+    "highlights": [
+     "شعب سمداي ذو شكل حدوة الحصان",
+     "جلسة داخل البحيرة",
+     "جلسة ثانية فوق المرجان",
+     "غداء بوفيه بين الجلستين"
+    ],
+    "inclusions": [
+     "الاصطحاب من الفندق والعودة إليه في مرسى علم",
+     "رحلة بحرية ليوم كامل إلى شعب سمداي",
+     "جلستان للسنوركلينغ بصحبة مرشد (المعدات مشمولة)",
+     "مرشد سنوركلينغ محترف",
+     "مرطبات ومشروبات غازية على متن المركب",
+     "غداء بوفيه على متن المركب",
+     "سترات نجاة ومعدات سلامة"
+    ],
+    "exclusions": [
+     "المصروفات الشخصية",
+     "رسوم دخول المحمية الوطنية/البيئية (10 يورو للشخص)",
+     "النقل من فنادق شمال مرسى علم وجنوبها (متاح مقابل رسم إضافي)",
+     "بدلة غوص، ويمكن استئجارها في اليوم نفسه"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "ملابس سباحة",
+     "منشفة",
+     "كاميرا",
+     "واقي شمس"
+    ],
+    "needToKnow": [
+     "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "national-park-fee-adult-d39334dec233",
+      "name": "يوم بحري للسنوركلينغ في شعب سمداي",
+      "description": "الاصطحاب من الفندق في مرسى علم، وجلستان للسنوركلينغ بصحبة مرشد في شعب سمداي، وغداء بوفيه على متن المركب.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "صباحاً"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "تصطحبك السيارة من فندقك في مرسى علم وتتجه إلى المركب.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "إلى شعب سمداي",
+      "description": "يبحر المركب إلى شعب سمداي، الشعاب التي على شكل حافر الفرس.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "جلسة السنوركلينغ الأولى",
+      "description": "جلسة بصحبة مرشد مع المعدات، في البحيرة التي كثيراً ما ترتاح فيها الدلافين الدوّارة.",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "الغداء على متن المركب",
+      "description": "غداء بوفيه مع مشروبات غازية.",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "جلسة السنوركلينغ الثانية",
+      "description": "جلسة ثانية بصحبة مرشد فوق حدائق الشعاب المرجانية.",
+      "duration": ""
+     },
+     {
+      "index": 5,
+      "title": "العودة إلى فندقك",
+      "description": "يعود المركب وتعيدك السيارة إلى فندقك في مرسى علم.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك في مرسى علم والعودة إليه."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788795260/tours/fs65spccs0uncfww6z9k.jpg",
+      "alt": "ثلاثة دلافين تسبح فوق شعاب مرجانية، وممارس سنوركلينغ بقميص أصفر يسبح قريباً منها"
+     }
+    ],
+    "seo": {
+     "metaTitle": "سبع ساعات عند شعب سمداي ذي شكل حدوة الحصان",
+     "metaDescription": "يوم بحري من مرسى علم: جلسة بصحبة مرشد داخل بحيرة شعب سمداي، وثانية فوق المرجان خارجها، وغداء بوفيه بينهما.",
+     "keywords": []
+    }
+   }
+  }
+ ],
+ "destinations": [
+  {
+   "id": "699895e47169d9820932b9ab",
+   "sourceSlug": "marsa-alam",
+   "slug": "marsa-alam-ar",
+   "sourceUpdatedAt": "2026-04-09T16:34:09.828Z",
+   "sourceDigest": "745ca25bbadf20dc3b858537c46c7a94626e45331e3ebe4f53c03911f9f9e264",
+   "english": {
+    "name": "Marsa Alam",
+    "country": "Egypt",
+    "description": "A pristine diving destination on the Red Sea, Marsa Alam is known for its untouched coral reefs and marine wildlife.",
+    "shortDescription": "Pristine Red Sea diving destination",
+    "highlights": [
+     "Coral Reefs",
+     "Dolphin Encounters",
+     "Undiscovered Wrecks",
+     "Tranquility"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "diving",
+     "marine-life",
+     "beach",
+     "adventure"
+    ]
+   },
+   "arabic": {
+    "name": "مرسى علم",
+    "country": "مصر",
+    "description": "مرسى علم وجهة غوص بكر على البحر الأحمر، تشتهر بشعابها المرجانية التي لم تمسها يد وبحياتها البحرية.",
+    "shortDescription": "وجهة غوص بكر على البحر الأحمر",
+    "highlights": [
+     "الشعاب المرجانية",
+     "لقاءات الدلافين",
+     "حطام سفن لم يُكتشف بعد",
+     "الهدوء"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "غوص",
+     "الحياة البحرية",
+     "شاطئ",
+     "مغامرة"
+    ]
+   }
+  }
+ ]
+}

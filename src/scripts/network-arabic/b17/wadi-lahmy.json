@@ -1,0 +1,358 @@
+{
+ "version": 1,
+ "batch": "b17a",
+ "locale": "ar",
+ "tenant": {
+  "id": "6ae8df8df5e4742051b2bd31",
+  "slug": "wadi-lahmy",
+  "domain": "wadi-lahmy.foxesnetwork.com"
+ },
+ "presentationSha256": "53789eae7435edcd5cddd06c006485064db244263a7c6b3b192015c5ecf41fd3",
+ "presentation": [
+  {
+   "kind": "tenant",
+   "sourceId": "6ae8df8df5e4742051b2bd31",
+   "sourceDigest": "f7d8fe93eb0517a33c7a95554fb4a98d8967b525deee05c899854e9f35edf4fe",
+   "english": {
+    "tagline": "Eighty kilometres inland, by jeep",
+    "description": "Wadi Lahmy is where the desert valley of Wadi Lahmi reaches the Red Sea, about nine kilometres south-east of Hamata; the gazetteer records the anchorage at the valley’s mouth as Marsa Wadi Lahmi and the valley itself as Wadi Lahmi, written Wadi Lahami and Wadi Lehama too, and the bay just to the south is known as Lahami Bay. The watercourse is seasonal, and its mapped course runs some fifty kilometres down from the interior before it reaches the sea here. About eight kilometres up the valley stood a station of the ancient road from Berenike to Edfu: a university survey of the Eastern Desert roads lists Wadi Lahma among that road’s stations, and an archaeological atlas places a fort there, beside the watercourse. Mangroves grow along the shore just north of the mouth, and Lahami Bay is listed for its mangroves as well. The bay is sheltered, with a sandy, gently sloping beach giving on to a shallow sandy lagoon and a fringing house reef, and the Fury Shoals lie offshore to the east, the nearest of them ten to twelve kilometres out.\n\nThis jeep day goes inland into Wadi El Gemal, to a desert spring and to Cleopatra’s Temple, and its programme does not name Wadi Lahmy, where the Wadi Lahmi valley meets the sea below Hamata, about eighty kilometres south-east of that temple. Only one trip is sold here, and the valley is where it goes, not the shore: the jeep safari to that spring and that temple, with dinner before the drive back. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+    "seoSettings": {
+     "metaTitle": "Wadi Lahmy: a Jeep Day Up the Valley",
+     "metaDescription": "Eighty kilometres inland by jeep, into Wadi El Gemal: a spring in the desert, the temple ruin, a viewpoint, two desert trees and dinner.",
+     "keywords": [
+      "wadi lahmy red sea",
+      "marsa wadi lahmi anchorage",
+      "berenike to edfu road station",
+      "mangroves below hamata",
+      "jeep day up the valley from marsa alam"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "Home",
+      "columns": []
+     },
+     {
+      "label": "Trips",
+      "columns": []
+     },
+     {
+      "label": "About",
+      "columns": []
+     },
+     {
+      "label": "FAQ",
+      "columns": []
+     },
+     {
+      "label": "Contact",
+      "columns": []
+     }
+    ]
+   },
+   "arabic": {
+    "tagline": "ثمانون كيلومترًا إلى الداخل، بسيارات الجيب",
+    "description": "وادي لحمي هو حيث يبلغ وادي لحمي الصحراوي البحر الأحمر، على نحو تسعة كيلومترات إلى الجنوب الشرقي من حماطة؛ ويسجّل المعجم الجغرافي المرسى عند مصبّ الوادي باسم مرسى وادي لحمي والوادي نفسه باسم وادي لحمي، ويُكتب كذلك Wadi Lahami وWadi Lehama، ويُعرف الخليج الواقع إلى الجنوب مباشرة باسم خليج لحمي. والمجرى موسمي، ويمتدّ مساره المرسوم نحو خمسين كيلومترًا هابطًا من الداخل قبل أن يبلغ البحر هنا. وعلى نحو ثمانية كيلومترات صعودًا في الوادي قامت محطة على الطريق القديم من برنيكي إلى إدفو: يُدرج مسحٌ جامعي لطرق الصحراء الشرقية وادي لحمى بين محطات ذلك الطريق، ويضع أطلس أثري حصنًا هناك، إلى جوار المجرى. وينمو المانغروف على الساحل شمال المصبّ مباشرة، ويُدرج خليج لحمي كذلك لأشجار المانغروف فيه. والخليج محمي، بشاطئ رملي لطيف الانحدار يفضي إلى بحيرة رملية ضحلة وشعبة بيتية هدبية، وتقع شعاب فيوري شولز في عرض البحر إلى الشرق، أقربها على عشرة إلى اثني عشر كيلومترًا. يمضي هذا اليوم بسيارات الجيب إلى الداخل في وادي الجمال، إلى نبع صحراوي وإلى معبد كليوباترا، ولا يذكر برنامجه وادي لحمي، حيث يلتقي وادي لحمي بالبحر جنوب حماطة، على نحو ثمانين كيلومترًا إلى الجنوب الشرقي من ذلك المعبد. ورحلة واحدة فقط تُباع هنا، والوادي هو وجهتها لا الشاطئ: سفاري بسيارات الجيب إلى ذلك النبع وذلك المعبد، مع عشاء قبل طريق العودة. وكل رحلة تقلّك من فندقك وتعيدك إليه، وتذكر كل صفحة ما يشمله سعرها. احجز مكانك عبر الإنترنت وادفع لاحقًا، أو اسأل الفريق أولًا عن موعد الاستلام.",
+    "seoSettings": {
+     "metaTitle": "وادي لحمي: يوم بسيارات الجيب صعودًا في الوادي",
+     "metaDescription": "ثمانون كيلومترًا إلى الداخل بسيارات الجيب، إلى وادي الجمال: نبع في الصحراء، وأطلال المعبد، ومطلّ، وشجرتان صحراويتان، وعشاء.",
+     "keywords": [
+      "وادي لحمي البحر الأحمر",
+      "مرسى وادي لحمي",
+      "محطة طريق برنيكي إلى إدفو",
+      "المانغروف جنوب حماطة",
+      "يوم بسيارات الجيب صعودًا في الوادي من مرسى علم"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "الرئيسية",
+      "columns": []
+     },
+     {
+      "label": "الرحلات",
+      "columns": []
+     },
+     {
+      "label": "من نحن",
+      "columns": []
+     },
+     {
+      "label": "الأسئلة الشائعة",
+      "columns": []
+     },
+     {
+      "label": "اتصل بنا",
+      "columns": []
+     }
+    ]
+   }
+  }
+ ],
+ "tours": [
+  {
+   "id": "6ae8df8d5aeee024ae3b2ef9",
+   "sourceSlug": "wlh-the-valley-and-not-the-shore",
+   "slug": "wlh-the-valley-and-not-the-shore-ar",
+   "sourceUpdatedAt": "2026-11-02T19:07:57.907Z",
+   "sourceDigest": "2c8a498004d35dc1255fb0d7c3b9b0e23042b62f49b3fe0629435c5b9da244c7",
+   "english": {
+    "title": "Eighty Kilometres Inland, and Dinner at the End",
+    "shortDescription": "Seven hours by jeep, eighty kilometres up the country: a spring in the desert, the temple ruin, a viewpoint, two desert trees and dinner at dusk.",
+    "description": "The jeep calls at midday and heads inland into the park’s valley. It stops at a spring in the desert, at the temple the maps call Cleopatra’s, at a viewpoint and at two desert trees, an acacia and an arak. What its programme names is the valley, its spring and the temple, not Wadi Lahmy, where the Wadi Lahmi valley meets the sea below Hamata, about eighty kilometres south-east of that temple; nothing on the day comes down to the coast.\n\nDinner is served before the road home, and the running order is fixed when the booking is confirmed. This is a desert day eighty kilometres from the valley’s mouth, and no part of it is spent at the sea. A child’s price is not an adult’s.",
+    "duration": "7 hours",
+    "cancellationPolicy": "",
+    "highlights": [
+     "A spring in the desert",
+     "The temple the maps call Cleopatra’s",
+     "An acacia and an arak",
+     "Dinner before the road home"
+    ],
+    "inclusions": [
+     "Panorama stop",
+     "Acacia tree stop",
+     "Water spring stop",
+     "Arak tree stop",
+     "Cleopatra's Temple",
+     "Bedouin dinner",
+     "Hotel pickup and drop off"
+    ],
+    "exclusions": [],
+    "participantRequirements": [],
+    "whatToBring": [],
+    "needToKnow": [
+     "The team confirms the order of the stops when it confirms your booking.",
+     "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "marsa-alam-wadi-el-gemal-desert-jeep-safari-b-f93ac389582f",
+      "name": "Jeep safari with a Bedouin dinner",
+      "description": "Wadi El Gemal National Park by jeep: a panorama, an acacia, a water spring, an arak tree, Cleopatra’s Temple and a Bedouin dinner.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "12:00"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel pickup",
+      "description": "The jeep collects you from your hotel in Marsa Alam.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "Into Wadi El Gemal",
+      "description": "The drive into the national park, with a stop at a panorama over the valley.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "Acacia and arak trees",
+      "description": "Stops at an acacia and an arak tree in the valley.",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "The water spring",
+      "description": "A stop at a desert spring.",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "Cleopatra’s Temple",
+      "description": "A visit to the temple ruins in the park.",
+      "duration": ""
+     },
+     {
+      "index": 5,
+      "title": "Bedouin dinner",
+      "description": "Dinner in the Bedouin way before the drive back to your hotel.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel pickup",
+      "description": "Pickup and drop-off at your hotel in Marsa Alam."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "The team confirms your pickup time when it confirms your booking."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793636436/attractions-network/tenant-heroes/wadi-lahmy/site-20261102-second-52648bf9f037.png",
+      "alt": "A broad stony gravel wash with scattered scrub runs inland between low dark desert hills under a clear blue sky."
+     }
+    ],
+    "seo": {
+     "metaTitle": "Eighty Kilometres Inland, and Dinner at the End",
+     "metaDescription": "A jeep day in Wadi El Gemal, eighty kilometres from this valley’s mouth: a spring, the temple ruin, a viewpoint and two desert trees.",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "ثمانون كيلومترًا إلى الداخل، وعشاء في الختام",
+    "shortDescription": "سبع ساعات بسيارات الجيب، ثمانون كيلومترًا صعودًا في البلاد: نبع في الصحراء، وأطلال المعبد، ومطلّ، وشجرتان صحراويتان، وعشاء عند الغسق.",
+    "description": "تمرّ سيارة الجيب عند منتصف النهار وتتّجه إلى الداخل إلى وادي الحديقة. وتتوقف عند نبع في الصحراء، وعند المعبد الذي تسمّيه الخرائط معبد كليوباترا، وعند مطلّ، وعند شجرتين صحراويتين: شجرة سنط وشجرة أراك. وما يذكره برنامجها هو الوادي ونبعه والمعبد، لا وادي لحمي، حيث يلتقي وادي لحمي بالبحر جنوب حماطة، على نحو ثمانين كيلومترًا إلى الجنوب الشرقي من ذلك المعبد؛ ولا شيء في اليوم ينزل إلى الساحل.\n\nويُقدَّم العشاء قبل طريق العودة، ويُثبَّت ترتيب المحطات عند تأكيد الحجز. وهذا يوم صحراوي على بُعد ثمانين كيلومترًا من مصبّ الوادي، ولا يُقضى أي جزء منه عند البحر. وسعر الطفل ليس سعر البالغ.",
+    "duration": "7 ساعات",
+    "cancellationPolicy": "",
+    "highlights": [
+     "نبع في الصحراء",
+     "المعبد الذي تسمّيه الخرائط معبد كليوباترا",
+     "شجرة سنط وشجرة أراك",
+     "عشاء قبل طريق العودة"
+    ],
+    "inclusions": [
+     "توقف عند نقطة البانوراما",
+     "توقف عند شجرة السنط",
+     "توقف عند نبع الماء",
+     "توقف عند شجرة الأراك",
+     "معبد كليوباترا",
+     "عشاء بدوي",
+     "النقل من الفندق وإليه"
+    ],
+    "exclusions": [],
+    "participantRequirements": [],
+    "whatToBring": [],
+    "needToKnow": [
+     "يؤكد الفريق ترتيب التوقفات عند تأكيد حجزك.",
+     "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "marsa-alam-wadi-el-gemal-desert-jeep-safari-b-f93ac389582f",
+      "name": "سفاري بالجيب مع عشاء بدوي",
+      "description": "محمية وادي الجمال الوطنية بالجيب: مطل، وشجرة سنط، وعين ماء، وشجرة أراك، ومعبد كليوباترا، وعشاء بدوي.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "الساعة 12:00"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "يصطحبك الجيب من فندقك في مرسى علم.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "إلى وادي الجمال",
+      "description": "الطريق إلى داخل المحمية الوطنية، مع وقفة عند مطل على الوادي.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "شجرتا السنط والأراك",
+      "description": "وقفات عند شجرة سنط وشجرة أراك في الوادي.",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "عين الماء",
+      "description": "وقفة عند عين ماء في الصحراء.",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "معبد كليوباترا",
+      "description": "زيارة أطلال المعبد داخل المحمية.",
+      "duration": ""
+     },
+     {
+      "index": 5,
+      "title": "عشاء بدوي",
+      "description": "عشاء على الطريقة البدوية قبل طريق العودة إلى فندقك.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك في مرسى علم والعودة إليه."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793636436/attractions-network/tenant-heroes/wadi-lahmy/site-20261102-second-52648bf9f037.png",
+      "alt": "مجرى حصوي عريض تتناثر فيه الشجيرات يمتدّ إلى الداخل بين تلال صحراوية داكنة منخفضة تحت سماء زرقاء صافية."
+     }
+    ],
+    "seo": {
+     "metaTitle": "ثمانون كيلومترًا إلى الداخل، وعشاء في الختام",
+     "metaDescription": "يوم بسيارات الجيب في وادي الجمال، على بُعد ثمانين كيلومترًا من مصبّ هذا الوادي: نبع، وأطلال المعبد، ومطلّ، وشجرتان صحراويتان.",
+     "keywords": []
+    }
+   }
+  }
+ ],
+ "destinations": [
+  {
+   "id": "699895e47169d9820932b9ab",
+   "sourceSlug": "marsa-alam",
+   "slug": "marsa-alam-ar",
+   "sourceUpdatedAt": "2026-04-09T16:34:09.828Z",
+   "sourceDigest": "745ca25bbadf20dc3b858537c46c7a94626e45331e3ebe4f53c03911f9f9e264",
+   "english": {
+    "name": "Marsa Alam",
+    "country": "Egypt",
+    "description": "A pristine diving destination on the Red Sea, Marsa Alam is known for its untouched coral reefs and marine wildlife.",
+    "shortDescription": "Pristine Red Sea diving destination",
+    "highlights": [
+     "Coral Reefs",
+     "Dolphin Encounters",
+     "Undiscovered Wrecks",
+     "Tranquility"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "diving",
+     "marine-life",
+     "beach",
+     "adventure"
+    ]
+   },
+   "arabic": {
+    "name": "مرسى علم",
+    "country": "مصر",
+    "description": "مرسى علم وجهة غوص بكر على البحر الأحمر، تشتهر بشعابها المرجانية التي لم تمسها يد وبحياتها البحرية.",
+    "shortDescription": "وجهة غوص بكر على البحر الأحمر",
+    "highlights": [
+     "الشعاب المرجانية",
+     "لقاءات الدلافين",
+     "حطام سفن لم يُكتشف بعد",
+     "الهدوء"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "غوص",
+     "الحياة البحرية",
+     "شاطئ",
+     "مغامرة"
+    ]
+   }
+  }
+ ]
+}

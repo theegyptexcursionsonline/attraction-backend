@@ -1,0 +1,388 @@
+{
+ "version": 1,
+ "batch": "b17c",
+ "locale": "ar",
+ "tenant": {
+  "id": "6ae9a6f5f5e4742051b2bd3d",
+  "slug": "future-travel-egypt",
+  "domain": "future-travel-egypt.foxesnetwork.com"
+ },
+ "presentationSha256": "da2dde770bfb023fd1f909a8b4cda5db476c38215d961b9dcee17abef423cf66",
+ "presentation": [
+  {
+   "kind": "tenant",
+   "sourceId": "6ae9a6f5f5e4742051b2bd3d",
+   "sourceDigest": "d4d495ae1b79e31b918e66f70faa605d249bdc9b60ca24d04171f934aff4448a",
+   "english": {
+    "tagline": "A Cairo sightseeing day, built to order",
+    "description": "Future Travel Egypt is a tour-package agency: what it publishes is multi-day Egypt packages, Nile cruise packages, sightseeing day tours, weekend and overnight trips, and bus and sleeper-train itineraries, across the ten places its own pages name — Cairo, Giza, Aswan, Luxor, Alexandria, Hurghada, Sharm El Sheikh, the White Desert, Bahariya Oasis and the Nile. All of that is the agency's own account of itself. Nothing in it is confirmed anywhere else: the search for a separate listing, under this domain or under the name, turned up nothing at all, and no page here presents any of it as checked. Its own site trades under a different name from this domain and the contact details it publishes belong to that other name, so neither is repeated here; nor is the address it gives, which is garbled where it stands; nor any of its figures, which put one identical price on four different packages. What this site sells is a single day of what the agency advertises rather than a package, and the price of that day is the trip record's.\n\nThe day sold here is a Cairo sightseeing day built to order around the Giza pyramids and the Sphinx; the multi-day packages the business advertises elsewhere are not sold on this site. One trip is sold here, shared or private: the plateau, the Egyptian Museum and Old Cairo, with the entry tickets and the choice of how to take it made at booking. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+    "seoSettings": {
+     "metaTitle": "Future Travel Egypt: a Custom Cairo Day",
+     "metaDescription": "A Cairo sightseeing day built around the Giza pyramids and the Sphinx, with the Egyptian Museum and Old Cairo, shared or private, tickets included.",
+     "keywords": [
+      "future travel egypt cairo sightseeing day",
+      "custom giza pyramids and sphinx day",
+      "shared or private cairo day with tickets",
+      "egyptian museum and old cairo day tour",
+      "tour package agency selling one cairo day"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "Home",
+      "columns": []
+     },
+     {
+      "label": "Trips",
+      "columns": []
+     },
+     {
+      "label": "About",
+      "columns": []
+     },
+     {
+      "label": "FAQ",
+      "columns": []
+     },
+     {
+      "label": "Contact",
+      "columns": []
+     }
+    ]
+   },
+   "arabic": {
+    "tagline": "يوم لمشاهدة معالم القاهرة، يُبنى على الطلب",
+    "description": "Future Travel Egypt وكالة باقات سياحية: فما تنشره باقات لمصر تمتدّ أيامًا، وباقات رحلات نيلية، وجولات يومية لمشاهدة المعالم، ورحلات نهاية الأسبوع ورحلات المبيت، وبرامج بالحافلات وقطارات النوم، في المواضع العشرة التي تسمّيها صفحاتها: القاهرة والجيزة وأسوان والأقصر والإسكندرية والغردقة وشرم الشيخ والصحراء البيضاء وواحة البحرية والنيل. وكل ذلك رواية الوكالة عن نفسها. ولا شيء منه مؤكَّد في أي موضع آخر: فالبحث عن إدراج مستقل، باسم هذا النطاق أو بالاسم، لم يأتِ بشيء على الإطلاق، ولا تعرض أي صفحة هنا شيئًا منه على أنه متحقَّق منه. وموقعها الخاص يعمل باسم تجاري يختلف عن اسم هذا النطاق، وبيانات الاتصال التي تنشرها تخصّ ذلك الاسم الآخر، فلا يُكرَّر أيٌّ منهما هنا؛ ولا العنوان الذي تعطيه، وهو مشوَّش كما هو؛ ولا أيٌّ من أرقامها، التي تضع سعرًا واحدًا بعينه على أربع باقات مختلفة. وما يبيعه هذا الموقع يوم واحد من بين ما تعلن عنه الوكالة لا باقة، وسعر ذلك اليوم سعر سجلّ الرحلة. واليوم المعروض هنا يوم لمشاهدة معالم القاهرة يُبنى على الطلب حول أهرامات الجيزة وأبو الهول؛ والباقات التي تمتدّ أيامًا والتي تعلن عنها الشركة في مكان آخر لا تُباع في هذا الموقع. ورحلة واحدة تُباع هنا، مشتركة أو خاصة: الهضبة والمتحف المصري والقاهرة القديمة، مع تذاكر الدخول واختيار طريقة أخذها عند الحجز. وكل رحلة تقلّك من فندقك وتعيدك إليه، وتذكر كل صفحة ما يشمله سعرها. احجز مكانك عبر الإنترنت وادفع لاحقًا، أو اسأل الفريق أولًا عن موعد الاستلام.",
+    "seoSettings": {
+     "metaTitle": "Future Travel Egypt: يوم قاهري على الطلب",
+     "metaDescription": "يوم لمشاهدة معالم القاهرة يُبنى حول أهرامات الجيزة وأبو الهول، مع المتحف المصري والقاهرة القديمة، مشتركًا أو خاصًا، والتذاكر مشمولة.",
+     "keywords": [
+      "Future Travel Egypt يوم مشاهدة معالم القاهرة",
+      "يوم أهرامات الجيزة وأبو الهول على الطلب",
+      "يوم قاهري مشترك أو خاص مع التذاكر",
+      "جولة المتحف المصري والقاهرة القديمة",
+      "وكالة باقات سياحية تبيع يومًا قاهريًا واحدًا"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "الرئيسية",
+      "columns": []
+     },
+     {
+      "label": "الرحلات",
+      "columns": []
+     },
+     {
+      "label": "من نحن",
+      "columns": []
+     },
+     {
+      "label": "الأسئلة الشائعة",
+      "columns": []
+     },
+     {
+      "label": "اتصل بنا",
+      "columns": []
+     }
+    ]
+   }
+  }
+ ],
+ "tours": [
+  {
+   "id": "6ae9a6f5226b91979e22a0ad",
+   "sourceSlug": "fte-a-cairo-day-around-the-pyramids-and-the-sphinx",
+   "slug": "fte-a-cairo-day-around-the-pyramids-and-the-sphinx-ar",
+   "sourceUpdatedAt": "2026-11-03T09:18:45.910Z",
+   "sourceDigest": "65dd38e4a81f98b45a1ad13af41f305e6c4120aecc86704b5aa85c94e209d777",
+   "english": {
+    "title": "A Cairo Day Around the Pyramids and the Sphinx",
+    "shortDescription": "A day with its tickets paid: two hours on the plateau and the Sphinx, two in the museum on Tahrir Square, an hour among the old churches.",
+    "description": "An air-conditioned vehicle is at the door at eight, in the city or out at Giza. The plateau takes the first two hours, on foot between the pyramids of Khufu, Khafre and Menkaure and up to the Great Sphinx. An hour in town follows, and it is the hour to buy yourself something to eat. Two more hours go to the museum on Tahrir Square with the guide, and the last to the old Christian quarter and the churches in it. What the programme names is those three stops with their entry tickets, assembled around them; the multi-day packages advertised elsewhere are not sold on this site.\n\nTake it in a shared group, guided in English, or with a guide and vehicle to yourself, and name the language you want at booking if it is not English. The record also allows a stop at a papyrus gallery, an oils factory, a bazaar, a cotton store or a carpet school, which you may ask for or do without. No meal is in the price. How long the day runs, and the order it takes its stops in, move with the traffic and with the sites, and a child has its own price on the option that publishes one.",
+    "duration": "3 - 8 hours",
+    "cancellationPolicy": "",
+    "highlights": [
+     "Two hours on foot between the pyramids",
+     "The museum on Tahrir Square with the guide",
+     "The churches of the old quarter",
+     "Every ticket the day needs, paid"
+    ],
+    "inclusions": [
+     "Transportation by air-conditioned vehicle",
+     "Bottled water",
+     "Hotel pickup and drop-off in Cairo or Giza",
+     "The entry tickets for the stops the day makes"
+    ],
+    "exclusions": [
+     "Lunch"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Comfortable shoes",
+     "Sunglasses",
+     "Sun hat",
+     "Hat",
+     "Camera",
+     "Sunscreen",
+     "Comfortable clothes"
+    ],
+    "needToKnow": [
+     "The shared day is guided in English; the private day can be guided in another language, so say which when you book.",
+     "A stop at a papyrus gallery, an oils factory, a bazaar, a cotton store or a carpet school can be added on request, and can be left out.",
+     "The length of the day and the order of its stops change with the traffic and with the sites.",
+     "Children have their own price on the option that publishes one; on the other they pay the adult price. The team confirms which ages count as children when it confirms your booking."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "pyramids-egyptian-museum-old-cairo-shared-wit-d7d116d74da4",
+      "name": "Shared day with the tickets",
+      "description": "The Giza plateau, the Egyptian Museum and Old Cairo in a shared group, guided in English, with the entry tickets. Lunch is not included.",
+      "timeSlots": []
+     },
+     {
+      "id": "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "name": "Private day with the tickets",
+      "description": "The same three stops with your own guide and vehicle, with the entry tickets. Lunch is not included.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel pickup",
+      "description": "An air-conditioned vehicle collects you from your hotel in Cairo or Giza.",
+      "duration": "30 minutes"
+     },
+     {
+      "index": 1,
+      "title": "The Giza plateau",
+      "description": "A guided walk among the pyramids of Khufu, Khafre and Menkaure and the Great Sphinx.",
+      "duration": "2 hours"
+     },
+     {
+      "index": 2,
+      "title": "Break",
+      "description": "A break in Cairo. Lunch is not included, so this is the hour to buy your own.",
+      "duration": "1 hour"
+     },
+     {
+      "index": 3,
+      "title": "The Egyptian Museum of Antiquities",
+      "description": "The museum on Tahrir Square with the guide.",
+      "duration": "2 hours"
+     },
+     {
+      "index": 4,
+      "title": "Old Cairo",
+      "description": "The churches of Old Cairo, the Hanging Church among them.",
+      "duration": "1 hour"
+     },
+     {
+      "index": 5,
+      "title": "Back to your hotel",
+      "description": "The vehicle returns you to your hotel in Cairo or Giza.",
+      "duration": "30 minutes"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel pickup",
+      "description": "Pickup and drop-off at your hotel in Cairo or Giza."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "The team confirms your pickup time when it confirms your booking."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788796912/tours/mhbnyzl0vhwyxopd4hzk.jpg",
+      "alt": "The Great Sphinx seen from the side in warm light, worn at the face and shoulders, with a pyramid rising behind it under a pale sky"
+     }
+    ],
+    "seo": {
+     "metaTitle": "A Cairo Day: the Plateau, the Museum and the Churches",
+     "metaDescription": "A day with its tickets paid: two hours on the plateau and the Sphinx, two in the museum on Tahrir Square, an hour among the old churches.",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "يوم قاهري حول الأهرامات وأبو الهول",
+    "shortDescription": "يوم تذاكره مدفوعة: ساعتان على الهضبة وعند أبو الهول، وساعتان في المتحف في ميدان التحرير، وساعة بين الكنائس القديمة.",
+    "description": "تقف مركبة مكيّفة عند الباب في الثامنة، في المدينة أو في الجيزة. وتأخذ الهضبة الساعتين الأولى، سيرًا على الأقدام بين أهرام خوفو وخفرع ومنقرع وصعودًا إلى أبو الهول العظيم. وتتبع ساعة في المدينة، وهي الساعة التي تشتري فيها لنفسك شيئًا تأكله. وتُعطى ساعتان أخريان للمتحف في ميدان التحرير بصحبة المرشد، والأخيرة للحيّ المسيحي القديم وكنائسه. وما يذكره البرنامج هو تلك المحطات الثلاث مع تذاكر دخولها، مجموعةً حولها؛ والباقات التي تمتدّ أيامًا والمعلن عنها في مكان آخر لا تُباع في هذا الموقع.\n\nخُذه في مجموعة مشتركة بإرشاد بالإنجليزية، أو بمرشد ومركبة لك وحدك، وسمِّ اللغة التي تريدها عند الحجز إن لم تكن الإنجليزية. ويتيح السجلّ كذلك توقفًا عند معرض للبردي أو مصنع للزيوت أو بازار أو متجر للقطن أو مدرسة للسجاد، وهو ما يمكنك طلبه أو تركه. ولا وجبة في السعر. وطول اليوم وترتيب محطاته يتحرّكان مع المرور ومع المواقع، وللطفل سعره الخاص في الخيار الذي ينشر سعرًا له.",
+    "duration": "3 - 8 ساعات",
+    "cancellationPolicy": "",
+    "highlights": [
+     "ساعتان سيرًا على الأقدام بين الأهرامات",
+     "المتحف في ميدان التحرير بصحبة المرشد",
+     "كنائس الحيّ القديم",
+     "كل تذكرة يحتاجها اليوم، مدفوعة"
+    ],
+    "inclusions": [
+     "النقل بسيارة مكيّفة",
+     "مياه معبأة",
+     "الاصطحاب من الفندق والعودة إليه في القاهرة أو الجيزة",
+     "تذاكر الدخول للمحطات التي يقف عندها اليوم"
+    ],
+    "exclusions": [
+     "الغداء"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "أحذية مريحة",
+     "نظارات شمسية",
+     "قبعة شمسية",
+     "قبعة",
+     "كاميرا",
+     "واقي شمس",
+     "ملابس مريحة"
+    ],
+    "needToKnow": [
+     "يُرشَد اليوم الجماعي بالإنجليزية؛ أما اليوم الخاص فيمكن إرشاده بلغة أخرى، فاذكر أيها عند الحجز.",
+     "يمكن إضافة توقف عند معرض للبردي أو مصنع للزيوت أو بازار أو متجر للقطن أو مدرسة للسجاد عند الطلب، ويمكن الاستغناء عنه.",
+     "يتغير طول اليوم وترتيب محطاته بحسب حركة المرور وبحسب المواقع.",
+     "للأطفال سعرهم الخاص في الخيار الذي يعلن سعراً لهم؛ وفي الخيار الآخر يدفعون سعر البالغين. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "pyramids-egyptian-museum-old-cairo-shared-wit-d7d116d74da4",
+      "name": "يوم جماعي مع التذاكر",
+      "description": "هضبة الجيزة والمتحف المصري والقاهرة القديمة في مجموعة جماعية، بإرشاد بالإنجليزية، مع تذاكر الدخول. الغداء غير مشمول.",
+      "timeSlots": []
+     },
+     {
+      "id": "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+      "name": "يوم خاص مع التذاكر",
+      "description": "المحطات الثلاث نفسها مع مرشد وسيارة خاصين بك، مع تذاكر الدخول. الغداء غير مشمول.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "صباحاً"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "تصطحبك سيارة مكيّفة من فندقك في القاهرة أو الجيزة.",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "هضبة الجيزة",
+      "description": "جولة سيراً بصحبة مرشد بين أهرامات خوفو وخفرع ومنقرع وأبو الهول العظيم.",
+      "duration": "2 ساعات"
+     },
+     {
+      "index": 2,
+      "title": "استراحة",
+      "description": "استراحة في القاهرة. الغداء غير مشمول، وهذه هي الساعة التي تشتري فيها غداءك.",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 3,
+      "title": "المتحف المصري للآثار",
+      "description": "المتحف في ميدان التحرير بصحبة المرشد.",
+      "duration": "2 ساعات"
+     },
+     {
+      "index": 4,
+      "title": "القاهرة القديمة",
+      "description": "كنائس القاهرة القديمة، ومنها الكنيسة المعلقة.",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 5,
+      "title": "العودة إلى فندقك",
+      "description": "تعيدك المركبة إلى فندقك في القاهرة أو الجيزة.",
+      "duration": "30 دقيقة"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك في القاهرة أو الجيزة والعودة إليه."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788796912/tours/mhbnyzl0vhwyxopd4hzk.jpg",
+      "alt": "أبو الهول العظيم من الجانب في ضوء دافئ، متآكل في الوجه والكتفين، وخلفه هرم يرتفع تحت سماء شاحبة"
+     }
+    ],
+    "seo": {
+     "metaTitle": "يوم قاهري: الهضبة والمتحف والكنائس",
+     "metaDescription": "يوم تذاكره مدفوعة: ساعتان على الهضبة وعند أبو الهول، وساعتان في المتحف في ميدان التحرير، وساعة بين الكنائس القديمة.",
+     "keywords": []
+    }
+   }
+  }
+ ],
+ "destinations": [
+  {
+   "id": "699895e47169d9820932b9a5",
+   "sourceSlug": "cairo",
+   "slug": "cairo-ar",
+   "sourceUpdatedAt": "2026-04-05T23:15:20.957Z",
+   "sourceDigest": "b2944970eac7f367dda5e99e05239b2f9a44bedbb78a60a40c157f469e183ce9",
+   "english": {
+    "name": "Cairo",
+    "country": "Egypt",
+    "description": "Cairo, the capital of Egypt, is home to the iconic Pyramids of Giza, the Egyptian Museum, and vibrant Islamic architecture.",
+    "shortDescription": "Home to the Pyramids of Giza and ancient wonders",
+    "highlights": [
+     "Pyramids of Giza",
+     "Sphinx",
+     "Egyptian Museum",
+     "Khan el-Khalili"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "historical",
+     "ancient",
+     "monuments",
+     "culture"
+    ]
+   },
+   "arabic": {
+    "name": "القاهرة",
+    "country": "مصر",
+    "description": "القاهرة، عاصمة مصر، موطن أهرامات الجيزة الشهيرة والمتحف المصري والعمارة الإسلامية النابضة بالحياة.",
+    "shortDescription": "موطن أهرامات الجيزة والعجائب القديمة",
+    "highlights": [
+     "أهرامات الجيزة",
+     "أبو الهول",
+     "المتحف المصري",
+     "خان الخليلي"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "تاريخي",
+     "آثار قديمة",
+     "آثار",
+     "ثقافة"
+    ]
+   }
+  }
+ ]
+}

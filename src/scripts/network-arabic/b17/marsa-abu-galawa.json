@@ -1,0 +1,390 @@
+{
+ "version": 1,
+ "batch": "b17c",
+ "locale": "ar",
+ "tenant": {
+  "id": "6ae9a6f4f5e4742051b2bd3b",
+  "slug": "marsa-abu-galawa",
+  "domain": "marsa-abu-galawa.foxesnetwork.com"
+ },
+ "presentationSha256": "e96f772433acf3d1421735ef1c9d1beeba22bf44ab57a85edb2e82e6911284dd",
+ "presentation": [
+  {
+   "kind": "tenant",
+   "sourceId": "6ae9a6f4f5e4742051b2bd3b",
+   "sourceDigest": "1e726c658304ecaab0a1593e70093a9255ffdd52f5d33ca80daeb47de83db612",
+   "english": {
+    "tagline": "A two-dive day that names no site",
+    "description": "Marsa Abu Galawa is a sheltered lagoon or inlet in the Abu Galawa reef group, which lies north of Hurghada and is reached by boat: sandy shallows giving way to coral at a drop-off. Abu Galawa is a group of several named sites sharing one name — Marsa, Sakhwa, which the registers also write as El Sachwa, Gota and Erg — and Sakhwa is the northernmost of them, while the dive registers record \"Abu Galawa\" as the nickname of the Hurghada reef itself. It is not Careless Reef: no source treats the two names as one place, and two independent sources put them roughly fourteen kilometres apart, which is the one figure this site gives. A second, unrelated Abu Galawa group lies in the far south, around Fury Shoals and Hamata, about three hundred and eighty kilometres from Hurghada; it is named here only to be set aside, and nothing of it is described. No position for this inlet is published by a second source — only one mapping record carries a coordinate for it — so no figure, no map and no bearing for the inlet appears here at all.\n\nThis is a two-dive boat day out of El Gouna; its programme names neither of the sites it dives and does not name Marsa Abu Galawa, and because only one map record publishes a position for that reef, how far the boat passes from it cannot be said. One trip is sold here, for certified divers: eight hours, two guided dives with a surface interval between them, with or without the rental set. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+    "seoSettings": {
+     "metaTitle": "Marsa Abu Galawa: El Gouna Two-Tank Boat Dives",
+     "metaDescription": "Eight hours out of El Gouna for certified divers: two guided boat dives with a surface interval, with or without the rental equipment.",
+     "keywords": [
+      "marsa abu galawa sheltered reef inlet",
+      "abu galawa group marsa sakhwa gota erg",
+      "abu galawa is not careless reef",
+      "no published position for the inlet",
+      "el gouna two tank boat dives certified divers"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "Home",
+      "columns": []
+     },
+     {
+      "label": "Trips",
+      "columns": []
+     },
+     {
+      "label": "About",
+      "columns": []
+     },
+     {
+      "label": "FAQ",
+      "columns": []
+     },
+     {
+      "label": "Contact",
+      "columns": []
+     }
+    ]
+   },
+   "arabic": {
+    "tagline": "يوم بغطستين لا يذكر أي موقع",
+    "description": "مرسى أبو جلاوة بحيرة أو خور محمي في مجموعة شعاب أبو جلاوة، التي تقع شمال الغردقة ويُوصل إليها بالقارب: مياه ضحلة رملية تفسح المجال للمرجان عند حدّ هابط. وأبو جلاوة مجموعة من عدة مواقع تحمل أسماءً وتتقاسم اسمًا واحدًا — Marsa وSakhwa، التي تكتبها السجلّات أيضًا El Sachwa، وGota وErg — وSakhwa أقصاها شمالًا، في حين تسجّل سجلّات الغوص ”أبو جلاوة“ لقبًا لشعبة الغردقة نفسها. وهي ليست شعب كيرلس: لا مصدر يعامل الاسمين مكانًا واحدًا، ويضعهما مصدران مستقلان على بُعد نحو أربعة عشر كيلومترًا، وهذا هو الرقم الوحيد الذي يعطيه هذا الموقع. وثمة مجموعة ثانية لا صلة لها باسم أبو جلاوة في أقصى الجنوب، حول شعاب فيوري شولز وحماطة، على نحو ثلاثمئة وثمانين كيلومترًا من الغردقة؛ ولا تُذكر هنا إلا لتُنحّى جانبًا، ولا يُوصف منها شيء. ولا ينشر مصدر ثانٍ موضعًا لهذا الخور — فسجلّ خرائط واحد فقط يحمل إحداثيًا له — ولذلك لا يظهر هنا للخور أي رقم ولا خريطة ولا اتجاه البتّة. وهذا يوم بحري بغطستين من الجونة؛ ولا يذكر برنامجه أيًّا من الموقعين الذين يغطس فيهما ولا يذكر مرسى أبو جلاوة، ولأن سجلّ خرائط واحدًا فقط ينشر موضعًا لتلك الشعبة لا يمكن القول كم يبعد القارب عنها. ورحلة واحدة تُباع هنا، للغواصين المعتمدين: ثماني ساعات، وغطستان بصحبة مرشد بينهما فترة على السطح، مع طقم الاستئجار أو من دونه. وكل رحلة تقلّك من فندقك وتعيدك إليه، وتذكر كل صفحة ما يشمله سعرها. احجز مكانك عبر الإنترنت وادفع لاحقًا، أو اسأل الفريق أولًا عن موعد الاستلام.",
+    "seoSettings": {
+     "metaTitle": "مرسى أبو جلاوة: غطستان من القارب في الجونة",
+     "metaDescription": "ثماني ساعات من الجونة للغواصين المعتمدين: غطستان من القارب بصحبة مرشد بينهما فترة على السطح، مع معدّات الاستئجار أو من دونها.",
+     "keywords": [
+      "خور شعاب مرسى أبو جلاوة المحمي",
+      "مجموعة أبو جلاوة Marsa Sakhwa Gota Erg",
+      "أبو جلاوة ليست شعب كيرلس",
+      "لا موضع منشور للخور",
+      "غطستان من القارب في الجونة للغواصين المعتمدين"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "الرئيسية",
+      "columns": []
+     },
+     {
+      "label": "الرحلات",
+      "columns": []
+     },
+     {
+      "label": "من نحن",
+      "columns": []
+     },
+     {
+      "label": "الأسئلة الشائعة",
+      "columns": []
+     },
+     {
+      "label": "اتصل بنا",
+      "columns": []
+     }
+    ]
+   }
+  }
+ ],
+ "tours": [
+  {
+   "id": "6ae9a6f4226b91979e22a057",
+   "sourceSlug": "mag-two-guided-boat-dives-out-of-el-gouna",
+   "slug": "mag-two-guided-boat-dives-out-of-el-gouna-ar",
+   "sourceUpdatedAt": "2026-11-03T09:18:45.056Z",
+   "sourceDigest": "09776b85e7fcf9fae8cbabd23408451b0781561761783fcdeb6be04ca220e03f",
+   "english": {
+    "title": "Two Guided Boat Dives Out of El Gouna",
+    "shortDescription": "Eight hours for divers already certified: two dives at two separate sites with an interval on deck between them, tanks and weights aboard, no meal.",
+    "description": "This one is for divers who hold a certification already. A car is at the door at eight for the run to the harbour, and the kit goes together on deck as the boat clears the moorings. Two dives follow at two separate sites with an interval on the surface between them, and there are toilets and a shower on board. What the programme names is the town the day leaves from, and neither of the two sites it works: it does not name Marsa Abu Galawa, the sheltered inlet in the Abu Galawa reefs; only one map record publishes a position for that reef, so how far the boat passes from it cannot be said, and no page here promises a dive at any named site.\n\nTanks, weights, Nitrox for those qualified to breathe it, water and fruit come with the day. Pick the option that carries a full rental set unless you travel with your own; have your certification card and your log book on you; and plan to feed yourself, because no meal is in this price. A child carries a price of its own.",
+    "duration": "8 hours",
+    "cancellationPolicy": "",
+    "highlights": [
+     "Two dives at two separate sites",
+     "An interval on the surface between them",
+     "Tanks, weights and Nitrox provided",
+     "A full rental set for anyone who needs one"
+    ],
+    "inclusions": [
+     "Professional dive guides",
+     "Toilets and showers on board",
+     "Experienced boat crew",
+     "Hotel pickup and drop-off",
+     "Free Nitrox (for certified divers)",
+     "Drinking water",
+     "Fresh fruit"
+    ],
+    "exclusions": [
+     "Lunch",
+     "Surface-interval refreshments"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Swimwear",
+     "Towel",
+     "Sunscreen",
+     "Diving certification",
+     "Dive log"
+    ],
+    "needToKnow": [
+     "This trip is for certified divers: bring your certification card and your dive log.",
+     "The rental equipment comes with the option that names it.",
+     "Children have their own price, and the booking applies it. The team confirms which ages count as children when it confirms your booking."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "bring-your-own-scuba-equipment-c6f9b7889912",
+      "name": "Two boat dives with your own equipment",
+      "description": "Two guided dives from the boat for certified divers. Tanks and weights are included; bring your own scuba set.",
+      "timeSlots": []
+     },
+     {
+      "id": "including-scuba-equipment-3f641511932b",
+      "name": "Two boat dives with the equipment included",
+      "description": "The same two dives with a full rental set: BCD, regulator, mask, fins, tanks and weights.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "08:00"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel pickup",
+      "description": "The car collects you from your hotel in El Gouna and drives to the harbour.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "On board",
+      "description": "You board the dive boat and set up your gear on the way out.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "First dive",
+      "description": "A site briefing, then the first guided dive.",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "Surface interval",
+      "description": "Time on deck as the boat moves to the second site. Lunch is not included.",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "Second dive",
+      "description": "A briefing and the second guided dive at a new site.",
+      "duration": ""
+     },
+     {
+      "index": 5,
+      "title": "Back to your hotel",
+      "description": "The boat returns to the harbour and the car takes you back to your hotel.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel pickup",
+      "description": "Pickup and drop-off at your hotel in El Gouna."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "The team confirms your pickup time when it confirms your booking."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788212485/tours/c3syeyx758xwhljxpfqk.jpg",
+      "alt": "A small dive boat on turquoise water seen from above, with a diver and a coral head nearby"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Two Guided Boat Dives Out of El Gouna in a Day",
+     "metaDescription": "An eight-hour day for divers already certified: two dives at separate sites off El Gouna, an interval on deck, Nitrox aboard, a car both ways.",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "غطستان من القارب بصحبة مرشد من الجونة",
+    "shortDescription": "ثماني ساعات للغواصين المعتمدين سلفًا: غطستان في موقعين منفصلين بينهما فترة على سطح المركب، والأسطوانات والأثقال على متنه، ولا وجبة.",
+    "description": "هذه الرحلة للغواصين الحاملين شهادة سلفًا. تكون السيارة عند الباب في الثامنة للتوجّه إلى الميناء، ويُجمَّع العتاد على سطح المركب والقارب يفارق المرسى. وتتبع غطستان في موقعين منفصلين بينهما فترة على السطح، وعلى متن المركب حمّامات ودشّ. وما يذكره البرنامج هو البلدة التي ينطلق منها اليوم، لا أيٌّ من الموقعين الذين يعمل فيهما: فهو لا يذكر مرسى أبو جلاوة، الخور المحمي في شعاب أبو جلاوة؛ وسجلّ خرائط واحد فقط ينشر موضعًا لتلك الشعبة، فلا يمكن القول كم يبعد القارب عنها، ولا تَعِد أي صفحة هنا بغطسة عند أي موقع مسمّى.\n\nوتأتي مع اليوم الأسطوانات والأثقال والنيتروكس لمن هو مؤهّل لتنفّسه والماء والفاكهة. واختر الخيار الذي يحمل طقم استئجار كاملًا إلا إذا كنت تسافر بعتادك؛ واحمل معك بطاقة شهادتك ودفتر غطساتك؛ ودبّر طعامك بنفسك، فلا وجبة في هذا السعر. وللطفل سعر خاص به.",
+    "duration": "8 ساعات",
+    "cancellationPolicy": "",
+    "highlights": [
+     "غطستان في موقعين منفصلين",
+     "فترة على السطح بينهما",
+     "أسطوانات وأثقال ونيتروكس مُوفَّرة",
+     "طقم استئجار كامل لمن يحتاجه"
+    ],
+    "inclusions": [
+     "مرشدو غوص محترفون",
+     "حمّامات ودشات على متن المركب",
+     "طاقم مركب ذو خبرة",
+     "النقل من الفندق وإليه",
+     "نيتروكس مجاني (للغواصين المعتمدين)",
+     "مياه الشرب",
+     "فاكهة طازجة"
+    ],
+    "exclusions": [
+     "الغداء",
+     "مرطبات فترة الراحة على السطح"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "ملابس سباحة",
+     "منشفة",
+     "واقي شمس",
+     "شهادة الغوص",
+     "سجل الغوص"
+    ],
+    "needToKnow": [
+     "هذه الرحلة للغواصين المعتمدين: أحضر بطاقة شهادتك وسجل غوصك.",
+     "المعدات المستأجرة تأتي مع الخيار الذي يذكرها.",
+     "للأطفال سعرهم الخاص، ويطبّقه الحجز. ويؤكد الفريق الأعمار التي تُحتسب أطفالاً عند تأكيد حجزك."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "bring-your-own-scuba-equipment-c6f9b7889912",
+      "name": "غطستان من القارب بمعداتك الخاصة",
+      "description": "غطستان بصحبة مرشد من المركب للغواصين المعتمدين. والأسطوانات والأوزان مشمولة؛ فأحضر طقم الغوص الخاص بك.",
+      "timeSlots": []
+     },
+     {
+      "id": "including-scuba-equipment-3f641511932b",
+      "name": "غطستان من القارب، والمعدات مشمولة",
+      "description": "الغطستان نفسهما مع طقم تأجير كامل: سترة التحكم في الطفو، ومنظّم، وقناع، وزعانف، وأسطوانات، وأوزان.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "الساعة 08:00"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "تصطحبك السيارة من فندقك في الجونة وتتجه إلى الميناء.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "على متن المركب",
+      "description": "تصعد إلى مركب الغوص وتجهّز معداتك في طريق الذهاب.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "الغطسة الأولى",
+      "description": "شرح عن الموقع، ثم الغطسة الأولى بصحبة مرشد.",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "فترة الراحة على السطح",
+      "description": "وقت على السطح أثناء انتقال المركب إلى الموقع الثاني. والغداء غير مشمول.",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "الغطسة الثانية",
+      "description": "شرح تمهيدي والغطسة الثانية بصحبة مرشد في موقع جديد.",
+      "duration": ""
+     },
+     {
+      "index": 5,
+      "title": "العودة إلى فندقك",
+      "description": "يعود المركب إلى الميناء وتعيدك السيارة إلى فندقك.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك في الجونة والعودة إليه."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1788212485/tours/c3syeyx758xwhljxpfqk.jpg",
+      "alt": "قارب غوص صغير على ماء فيروزي يُرى من أعلى، وغواص ورأس مرجاني قريبان منه"
+     }
+    ],
+    "seo": {
+     "metaTitle": "غطستان من القارب بصحبة مرشد من الجونة في يوم واحد",
+     "metaDescription": "يوم من ثماني ساعات للغواصين المعتمدين سلفًا: غطستان في موقعين منفصلين قبالة الجونة، وفترة على سطح المركب، ونيتروكس على متنه، وسيارة في الاتجاهين.",
+     "keywords": []
+    }
+   }
+  }
+ ],
+ "destinations": [
+  {
+   "id": "699895e47169d9820932b9a9",
+   "sourceSlug": "el-gouna",
+   "slug": "el-gouna-ar",
+   "sourceUpdatedAt": "2026-04-09T16:33:34.309Z",
+   "sourceDigest": "7843755632ea235ed28111642ad1f6bbc5ffaf39bb3a37669c8bbcee3ef28fb0",
+   "english": {
+    "name": "El Gouna",
+    "country": "Egypt",
+    "description": "A modern, purpose-built resort town between Hurghada and the Red Sea, El Gouna offers luxury accommodations and water sports.",
+    "shortDescription": "Modern luxury resort destination in the Red Sea",
+    "highlights": [
+     "Luxury Resorts",
+     "Golf Course",
+     "Marina",
+     "Windsurfing"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "luxury",
+     "beach",
+     "resort",
+     "water-sports"
+    ]
+   },
+   "arabic": {
+    "name": "الجونة",
+    "country": "مصر",
+    "description": "الجونة مدينة منتجعات حديثة أُنشئت خصيصاً لهذا الغرض بين الغردقة والبحر الأحمر، وتوفّر أماكن إقامة فاخرة ورياضات مائية.",
+    "shortDescription": "وجهة منتجعات حديثة وفاخرة على البحر الأحمر",
+    "highlights": [
+     "منتجعات فاخرة",
+     "ملعب غولف",
+     "مارينا",
+     "التزلج الشراعي"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "فخامة",
+     "شاطئ",
+     "منتجع",
+     "رياضات مائية"
+    ]
+   }
+  }
+ ]
+}

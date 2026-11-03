@@ -1,0 +1,384 @@
+{
+ "version": 1,
+ "batch": "b17c",
+ "locale": "ar",
+ "tenant": {
+  "id": "6ae9a6f3f5e4742051b2bd38",
+  "slug": "seven-pools",
+  "domain": "seven-pools.foxesnetwork.com"
+ },
+ "presentationSha256": "f1556858a4ef999b85c6a6f99ad7c6a09d12fd3ecf453f7e88b28f3ad255b7bd",
+ "presentation": [
+  {
+   "kind": "tenant",
+   "sourceId": "6ae9a6f3f5e4742051b2bd38",
+   "sourceDigest": "3910ffd1a15acab7d7431e4ab94cae30db6d231aef46d74e325d9e16a4fe7274",
+   "english": {
+    "tagline": "A cruise inside the same park",
+    "description": "Seven Pools is the name the snorkelling trade uses for a shallow coral stop inside Ras Mohammed National Park, at the southern tip of the Sinai peninsula. It is reached by boat, on trips leaving from the marina at Sharm El Sheikh. No position is published for it: one snorkelling register carries a single map pin, and no gazetteer, no mapping record, no dive register and no encyclopaedia holds the name in Egypt at all, so nothing on these pages places it. Four statements about it are carried by two independent sources, and two of those four are about the park and about the boat day rather than about the stop, which is why these pages say so little and claim no more: boat days out of the town commonly pair reef snorkelling with a stop at White Island, which depends on the tide, and the park's other well-known stops, the mangrove channel and the earthquake crack, are stops on land rather than part of a boat snorkel. The name belongs to this stop alone: a similarly named row of pools lies on another Sinai coast and is a separate place in a separate town, and nothing on this site is taken from it.\n\nThis small-group cruise snorkels inside Ras Mohammed National Park and calls at White Island; its programme does not name Seven Pools, and because no position for that stop is published, how far the boat passes from it cannot be said. One trip is sold here: eight hours, with the park fees and the hotel transfer in the price and the snorkelling gear hired or added at booking. Every trip collects you from your hotel and brings you back, and each page says what its own price covers. Hold a place online and pay later, or ask the team first about the pickup time.",
+    "seoSettings": {
+     "metaTitle": "Seven Pools: a Ras Mohammed Small-Group Cruise",
+     "metaDescription": "Eight hours by boat from Sharm El Sheikh into Ras Mohammed National Park, calling at White Island, with the park fees and the hotel transfer.",
+     "keywords": [
+      "seven pools ras mohammed snorkelling stop",
+      "shallow coral stop with no published position",
+      "white island ras mohammed small group cruise",
+      "ras mohammed boat day from sharm el sheikh",
+      "snorkelling trade name for a park stop"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "Home",
+      "columns": []
+     },
+     {
+      "label": "Trips",
+      "columns": []
+     },
+     {
+      "label": "About",
+      "columns": []
+     },
+     {
+      "label": "FAQ",
+      "columns": []
+     },
+     {
+      "label": "Contact",
+      "columns": []
+     }
+    ]
+   },
+   "arabic": {
+    "tagline": "رحلة بحرية داخل المحمية نفسها",
+    "description": "Seven Pools هو الاسم الذي تستخدمه تجارة السنوركلينغ لمحطة مرجانية ضحلة داخل محمية رأس محمد الوطنية، عند الطرف الجنوبي من شبه جزيرة سيناء. ويُوصل إليها بالقارب، في رحلات تنطلق من المارينا في شرم الشيخ. ولا يُنشر لها موضع: يحمل سجلّ سنوركلينغ واحد علامة خريطة وحيدة، ولا يحمل الاسمَ في مصر أيُّ معجم جغرافي ولا سجلّ خرائط ولا سجلّ غوص ولا موسوعة، فلا شيء في هذه الصفحات يحدّد موضعها. وتحمل أربع عبارات عنها مصدران مستقلان، واثنتان من تلك الأربع عن المحمية وعن اليوم البحري لا عن المحطة نفسها، ولهذا تقول هذه الصفحات القليل ولا تدّعي أكثر منه: فالأيام البحرية من البلدة تجمع عادةً بين السنوركلينغ على الشعاب والتوقف عند الجزيرة البيضاء، وهو توقف يتوقف على المدّ والجزر، أما محطتا المحمية المعروفتان الأخريان، قناة المانغروف وشقّ الزلزال، فمحطتان على البرّ لا جزء من سنوركلينغ بحري. والاسم يخصّ هذه المحطة وحدها: فثمة صفّ من البرك يحمل اسمًا مشابهًا على ساحل آخر في سيناء وهو مكان منفصل في بلدة منفصلة، ولا شيء في هذا الموقع مأخوذ عنه. وتمارس هذه الرحلة البحرية لمجموعة صغيرة السنوركلينغ داخل محمية رأس محمد الوطنية وتتوقف عند الجزيرة البيضاء؛ ولا يذكر برنامجها Seven Pools، ولأن موضع تلك المحطة غير منشور لا يمكن القول كم يبعد القارب عنها. ورحلة واحدة تُباع هنا: ثماني ساعات، ورسوم المحمية والنقل من الفندق داخل السعر، ومعدّات السنوركلينغ تُستأجر أو تُضاف عند الحجز. وكل رحلة تقلّك من فندقك وتعيدك إليه، وتذكر كل صفحة ما يشمله سعرها. احجز مكانك عبر الإنترنت وادفع لاحقًا، أو اسأل الفريق أولًا عن موعد الاستلام.",
+    "seoSettings": {
+     "metaTitle": "Seven Pools: رحلة بحرية لمجموعة صغيرة في رأس محمد",
+     "metaDescription": "ثماني ساعات بالقارب من شرم الشيخ إلى محمية رأس محمد الوطنية، مع توقف عند الجزيرة البيضاء، ورسوم المحمية والنقل من الفندق مشمولة.",
+     "keywords": [
+      "Seven Pools محطة سنوركلينغ في رأس محمد",
+      "محطة مرجانية ضحلة لا موضع منشور لها",
+      "رحلة بحرية لمجموعة صغيرة إلى الجزيرة البيضاء ورأس محمد",
+      "يوم بحري إلى رأس محمد من شرم الشيخ",
+      "اسم تجارة السنوركلينغ لمحطة داخل المحمية"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": [
+     {
+      "label": "الرئيسية",
+      "columns": []
+     },
+     {
+      "label": "الرحلات",
+      "columns": []
+     },
+     {
+      "label": "من نحن",
+      "columns": []
+     },
+     {
+      "label": "الأسئلة الشائعة",
+      "columns": []
+     },
+     {
+      "label": "اتصل بنا",
+      "columns": []
+     }
+    ]
+   }
+  }
+ ],
+ "tours": [
+  {
+   "id": "6ae9a6f3226b91979e229fd6",
+   "sourceSlug": "svp-eight-hours-inside-ras-mohammed-and-white-island",
+   "slug": "svp-eight-hours-inside-ras-mohammed-and-white-island-ar",
+   "sourceUpdatedAt": "2026-11-03T09:18:43.778Z",
+   "sourceDigest": "393ca9f2de2e2cf571175d9a50a2b938be28f60866f74ee5174e621630e5868d",
+   "english": {
+    "title": "Eight Hours Inside Ras Mohammed, and White Island",
+    "shortDescription": "Eight hours by boat in a small group: into Ras Mohammed National Park and on to the sandbar at White Island, with the park fees and the transfer.",
+    "description": "A coach collects you from your hotel and runs down to the marina, and the boat leaves at eight for the national park. The sailing is in a small group, the park entry is settled inside the price, and the sandbar at White Island is the stop the programme names beside the park itself; the island stands out of the water with the tide, so what it looks like depends on the hour. What the programme names is the park and that island, not Seven Pools, the shallow coral stop the snorkelling trade names inside the same park; no position for that stop is published, so how far the boat passes from it cannot be said.\n\nThe snorkelling gear sits outside this price and can be added when you book or hired at the marina, and a beginner dive can be added in the same way. A child carries a price of its own. Bring something to cover your shoulders for the open deck, and expect the order of the day to follow the sea rather than a clock.",
+    "duration": "8 hours",
+    "cancellationPolicy": "",
+    "highlights": [
+     "A small group for the whole sailing",
+     "Into Ras Mohammed National Park",
+     "The sandbar at White Island",
+     "The park fees inside the price"
+    ],
+    "inclusions": [
+     "Early access to White Island",
+     "50% free capacity on-board",
+     "National park fees",
+     "Gourmet lunch",
+     "Two snorkeling stops",
+     "Hotel pickup and drop-off"
+    ],
+    "exclusions": [
+     "Extra fresh beverages on board",
+     "Snorkelling gear, unless you add it when you book"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Sunglasses",
+     "Hat",
+     "Swimwear",
+     "Towel",
+     "Camera",
+     "Sunscreen"
+    ],
+    "needToKnow": [
+     "Children pay the child price. The team confirms which ages count as children when it confirms your booking."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "small-group-white-island-transfer-without-sno-f7995d139597",
+      "name": "Small group cruise with hotel transfer",
+      "description": "Park fees included; snorkelling gear is rented separately",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "6a8dcc1994c30fd1862c5998",
+      "name": "One beginner dive",
+      "description": ""
+     },
+     {
+      "id": "6a8dcc1994c30fd1862c599f",
+      "name": "Snorkelling gear",
+      "description": ""
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel pickup",
+      "description": "A coach collects you from your hotel for the drive to the marina.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "Sail into Ras Mohamed",
+      "description": "The boat leaves at eight and sails into the national park.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "White Island",
+      "description": "Early on the sandbar, for swimming and snorkelling.",
+      "duration": "1 hour"
+     },
+     {
+      "index": 3,
+      "title": "Snorkelling in the park",
+      "description": "Two snorkelling stops, with lunch served on board.",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "Back to your hotel",
+      "description": "The boat returns to the marina in Sharm el-Sheikh and the coach takes you back to your hotel.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel pickup",
+      "description": "Pickup and drop-off at your hotel in Sharm El Sheikh."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "The team confirms your pickup time when it confirms your booking."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1792826499/attractions-network/network-sites/eeo/jukhmljqqiogdxbc3bim.jpg",
+      "alt": "A white yacht anchored in clear turquoise water close to a rocky desert shore"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Ras Mohammed and White Island: an Eight-Hour Cruise",
+     "metaDescription": "A small-group boat day from Sharm El Sheikh: eight hours into Ras Mohammed National Park and on to the White Island sandbar, park fees included.",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "ثماني ساعات داخل رأس محمد، والجزيرة البيضاء",
+    "shortDescription": "ثماني ساعات بالقارب في مجموعة صغيرة: إلى محمية رأس محمد الوطنية ثم إلى اللسان الرملي في الجزيرة البيضاء، مع رسوم المحمية والنقل.",
+    "description": "تقلّك حافلة من فندقك وتنزل بك إلى المارينا، ويغادر القارب في الثامنة إلى المحمية الوطنية. والإبحار في مجموعة صغيرة، ودخول المحمية مسوّى داخل السعر، واللسان الرملي في الجزيرة البيضاء هو التوقف الذي يذكره البرنامج إلى جانب المحمية نفسها؛ وتبرز الجزيرة من الماء مع المدّ والجزر، فهيئتها تتوقف على الساعة. وما يذكره البرنامج هو المحمية وتلك الجزيرة، لا Seven Pools، المحطة المرجانية الضحلة التي تسمّيها تجارة السنوركلينغ داخل المحمية نفسها؛ ولا يُنشر لتلك المحطة موضع، فلا يمكن القول كم يبعد القارب عنها.\n\nومعدّات السنوركلينغ خارج هذا السعر ويمكن إضافتها عند الحجز أو استئجارها في المارينا، ويمكن إضافة غطسة للمبتدئين بالطريقة نفسها. وللطفل سعر خاص به. وأحضر ما يغطّي كتفيك على سطح المركب المكشوف، وتوقّع أن يسير ترتيب اليوم على البحر لا على الساعة.",
+    "duration": "8 ساعات",
+    "cancellationPolicy": "",
+    "highlights": [
+     "مجموعة صغيرة طوال الإبحار",
+     "إلى محمية رأس محمد الوطنية",
+     "اللسان الرملي في الجزيرة البيضاء",
+     "رسوم المحمية داخل السعر"
+    ],
+    "inclusions": [
+     "وصول مبكر إلى الجزيرة البيضاء",
+     "50% من سعة المركب تُترك شاغرة",
+     "رسوم المحمية الوطنية",
+     "غداء فاخر",
+     "توقفان للسنوركلينغ",
+     "النقل من الفندق وإليه"
+    ],
+    "exclusions": [
+     "المشروبات الطازجة الإضافية على متن المركب",
+     "عدة السنوركلينغ، ما لم تضفها عند الحجز"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "نظارات شمسية",
+     "قبعة",
+     "ملابس سباحة",
+     "منشفة",
+     "كاميرا",
+     "واقي شمس"
+    ],
+    "needToKnow": [
+     "يدفع الأطفال سعر الأطفال. ويؤكد الفريق الأعمار التي تُحتسب للأطفال عند تأكيد حجزك."
+    ],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "small-group-white-island-transfer-without-sno-f7995d139597",
+      "name": "رحلة بحرية لمجموعة صغيرة مع النقل من الفندق",
+      "description": "رسوم المحمية مشمولة؛ وتُستأجر عدة السنوركلينغ بشكل منفصل",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "6a8dcc1994c30fd1862c5998",
+      "name": "غطسة واحدة للمبتدئين",
+      "description": ""
+     },
+     {
+      "id": "6a8dcc1994c30fd1862c599f",
+      "name": "عدة السنوركلينغ",
+      "description": ""
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "صباحاً"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "تصطحبك حافلة من فندقك للطريق إلى المارينا.",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "الإبحار إلى رأس محمد",
+      "description": "ينطلق المركب عند الثامنة ويبحر إلى داخل المحمية الوطنية.",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "الجزيرة البيضاء",
+      "description": "مبكراً على اللسان الرملي، للسباحة والسنوركلينغ.",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 3,
+      "title": "السنوركلينغ في المحمية",
+      "description": "توقفان للسنوركلينغ، مع غداء يُقدَّم على متن المركب.",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "العودة إلى فندقك",
+      "description": "يعود المركب إلى المارينا في شرم الشيخ وتعيدك الحافلة إلى فندقك.",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك في شرم الشيخ والعودة إليه."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1792826499/attractions-network/network-sites/eeo/jukhmljqqiogdxbc3bim.jpg",
+      "alt": "يخت أبيض راسٍ في ماء فيروزي صافٍ قرب شاطئ صحراوي صخري"
+     }
+    ],
+    "seo": {
+     "metaTitle": "رأس محمد والجزيرة البيضاء: رحلة بحرية من ثماني ساعات",
+     "metaDescription": "يوم بحري لمجموعة صغيرة من شرم الشيخ: ثماني ساعات إلى محمية رأس محمد الوطنية ثم إلى اللسان الرملي في الجزيرة البيضاء، مع رسوم المحمية.",
+     "keywords": []
+    }
+   }
+  }
+ ],
+ "destinations": [
+  {
+   "id": "699895e47169d9820932b9a4",
+   "sourceSlug": "sharm-el-sheikh",
+   "slug": "sharm-el-sheikh-ar",
+   "sourceUpdatedAt": "2026-04-09T16:31:18.356Z",
+   "sourceDigest": "05c986dc8b6a6b3e8412fe767586084a5b89af41fd1d4e95cac1b445eb8d6567",
+   "english": {
+    "name": "Sharm El Sheikh",
+    "country": "Egypt",
+    "description": "Located at the tip of the Sinai Peninsula, Sharm El Sheikh offers stunning Red Sea views and world-renowned diving spots.",
+    "shortDescription": "Luxurious Red Sea resort at the Sinai Peninsula",
+    "highlights": [
+     "Diving",
+     "Snorkeling",
+     "Naama Bay",
+     "Restaurants & Bars"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "beach",
+     "luxury",
+     "diving",
+     "water-sports"
+    ]
+   },
+   "arabic": {
+    "name": "شرم الشيخ",
+    "country": "مصر",
+    "description": "تقع شرم الشيخ عند طرف شبه جزيرة سيناء، وتوفر إطلالات خلابة على البحر الأحمر ومواقع غوص ذائعة الصيت عالمياً.",
+    "shortDescription": "منتجع فاخر على البحر الأحمر في شبه جزيرة سيناء",
+    "highlights": [
+     "الغوص",
+     "السنوركلينغ",
+     "خليج نعمة",
+     "المطاعم والحانات"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "شاطئ",
+     "فخامة",
+     "غوص",
+     "رياضات مائية"
+    ]
+   }
+  }
+ ]
+}
