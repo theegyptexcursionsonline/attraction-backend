@@ -1,0 +1,118 @@
+{
+  "shaab-samadai-dolphin-sanctuary-snorkel-cruise-from-marsa-alam": {
+    "title": "Shaab Samadai Dolphin Sanctuary Snorkel & Cruise from Marsa Alam",
+    "duration": "7 hours",
+    "options": [
+      "National Park Fee (Adult)"
+    ],
+    "optionKeys": [
+      "national-park-fee-adult-d39334dec233"
+    ],
+    "itinerary": [],
+    "included": [],
+    "notIncluded": [
+      "Personal expenses",
+      "wetsuit available Additional fee (10€/Person)",
+      "National park/environmental entrance fee (10€/Person)",
+      "Transfers from hotels in North & South Marsa Alam (available for an extra charge)"
+    ]
+  },
+  "marsa-alam-marsa-mubarak-turtle-snorkelling-boat-trip": {
+    "title": "Marsa Alam: Marsa Mubarak Turtle Snorkelling & Boat Trip",
+    "duration": "8 hours",
+    "options": [
+      "Marsa Mubarak Sea Turtle Trip with Lunch and Transfer",
+      "With 1 Intro Dive, Snorkelling, and Lunch"
+    ],
+    "optionKeys": [
+      "marsa-mubarak-sea-turtle-trip-with-lunch-and--b9350a52e3cd",
+      "with-1-intro-dive-snorkelling-and-lunch-5d73f8d46c61"
+    ],
+    "itinerary": [],
+    "included": [
+      "Pickup and transfer to Marsa Mubarak",
+      "Snorkelling adventure",
+      "Professional instructors",
+      "Lunch and soft drinks",
+      "Snorkelling equipment (mask, fins, life jacket)",
+      "Optional diving session (if selected)",
+      "Soft drinks and water",
+      "National Park fees"
+    ],
+    "notIncluded": [
+      "Tips",
+      "Personal expenses",
+      "Transfers from hotels in North Marsa Alam (available for an extra charge)"
+    ]
+  },
+  "marsa-alam-luxury-pirates-boat-snorkeling-cruise-with-lunch": {
+    "title": "Marsa Alam: Luxury Pirates Boat Snorkeling Cruise with Lunch",
+    "duration": "4.5 hours",
+    "options": [
+      "Marsa Alam: Pirates Premium Boat to Turtle Bay with lunch"
+    ],
+    "optionKeys": [
+      "marsa-alam-pirates-premium-boat-to-turtle-bay-d101de788b0b"
+    ],
+    "itinerary": [
+      "Pickup location: Port Ghalib",
+      "Bus/coach",
+      "Marsa Mubarak",
+      "Marsa Mubarak",
+      "Arrive back at: Port Ghalib"
+    ],
+    "included": [
+      "Hotel pickup and drop-off",
+      "Two daily programs",
+      "Professional and experienced guides",
+      "Delicious open buffet lunch/dinner",
+      "Unlimited fizzy drinks and tea",
+      "45-minute fully guided snorkelling stops at Marsa Mubarak and Marsa Shona",
+      "Fresh juice welcome drink"
+    ],
+    "notIncluded": [
+      "Personal expenses",
+      "Tips (optional)",
+      "Snorkelling gear available to rent from Marina shops"
+    ]
+  },
+  "hurghada-orange-bay-yacht-cruise-with-snorkeling-breakfast-lunch-drinks": {
+    "title": "Hurghada: Orange Bay Yacht Cruise with Snorkeling, Breakfast, Lunch & Drinks",
+    "duration": "5 - 8 hours",
+    "options": [
+      "5 Hour Orange Bay Trip with Breakfast",
+      "8 Hour Orange Bay Trip with Breakfast & Lunch",
+      "Private Orange Bay Trip with Breakfast"
+    ],
+    "optionKeys": [
+      "5-hour-orange-bay-trip-with-breakfast-c611b52197e1",
+      "8-hour-orange-bay-trip-with-breakfast-lunch-5ca8942ae903",
+      "private-orange-bay-trip-with-breakfast-3faa31826278"
+    ],
+    "itinerary": [
+      "4 pickup location options",
+      "Van",
+      "Giftun Island",
+      "4 drop-off locations"
+    ],
+    "included": [
+      "Pick-up and drop-off from Hurghada (see Know Before You Go for details)",
+      "Food & Drinks",
+      "5h Tour: Breakfast buffet",
+      "8h Tour: Breakfast + Lunch",
+      "Unlimited drinks (tea, coffee, soft drinks, water) & Fresh seasonal fruits",
+      "Activities",
+      "5h Tour: 45-min snorkeling stop",
+      "8h Tour: 2 snorkeling stops",
+      "1 hour at Orange Bay Island (white sand beaches & turquoise waters)",
+      "Equipment & Fees: Snorkeling equipment, Island entry fees & Marine tax",
+      "Guides & Crew: Professional guides on each boat, Special guide for non-swimmers & Professional crew"
+    ],
+    "notIncluded": [
+      "Towels",
+      "Underwater photos",
+      "Gratuities (optional)",
+      "Long-range pickup from Makadi, Safaga, El Gouna, Sahl Hasheesh, and Soma Bay (available as an add-on)"
+    ]
+  }
+}

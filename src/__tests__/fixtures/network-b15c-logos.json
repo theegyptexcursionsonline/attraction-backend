@@ -1,0 +1,22 @@
+{
+ "daedalus-reef": {
+  "logo": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793686474/attractions-network/tenant-logos/daedalus-reef/brand-20261103-5e67e21ad33e.png",
+  "logoDark": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793686475/attractions-network/tenant-logos/daedalus-reef/brand-20261103-9173cef8b8a6.png",
+  "favicon": "https://res.cloudinary.com/dm3sxllch/image/upload/c_limit,w_192,h_192/v1793686477/attractions-network/tenant-logos/daedalus-reef/brand-20261103-563b75dcd5cc.png"
+ },
+ "el-ikhwa-islands": {
+  "logo": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793686478/attractions-network/tenant-logos/el-ikhwa-islands/brand-20261103-172b2bdf3485.png",
+  "logoDark": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793686479/attractions-network/tenant-logos/el-ikhwa-islands/brand-20261103-7420d8738a58.png",
+  "favicon": "https://res.cloudinary.com/dm3sxllch/image/upload/c_limit,w_192,h_192/v1793686481/attractions-network/tenant-logos/el-ikhwa-islands/brand-20261103-15b2f64ee607.png"
+ },
+ "zabargad-island": {
+  "logo": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793686482/attractions-network/tenant-logos/zabargad-island/brand-20261103-056c716ddd7f.png",
+  "logoDark": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793686484/attractions-network/tenant-logos/zabargad-island/brand-20261103-b800c99f9b37.png",
+  "favicon": "https://res.cloudinary.com/dm3sxllch/image/upload/c_limit,w_192,h_192/v1793686485/attractions-network/tenant-logos/zabargad-island/brand-20261103-328138d7d426.png"
+ },
+ "hebat-allah-wreck": {
+  "logo": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793686487/attractions-network/tenant-logos/hebat-allah-wreck/brand-20261103-ce70f1328881.png",
+  "logoDark": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793686488/attractions-network/tenant-logos/hebat-allah-wreck/brand-20261103-9f74c101c78a.png",
+  "favicon": "https://res.cloudinary.com/dm3sxllch/image/upload/c_limit,w_192,h_192/v1793686490/attractions-network/tenant-logos/hebat-allah-wreck/brand-20261103-3b6b708f8cfe.png"
+ }
+}

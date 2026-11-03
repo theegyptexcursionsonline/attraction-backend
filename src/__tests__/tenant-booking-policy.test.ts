@@ -120,6 +120,8 @@ describe('tenant booking-creation closure policy', () => {
         'erg-sabina', 'fanous-west', 'abu-dabbab-beach', 'elphinstone-reef', 'sharm-el-luli',
         // Batch B15's three reefs off Hurghada and its three places on the southern coast, closed the same way.
         'erg-abu-ramada', 'shabruhr-umm-gamar', 'hamda', 'ras-hankorab', 'qulaan', 'wadi-lahmy',
+        // Batch B15C's four offshore places, closed the same way.
+        'daedalus-reef', 'el-ikhwa-islands', 'zabargad-island', 'hebat-allah-wreck',
         'coral-safari-hurghada',
       ] },
     });

@@ -97,6 +97,14 @@ const BOOKING_CREATION_CLOSED_TENANT_SLUGS = [
   'ras-hankorab',
   'qulaan',
   'wadi-lahmy',
+  // The network queue's batch B15C, the four offshore places added to batch B15: the lighthouse reef east of
+  // Marsa Alam, the two islands off El Quseir, the mantle island south-east of Ras Banas, and the wreck off
+  // Hurghada whose position is not published. Each is closed to real bookings until its domain is connected and
+  // the owner opens it; opening a site is removing its slug.
+  'daedalus-reef',
+  'el-ikhwa-islands',
+  'zabargad-island',
+  'hebat-allah-wreck',
   // Coral starts with preference requests only; no route may create a normal booking for it.
   CORAL_REQUEST_TENANT_SLUG,
 ] as const;
