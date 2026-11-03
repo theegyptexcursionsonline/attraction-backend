@@ -37,11 +37,15 @@ import { presentationDigest } from '../../services/tenantPresentationMigration.s
 import { tenantPickupDestinationSlugs } from '../../utils/pickupDestinations';
 import type { NetworkBatch } from '../seed-network-sites';
 import { B14A, B14B } from '../network-sites/b14';
+import { B17A, B17B, B17C } from './b17';
 
 export const LOCALE = 'ar' as const;
 export const PUBLISH_BATCHES: Record<string, { batch: NetworkBatch; folder: string }> = {
   b14a: { batch: B14A, folder: 'b14' },
   b14b: { batch: B14B, folder: 'b14' },
+  b17a: { batch: B17A, folder: 'b17' },
+  b17b: { batch: B17B, folder: 'b17' },
+  b17c: { batch: B17C, folder: 'b17' },
 };
 const PAYLOAD_ROOT = __dirname;
 const HEX24 = /^[a-f\d]{24}$/i;

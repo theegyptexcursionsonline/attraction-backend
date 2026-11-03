@@ -31,9 +31,10 @@ import type { NetworkBatch } from './seed-network-sites';
 import { B12A, B12B } from './network-sites/b12';
 import { B13A, B13B } from './network-sites/b13';
 import { B14A, B14B } from './network-sites/b14';
+import { B17A, B17B, B17C } from './network-arabic/b17';
 import { GLOSSARY_TERMS, TranslationMemory, alignPairs, flattenStrings, logChunks } from './network-arabic/text';
 
-export const NETWORK_BATCHES: Record<string, NetworkBatch> = { b12a: B12A, b12b: B12B, b13a: B13A, b13b: B13B, b14a: B14A, b14b: B14B };
+export const NETWORK_BATCHES: Record<string, NetworkBatch> = { b12a: B12A, b12b: B12B, b13a: B13A, b13b: B13B, b14a: B14A, b14b: B14B, b17a: B17A, b17b: B17B, b17c: B17C };
 /** The batches whose published Arabic is printed in full, as the model for wording and record shape. */
 const MODEL_BATCHES = ['b13a', 'b13b'];
 const TENANT_FIELDS = '_id slug name status domain customDomain supportedLanguages defaultLanguage designMode tagline description heroImages seoSettings pageSeo navigation customPages pickupDestinationSlugs updatedAt';

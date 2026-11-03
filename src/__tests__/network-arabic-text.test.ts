@@ -66,6 +66,7 @@ describe('network Arabic text helpers', () => {
 describe('network Arabic source export', () => {
   it('accepts only known groups, once each', () => {
     expect(exportArguments(['--batch=b14a,b14b'])).toEqual({ batches: ['b14a', 'b14b'] });
+    expect(exportArguments(['--batch=b17a,b17b,b17c'])).toEqual({ batches: ['b17a', 'b17b', 'b17c'] });
     expect(() => exportArguments(['--batch=b14a,b14a'])).toThrow();
     expect(() => exportArguments(['--batch=b99'])).toThrow();
     expect(() => exportArguments([])).toThrow();

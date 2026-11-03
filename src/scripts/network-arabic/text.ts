@@ -90,6 +90,25 @@ export const GLOSSARY_TERMS: readonly string[] = [
   'scorpionfish', 'stonefish', 'pipefish', 'octopus', 'goatfish', 'sweetlips', 'bannerfish', 'anthias', 'amberjack',
   'clownfish', 'pufferfish', 'butterflyfish', 'surgeonfish', 'unicornfish', 'hawksbill', 'green turtle', 'blue-spotted',
   'shrimp', 'kofta', 'nuggets', 'spaghetti', 'acacia', 'arak', 'rock carving', 'mine',
+  // Places the B17 facts name: Sinai and the Gulf of Aqaba
+  'Sharm El Sheikh', 'Dahab', 'Sinai', 'South Sinai', 'Sinai Trail', 'Ras Mohammed', 'White Island', 'Blue Hole',
+  'Blue Lagoon', 'Coloured Canyon', 'Colored Canyon', 'Ras Abu Galum', 'Abu Galum', 'Ein Kid', 'Seven Pools',
+  'Wadi Zaghara', 'Salama', 'Gulf of Aqaba', 'Nuweiba', 'Ras Shetan', 'St Catherine', 'Nabq',
+  // Cairo and Giza
+  'Cairo', 'Giza', 'Sakkara', 'Memphis', 'Sphinx', 'Great Sphinx', 'Pyramids', 'Step Pyramid', 'Djoser',
+  'Khufu', 'Khafre', 'Menkaure', 'Valley Temple', 'Egyptian Museum', 'Tahrir Square', 'Old Cairo', 'Nile',
+  'Ramses II', 'Eastern Desert', 'private day', 'driver', 'air-conditioned', 'entrance fee', 'entrance ticket',
+  // El Gouna, Hurghada and the reefs the B17 facts name
+  'El Gouna', 'Marsa Abu Galawa', 'Abu Galawa', 'Camel Reef', 'Shabruhr', 'Shabrur', 'Hamda', 'Kizan',
+  'Gota Abu Ramada', 'Hebat Allah', 'Numidia', 'nitrox', 'two-tank', 'tank', 'dive guide', 'instructor',
+  'certification', 'logbook', 'horseshoe',
+  // The Marsa Alam coast and the open sea
+  'Shaab Samadai', 'Samadai', 'Dolphin Reef', 'Gebel El Rosas', 'El Quseir', 'Lahami Bay', 'Wadi Lahmy',
+  'Wadi Lahmi', 'Ras Hankorab', 'Fury Shoals', 'Daedalus', 'El Ikhwa', 'Big Brother', 'Little Brother',
+  'Zabargad', 'St John', 'Ras Banas', 'Berenike', 'Ababda', 'Elba National Park', 'peridot', 'olivine',
+  // Features and food the B17 facts name
+  'mangrove', 'canyon', 'pool', 'oasis', 'camel', 'quad', 'jeep', 'calamari', 'salad', 'tea', 'Bedouin tent',
+  'star', 'telescope', 'sunset', 'wind', 'kite',
 ];
 
 export function containsTerm(text: string, term: string): boolean {
