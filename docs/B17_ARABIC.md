@@ -1,7 +1,7 @@
 # B17 Arabic records: prepared and checked, not published
 
 State on 3 November 2026: **prepared, committed and pushed on `feat/b17-arabic`; the read-only apply check passes
-for all eighteen sites; nothing is published.** Every publishing step below is a production write and needs the
+for all eighteen sites on the branch head; nothing is published.** Every publishing step below is a production write and needs the
 owner's approval for that run.
 
 Sites, three groups of six, 18 trips and 54 rows:
@@ -48,13 +48,14 @@ Found: 18 sites, 18 trips, 18 destination sources, 18 presentation sources (no c
 translation rows for any of the eighteen**, 789 unique English strings, 473 of them already rendered somewhere on
 the network.
 
-**One honest limitation on the export runs.** On the ops-runner the export printed every site's source part and then
-stopped producing output in its network-wide scan; after 40 minutes it had not printed `[ops-runner] finished`, so
-that run is recorded without an exit code (below). The identical read-only script, run locally against the same
-production database, completed in 54 seconds with exit code 0, 23 parts and
-`databaseWrites: 0`, and **its per-site tenant ids and source digests are the same ones the ops-runner run
-printed**, which is what the payloads were built from. The apply-check runs on the ops-runner, which read the same
-sources again, matched every one of the 54 rows (section 5), so the sources in the payloads are production's.
+**Two export runs.** The first, on commit `cf85c20c` for `b17a` alone, printed every site's source part and then
+showed nothing further for forty minutes, so it was left without a recorded exit code. The second, on commit
+`ed4fd26f` for all three groups, **finished with exit code 0**: 23 parts, 789 batch strings, 473 of them already
+rendered, `databaseWrites: 0`. Its per-site tenant ids, presentation digests, `sourceUpdatedAt` values and snapshot
+digests are **identical to the ones the payloads carry** — checked record by record, 0 mismatches. (Railway's log
+API lags behind the container: the second run's reader was still reporting 38 log lines when the run had in fact
+already printed all 203 and its exit line, so a run that looks stalled there may simply not have been shipped to
+the log yet.)
 
 ## 3. Strings: reused and new
 
@@ -150,38 +151,41 @@ the language switch all accept them; `network-arabic-text.test.ts` (7) and `netw
 
 ## 5. Read-only apply check
 
-`OPS_TASK="src/scripts/check-network-arabic-apply.ts --group=<group>"`, run on commit `ed4fd26f`, one group per run,
-exit code 0 each time:
+`OPS_TASK="src/scripts/check-network-arabic-apply.ts --group=b17a,b17b,b17c"`, run on commit `327f63c8` (the head of
+`feat/b17-arabic`), exit code 0, every group passed:
 
 | Group | Sites | Rows to write | Rows present | Sources matched | Approval digest |
 |---|---|---|---|---|---|
 | b17a | 6 | 18 | 0 | 18/18 | `56901167dfd50f2cad378316bf2c51bb02862e6e1616388034697484162bdf6c` |
-| b17b | 6 | 18 | 0 | 18/18 | `ade023f39bd4d0ce16fc4bb3ee283495d0f0d78e6963366f4cff451ed3d72eab` |
-| b17c | 6 | 18 | 0 | 18/18 | `7e14ce1ab4c2e5b663943bbde6b7d5f783f8a7241f191d2b87a6c9e2ec1f7ea7` |
+| b17b | 6 | 18 | 0 | 18/18 | `8dd3415cbf475c557880ed88fa701c502f176229b1d48f24185279dba0b8ffdf` |
+| b17c | 6 | 18 | 0 | 18/18 | `094dd9b36fa882b0e46f7e3fbf607524bf611737cadfd341013252984d32827a` |
 
-Per site, every one of the eighteen: 3 rows to write, 0 present, 3/3 sources matched, no mismatch anywhere. The
-per-site digests:
+Per site, every one of the eighteen: 3 rows to write, 0 present, 3/3 sources matched, no mismatch anywhere.
 
-| Site | Approval digest |
-|---|---|
-| erg-abu-ramada | `8ea0ea59a3776600c34eaae6aaf2f528a53d0963b381b222384ad9d1364bba84` |
-| shabruhr-umm-gamar | `fd0d47af0560458702afb17f8fe949762a53c9361d77e8dbb588ad14626cbab8` |
-| hamda | `3c0e2610b19c749227bef2d0ae76ba7845b3a8911d03c316639b6ec09c519dfb` |
-| ras-hankorab | `b488c9c72954551c2753d388cb28580e241624cc7976c6da3793a21c23ff6875` |
-| qulaan | `bcdf69b0cb15c07086d018bf98fdf6cc88082d3ad13e4bc9b56260b5eb110d99` |
-| wadi-lahmy | `5dbb318a5674abe3c365d3bfa42e6ecd0f8d93ac921032a6d336c6e4c8545b95` |
-| daedalus-reef | `c90140b066cc8daeefddc2283ace94e6ce4e247808129d554adb5d63f9c448ba` |
-| el-ikhwa-islands | `998e4bd35776e2651d94f30398bb33da9eb32293a01becc04713fb2553fc07cc` |
-| zabargad-island | `1dbea1359a88c86c2eca1e740ac6a49edb765e8edd80d83810fa7ee4e3af7ada` |
-| hebat-allah-wreck | `f5f80d130a9add8a61553ff906ad7c5225d344eda8f4d9a222e4f75530a3cb32` |
-| blue-lagoon-dahab | `3bd4818cdd2acdf4c06d10397d7189333d4886646edf6faf1c44e5e86e1f100a` |
-| ein-kid | `43f4c72f551ff7463360c3e7429ffc9ce4407bf883a9322bab1783dd90c769d8` |
-| seven-pools | `14ea979d1a385b9f509ff63eac1e92312b70f4a6832fb65c777048bfe3559e93` |
-| wadi-zaghara | `eed916ec19338651ac1fd2305e0c9ee5ce5c1a331ac98382eb2edd15fa60f425` |
-| gebel-el-rosas-bay | `be875ffeb98aef4724d455dafaa610e660bc80f20d284224aafc35800cc7995e` |
-| marsa-abu-galawa | `edc22f26de5162249c5d00023a71c576693f8ffe16ae653401eb57885795231d` |
-| skar-transport-cairo | `c10230296ffa7840d84085acbac3f0fac2ac6dcaebbc48ec00ccafbaf16c9eef` |
-| future-travel-egypt | `54057d3bd5d6d6e6d629d961277e48b0d8d58f76a8a14d9ee8290b38de06e967` |
+| Site | Group | Approval digest |
+|---|---|---|
+| erg-abu-ramada | b17a | `8ea0ea59a3776600c34eaae6aaf2f528a53d0963b381b222384ad9d1364bba84` |
+| shabruhr-umm-gamar | b17a | `fd0d47af0560458702afb17f8fe949762a53c9361d77e8dbb588ad14626cbab8` |
+| hamda | b17a | `3c0e2610b19c749227bef2d0ae76ba7845b3a8911d03c316639b6ec09c519dfb` |
+| ras-hankorab | b17a | `b488c9c72954551c2753d388cb28580e241624cc7976c6da3793a21c23ff6875` |
+| qulaan | b17a | `bcdf69b0cb15c07086d018bf98fdf6cc88082d3ad13e4bc9b56260b5eb110d99` |
+| wadi-lahmy | b17a | `5dbb318a5674abe3c365d3bfa42e6ecd0f8d93ac921032a6d336c6e4c8545b95` |
+| daedalus-reef | b17b | `58cf45f187a967d4c2f3cfacfc11741d8087ef94f8c49c5cfe2dc33092220d6d` |
+| el-ikhwa-islands | b17b | `998e4bd35776e2651d94f30398bb33da9eb32293a01becc04713fb2553fc07cc` |
+| zabargad-island | b17b | `1dbea1359a88c86c2eca1e740ac6a49edb765e8edd80d83810fa7ee4e3af7ada` |
+| hebat-allah-wreck | b17b | `f5f80d130a9add8a61553ff906ad7c5225d344eda8f4d9a222e4f75530a3cb32` |
+| blue-lagoon-dahab | b17b | `aeefdccda082dc0c8f7074c6f3ad3c301d7a7f5aebbcece6a332a20bb9478990` |
+| ein-kid | b17b | `06157a3974dc35d10490aa5f75c201a21267b1f9ea673c347394ed8ff4308dc5` |
+| seven-pools | b17c | `14ea979d1a385b9f509ff63eac1e92312b70f4a6832fb65c777048bfe3559e93` |
+| wadi-zaghara | b17c | `2d507f500bad7b4b4d73e18d3ff1710708fd69b2f5dff21cc25d7830fc0b2446` |
+| gebel-el-rosas-bay | b17c | `175348dc433eeb63f1b34da1bedd88480761635edb39d9be8f9c7ba3f3b5eb52` |
+| marsa-abu-galawa | b17c | `231adda6af9ee7eacd048f22aefff6102070248deba686b1b669c459ce3994b9` |
+| skar-transport-cairo | b17c | `c10230296ffa7840d84085acbac3f0fac2ac6dcaebbc48ec00ccafbaf16c9eef` |
+| future-travel-egypt | b17c | `54057d3bd5d6d6e6d629d961277e48b0d8d58f76a8a14d9ee8290b38de06e967` |
+
+An earlier run of the same check on `ed4fd26f`, before the nine lines of the read-back pass (`327f63c8`), gave the
+same result and the same digests for `b17a` and for the twelve sites that pass unchanged; the six sites whose Arabic
+changed, and the two groups holding them, changed digest, as the digest design intends.
 
 **The digests hold only while production is unchanged: take them from a fresh check run immediately before
 publishing.**
@@ -190,10 +194,12 @@ Ops-runner runs for this work, all read-only, each followed by `OPS_TASK` reset 
 
 | Task | Commit | Exit |
 |---|---|---|
-| `export-network-arabic-sources.ts --batch=b17a` | `cf85c20c` | no exit line in 40 minutes (section 2) |
+| `export-network-arabic-sources.ts --batch=b17a` | `cf85c20c` | no exit line within 40 minutes (section 2) |
 | `check-network-arabic-apply.ts --group=b17a` | `ed4fd26f` | 0 |
 | `check-network-arabic-apply.ts --group=b17b` | `ed4fd26f` | 0 |
 | `check-network-arabic-apply.ts --group=b17c` | `ed4fd26f` | 0 |
+| `export-network-arabic-sources.ts --batch=b17a,b17b,b17c` | `ed4fd26f` | 0 |
+| `check-network-arabic-apply.ts --group=b17a,b17b,b17c` | `327f63c8` | 0 |
 
 ## 6. Publishing, in order (for the coordinator; each write needs the owner's approval for that run)
 
