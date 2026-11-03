@@ -122,6 +122,10 @@ describe('tenant booking-creation closure policy', () => {
         'erg-abu-ramada', 'shabruhr-umm-gamar', 'hamda', 'ras-hankorab', 'qulaan', 'wadi-lahmy',
         // Batch B15C's four offshore places, closed the same way.
         'daedalus-reef', 'el-ikhwa-islands', 'zabargad-island', 'hebat-allah-wreck',
+        // Batch B16's last ten: six places batch B15 held back, and four of the client's own businesses.
+        'blue-lagoon-dahab', 'ein-kid', 'seven-pools', 'wadi-zaghara', 'gebel-el-rosas-bay',
+        'marsa-abu-galawa', 'skar-transport-cairo', 'future-travel-egypt', 'makadi-bay-safari-day',
+        'hurghada-speedboat-day',
         'coral-safari-hurghada',
       ] },
     });

@@ -13,7 +13,8 @@
  */
 import type { NetworkBatch, PriceSpec } from '../seed-network-sites';
 
-const PROGRAMMES: Record<string, PriceSpec> = {
+/** Exported so a later batch selling one of these records sells the same programme, never a second copy of it. */
+export const PROGRAMMES: Record<string, PriceSpec> = {
   "RC_GIFTUN": {
     "tenant": "royal-cruise-hurghada",
     "source": "hurghada-luxury-giftun-island-wsnorkelinglunch-massage-mt8xlx1e",

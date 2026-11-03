@@ -105,6 +105,22 @@ const BOOKING_CREATION_CLOSED_TENANT_SLUGS = [
   'el-ikhwa-islands',
   'zabargad-island',
   'hebat-allah-wreck',
+  // The network queue's batch B16, the last ten sites of the domain list: the six places batch B15 held back in
+  // its group C, and four businesses from the client's own list, each selling a single day of the client's
+  // catalogue. Each is closed to real bookings until its domain is connected and the owner opens it; opening a
+  // site is removing its slug. Two of the ten carry a slug of their own because the network already holds the
+  // slug the selection named: `hurghada-speedboat-day` beside the live `hurghada-speedboat`, and
+  // `makadi-bay-safari-day` beside the inactive `makadi-bay-safari`, which stays exactly as it is.
+  'blue-lagoon-dahab',
+  'ein-kid',
+  'seven-pools',
+  'wadi-zaghara',
+  'gebel-el-rosas-bay',
+  'marsa-abu-galawa',
+  'skar-transport-cairo',
+  'future-travel-egypt',
+  'makadi-bay-safari-day',
+  'hurghada-speedboat-day',
   // Coral starts with preference requests only; no route may create a normal booking for it.
   CORAL_REQUEST_TENANT_SLUG,
 ] as const;

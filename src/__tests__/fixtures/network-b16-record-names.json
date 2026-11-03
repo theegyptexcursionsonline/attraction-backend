@@ -1,0 +1,444 @@
+{
+ "sharm-el-sheikh-colored-canyon-blue-hole-dahab-jeep-adventure": {
+  "title": "Sharm El Sheikh: Colored Canyon, Blue Hole & Dahab Jeep Adventure",
+  "duration": "10 hours",
+  "options": [
+   "Colored Canyon without Blue Hole & Abu Galum",
+   "Colored Canyon, Blue Hole & Abu Galum with ATV Quad",
+   "Colored Canyon with ATV Quad without Blue Hole"
+  ],
+  "optionKeys": [
+   "colored-canyon-without-blue-hole-abu-galum-fdc52dfcca40",
+   "colored-canyon-blue-hole-abu-galum-with-atv-q-c9913ca7db12",
+   "colored-canyon-with-atv-quad-without-blue-hol-14d86f6dd20a"
+  ],
+  "optionTypes": [
+   "Per Person"
+  ],
+  "itinerary": [
+   "Pickup location:",
+   "Van",
+   "Colored Canyon",
+   "Jeep / SUV",
+   "Dahab",
+   "Blue Hole, Red Sea",
+   "Dahab",
+   "Dahab",
+   "Van",
+   "Arrive back at:"
+  ],
+  "included": [
+   "Hotel pickup and drop-off of in air-conditioned transportation",
+   "Professional canyon and snorkeling guide",
+   "Jeep adventure safari",
+   "Visit to Colored Canyon and canyon history description",
+   "Lunch in a Bedouin Tent on the beach in Dahab",
+   "Camel ride along the sea",
+   "Shopping stop at Dahab city",
+   "Bottle of water",
+   "Blue Hole and Abu Galum (if option selected)",
+   "ATV ride along the sea and mountains in Dahab (if option selected)"
+  ],
+  "includes": [],
+  "notIncluded": [
+   "Gratuities",
+   "Snorkeling Equipment",
+   "Drinks at the Restaurant"
+  ]
+ },
+ "sharm-el-sheikh-quad-bike-camel-ride-bedouin-dinner-stargazing": {
+  "title": "Sharm El Sheikh: Quad Bike, Camel Ride, Bedouin Dinner & Stargazing",
+  "duration": "5 hours",
+  "options": [
+   "Shared Double Quad Bike Experience",
+   "5 in 1 Quad, Camel, Dinner & Stargazing Tour"
+  ],
+  "optionKeys": [
+   "shared-double-quad-bike-experience-a52d71783324",
+   "5-in-1-quad-camel-dinner-stargazing-tour-c24ec77fbaf5"
+  ],
+  "optionTypes": [
+   "Per Person"
+  ],
+  "itinerary": [
+   "Pickup location:",
+   "Van",
+   "Safari Center Sharm El Sheikh",
+   "Sinai desert",
+   "Sinai desert",
+   "Sinai desert",
+   "Sinai desert",
+   "Sinai desert",
+   "Sinai desert",
+   "Sinai desert",
+   "Van",
+   "Arrive back at:"
+  ],
+  "included": [
+   "Hotel pickup and drop-off",
+   "Quad bike ride",
+   "Camel ride",
+   "Bedouin tea and bread",
+   "Buffet dinner",
+   "Oriental entertainment program",
+   "Stargazing session with professional telescopes",
+   "Experienced astronomy guide"
+  ],
+  "includes": [],
+  "notIncluded": [
+   "National Park / Desert Conservation Fee: US$1 per person, payable in cash on the spot in US dollars, euros, British pounds, or Egyptian pounds at the equivalent exchange rate"
+  ]
+ },
+ "sharm-el-sheikh-white-island-ras-mohammed-small-group-cruise": {
+  "title": "Sharm El Sheikh: White Island & Ras Mohammed Small Group Cruise",
+  "duration": "8 hours",
+  "options": [
+   "Small group White Island without Transfers and Snorkel Gear",
+   "Small Group White Island & Transfer, without Snorkel Gear"
+  ],
+  "optionKeys": [
+   "small-group-white-island-without-transfers-an-6e5d672ca89c",
+   "small-group-white-island-transfer-without-sno-f7995d139597"
+  ],
+  "optionTypes": [
+   "Per Person"
+  ],
+  "itinerary": [
+   "Starting/pickup location",
+   "Bus/coach",
+   "Ras Muhammad National Park",
+   "White Island, Sharm El Shiekh",
+   "Ras Muhammad National Park",
+   "Ras Muhammad National Park",
+   "Ras Muhammad National Park",
+   "Sharm el-Sheikh",
+   "2 drop-off locations"
+  ],
+  "included": [
+   "Early access to White Island",
+   "50% free capacity on-board",
+   "Snorkeling gear (if option selected)",
+   "National park fees",
+   "Gourmet lunch",
+   "Two snorkeling stops"
+  ],
+  "includes": [],
+  "notIncluded": [
+   "Extra fresh beverages on board"
+  ]
+ },
+ "from-sharm-el-sheikh-dahab-canyon-snorkeling-camel-jeep-safari": {
+  "title": "From Sharm El Sheikh: Dahab Canyon, Snorkeling, Camel & Jeep Safari",
+  "duration": "10.5 hours",
+  "options": [
+   "Salama Colored Canyon, Snorkeling & Camel Ride Without Blue Hole",
+   "Salama Colored Canyon & Blue Hole Snorkeling with Camel Ride"
+  ],
+  "optionKeys": [
+   "salama-colored-canyon-snorkeling-camel-ride-w-28aa36d10889",
+   "salama-colored-canyon-blue-hole-snorkeling-wi-bed8134f9971"
+  ],
+  "optionTypes": [
+   "Per Person"
+  ],
+  "itinerary": [
+   "Pickup location:",
+   "Van",
+   "Dahab",
+   "Dahab",
+   "Dahab",
+   "Van",
+   "Dahab",
+   "Van",
+   "Jeep / SUV",
+   "Colored Canyon",
+   "Arrive back at:"
+  ],
+  "included": [
+   "Pick up and drop off from hotel",
+   "Air-conditioned minivan",
+   "Guide",
+   "Lunch",
+   "Salama Colored Canyon",
+   "Governmental fees and entry for Canyon",
+   "Camel Ride"
+  ],
+  "includes": [],
+  "notIncluded": [
+   "Snorkel gear",
+   "Photos and videos (available to purchase)",
+   "Drinks in restaurant"
+  ]
+ },
+ "shaab-samadai-dolphin-sanctuary-snorkel-cruise-from-marsa-alam": {
+  "title": "Shaab Samadai Dolphin Sanctuary Snorkel & Cruise from Marsa Alam",
+  "duration": "7 hours",
+  "options": [
+   "National Park Fee (Adult)"
+  ],
+  "optionKeys": [
+   "national-park-fee-adult-d39334dec233"
+  ],
+  "optionTypes": [
+   "Per Person"
+  ],
+  "itinerary": [],
+  "included": [],
+  "includes": [
+   "Hotel pickup and drop-off in Marsa Alam",
+   "Full-day boat trip to Shaab Samadai Reef",
+   "Two guided snorkelling sessions (equipment included)",
+   "Professional snorkelling guide",
+   "Refreshments and soft drinks on board",
+   "Buffet lunch on the boat",
+   "Life jackets and safety equipment"
+  ],
+  "notIncluded": [
+   "Personal expenses",
+   "wetsuit available Additional fee (10€/Person)",
+   "National park/environmental entrance fee (10€/Person)",
+   "Transfers from hotels in North & South Marsa Alam (available for an extra charge)"
+  ]
+ },
+ "el-gouna-2-tank-guided-boat-dives-for-certified-divers": {
+  "title": "El Gouna 2-Tank Guided Boat Dives for Certified Divers",
+  "duration": "8 hours",
+  "options": [
+   "Bring Your Own Scuba Equipment",
+   "Including Scuba Equipment",
+   "2-Day Refresher Package (Pool + Boat Dives)"
+  ],
+  "optionKeys": [
+   "bring-your-own-scuba-equipment-c6f9b7889912",
+   "including-scuba-equipment-3f641511932b",
+   "2-day-refresher-package-pool-boat-dives-7c3e1ac00033"
+  ],
+  "optionTypes": [
+   "Per Person"
+  ],
+  "itinerary": [
+   "Hotel Pickup",
+   "Boat Boarding & Gear Prep",
+   "First Guided Dive",
+   "Surface Interval & Cruise",
+   "Second Guided Dive",
+   "Harbor Return & Drop-off"
+  ],
+  "included": [
+   "Full scuba equipment rental (if option selected)",
+   "Professional dive guides",
+   "Toilets and showers on board",
+   "Experienced boat crew",
+   "Small groups",
+   "Hotel pickup and drop-off",
+   "Free Nitrox (for certified divers)",
+   "Drinking water",
+   "Fresh fruit"
+  ],
+  "includes": [],
+  "notIncluded": [
+   "Lunch",
+   "Surface-interval refreshments"
+  ]
+ },
+ "secrets-of-cairo-2-day-private-sightseeing-tour": {
+  "title": "Secrets of Cairo: 2-Day Private Sightseeing Tour",
+  "duration": "2 days",
+  "options": [
+   "Secrets of Cairo: A 2-Day Private Magical Adventure"
+  ],
+  "optionKeys": [
+   "secrets-of-cairo-a-2-day-private-magical-adve-b8969b9ddc98"
+  ],
+  "optionTypes": [
+   "Per Person"
+  ],
+  "itinerary": [
+   "2 pickup location options",
+   "Car",
+   "Pyramids of Giza",
+   "Valley Temple",
+   "Saqqara (Sakkara) Pyramids",
+   "colossal statue of Ramses II",
+   "Alabaster Sphinx",
+   "Egyptian Museum",
+   "National Museum of Egyptian Civilisation",
+   "2 drop-off locations"
+  ],
+  "included": [],
+  "includes": [
+   "Lunch x 2",
+   "Private transportation",
+   "Air-conditioned vehicle",
+   "Tour Guide",
+   "Entry Fees",
+   "Bottle Of Water"
+  ],
+  "notIncluded": []
+ },
+ "giza-pyramids-sphinx-custom-cairo-sightseeing-tour": {
+  "title": "Giza Pyramids, Sphinx & Custom Cairo Sightseeing Tour",
+  "duration": "3 - 8 hours",
+  "options": [
+   "Egyptian Museum, Old Cairo, Khan Khalili —Shared With Ticket",
+   "Pyramids, Egyptian Museum, Old Cairo — Shared With Ticket",
+   "Pyramids, Egyptian Museum, Old Cairo — Private With Ticket",
+   "{VIP} Private: Pyramid, Museum, Citadel, Old Cairo & Felucca"
+  ],
+  "optionKeys": [
+   "egyptian-museum-old-cairo-khan-khalili-shared-63856fdfa130",
+   "pyramids-egyptian-museum-old-cairo-shared-wit-d7d116d74da4",
+   "pyramids-egyptian-museum-old-cairo-private-wi-b9e6510bf37e",
+   "vip-private-pyramid-museum-citadel-old-cairo--be85505e4e07"
+  ],
+  "optionTypes": [
+   "Per Person"
+  ],
+  "itinerary": [
+   "2 pickup location options",
+   "Car",
+   "Pyramids of Giza",
+   "Cairo",
+   "Egyptian Museum of Antiquities",
+   "Giza",
+   "Car",
+   "2 drop-off locations"
+  ],
+  "included": [],
+  "includes": [
+   "Transportation by air-conditioned vehicle",
+   "Professional licensed guide",
+   "Shared Tour: Professional English-speaking guide only",
+   "Private Tour: Professional guide available in all languages",
+   "Entry tickets to selected landmarks",
+   "Hotel pickup and drop-off from Cairo or Giza",
+   "Visits: Papyrus Gallery, Oils Factory, Bazaar, Cotton Store, Carpet School (upon request)",
+   "Bottled water"
+  ],
+  "notIncluded": []
+ },
+ "golden-sunset-quad-safari-in-makadi-bay": {
+  "title": "Golden Sunset Quad Safari in Makadi Bay",
+  "duration": "3 hours",
+  "options": [
+   "Quad Sunset"
+  ],
+  "optionKeys": [
+   "quad-sunset-6faa56b781a9"
+  ],
+  "optionTypes": [
+   "Per Person"
+  ],
+  "itinerary": [
+   "Pick-up",
+   "Makadi Bay",
+   "Return"
+  ],
+  "included": [],
+  "includes": [
+   "All ocal taxes, fees and handling charges",
+   "Hotel pickup and drop-off (within Makadi Bay)",
+   "Professional guide",
+   "Use of helmet"
+  ],
+  "notIncluded": [
+   "Drinks other than complimentary drinks given.",
+   "DVD (available to purchase)",
+   "Hotel pickup and drop-off (if outside Makadi Bay)",
+   "Scarfs and glasses"
+  ]
+ },
+ "hurghada-speedboat-snorkeling-trip-with-hotel-pickup": {
+  "title": "Hurghada: Speedboat Snorkeling Trip with Hotel Pickup",
+  "duration": "4 hours",
+  "options": [
+   "Hurghada: Small Group Snorkeling Speedboat Tour with Hotel Pickup",
+   "Hurghada: Private Snorkeling Speedboat Tour with Hotel Pickup"
+  ],
+  "optionKeys": [
+   "hurghada-small-group-snorkeling-speedboat-tou-cbf8ee280392",
+   "hurghada-private-snorkeling-speedboat-tour-wi-075459ebbb8f"
+  ],
+  "optionTypes": [
+   "Per Family",
+   "Per Person"
+  ],
+  "itinerary": [],
+  "included": [
+   "Pick-up and drop-off from Hurghada (see Know Before You Go for details)",
+   "Snorkeling equipment",
+   "Guide",
+   "Boat cruise",
+   "Shaded area on the boat ( Taneda )",
+   "Life jackets",
+   "Stereo system",
+   "Fresh seasonal fruits",
+   "Drinks (soft drinks and mineral water)",
+   "Captain",
+   "Nature reserve fees"
+  ],
+  "includes": [],
+  "notIncluded": [
+   "The long-range pickup service from Makadi, Safaga, El Gouna, Sahl Hasheesh, and the Soma bay area’s is available to book in the checkout process as \"add on\""
+  ]
+ },
+ "sunrise-buggy-safari-in-makadi-bay-with-breakfast": {
+  "title": "Sunrise Buggy Safari in Makadi Bay with Breakfast",
+  "duration": "3 - 5 hours",
+  "options": [
+   "Family Dune Buggy (Max 4 Riders)",
+   "Double Dune Buggy (Max 2 Riders)",
+   "Single Dune Buggy (1 Rider)",
+   "Double Dune Buggy (Max 2 Riders) | Dinner, Show & Stargazing",
+   "Family Dune Buggy (Max 4 Riders) | Dinner, Show & Stargazing",
+   "Single Dune Buggy (1 Rider) | Dinner, Show & Stargazing"
+  ],
+  "optionKeys": [
+   "family-dune-buggy-max-4-riders-b6e1ca82ab1a",
+   "double-dune-buggy-max-2-riders-ebb6f22aae0e",
+   "single-dune-buggy-1-rider-681bcabdd38f",
+   "double-dune-buggy-max-2-riders-dinner-show-st-bdbd96a90d50",
+   "family-dune-buggy-max-4-riders-dinner-show-st-54ddaefec17d",
+   "single-dune-buggy-1-rider-dinner-show-stargaz-66eff2723811"
+  ],
+  "optionTypes": [
+   "Per Group"
+  ],
+  "itinerary": [
+   "Starting Point",
+   "Pickup & Transfer",
+   "Dune Buggy Safari",
+   "Scenic Desert Stops",
+   "Sunrise & Breakfast/ Dinner, Show & Stargazing",
+   "Return Transfer",
+   "Drop-off"
+  ],
+  "included": [],
+  "includes": [
+   "Professional guide and desert escort",
+   "Safety briefing and short driving test",
+   "Helmet and required safety equipment",
+   "Dune buggy ride according to the selected option",
+   "Guided desert driving route",
+   "Desert photo and relaxation stops",
+   "Hotel pickup and drop-off (if selected)",
+   "Air-conditioned transportation (if selected)",
+   "Oriental breakfast (with the 5:00 AM sunrise option only)",
+   "Oriental dinner (with the evening options only)",
+   "Live cultural show (with the evening options only)",
+   "Stargazing experience (with the evening options only)"
+  ],
+  "notIncluded": [
+   "Personal expenses",
+   "Scarf or goggles",
+   "Food and drinks outside the selected meal",
+   "Private transfer (available for an extra fee)",
+   "Private guide (available for an extra fee)",
+   "Private guide (available for an extra fee)",
+   "20-minute Camel ride (available for an extra fee)",
+   "20-minute horse ride (available for an extra fee)",
+   "20-minute quad ride (available for an extra fee)",
+   "Extra 1-hour dune buggy (available for an extra fee)"
+  ]
+ }
+}
