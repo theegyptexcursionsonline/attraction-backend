@@ -1,0 +1,2715 @@
+{
+ "version": 1,
+ "batch": "b18a",
+ "locale": "ar",
+ "tenant": {
+  "id": "69cf5d42af49d480e4d15dbb",
+  "slug": "gamila-horse-stable",
+  "domain": "gamila-horse-stable.foxesnetwork.com"
+ },
+ "presentationSha256": "2b34fb589c009e6bf64e6986ebb23db9fa3f7d9bcbcd0435555757684b82ffb6",
+ "presentation": [
+  {
+   "kind": "tenant",
+   "sourceId": "69cf5d42af49d480e4d15dbb",
+   "sourceDigest": "0be64815dedf103735126c60dbff95ac1246729d05815405f86a32548d75d742",
+   "english": {
+    "tagline": "Horse Stable & Riding in Makadi Bay",
+    "description": "Gamila Horse Stable offers beautiful horse riding experiences in Makadi Bay. From beach rides at sunset to desert treks, our well-trained horses and expert guides ensure a memorable experience.",
+    "seoSettings": {
+     "metaTitle": "Gamila Horse Stable - Horse Riding in Makadi Bay",
+     "metaDescription": "Horse riding experiences in Makadi Bay, Egypt. Beach rides, desert treks, and riding lessons.",
+     "keywords": [
+      "gamila horse stable",
+      "horse riding makadi bay",
+      "horse stable egypt"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": []
+   },
+   "arabic": {
+    "tagline": "إسطبل الخيل وركوب الخيل في خليج مكادي",
+    "description": "يقدّم Gamila Horse Stable تجارب ركوب خيل جميلة في خليج مكادي. من جولات الشاطئ وقت الغروب إلى رحلات الصحراء، تحرص خيولنا المدرّبة جيداً ومرشدونا المتخصصون على تجربة تبقى في الذاكرة.",
+    "seoSettings": {
+     "metaTitle": "Gamila Horse Stable - ركوب الخيل في خليج مكادي",
+     "metaDescription": "تجارب ركوب الخيل في خليج مكادي بمصر. جولات على الشاطئ ورحلات في الصحراء ودروس للركوب.",
+     "keywords": [
+      "Gamila Horse Stable",
+      "ركوب الخيل في خليج مكادي",
+      "إسطبل خيل مصر"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": []
+   }
+  }
+ ],
+ "tours": [
+  {
+   "id": "699895e47169d9820932b9e8",
+   "sourceSlug": "horse-riding-hurghada",
+   "slug": "horse-riding-hurghada-ar",
+   "sourceUpdatedAt": "2026-10-30T12:38:36.741Z",
+   "sourceDigest": "d9458328de86406a4321727dd38a1099cb2de28361c7def60a09b2fb052322a6",
+   "english": {
+    "title": "Horse Riding on Hurghada Beach",
+    "shortDescription": "Scenic horseback riding along Hurghada's beautiful Red Sea beaches",
+    "description": "Ride along pristine beaches with views of the Red Sea and desert landscape.",
+    "duration": "2 hours",
+    "cancellationPolicy": "Free cancellation up to 4 hours before",
+    "highlights": [
+     "Beach riding",
+     "Red Sea views",
+     "Desert scenery",
+     "Sunset option"
+    ],
+    "inclusions": [
+     "Horse rental",
+     "Guide",
+     "Hotel pickup"
+    ],
+    "exclusions": [
+     "Photos",
+     "Meals"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Comfortable shoes",
+     "Sunscreen",
+     "Camera",
+     "Water bottle",
+     "Valid ID"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "Please contact us for accessibility requirements",
+     "Service animals welcome"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "Beach Ride",
+      "description": "2-hour beach ride",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "Extended Ride",
+      "description": "3-hour ride with refreshments",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "addon_photo",
+      "name": "Beach Photo Package",
+      "description": "Professional beach riding photos"
+     },
+     {
+      "id": "addon_transfer",
+      "name": "Hotel Transfer",
+      "description": "Round-trip hotel pickup"
+     },
+     {
+      "id": "addon_swim",
+      "name": "Beach Swimming Time",
+      "description": "30 min beach access after ride"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Sunrise"
+     },
+     {
+      "index": 1,
+      "label": "Morning"
+     },
+     {
+      "index": 2,
+      "label": "Sunset"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Check-in & Welcome",
+      "description": "Arrive at the meeting point for registration and welcome briefing",
+      "duration": "15 min"
+     },
+     {
+      "index": 1,
+      "title": "Main Experience",
+      "description": "Enjoy the core activity with professional guidance",
+      "duration": "2 hrs"
+     },
+     {
+      "index": 2,
+      "title": "Break & Refreshments",
+      "description": "Short break with complimentary refreshments",
+      "duration": "30 min"
+     },
+     {
+      "index": 3,
+      "title": "Continued Activity",
+      "description": "Resume the experience with additional activities",
+      "duration": "1 hr"
+     },
+     {
+      "index": 4,
+      "title": "Wrap-up & Farewell",
+      "description": "Final photos and farewell from your guide",
+      "duration": "15 min"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel",
+      "description": "Free hotel pickup from all Hurghada hotels"
+     },
+     {
+      "index": 1,
+      "mode": "Taxi",
+      "description": "Taxi from Hurghada airport (20 min)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "Meeting point by the beach"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1775430074/attractions-network/attractions/ai-generated/makadi-horse-club/tlxjv2gy6vidk66kvzcq.jpg",
+      "alt": "Horse Riding on Hurghada Beach"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1775430126/attractions-network/attractions/ai-generated/makadi-horse-club/jt1neyd5e4rms8dg3klj.jpg",
+      "alt": "Horse Riding on Hurghada Beach"
+     },
+     {
+      "url": "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=1200&q=80",
+      "alt": "Horse Riding on Hurghada Beach"
+     },
+     {
+      "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80",
+      "alt": "Horse Riding on Hurghada Beach"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Horse Riding Hurghada",
+     "metaDescription": "Book horse riding in Hurghada",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "ركوب الخيل على شاطئ الغردقة",
+    "shortDescription": "ركوب خيل خلاب على شواطئ البحر الأحمر الجميلة في الغردقة",
+    "description": "اركب على شواطئ نقية مع مشاهد البحر الأحمر ومناظر الصحراء.",
+    "duration": "2 ساعات",
+    "cancellationPolicy": "إلغاء مجاني حتى 4 ساعات قبل الموعد",
+    "highlights": [
+     "الركوب على الشاطئ",
+     "مشاهد البحر الأحمر",
+     "مناظر الصحراء",
+     "خيار الغروب"
+    ],
+    "inclusions": [
+     "تأجير الخيل",
+     "مرشد",
+     "الاصطحاب من الفندق"
+    ],
+    "exclusions": [
+     "الصور",
+     "الوجبات"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "أحذية مريحة",
+     "واقي شمس",
+     "كاميرا",
+     "زجاجة ماء",
+     "هوية سارية"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "يُرجى التواصل معنا لمتطلبات إمكانية الوصول",
+     "يُرحَّب بحيوانات الخدمة"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "جولة على الشاطئ",
+      "description": "جولة لمدة 2 ساعة على الشاطئ",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "جولة ممتدة",
+      "description": "جولة لمدة 3 ساعات مع المرطبات",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "addon_photo",
+      "name": "باقة صور الشاطئ",
+      "description": "صور احترافية للركوب على الشاطئ"
+     },
+     {
+      "id": "addon_transfer",
+      "name": "النقل إلى الفندق",
+      "description": "الاصطحاب من الفندق والعودة إليه"
+     },
+     {
+      "id": "addon_swim",
+      "name": "وقت السباحة في الشاطئ",
+      "description": "30 دقيقة على الشاطئ بعد الجولة"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "الشروق"
+     },
+     {
+      "index": 1,
+      "label": "صباحاً"
+     },
+     {
+      "index": 2,
+      "label": "الغروب"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "التسجيل والترحيب",
+      "description": "الوصول إلى نقطة اللقاء للتسجيل وإحاطة الترحيب",
+      "duration": "15 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "التجربة الرئيسية",
+      "description": "استمتع بالنشاط الأساسي بإرشاد محترف",
+      "duration": "2 ساعات"
+     },
+     {
+      "index": 2,
+      "title": "استراحة ومرطبات",
+      "description": "استراحة قصيرة مع مرطبات مجانية",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 3,
+      "title": "مواصلة النشاط",
+      "description": "مواصلة التجربة بأنشطة إضافية",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 4,
+      "title": "الختام والوداع",
+      "description": "الصور الأخيرة ووداع مرشدك",
+      "duration": "15 دقيقة"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الفندق",
+      "description": "اصطحاب مجاني من جميع فنادق الغردقة"
+     },
+     {
+      "index": 1,
+      "mode": "سيارة أجرة",
+      "description": "سيارة أجرة من مطار الغردقة (20 دقيقة)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "نقطة اللقاء عند الشاطئ"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1775430074/attractions-network/attractions/ai-generated/makadi-horse-club/tlxjv2gy6vidk66kvzcq.jpg",
+      "alt": "ركوب الخيل على شاطئ الغردقة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1775430126/attractions-network/attractions/ai-generated/makadi-horse-club/jt1neyd5e4rms8dg3klj.jpg",
+      "alt": "ركوب الخيل على شاطئ الغردقة"
+     },
+     {
+      "url": "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=1200&q=80",
+      "alt": "ركوب الخيل على شاطئ الغردقة"
+     },
+     {
+      "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80",
+      "alt": "ركوب الخيل على شاطئ الغردقة"
+     }
+    ],
+    "seo": {
+     "metaTitle": "ركوب الخيل في الغردقة",
+     "metaDescription": "احجز ركوب الخيل في الغردقة",
+     "keywords": []
+    }
+   }
+  },
+  {
+   "id": "69d6aed864766bb00708de61",
+   "sourceSlug": "two-hours-desert-ride",
+   "slug": "two-hours-desert-ride-ar",
+   "sourceUpdatedAt": "2026-06-18T15:52:31.344Z",
+   "sourceDigest": "c14244fa2d9648ba5b9e2a24e1f54904cc6cb94d72768d2fb9ee5d7fceb9743f",
+   "english": {
+    "title": "Two Hours Direct to the Desert",
+    "shortDescription": "Head straight into the Egyptian desert for a 2-hour ride through stunning desert landscapes. Experience the peace and be",
+    "description": "Head straight into the Egyptian desert for a 2-hour ride through stunning desert landscapes. Experience the peace and beauty of the Sahara on horseback.",
+    "duration": "2 hours",
+    "cancellationPolicy": "Free cancellation up to 24 hours before start",
+    "highlights": [
+     "Desert horseback trek",
+     "Bedouin tea break",
+     "Mountain views",
+     "2-hour ride",
+     "All levels"
+    ],
+    "inclusions": [
+     "Arabian horse",
+     "Safety helmet",
+     "Professional guide",
+     "Hotel pickup/drop-off",
+     "Water",
+     "Insurance"
+    ],
+    "exclusions": [
+     "Tips",
+     "GoPro (add-on)",
+     "Extra hour (add-on)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [],
+    "needToKnow": [],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "adult",
+      "name": "Adult",
+      "description": "Ages 12+",
+      "timeSlots": []
+     },
+     {
+      "id": "child",
+      "name": "Child (8-11)",
+      "description": "Ages 8-11",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "addon-photo",
+      "name": "Photography Package",
+      "description": "Professional photos of your experience"
+     },
+     {
+      "id": "addon-drinks",
+      "name": "Cold Drinks Package",
+      "description": "Unlimited cold drinks during trip"
+     },
+     {
+      "id": "addon-dinner",
+      "name": "Traditional Bedouin Dinner",
+      "description": "Authentic BBQ dinner under the stars"
+     },
+     {
+      "id": "addon-camel",
+      "name": "Camel Ride Add-on",
+      "description": "30-minute camel ride experience"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning Session"
+     },
+     {
+      "index": 1,
+      "label": "Mid-Morning Session"
+     },
+     {
+      "index": 2,
+      "label": "Afternoon Session"
+     },
+     {
+      "index": 3,
+      "label": "Late Afternoon Session"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel Pickup",
+      "description": "Transport to stable",
+      "duration": "20 min"
+     },
+     {
+      "index": 1,
+      "title": "Meet Your Horse",
+      "description": "Safety briefing and mounting",
+      "duration": "15 min"
+     },
+     {
+      "index": 2,
+      "title": "Desert Ride",
+      "description": "Ride through desert terrain with mountain views",
+      "duration": "1.5 hours"
+     },
+     {
+      "index": 3,
+      "title": "Tea Break",
+      "description": "Traditional Bedouin tea in the desert",
+      "duration": "15 min"
+     },
+     {
+      "index": 4,
+      "title": "Return",
+      "description": "Ride back and drop-off",
+      "duration": "20 min"
+     }
+    ],
+    "gettingThere": [],
+    "meetingPoint": {
+     "instructions": "Hotel pickup included"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1775677143/attractions-network/attractions/kwsuvpknncimwitq5w8h.jpg",
+      "alt": "Two Hours Direct to the Desert"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Two Hours Direct to the Desert",
+     "metaDescription": "Head straight into the Egyptian desert for a 2-hour ride through stunning desert landscapes. Experience the peace and be",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "ساعتان مباشرة إلى الصحراء",
+    "shortDescription": "انطلق مباشرة إلى الصحراء المصرية في جولة لمدة 2 ساعة عبر مناظر صحراوية خلابة. اختبر سكون الصحراء الكبرى وجمالها على ظهر الخيل.",
+    "description": "انطلق مباشرة إلى الصحراء المصرية في جولة لمدة 2 ساعة عبر مناظر صحراوية خلابة. اختبر سكون الصحراء الكبرى وجمالها على ظهر الخيل.",
+    "duration": "2 ساعات",
+    "cancellationPolicy": "إلغاء مجاني حتى 24 ساعة قبل البدء",
+    "highlights": [
+     "رحلة بالخيل في الصحراء",
+     "وقفة شاي بدوي",
+     "مشاهد الجبال",
+     "جولة لمدة 2 ساعة",
+     "جميع المستويات"
+    ],
+    "inclusions": [
+     "حصان عربي",
+     "خوذة سلامة",
+     "مرشد محترف",
+     "الاصطحاب من الفندق والتوصيل إليه",
+     "ماء",
+     "التأمين"
+    ],
+    "exclusions": [
+     "الإكراميات",
+     "كاميرا GoPro (خدمة إضافية)",
+     "الساعة الإضافية (خدمة إضافية)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [],
+    "needToKnow": [],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "adult",
+      "name": "بالغ",
+      "description": "من 12 عاماً فأكثر",
+      "timeSlots": []
+     },
+     {
+      "id": "child",
+      "name": "طفل (8-11)",
+      "description": "الأعمار 8-11",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "addon-photo",
+      "name": "حزمة التصوير",
+      "description": "صور احترافية لتجربتك"
+     },
+     {
+      "id": "addon-drinks",
+      "name": "حزمة المشروبات الباردة",
+      "description": "مشروبات باردة غير محدودة أثناء الرحلة"
+     },
+     {
+      "id": "addon-dinner",
+      "name": "عشاء بدوي تقليدي",
+      "description": "عشاء مشويات أصيل تحت النجوم"
+     },
+     {
+      "id": "addon-camel",
+      "name": "إضافة ركوب الجمل",
+      "description": "تجربة ركوب الجمل لمدة 30 دقيقة"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "جلسة صباحية"
+     },
+     {
+      "index": 1,
+      "label": "جلسة منتصف الصباح"
+     },
+     {
+      "index": 2,
+      "label": "جلسة بعد الظهر"
+     },
+     {
+      "index": 3,
+      "label": "جلسة آخر النهار"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "النقل إلى الإسطبل",
+      "duration": "20 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "تعرّف على حصانك",
+      "description": "شرح السلامة والصعود على الحصان",
+      "duration": "15 دقيقة"
+     },
+     {
+      "index": 2,
+      "title": "جولة في الصحراء",
+      "description": "الركوب عبر التضاريس الصحراوية مع إطلالات على الجبال",
+      "duration": "1.5 ساعة"
+     },
+     {
+      "index": 3,
+      "title": "استراحة شاي",
+      "description": "شاي بدوي تقليدي في الصحراء",
+      "duration": "15 دقيقة"
+     },
+     {
+      "index": 4,
+      "title": "العودة",
+      "description": "جولة العودة والتوصيل",
+      "duration": "20 دقيقة"
+     }
+    ],
+    "gettingThere": [],
+    "meetingPoint": {
+     "instructions": "الاصطحاب من الفندق مشمول"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1775677143/attractions-network/attractions/kwsuvpknncimwitq5w8h.jpg",
+      "alt": "ساعتان مباشرة إلى الصحراء"
+     }
+    ],
+    "seo": {
+     "metaTitle": "ساعتان مباشرة إلى الصحراء",
+     "metaDescription": "انطلق مباشرة إلى الصحراء المصرية في جولة لمدة 2 ساعة عبر مناظر صحراوية خلابة. اختبر سكون الصحراء الكبرى وجمالها على ظهر الخيل.",
+     "keywords": []
+    }
+   }
+  },
+  {
+   "id": "69d6aef464766bb00708de6c",
+   "sourceSlug": "three-hours-desert-trip",
+   "slug": "three-hours-desert-trip-ar",
+   "sourceUpdatedAt": "2026-06-18T15:52:31.344Z",
+   "sourceDigest": "397b44d90eadd2bc05914036aa801d3e48a94d140a085fee03e6f4b2bddde901",
+   "english": {
+    "title": "Three Hours Desert Trip",
+    "shortDescription": "Escape the city lights and head to the desert for 3 hours of pure adventure. See the heavens open up and enjoy the tranq",
+    "description": "Escape the city lights and head to the desert for 3 hours of pure adventure. See the heavens open up and enjoy the tranquility of the desert on horseback.",
+    "duration": "3 hours",
+    "cancellationPolicy": "Free cancellation up to 24 hours before start",
+    "highlights": [
+     "3-hour desert adventure",
+     "Sunset viewpoint",
+     "Bedouin camp visit",
+     "Tea and snacks",
+     "Professional guides"
+    ],
+    "inclusions": [
+     "Arabian horse",
+     "Safety helmet",
+     "Professional guide",
+     "Hotel pickup/drop-off",
+     "Water",
+     "Insurance"
+    ],
+    "exclusions": [
+     "Tips",
+     "GoPro (add-on)",
+     "Extra hour (add-on)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [],
+    "needToKnow": [],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "adult",
+      "name": "Adult",
+      "description": "Ages 12+",
+      "timeSlots": []
+     },
+     {
+      "id": "child",
+      "name": "Child (8-11)",
+      "description": "Ages 8-11",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "addon-photo",
+      "name": "Photography Package",
+      "description": "Professional photos of your experience"
+     },
+     {
+      "id": "addon-drinks",
+      "name": "Cold Drinks Package",
+      "description": "Unlimited cold drinks during trip"
+     },
+     {
+      "id": "addon-dinner",
+      "name": "Traditional Bedouin Dinner",
+      "description": "Authentic BBQ dinner under the stars"
+     },
+     {
+      "id": "addon-camel",
+      "name": "Camel Ride Add-on",
+      "description": "30-minute camel ride experience"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning Session"
+     },
+     {
+      "index": 1,
+      "label": "Mid-Morning Session"
+     },
+     {
+      "index": 2,
+      "label": "Afternoon Session"
+     },
+     {
+      "index": 3,
+      "label": "Late Afternoon Session"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel Pickup",
+      "description": "Transport to stable",
+      "duration": "20 min"
+     },
+     {
+      "index": 1,
+      "title": "Saddle Up",
+      "description": "Meet horse, safety briefing",
+      "duration": "15 min"
+     },
+     {
+      "index": 2,
+      "title": "Desert Trek",
+      "description": "Ride through valleys and desert plains",
+      "duration": "2 hours"
+     },
+     {
+      "index": 3,
+      "title": "Sunset Stop",
+      "description": "Watch sunset from desert viewpoint",
+      "duration": "30 min"
+     },
+     {
+      "index": 4,
+      "title": "Bedouin Camp",
+      "description": "Tea and snacks at desert camp",
+      "duration": "20 min"
+     },
+     {
+      "index": 5,
+      "title": "Return",
+      "description": "Ride back, hotel drop-off",
+      "duration": "20 min"
+     }
+    ],
+    "gettingThere": [],
+    "meetingPoint": {
+     "instructions": "Hotel pickup included"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1775677171/attractions-network/attractions/wd4zlntsflkcd7zyx9th.jpg",
+      "alt": "Three Hours Desert Trip"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Three Hours Desert Trip",
+     "metaDescription": "Escape the city lights and head to the desert for 3 hours of pure adventure. See the heavens open up and enjoy the tranq",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "رحلة ثلاث ساعات في الصحراء",
+    "shortDescription": "ابتعد عن أضواء المدينة واتجه إلى الصحراء في 3 ساعات من المغامرة الخالصة. شاهد السماء تتفتح واستمتع بهدوء الصحراء على ظهر الخيل.",
+    "description": "ابتعد عن أضواء المدينة واتجه إلى الصحراء في 3 ساعات من المغامرة الخالصة. شاهد السماء تتفتح واستمتع بهدوء الصحراء على ظهر الخيل.",
+    "duration": "3 ساعات",
+    "cancellationPolicy": "إلغاء مجاني حتى 24 ساعة قبل البدء",
+    "highlights": [
+     "مغامرة صحراوية لمدة 3 ساعات",
+     "نقطة إطلالة على الغروب",
+     "زيارة مخيم بدوي",
+     "شاي ووجبات خفيفة",
+     "مرشدون محترفون"
+    ],
+    "inclusions": [
+     "حصان عربي",
+     "خوذة سلامة",
+     "مرشد محترف",
+     "الاصطحاب من الفندق والتوصيل إليه",
+     "ماء",
+     "التأمين"
+    ],
+    "exclusions": [
+     "الإكراميات",
+     "كاميرا GoPro (خدمة إضافية)",
+     "الساعة الإضافية (خدمة إضافية)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [],
+    "needToKnow": [],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "adult",
+      "name": "بالغ",
+      "description": "من 12 عاماً فأكثر",
+      "timeSlots": []
+     },
+     {
+      "id": "child",
+      "name": "طفل (8-11)",
+      "description": "الأعمار 8-11",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "addon-photo",
+      "name": "حزمة التصوير",
+      "description": "صور احترافية لتجربتك"
+     },
+     {
+      "id": "addon-drinks",
+      "name": "حزمة المشروبات الباردة",
+      "description": "مشروبات باردة غير محدودة أثناء الرحلة"
+     },
+     {
+      "id": "addon-dinner",
+      "name": "عشاء بدوي تقليدي",
+      "description": "عشاء مشويات أصيل تحت النجوم"
+     },
+     {
+      "id": "addon-camel",
+      "name": "إضافة ركوب الجمل",
+      "description": "تجربة ركوب الجمل لمدة 30 دقيقة"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "جلسة صباحية"
+     },
+     {
+      "index": 1,
+      "label": "جلسة منتصف الصباح"
+     },
+     {
+      "index": 2,
+      "label": "جلسة بعد الظهر"
+     },
+     {
+      "index": 3,
+      "label": "جلسة آخر النهار"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "النقل إلى الإسطبل",
+      "duration": "20 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "الصعود إلى السرج",
+      "description": "تعرّف على الحصان، وشرح السلامة",
+      "duration": "15 دقيقة"
+     },
+     {
+      "index": 2,
+      "title": "رحلة صحراوية",
+      "description": "الركوب عبر الأودية والسهول الصحراوية",
+      "duration": "2 ساعات"
+     },
+     {
+      "index": 3,
+      "title": "توقف الغروب",
+      "description": "مشاهدة الغروب من مطل صحراوي",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 4,
+      "title": "المخيم البدوي",
+      "description": "شاي ووجبات خفيفة في المخيم الصحراوي",
+      "duration": "20 دقيقة"
+     },
+     {
+      "index": 5,
+      "title": "العودة",
+      "description": "جولة العودة والتوصيل إلى الفندق",
+      "duration": "20 دقيقة"
+     }
+    ],
+    "gettingThere": [],
+    "meetingPoint": {
+     "instructions": "الاصطحاب من الفندق مشمول"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1775677171/attractions-network/attractions/wd4zlntsflkcd7zyx9th.jpg",
+      "alt": "رحلة ثلاث ساعات في الصحراء"
+     }
+    ],
+    "seo": {
+     "metaTitle": "رحلة ثلاث ساعات في الصحراء",
+     "metaDescription": "ابتعد عن أضواء المدينة واتجه إلى الصحراء في 3 ساعات من المغامرة الخالصة. شاهد السماء تتفتح واستمتع بهدوء الصحراء على ظهر الخيل.",
+     "keywords": []
+    }
+   }
+  },
+  {
+   "id": "69d6af1364766bb00708de78",
+   "sourceSlug": "four-hours-desert-sea-swimming",
+   "slug": "four-hours-desert-sea-swimming-ar",
+   "sourceUpdatedAt": "2026-06-18T15:52:31.344Z",
+   "sourceDigest": "9e6d168d85451a863aed2637b5335636e0f8c44337bc8c0409a0b032463510b5",
+   "english": {
+    "title": "Four Hours Desert & Sea Trip Plus Swimming with Horse",
+    "shortDescription": "The ultimate horse riding experience! Explore the desert then ride to the beach and wade into the Red Sea with your hors",
+    "description": "The ultimate horse riding experience! Explore the desert then ride to the beach and wade into the Red Sea with your horse. Swimming with horses is unforgettable.",
+    "duration": "4 hours",
+    "cancellationPolicy": "Free cancellation up to 24 hours before start",
+    "highlights": [
+     "Desert + sea combo",
+     "Swim with your horse!",
+     "4-hour adventure",
+     "Beach relaxation",
+     "Refreshments included"
+    ],
+    "inclusions": [
+     "Arabian horse",
+     "Safety helmet",
+     "Professional guide",
+     "Hotel pickup/drop-off",
+     "Water",
+     "Insurance"
+    ],
+    "exclusions": [
+     "Tips",
+     "GoPro (add-on)",
+     "Extra hour (add-on)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [],
+    "needToKnow": [],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "adult",
+      "name": "Adult",
+      "description": "Ages 12+",
+      "timeSlots": []
+     },
+     {
+      "id": "child",
+      "name": "Child (8-11)",
+      "description": "Ages 8-11",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "addon-photo",
+      "name": "Photography Package",
+      "description": "Professional photos of your experience"
+     },
+     {
+      "id": "addon-drinks",
+      "name": "Cold Drinks Package",
+      "description": "Unlimited cold drinks during trip"
+     },
+     {
+      "id": "addon-dinner",
+      "name": "Traditional Bedouin Dinner",
+      "description": "Authentic BBQ dinner under the stars"
+     },
+     {
+      "id": "addon-camel",
+      "name": "Camel Ride Add-on",
+      "description": "30-minute camel ride experience"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning Session"
+     },
+     {
+      "index": 1,
+      "label": "Mid-Morning Session"
+     },
+     {
+      "index": 2,
+      "label": "Afternoon Session"
+     },
+     {
+      "index": 3,
+      "label": "Late Afternoon Session"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel Pickup",
+      "description": "Transport to stable",
+      "duration": "20 min"
+     },
+     {
+      "index": 1,
+      "title": "Desert Ride",
+      "description": "1.5 hours through desert terrain",
+      "duration": "1.5 hours"
+     },
+     {
+      "index": 2,
+      "title": "Beach Arrival",
+      "description": "Ride down to the Red Sea beach",
+      "duration": "15 min"
+     },
+     {
+      "index": 3,
+      "title": "Sea Ride & Swimming",
+      "description": "Ride through shallows, then swim with your horse!",
+      "duration": "1 hour"
+     },
+     {
+      "index": 4,
+      "title": "Beach Rest",
+      "description": "Relax on beach, refreshments",
+      "duration": "30 min"
+     },
+     {
+      "index": 5,
+      "title": "Return",
+      "description": "Ride back, hotel drop-off",
+      "duration": "30 min"
+     }
+    ],
+    "gettingThere": [],
+    "meetingPoint": {
+     "instructions": "Hotel pickup included"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1775677202/attractions-network/attractions/aysyrd5ly9aa4j3zx2zy.jpg",
+      "alt": "Four Hours Desert & Sea Trip Plus Swimming with Horse"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Four Hours Desert & Sea Trip Plus Swimming with Horse",
+     "metaDescription": "The ultimate horse riding experience! Explore the desert then ride to the beach and wade into the Red Sea with your hors",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "رحلة أربع ساعات في الصحراء والبحر مع السباحة مع الحصان",
+    "shortDescription": "تجربة ركوب الخيل الأشمل! استكشف الصحراء ثم اركب إلى الشاطئ وادخل البحر الأحمر مع حصانك.",
+    "description": "تجربة ركوب الخيل الأشمل! استكشف الصحراء ثم اركب إلى الشاطئ وادخل البحر الأحمر مع حصانك. السباحة مع الخيول تجربة لا تُنسى.",
+    "duration": "4 ساعات",
+    "cancellationPolicy": "إلغاء مجاني حتى 24 ساعة قبل البدء",
+    "highlights": [
+     "مزيج الصحراء والبحر",
+     "اسبح مع حصانك!",
+     "مغامرة لمدة 4 ساعات",
+     "استرخاء على الشاطئ",
+     "المرطبات مشمولة"
+    ],
+    "inclusions": [
+     "حصان عربي",
+     "خوذة سلامة",
+     "مرشد محترف",
+     "الاصطحاب من الفندق والتوصيل إليه",
+     "ماء",
+     "التأمين"
+    ],
+    "exclusions": [
+     "الإكراميات",
+     "كاميرا GoPro (خدمة إضافية)",
+     "الساعة الإضافية (خدمة إضافية)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [],
+    "needToKnow": [],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "adult",
+      "name": "بالغ",
+      "description": "من 12 عاماً فأكثر",
+      "timeSlots": []
+     },
+     {
+      "id": "child",
+      "name": "طفل (8-11)",
+      "description": "الأعمار 8-11",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "addon-photo",
+      "name": "حزمة التصوير",
+      "description": "صور احترافية لتجربتك"
+     },
+     {
+      "id": "addon-drinks",
+      "name": "حزمة المشروبات الباردة",
+      "description": "مشروبات باردة غير محدودة أثناء الرحلة"
+     },
+     {
+      "id": "addon-dinner",
+      "name": "عشاء بدوي تقليدي",
+      "description": "عشاء مشويات أصيل تحت النجوم"
+     },
+     {
+      "id": "addon-camel",
+      "name": "إضافة ركوب الجمل",
+      "description": "تجربة ركوب الجمل لمدة 30 دقيقة"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "جلسة صباحية"
+     },
+     {
+      "index": 1,
+      "label": "جلسة منتصف الصباح"
+     },
+     {
+      "index": 2,
+      "label": "جلسة بعد الظهر"
+     },
+     {
+      "index": 3,
+      "label": "جلسة آخر النهار"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "النقل إلى الإسطبل",
+      "duration": "20 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "جولة في الصحراء",
+      "description": "1.5 ساعة عبر التضاريس الصحراوية",
+      "duration": "1.5 ساعة"
+     },
+     {
+      "index": 2,
+      "title": "الوصول إلى الشاطئ",
+      "description": "الركوب نزولاً إلى شاطئ البحر الأحمر",
+      "duration": "15 دقيقة"
+     },
+     {
+      "index": 3,
+      "title": "جولة في البحر وسباحة",
+      "description": "الركوب في المياه الضحلة، ثم السباحة مع حصانك.",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 4,
+      "title": "استراحة على الشاطئ",
+      "description": "الاسترخاء على الشاطئ ومرطبات",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 5,
+      "title": "العودة",
+      "description": "جولة العودة والتوصيل إلى الفندق",
+      "duration": "30 دقيقة"
+     }
+    ],
+    "gettingThere": [],
+    "meetingPoint": {
+     "instructions": "الاصطحاب من الفندق مشمول"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1775677202/attractions-network/attractions/aysyrd5ly9aa4j3zx2zy.jpg",
+      "alt": "رحلة أربع ساعات في الصحراء والبحر مع السباحة مع الحصان"
+     }
+    ],
+    "seo": {
+     "metaTitle": "رحلة أربع ساعات في الصحراء والبحر مع السباحة مع الحصان",
+     "metaDescription": "تجربة ركوب الخيل الأشمل! استكشف الصحراء ثم اركب إلى الشاطئ وادخل البحر الأحمر مع حصانك.",
+     "keywords": []
+    }
+   }
+  },
+  {
+   "id": "69d6af3664766bb00708de84",
+   "sourceSlug": "swimming-with-horse-2-hour",
+   "slug": "swimming-with-horse-2-hour-ar",
+   "sourceUpdatedAt": "2026-06-18T15:52:31.344Z",
+   "sourceDigest": "87a907cea45dbdcb10f7f7039597824698cf028b61eba8e7de116a27c438964f",
+   "english": {
+    "title": "Swimming with Horse 2-Hour Tour",
+    "shortDescription": "The highlight of any horse ride — swimming in the Red Sea with your Arabian horse! A gentle ride to the beach followed b",
+    "description": "The highlight of any horse ride — swimming in the Red Sea with your Arabian horse! A gentle ride to the beach followed by an incredible swim in the turquoise waters.",
+    "duration": "2 hours",
+    "cancellationPolicy": "Free cancellation up to 24 hours before start",
+    "highlights": [
+     "Swim with Arabian horse",
+     "Red Sea beach",
+     "Beginner friendly",
+     "Photo opportunities",
+     "Unique experience"
+    ],
+    "inclusions": [
+     "Arabian horse",
+     "Safety helmet",
+     "Professional guide",
+     "Hotel pickup/drop-off",
+     "Water",
+     "Insurance"
+    ],
+    "exclusions": [
+     "Tips",
+     "GoPro (add-on)",
+     "Extra hour (add-on)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [],
+    "needToKnow": [],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "adult",
+      "name": "Adult",
+      "description": "Ages 12+",
+      "timeSlots": []
+     },
+     {
+      "id": "child",
+      "name": "Child (8-11)",
+      "description": "Ages 8-11",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "addon-photo",
+      "name": "Photography Package",
+      "description": "Professional photos of your experience"
+     },
+     {
+      "id": "addon-ext",
+      "name": "Extended Trail Ride",
+      "description": "Extra hour on the trail"
+     },
+     {
+      "id": "addon-priv",
+      "name": "Private Guide",
+      "description": "Dedicated riding instructor"
+     },
+     {
+      "id": "addon-refresh",
+      "name": "Refreshments Package",
+      "description": "Cold drinks and snacks"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning Session"
+     },
+     {
+      "index": 1,
+      "label": "Mid-Morning Session"
+     },
+     {
+      "index": 2,
+      "label": "Afternoon Session"
+     },
+     {
+      "index": 3,
+      "label": "Late Afternoon Session"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel Pickup",
+      "description": "Transport to stable",
+      "duration": "15 min"
+     },
+     {
+      "index": 1,
+      "title": "Safety Briefing",
+      "description": "Meet your horse, instructions for water riding",
+      "duration": "15 min"
+     },
+     {
+      "index": 2,
+      "title": "Beach Ride",
+      "description": "Short ride to the sea",
+      "duration": "20 min"
+     },
+     {
+      "index": 3,
+      "title": "Swimming with Horse",
+      "description": "Enter the Red Sea together!",
+      "duration": "45 min"
+     },
+     {
+      "index": 4,
+      "title": "Beach Time",
+      "description": "Rest on the beach",
+      "duration": "15 min"
+     },
+     {
+      "index": 5,
+      "title": "Return",
+      "description": "Ride back, drop-off",
+      "duration": "20 min"
+     }
+    ],
+    "gettingThere": [],
+    "meetingPoint": {
+     "instructions": "Hotel pickup included"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1775677237/attractions-network/attractions/blxh4lekikurhpyppomv.jpg",
+      "alt": "Swimming with Horse 2-Hour Tour"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Swimming with Horse 2-Hour Tour",
+     "metaDescription": "The highlight of any horse ride — swimming in the Red Sea with your Arabian horse! A gentle ride to the beach followed b",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "جولة السباحة مع الحصان لمدة 2 ساعة",
+    "shortDescription": "أبرز ما في أي جولة خيل — السباحة في البحر الأحمر مع حصانك العربي! جولة هادئة إلى الشاطئ.",
+    "description": "أبرز ما في أي جولة خيل — السباحة في البحر الأحمر مع حصانك العربي! جولة هادئة إلى الشاطئ تتبعها سباحة مدهشة في المياه الفيروزية.",
+    "duration": "2 ساعات",
+    "cancellationPolicy": "إلغاء مجاني حتى 24 ساعة قبل البدء",
+    "highlights": [
+     "السباحة مع حصان عربي",
+     "شاطئ البحر الأحمر",
+     "مناسب للمبتدئين",
+     "فرص للتصوير",
+     "تجربة فريدة"
+    ],
+    "inclusions": [
+     "حصان عربي",
+     "خوذة سلامة",
+     "مرشد محترف",
+     "الاصطحاب من الفندق والتوصيل إليه",
+     "ماء",
+     "التأمين"
+    ],
+    "exclusions": [
+     "الإكراميات",
+     "كاميرا GoPro (خدمة إضافية)",
+     "الساعة الإضافية (خدمة إضافية)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [],
+    "needToKnow": [],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "adult",
+      "name": "بالغ",
+      "description": "من 12 عاماً فأكثر",
+      "timeSlots": []
+     },
+     {
+      "id": "child",
+      "name": "طفل (8-11)",
+      "description": "الأعمار 8-11",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "addon-photo",
+      "name": "حزمة التصوير",
+      "description": "صور احترافية لتجربتك"
+     },
+     {
+      "id": "addon-ext",
+      "name": "جولة ممتدة على المسار",
+      "description": "ساعة إضافية على المسار"
+     },
+     {
+      "id": "addon-priv",
+      "name": "مرشد خاص",
+      "description": "مدرّب ركوب مخصص لك"
+     },
+     {
+      "id": "addon-refresh",
+      "name": "حزمة المرطبات",
+      "description": "مشروبات باردة ووجبات خفيفة"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "جلسة صباحية"
+     },
+     {
+      "index": 1,
+      "label": "جلسة منتصف الصباح"
+     },
+     {
+      "index": 2,
+      "label": "جلسة بعد الظهر"
+     },
+     {
+      "index": 3,
+      "label": "جلسة آخر النهار"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "النقل إلى الإسطبل",
+      "duration": "15 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "شرح السلامة",
+      "description": "تعرّف على حصانك، وتعليمات الركوب في الماء",
+      "duration": "15 دقيقة"
+     },
+     {
+      "index": 2,
+      "title": "جولة على الشاطئ",
+      "description": "جولة قصيرة إلى البحر",
+      "duration": "20 دقيقة"
+     },
+     {
+      "index": 3,
+      "title": "السباحة مع الحصان",
+      "description": "الدخول إلى البحر الأحمر معاً.",
+      "duration": "45 دقيقة"
+     },
+     {
+      "index": 4,
+      "title": "وقت على الشاطئ",
+      "description": "راحة على الشاطئ",
+      "duration": "15 دقيقة"
+     },
+     {
+      "index": 5,
+      "title": "العودة",
+      "description": "جولة العودة، والتوصيل",
+      "duration": "20 دقيقة"
+     }
+    ],
+    "gettingThere": [],
+    "meetingPoint": {
+     "instructions": "الاصطحاب من الفندق مشمول"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1775677237/attractions-network/attractions/blxh4lekikurhpyppomv.jpg",
+      "alt": "جولة السباحة مع الحصان لمدة 2 ساعة"
+     }
+    ],
+    "seo": {
+     "metaTitle": "جولة السباحة مع الحصان لمدة 2 ساعة",
+     "metaDescription": "أبرز ما في أي جولة خيل — السباحة في البحر الأحمر مع حصانك العربي! جولة هادئة إلى الشاطئ.",
+     "keywords": []
+    }
+   }
+  },
+  {
+   "id": "69d6af5964766bb00708de90",
+   "sourceSlug": "two-hours-beach-desert-ride",
+   "slug": "two-hours-beach-desert-ride-ar",
+   "sourceUpdatedAt": "2026-06-18T15:52:31.344Z",
+   "sourceDigest": "ea52339be2c0064b1e5c7dded942a4fb953897066f005df7287fbbf09a55ab30",
+   "english": {
+    "title": "Two Hours Beach and Desert Ride",
+    "shortDescription": "Best of both worlds — ride along the Red Sea beach then head into the desert. See the contrast of turquoise sea and gold",
+    "description": "Best of both worlds — ride along the Red Sea beach then head into the desert. See the contrast of turquoise sea and golden sand on this 2-hour adventure.",
+    "duration": "2 hours",
+    "cancellationPolicy": "Free cancellation up to 24 hours before start",
+    "highlights": [
+     "Beach + desert combo",
+     "2-hour ride",
+     "Sea and sand views",
+     "All levels",
+     "Refreshments"
+    ],
+    "inclusions": [
+     "Arabian horse",
+     "Safety helmet",
+     "Professional guide",
+     "Hotel pickup/drop-off",
+     "Water",
+     "Insurance"
+    ],
+    "exclusions": [
+     "Tips",
+     "GoPro (add-on)",
+     "Extra hour (add-on)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [],
+    "needToKnow": [],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "adult",
+      "name": "Adult",
+      "description": "Ages 12+",
+      "timeSlots": []
+     },
+     {
+      "id": "child",
+      "name": "Child (8-11)",
+      "description": "Ages 8-11",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "addon-photo",
+      "name": "Photography Package",
+      "description": "Professional photos of your experience"
+     },
+     {
+      "id": "addon-drinks",
+      "name": "Cold Drinks Package",
+      "description": "Unlimited cold drinks during trip"
+     },
+     {
+      "id": "addon-dinner",
+      "name": "Traditional Bedouin Dinner",
+      "description": "Authentic BBQ dinner under the stars"
+     },
+     {
+      "id": "addon-camel",
+      "name": "Camel Ride Add-on",
+      "description": "30-minute camel ride experience"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning Session"
+     },
+     {
+      "index": 1,
+      "label": "Mid-Morning Session"
+     },
+     {
+      "index": 2,
+      "label": "Afternoon Session"
+     },
+     {
+      "index": 3,
+      "label": "Late Afternoon Session"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel Pickup",
+      "description": "Transport to stable",
+      "duration": "15 min"
+     },
+     {
+      "index": 1,
+      "title": "Saddle Up",
+      "description": "Meet horse, instructions",
+      "duration": "15 min"
+     },
+     {
+      "index": 2,
+      "title": "Beach Ride",
+      "description": "Ride along the shoreline",
+      "duration": "45 min"
+     },
+     {
+      "index": 3,
+      "title": "Desert Ride",
+      "description": "Head into the desert terrain",
+      "duration": "45 min"
+     },
+     {
+      "index": 4,
+      "title": "Return",
+      "description": "Ride back, refreshments, drop-off",
+      "duration": "20 min"
+     }
+    ],
+    "gettingThere": [],
+    "meetingPoint": {
+     "instructions": "Hotel pickup included"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1775677272/attractions-network/attractions/rd1mtku0upd2tq226k4g.jpg",
+      "alt": "Two Hours Beach and Desert Ride"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Two Hours Beach and Desert Ride",
+     "metaDescription": "Best of both worlds — ride along the Red Sea beach then head into the desert. See the contrast of turquoise sea and gold",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "جولة ساعتين على الشاطئ وفي الصحراء",
+    "shortDescription": "أفضل ما في العالمين — اركب على شاطئ البحر الأحمر ثم اتجه إلى الصحراء. شاهد التناقض بين البحر الفيروزي والرمال الذهبية.",
+    "description": "أفضل ما في العالمين — اركب على شاطئ البحر الأحمر ثم اتجه إلى الصحراء. شاهد التناقض بين البحر الفيروزي والرمال الذهبية في هذه المغامرة لمدة 2 ساعة.",
+    "duration": "2 ساعات",
+    "cancellationPolicy": "إلغاء مجاني حتى 24 ساعة قبل البدء",
+    "highlights": [
+     "مزيج الشاطئ والصحراء",
+     "جولة لمدة 2 ساعة",
+     "مشاهد البحر والرمال",
+     "جميع المستويات",
+     "المرطبات"
+    ],
+    "inclusions": [
+     "حصان عربي",
+     "خوذة سلامة",
+     "مرشد محترف",
+     "الاصطحاب من الفندق والتوصيل إليه",
+     "ماء",
+     "التأمين"
+    ],
+    "exclusions": [
+     "الإكراميات",
+     "كاميرا GoPro (خدمة إضافية)",
+     "الساعة الإضافية (خدمة إضافية)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [],
+    "needToKnow": [],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "adult",
+      "name": "بالغ",
+      "description": "من 12 عاماً فأكثر",
+      "timeSlots": []
+     },
+     {
+      "id": "child",
+      "name": "طفل (8-11)",
+      "description": "الأعمار 8-11",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "addon-photo",
+      "name": "حزمة التصوير",
+      "description": "صور احترافية لتجربتك"
+     },
+     {
+      "id": "addon-drinks",
+      "name": "حزمة المشروبات الباردة",
+      "description": "مشروبات باردة غير محدودة أثناء الرحلة"
+     },
+     {
+      "id": "addon-dinner",
+      "name": "عشاء بدوي تقليدي",
+      "description": "عشاء مشويات أصيل تحت النجوم"
+     },
+     {
+      "id": "addon-camel",
+      "name": "إضافة ركوب الجمل",
+      "description": "تجربة ركوب الجمل لمدة 30 دقيقة"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "جلسة صباحية"
+     },
+     {
+      "index": 1,
+      "label": "جلسة منتصف الصباح"
+     },
+     {
+      "index": 2,
+      "label": "جلسة بعد الظهر"
+     },
+     {
+      "index": 3,
+      "label": "جلسة آخر النهار"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "النقل إلى الإسطبل",
+      "duration": "15 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "الصعود إلى السرج",
+      "description": "تعرّف على الحصان، والتعليمات",
+      "duration": "15 دقيقة"
+     },
+     {
+      "index": 2,
+      "title": "جولة على الشاطئ",
+      "description": "الركوب على خط الساحل",
+      "duration": "45 دقيقة"
+     },
+     {
+      "index": 3,
+      "title": "جولة في الصحراء",
+      "description": "التوجه إلى التضاريس الصحراوية",
+      "duration": "45 دقيقة"
+     },
+     {
+      "index": 4,
+      "title": "العودة",
+      "description": "جولة العودة، ومرطبات، والتوصيل",
+      "duration": "20 دقيقة"
+     }
+    ],
+    "gettingThere": [],
+    "meetingPoint": {
+     "instructions": "الاصطحاب من الفندق مشمول"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1775677272/attractions-network/attractions/rd1mtku0upd2tq226k4g.jpg",
+      "alt": "جولة ساعتين على الشاطئ وفي الصحراء"
+     }
+    ],
+    "seo": {
+     "metaTitle": "جولة ساعتين على الشاطئ وفي الصحراء",
+     "metaDescription": "أفضل ما في العالمين — اركب على شاطئ البحر الأحمر ثم اتجه إلى الصحراء. شاهد التناقض بين البحر الفيروزي والرمال الذهبية.",
+     "keywords": []
+    }
+   }
+  },
+  {
+   "id": "69dbcd6ba68005fe6325c396",
+   "sourceSlug": "gamila-makadi-horse-riding-desert-sea-guide",
+   "slug": "gamila-makadi-horse-riding-desert-sea-guide-ar",
+   "sourceUpdatedAt": "2026-06-18T15:52:31.344Z",
+   "sourceDigest": "3d2aef55db404db0a20ae1b58a7176d5c791032a4dcce3e65d64901da26db30c",
+   "english": {
+    "title": "Makadi Bay: Horse Riding in Desert & Sea with Guide + Transfers",
+    "shortDescription": "Our signature ride — gallop through the desert and along the Red Sea coast with an experienced guide. Hotel transfers included.",
+    "description": "The most popular horse riding experience in Makadi Bay with 114 five-star reviews. Ride through the stunning desert landscape and along the Red Sea shoreline with an experienced local guide. Suitable for all levels — from complete beginners to advanced riders. Each rider is matched with a horse suited to their skill level. Hotel pickup and drop-off included from Makadi Bay, Sahl Hasheesh, and Hurghada. Rated 4.8★.",
+    "duration": "3 hours",
+    "cancellationPolicy": "Free cancellation up to 24 hours before the start time.",
+    "highlights": [
+     "Rated 4.8★ by 114 guests",
+     "Desert + sea coast riding",
+     "All skill levels welcome",
+     "Matched to the right horse",
+     "Hotel transfers included",
+     "Optional horse sea swimming"
+    ],
+    "inclusions": [
+     "Horse riding",
+     "Experienced guide",
+     "Safety helmet",
+     "Water",
+     "Hotel pickup & drop-off from Makadi/Sahl Hasheesh/Hurghada"
+    ],
+    "exclusions": [
+     "Gratuities",
+     "Swimming with horse (add-on)",
+     "Photos (add-on)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Long trousers (required for riding)",
+     "Closed shoes or boots",
+     "Sunscreen",
+     "Sun hat",
+     "Camera",
+     "Swimsuit (if swimming with horse)"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "Not wheelchair accessible",
+     "Max weight limit 100kg per rider",
+     "Children under 3 not permitted on horses"
+    ],
+    "pricingOptions": [
+     {
+      "id": "standard",
+      "name": "Standard Ride (2 hrs)",
+      "description": "Desert and sea ride with guide",
+      "timeSlots": []
+     },
+     {
+      "id": "extended",
+      "name": "Extended Ride (3 hrs)",
+      "description": "Longer route with swimming option",
+      "timeSlots": []
+     },
+     {
+      "id": "private",
+      "name": "Private Ride",
+      "description": "Just you and your guide",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "swimming",
+      "name": "Swimming with Horse",
+      "description": "Ride your horse into the sea for a swim"
+     },
+     {
+      "id": "photos",
+      "name": "Photo Package",
+      "description": "Professional photos during the ride"
+     },
+     {
+      "id": "sunset",
+      "name": "Sunset Upgrade",
+      "description": "Timed for golden hour — premium photo ops"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning"
+     },
+     {
+      "index": 1,
+      "label": "Afternoon"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel Pickup",
+      "description": "Comfortable transfer from your hotel to Gamila Horse Stable.",
+      "duration": "30 min"
+     },
+     {
+      "index": 1,
+      "title": "Horse Matching & Briefing",
+      "description": "Meet your horse, get riding instructions and safety gear.",
+      "duration": "15 min"
+     },
+     {
+      "index": 2,
+      "title": "Desert Ride",
+      "description": "Ride through the stunning Makadi Bay desert landscape.",
+      "duration": "45 min"
+     },
+     {
+      "index": 3,
+      "title": "Beach & Sea Ride",
+      "description": "Gallop along the Red Sea coast with panoramic views.",
+      "duration": "45 min"
+     },
+     {
+      "index": 4,
+      "title": "Optional Sea Swimming",
+      "description": "Take your horse for a swim in the Red Sea (add-on).",
+      "duration": "15 min"
+     },
+     {
+      "index": 5,
+      "title": "Cool Down & Photos",
+      "description": "Return to stable, photos with your horse.",
+      "duration": "15 min"
+     },
+     {
+      "index": 6,
+      "title": "Return Transfer",
+      "description": "Drop-off at your hotel.",
+      "duration": "15 min"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel Pickup",
+      "description": "Free pickup from hotels in Makadi Bay, Sahl Hasheesh, and Hurghada."
+     },
+     {
+      "index": 1,
+      "mode": "Self Drive",
+      "description": "Gamila Horse Stable, Makadi Bay Road. Free parking."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "Hotel pickup available. If driving, follow Makadi Bay Road — the stable is signposted."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776012651/attractions-network/tours/gamila-makadi-horse-riding-desert-sea-guide/manpcsd901obdqvbwgfc.jpg",
+      "alt": "Makadi Bay: Horse Riding in Desert & Sea with Guide + Transfers"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Makadi Bay: Horse Riding in Desert & Sea with Guide + Transfers | Gamila Horse Stable",
+     "metaDescription": "Our signature ride — gallop through the desert and along the Red Sea coast with an experienced guide. Hotel transfers included.",
+     "keywords": [
+      "makadi",
+      "bay:",
+      "horse",
+      "riding",
+      "desert",
+      "with",
+      "guide",
+      "transfers"
+     ]
+    }
+   },
+   "arabic": {
+    "title": "خليج مكادي: ركوب الخيل في الصحراء والبحر بصحبة مرشد مع النقل",
+    "shortDescription": "جولتنا المميزة — اعدُ بحصانك عبر الصحراء وعلى ساحل البحر الأحمر بصحبة مرشد ذي خبرة. النقل من الفندق وإليه مشمول.",
+    "description": "تجربة ركوب الخيل الأكثر رواجاً في خليج مكادي مع 114 مراجعة بخمس نجوم. اركب عبر مناظر الصحراء الخلابة وعلى طول ساحل البحر الأحمر بصحبة مرشد محلي ذي خبرة. مناسبة لجميع المستويات — من المبتدئين تماماً إلى الفارسين المتقدمين. يُطابق كل راكب بحصان يناسب مستوى مهارته. الاصطحاب من الفندق والتوصيل إليه مشمولان من خليج مكادي وسهل حشيش والغردقة. تقييم 4.8★.",
+    "duration": "3 ساعات",
+    "cancellationPolicy": "إلغاء مجاني حتى 24 ساعة قبل وقت البدء.",
+    "highlights": [
+     "تقييم 4.8★ من 114 زائراً",
+     "الركوب في الصحراء وعلى ساحل البحر",
+     "جميع مستويات المهارة مرحّب بها",
+     "مطابقة كل راكب بالحصان المناسب",
+     "النقل من الفندق وإليه مشمول",
+     "سباحة الخيل في البحر (اختياري)"
+    ],
+    "inclusions": [
+     "ركوب الخيل",
+     "مرشد ذو خبرة",
+     "خوذة سلامة",
+     "ماء",
+     "الاصطحاب من الفندق والتوصيل إليه من مكادي/سهل حشيش/الغردقة"
+    ],
+    "exclusions": [
+     "الإكراميات",
+     "السباحة مع الحصان (إضافة)",
+     "الصور (إضافة)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "بنطال طويل (مطلوب للركوب)",
+     "أحذية مغلقة أو أحذية عالية الرقبة",
+     "واقي شمس",
+     "قبعة شمسية",
+     "كاميرا",
+     "لباس سباحة (إذا كنت ستسبح مع الحصان)"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "غير مهيأة للكراسي المتحركة",
+     "الحد الأقصى للوزن 100 كجم لكل راكب",
+     "لا يُسمح للأطفال دون 3 سنوات بركوب الخيل"
+    ],
+    "pricingOptions": [
+     {
+      "id": "standard",
+      "name": "جولة عادية (2 ساعة)",
+      "description": "جولة في الصحراء والبحر بصحبة مرشد",
+      "timeSlots": []
+     },
+     {
+      "id": "extended",
+      "name": "جولة ممتدة (3 ساعات)",
+      "description": "مسار أطول مع خيار السباحة",
+      "timeSlots": []
+     },
+     {
+      "id": "private",
+      "name": "جولة خاصة",
+      "description": "أنت ومرشدك فقط",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "swimming",
+      "name": "السباحة مع الحصان",
+      "description": "أدخل حصانك إلى البحر للسباحة"
+     },
+     {
+      "id": "photos",
+      "name": "حزمة الصور",
+      "description": "صور احترافية أثناء الجولة"
+     },
+     {
+      "id": "sunset",
+      "name": "ترقية الغروب",
+      "description": "موقوتة مع الساعة الذهبية — فرص تصوير مميزة"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "صباحاً"
+     },
+     {
+      "index": 1,
+      "label": "بعد الظهر"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "نقل مريح من فندقك إلى Gamila Horse Stable.",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "اختيار الحصان والإحاطة",
+      "description": "التق بحصانك واحصل على تعليمات الركوب وتجهيزات السلامة.",
+      "duration": "15 دقيقة"
+     },
+     {
+      "index": 2,
+      "title": "جولة في الصحراء",
+      "description": "اركب عبر مناظر صحراء خليج مكادي الخلابة.",
+      "duration": "45 دقيقة"
+     },
+     {
+      "index": 3,
+      "title": "جولة الشاطئ والبحر",
+      "description": "اعدُ بحصانك على ساحل البحر الأحمر مع مشاهد بانورامية.",
+      "duration": "45 دقيقة"
+     },
+     {
+      "index": 4,
+      "title": "سباحة في البحر (اختياري)",
+      "description": "خُذ حصانك للسباحة في البحر الأحمر (خدمة إضافية).",
+      "duration": "15 دقيقة"
+     },
+     {
+      "index": 5,
+      "title": "التهدئة والصور",
+      "description": "العودة إلى الإسطبل والصور مع حصانك.",
+      "duration": "15 دقيقة"
+     },
+     {
+      "index": 6,
+      "title": "العودة",
+      "description": "التوصيل إلى فندقك.",
+      "duration": "15 دقيقة"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "اصطحاب مجاني من فنادق خليج مكادي وسهل حشيش والغردقة."
+     },
+     {
+      "index": 1,
+      "mode": "بالسيارة الخاصة",
+      "description": "Gamila Horse Stable، طريق خليج مكادي. مواقف مجانية."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "الاصطحاب من الفندق متاح. وإن كنت تقود، اتبع طريق خليج مكادي — الإسطبل مُعلَّم بلوحات."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776012651/attractions-network/tours/gamila-makadi-horse-riding-desert-sea-guide/manpcsd901obdqvbwgfc.jpg",
+      "alt": "خليج مكادي: ركوب الخيل في الصحراء والبحر بصحبة مرشد مع النقل"
+     }
+    ],
+    "seo": {
+     "metaTitle": "خليج مكادي: ركوب الخيل في الصحراء والبحر بصحبة مرشد مع النقل | Gamila Horse Stable",
+     "metaDescription": "جولتنا المميزة — اعدُ بحصانك عبر الصحراء وعلى ساحل البحر الأحمر بصحبة مرشد ذي خبرة. النقل من الفندق وإليه مشمول.",
+     "keywords": [
+      "مكادي",
+      "خليج:",
+      "خيل",
+      "ركوب",
+      "صحراء",
+      "مع",
+      "مرشد",
+      "النقل"
+     ]
+    }
+   }
+  },
+  {
+   "id": "69dbcd8ba68005fe6325c3aa",
+   "sourceSlug": "gamila-sunset-beach-horse-ride",
+   "slug": "gamila-sunset-beach-horse-ride-ar",
+   "sourceUpdatedAt": "2026-06-18T15:52:31.344Z",
+   "sourceDigest": "9e6c13f5f671994168051499dbcf34856b0492a14cde8d910092ec0d3a2c1d5b",
+   "english": {
+    "title": "Sunset Beach Horse Ride",
+    "shortDescription": "A magical evening ride along the Red Sea coast as the sun sets — the most photogenic experience in Makadi Bay.",
+    "description": "Experience the magic of riding along the Red Sea at golden hour. The sunset beach ride is our most romantic and photogenic experience — the warm light, the calm sea, and the gentle rhythm of the horse create an unforgettable memory. Perfect for couples, photographers, and anyone who loves sunsets. All levels welcome.",
+    "duration": "2 hours",
+    "cancellationPolicy": "Free cancellation up to 24 hours before the start time.",
+    "highlights": [
+     "Golden hour beach ride",
+     "Most photogenic experience",
+     "Perfect for couples",
+     "All skill levels",
+     "Stunning sunset views"
+    ],
+    "inclusions": [
+     "Horse ride",
+     "Guide",
+     "Helmet",
+     "Water",
+     "Hotel transfers"
+    ],
+    "exclusions": [
+     "Gratuities",
+     "Photos (add-on)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Long trousers",
+     "Closed shoes",
+     "Camera",
+     "Light jacket"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "Not wheelchair accessible",
+     "Max weight limit 100kg per rider",
+     "Children under 3 not permitted on horses"
+    ],
+    "pricingOptions": [
+     {
+      "id": "adult",
+      "name": "Adult",
+      "description": "Sunset beach ride",
+      "timeSlots": []
+     },
+     {
+      "id": "couple",
+      "name": "Couple Package",
+      "description": "Two riders + champagne toast",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "photos",
+      "name": "Golden Hour Photos",
+      "description": "Professional sunset photos"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning"
+     },
+     {
+      "index": 1,
+      "label": "Afternoon"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel Pickup",
+      "description": "Transfer to stable.",
+      "duration": "20 min"
+     },
+     {
+      "index": 1,
+      "title": "Horse Matching",
+      "description": "Meet your horse and safety briefing.",
+      "duration": "10 min"
+     },
+     {
+      "index": 2,
+      "title": "Sunset Beach Ride",
+      "description": "Ride along the coast during golden hour.",
+      "duration": "1 hr"
+     },
+     {
+      "index": 3,
+      "title": "Sunset Viewing",
+      "description": "Stop to watch the sun set over the Red Sea.",
+      "duration": "15 min"
+     },
+     {
+      "index": 4,
+      "title": "Return",
+      "description": "Return to stable and hotel transfer.",
+      "duration": "15 min"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel Pickup",
+      "description": "Free pickup from hotels in Makadi Bay, Sahl Hasheesh, and Hurghada."
+     },
+     {
+      "index": 1,
+      "mode": "Self Drive",
+      "description": "Gamila Horse Stable, Makadi Bay Road. Free parking."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "Hotel pickup available. If driving, follow Makadi Bay Road — the stable is signposted."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776012682/attractions-network/tours/gamila-sunset-beach-horse-ride/itidklee13rpunfnryvt.jpg",
+      "alt": "Sunset Beach Horse Ride"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Sunset Beach Horse Ride | Gamila Horse Stable",
+     "metaDescription": "A magical evening ride along the Red Sea coast as the sun sets — the most photogenic experience in Makadi Bay.",
+     "keywords": [
+      "sunset",
+      "beach",
+      "horse",
+      "ride"
+     ]
+    }
+   },
+   "arabic": {
+    "title": "جولة بالخيل على الشاطئ وقت الغروب",
+    "shortDescription": "جولة مسائية ساحرة على ساحل البحر الأحمر عند غروب الشمس — التجربة الأنسب للتصوير في خليج مكادي.",
+    "description": "اختبر سحر الركوب على طول البحر الأحمر في الساعة الذهبية. جولة الشاطئ وقت الغروب هي تجربتنا الأكثر رومانسية والأنسب للتصوير — الضوء الدافئ والبحر الهادئ وإيقاع الحصان الهادئ تصنع ذكرى لا تُنسى. مثالية للأزواج والمصورين وكل من يحب الغروب. جميع المستويات مرحّب بها.",
+    "duration": "2 ساعات",
+    "cancellationPolicy": "إلغاء مجاني حتى 24 ساعة قبل وقت البدء.",
+    "highlights": [
+     "جولة على الشاطئ في الساعة الذهبية",
+     "التجربة الأنسب للتصوير",
+     "مثالية للأزواج",
+     "جميع مستويات المهارة",
+     "مشاهد غروب خلابة"
+    ],
+    "inclusions": [
+     "ركوب الخيل",
+     "مرشد",
+     "خوذة",
+     "ماء",
+     "النقل من الفندق وإليه"
+    ],
+    "exclusions": [
+     "الإكراميات",
+     "الصور (إضافة)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "بنطال طويل",
+     "أحذية مغلقة",
+     "كاميرا",
+     "سترة خفيفة"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "غير مهيأة للكراسي المتحركة",
+     "الحد الأقصى للوزن 100 كجم لكل راكب",
+     "لا يُسمح للأطفال دون 3 سنوات بركوب الخيل"
+    ],
+    "pricingOptions": [
+     {
+      "id": "adult",
+      "name": "بالغ",
+      "description": "جولة على الشاطئ وقت الغروب",
+      "timeSlots": []
+     },
+     {
+      "id": "couple",
+      "name": "باقة الزوجين",
+      "description": "راكبان ونخب شمبانيا",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "photos",
+      "name": "صور الساعة الذهبية",
+      "description": "صور احترافية عند الغروب"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "صباحاً"
+     },
+     {
+      "index": 1,
+      "label": "بعد الظهر"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "النقل إلى الإسطبل.",
+      "duration": "20 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "اختيار الحصان المناسب",
+      "description": "تعرّف على حصانك وشرح للسلامة.",
+      "duration": "10 دقائق"
+     },
+     {
+      "index": 2,
+      "title": "جولة على الشاطئ عند الغروب",
+      "description": "الركوب على الساحل في الساعة الذهبية.",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 3,
+      "title": "مشاهدة الغروب",
+      "description": "توقف لمشاهدة الشمس تغيب فوق البحر الأحمر.",
+      "duration": "15 دقيقة"
+     },
+     {
+      "index": 4,
+      "title": "العودة",
+      "description": "العودة إلى الإسطبل ثم النقل إلى الفندق.",
+      "duration": "15 دقيقة"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "اصطحاب مجاني من فنادق خليج مكادي وسهل حشيش والغردقة."
+     },
+     {
+      "index": 1,
+      "mode": "بالسيارة الخاصة",
+      "description": "Gamila Horse Stable، طريق خليج مكادي. مواقف مجانية."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "الاصطحاب من الفندق متاح. وإن كنت تقود، اتبع طريق خليج مكادي — الإسطبل مُعلَّم بلوحات."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776012682/attractions-network/tours/gamila-sunset-beach-horse-ride/itidklee13rpunfnryvt.jpg",
+      "alt": "جولة بالخيل على الشاطئ وقت الغروب"
+     }
+    ],
+    "seo": {
+     "metaTitle": "جولة بالخيل على الشاطئ وقت الغروب | Gamila Horse Stable",
+     "metaDescription": "جولة مسائية ساحرة على ساحل البحر الأحمر عند غروب الشمس — التجربة الأنسب للتصوير في خليج مكادي.",
+     "keywords": [
+      "غروب",
+      "شاطئ",
+      "خيل",
+      "جولة"
+     ]
+    }
+   }
+  },
+  {
+   "id": "69dbcdaaa68005fe6325c3b9",
+   "sourceSlug": "gamila-kids-pony-experience",
+   "slug": "gamila-kids-pony-experience-ar",
+   "sourceUpdatedAt": "2026-06-18T15:52:31.344Z",
+   "sourceDigest": "f8dff44bc54ec334f2ad1a649fedc97159736440091eb08568ec25b0eaf30db6",
+   "english": {
+    "title": "Kids Pony Ride & Stable Visit",
+    "shortDescription": "A gentle pony ride and stable tour for young children — meet the horses, brush them, and take a short ride.",
+    "description": "Designed for young children aged 3-10. Meet the gentle ponies at Gamila Stable, learn to brush and care for them, then take a short guided ride around the paddock and beach path. Our experienced handlers ensure complete safety. A wonderful introduction to horse riding for little ones.",
+    "duration": "1 hour",
+    "cancellationPolicy": "Free cancellation up to 24 hours before the start time.",
+    "highlights": [
+     "Designed for ages 3-10",
+     "Gentle ponies",
+     "Learn horse care basics",
+     "Experienced handlers",
+     "Safe paddock riding"
+    ],
+    "inclusions": [
+     "Pony ride",
+     "Stable tour",
+     "Handler supervision",
+     "Helmet",
+     "Water"
+    ],
+    "exclusions": [
+     "Gratuities",
+     "Hotel transfers (available on request)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Closed shoes",
+     "Sun hat",
+     "Comfortable clothes",
+     "Camera"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "Not wheelchair accessible",
+     "Max weight limit 100kg per rider",
+     "Children under 3 not permitted on horses"
+    ],
+    "pricingOptions": [
+     {
+      "id": "child",
+      "name": "Child (3-10)",
+      "description": "Pony ride + stable visit",
+      "timeSlots": []
+     },
+     {
+      "id": "family",
+      "name": "Family Package (2 kids + 1 adult ride)",
+      "description": "Two kids pony + one adult horse ride",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "photos",
+      "name": "Photos with Ponies",
+      "description": "Professional photos with the horses"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning"
+     },
+     {
+      "index": 1,
+      "label": "Afternoon"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Arrival & Meet Ponies",
+      "description": "Meet the gentle ponies and learn their names.",
+      "duration": "15 min"
+     },
+     {
+      "index": 1,
+      "title": "Grooming",
+      "description": "Brush and care for the pony with handler guidance.",
+      "duration": "15 min"
+     },
+     {
+      "index": 2,
+      "title": "Pony Ride",
+      "description": "Gentle ride around paddock and beach path.",
+      "duration": "20 min"
+     },
+     {
+      "index": 3,
+      "title": "Photos & Goodbye",
+      "description": "Say goodbye to your pony, take photos.",
+      "duration": "10 min"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel Pickup",
+      "description": "Free pickup from hotels in Makadi Bay, Sahl Hasheesh, and Hurghada."
+     },
+     {
+      "index": 1,
+      "mode": "Self Drive",
+      "description": "Gamila Horse Stable, Makadi Bay Road. Free parking."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "Hotel pickup available. If driving, follow Makadi Bay Road — the stable is signposted."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776012713/attractions-network/tours/gamila-kids-pony-experience/lpr3evferz468a08whjj.jpg",
+      "alt": "Kids Pony Ride & Stable Visit"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Kids Pony Ride & Stable Visit | Gamila Horse Stable",
+     "metaDescription": "A gentle pony ride and stable tour for young children — meet the horses, brush them, and take a short ride.",
+     "keywords": [
+      "kids",
+      "pony",
+      "ride",
+      "stable",
+      "visit"
+     ]
+    }
+   },
+   "arabic": {
+    "title": "جولة الأطفال على المهر وزيارة الإسطبل",
+    "shortDescription": "جولة هادئة على المهر وجولة في الإسطبل للأطفال الصغار — تعرّف على الخيول ونظّفها وخُذ جولة قصيرة.",
+    "description": "مُعدّة للأطفال الصغار في الأعمار 3-10. تعرّف على المهور الهادئة في Gamila Stable وتعلّم تنظيفها والعناية بها، ثم خُذ جولة قصيرة بصحبة مرشد حول الحلبة ومسار الشاطئ. يحرص مدرّبونا ذوو الخبرة على السلامة الكاملة. مقدمة رائعة لركوب الخيل للصغار.",
+    "duration": "1 ساعة",
+    "cancellationPolicy": "إلغاء مجاني حتى 24 ساعة قبل وقت البدء.",
+    "highlights": [
+     "مُعدّة للأعمار 3-10",
+     "مهور هادئة",
+     "تعلّم أساسيات العناية بالخيل",
+     "مدرّبون ذوو خبرة",
+     "ركوب آمن في الحلبة"
+    ],
+    "inclusions": [
+     "جولة على المهر",
+     "جولة في الإسطبل",
+     "إشراف المدرّب",
+     "خوذة",
+     "ماء"
+    ],
+    "exclusions": [
+     "الإكراميات",
+     "النقل من الفندق وإليه (متاح عند الطلب)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "أحذية مغلقة",
+     "قبعة شمسية",
+     "ملابس مريحة",
+     "كاميرا"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "غير مهيأة للكراسي المتحركة",
+     "الحد الأقصى للوزن 100 كجم لكل راكب",
+     "لا يُسمح للأطفال دون 3 سنوات بركوب الخيل"
+    ],
+    "pricingOptions": [
+     {
+      "id": "child",
+      "name": "طفل (3-10)",
+      "description": "جولة على المهر وزيارة الإسطبل",
+      "timeSlots": []
+     },
+     {
+      "id": "family",
+      "name": "باقة العائلة (2 طفل وجولة 1 بالغ)",
+      "description": "جولة لطفلين على المهر وجولة لبالغ على الحصان",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "photos",
+      "name": "صور مع المهور",
+      "description": "صور احترافية مع الخيول"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "صباحاً"
+     },
+     {
+      "index": 1,
+      "label": "بعد الظهر"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الوصول ولقاء المهور",
+      "description": "تعرّف على المهور الهادئة واعرف أسماءها.",
+      "duration": "15 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "العناية بالخيل",
+      "description": "تنظيف المهر والعناية به بإرشاد المدرّب.",
+      "duration": "15 دقيقة"
+     },
+     {
+      "index": 2,
+      "title": "جولة على المهر",
+      "description": "جولة هادئة حول الحلبة ومسار الشاطئ.",
+      "duration": "20 دقيقة"
+     },
+     {
+      "index": 3,
+      "title": "الصور والوداع",
+      "description": "ودّع مهرك والتقط الصور.",
+      "duration": "10 دقائق"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "اصطحاب مجاني من فنادق خليج مكادي وسهل حشيش والغردقة."
+     },
+     {
+      "index": 1,
+      "mode": "بالسيارة الخاصة",
+      "description": "Gamila Horse Stable، طريق خليج مكادي. مواقف مجانية."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "الاصطحاب من الفندق متاح. وإن كنت تقود، اتبع طريق خليج مكادي — الإسطبل مُعلَّم بلوحات."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776012713/attractions-network/tours/gamila-kids-pony-experience/lpr3evferz468a08whjj.jpg",
+      "alt": "جولة الأطفال على المهر وزيارة الإسطبل"
+     }
+    ],
+    "seo": {
+     "metaTitle": "جولة الأطفال على المهر وزيارة الإسطبل | Gamila Horse Stable",
+     "metaDescription": "جولة هادئة على المهر وجولة في الإسطبل للأطفال الصغار — تعرّف على الخيول ونظّفها وخُذ جولة قصيرة.",
+     "keywords": [
+      "أطفال",
+      "مهر",
+      "جولة",
+      "إسطبل",
+      "زيارة"
+     ]
+    }
+   }
+  }
+ ],
+ "destinations": [
+  {
+   "id": "699895e47169d9820932b9a3",
+   "sourceSlug": "hurghada",
+   "slug": "hurghada-ar",
+   "sourceUpdatedAt": "2026-04-05T23:15:20.775Z",
+   "sourceDigest": "111acca5fa242e38932f013e0fbb66e4bafd26bd529ebf11740d6c5d2779a75c",
+   "english": {
+    "name": "Hurghada",
+    "country": "Egypt",
+    "description": "Hurghada is a premier Red Sea resort destination known for its pristine beaches, world-class diving, and water sports.",
+    "shortDescription": "Red Sea paradise for diving and water sports",
+    "highlights": [
+     "Coral Reefs",
+     "Snorkeling",
+     "Desert Safaris",
+     "Nightlife"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "beach",
+     "water-sports",
+     "diving",
+     "resort"
+    ]
+   },
+   "arabic": {
+    "name": "الغردقة",
+    "country": "مصر",
+    "description": "الغردقة وجهة رائدة للمنتجعات على البحر الأحمر، تشتهر بشواطئها النقية والغوص ذي المستوى العالمي والرياضات المائية.",
+    "shortDescription": "جنة على البحر الأحمر للغوص والرياضات المائية",
+    "highlights": [
+     "الشعاب المرجانية",
+     "السنوركلينغ",
+     "رحلات سفاري الصحراء",
+     "الحياة الليلية"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "شاطئ",
+     "رياضات مائية",
+     "غوص",
+     "منتجع"
+    ]
+   }
+  },
+  {
+   "id": "699895e47169d9820932b9aa",
+   "sourceSlug": "makadi-bay",
+   "slug": "makadi-bay-ar",
+   "sourceUpdatedAt": "2026-04-05T23:15:20.871Z",
+   "sourceDigest": "56c58058153c61a44b5b8ced8a94390953320f5933ff2cfb0c1e091001c8971b",
+   "english": {
+    "name": "Makadi Bay",
+    "country": "Egypt",
+    "description": "An exclusive gated community along the Red Sea, Makadi Bay is known for its pristine beaches and high-end resorts.",
+    "shortDescription": "Exclusive beachfront resort community",
+    "highlights": [
+     "Private Beaches",
+     "Luxury Resorts",
+     "Marina",
+     "Aqua Park"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "luxury",
+     "beach",
+     "exclusive",
+     "resort"
+    ]
+   },
+   "arabic": {
+    "name": "خليج مكادي",
+    "country": "مصر",
+    "description": "خليج مكادي مجتمع حصري مسوّر على البحر الأحمر، يشتهر بشواطئه النقية ومنتجعاته الراقية.",
+    "shortDescription": "مجتمع منتجعات حصري على الشاطئ",
+    "highlights": [
+     "شواطئ خاصة",
+     "منتجعات فاخرة",
+     "مارينا",
+     "حديقة مائية"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "فخامة",
+     "شاطئ",
+     "حصري",
+     "منتجع"
+    ]
+   }
+  }
+ ]
+}

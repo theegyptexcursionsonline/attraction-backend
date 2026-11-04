@@ -1,0 +1,4892 @@
+{
+ "version": 1,
+ "batch": "b18a",
+ "locale": "ar",
+ "tenant": {
+  "id": "699895e47169d9820932b9ce",
+  "slug": "cairo-adventures",
+  "domain": "cairo-adventures.foxesnetwork.com",
+  "customDomain": "cairoattractionsticket.com"
+ },
+ "presentationSha256": "6a093d8cdbcfa97ed3cf58d823eead349eaf6605ae09118edbfd73335fec812d",
+ "presentation": [
+  {
+   "kind": "tenant",
+   "sourceId": "699895e47169d9820932b9ce",
+   "sourceDigest": "e765531590eb7bf337387062a0e2ebff30c29610296a4065f18c0bc93a017ae2",
+   "english": {
+    "tagline": "Your Gateway to Cairo's Greatest Attractions",
+    "description": "Book tickets and tours for Cairo's top attractions. Pyramids, museums, Nile cruises, and historical tours with instant e-tickets.",
+    "seoSettings": {
+     "metaTitle": "Cairo Attractions Ticket - Book Cairo Tours & Tickets",
+     "metaDescription": "Book skip-the-line tickets to Cairo attractions. Pyramids, Egyptian Museum, Nile cruises and more.",
+     "keywords": [
+      "cairo attractions ticket",
+      "cairo tours",
+      "pyramids tickets",
+      "egypt tickets"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": []
+   },
+   "arabic": {
+    "tagline": "بوابتك إلى أعظم معالم القاهرة",
+    "description": "احجز تذاكر وجولات لأبرز معالم القاهرة. الأهرامات والمتاحف والرحلات النهرية على النيل والجولات التاريخية مع تذاكر إلكترونية فورية.",
+    "seoSettings": {
+     "metaTitle": "Cairo Attractions Ticket - احجز جولات القاهرة وتذاكرها",
+     "metaDescription": "احجز تذاكر دخول دون انتظار لمعالم القاهرة. الأهرامات والمتحف المصري والرحلات النهرية على النيل وغيرها.",
+     "keywords": [
+      "Cairo Attractions Ticket",
+      "جولات القاهرة",
+      "تذاكر الأهرامات",
+      "تذاكر مصر"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": []
+   }
+  }
+ ],
+ "tours": [
+  {
+   "id": "699895e47169d9820932b9d9",
+   "sourceSlug": "cairo-night-cruise",
+   "slug": "cairo-night-cruise-ar",
+   "sourceUpdatedAt": "2026-10-30T11:10:19.308Z",
+   "sourceDigest": "1011f7f016b2ae5cede0afb23559b849e9273206c6abe63e662e23096bd248df",
+   "english": {
+    "title": "Cairo Night Cruise on the Nile",
+    "shortDescription": "Magical evening Nile cruise with dinner and entertainment in Cairo",
+    "description": "Experience the romance of the Nile River with an elegant night cruise featuring traditional dinner and live entertainment.",
+    "duration": "3 hours",
+    "cancellationPolicy": "Free cancellation up to 24 hours before",
+    "highlights": [
+     "Nile River views",
+     "Traditional dinner",
+     "Live entertainment",
+     "Belly dance show"
+    ],
+    "inclusions": [
+     "Cruise ticket",
+     "Dinner buffet",
+     "Live show",
+     "Soft beverages"
+    ],
+    "exclusions": [
+     "Hotel pickup",
+     "Alcoholic drinks"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Smart casual attire",
+     "Camera",
+     "Light jacket",
+     "Cash for tips"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "Wheelchair accessible deck",
+     "Accessible restrooms",
+     "Assistance available on request"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "Standard Cruise",
+      "description": "Dinner and entertainment included",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "VIP Cruise",
+      "description": "Premium seating and beverages",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning Session"
+     },
+     {
+      "index": 1,
+      "label": "Mid-Morning Session"
+     },
+     {
+      "index": 2,
+      "label": "Afternoon Session"
+     },
+     {
+      "index": 3,
+      "label": "Late Afternoon Session"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Boarding & Welcome Drink",
+      "description": "Board the cruise and enjoy a welcome cocktail on deck",
+      "duration": "30 min"
+     },
+     {
+      "index": 1,
+      "title": "Dinner Service",
+      "description": "Multi-course dinner with Egyptian and international cuisine",
+      "duration": "1.5 hrs"
+     },
+     {
+      "index": 2,
+      "title": "Live Entertainment",
+      "description": "Enjoy belly dancing, Tanoura show, and live music",
+      "duration": "1 hr"
+     },
+     {
+      "index": 3,
+      "title": "Open Deck & City Views",
+      "description": "Relax on the open deck with panoramic city and river views",
+      "duration": "30 min"
+     },
+     {
+      "index": 4,
+      "title": "Disembarkation",
+      "description": "Return to the dock with optional hotel transfer",
+      "duration": "15 min"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Metro",
+      "description": "Nearest metro station: Giza (15 min walk)"
+     },
+     {
+      "index": 1,
+      "mode": "Taxi",
+      "description": "From Cairo center: 30-45 min by taxi"
+     },
+     {
+      "index": 2,
+      "mode": "Hotel",
+      "description": "Hotel pickup available (add-on)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "Meet at cruise terminal"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001120/attractions-network/tours/cairo-night-cruise/lduxyykpsoerj203hc0d.jpg",
+      "alt": "Cairo Night Cruise on the Nile"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001906/attractions-network/tours/pyramids-excursions/lsivfpcyso3hojmabuh0.jpg",
+      "alt": "Cairo Night Cruise on the Nile"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002079/attractions-network/tours/cairo-sunset-felucca-ride/bu61ptesnyqbgubqewj6.jpg",
+      "alt": "Cairo Night Cruise on the Nile"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002250/attractions-network/tours/cairo-quad-bike-pyramids/zjrsutlwuoayaomskpmk.jpg",
+      "alt": "Cairo Night Cruise on the Nile"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Cairo Night Nile Cruise",
+     "metaDescription": "Book Nile dinner cruise in Cairo",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "رحلة القاهرة الليلية على النيل",
+    "shortDescription": "رحلة مسائية ساحرة على النيل مع العشاء والترفيه في القاهرة",
+    "description": "اختبر رومانسية نهر النيل في رحلة ليلية أنيقة تضم عشاءً تقليدياً وترفيهاً حياً.",
+    "duration": "3 ساعات",
+    "cancellationPolicy": "إلغاء مجاني حتى 24 ساعة قبل الموعد",
+    "highlights": [
+     "مشاهد نهر النيل",
+     "عشاء تقليدي",
+     "ترفيه حي",
+     "عرض الرقص الشرقي"
+    ],
+    "inclusions": [
+     "تذكرة الرحلة النهرية",
+     "بوفيه العشاء",
+     "عرض حي",
+     "المشروبات الغازية"
+    ],
+    "exclusions": [
+     "الاصطحاب من الفندق",
+     "المشروبات الكحولية"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "ملابس أنيقة غير رسمية",
+     "كاميرا",
+     "سترة خفيفة",
+     "نقود للإكراميات"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "سطح مهيّأ للكراسي المتحركة",
+     "دورات مياه مهيّأة",
+     "المساعدة متاحة عند الطلب"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "الرحلة النهرية العادية",
+      "description": "العشاء والترفيه مشمولان",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "رحلة VIP النهرية",
+      "description": "مقاعد ومشروبات مميزة",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "جلسة صباحية"
+     },
+     {
+      "index": 1,
+      "label": "جلسة منتصف الصباح"
+     },
+     {
+      "index": 2,
+      "label": "جلسة بعد الظهر"
+     },
+     {
+      "index": 3,
+      "label": "جلسة آخر النهار"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الصعود ومشروب الترحيب",
+      "description": "اصعد إلى المركب واستمتع بمشروب ترحيبي على السطح",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "تقديم العشاء",
+      "description": "عشاء متعدد الأطباق من المطبخ المصري والمطابخ الدولية",
+      "duration": "1.5 ساعة"
+     },
+     {
+      "index": 2,
+      "title": "ترفيه حي",
+      "description": "استمتع بالرقص الشرقي وعرض التنورة والموسيقى الحية",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 3,
+      "title": "السطح المكشوف ومشاهد المدينة",
+      "description": "استرخِ على السطح المكشوف مع مشاهد بانورامية للمدينة والنهر",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 4,
+      "title": "النزول من المركب",
+      "description": "العودة إلى الرصيف مع نقل اختياري إلى الفندق",
+      "duration": "15 دقيقة"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "المترو",
+      "description": "أقرب محطة مترو: الجيزة (15 دقيقة سيراً)"
+     },
+     {
+      "index": 1,
+      "mode": "سيارة أجرة",
+      "description": "من وسط القاهرة: 30-45 دقيقة بسيارة الأجرة"
+     },
+     {
+      "index": 2,
+      "mode": "الفندق",
+      "description": "الاصطحاب من الفندق متاح (خدمة إضافية)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "اللقاء في محطة الرحلات النهرية"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001120/attractions-network/tours/cairo-night-cruise/lduxyykpsoerj203hc0d.jpg",
+      "alt": "رحلة القاهرة الليلية على النيل"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001906/attractions-network/tours/pyramids-excursions/lsivfpcyso3hojmabuh0.jpg",
+      "alt": "رحلة القاهرة الليلية على النيل"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002079/attractions-network/tours/cairo-sunset-felucca-ride/bu61ptesnyqbgubqewj6.jpg",
+      "alt": "رحلة القاهرة الليلية على النيل"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002250/attractions-network/tours/cairo-quad-bike-pyramids/zjrsutlwuoayaomskpmk.jpg",
+      "alt": "رحلة القاهرة الليلية على النيل"
+     }
+    ],
+    "seo": {
+     "metaTitle": "رحلة ليلية على النيل في القاهرة",
+     "metaDescription": "احجز رحلة عشاء على النيل في القاهرة",
+     "keywords": []
+    }
+   }
+  },
+  {
+   "id": "699895e47169d9820932b9dc",
+   "sourceSlug": "cairo-tour-from-hurghada",
+   "slug": "cairo-tour-from-hurghada-ar",
+   "sourceUpdatedAt": "2026-10-30T11:10:21.261Z",
+   "sourceDigest": "2fd29f09e75630dad7b9fbf950b1802e177d2c58949defb010a2fea5ce0eaa3e",
+   "english": {
+    "title": "Cairo Day Tour from Hurghada",
+    "shortDescription": "Full-day Cairo excursion from Hurghada including Pyramids and Museum",
+    "description": "Fly from Hurghada to Cairo for an unforgettable day visiting the Pyramids of Giza and exploring ancient Egyptian history.",
+    "duration": "Full day (12 hours)",
+    "cancellationPolicy": "Free cancellation up to 7 days before",
+    "highlights": [
+     "Pyramids of Giza",
+     "Sphinx",
+     "Egyptian Museum",
+     "Pharaonic lunch"
+    ],
+    "inclusions": [
+     "Flight from Hurghada",
+     "Professional guide",
+     "Entrance fees"
+    ],
+    "exclusions": [
+     "Lunch",
+     "Travel insurance"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Valid passport or ID",
+     "Comfortable shoes",
+     "Sunscreen & hat",
+     "Camera",
+     "Water bottle",
+     "Small backpack"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "Long walking distances involved",
+     "Moderate fitness level required",
+     "Service animals welcome"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "Basic Tour",
+      "description": "Flight and guided tour",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "Premium Tour",
+      "description": "Flight, tour, and lunch included",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning Session"
+     },
+     {
+      "index": 1,
+      "label": "Mid-Morning Session"
+     },
+     {
+      "index": 2,
+      "label": "Afternoon Session"
+     },
+     {
+      "index": 3,
+      "label": "Late Afternoon Session"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel Pickup",
+      "description": "Private air-conditioned vehicle picks you up from your hotel lobby",
+      "duration": "30 min"
+     },
+     {
+      "index": 1,
+      "title": "Arrival & Guided Tour",
+      "description": "Arrive at the destination and begin your guided exploration with an expert Egyptologist",
+      "duration": "2 hrs"
+     },
+     {
+      "index": 2,
+      "title": "Free Exploration Time",
+      "description": "Explore at your own pace, take photos, and soak in the atmosphere",
+      "duration": "1 hr"
+     },
+     {
+      "index": 3,
+      "title": "Traditional Lunch",
+      "description": "Enjoy an authentic Egyptian lunch at a local restaurant",
+      "duration": "45 min"
+     },
+     {
+      "index": 4,
+      "title": "Continued Sightseeing",
+      "description": "Visit additional sites and landmarks in the area",
+      "duration": "1.5 hrs"
+     },
+     {
+      "index": 5,
+      "title": "Return Transfer",
+      "description": "Comfortable return journey to your hotel",
+      "duration": "3 hrs"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Metro",
+      "description": "Nearest metro station: Giza (15 min walk)"
+     },
+     {
+      "index": 1,
+      "mode": "Taxi",
+      "description": "From Cairo center: 30-45 min by taxi"
+     },
+     {
+      "index": 2,
+      "mode": "Hotel",
+      "description": "Hotel pickup available (add-on)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "Meet at airport 2 hours before flight"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001168/attractions-network/tours/cairo-tour-from-hurghada/tgdcmnxqu6ydwcxx5dxq.jpg",
+      "alt": "Cairo Day Tour from Hurghada"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864632/attractions-network/tours/sunset-felucca-dinner/cegvwihkvodnaptormqr.jpg",
+      "alt": "Cairo Day Tour from Hurghada"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864661/attractions-network/tours/classic-5-course-nile-dinner/e6jasunxojlzxrfbwqff.jpg",
+      "alt": "Cairo Day Tour from Hurghada"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864688/attractions-network/tours/couples-anniversary-cruise/fscgv4omk6cclgwiq6uk.jpg",
+      "alt": "Cairo Day Tour from Hurghada"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Cairo Day Tour from Hurghada",
+     "metaDescription": "Book Cairo tour from Hurghada",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "جولة يوم إلى القاهرة من الغردقة",
+    "shortDescription": "رحلة يوم كامل إلى القاهرة من الغردقة تشمل الأهرامات والمتحف",
+    "description": "طِر من الغردقة إلى القاهرة في يوم لا يُنسى لزيارة أهرامات الجيزة واستكشاف تاريخ مصر القديم.",
+    "duration": "يوم كامل (12 ساعة)",
+    "cancellationPolicy": "إلغاء مجاني حتى 7 أيام قبل الموعد",
+    "highlights": [
+     "أهرامات الجيزة",
+     "أبو الهول",
+     "المتحف المصري",
+     "غداء فرعوني"
+    ],
+    "inclusions": [
+     "رحلة طيران من الغردقة",
+     "مرشد محترف",
+     "رسوم الدخول"
+    ],
+    "exclusions": [
+     "الغداء",
+     "تأمين السفر"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "جواز سفر أو بطاقة هوية سارية",
+     "أحذية مريحة",
+     "واقي شمس وقبعة",
+     "كاميرا",
+     "زجاجة ماء",
+     "حقيبة ظهر صغيرة"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "تتضمن مسافات مشي طويلة",
+     "تتطلب مستوى متوسطاً من اللياقة البدنية",
+     "يُرحَّب بحيوانات الخدمة"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "الجولة الأساسية",
+      "description": "رحلة طيران وجولة بصحبة مرشد",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "جولة مميزة",
+      "description": "الطيران والجولة والغداء مشمولة",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "جلسة صباحية"
+     },
+     {
+      "index": 1,
+      "label": "جلسة منتصف الصباح"
+     },
+     {
+      "index": 2,
+      "label": "جلسة بعد الظهر"
+     },
+     {
+      "index": 3,
+      "label": "جلسة آخر النهار"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "تصطحبك سيارة خاصة مكيّفة من بهو فندقك",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "الوصول والجولة مع المرشد",
+      "description": "الوصول إلى الوجهة وبدء جولتك الاستكشافية مع مرشد خبير في علم المصريات",
+      "duration": "2 ساعات"
+     },
+     {
+      "index": 2,
+      "title": "وقت حر للاستكشاف",
+      "description": "استكشف على راحتك، والتقط الصور، واستمتع بالأجواء",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 3,
+      "title": "غداء تقليدي",
+      "description": "غداء مصري أصيل في مطعم محلي",
+      "duration": "45 دقيقة"
+     },
+     {
+      "index": 4,
+      "title": "متابعة زيارة المعالم",
+      "description": "زيارة مواقع ومعالم إضافية في المنطقة",
+      "duration": "1.5 ساعة"
+     },
+     {
+      "index": 5,
+      "title": "العودة",
+      "description": "رحلة عودة مريحة إلى فندقك",
+      "duration": "3 ساعات"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "المترو",
+      "description": "أقرب محطة مترو: الجيزة (15 دقيقة سيراً)"
+     },
+     {
+      "index": 1,
+      "mode": "سيارة أجرة",
+      "description": "من وسط القاهرة: 30-45 دقيقة بسيارة الأجرة"
+     },
+     {
+      "index": 2,
+      "mode": "الفندق",
+      "description": "الاصطحاب من الفندق متاح (خدمة إضافية)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "اللقاء في المطار 2 ساعة قبل الرحلة"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001168/attractions-network/tours/cairo-tour-from-hurghada/tgdcmnxqu6ydwcxx5dxq.jpg",
+      "alt": "جولة يوم إلى القاهرة من الغردقة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864632/attractions-network/tours/sunset-felucca-dinner/cegvwihkvodnaptormqr.jpg",
+      "alt": "جولة يوم إلى القاهرة من الغردقة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864661/attractions-network/tours/classic-5-course-nile-dinner/e6jasunxojlzxrfbwqff.jpg",
+      "alt": "جولة يوم إلى القاهرة من الغردقة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864688/attractions-network/tours/couples-anniversary-cruise/fscgv4omk6cclgwiq6uk.jpg",
+      "alt": "جولة يوم إلى القاهرة من الغردقة"
+     }
+    ],
+    "seo": {
+     "metaTitle": "جولة يوم إلى القاهرة من الغردقة",
+     "metaDescription": "احجز جولة القاهرة من الغردقة",
+     "keywords": []
+    }
+   }
+  },
+  {
+   "id": "699895e47169d9820932b9df",
+   "sourceSlug": "cairo-tours-packages",
+   "slug": "cairo-tours-packages-ar",
+   "sourceUpdatedAt": "2026-10-30T11:10:21.642Z",
+   "sourceDigest": "650ff8efcc23ad243a0292adc3cf8d4fcc7f277a88ce37a2b652eeeda91f8600",
+   "english": {
+    "title": "Cairo Tours Packages",
+    "shortDescription": "Customizable multi-day Cairo tour packages with hotels and guides",
+    "description": "Comprehensive Cairo tour packages combining major historical sites with comfortable accommodations.",
+    "duration": "3-5 days",
+    "cancellationPolicy": "Free cancellation up to 10 days before",
+    "highlights": [
+     "Pyramids",
+     "Museums",
+     "Temples",
+     "Guided tours"
+    ],
+    "inclusions": [
+     "Accommodation",
+     "Daily breakfast",
+     "Professional guide",
+     "Entrance fees"
+    ],
+    "exclusions": [
+     "Flights",
+     "Travel insurance"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Comfortable shoes",
+     "Sunscreen",
+     "Camera",
+     "Water bottle",
+     "Valid ID"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "Please contact us for accessibility requirements",
+     "Service animals welcome"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "3-Day Package",
+      "description": "Hotel + guides + meals",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "5-Day Package",
+      "description": "Cairo + Alexandria + Luxor",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning Session"
+     },
+     {
+      "index": 1,
+      "label": "Mid-Morning Session"
+     },
+     {
+      "index": 2,
+      "label": "Afternoon Session"
+     },
+     {
+      "index": 3,
+      "label": "Late Afternoon Session"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Check-in & Welcome",
+      "description": "Arrive at the meeting point for registration and welcome briefing",
+      "duration": "15 min"
+     },
+     {
+      "index": 1,
+      "title": "Main Experience",
+      "description": "Enjoy the core activity with professional guidance",
+      "duration": "2 hrs"
+     },
+     {
+      "index": 2,
+      "title": "Break & Refreshments",
+      "description": "Short break with complimentary refreshments",
+      "duration": "30 min"
+     },
+     {
+      "index": 3,
+      "title": "Continued Activity",
+      "description": "Resume the experience with additional activities",
+      "duration": "1 hr"
+     },
+     {
+      "index": 4,
+      "title": "Wrap-up & Farewell",
+      "description": "Final photos and farewell from your guide",
+      "duration": "15 min"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Metro",
+      "description": "Nearest metro station: Giza (15 min walk)"
+     },
+     {
+      "index": 1,
+      "mode": "Taxi",
+      "description": "From Cairo center: 30-45 min by taxi"
+     },
+     {
+      "index": 2,
+      "mode": "Hotel",
+      "description": "Hotel pickup available (add-on)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "Hotel pickup available"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001229/attractions-network/tours/cairo-tours-packages/ndeswj77guwvyf7vgz7g.jpg",
+      "alt": "Cairo Tours Packages"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002197/attractions-network/tours/cairo-citadel-mosque-tour/m1jrqai4eytj6koa7rz2.jpg",
+      "alt": "Cairo Tours Packages"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001168/attractions-network/tours/cairo-tour-from-hurghada/tgdcmnxqu6ydwcxx5dxq.jpg",
+      "alt": "Cairo Tours Packages"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864632/attractions-network/tours/sunset-felucca-dinner/cegvwihkvodnaptormqr.jpg",
+      "alt": "Cairo Tours Packages"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Cairo Tours Packages",
+     "metaDescription": "Book Cairo tour packages",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "باقات جولات القاهرة",
+    "shortDescription": "باقات جولات القاهرة لعدة أيام قابلة للتخصيص مع الفنادق والمرشدين",
+    "description": "باقات جولات شاملة في القاهرة تجمع بين المواقع التاريخية الكبرى والإقامة المريحة.",
+    "duration": "3-5 أيام",
+    "cancellationPolicy": "إلغاء مجاني حتى 10 أيام قبل الموعد",
+    "highlights": [
+     "الأهرامات",
+     "المتاحف",
+     "المعابد",
+     "جولات بصحبة مرشد"
+    ],
+    "inclusions": [
+     "الإقامة",
+     "إفطار يومي",
+     "مرشد محترف",
+     "رسوم الدخول"
+    ],
+    "exclusions": [
+     "الطيران",
+     "تأمين السفر"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "أحذية مريحة",
+     "واقي شمس",
+     "كاميرا",
+     "زجاجة ماء",
+     "هوية سارية"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "يُرجى التواصل معنا لمتطلبات إمكانية الوصول",
+     "يُرحَّب بحيوانات الخدمة"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "باقة 3 أيام",
+      "description": "فندق ومرشدون ووجبات",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "باقة 5 أيام",
+      "description": "القاهرة والإسكندرية والأقصر",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "جلسة صباحية"
+     },
+     {
+      "index": 1,
+      "label": "جلسة منتصف الصباح"
+     },
+     {
+      "index": 2,
+      "label": "جلسة بعد الظهر"
+     },
+     {
+      "index": 3,
+      "label": "جلسة آخر النهار"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "التسجيل والترحيب",
+      "description": "الوصول إلى نقطة اللقاء للتسجيل وإحاطة الترحيب",
+      "duration": "15 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "التجربة الرئيسية",
+      "description": "استمتع بالنشاط الأساسي بإرشاد محترف",
+      "duration": "2 ساعات"
+     },
+     {
+      "index": 2,
+      "title": "استراحة ومرطبات",
+      "description": "استراحة قصيرة مع مرطبات مجانية",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 3,
+      "title": "مواصلة النشاط",
+      "description": "مواصلة التجربة بأنشطة إضافية",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 4,
+      "title": "الختام والوداع",
+      "description": "الصور الأخيرة ووداع مرشدك",
+      "duration": "15 دقيقة"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "المترو",
+      "description": "أقرب محطة مترو: الجيزة (15 دقيقة سيراً)"
+     },
+     {
+      "index": 1,
+      "mode": "سيارة أجرة",
+      "description": "من وسط القاهرة: 30-45 دقيقة بسيارة الأجرة"
+     },
+     {
+      "index": 2,
+      "mode": "الفندق",
+      "description": "الاصطحاب من الفندق متاح (خدمة إضافية)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "الاصطحاب من الفندق متاح"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001229/attractions-network/tours/cairo-tours-packages/ndeswj77guwvyf7vgz7g.jpg",
+      "alt": "باقات جولات القاهرة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002197/attractions-network/tours/cairo-citadel-mosque-tour/m1jrqai4eytj6koa7rz2.jpg",
+      "alt": "باقات جولات القاهرة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001168/attractions-network/tours/cairo-tour-from-hurghada/tgdcmnxqu6ydwcxx5dxq.jpg",
+      "alt": "باقات جولات القاهرة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864632/attractions-network/tours/sunset-felucca-dinner/cegvwihkvodnaptormqr.jpg",
+      "alt": "باقات جولات القاهرة"
+     }
+    ],
+    "seo": {
+     "metaTitle": "باقات جولات القاهرة",
+     "metaDescription": "احجز باقات جولات القاهرة",
+     "keywords": []
+    }
+   }
+  },
+  {
+   "id": "699895e47169d9820932ba12",
+   "sourceSlug": "pyramids-excursions",
+   "slug": "pyramids-excursions-ar",
+   "sourceUpdatedAt": "2026-10-30T11:10:22.738Z",
+   "sourceDigest": "1e8c701552436d90d8e5138da22151ec2468c755b6f62560ae8bf3a43c06edc1",
+   "english": {
+    "title": "Pyramids of Giza Excursion",
+    "shortDescription": "Guided tour of the iconic Pyramids of Giza and Sphinx",
+    "description": "Explore the ancient Pyramids of Giza, one of the world's most iconic archaeological sites.",
+    "duration": "4-5 hours",
+    "cancellationPolicy": "Free cancellation up to 24 hours before",
+    "highlights": [
+     "Great Pyramids",
+     "Sphinx statue",
+     "Ancient wonders",
+     "Photo opportunities"
+    ],
+    "inclusions": [
+     "Professional guide",
+     "Entrance fees",
+     "Hotel pickup",
+     "Bottled water"
+    ],
+    "exclusions": [
+     "Lunch",
+     "Camel riding"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Valid passport or ID",
+     "Comfortable shoes",
+     "Sunscreen & hat",
+     "Camera",
+     "Water bottle",
+     "Small backpack"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "Long walking distances involved",
+     "Moderate fitness level required",
+     "Service animals welcome"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "Giza Tour",
+      "description": "Pyramids and Sphinx tour",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "Premium Tour",
+      "description": "Includes Egyptian Museum",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning Session"
+     },
+     {
+      "index": 1,
+      "label": "Mid-Morning Session"
+     },
+     {
+      "index": 2,
+      "label": "Afternoon Session"
+     },
+     {
+      "index": 3,
+      "label": "Late Afternoon Session"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel Pickup",
+      "description": "Private air-conditioned vehicle picks you up from your hotel lobby",
+      "duration": "30 min"
+     },
+     {
+      "index": 1,
+      "title": "Arrival & Guided Tour",
+      "description": "Arrive at the destination and begin your guided exploration with an expert Egyptologist",
+      "duration": "2 hrs"
+     },
+     {
+      "index": 2,
+      "title": "Free Exploration Time",
+      "description": "Explore at your own pace, take photos, and soak in the atmosphere",
+      "duration": "1 hr"
+     },
+     {
+      "index": 3,
+      "title": "Traditional Lunch",
+      "description": "Enjoy an authentic Egyptian lunch at a local restaurant",
+      "duration": "45 min"
+     },
+     {
+      "index": 4,
+      "title": "Continued Sightseeing",
+      "description": "Visit additional sites and landmarks in the area",
+      "duration": "1.5 hrs"
+     },
+     {
+      "index": 5,
+      "title": "Return Transfer",
+      "description": "Comfortable return journey to your hotel",
+      "duration": "3 hrs"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Metro",
+      "description": "Nearest metro station: Giza (15 min walk)"
+     },
+     {
+      "index": 1,
+      "mode": "Taxi",
+      "description": "From Cairo center: 30-45 min by taxi"
+     },
+     {
+      "index": 2,
+      "mode": "Hotel",
+      "description": "Hotel pickup available (add-on)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "Meet at main entrance"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001906/attractions-network/tours/pyramids-excursions/lsivfpcyso3hojmabuh0.jpg",
+      "alt": "Pyramids of Giza Excursion"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002079/attractions-network/tours/cairo-sunset-felucca-ride/bu61ptesnyqbgubqewj6.jpg",
+      "alt": "Pyramids of Giza Excursion"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002250/attractions-network/tours/cairo-quad-bike-pyramids/zjrsutlwuoayaomskpmk.jpg",
+      "alt": "Pyramids of Giza Excursion"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002306/attractions-network/tours/cairo-food-street-tour/hid9eupdazakgeibsf07.jpg",
+      "alt": "Pyramids of Giza Excursion"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Pyramids of Giza Tour",
+     "metaDescription": "Book Pyramids excursion",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "رحلة إلى أهرامات الجيزة",
+    "shortDescription": "جولة بصحبة مرشد في أهرامات الجيزة الشهيرة وأبو الهول",
+    "description": "استكشف أهرامات الجيزة القديمة، أحد أشهر المواقع الأثرية في العالم.",
+    "duration": "4-5 ساعات",
+    "cancellationPolicy": "إلغاء مجاني حتى 24 ساعة قبل الموعد",
+    "highlights": [
+     "الأهرامات العظيمة",
+     "تمثال أبو الهول",
+     "عجائب قديمة",
+     "فرص للتصوير"
+    ],
+    "inclusions": [
+     "مرشد محترف",
+     "رسوم الدخول",
+     "الاصطحاب من الفندق",
+     "مياه معبأة"
+    ],
+    "exclusions": [
+     "الغداء",
+     "ركوب الجمال"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "جواز سفر أو بطاقة هوية سارية",
+     "أحذية مريحة",
+     "واقي شمس وقبعة",
+     "كاميرا",
+     "زجاجة ماء",
+     "حقيبة ظهر صغيرة"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "تتضمن مسافات مشي طويلة",
+     "تتطلب مستوى متوسطاً من اللياقة البدنية",
+     "يُرحَّب بحيوانات الخدمة"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "جولة الجيزة",
+      "description": "جولة الأهرامات وأبو الهول",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "جولة مميزة",
+      "description": "يشمل المتحف المصري",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "جلسة صباحية"
+     },
+     {
+      "index": 1,
+      "label": "جلسة منتصف الصباح"
+     },
+     {
+      "index": 2,
+      "label": "جلسة بعد الظهر"
+     },
+     {
+      "index": 3,
+      "label": "جلسة آخر النهار"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "تصطحبك سيارة خاصة مكيّفة من بهو فندقك",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "الوصول والجولة مع المرشد",
+      "description": "الوصول إلى الوجهة وبدء جولتك الاستكشافية مع مرشد خبير في علم المصريات",
+      "duration": "2 ساعات"
+     },
+     {
+      "index": 2,
+      "title": "وقت حر للاستكشاف",
+      "description": "استكشف على راحتك، والتقط الصور، واستمتع بالأجواء",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 3,
+      "title": "غداء تقليدي",
+      "description": "غداء مصري أصيل في مطعم محلي",
+      "duration": "45 دقيقة"
+     },
+     {
+      "index": 4,
+      "title": "متابعة زيارة المعالم",
+      "description": "زيارة مواقع ومعالم إضافية في المنطقة",
+      "duration": "1.5 ساعة"
+     },
+     {
+      "index": 5,
+      "title": "العودة",
+      "description": "رحلة عودة مريحة إلى فندقك",
+      "duration": "3 ساعات"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "المترو",
+      "description": "أقرب محطة مترو: الجيزة (15 دقيقة سيراً)"
+     },
+     {
+      "index": 1,
+      "mode": "سيارة أجرة",
+      "description": "من وسط القاهرة: 30-45 دقيقة بسيارة الأجرة"
+     },
+     {
+      "index": 2,
+      "mode": "الفندق",
+      "description": "الاصطحاب من الفندق متاح (خدمة إضافية)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "اللقاء عند المدخل الرئيسي"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001906/attractions-network/tours/pyramids-excursions/lsivfpcyso3hojmabuh0.jpg",
+      "alt": "رحلة إلى أهرامات الجيزة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002079/attractions-network/tours/cairo-sunset-felucca-ride/bu61ptesnyqbgubqewj6.jpg",
+      "alt": "رحلة إلى أهرامات الجيزة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002250/attractions-network/tours/cairo-quad-bike-pyramids/zjrsutlwuoayaomskpmk.jpg",
+      "alt": "رحلة إلى أهرامات الجيزة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002306/attractions-network/tours/cairo-food-street-tour/hid9eupdazakgeibsf07.jpg",
+      "alt": "رحلة إلى أهرامات الجيزة"
+     }
+    ],
+    "seo": {
+     "metaTitle": "جولة أهرامات الجيزة",
+     "metaDescription": "احجز رحلة إلى الأهرامات",
+     "keywords": []
+    }
+   }
+  },
+  {
+   "id": "699895e47169d9820932ba15",
+   "sourceSlug": "egyptian-museum-vip-tour",
+   "slug": "egyptian-museum-vip-tour-ar",
+   "sourceUpdatedAt": "2026-10-30T11:10:22.326Z",
+   "sourceDigest": "00579e868c91d92bc6e247c43e9135ebca3b9a9d049ec8ca17efae6742f0517a",
+   "english": {
+    "title": "Egyptian Museum VIP Guided Tour",
+    "shortDescription": "Skip-the-line private tour of the Grand Egyptian Museum with expert Egyptologist",
+    "description": "Get exclusive VIP access to the Grand Egyptian Museum with a private Egyptologist guide. See Tutankhamun's treasures, royal mummies, and thousands of ancient artefacts without the crowds.",
+    "duration": "3 hours",
+    "cancellationPolicy": "Free cancellation up to 24 hours before",
+    "highlights": [
+     "Tutankhamun collection",
+     "Royal mummy halls",
+     "Private Egyptologist guide",
+     "Skip-the-line access"
+    ],
+    "inclusions": [
+     "Museum entrance fee",
+     "Professional guide",
+     "Skip-the-line access",
+     "Bottled water"
+    ],
+    "exclusions": [
+     "Hotel transfer",
+     "Lunch",
+     "Photography permit"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Comfortable walking shoes",
+     "Sunscreen & hat",
+     "Water bottle",
+     "Camera",
+     "Valid photo ID or passport"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "Partially wheelchair accessible",
+     "Stroller friendly",
+     "Service animals welcome"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "General Admission",
+      "description": "Museum entry with audio guide",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "VIP Private Tour",
+      "description": "Private Egyptologist + skip-the-line",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning Session"
+     },
+     {
+      "index": 1,
+      "label": "Mid-Morning Session"
+     },
+     {
+      "index": 2,
+      "label": "Afternoon Session"
+     },
+     {
+      "index": 3,
+      "label": "Late Afternoon Session"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Meeting & Briefing",
+      "description": "Meet your guide at the entrance for a brief orientation",
+      "duration": "30 min"
+     },
+     {
+      "index": 1,
+      "title": "Guided Tour",
+      "description": "In-depth guided exploration with expert commentary",
+      "duration": "2 hrs"
+     },
+     {
+      "index": 2,
+      "title": "Photo Opportunities",
+      "description": "Dedicated time for photography at the best viewpoints",
+      "duration": "30 min"
+     },
+     {
+      "index": 3,
+      "title": "Extended Exploration",
+      "description": "Continue exploring at your own pace with guide available for questions",
+      "duration": "1 hr"
+     },
+     {
+      "index": 4,
+      "title": "Tour Wrap-up",
+      "description": "Final Q&A and personalized recommendations from your guide",
+      "duration": "15 min"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Metro",
+      "description": "Nearest metro station: Giza (15 min walk)"
+     },
+     {
+      "index": 1,
+      "mode": "Taxi",
+      "description": "From Cairo center: 30-45 min by taxi"
+     },
+     {
+      "index": 2,
+      "mode": "Hotel",
+      "description": "Hotel pickup available (add-on)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "Meet your guide at the main ticket office. Look for the Cairo Attractions Ticket sign."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001971/attractions-network/tours/egyptian-museum-vip-tour/p78zg7y36d6hfcznkhg4.jpg",
+      "alt": "Egyptian Museum VIP Guided Tour"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002026/attractions-network/tours/cairo-old-city-walking-tour/pamgtqhw4rgkvvce7p6m.jpg",
+      "alt": "Egyptian Museum VIP Guided Tour"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002138/attractions-network/tours/cairo-sound-light-show-pyramids/cfj2tbpsdcpxl67toidx.jpg",
+      "alt": "Egyptian Museum VIP Guided Tour"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001120/attractions-network/tours/cairo-night-cruise/lduxyykpsoerj203hc0d.jpg",
+      "alt": "Egyptian Museum VIP Guided Tour"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Egyptian Museum VIP Tour Cairo",
+     "metaDescription": "Skip-the-line Egyptian Museum tour with private Egyptologist guide",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "جولة VIP بصحبة مرشد في المتحف المصري",
+    "shortDescription": "جولة خاصة دون انتظار في المتحف المصري الكبير مع عالم مصريات متخصص",
+    "description": "احصل على دخول VIP حصري إلى المتحف المصري الكبير مع مرشد عالم مصريات خاص. شاهد كنوز توت عنخ آمون والمومياوات الملكية وآلاف الآثار القديمة بعيداً عن الحشود.",
+    "duration": "3 ساعات",
+    "cancellationPolicy": "إلغاء مجاني حتى 24 ساعة قبل الموعد",
+    "highlights": [
+     "مجموعة توت عنخ آمون",
+     "قاعات المومياوات الملكية",
+     "مرشد خاص متخصص في علم المصريات",
+     "دخول دون انتظار في الصفوف"
+    ],
+    "inclusions": [
+     "رسم دخول المتحف",
+     "مرشد محترف",
+     "دخول دون انتظار في الصفوف",
+     "مياه معبأة"
+    ],
+    "exclusions": [
+     "النقل من الفندق",
+     "الغداء",
+     "تصريح التصوير"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "أحذية مريحة للمشي",
+     "واقي شمس وقبعة",
+     "زجاجة ماء",
+     "كاميرا",
+     "هوية بصورة سارية أو جواز سفر"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "مهيّأ جزئياً للكراسي المتحركة",
+     "مناسب لعربات الأطفال",
+     "يُرحَّب بحيوانات الخدمة"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "الدخول العام",
+      "description": "دخول المتحف مع الشرح الصوتي",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "جولة خاصة VIP",
+      "description": "عالم مصريات خاص ودخول دون انتظار",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "جلسة صباحية"
+     },
+     {
+      "index": 1,
+      "label": "جلسة منتصف الصباح"
+     },
+     {
+      "index": 2,
+      "label": "جلسة بعد الظهر"
+     },
+     {
+      "index": 3,
+      "label": "جلسة آخر النهار"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "اللقاء والإحاطة",
+      "description": "التق بمرشدك عند المدخل لإحاطة موجزة",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "جولة بصحبة مرشد",
+      "description": "استكشاف معمّق بصحبة مرشد مع شرح متخصص",
+      "duration": "2 ساعات"
+     },
+     {
+      "index": 2,
+      "title": "فرص التصوير",
+      "description": "وقت مخصص للتصوير في أفضل نقاط الإطلالة",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 3,
+      "title": "استكشاف موسّع",
+      "description": "واصل الاستكشاف بإيقاعك مع توفر المرشد للأسئلة",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 4,
+      "title": "ختام الجولة",
+      "description": "أسئلة أخيرة وتوصيات مخصصة من مرشدك",
+      "duration": "15 دقيقة"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "المترو",
+      "description": "أقرب محطة مترو: الجيزة (15 دقيقة سيراً)"
+     },
+     {
+      "index": 1,
+      "mode": "سيارة أجرة",
+      "description": "من وسط القاهرة: 30-45 دقيقة بسيارة الأجرة"
+     },
+     {
+      "index": 2,
+      "mode": "الفندق",
+      "description": "الاصطحاب من الفندق متاح (خدمة إضافية)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "التق بمرشدك في مكتب التذاكر الرئيسي. ابحث عن لوحة Cairo Attractions Ticket."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001971/attractions-network/tours/egyptian-museum-vip-tour/p78zg7y36d6hfcznkhg4.jpg",
+      "alt": "جولة VIP بصحبة مرشد في المتحف المصري"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002026/attractions-network/tours/cairo-old-city-walking-tour/pamgtqhw4rgkvvce7p6m.jpg",
+      "alt": "جولة VIP بصحبة مرشد في المتحف المصري"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002138/attractions-network/tours/cairo-sound-light-show-pyramids/cfj2tbpsdcpxl67toidx.jpg",
+      "alt": "جولة VIP بصحبة مرشد في المتحف المصري"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001120/attractions-network/tours/cairo-night-cruise/lduxyykpsoerj203hc0d.jpg",
+      "alt": "جولة VIP بصحبة مرشد في المتحف المصري"
+     }
+    ],
+    "seo": {
+     "metaTitle": "جولة VIP في المتحف المصري بالقاهرة",
+     "metaDescription": "جولة في المتحف المصري دون انتظار مع مرشد عالم مصريات خاص",
+     "keywords": []
+    }
+   }
+  },
+  {
+   "id": "699895e47169d9820932ba18",
+   "sourceSlug": "cairo-old-city-walking-tour",
+   "slug": "cairo-old-city-walking-tour-ar",
+   "sourceUpdatedAt": "2026-10-30T11:10:19.691Z",
+   "sourceDigest": "11392b080b4d2efb8dbce521937470446b5af550d6528ccacf4940cc2ef82e79",
+   "english": {
+    "title": "Old Cairo & Islamic Quarter Walking Tour",
+    "shortDescription": "Walk through centuries of history in Islamic Cairo, Coptic Cairo and Khan el-Khalili",
+    "description": "Discover the enchanting streets of Old Cairo on this guided walking tour. Explore the medieval Islamic quarter, visit Al-Azhar Mosque, the Hanging Church in Coptic Cairo, and browse the legendary Khan el-Khalili bazaar.",
+    "duration": "4 hours",
+    "cancellationPolicy": "Free cancellation up to 24 hours before",
+    "highlights": [
+     "Islamic Cairo",
+     "Khan el-Khalili bazaar",
+     "Coptic Cairo",
+     "Al-Azhar Mosque",
+     "Hanging Church"
+    ],
+    "inclusions": [
+     "Licensed guide",
+     "Mosque entrance fees",
+     "Tea at local café"
+    ],
+    "exclusions": [
+     "Hotel transfer",
+     "Lunch",
+     "Shopping expenses"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Comfortable walking shoes",
+     "Sunscreen & hat",
+     "Water bottle",
+     "Camera",
+     "Valid photo ID or passport"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "Partially wheelchair accessible",
+     "Stroller friendly",
+     "Service animals welcome"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "Group Tour",
+      "description": "Small group (max 12)",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "Private Tour",
+      "description": "Private guide + flexible pace",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning Session"
+     },
+     {
+      "index": 1,
+      "label": "Mid-Morning Session"
+     },
+     {
+      "index": 2,
+      "label": "Afternoon Session"
+     },
+     {
+      "index": 3,
+      "label": "Late Afternoon Session"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Meeting & Briefing",
+      "description": "Meet your guide at the entrance for a brief orientation",
+      "duration": "30 min"
+     },
+     {
+      "index": 1,
+      "title": "Guided Tour",
+      "description": "In-depth guided exploration with expert commentary",
+      "duration": "2 hrs"
+     },
+     {
+      "index": 2,
+      "title": "Photo Opportunities",
+      "description": "Dedicated time for photography at the best viewpoints",
+      "duration": "30 min"
+     },
+     {
+      "index": 3,
+      "title": "Extended Exploration",
+      "description": "Continue exploring at your own pace with guide available for questions",
+      "duration": "1 hr"
+     },
+     {
+      "index": 4,
+      "title": "Tour Wrap-up",
+      "description": "Final Q&A and personalized recommendations from your guide",
+      "duration": "15 min"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Metro",
+      "description": "Nearest metro station: Giza (15 min walk)"
+     },
+     {
+      "index": 1,
+      "mode": "Taxi",
+      "description": "From Cairo center: 30-45 min by taxi"
+     },
+     {
+      "index": 2,
+      "mode": "Hotel",
+      "description": "Hotel pickup available (add-on)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "Meet your guide under the mosque archway. Look for the yellow Cairo Attractions flag."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002026/attractions-network/tours/cairo-old-city-walking-tour/pamgtqhw4rgkvvce7p6m.jpg",
+      "alt": "Old Cairo & Islamic Quarter Walking Tour"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002138/attractions-network/tours/cairo-sound-light-show-pyramids/cfj2tbpsdcpxl67toidx.jpg",
+      "alt": "Old Cairo & Islamic Quarter Walking Tour"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001120/attractions-network/tours/cairo-night-cruise/lduxyykpsoerj203hc0d.jpg",
+      "alt": "Old Cairo & Islamic Quarter Walking Tour"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001906/attractions-network/tours/pyramids-excursions/lsivfpcyso3hojmabuh0.jpg",
+      "alt": "Old Cairo & Islamic Quarter Walking Tour"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Old Cairo Walking Tour",
+     "metaDescription": "Guided walking tour of Islamic and Coptic Cairo with Khan el-Khalili visit",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "جولة سير في القاهرة القديمة والحي الإسلامي",
+    "shortDescription": "تجوّل عبر قرون من التاريخ في القاهرة الإسلامية والقاهرة القبطية وخان الخليلي",
+    "description": "اكتشف شوارع القاهرة القديمة الساحرة في جولة السير هذه بصحبة مرشد. استكشف الحي الإسلامي من العصور الوسطى وزُر الجامع الأزهر والكنيسة المعلقة في القاهرة القبطية وتجوّل في بازار خان الخليلي الأسطوري.",
+    "duration": "4 ساعات",
+    "cancellationPolicy": "إلغاء مجاني حتى 24 ساعة قبل الموعد",
+    "highlights": [
+     "القاهرة الإسلامية",
+     "بازار خان الخليلي",
+     "القاهرة القبطية",
+     "الجامع الأزهر",
+     "الكنيسة المعلقة"
+    ],
+    "inclusions": [
+     "مرشد مرخّص",
+     "رسوم دخول المساجد",
+     "شاي في مقهى محلي"
+    ],
+    "exclusions": [
+     "النقل من الفندق",
+     "الغداء",
+     "مصاريف التسوق"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "أحذية مريحة للمشي",
+     "واقي شمس وقبعة",
+     "زجاجة ماء",
+     "كاميرا",
+     "هوية بصورة سارية أو جواز سفر"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "مهيّأ جزئياً للكراسي المتحركة",
+     "مناسب لعربات الأطفال",
+     "يُرحَّب بحيوانات الخدمة"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "جولة جماعية",
+      "description": "مجموعة صغيرة (بحد أقصى 12)",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "الجولة الخاصة",
+      "description": "مرشد خاص وإيقاع مرن",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "جلسة صباحية"
+     },
+     {
+      "index": 1,
+      "label": "جلسة منتصف الصباح"
+     },
+     {
+      "index": 2,
+      "label": "جلسة بعد الظهر"
+     },
+     {
+      "index": 3,
+      "label": "جلسة آخر النهار"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "اللقاء والإحاطة",
+      "description": "التق بمرشدك عند المدخل لإحاطة موجزة",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "جولة بصحبة مرشد",
+      "description": "استكشاف معمّق بصحبة مرشد مع شرح متخصص",
+      "duration": "2 ساعات"
+     },
+     {
+      "index": 2,
+      "title": "فرص التصوير",
+      "description": "وقت مخصص للتصوير في أفضل نقاط الإطلالة",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 3,
+      "title": "استكشاف موسّع",
+      "description": "واصل الاستكشاف بإيقاعك مع توفر المرشد للأسئلة",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 4,
+      "title": "ختام الجولة",
+      "description": "أسئلة أخيرة وتوصيات مخصصة من مرشدك",
+      "duration": "15 دقيقة"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "المترو",
+      "description": "أقرب محطة مترو: الجيزة (15 دقيقة سيراً)"
+     },
+     {
+      "index": 1,
+      "mode": "سيارة أجرة",
+      "description": "من وسط القاهرة: 30-45 دقيقة بسيارة الأجرة"
+     },
+     {
+      "index": 2,
+      "mode": "الفندق",
+      "description": "الاصطحاب من الفندق متاح (خدمة إضافية)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "التق بمرشدك تحت قوس المسجد. ابحث عن علم Cairo Attractions الأصفر."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002026/attractions-network/tours/cairo-old-city-walking-tour/pamgtqhw4rgkvvce7p6m.jpg",
+      "alt": "جولة سير في القاهرة القديمة والحي الإسلامي"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002138/attractions-network/tours/cairo-sound-light-show-pyramids/cfj2tbpsdcpxl67toidx.jpg",
+      "alt": "جولة سير في القاهرة القديمة والحي الإسلامي"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001120/attractions-network/tours/cairo-night-cruise/lduxyykpsoerj203hc0d.jpg",
+      "alt": "جولة سير في القاهرة القديمة والحي الإسلامي"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001906/attractions-network/tours/pyramids-excursions/lsivfpcyso3hojmabuh0.jpg",
+      "alt": "جولة سير في القاهرة القديمة والحي الإسلامي"
+     }
+    ],
+    "seo": {
+     "metaTitle": "جولة سير في القاهرة القديمة",
+     "metaDescription": "جولة سير بصحبة مرشد في القاهرة الإسلامية والقبطية مع زيارة خان الخليلي",
+     "keywords": []
+    }
+   }
+  },
+  {
+   "id": "699895e47169d9820932ba1b",
+   "sourceSlug": "cairo-sunset-felucca-ride",
+   "slug": "cairo-sunset-felucca-ride-ar",
+   "sourceUpdatedAt": "2026-10-30T11:10:20.845Z",
+   "sourceDigest": "b9b708d86a5d6724f83614ba00172d1a9588940da2316150f4c2406dff19114e",
+   "english": {
+    "title": "Sunset Felucca Ride on the Nile",
+    "shortDescription": "Traditional sailboat cruise on the Nile at golden hour with tea and snacks",
+    "description": "Glide along the Nile on a traditional Egyptian felucca as the sun sets over Cairo. Enjoy mint tea, local snacks, and panoramic views of the Cairo skyline and river islands.",
+    "duration": "2 hours",
+    "cancellationPolicy": "Free cancellation up to 12 hours before",
+    "highlights": [
+     "Nile sunset views",
+     "Traditional felucca",
+     "Cairo skyline panorama",
+     "Mint tea included"
+    ],
+    "inclusions": [
+     "Felucca ride",
+     "Mint tea and snacks",
+     "Life jackets"
+    ],
+    "exclusions": [
+     "Hotel transfer",
+     "Dinner"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Smart casual attire",
+     "Camera",
+     "Light jacket",
+     "Cash for tips"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "Wheelchair accessible deck",
+     "Accessible restrooms",
+     "Assistance available on request"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "Standard Felucca",
+      "description": "Shared felucca with tea",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "Private Felucca",
+      "description": "Exclusive boat for your group",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning Session"
+     },
+     {
+      "index": 1,
+      "label": "Mid-Morning Session"
+     },
+     {
+      "index": 2,
+      "label": "Afternoon Session"
+     },
+     {
+      "index": 3,
+      "label": "Late Afternoon Session"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Boarding & Welcome Drink",
+      "description": "Board the cruise and enjoy a welcome cocktail on deck",
+      "duration": "30 min"
+     },
+     {
+      "index": 1,
+      "title": "Dinner Service",
+      "description": "Multi-course dinner with Egyptian and international cuisine",
+      "duration": "1.5 hrs"
+     },
+     {
+      "index": 2,
+      "title": "Live Entertainment",
+      "description": "Enjoy belly dancing, Tanoura show, and live music",
+      "duration": "1 hr"
+     },
+     {
+      "index": 3,
+      "title": "Open Deck & City Views",
+      "description": "Relax on the open deck with panoramic city and river views",
+      "duration": "30 min"
+     },
+     {
+      "index": 4,
+      "title": "Disembarkation",
+      "description": "Return to the dock with optional hotel transfer",
+      "duration": "15 min"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Metro",
+      "description": "Nearest metro station: Giza (15 min walk)"
+     },
+     {
+      "index": 1,
+      "mode": "Taxi",
+      "description": "From Cairo center: 30-45 min by taxi"
+     },
+     {
+      "index": 2,
+      "mode": "Hotel",
+      "description": "Hotel pickup available (add-on)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "Meet at the felucca dock near the Four Seasons."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002079/attractions-network/tours/cairo-sunset-felucca-ride/bu61ptesnyqbgubqewj6.jpg",
+      "alt": "Sunset Felucca Ride on the Nile"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002250/attractions-network/tours/cairo-quad-bike-pyramids/zjrsutlwuoayaomskpmk.jpg",
+      "alt": "Sunset Felucca Ride on the Nile"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002306/attractions-network/tours/cairo-food-street-tour/hid9eupdazakgeibsf07.jpg",
+      "alt": "Sunset Felucca Ride on the Nile"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001229/attractions-network/tours/cairo-tours-packages/ndeswj77guwvyf7vgz7g.jpg",
+      "alt": "Sunset Felucca Ride on the Nile"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Sunset Felucca Ride Cairo",
+     "metaDescription": "Romantic Nile felucca ride at sunset in Cairo",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "جولة بالفلوكة على النيل وقت الغروب",
+    "shortDescription": "رحلة بقارب شراعي تقليدي على النيل في الساعة الذهبية مع الشاي والوجبات الخفيفة",
+    "description": "انزلق على النيل في فلوكة مصرية تقليدية عند غروب الشمس فوق القاهرة. استمتع بالشاي بالنعناع والوجبات الخفيفة المحلية والمشاهد البانورامية لأفق القاهرة وجزر النهر.",
+    "duration": "2 ساعات",
+    "cancellationPolicy": "إلغاء مجاني حتى 12 ساعة قبل الموعد",
+    "highlights": [
+     "مشاهد الغروب على النيل",
+     "فلوكة تقليدية",
+     "بانوراما أفق القاهرة",
+     "شاي بالنعناع مشمول"
+    ],
+    "inclusions": [
+     "جولة بالفلوكة",
+     "شاي بالنعناع ووجبات خفيفة",
+     "سترات نجاة"
+    ],
+    "exclusions": [
+     "النقل من الفندق",
+     "عشاء"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "ملابس أنيقة غير رسمية",
+     "كاميرا",
+     "سترة خفيفة",
+     "نقود للإكراميات"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "سطح مهيّأ للكراسي المتحركة",
+     "دورات مياه مهيّأة",
+     "المساعدة متاحة عند الطلب"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "فلوكة عادية",
+      "description": "فلوكة مشتركة مع الشاي",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "فلوكة خاصة",
+      "description": "قارب حصري لمجموعتك",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "جلسة صباحية"
+     },
+     {
+      "index": 1,
+      "label": "جلسة منتصف الصباح"
+     },
+     {
+      "index": 2,
+      "label": "جلسة بعد الظهر"
+     },
+     {
+      "index": 3,
+      "label": "جلسة آخر النهار"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الصعود ومشروب الترحيب",
+      "description": "اصعد إلى المركب واستمتع بمشروب ترحيبي على السطح",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "تقديم العشاء",
+      "description": "عشاء متعدد الأطباق من المطبخ المصري والمطابخ الدولية",
+      "duration": "1.5 ساعة"
+     },
+     {
+      "index": 2,
+      "title": "ترفيه حي",
+      "description": "استمتع بالرقص الشرقي وعرض التنورة والموسيقى الحية",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 3,
+      "title": "السطح المكشوف ومشاهد المدينة",
+      "description": "استرخِ على السطح المكشوف مع مشاهد بانورامية للمدينة والنهر",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 4,
+      "title": "النزول من المركب",
+      "description": "العودة إلى الرصيف مع نقل اختياري إلى الفندق",
+      "duration": "15 دقيقة"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "المترو",
+      "description": "أقرب محطة مترو: الجيزة (15 دقيقة سيراً)"
+     },
+     {
+      "index": 1,
+      "mode": "سيارة أجرة",
+      "description": "من وسط القاهرة: 30-45 دقيقة بسيارة الأجرة"
+     },
+     {
+      "index": 2,
+      "mode": "الفندق",
+      "description": "الاصطحاب من الفندق متاح (خدمة إضافية)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "اللقاء عند رصيف الفلوكة قرب Four Seasons."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002079/attractions-network/tours/cairo-sunset-felucca-ride/bu61ptesnyqbgubqewj6.jpg",
+      "alt": "جولة بالفلوكة على النيل وقت الغروب"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002250/attractions-network/tours/cairo-quad-bike-pyramids/zjrsutlwuoayaomskpmk.jpg",
+      "alt": "جولة بالفلوكة على النيل وقت الغروب"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002306/attractions-network/tours/cairo-food-street-tour/hid9eupdazakgeibsf07.jpg",
+      "alt": "جولة بالفلوكة على النيل وقت الغروب"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001229/attractions-network/tours/cairo-tours-packages/ndeswj77guwvyf7vgz7g.jpg",
+      "alt": "جولة بالفلوكة على النيل وقت الغروب"
+     }
+    ],
+    "seo": {
+     "metaTitle": "جولة بالفلوكة وقت الغروب في القاهرة",
+     "metaDescription": "جولة رومانسية بالفلوكة على النيل وقت الغروب في القاهرة",
+     "keywords": []
+    }
+   }
+  },
+  {
+   "id": "699895e47169d9820932ba1e",
+   "sourceSlug": "cairo-sound-light-show-pyramids",
+   "slug": "cairo-sound-light-show-pyramids-ar",
+   "sourceUpdatedAt": "2026-10-30T11:10:20.459Z",
+   "sourceDigest": "10425d7e77cf8379fe368120b122a9ea1471f9307e5e43aa2c052ef1203e6c0b",
+   "english": {
+    "title": "Sound & Light Show at the Pyramids",
+    "shortDescription": "Spectacular evening laser and sound show at the Great Pyramids of Giza",
+    "description": "Watch the Pyramids come alive with a mesmerising sound and light show. The Sphinx narrates the history of ancient Egypt while laser projections illuminate the Great Pyramids against the night sky.",
+    "duration": "1.5 hours",
+    "cancellationPolicy": "Free cancellation up to 24 hours before",
+    "highlights": [
+     "Laser show on Pyramids",
+     "Sphinx narration",
+     "Night photography",
+     "Multi-language audio"
+    ],
+    "inclusions": [
+     "Show ticket",
+     "Seat assignment",
+     "Audio headset"
+    ],
+    "exclusions": [
+     "Hotel transfer",
+     "Drinks and snacks"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Comfortable shoes",
+     "Sunscreen",
+     "Camera",
+     "Water bottle",
+     "Valid ID"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "Please contact us for accessibility requirements",
+     "Service animals welcome"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "Standard Seat",
+      "description": "Open-air seating",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "VIP Front Row",
+      "description": "Premium front row seating",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning Session"
+     },
+     {
+      "index": 1,
+      "label": "Mid-Morning Session"
+     },
+     {
+      "index": 2,
+      "label": "Afternoon Session"
+     },
+     {
+      "index": 3,
+      "label": "Late Afternoon Session"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Check-in & Welcome",
+      "description": "Arrive at the meeting point for registration and welcome briefing",
+      "duration": "15 min"
+     },
+     {
+      "index": 1,
+      "title": "Main Experience",
+      "description": "Enjoy the core activity with professional guidance",
+      "duration": "2 hrs"
+     },
+     {
+      "index": 2,
+      "title": "Break & Refreshments",
+      "description": "Short break with complimentary refreshments",
+      "duration": "30 min"
+     },
+     {
+      "index": 3,
+      "title": "Continued Activity",
+      "description": "Resume the experience with additional activities",
+      "duration": "1 hr"
+     },
+     {
+      "index": 4,
+      "title": "Wrap-up & Farewell",
+      "description": "Final photos and farewell from your guide",
+      "duration": "15 min"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Metro",
+      "description": "Nearest metro station: Giza (15 min walk)"
+     },
+     {
+      "index": 1,
+      "mode": "Taxi",
+      "description": "From Cairo center: 30-45 min by taxi"
+     },
+     {
+      "index": 2,
+      "mode": "Hotel",
+      "description": "Hotel pickup available (add-on)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "Arrive 30 minutes before show time. Enter through the Sound & Light gate."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002138/attractions-network/tours/cairo-sound-light-show-pyramids/cfj2tbpsdcpxl67toidx.jpg",
+      "alt": "Sound & Light Show at the Pyramids"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001120/attractions-network/tours/cairo-night-cruise/lduxyykpsoerj203hc0d.jpg",
+      "alt": "Sound & Light Show at the Pyramids"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001906/attractions-network/tours/pyramids-excursions/lsivfpcyso3hojmabuh0.jpg",
+      "alt": "Sound & Light Show at the Pyramids"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002079/attractions-network/tours/cairo-sunset-felucca-ride/bu61ptesnyqbgubqewj6.jpg",
+      "alt": "Sound & Light Show at the Pyramids"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Sound & Light Show Pyramids Cairo",
+     "metaDescription": "Book Sound and Light Show tickets at the Pyramids of Giza",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "عرض الصوت والضوء عند الأهرامات",
+    "shortDescription": "عرض ليزر وصوت مسائي مذهل عند أهرامات الجيزة العظيمة",
+    "description": "شاهد الأهرامات تدبّ فيها الحياة في عرض صوت وضوء آسر. يسرد أبو الهول تاريخ مصر القديمة بينما تُضيء إسقاطات الليزر الأهرامات العظيمة في سماء الليل.",
+    "duration": "1.5 ساعة",
+    "cancellationPolicy": "إلغاء مجاني حتى 24 ساعة قبل الموعد",
+    "highlights": [
+     "عرض ليزر على الأهرامات",
+     "سرد أبو الهول",
+     "التصوير الليلي",
+     "شرح صوتي بعدة لغات"
+    ],
+    "inclusions": [
+     "تذكرة العرض",
+     "تحديد المقعد",
+     "سماعة الشرح الصوتي"
+    ],
+    "exclusions": [
+     "النقل من الفندق",
+     "المشروبات والوجبات الخفيفة"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "أحذية مريحة",
+     "واقي شمس",
+     "كاميرا",
+     "زجاجة ماء",
+     "هوية سارية"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "يُرجى التواصل معنا لمتطلبات إمكانية الوصول",
+     "يُرحَّب بحيوانات الخدمة"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "مقعد عادي",
+      "description": "مقاعد في الهواء الطلق",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "الصف الأول VIP",
+      "description": "مقاعد مميزة في الصف الأول",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "جلسة صباحية"
+     },
+     {
+      "index": 1,
+      "label": "جلسة منتصف الصباح"
+     },
+     {
+      "index": 2,
+      "label": "جلسة بعد الظهر"
+     },
+     {
+      "index": 3,
+      "label": "جلسة آخر النهار"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "التسجيل والترحيب",
+      "description": "الوصول إلى نقطة اللقاء للتسجيل وإحاطة الترحيب",
+      "duration": "15 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "التجربة الرئيسية",
+      "description": "استمتع بالنشاط الأساسي بإرشاد محترف",
+      "duration": "2 ساعات"
+     },
+     {
+      "index": 2,
+      "title": "استراحة ومرطبات",
+      "description": "استراحة قصيرة مع مرطبات مجانية",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 3,
+      "title": "مواصلة النشاط",
+      "description": "مواصلة التجربة بأنشطة إضافية",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 4,
+      "title": "الختام والوداع",
+      "description": "الصور الأخيرة ووداع مرشدك",
+      "duration": "15 دقيقة"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "المترو",
+      "description": "أقرب محطة مترو: الجيزة (15 دقيقة سيراً)"
+     },
+     {
+      "index": 1,
+      "mode": "سيارة أجرة",
+      "description": "من وسط القاهرة: 30-45 دقيقة بسيارة الأجرة"
+     },
+     {
+      "index": 2,
+      "mode": "الفندق",
+      "description": "الاصطحاب من الفندق متاح (خدمة إضافية)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "احضر 30 دقيقة قبل موعد العرض. ادخل من بوابة الصوت والضوء."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002138/attractions-network/tours/cairo-sound-light-show-pyramids/cfj2tbpsdcpxl67toidx.jpg",
+      "alt": "عرض الصوت والضوء عند الأهرامات"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001120/attractions-network/tours/cairo-night-cruise/lduxyykpsoerj203hc0d.jpg",
+      "alt": "عرض الصوت والضوء عند الأهرامات"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001906/attractions-network/tours/pyramids-excursions/lsivfpcyso3hojmabuh0.jpg",
+      "alt": "عرض الصوت والضوء عند الأهرامات"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002079/attractions-network/tours/cairo-sunset-felucca-ride/bu61ptesnyqbgubqewj6.jpg",
+      "alt": "عرض الصوت والضوء عند الأهرامات"
+     }
+    ],
+    "seo": {
+     "metaTitle": "عرض الصوت والضوء في أهرامات القاهرة",
+     "metaDescription": "احجز تذاكر عرض الصوت والضوء في أهرامات الجيزة",
+     "keywords": []
+    }
+   }
+  },
+  {
+   "id": "699895e47169d9820932ba21",
+   "sourceSlug": "cairo-citadel-mosque-tour",
+   "slug": "cairo-citadel-mosque-tour-ar",
+   "sourceUpdatedAt": "2026-10-30T11:10:18.531Z",
+   "sourceDigest": "7bbb704a76b46215f88782b2db64d980fc25b9cbcd51c6eff1115b2adc086752",
+   "english": {
+    "title": "Cairo Citadel & Alabaster Mosque Tour",
+    "shortDescription": "Visit the medieval Saladin Citadel and stunning Muhammad Ali Mosque with panoramic Cairo views",
+    "description": "Explore the majestic Saladin Citadel, a medieval Islamic fortress perched above Cairo. Tour the grand Muhammad Ali (Alabaster) Mosque, enjoy sweeping panoramic views of the city, and discover centuries of Egyptian history.",
+    "duration": "3 hours",
+    "cancellationPolicy": "Free cancellation up to 24 hours before",
+    "highlights": [
+     "Saladin Citadel",
+     "Alabaster Mosque",
+     "Panoramic city views",
+     "Military Museum"
+    ],
+    "inclusions": [
+     "Licensed guide",
+     "All entrance fees",
+     "Bottled water"
+    ],
+    "exclusions": [
+     "Hotel transfer",
+     "Lunch",
+     "Tips"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Comfortable shoes",
+     "Sunscreen",
+     "Camera",
+     "Water bottle",
+     "Valid ID"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "Please contact us for accessibility requirements",
+     "Service animals welcome"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "Standard Tour",
+      "description": "Guided tour with entrance fees",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "Premium Tour",
+      "description": "Includes lunch at local restaurant",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning Session"
+     },
+     {
+      "index": 1,
+      "label": "Mid-Morning Session"
+     },
+     {
+      "index": 2,
+      "label": "Afternoon Session"
+     },
+     {
+      "index": 3,
+      "label": "Late Afternoon Session"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Check-in & Welcome",
+      "description": "Arrive at the meeting point for registration and welcome briefing",
+      "duration": "15 min"
+     },
+     {
+      "index": 1,
+      "title": "Main Experience",
+      "description": "Enjoy the core activity with professional guidance",
+      "duration": "2 hrs"
+     },
+     {
+      "index": 2,
+      "title": "Break & Refreshments",
+      "description": "Short break with complimentary refreshments",
+      "duration": "30 min"
+     },
+     {
+      "index": 3,
+      "title": "Continued Activity",
+      "description": "Resume the experience with additional activities",
+      "duration": "1 hr"
+     },
+     {
+      "index": 4,
+      "title": "Wrap-up & Farewell",
+      "description": "Final photos and farewell from your guide",
+      "duration": "15 min"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Metro",
+      "description": "Nearest metro station: Giza (15 min walk)"
+     },
+     {
+      "index": 1,
+      "mode": "Taxi",
+      "description": "From Cairo center: 30-45 min by taxi"
+     },
+     {
+      "index": 2,
+      "mode": "Hotel",
+      "description": "Hotel pickup available (add-on)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "Meet at the main entrance near the ticket booth."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002197/attractions-network/tours/cairo-citadel-mosque-tour/m1jrqai4eytj6koa7rz2.jpg",
+      "alt": "Cairo Citadel & Alabaster Mosque Tour"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001168/attractions-network/tours/cairo-tour-from-hurghada/tgdcmnxqu6ydwcxx5dxq.jpg",
+      "alt": "Cairo Citadel & Alabaster Mosque Tour"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864632/attractions-network/tours/sunset-felucca-dinner/cegvwihkvodnaptormqr.jpg",
+      "alt": "Cairo Citadel & Alabaster Mosque Tour"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864661/attractions-network/tours/classic-5-course-nile-dinner/e6jasunxojlzxrfbwqff.jpg",
+      "alt": "Cairo Citadel & Alabaster Mosque Tour"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Cairo Citadel Tour",
+     "metaDescription": "Guided tour of Saladin Citadel and Alabaster Mosque in Cairo",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "جولة قلعة القاهرة ومسجد الألباستر",
+    "shortDescription": "زُر قلعة صلاح الدين من العصور الوسطى ومسجد محمد علي الخلاب مع مشاهد بانورامية للقاهرة",
+    "description": "استكشف قلعة صلاح الدين المهيبة، حصناً إسلامياً من العصور الوسطى يتربع فوق القاهرة. تجوّل في مسجد محمد علي (الألباستر) الكبير واستمتع بمشاهد بانورامية واسعة للمدينة واكتشف قروناً من التاريخ المصري.",
+    "duration": "3 ساعات",
+    "cancellationPolicy": "إلغاء مجاني حتى 24 ساعة قبل الموعد",
+    "highlights": [
+     "قلعة صلاح الدين",
+     "مسجد الألباستر",
+     "مشاهد بانورامية للمدينة",
+     "المتحف العسكري"
+    ],
+    "inclusions": [
+     "مرشد مرخّص",
+     "جميع رسوم الدخول",
+     "مياه معبأة"
+    ],
+    "exclusions": [
+     "النقل من الفندق",
+     "الغداء",
+     "الإكراميات"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "أحذية مريحة",
+     "واقي شمس",
+     "كاميرا",
+     "زجاجة ماء",
+     "هوية سارية"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "يُرجى التواصل معنا لمتطلبات إمكانية الوصول",
+     "يُرحَّب بحيوانات الخدمة"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "الجولة القياسية",
+      "description": "جولة بصحبة مرشد مع رسوم الدخول",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "جولة مميزة",
+      "description": "يشمل الغداء في مطعم محلي",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "جلسة صباحية"
+     },
+     {
+      "index": 1,
+      "label": "جلسة منتصف الصباح"
+     },
+     {
+      "index": 2,
+      "label": "جلسة بعد الظهر"
+     },
+     {
+      "index": 3,
+      "label": "جلسة آخر النهار"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "التسجيل والترحيب",
+      "description": "الوصول إلى نقطة اللقاء للتسجيل وإحاطة الترحيب",
+      "duration": "15 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "التجربة الرئيسية",
+      "description": "استمتع بالنشاط الأساسي بإرشاد محترف",
+      "duration": "2 ساعات"
+     },
+     {
+      "index": 2,
+      "title": "استراحة ومرطبات",
+      "description": "استراحة قصيرة مع مرطبات مجانية",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 3,
+      "title": "مواصلة النشاط",
+      "description": "مواصلة التجربة بأنشطة إضافية",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 4,
+      "title": "الختام والوداع",
+      "description": "الصور الأخيرة ووداع مرشدك",
+      "duration": "15 دقيقة"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "المترو",
+      "description": "أقرب محطة مترو: الجيزة (15 دقيقة سيراً)"
+     },
+     {
+      "index": 1,
+      "mode": "سيارة أجرة",
+      "description": "من وسط القاهرة: 30-45 دقيقة بسيارة الأجرة"
+     },
+     {
+      "index": 2,
+      "mode": "الفندق",
+      "description": "الاصطحاب من الفندق متاح (خدمة إضافية)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "اللقاء عند المدخل الرئيسي قرب شباك التذاكر."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002197/attractions-network/tours/cairo-citadel-mosque-tour/m1jrqai4eytj6koa7rz2.jpg",
+      "alt": "جولة قلعة القاهرة ومسجد الألباستر"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001168/attractions-network/tours/cairo-tour-from-hurghada/tgdcmnxqu6ydwcxx5dxq.jpg",
+      "alt": "جولة قلعة القاهرة ومسجد الألباستر"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864632/attractions-network/tours/sunset-felucca-dinner/cegvwihkvodnaptormqr.jpg",
+      "alt": "جولة قلعة القاهرة ومسجد الألباستر"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864661/attractions-network/tours/classic-5-course-nile-dinner/e6jasunxojlzxrfbwqff.jpg",
+      "alt": "جولة قلعة القاهرة ومسجد الألباستر"
+     }
+    ],
+    "seo": {
+     "metaTitle": "جولة قلعة القاهرة",
+     "metaDescription": "جولة بصحبة مرشد في قلعة صلاح الدين ومسجد الألباستر بالقاهرة",
+     "keywords": []
+    }
+   }
+  },
+  {
+   "id": "699895e47169d9820932ba24",
+   "sourceSlug": "cairo-quad-bike-pyramids",
+   "slug": "cairo-quad-bike-pyramids-ar",
+   "sourceUpdatedAt": "2026-10-30T11:10:20.075Z",
+   "sourceDigest": "eee6d53e07132f63d206a8159761d2bf0f1fe04e65c9d4e314c8b3a6fc468b58",
+   "english": {
+    "title": "Quad Bike Adventure at the Pyramids",
+    "shortDescription": "Thrilling ATV ride around the Giza Pyramids with desert panoramic views",
+    "description": "Rev up for an adrenaline-pumping quad bike adventure across the Giza desert plateau. Ride past the Great Pyramids, enjoy stunning panoramic views, and capture once-in-a-lifetime photos from the desert.",
+    "duration": "2 hours",
+    "cancellationPolicy": "Free cancellation up to 24 hours before",
+    "highlights": [
+     "Quad bike riding",
+     "Pyramids desert views",
+     "Photo stops",
+     "Safety equipment included"
+    ],
+    "inclusions": [
+     "Quad bike rental",
+     "Helmet and gear",
+     "Guide",
+     "Bottled water"
+    ],
+    "exclusions": [
+     "Hotel transfer",
+     "Insurance",
+     "Photos and videos"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Comfortable closed-toe shoes",
+     "Sunscreen (SPF 50+)",
+     "Sunglasses",
+     "Light jacket for evening",
+     "Camera",
+     "Cash for tips"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "Moderate fitness required",
+     "Not suitable for wheelchair users",
+     "Not recommended for pregnant women"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "Single Quad",
+      "description": "1-person ATV ride",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "Double Quad",
+      "description": "2-person ATV ride",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning Session"
+     },
+     {
+      "index": 1,
+      "label": "Mid-Morning Session"
+     },
+     {
+      "index": 2,
+      "label": "Afternoon Session"
+     },
+     {
+      "index": 3,
+      "label": "Late Afternoon Session"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel Pickup",
+      "description": "Collected from your hotel in a 4x4 vehicle",
+      "duration": "30 min"
+     },
+     {
+      "index": 1,
+      "title": "Desert Drive & ATV/Quad",
+      "description": "Thrilling ride across sand dunes on ATVs or quad bikes",
+      "duration": "1 hr"
+     },
+     {
+      "index": 2,
+      "title": "Camel Ride",
+      "description": "Traditional camel trek through the desert landscape",
+      "duration": "45 min"
+     },
+     {
+      "index": 3,
+      "title": "Bedouin Village Visit",
+      "description": "Experience authentic Bedouin culture with tea and bread",
+      "duration": "30 min"
+     },
+     {
+      "index": 4,
+      "title": "Sunset Viewing",
+      "description": "Watch the stunning desert sunset from a scenic viewpoint",
+      "duration": "30 min"
+     },
+     {
+      "index": 5,
+      "title": "BBQ Dinner & Stargazing",
+      "description": "Enjoy a traditional BBQ dinner under the stars",
+      "duration": "1.5 hrs"
+     },
+     {
+      "index": 6,
+      "title": "Return to Hotel",
+      "description": "Transfer back to your hotel",
+      "duration": "30 min"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Metro",
+      "description": "Nearest metro station: Giza (15 min walk)"
+     },
+     {
+      "index": 1,
+      "mode": "Taxi",
+      "description": "From Cairo center: 30-45 min by taxi"
+     },
+     {
+      "index": 2,
+      "mode": "Hotel",
+      "description": "Hotel pickup available (add-on)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "Meet at the quad bike station near the Sphinx entrance."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002250/attractions-network/tours/cairo-quad-bike-pyramids/zjrsutlwuoayaomskpmk.jpg",
+      "alt": "Quad Bike Adventure at the Pyramids"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002306/attractions-network/tours/cairo-food-street-tour/hid9eupdazakgeibsf07.jpg",
+      "alt": "Quad Bike Adventure at the Pyramids"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001229/attractions-network/tours/cairo-tours-packages/ndeswj77guwvyf7vgz7g.jpg",
+      "alt": "Quad Bike Adventure at the Pyramids"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002197/attractions-network/tours/cairo-citadel-mosque-tour/m1jrqai4eytj6koa7rz2.jpg",
+      "alt": "Quad Bike Adventure at the Pyramids"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Quad Bike Pyramids Cairo",
+     "metaDescription": "Quad bike desert adventure at the Pyramids of Giza",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "مغامرة دراجات الكواد عند الأهرامات",
+    "shortDescription": "جولة مثيرة بمركبة ATV حول أهرامات الجيزة مع مشاهد بانورامية للصحراء",
+    "description": "استعد لمغامرة دراجات كواد مثيرة عبر هضبة صحراء الجيزة. اركب بجوار الأهرامات العظيمة واستمتع بمشاهد بانورامية خلابة والتقط صوراً لا تتكرر من الصحراء.",
+    "duration": "2 ساعات",
+    "cancellationPolicy": "إلغاء مجاني حتى 24 ساعة قبل الموعد",
+    "highlights": [
+     "قيادة دراجات الكواد",
+     "مشاهد الصحراء عند الأهرامات",
+     "توقفات للتصوير",
+     "تجهيزات السلامة مشمولة"
+    ],
+    "inclusions": [
+     "تأجير دراجات الكواد",
+     "الخوذة والتجهيزات",
+     "مرشد",
+     "مياه معبأة"
+    ],
+    "exclusions": [
+     "النقل من الفندق",
+     "التأمين",
+     "الصور ومقاطع الفيديو"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "أحذية مريحة مغلقة من الأمام",
+     "واقٍ من الشمس (SPF 50+)",
+     "نظارات شمسية",
+     "سترة خفيفة للمساء",
+     "كاميرا",
+     "نقود للإكراميات"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "تتطلب لياقة بدنية متوسطة",
+     "غير مناسبة لمستخدمي الكراسي المتحركة",
+     "غير مناسبة للحوامل"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "كواد لشخص واحد",
+      "description": "جولة بمركبة ATV لـ 1 راكب",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "كواد مزدوج",
+      "description": "جولة بمركبة ATV لـ 2 راكب",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "جلسة صباحية"
+     },
+     {
+      "index": 1,
+      "label": "جلسة منتصف الصباح"
+     },
+     {
+      "index": 2,
+      "label": "جلسة بعد الظهر"
+     },
+     {
+      "index": 3,
+      "label": "جلسة آخر النهار"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك بسيارة 4x4",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "القيادة في الصحراء بمركبة ATV أو الكواد",
+      "description": "جولة مثيرة عبر الكثبان الرملية بمركبات ATV أو دراجات الكواد",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 2,
+      "title": "ركوب الجمل",
+      "description": "رحلة تقليدية على ظهر الجمل عبر الصحراء",
+      "duration": "45 دقيقة"
+     },
+     {
+      "index": 3,
+      "title": "زيارة قرية بدوية",
+      "description": "التعرف على الثقافة البدوية الأصيلة مع الشاي والخبز",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 4,
+      "title": "مشاهدة الغروب",
+      "description": "مشاهدة غروب الشمس الساحر في الصحراء من نقطة إطلالة خلابة",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 5,
+      "title": "عشاء مشويات ومراقبة النجوم",
+      "description": "عشاء مشويات تقليدي تحت النجوم",
+      "duration": "1.5 ساعة"
+     },
+     {
+      "index": 6,
+      "title": "العودة إلى الفندق",
+      "description": "العودة إلى فندقك",
+      "duration": "30 دقيقة"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "المترو",
+      "description": "أقرب محطة مترو: الجيزة (15 دقيقة سيراً)"
+     },
+     {
+      "index": 1,
+      "mode": "سيارة أجرة",
+      "description": "من وسط القاهرة: 30-45 دقيقة بسيارة الأجرة"
+     },
+     {
+      "index": 2,
+      "mode": "الفندق",
+      "description": "الاصطحاب من الفندق متاح (خدمة إضافية)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "اللقاء عند محطة دراجات الكواد قرب مدخل أبو الهول."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002250/attractions-network/tours/cairo-quad-bike-pyramids/zjrsutlwuoayaomskpmk.jpg",
+      "alt": "مغامرة دراجات الكواد عند الأهرامات"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002306/attractions-network/tours/cairo-food-street-tour/hid9eupdazakgeibsf07.jpg",
+      "alt": "مغامرة دراجات الكواد عند الأهرامات"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001229/attractions-network/tours/cairo-tours-packages/ndeswj77guwvyf7vgz7g.jpg",
+      "alt": "مغامرة دراجات الكواد عند الأهرامات"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002197/attractions-network/tours/cairo-citadel-mosque-tour/m1jrqai4eytj6koa7rz2.jpg",
+      "alt": "مغامرة دراجات الكواد عند الأهرامات"
+     }
+    ],
+    "seo": {
+     "metaTitle": "دراجات الكواد عند أهرامات القاهرة",
+     "metaDescription": "مغامرة دراجات الكواد في الصحراء عند أهرامات الجيزة",
+     "keywords": []
+    }
+   }
+  },
+  {
+   "id": "699895e47169d9820932ba27",
+   "sourceSlug": "cairo-food-street-tour",
+   "slug": "cairo-food-street-tour-ar",
+   "sourceUpdatedAt": "2026-10-30T11:10:18.922Z",
+   "sourceDigest": "e5e3f5d04cf9b9d4caef1a872c47cdbbe0192329a98196ce1a9f76a35ef4cd9a",
+   "english": {
+    "title": "Cairo Street Food & Culture Tour",
+    "shortDescription": "Taste authentic Egyptian street food with a local guide in downtown Cairo",
+    "description": "Satisfy your taste buds on a guided walking tour through Cairo's vibrant food scene. Sample koshari, falafel, ful medames, fresh juices, and traditional pastries while exploring bustling local neighbourhoods.",
+    "duration": "3.5 hours",
+    "cancellationPolicy": "Free cancellation up to 24 hours before",
+    "highlights": [
+     "Authentic koshari",
+     "Local falafel shops",
+     "Egyptian pastries",
+     "Fresh juice bars",
+     "Downtown Cairo culture"
+    ],
+    "inclusions": [
+     "Local guide",
+     "All food tastings",
+     "Bottled water",
+     "Soft drinks"
+    ],
+    "exclusions": [
+     "Hotel transfer",
+     "Alcoholic beverages",
+     "Gratuities"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Comfortable walking shoes",
+     "Sunscreen & hat",
+     "Water bottle",
+     "Camera",
+     "Valid photo ID or passport"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "Partially wheelchair accessible",
+     "Stroller friendly",
+     "Service animals welcome"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "Standard Tour",
+      "description": "Walking tour + 6 food stops",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "Premium Tour",
+      "description": "9 food stops + drink pairings",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning Session"
+     },
+     {
+      "index": 1,
+      "label": "Mid-Morning Session"
+     },
+     {
+      "index": 2,
+      "label": "Afternoon Session"
+     },
+     {
+      "index": 3,
+      "label": "Late Afternoon Session"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Meeting & Briefing",
+      "description": "Meet your guide at the entrance for a brief orientation",
+      "duration": "30 min"
+     },
+     {
+      "index": 1,
+      "title": "Guided Tour",
+      "description": "In-depth guided exploration with expert commentary",
+      "duration": "2 hrs"
+     },
+     {
+      "index": 2,
+      "title": "Photo Opportunities",
+      "description": "Dedicated time for photography at the best viewpoints",
+      "duration": "30 min"
+     },
+     {
+      "index": 3,
+      "title": "Extended Exploration",
+      "description": "Continue exploring at your own pace with guide available for questions",
+      "duration": "1 hr"
+     },
+     {
+      "index": 4,
+      "title": "Tour Wrap-up",
+      "description": "Final Q&A and personalized recommendations from your guide",
+      "duration": "15 min"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Metro",
+      "description": "Nearest metro station: Giza (15 min walk)"
+     },
+     {
+      "index": 1,
+      "mode": "Taxi",
+      "description": "From Cairo center: 30-45 min by taxi"
+     },
+     {
+      "index": 2,
+      "mode": "Hotel",
+      "description": "Hotel pickup available (add-on)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "Meet at the Talaat Harb statue in the centre of the square."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002306/attractions-network/tours/cairo-food-street-tour/hid9eupdazakgeibsf07.jpg",
+      "alt": "Cairo Street Food & Culture Tour"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001229/attractions-network/tours/cairo-tours-packages/ndeswj77guwvyf7vgz7g.jpg",
+      "alt": "Cairo Street Food & Culture Tour"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002197/attractions-network/tours/cairo-citadel-mosque-tour/m1jrqai4eytj6koa7rz2.jpg",
+      "alt": "Cairo Street Food & Culture Tour"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001168/attractions-network/tours/cairo-tour-from-hurghada/tgdcmnxqu6ydwcxx5dxq.jpg",
+      "alt": "Cairo Street Food & Culture Tour"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Cairo Street Food Tour",
+     "metaDescription": "Guided street food tour in downtown Cairo with local tastings",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "جولة طعام الشارع والثقافة في القاهرة",
+    "shortDescription": "تذوّق طعام الشارع المصري الأصيل مع مرشد محلي في وسط القاهرة",
+    "description": "أرضِ ذوقك في جولة سير بصحبة مرشد عبر مشهد الطعام النابض بالحياة في القاهرة. تذوّق الكشري والفلافل والفول المدمس والعصائر الطازجة والمعجنات التقليدية أثناء استكشاف الأحياء المحلية المزدحمة.",
+    "duration": "3.5 ساعة",
+    "cancellationPolicy": "إلغاء مجاني حتى 24 ساعة قبل الموعد",
+    "highlights": [
+     "كشري أصيل",
+     "محال الفلافل المحلية",
+     "معجنات مصرية",
+     "بارات العصائر الطازجة",
+     "ثقافة وسط القاهرة"
+    ],
+    "inclusions": [
+     "مرشد محلي",
+     "جميع التذوقات",
+     "مياه معبأة",
+     "مشروبات غازية"
+    ],
+    "exclusions": [
+     "النقل من الفندق",
+     "المشروبات الكحولية",
+     "الإكراميات"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "أحذية مريحة للمشي",
+     "واقي شمس وقبعة",
+     "زجاجة ماء",
+     "كاميرا",
+     "هوية بصورة سارية أو جواز سفر"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "مهيّأ جزئياً للكراسي المتحركة",
+     "مناسب لعربات الأطفال",
+     "يُرحَّب بحيوانات الخدمة"
+    ],
+    "pricingOptions": [
+     {
+      "id": "opt_1",
+      "name": "الجولة القياسية",
+      "description": "جولة سير و 6 توقفات طعام",
+      "timeSlots": []
+     },
+     {
+      "id": "opt_2",
+      "name": "جولة مميزة",
+      "description": "9 توقفات طعام مع مشروبات مرافقة",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "جلسة صباحية"
+     },
+     {
+      "index": 1,
+      "label": "جلسة منتصف الصباح"
+     },
+     {
+      "index": 2,
+      "label": "جلسة بعد الظهر"
+     },
+     {
+      "index": 3,
+      "label": "جلسة آخر النهار"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "اللقاء والإحاطة",
+      "description": "التق بمرشدك عند المدخل لإحاطة موجزة",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "جولة بصحبة مرشد",
+      "description": "استكشاف معمّق بصحبة مرشد مع شرح متخصص",
+      "duration": "2 ساعات"
+     },
+     {
+      "index": 2,
+      "title": "فرص التصوير",
+      "description": "وقت مخصص للتصوير في أفضل نقاط الإطلالة",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 3,
+      "title": "استكشاف موسّع",
+      "description": "واصل الاستكشاف بإيقاعك مع توفر المرشد للأسئلة",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 4,
+      "title": "ختام الجولة",
+      "description": "أسئلة أخيرة وتوصيات مخصصة من مرشدك",
+      "duration": "15 دقيقة"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "المترو",
+      "description": "أقرب محطة مترو: الجيزة (15 دقيقة سيراً)"
+     },
+     {
+      "index": 1,
+      "mode": "سيارة أجرة",
+      "description": "من وسط القاهرة: 30-45 دقيقة بسيارة الأجرة"
+     },
+     {
+      "index": 2,
+      "mode": "الفندق",
+      "description": "الاصطحاب من الفندق متاح (خدمة إضافية)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "اللقاء عند تمثال طلعت حرب في وسط الميدان."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002306/attractions-network/tours/cairo-food-street-tour/hid9eupdazakgeibsf07.jpg",
+      "alt": "جولة طعام الشارع والثقافة في القاهرة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001229/attractions-network/tours/cairo-tours-packages/ndeswj77guwvyf7vgz7g.jpg",
+      "alt": "جولة طعام الشارع والثقافة في القاهرة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002197/attractions-network/tours/cairo-citadel-mosque-tour/m1jrqai4eytj6koa7rz2.jpg",
+      "alt": "جولة طعام الشارع والثقافة في القاهرة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001168/attractions-network/tours/cairo-tour-from-hurghada/tgdcmnxqu6ydwcxx5dxq.jpg",
+      "alt": "جولة طعام الشارع والثقافة في القاهرة"
+     }
+    ],
+    "seo": {
+     "metaTitle": "جولة طعام الشارع في القاهرة",
+     "metaDescription": "جولة طعام شارع بصحبة مرشد في وسط القاهرة مع تذوقات محلية",
+     "keywords": []
+    }
+   }
+  },
+  {
+   "id": "69ceb9274ce520edffefbb5d",
+   "sourceSlug": "cairo-tour-from-hurghada-experience",
+   "slug": "cairo-tour-from-hurghada-experience-ar",
+   "sourceUpdatedAt": "2026-10-30T11:09:59.341Z",
+   "sourceDigest": "c532d1f9c2a78ca1f41eac370cc694473c665516d7d5839552b6277f2dcc6544",
+   "english": {
+    "title": "Cairo Tour from Hurghada",
+    "shortDescription": "Full-day guided tour from Hurghada to Cairo visiting the Pyramids, Sphinx, and Egyptian Museum",
+    "description": "Experience the wonders of ancient Egypt on this full-day tour from Hurghada to Cairo. Travel in an air-conditioned vehicle and visit the Great Pyramids of Giza, the Sphinx, and the Egyptian Museum. Enjoy a traditional Egyptian lunch and explore Khan El Khalili bazaar.",
+    "duration": "14-16 hours",
+    "cancellationPolicy": "Free cancellation up to 24 hours before",
+    "highlights": [
+     "Pyramids of Giza & Sphinx",
+     "Egyptian Museum",
+     "Khan El Khalili Bazaar",
+     "Traditional lunch",
+     "AC transport"
+    ],
+    "inclusions": [
+     "Egyptologist guide",
+     "AC transport",
+     "Entrance fees",
+     "Lunch",
+     "Hotel pickup",
+     "Water"
+    ],
+    "exclusions": [
+     "Camel ride (optional)",
+     "Tips",
+     "Inside pyramid entry"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Valid passport or ID",
+     "Comfortable shoes",
+     "Sunscreen & hat",
+     "Camera",
+     "Water bottle",
+     "Small backpack"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "Long walking distances involved",
+     "Moderate fitness level required",
+     "Service animals welcome"
+    ],
+    "pricingOptions": [
+     {
+      "id": "ct1",
+      "name": "Group Tour",
+      "description": "Shared bus, up to 20",
+      "timeSlots": []
+     },
+     {
+      "id": "ct2",
+      "name": "Private Tour",
+      "description": "Private vehicle and guide",
+      "timeSlots": []
+     },
+     {
+      "id": "ct3",
+      "name": "VIP Tour",
+      "description": "Luxury vehicle, private guide",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "a1",
+      "name": "Hotel Pickup",
+      "description": "Door-to-door from any Hurghada hotel"
+     },
+     {
+      "id": "a2",
+      "name": "Camel Ride",
+      "description": "30-min camel ride at Pyramids"
+     },
+     {
+      "id": "a3",
+      "name": "Lunch Upgrade",
+      "description": "Premium restaurant with Nile view"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning Session"
+     },
+     {
+      "index": 1,
+      "label": "Mid-Morning Session"
+     },
+     {
+      "index": 2,
+      "label": "Afternoon Session"
+     },
+     {
+      "index": 3,
+      "label": "Late Afternoon Session"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel Pickup",
+      "description": "Private air-conditioned vehicle picks you up from your hotel lobby",
+      "duration": "30 min"
+     },
+     {
+      "index": 1,
+      "title": "Arrival & Guided Tour",
+      "description": "Arrive at the destination and begin your guided exploration with an expert Egyptologist",
+      "duration": "2 hrs"
+     },
+     {
+      "index": 2,
+      "title": "Free Exploration Time",
+      "description": "Explore at your own pace, take photos, and soak in the atmosphere",
+      "duration": "1 hr"
+     },
+     {
+      "index": 3,
+      "title": "Traditional Lunch",
+      "description": "Enjoy an authentic Egyptian lunch at a local restaurant",
+      "duration": "45 min"
+     },
+     {
+      "index": 4,
+      "title": "Continued Sightseeing",
+      "description": "Visit additional sites and landmarks in the area",
+      "duration": "1.5 hrs"
+     },
+     {
+      "index": 5,
+      "title": "Return Transfer",
+      "description": "Comfortable return journey to your hotel",
+      "duration": "3 hrs"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Metro",
+      "description": "Nearest metro station: Giza (15 min walk)"
+     },
+     {
+      "index": 1,
+      "mode": "Taxi",
+      "description": "From Cairo center: 30-45 min by taxi"
+     },
+     {
+      "index": 2,
+      "mode": "Hotel",
+      "description": "Hotel pickup available (add-on)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "Guide meets at 3:00 AM"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002473/attractions-network/tours/cairo-tour-from-hurghada-experience/vjy30yf7x3vqusyylely.jpg",
+      "alt": "Cairo Tour from Hurghada"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864632/attractions-network/tours/sunset-felucca-dinner/cegvwihkvodnaptormqr.jpg",
+      "alt": "Cairo Tour from Hurghada"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864661/attractions-network/tours/classic-5-course-nile-dinner/e6jasunxojlzxrfbwqff.jpg",
+      "alt": "Cairo Tour from Hurghada"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864688/attractions-network/tours/couples-anniversary-cruise/fscgv4omk6cclgwiq6uk.jpg",
+      "alt": "Cairo Tour from Hurghada"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Cairo Tour from Hurghada - Pyramids Day Trip",
+     "metaDescription": "Book a full-day Cairo tour from Hurghada.",
+     "keywords": [
+      "cairo tour from hurghada",
+      "pyramids day trip"
+     ]
+    }
+   },
+   "arabic": {
+    "title": "جولة القاهرة من الغردقة",
+    "shortDescription": "جولة يوم كامل بصحبة مرشد من الغردقة إلى القاهرة تزور الأهرامات وأبو الهول والمتحف المصري",
+    "description": "اختبر عجائب مصر القديمة في جولة اليوم الكامل هذه من الغردقة إلى القاهرة. سافر في سيارة مكيّفة وزُر أهرامات الجيزة العظيمة وأبو الهول والمتحف المصري. استمتع بغداء مصري تقليدي واستكشف بازار خان الخليلي.",
+    "duration": "14-16 ساعة",
+    "cancellationPolicy": "إلغاء مجاني حتى 24 ساعة قبل الموعد",
+    "highlights": [
+     "أهرامات الجيزة وأبو الهول",
+     "المتحف المصري",
+     "بازار خان الخليلي",
+     "غداء تقليدي",
+     "مواصلات مكيّفة"
+    ],
+    "inclusions": [
+     "مرشد متخصص في علم المصريات",
+     "مواصلات مكيّفة",
+     "رسوم الدخول",
+     "الغداء",
+     "الاصطحاب من الفندق",
+     "ماء"
+    ],
+    "exclusions": [
+     "ركوب الجمل (اختياري)",
+     "الإكراميات",
+     "الدخول إلى داخل الهرم"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "جواز سفر أو بطاقة هوية سارية",
+     "أحذية مريحة",
+     "واقي شمس وقبعة",
+     "كاميرا",
+     "زجاجة ماء",
+     "حقيبة ظهر صغيرة"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "تتضمن مسافات مشي طويلة",
+     "تتطلب مستوى متوسطاً من اللياقة البدنية",
+     "يُرحَّب بحيوانات الخدمة"
+    ],
+    "pricingOptions": [
+     {
+      "id": "ct1",
+      "name": "جولة جماعية",
+      "description": "حافلة مشتركة تتسع حتى 20",
+      "timeSlots": []
+     },
+     {
+      "id": "ct2",
+      "name": "الجولة الخاصة",
+      "description": "سيارة خاصة ومرشد خاص",
+      "timeSlots": []
+     },
+     {
+      "id": "ct3",
+      "name": "جولة VIP",
+      "description": "سيارة فاخرة، مرشد خاص",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "a1",
+      "name": "الاصطحاب من الفندق",
+      "description": "من الباب إلى الباب من أي فندق في الغردقة"
+     },
+     {
+      "id": "a2",
+      "name": "ركوب الجمل",
+      "description": "جولة 30 دقيقة على الجمل عند الأهرامات"
+     },
+     {
+      "id": "a3",
+      "name": "ترقية الغداء",
+      "description": "مطعم مميز بإطلالة على النيل"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "جلسة صباحية"
+     },
+     {
+      "index": 1,
+      "label": "جلسة منتصف الصباح"
+     },
+     {
+      "index": 2,
+      "label": "جلسة بعد الظهر"
+     },
+     {
+      "index": 3,
+      "label": "جلسة آخر النهار"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "تصطحبك سيارة خاصة مكيّفة من بهو فندقك",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "الوصول والجولة مع المرشد",
+      "description": "الوصول إلى الوجهة وبدء جولتك الاستكشافية مع مرشد خبير في علم المصريات",
+      "duration": "2 ساعات"
+     },
+     {
+      "index": 2,
+      "title": "وقت حر للاستكشاف",
+      "description": "استكشف على راحتك، والتقط الصور، واستمتع بالأجواء",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 3,
+      "title": "غداء تقليدي",
+      "description": "غداء مصري أصيل في مطعم محلي",
+      "duration": "45 دقيقة"
+     },
+     {
+      "index": 4,
+      "title": "متابعة زيارة المعالم",
+      "description": "زيارة مواقع ومعالم إضافية في المنطقة",
+      "duration": "1.5 ساعة"
+     },
+     {
+      "index": 5,
+      "title": "العودة",
+      "description": "رحلة عودة مريحة إلى فندقك",
+      "duration": "3 ساعات"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "المترو",
+      "description": "أقرب محطة مترو: الجيزة (15 دقيقة سيراً)"
+     },
+     {
+      "index": 1,
+      "mode": "سيارة أجرة",
+      "description": "من وسط القاهرة: 30-45 دقيقة بسيارة الأجرة"
+     },
+     {
+      "index": 2,
+      "mode": "الفندق",
+      "description": "الاصطحاب من الفندق متاح (خدمة إضافية)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "المرشد يلتقي بك في 3:00 صباحاً"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002473/attractions-network/tours/cairo-tour-from-hurghada-experience/vjy30yf7x3vqusyylely.jpg",
+      "alt": "جولة القاهرة من الغردقة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864632/attractions-network/tours/sunset-felucca-dinner/cegvwihkvodnaptormqr.jpg",
+      "alt": "جولة القاهرة من الغردقة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864661/attractions-network/tours/classic-5-course-nile-dinner/e6jasunxojlzxrfbwqff.jpg",
+      "alt": "جولة القاهرة من الغردقة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864688/attractions-network/tours/couples-anniversary-cruise/fscgv4omk6cclgwiq6uk.jpg",
+      "alt": "جولة القاهرة من الغردقة"
+     }
+    ],
+    "seo": {
+     "metaTitle": "جولة القاهرة من الغردقة - رحلة يوم إلى الأهرامات",
+     "metaDescription": "احجز جولة يوم كامل إلى القاهرة من الغردقة.",
+     "keywords": [
+      "جولة القاهرة من الغردقة",
+      "رحلة يوم إلى الأهرامات"
+     ]
+    }
+   }
+  },
+  {
+   "id": "69ceb9274ce520edffefbb5e",
+   "sourceSlug": "cairo-tours-packages-deal",
+   "slug": "cairo-tours-packages-deal-ar",
+   "sourceUpdatedAt": "2026-10-26T09:24:58.193Z",
+   "sourceDigest": "3b9dd374f2cd7622b9d5c7fed6e50f3f6551fe328e96f3dbafe3321424a3d337",
+   "english": {
+    "title": "Cairo Tour Package",
+    "shortDescription": "2-day Cairo tour package with hotel, guided tours of Pyramids, Museum, Old Cairo and Nile cruise",
+    "description": "Discover the best of Cairo with this 2-day tour package. Day one: Pyramids, Sphinx, Egyptian Museum. Day two: Old Cairo, Citadel, Nile dinner cruise. Includes hotel, transfers, and meals.",
+    "duration": "2 days / 1 night",
+    "cancellationPolicy": "Free cancellation up to 48 hours before",
+    "highlights": [
+     "Pyramids & Sphinx",
+     "Egyptian Museum",
+     "Old Cairo & Citadel",
+     "Nile Dinner Cruise",
+     "Hotel included"
+    ],
+    "inclusions": [
+     "1 night hotel",
+     "All entrance fees",
+     "Guide",
+     "All meals",
+     "Nile cruise",
+     "Transfers"
+    ],
+    "exclusions": [
+     "Flights",
+     "Travel insurance",
+     "Tips"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Comfortable shoes",
+     "Sunscreen",
+     "Camera",
+     "Water bottle",
+     "Valid ID"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "Please contact us for accessibility requirements",
+     "Service animals welcome"
+    ],
+    "pricingOptions": [
+     {
+      "id": "cp1",
+      "name": "Standard Package",
+      "description": "3-star hotel, group tours",
+      "timeSlots": []
+     },
+     {
+      "id": "cp2",
+      "name": "Premium Package",
+      "description": "4-star hotel, semi-private",
+      "timeSlots": []
+     },
+     {
+      "id": "cp3",
+      "name": "Luxury Package",
+      "description": "5-star hotel, private guide",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "a1",
+      "name": "Airport Transfer",
+      "description": "Private car to/from Cairo airport"
+     },
+     {
+      "id": "a2",
+      "name": "Sound & Light Show",
+      "description": "Evening show at Pyramids"
+     },
+     {
+      "id": "a3",
+      "name": "Extra Night",
+      "description": "Additional hotel night"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning Session"
+     },
+     {
+      "index": 1,
+      "label": "Mid-Morning Session"
+     },
+     {
+      "index": 2,
+      "label": "Afternoon Session"
+     },
+     {
+      "index": 3,
+      "label": "Late Afternoon Session"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Check-in & Welcome",
+      "description": "Arrive at the meeting point for registration and welcome briefing",
+      "duration": "15 min"
+     },
+     {
+      "index": 1,
+      "title": "Main Experience",
+      "description": "Enjoy the core activity with professional guidance",
+      "duration": "2 hrs"
+     },
+     {
+      "index": 2,
+      "title": "Break & Refreshments",
+      "description": "Short break with complimentary refreshments",
+      "duration": "30 min"
+     },
+     {
+      "index": 3,
+      "title": "Continued Activity",
+      "description": "Resume the experience with additional activities",
+      "duration": "1 hr"
+     },
+     {
+      "index": 4,
+      "title": "Wrap-up & Farewell",
+      "description": "Final photos and farewell from your guide",
+      "duration": "15 min"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Metro",
+      "description": "Nearest metro station: Giza (15 min walk)"
+     },
+     {
+      "index": 1,
+      "mode": "Taxi",
+      "description": "From Cairo center: 30-45 min by taxi"
+     },
+     {
+      "index": 2,
+      "mode": "Hotel",
+      "description": "Hotel pickup available (add-on)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "Transfer arranged"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002416/attractions-network/tours/cairo-tours-packages-deal/jxe7a30tl9kltzifq4xi.jpg",
+      "alt": "Cairo Tour Package"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864661/attractions-network/tours/classic-5-course-nile-dinner/e6jasunxojlzxrfbwqff.jpg",
+      "alt": "Cairo Tour Package"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864688/attractions-network/tours/couples-anniversary-cruise/fscgv4omk6cclgwiq6uk.jpg",
+      "alt": "Cairo Tour Package"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864715/attractions-network/tours/tanoura-folkloric-dinner/k0oqmidsjonczlzvxjog.jpg",
+      "alt": "Cairo Tour Package"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Cairo Tour Package - 2 Day Pyramids Tour",
+     "metaDescription": "Book 2-day Cairo tour package.",
+     "keywords": [
+      "cairo tour package",
+      "egypt tour package"
+     ]
+    }
+   },
+   "arabic": {
+    "title": "باقة جولة القاهرة",
+    "shortDescription": "باقة جولة القاهرة لمدة 2 يوم مع الفندق وجولات بصحبة مرشد في الأهرامات والمتحف والقاهرة القديمة ورحلة نهرية على النيل",
+    "description": "اكتشف أفضل ما في القاهرة مع باقة الجولة هذه لمدة 2 يوم. اليوم الأول: الأهرامات وأبو الهول والمتحف المصري. اليوم الثاني: القاهرة القديمة والقلعة ورحلة عشاء على النيل. تشمل الفندق والنقل والوجبات.",
+    "duration": "2 أيام / 1 ليلة",
+    "cancellationPolicy": "إلغاء مجاني حتى 48 ساعة قبل الموعد",
+    "highlights": [
+     "الأهرامات وأبو الهول",
+     "المتحف المصري",
+     "القاهرة القديمة والقلعة",
+     "رحلة عشاء بحرية على النيل",
+     "الفندق مشمول"
+    ],
+    "inclusions": [
+     "1 ليلة في فندق",
+     "جميع رسوم الدخول",
+     "مرشد",
+     "جميع الوجبات",
+     "رحلة نهرية على النيل",
+     "خدمات النقل"
+    ],
+    "exclusions": [
+     "الطيران",
+     "تأمين السفر",
+     "الإكراميات"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "أحذية مريحة",
+     "واقي شمس",
+     "كاميرا",
+     "زجاجة ماء",
+     "هوية سارية"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "يُرجى التواصل معنا لمتطلبات إمكانية الوصول",
+     "يُرحَّب بحيوانات الخدمة"
+    ],
+    "pricingOptions": [
+     {
+      "id": "cp1",
+      "name": "الباقة القياسية",
+      "description": "فندق 3 نجوم، جولات جماعية",
+      "timeSlots": []
+     },
+     {
+      "id": "cp2",
+      "name": "الباقة المميزة",
+      "description": "فندق 4 نجوم، شبه خاص",
+      "timeSlots": []
+     },
+     {
+      "id": "cp3",
+      "name": "الباقة الفاخرة",
+      "description": "فندق 5 نجوم، مرشد خاص",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "a1",
+      "name": "النقل إلى المطار",
+      "description": "سيارة خاصة من مطار القاهرة وإليه"
+     },
+     {
+      "id": "a2",
+      "name": "عرض الصوت والضوء",
+      "description": "عرض مسائي عند الأهرامات"
+     },
+     {
+      "id": "a3",
+      "name": "ليلة إضافية",
+      "description": "ليلة فندقية إضافية"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "جلسة صباحية"
+     },
+     {
+      "index": 1,
+      "label": "جلسة منتصف الصباح"
+     },
+     {
+      "index": 2,
+      "label": "جلسة بعد الظهر"
+     },
+     {
+      "index": 3,
+      "label": "جلسة آخر النهار"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "التسجيل والترحيب",
+      "description": "الوصول إلى نقطة اللقاء للتسجيل وإحاطة الترحيب",
+      "duration": "15 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "التجربة الرئيسية",
+      "description": "استمتع بالنشاط الأساسي بإرشاد محترف",
+      "duration": "2 ساعات"
+     },
+     {
+      "index": 2,
+      "title": "استراحة ومرطبات",
+      "description": "استراحة قصيرة مع مرطبات مجانية",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 3,
+      "title": "مواصلة النشاط",
+      "description": "مواصلة التجربة بأنشطة إضافية",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 4,
+      "title": "الختام والوداع",
+      "description": "الصور الأخيرة ووداع مرشدك",
+      "duration": "15 دقيقة"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "المترو",
+      "description": "أقرب محطة مترو: الجيزة (15 دقيقة سيراً)"
+     },
+     {
+      "index": 1,
+      "mode": "سيارة أجرة",
+      "description": "من وسط القاهرة: 30-45 دقيقة بسيارة الأجرة"
+     },
+     {
+      "index": 2,
+      "mode": "الفندق",
+      "description": "الاصطحاب من الفندق متاح (خدمة إضافية)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "النقل مُرتَّب"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002416/attractions-network/tours/cairo-tours-packages-deal/jxe7a30tl9kltzifq4xi.jpg",
+      "alt": "باقة جولة القاهرة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864661/attractions-network/tours/classic-5-course-nile-dinner/e6jasunxojlzxrfbwqff.jpg",
+      "alt": "باقة جولة القاهرة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864688/attractions-network/tours/couples-anniversary-cruise/fscgv4omk6cclgwiq6uk.jpg",
+      "alt": "باقة جولة القاهرة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864715/attractions-network/tours/tanoura-folkloric-dinner/k0oqmidsjonczlzvxjog.jpg",
+      "alt": "باقة جولة القاهرة"
+     }
+    ],
+    "seo": {
+     "metaTitle": "باقة جولة القاهرة - جولة الأهرامات في 2 يوم",
+     "metaDescription": "احجز باقة جولة القاهرة لمدة 2 يوم.",
+     "keywords": [
+      "باقة جولة القاهرة",
+      "باقة جولة مصر"
+     ]
+    }
+   }
+  },
+  {
+   "id": "69ceb9274ce520edffefbb5f",
+   "sourceSlug": "luxor-tour-from-hurghada-excursion",
+   "slug": "luxor-tour-from-hurghada-excursion-ar",
+   "sourceUpdatedAt": "2026-10-30T11:10:13.521Z",
+   "sourceDigest": "b3ab53f100f24ec186a1eee4c5f0e12e866ca22871fd3569bf89b6082dec2b46",
+   "english": {
+    "title": "Luxor Tour From Hurghada",
+    "shortDescription": "Full-day Luxor excursion visiting Valley of the Kings, Karnak Temple, and Hatshepsut Temple",
+    "description": "Travel from Hurghada to Luxor for an unforgettable day exploring ancient temples and tombs. Visit Valley of the Kings, Hatshepsut Temple, Colossi of Memnon, and Karnak Temple with lunch.",
+    "duration": "14-16 hours",
+    "cancellationPolicy": "Free cancellation up to 24 hours before",
+    "highlights": [
+     "Valley of the Kings",
+     "Karnak Temple",
+     "Hatshepsut Temple",
+     "Colossi of Memnon",
+     "Nile-view lunch"
+    ],
+    "inclusions": [
+     "Egyptologist guide",
+     "AC transport",
+     "Entrance fees",
+     "Lunch",
+     "Hotel pickup"
+    ],
+    "exclusions": [
+     "Inside tomb entries (optional)",
+     "Hot air balloon (optional)",
+     "Tips"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Valid passport or ID",
+     "Comfortable shoes",
+     "Sunscreen & hat",
+     "Camera",
+     "Water bottle",
+     "Small backpack"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "Long walking distances involved",
+     "Moderate fitness level required",
+     "Service animals welcome"
+    ],
+    "pricingOptions": [
+     {
+      "id": "lx1",
+      "name": "Group Tour",
+      "description": "Shared bus tour",
+      "timeSlots": []
+     },
+     {
+      "id": "lx2",
+      "name": "Private Tour",
+      "description": "Private vehicle and guide",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "a1",
+      "name": "Hot Air Balloon",
+      "description": "Sunrise balloon ride over Luxor"
+     },
+     {
+      "id": "a2",
+      "name": "Felucca Ride",
+      "description": "1-hour Nile sailboat"
+     },
+     {
+      "id": "a3",
+      "name": "Tomb of Tutankhamun",
+      "description": "Entry to Tutankhamun tomb"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning Session"
+     },
+     {
+      "index": 1,
+      "label": "Mid-Morning Session"
+     },
+     {
+      "index": 2,
+      "label": "Afternoon Session"
+     },
+     {
+      "index": 3,
+      "label": "Late Afternoon Session"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel Pickup",
+      "description": "Private air-conditioned vehicle picks you up from your hotel lobby",
+      "duration": "30 min"
+     },
+     {
+      "index": 1,
+      "title": "Arrival & Guided Tour",
+      "description": "Arrive at the destination and begin your guided exploration with an expert Egyptologist",
+      "duration": "2 hrs"
+     },
+     {
+      "index": 2,
+      "title": "Free Exploration Time",
+      "description": "Explore at your own pace, take photos, and soak in the atmosphere",
+      "duration": "1 hr"
+     },
+     {
+      "index": 3,
+      "title": "Traditional Lunch",
+      "description": "Enjoy an authentic Egyptian lunch at a local restaurant",
+      "duration": "45 min"
+     },
+     {
+      "index": 4,
+      "title": "Continued Sightseeing",
+      "description": "Visit additional sites and landmarks in the area",
+      "duration": "1.5 hrs"
+     },
+     {
+      "index": 5,
+      "title": "Return Transfer",
+      "description": "Comfortable return journey to your hotel",
+      "duration": "3 hrs"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel",
+      "description": "Free pickup from all Luxor & Hurghada hotels"
+     },
+     {
+      "index": 1,
+      "mode": "Bus",
+      "description": "Tourist bus from Hurghada (4 hrs)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "Pickup at 4:00 AM"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002538/attractions-network/tours/luxor-tour-from-hurghada-excursion/xhxq1ff3r5qdvuuafeog.jpg",
+      "alt": "Luxor Tour From Hurghada"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864688/attractions-network/tours/couples-anniversary-cruise/fscgv4omk6cclgwiq6uk.jpg",
+      "alt": "Luxor Tour From Hurghada"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864715/attractions-network/tours/tanoura-folkloric-dinner/k0oqmidsjonczlzvxjog.jpg",
+      "alt": "Luxor Tour From Hurghada"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864833/attractions-network/tours/late-night-jazz-felucca/g1iwzdad0ktpihtzpph5.jpg",
+      "alt": "Luxor Tour From Hurghada"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Luxor Tour from Hurghada - Valley of the Kings",
+     "metaDescription": "Full-day Luxor tour from Hurghada.",
+     "keywords": [
+      "luxor tour from hurghada",
+      "valley of the kings"
+     ]
+    }
+   },
+   "arabic": {
+    "title": "جولة الأقصر من الغردقة",
+    "shortDescription": "رحلة يوم كامل إلى الأقصر تزور وادي الملوك ومعبد الكرنك ومعبد حتشبسوت",
+    "description": "سافر من الغردقة إلى الأقصر في يوم لا يُنسى لاستكشاف المعابد والمقابر القديمة. زُر وادي الملوك ومعبد حتشبسوت وتمثالي ممنون ومعبد الكرنك مع الغداء.",
+    "duration": "14-16 ساعة",
+    "cancellationPolicy": "إلغاء مجاني حتى 24 ساعة قبل الموعد",
+    "highlights": [
+     "وادي الملوك",
+     "معبد الكرنك",
+     "معبد حتشبسوت",
+     "تمثالا ممنون",
+     "غداء بإطلالة على النيل"
+    ],
+    "inclusions": [
+     "مرشد متخصص في علم المصريات",
+     "مواصلات مكيّفة",
+     "رسوم الدخول",
+     "الغداء",
+     "الاصطحاب من الفندق"
+    ],
+    "exclusions": [
+     "دخول المقابر من الداخل (اختياري)",
+     "منطاد الهواء الساخن (اختياري)",
+     "الإكراميات"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "جواز سفر أو بطاقة هوية سارية",
+     "أحذية مريحة",
+     "واقي شمس وقبعة",
+     "كاميرا",
+     "زجاجة ماء",
+     "حقيبة ظهر صغيرة"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "تتضمن مسافات مشي طويلة",
+     "تتطلب مستوى متوسطاً من اللياقة البدنية",
+     "يُرحَّب بحيوانات الخدمة"
+    ],
+    "pricingOptions": [
+     {
+      "id": "lx1",
+      "name": "جولة جماعية",
+      "description": "جولة بحافلة مشتركة",
+      "timeSlots": []
+     },
+     {
+      "id": "lx2",
+      "name": "الجولة الخاصة",
+      "description": "سيارة خاصة ومرشد خاص",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "a1",
+      "name": "المنطاد الهوائي",
+      "description": "جولة بالمنطاد عند الشروق فوق الأقصر"
+     },
+     {
+      "id": "a2",
+      "name": "جولة بالفلوكة",
+      "description": "قارب شراعي على النيل لمدة 1 ساعة"
+     },
+     {
+      "id": "a3",
+      "name": "مقبرة توت عنخ آمون",
+      "description": "الدخول إلى مقبرة توت عنخ آمون"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "جلسة صباحية"
+     },
+     {
+      "index": 1,
+      "label": "جلسة منتصف الصباح"
+     },
+     {
+      "index": 2,
+      "label": "جلسة بعد الظهر"
+     },
+     {
+      "index": 3,
+      "label": "جلسة آخر النهار"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "تصطحبك سيارة خاصة مكيّفة من بهو فندقك",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "الوصول والجولة مع المرشد",
+      "description": "الوصول إلى الوجهة وبدء جولتك الاستكشافية مع مرشد خبير في علم المصريات",
+      "duration": "2 ساعات"
+     },
+     {
+      "index": 2,
+      "title": "وقت حر للاستكشاف",
+      "description": "استكشف على راحتك، والتقط الصور، واستمتع بالأجواء",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 3,
+      "title": "غداء تقليدي",
+      "description": "غداء مصري أصيل في مطعم محلي",
+      "duration": "45 دقيقة"
+     },
+     {
+      "index": 4,
+      "title": "متابعة زيارة المعالم",
+      "description": "زيارة مواقع ومعالم إضافية في المنطقة",
+      "duration": "1.5 ساعة"
+     },
+     {
+      "index": 5,
+      "title": "العودة",
+      "description": "رحلة عودة مريحة إلى فندقك",
+      "duration": "3 ساعات"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الفندق",
+      "description": "اصطحاب مجاني من جميع فنادق الأقصر والغردقة"
+     },
+     {
+      "index": 1,
+      "mode": "حافلة",
+      "description": "حافلة سياحية من الغردقة (4 ساعات)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "الاصطحاب في 4:00 صباحاً"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002538/attractions-network/tours/luxor-tour-from-hurghada-excursion/xhxq1ff3r5qdvuuafeog.jpg",
+      "alt": "جولة الأقصر من الغردقة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864688/attractions-network/tours/couples-anniversary-cruise/fscgv4omk6cclgwiq6uk.jpg",
+      "alt": "جولة الأقصر من الغردقة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864715/attractions-network/tours/tanoura-folkloric-dinner/k0oqmidsjonczlzvxjog.jpg",
+      "alt": "جولة الأقصر من الغردقة"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864833/attractions-network/tours/late-night-jazz-felucca/g1iwzdad0ktpihtzpph5.jpg",
+      "alt": "جولة الأقصر من الغردقة"
+     }
+    ],
+    "seo": {
+     "metaTitle": "جولة الأقصر من الغردقة - وادي الملوك",
+     "metaDescription": "جولة يوم كامل إلى الأقصر من الغردقة.",
+     "keywords": [
+      "جولة الأقصر من الغردقة",
+      "وادي الملوك"
+     ]
+    }
+   }
+  },
+  {
+   "id": "69ceb9274ce520edffefbb60",
+   "sourceSlug": "pyramids-excursions-guided-tour",
+   "slug": "pyramids-excursions-guided-tour-ar",
+   "sourceUpdatedAt": "2026-10-30T05:30:59.510Z",
+   "sourceDigest": "b91d2c895b996ed653b07674d9532cd1c37eb0e8687637f935a3c6347a82f7ce",
+   "english": {
+    "title": "Pyramids Excursions",
+    "shortDescription": "Half-day guided excursion to the Pyramids of Giza and Sphinx with expert Egyptologist",
+    "description": "Get up close with one of the Seven Wonders of the Ancient World. Half-day excursion to the Giza Plateau — Great Pyramid, Pyramid of Khafre, Pyramid of Menkaure, and the Sphinx.",
+    "duration": "4-5 hours",
+    "cancellationPolicy": "Free cancellation up to 24 hours before",
+    "highlights": [
+     "Great Pyramid of Khufu",
+     "Sphinx",
+     "Panoramic viewpoint",
+     "Expert Egyptologist"
+    ],
+    "inclusions": [
+     "Egyptologist guide",
+     "Entrance fees",
+     "Water",
+     "Hotel pickup"
+    ],
+    "exclusions": [
+     "Inside pyramid (optional)",
+     "Camel ride (optional)",
+     "Lunch",
+     "Tips"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Valid passport or ID",
+     "Comfortable shoes",
+     "Sunscreen & hat",
+     "Camera",
+     "Water bottle",
+     "Small backpack"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "Long walking distances involved",
+     "Moderate fitness level required",
+     "Service animals welcome"
+    ],
+    "pricingOptions": [
+     {
+      "id": "pe1",
+      "name": "Group Excursion",
+      "description": "Shared tour, up to 15",
+      "timeSlots": []
+     },
+     {
+      "id": "pe2",
+      "name": "Private Excursion",
+      "description": "Private guide + vehicle",
+      "timeSlots": []
+     },
+     {
+      "id": "pe3",
+      "name": "VIP Experience",
+      "description": "Luxury car, inside pyramid",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "a1",
+      "name": "Camel Ride",
+      "description": "30-min camel ride"
+     },
+     {
+      "id": "a2",
+      "name": "Inside Pyramid Entry",
+      "description": "Enter the Great Pyramid"
+     },
+     {
+      "id": "a3",
+      "name": "Photo Package",
+      "description": "Professional photos"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "Morning Session"
+     },
+     {
+      "index": 1,
+      "label": "Mid-Morning Session"
+     },
+     {
+      "index": 2,
+      "label": "Afternoon Session"
+     },
+     {
+      "index": 3,
+      "label": "Late Afternoon Session"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Hotel Pickup",
+      "description": "Private air-conditioned vehicle picks you up from your hotel lobby",
+      "duration": "30 min"
+     },
+     {
+      "index": 1,
+      "title": "Arrival & Guided Tour",
+      "description": "Arrive at the destination and begin your guided exploration with an expert Egyptologist",
+      "duration": "2 hrs"
+     },
+     {
+      "index": 2,
+      "title": "Free Exploration Time",
+      "description": "Explore at your own pace, take photos, and soak in the atmosphere",
+      "duration": "1 hr"
+     },
+     {
+      "index": 3,
+      "title": "Traditional Lunch",
+      "description": "Enjoy an authentic Egyptian lunch at a local restaurant",
+      "duration": "45 min"
+     },
+     {
+      "index": 4,
+      "title": "Continued Sightseeing",
+      "description": "Visit additional sites and landmarks in the area",
+      "duration": "1.5 hrs"
+     },
+     {
+      "index": 5,
+      "title": "Return Transfer",
+      "description": "Comfortable return journey to your hotel",
+      "duration": "3 hrs"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Metro",
+      "description": "Nearest metro station: Giza (15 min walk)"
+     },
+     {
+      "index": 1,
+      "mode": "Taxi",
+      "description": "From Cairo center: 30-45 min by taxi"
+     },
+     {
+      "index": 2,
+      "mode": "Hotel",
+      "description": "Hotel pickup available (add-on)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "Meet at main entrance"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002600/attractions-network/tours/pyramids-excursions-guided-tour/x539yqud5nlwcemv5xfv.jpg",
+      "alt": "Pyramids Excursions"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864715/attractions-network/tours/tanoura-folkloric-dinner/k0oqmidsjonczlzvxjog.jpg",
+      "alt": "Pyramids Excursions"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864833/attractions-network/tours/late-night-jazz-felucca/g1iwzdad0ktpihtzpph5.jpg",
+      "alt": "Pyramids Excursions"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001679/attractions-network/tours/luxor-tour-from-hurghada/trkxynvxjgddy5llqnd2.jpg",
+      "alt": "Pyramids Excursions"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Pyramids Excursions - Guided Giza Tour",
+     "metaDescription": "Book guided Pyramids excursions.",
+     "keywords": [
+      "pyramids excursions",
+      "giza tour"
+     ]
+    }
+   },
+   "arabic": {
+    "title": "رحلات الأهرامات",
+    "shortDescription": "رحلة نصف يوم إلى أهرامات الجيزة وأبو الهول بصحبة مرشد خبير في علم المصريات",
+    "description": "اقترب من إحدى عجائب الدنيا السبع في العالم القديم. رحلة نصف يوم إلى هضبة الجيزة — الهرم الأكبر وهرم خفرع وهرم منقرع وأبو الهول.",
+    "duration": "4-5 ساعات",
+    "cancellationPolicy": "إلغاء مجاني حتى 24 ساعة قبل الموعد",
+    "highlights": [
+     "هرم خوفو الأكبر",
+     "أبو الهول",
+     "نقطة إطلالة بانورامية",
+     "خبير في علم المصريات"
+    ],
+    "inclusions": [
+     "مرشد متخصص في علم المصريات",
+     "رسوم الدخول",
+     "ماء",
+     "الاصطحاب من الفندق"
+    ],
+    "exclusions": [
+     "دخول الهرم من الداخل (اختياري)",
+     "ركوب الجمل (اختياري)",
+     "الغداء",
+     "الإكراميات"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "جواز سفر أو بطاقة هوية سارية",
+     "أحذية مريحة",
+     "واقي شمس وقبعة",
+     "كاميرا",
+     "زجاجة ماء",
+     "حقيبة ظهر صغيرة"
+    ],
+    "needToKnow": [],
+    "accessibility": [
+     "تتضمن مسافات مشي طويلة",
+     "تتطلب مستوى متوسطاً من اللياقة البدنية",
+     "يُرحَّب بحيوانات الخدمة"
+    ],
+    "pricingOptions": [
+     {
+      "id": "pe1",
+      "name": "رحلة جماعية",
+      "description": "جولة مشتركة، حتى 15 شخصاً",
+      "timeSlots": []
+     },
+     {
+      "id": "pe2",
+      "name": "رحلة خاصة",
+      "description": "مرشد خاص + سيارة",
+      "timeSlots": []
+     },
+     {
+      "id": "pe3",
+      "name": "تجربة VIP",
+      "description": "سيارة فاخرة، ودخول الهرم من الداخل",
+      "timeSlots": []
+     }
+    ],
+    "addons": [
+     {
+      "id": "a1",
+      "name": "ركوب الجمل",
+      "description": "ركوب الجمل لمدة 30 دقيقة"
+     },
+     {
+      "id": "a2",
+      "name": "الدخول إلى داخل الهرم",
+      "description": "ادخل إلى الهرم الأكبر"
+     },
+     {
+      "id": "a3",
+      "name": "حزمة الصور",
+      "description": "صور احترافية"
+     }
+    ],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "جلسة صباحية"
+     },
+     {
+      "index": 1,
+      "label": "جلسة منتصف الصباح"
+     },
+     {
+      "index": 2,
+      "label": "جلسة بعد الظهر"
+     },
+     {
+      "index": 3,
+      "label": "جلسة آخر النهار"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "الاصطحاب من الفندق",
+      "description": "تصطحبك سيارة خاصة مكيّفة من بهو فندقك",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 1,
+      "title": "الوصول والجولة مع المرشد",
+      "description": "الوصول إلى الوجهة وبدء جولتك الاستكشافية مع مرشد خبير في علم المصريات",
+      "duration": "2 ساعات"
+     },
+     {
+      "index": 2,
+      "title": "وقت حر للاستكشاف",
+      "description": "استكشف على راحتك، والتقط الصور، واستمتع بالأجواء",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 3,
+      "title": "غداء تقليدي",
+      "description": "غداء مصري أصيل في مطعم محلي",
+      "duration": "45 دقيقة"
+     },
+     {
+      "index": 4,
+      "title": "متابعة زيارة المعالم",
+      "description": "زيارة مواقع ومعالم إضافية في المنطقة",
+      "duration": "1.5 ساعة"
+     },
+     {
+      "index": 5,
+      "title": "العودة",
+      "description": "رحلة عودة مريحة إلى فندقك",
+      "duration": "3 ساعات"
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "المترو",
+      "description": "أقرب محطة مترو: الجيزة (15 دقيقة سيراً)"
+     },
+     {
+      "index": 1,
+      "mode": "سيارة أجرة",
+      "description": "من وسط القاهرة: 30-45 دقيقة بسيارة الأجرة"
+     },
+     {
+      "index": 2,
+      "mode": "الفندق",
+      "description": "الاصطحاب من الفندق متاح (خدمة إضافية)"
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "اللقاء عند المدخل الرئيسي"
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776002600/attractions-network/tours/pyramids-excursions-guided-tour/x539yqud5nlwcemv5xfv.jpg",
+      "alt": "رحلات الأهرامات"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864715/attractions-network/tours/tanoura-folkloric-dinner/k0oqmidsjonczlzvxjog.jpg",
+      "alt": "رحلات الأهرامات"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1778864833/attractions-network/tours/late-night-jazz-felucca/g1iwzdad0ktpihtzpph5.jpg",
+      "alt": "رحلات الأهرامات"
+     },
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1776001679/attractions-network/tours/luxor-tour-from-hurghada/trkxynvxjgddy5llqnd2.jpg",
+      "alt": "رحلات الأهرامات"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Pyramids Excursions - جولة في الجيزة بصحبة مرشد",
+     "metaDescription": "احجز رحلات إلى الأهرامات بصحبة مرشد.",
+     "keywords": [
+      "رحلات الأهرامات",
+      "جولة الجيزة"
+     ]
+    }
+   }
+  }
+ ],
+ "destinations": [
+  {
+   "id": "699895e47169d9820932b9a5",
+   "sourceSlug": "cairo",
+   "slug": "cairo-ar",
+   "sourceUpdatedAt": "2026-04-05T23:15:20.957Z",
+   "sourceDigest": "b2944970eac7f367dda5e99e05239b2f9a44bedbb78a60a40c157f469e183ce9",
+   "english": {
+    "name": "Cairo",
+    "country": "Egypt",
+    "description": "Cairo, the capital of Egypt, is home to the iconic Pyramids of Giza, the Egyptian Museum, and vibrant Islamic architecture.",
+    "shortDescription": "Home to the Pyramids of Giza and ancient wonders",
+    "highlights": [
+     "Pyramids of Giza",
+     "Sphinx",
+     "Egyptian Museum",
+     "Khan el-Khalili"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "historical",
+     "ancient",
+     "monuments",
+     "culture"
+    ]
+   },
+   "arabic": {
+    "name": "القاهرة",
+    "country": "مصر",
+    "description": "القاهرة، عاصمة مصر، موطن أهرامات الجيزة الشهيرة والمتحف المصري والعمارة الإسلامية النابضة بالحياة.",
+    "shortDescription": "موطن أهرامات الجيزة والعجائب القديمة",
+    "highlights": [
+     "أهرامات الجيزة",
+     "أبو الهول",
+     "المتحف المصري",
+     "خان الخليلي"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "تاريخي",
+     "آثار قديمة",
+     "آثار",
+     "ثقافة"
+    ]
+   }
+  },
+  {
+   "id": "699895e47169d9820932b9a6",
+   "sourceSlug": "luxor",
+   "slug": "luxor-ar",
+   "sourceUpdatedAt": "2026-04-09T16:31:52.715Z",
+   "sourceDigest": "e7349ddafb7dbbd15f42f888a7d88cfcac521e829f441866d366b54d985e436e",
+   "english": {
+    "name": "Luxor",
+    "country": "Egypt",
+    "description": "Home to ancient Thebes and one of the world's greatest open-air museums, Luxor features the Valley of the Kings and stunning temples.",
+    "shortDescription": "Ancient Egypt's most impressive historical site",
+    "highlights": [
+     "Valley of the Kings",
+     "Karnak Temple",
+     "Luxor Temple",
+     "Nile Cruises"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "historical",
+     "ancient",
+     "temples",
+     "cultural"
+    ]
+   },
+   "arabic": {
+    "name": "الأقصر",
+    "country": "مصر",
+    "description": "الأقصر موطن طيبة القديمة وأحد أعظم المتاحف المفتوحة في العالم، وتضم وادي الملوك ومعابد مذهلة.",
+    "shortDescription": "أبرز المواقع التاريخية في مصر القديمة",
+    "highlights": [
+     "وادي الملوك",
+     "معبد الكرنك",
+     "معبد الأقصر",
+     "رحلات النيل النهرية"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "تاريخي",
+     "آثار قديمة",
+     "معابد",
+     "ثقافة"
+    ]
+   }
+  }
+ ]
+}

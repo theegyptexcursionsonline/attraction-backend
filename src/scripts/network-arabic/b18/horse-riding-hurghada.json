@@ -1,0 +1,873 @@
+{
+ "version": 1,
+ "batch": "b18a",
+ "locale": "ar",
+ "tenant": {
+  "id": "699895e47169d9820932b9ba",
+  "slug": "horse-riding-hurghada",
+  "domain": "horse-riding-hurghada.foxesnetwork.com",
+  "customDomain": "horseridinghurghada.com"
+ },
+ "presentationSha256": "a9e907dac362ae70d0174cb0360d9fe83b19152b7fa15bbcbb622d4f42fc34af",
+ "presentation": [
+  {
+   "kind": "tenant",
+   "sourceId": "699895e47169d9820932b9ba",
+   "sourceDigest": "32a686d60d85b0a51328d97a995db9b90976470c9d0943582ec65fc11493ef7d",
+   "english": {
+    "tagline": "Gallop Along the Red Sea",
+    "description": "Horse riding adventures in Hurghada. Beach rides, desert treks, and sunset horseback experiences.",
+    "seoSettings": {
+     "metaTitle": "Horse Riding Hurghada - Beach & Desert Rides",
+     "metaDescription": "Horse riding in Hurghada: desert rides, rides along the Red Sea with an optional swim, Makadi Bay on horseback, and rides with optional stargazing and a BBQ.",
+     "keywords": [
+      "horse riding hurghada",
+      "beach horse ride",
+      "desert horseback"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": []
+   },
+   "arabic": {
+    "tagline": "اعدُ بحصانك على طول البحر الأحمر",
+    "description": "مغامرات ركوب الخيل في الغردقة. جولات على الشاطئ ورحلات في الصحراء وتجارب على ظهر الخيل وقت الغروب.",
+    "seoSettings": {
+     "metaTitle": "ركوب الخيل في الغردقة - جولات الشاطئ والصحراء",
+     "metaDescription": "ركوب الخيل في الغردقة: جولات في الصحراء، وجولات على طول البحر الأحمر مع سباحة اختيارية، وخليج مكادي على ظهر الخيل، وجولات مع مراقبة النجوم والمشويات اختيارياً.",
+     "keywords": [
+      "ركوب الخيل في الغردقة",
+      "جولة بالخيل على الشاطئ",
+      "ركوب الخيل في الصحراء"
+     ]
+    },
+    "pageSeo": [],
+    "navigation": []
+   }
+  }
+ ],
+ "tours": [
+  {
+   "id": "6adf1c1bf6cdec5bebd19f06",
+   "sourceSlug": "hrh-horse-riding-in-hurghada-with-optional-stargazing-bbq",
+   "slug": "hrh-horse-riding-in-hurghada-with-optional-stargazing-bbq-ar",
+   "sourceUpdatedAt": "2026-10-26T09:23:39.411Z",
+   "sourceDigest": "29cd300be20444142a2c9ee7ebb2794c6f7887523bb82947d3bdc2d1f3e64856",
+   "english": {
+    "title": "Horse Riding in Hurghada with Optional Stargazing, BBQ Dinner and Live Show",
+    "shortDescription": "Horse Riding. 5 hours from your hotel in Hurghada.",
+    "description": "Pickup is from your hotel in Hurghada, and you are taken back there at the end. The day takes in Horse Riding. The trip runs 5 hours in all.\n\nOne booking option is sold: 2-Hour Horse Ride | Stargazing, Dinner and Show (All Location).",
+    "duration": "5 hours",
+    "cancellationPolicy": "",
+    "highlights": [
+     "Horse Riding",
+     "5 hours from your hotel in Hurghada"
+    ],
+    "inclusions": [
+     "Guided horse-riding experience according to the booked option",
+     "Professional riding guide",
+     "Pre-ride safety instructions and horse introduction",
+     "Groups organized according to riding experience",
+     "Desert trails and Red Sea coastal routes",
+     "Scheduled stops for photos",
+     "Hotel pickup and drop-off in Hurghada"
+    ],
+    "exclusions": [
+     "Personal purchases and additional expenses",
+     "Meals or drinks not stated in the selected option",
+     "Breakfast (not included with departures after 5:00 AM)",
+     "Horse swimming (not included with regular riding options)",
+     "Private transportation (available as an optional upgrade)",
+     "Personal horse guide (available as an optional upgrade)",
+     "Extended 30-minute camel ride (available as an optional upgrade)",
+     "30-minute buggy experience (available as an optional upgrade)",
+     "30-minute quad bike experience (available as an optional upgrade)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Comfortable shoes",
+     "Sunglasses",
+     "Sun hat",
+     "Sunscreen",
+     "Comfortable clothes",
+     "Scarf",
+     "Weather-appropriate clothing",
+     "Charged Smartphone",
+     "Face mask or protective covering"
+    ],
+    "needToKnow": [],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "2-hour-horse-ride-stargazing-dinner-show-all--fc615c205d71",
+      "name": "2-Hour Horse Ride | Stargazing, Dinner and Show (All Location)",
+      "description": "Begin with shared pickup from all listed areas, followed by a 90-minute sunset horse ride. Continue with an Oriental BBQ dinner, live cultural entertainment, and stargazing under the desert sky before returning to your hotel.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "17:30"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Meeting Point",
+      "description": "Arrival 10 minutes before departure, Check-in, & Safety Briefing",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "Horse Riding",
+      "description": "Desert & Red Sea coastal trails",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "Photo Stop",
+      "description": "Scenic desert and sea views",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "VIP Option",
+      "description": "Horse swim stop",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "Evening Option",
+      "description": "Dinner, cultural show & stargazing",
+      "duration": ""
+     },
+     {
+      "index": 5,
+      "title": "Return",
+      "description": "Hotel drop-off with transfer",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel pickup",
+      "description": "Pickup and drop-off at your hotel in Hurghada."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "The team confirms your pickup time when it confirms your booking."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793006374/attractions-network/network-high-ten/horse-riding-hurghada/nh4twdd96ldbjprhvbfx.jpg",
+      "alt": "Horse Riding in Hurghada with Optional Stargazing, BBQ Dinner and Live Show, Hurghada"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Horse Riding in Hurghada with Optional Stargazing, BBQ Dinner and...",
+     "metaDescription": "Horse Riding. 5 hours from your hotel in Hurghada.",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "ركوب الخيل في الغردقة مع مراقبة النجوم وعشاء المشويات والعرض الحي اختيارياً",
+    "shortDescription": "ركوب الخيل. 5 ساعات من فندقك في الغردقة.",
+    "description": "الاصطحاب من فندقك في الغردقة، والعودة إليه في النهاية. يشمل اليوم ركوب الخيل. تستغرق الرحلة 5 ساعات في المجمل.\n\nيُباع خيار حجز واحد: جولة بالخيل لمدة 2 ساعة | مراقبة النجوم والعشاء والعرض (جميع المواقع).",
+    "duration": "5 ساعات",
+    "cancellationPolicy": "",
+    "highlights": [
+     "ركوب الخيل",
+     "5 ساعات من فندقك في الغردقة"
+    ],
+    "inclusions": [
+     "تجربة ركوب خيل بصحبة مرشد وفق الخيار المحجوز",
+     "مرشد ركوب محترف",
+     "تعليمات السلامة قبل الجولة والتعريف بالحصان",
+     "تنظيم المجموعات حسب خبرة الركوب",
+     "مسارات الصحراء وطرق ساحل البحر الأحمر",
+     "توقفات مقررة للتصوير",
+     "النقل من الفندق وإليه في الغردقة"
+    ],
+    "exclusions": [
+     "المشتريات الشخصية والمصاريف الإضافية",
+     "الوجبات أو المشروبات غير المذكورة في الخيار المحدد",
+     "الإفطار (غير مشمول مع الانطلاقات بعد 5:00 صباحاً)",
+     "سباحة الخيل (غير مشمولة مع خيارات الركوب العادية)",
+     "النقل الخاص (متاح كترقية اختيارية)",
+     "مرشد خيل شخصي (متاح كترقية اختيارية)",
+     "جولة ممتدة على الجمل لمدة 30 دقيقة (متاحة كترقية اختيارية)",
+     "تجربة عربة الكثبان لمدة 30 دقيقة (متاحة كترقية اختيارية)",
+     "تجربة دراجة الكواد لمدة 30 دقيقة (متاحة كترقية اختيارية)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "أحذية مريحة",
+     "نظارات شمسية",
+     "قبعة شمسية",
+     "واقي شمس",
+     "ملابس مريحة",
+     "وشاح",
+     "ملابس مناسبة للطقس",
+     "هاتف ذكي مشحون",
+     "كمامة أو غطاء واقٍ"
+    ],
+    "needToKnow": [],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "2-hour-horse-ride-stargazing-dinner-show-all--fc615c205d71",
+      "name": "جولة بالخيل لمدة 2 ساعة | مراقبة النجوم والعشاء والعرض (جميع المواقع)",
+      "description": "ابدأ باصطحاب مشترك من جميع المناطق المذكورة، تتبعه جولة بالخيل وقت الغروب لمدة 90 دقيقة. واصل مع عشاء مشويات شرقي وترفيه ثقافي حي ومراقبة النجوم تحت سماء الصحراء قبل العودة إلى فندقك.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "الساعة 17:30"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "نقطة اللقاء",
+      "description": "الوصول 10 دقائق قبل الانطلاق، والتسجيل، وإحاطة السلامة",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "ركوب الخيل",
+      "description": "مسارات الصحراء وساحل البحر الأحمر",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "توقف للتصوير",
+      "description": "مشاهد خلابة للصحراء والبحر",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "خيار VIP",
+      "description": "توقف لسباحة الخيل",
+      "duration": ""
+     },
+     {
+      "index": 4,
+      "title": "الخيار المسائي",
+      "description": "العشاء والعرض الثقافي ومراقبة النجوم",
+      "duration": ""
+     },
+     {
+      "index": 5,
+      "title": "العودة",
+      "description": "التوصيل إلى الفندق مع النقل",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك في الغردقة والعودة إليه."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793006374/attractions-network/network-high-ten/horse-riding-hurghada/nh4twdd96ldbjprhvbfx.jpg",
+      "alt": "ركوب الخيل في الغردقة مع مراقبة النجوم وعشاء المشويات والعرض الحي اختيارياً، الغردقة"
+     }
+    ],
+    "seo": {
+     "metaTitle": "ركوب الخيل في الغردقة مع مراقبة النجوم وعشاء المشويات اختيارياً و...",
+     "metaDescription": "ركوب الخيل. 5 ساعات من فندقك في الغردقة.",
+     "keywords": []
+    }
+   }
+  },
+  {
+   "id": "6adf1c1bf6cdec5bebd19f20",
+   "sourceSlug": "hrh-horseback-riding-across-the-desert-and-red-sea-with",
+   "slug": "hrh-horseback-riding-across-the-desert-and-red-sea-with-ar",
+   "sourceUpdatedAt": "2026-10-26T09:23:39.700Z",
+   "sourceDigest": "0b5d3fec77119870d10436949a4abdde203fa491781f2695a91fb69723ab8094",
+   "english": {
+    "title": "Horseback Riding Across the Desert and Red Sea with Optional Swim",
+    "shortDescription": "A trip from Hurghada, with hotel pickup and drop-off. 2 - 4 hours from your hotel in Hurghada.",
+    "description": "Pickup is from your hotel in Hurghada, and you are taken back there at the end. The trip runs 2 - 4 hours in all.\n\nYou choose between Mega Offer: 2 Hour Horse Ride Through Desert and Beach Trails, 2 Hour Horse Riding Adventure with Red Sea Swimming, 3 Hour Desert and Beach Horse Ride with Swimming and Family Horse Cart Ride for Non Riders when you book.",
+    "duration": "2 - 4 hours",
+    "cancellationPolicy": "",
+    "highlights": [
+     "Hotel pickup and drop-off in Hurghada",
+     "2 - 4 hours from your hotel in Hurghada"
+    ],
+    "inclusions": [
+     "Guided horse riding experience",
+     "Use of well-trained horses",
+     "English-speaking guide/instructor",
+     "Safety equipment (helmets, vests)",
+     "Bottled water",
+     "Hotel pickup and drop-off in Hurghada"
+    ],
+    "exclusions": [
+     "Gratuities",
+     "Personal expenses",
+     "Photography services",
+     "Pick-up and dropp-off outside Hurghada not included ( Makadi, Sahl Hasheesh, El Gouna, Soma Bay, or Safaga). Please select the add-on at checkout for each"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Comfortable shoes",
+     "Sunglasses",
+     "Hat",
+     "Swimwear",
+     "Towel",
+     "Sunscreen",
+     "Comfortable clothes"
+    ],
+    "needToKnow": [],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "mega-offer-2-hour-horse-ride-through-desert-b-2b62c70ce067",
+      "name": "Mega Offer: 2 Hour Horse Ride Through Desert and Beach Trails",
+      "description": "Enjoy a relaxed two hour ride through the desert and along the beach, staying on land throughout the experience. A great choice for riders who want to focus entirely on the scenery and horseback adventure without swimming.",
+      "timeSlots": []
+     },
+     {
+      "id": "2-hour-horse-riding-adventure-with-red-sea-sw-f8b828dd2671",
+      "name": "2 Hour Horse Riding Adventure with Red Sea Swimming",
+      "description": "Start with a ride through Hurghada’s golden desert and along the Red Sea shoreline, then take your horse into the water for a refreshing swim. Experience the unusual combination of horseback riding, sea, and nature in one adventure.",
+      "timeSlots": []
+     },
+     {
+      "id": "3-hour-desert-beach-horse-ride-with-swimming-da753fb6c495",
+      "name": "3 Hour Desert and Beach Horse Ride with Swimming",
+      "description": "Make more time for the adventure with three hours of horseback riding across the desert and beside the beach, followed by the chance to swim with your horse in the sea. The experience is suitable for all riding levels and includes free transfer from Hurghada hotels.",
+      "timeSlots": []
+     },
+     {
+      "id": "family-horse-cart-ride-for-non-riders-df826d76f0db",
+      "name": "Family Horse Cart Ride for Non Riders",
+      "description": "Not a horse rider? Join the adventure from a traditional horse drawn cart as you travel along the desert and beach trails with your family. This option lets non riders stay close to their loved ones and enjoy the experience without swimming.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "08:00"
+     },
+     {
+      "index": 1,
+      "label": "09:00"
+     },
+     {
+      "index": 2,
+      "label": "10:00"
+     },
+     {
+      "index": 3,
+      "label": "11:00"
+     },
+     {
+      "index": 4,
+      "label": "12:00"
+     },
+     {
+      "index": 5,
+      "label": "13:00"
+     },
+     {
+      "index": 6,
+      "label": "14:00"
+     },
+     {
+      "index": 7,
+      "label": "15:00"
+     },
+     {
+      "index": 8,
+      "label": "16:00"
+     },
+     {
+      "index": 9,
+      "label": "17:00"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Starting/pickup location",
+      "description": "Depends on the selected option",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "Car",
+      "description": "(30 minutes)",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "Car",
+      "description": "(30 minutes)",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "2 drop-off locations",
+      "description": "El Gouna, Hurghada",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel pickup",
+      "description": "Pickup and drop-off at your hotel in Hurghada."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "The team confirms your pickup time when it confirms your booking."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793006376/attractions-network/network-high-ten/horse-riding-hurghada/aj8s9gkgwo4irrxln3lj.jpg",
+      "alt": "Horseback Riding Across the Desert and Red Sea with Optional Swim, Hurghada"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Horseback Riding Across the Desert and Red Sea with Optional Swim",
+     "metaDescription": "A trip from Hurghada, with hotel pickup and drop-off. 2 - 4 hours from your hotel in Hurghada.",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "ركوب الخيل عبر الصحراء والبحر الأحمر مع سباحة اختيارية",
+    "shortDescription": "رحلة من الغردقة، مع الاصطحاب من الفندق والتوصيل إليه. 2 - 4 ساعات من فندقك في الغردقة.",
+    "description": "الاصطحاب من فندقك في الغردقة، والعودة إليه في النهاية. تستغرق الرحلة 2 - 4 ساعات في المجمل.\n\nتختار عند الحجز بين عرض ضخم: جولة بالخيل لمدة 2 ساعة عبر مسارات الصحراء والشاطئ، ومغامرة ركوب الخيل لمدة 2 ساعة مع السباحة في البحر الأحمر، وجولة 3 ساعات بالخيل في الصحراء والشاطئ مع السباحة، وجولة بعربة الخيل للعائلة لغير الفارسين.",
+    "duration": "2 - 4 ساعات",
+    "cancellationPolicy": "",
+    "highlights": [
+     "النقل من الفندق وإليه في الغردقة",
+     "2 - 4 ساعات من فندقك في الغردقة"
+    ],
+    "inclusions": [
+     "تجربة ركوب خيل بصحبة مرشد",
+     "استخدام خيول مدرّبة جيداً",
+     "مرشد/مدرّب يتحدث الإنجليزية",
+     "تجهيزات السلامة (خوذات وصدريات)",
+     "مياه معبأة",
+     "النقل من الفندق وإليه في الغردقة"
+    ],
+    "exclusions": [
+     "الإكراميات",
+     "المصروفات الشخصية",
+     "خدمات التصوير",
+     "الاصطحاب والتوصيل خارج الغردقة غير مشمول (مكادي، سهل حشيش، الجونة، خليج سوما، أو سفاجا). يُرجى اختيار الخدمة الإضافية عند الدفع لكل منها"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "أحذية مريحة",
+     "نظارات شمسية",
+     "قبعة",
+     "ملابس سباحة",
+     "منشفة",
+     "واقي شمس",
+     "ملابس مريحة"
+    ],
+    "needToKnow": [],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "mega-offer-2-hour-horse-ride-through-desert-b-2b62c70ce067",
+      "name": "عرض ضخم: جولة بالخيل لمدة 2 ساعة عبر مسارات الصحراء والشاطئ",
+      "description": "استمتع بجولة هادئة لمدة ساعتين عبر الصحراء وعلى طول الشاطئ، مع البقاء على البر طوال التجربة. خيار جيد للفارسين الذين يريدون التركيز كاملاً على المشاهد ومغامرة ركوب الخيل دون السباحة.",
+      "timeSlots": []
+     },
+     {
+      "id": "2-hour-horse-riding-adventure-with-red-sea-sw-f8b828dd2671",
+      "name": "مغامرة ركوب الخيل لمدة 2 ساعة مع السباحة في البحر الأحمر",
+      "description": "ابدأ بجولة عبر صحراء الغردقة الذهبية وعلى طول ساحل البحر الأحمر، ثم خُذ حصانك إلى الماء لسباحة منعشة. اختبر المزيج غير المعتاد من ركوب الخيل والبحر والطبيعة في مغامرة واحدة.",
+      "timeSlots": []
+     },
+     {
+      "id": "3-hour-desert-beach-horse-ride-with-swimming-da753fb6c495",
+      "name": "جولة 3 ساعات بالخيل في الصحراء والشاطئ مع السباحة",
+      "description": "خصّص وقتاً أطول للمغامرة مع ثلاث ساعات من ركوب الخيل عبر الصحراء وبجانب الشاطئ، تتبعها فرصة السباحة مع حصانك في البحر. التجربة مناسبة لجميع مستويات الركوب وتشمل نقلاً مجانياً من فنادق الغردقة.",
+      "timeSlots": []
+     },
+     {
+      "id": "family-horse-cart-ride-for-non-riders-df826d76f0db",
+      "name": "جولة بعربة الخيل للعائلة لغير الفارسين",
+      "description": "لست من الفارسين؟ انضم إلى المغامرة من عربة تجرها الخيول أثناء التنقل على مسارات الصحراء والشاطئ مع عائلتك. يتيح هذا الخيار لغير الفارسين البقاء قريبين من أحبائهم والاستمتاع بالتجربة دون السباحة.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "الساعة 08:00"
+     },
+     {
+      "index": 1,
+      "label": "الساعة 09:00"
+     },
+     {
+      "index": 2,
+      "label": "الساعة 10:00"
+     },
+     {
+      "index": 3,
+      "label": "الساعة 11:00"
+     },
+     {
+      "index": 4,
+      "label": "الساعة 12:00"
+     },
+     {
+      "index": 5,
+      "label": "الساعة 13:00"
+     },
+     {
+      "index": 6,
+      "label": "الساعة 14:00"
+     },
+     {
+      "index": 7,
+      "label": "الساعة 15:00"
+     },
+     {
+      "index": 8,
+      "label": "الساعة 16:00"
+     },
+     {
+      "index": 9,
+      "label": "الساعة 17:00"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "موقع الانطلاق/الاصطحاب",
+      "description": "يتوقف على الخيار المحدد",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "سيارة",
+      "description": "(30 دقيقة)",
+      "duration": ""
+     },
+     {
+      "index": 2,
+      "title": "سيارة",
+      "description": "(30 دقيقة)",
+      "duration": ""
+     },
+     {
+      "index": 3,
+      "title": "2 موقع للتوصيل",
+      "description": "الجونة، الغردقة",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك في الغردقة والعودة إليه."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793006376/attractions-network/network-high-ten/horse-riding-hurghada/aj8s9gkgwo4irrxln3lj.jpg",
+      "alt": "ركوب الخيل عبر الصحراء والبحر الأحمر مع سباحة اختيارية، الغردقة"
+     }
+    ],
+    "seo": {
+     "metaTitle": "ركوب الخيل عبر الصحراء والبحر الأحمر مع سباحة اختيارية",
+     "metaDescription": "رحلة من الغردقة، مع الاصطحاب من الفندق والتوصيل إليه. 2 - 4 ساعات من فندقك في الغردقة.",
+     "keywords": []
+    }
+   }
+  },
+  {
+   "id": "6adf1c1bf6cdec5bebd19f4e",
+   "sourceSlug": "hrh-explore-makadi-bay-on-horseback-from-hurghada",
+   "slug": "hrh-explore-makadi-bay-on-horseback-from-hurghada-ar",
+   "sourceUpdatedAt": "2026-10-26T09:23:39.992Z",
+   "sourceDigest": "2698b33544f1aac9368be8e98e606cf51d181f9bf2554393440ac97b2e0b8508",
+   "english": {
+    "title": "Explore Makadi Bay on Horseback from Hurghada",
+    "shortDescription": "Makadi Bay. 1 - 5 hours from your hotel in Hurghada.",
+    "description": "Pickup is from your hotel in Hurghada, and you are taken back there at the end. The day takes in Makadi Bay. The trip runs 1 - 5 hours in all.\n\nOne booking option is sold: Stargazing, Dinner and Show - Without Horse Ride.",
+    "duration": "1 - 5 hours",
+    "cancellationPolicy": "",
+    "highlights": [
+     "Makadi Bay",
+     "1 - 5 hours from your hotel in Hurghada"
+    ],
+    "inclusions": [
+     "Professional horse guide",
+     "Safety briefing and horse introduction before the ride",
+     "2-hour horseback riding tour (or 4-hour VIP with swim stop, depending on option)",
+     "Desert and seaside trails with photo stops",
+     "Small group experience tailored to riding level",
+     "Hotel pickup and drop-off in Hurghada"
+    ],
+    "exclusions": [
+     "Personal expenses",
+     "Private guide (available for an extra fee)",
+     "Private transfer (available for an extra fee)",
+     "Swim stop during horse ride (only included with 4-hour horse ride option)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "Comfortable shoes",
+     "Sunglasses",
+     "Sun hat",
+     "Swimwear",
+     "Sunscreen",
+     "Comfortable clothes",
+     "Weather-appropriate clothing"
+    ],
+    "needToKnow": [],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "stargazing-dinner-show-without-horse-ride-1a5245b5d43d",
+      "name": "Stargazing, Dinner and Show - Without Horse Ride",
+      "description": "Evening cultural experience featuring stargazing, dinner, and a live traditional show without horse riding.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "18:00"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "Starting/pickup location",
+      "description": "Depends on the selected option",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "Car",
+      "description": "",
+      "duration": "1 hour"
+     },
+     {
+      "index": 2,
+      "title": "Makadi Bay",
+      "description": "Horse riding",
+      "duration": "2 hours"
+     },
+     {
+      "index": 3,
+      "title": "Car",
+      "description": "",
+      "duration": "30 minutes"
+     },
+     {
+      "index": 4,
+      "title": "7 drop-off locations",
+      "description": "Sahl Hasheesh, XVM5+RV7, Sahl Hasheesh, Safaga, Hurghada, Makadi Bay, Safaga",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "Hotel pickup",
+      "description": "Pickup and drop-off at your hotel in Hurghada."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "The team confirms your pickup time when it confirms your booking."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793006377/attractions-network/network-high-ten/horse-riding-hurghada/x2t4xozalofvoz1lmsrd.jpg",
+      "alt": "Explore Makadi Bay on Horseback from Hurghada, Hurghada"
+     }
+    ],
+    "seo": {
+     "metaTitle": "Explore Makadi Bay on Horseback from Hurghada",
+     "metaDescription": "Makadi Bay. 1 - 5 hours from your hotel in Hurghada.",
+     "keywords": []
+    }
+   },
+   "arabic": {
+    "title": "استكشف خليج مكادي على ظهر الخيل من الغردقة",
+    "shortDescription": "خليج مكادي. 1 - 5 ساعات من فندقك في الغردقة.",
+    "description": "الاصطحاب من فندقك في الغردقة، والعودة إليه في النهاية. يشمل اليوم خليج مكادي. تستغرق الرحلة 1 - 5 ساعات في المجمل.\n\nيُباع خيار حجز واحد: مراقبة النجوم والعشاء والعرض - دون ركوب الخيل.",
+    "duration": "1 - 5 ساعات",
+    "cancellationPolicy": "",
+    "highlights": [
+     "خليج مكادي",
+     "1 - 5 ساعات من فندقك في الغردقة"
+    ],
+    "inclusions": [
+     "مرشد محترف لركوب الخيل",
+     "إحاطة السلامة والتعريف بالحصان قبل الجولة",
+     "جولة ركوب خيل لمدة 2 ساعة (أو 4 ساعات VIP مع توقف للسباحة، حسب الخيار)",
+     "مسارات الصحراء والساحل مع توقفات للتصوير",
+     "تجربة بمجموعة صغيرة مُهيّأة لمستوى الركوب",
+     "النقل من الفندق وإليه في الغردقة"
+    ],
+    "exclusions": [
+     "المصروفات الشخصية",
+     "مرشد خاص (متاح مقابل رسم إضافي)",
+     "مواصلات خاصة (متاحة مقابل رسم إضافي)",
+     "توقف للسباحة أثناء جولة الخيل (مشمول فقط مع خيار جولة 4 ساعات)"
+    ],
+    "participantRequirements": [],
+    "whatToBring": [
+     "أحذية مريحة",
+     "نظارات شمسية",
+     "قبعة شمسية",
+     "ملابس سباحة",
+     "واقي شمس",
+     "ملابس مريحة",
+     "ملابس مناسبة للطقس"
+    ],
+    "needToKnow": [],
+    "accessibility": [],
+    "pricingOptions": [
+     {
+      "id": "stargazing-dinner-show-without-horse-ride-1a5245b5d43d",
+      "name": "مراقبة النجوم والعشاء والعرض - دون ركوب الخيل",
+      "description": "تجربة ثقافية مسائية تضم مراقبة النجوم والعشاء وعرضاً تقليدياً حياً دون ركوب الخيل.",
+      "timeSlots": []
+     }
+    ],
+    "addons": [],
+    "entryWindows": [
+     {
+      "index": 0,
+      "label": "الساعة 18:00"
+     }
+    ],
+    "itinerary": [
+     {
+      "index": 0,
+      "title": "موقع الانطلاق/الاصطحاب",
+      "description": "يتوقف على الخيار المحدد",
+      "duration": ""
+     },
+     {
+      "index": 1,
+      "title": "سيارة",
+      "description": "",
+      "duration": "1 ساعة"
+     },
+     {
+      "index": 2,
+      "title": "خليج مكادي",
+      "description": "ركوب الخيل",
+      "duration": "2 ساعات"
+     },
+     {
+      "index": 3,
+      "title": "سيارة",
+      "description": "",
+      "duration": "30 دقيقة"
+     },
+     {
+      "index": 4,
+      "title": "7 مواقع للتوصيل",
+      "description": "سهل حشيش، XVM5+RV7، سهل حشيش، سفاجا، الغردقة، خليج مكادي، سفاجا",
+      "duration": ""
+     }
+    ],
+    "gettingThere": [
+     {
+      "index": 0,
+      "mode": "الاصطحاب من الفندق",
+      "description": "الاصطحاب من فندقك في الغردقة والعودة إليه."
+     }
+    ],
+    "meetingPoint": {
+     "instructions": "يؤكد الفريق موعد اصطحابك عند تأكيد حجزك."
+    },
+    "imageAltTexts": [
+     {
+      "url": "https://res.cloudinary.com/dm3sxllch/image/upload/v1793006377/attractions-network/network-high-ten/horse-riding-hurghada/x2t4xozalofvoz1lmsrd.jpg",
+      "alt": "استكشف خليج مكادي على ظهر الخيل من الغردقة، الغردقة"
+     }
+    ],
+    "seo": {
+     "metaTitle": "استكشف خليج مكادي على ظهر الخيل من الغردقة",
+     "metaDescription": "خليج مكادي. 1 - 5 ساعات من فندقك في الغردقة.",
+     "keywords": []
+    }
+   }
+  }
+ ],
+ "destinations": [
+  {
+   "id": "699895e47169d9820932b9a3",
+   "sourceSlug": "hurghada",
+   "slug": "hurghada-ar",
+   "sourceUpdatedAt": "2026-04-05T23:15:20.775Z",
+   "sourceDigest": "111acca5fa242e38932f013e0fbb66e4bafd26bd529ebf11740d6c5d2779a75c",
+   "english": {
+    "name": "Hurghada",
+    "country": "Egypt",
+    "description": "Hurghada is a premier Red Sea resort destination known for its pristine beaches, world-class diving, and water sports.",
+    "shortDescription": "Red Sea paradise for diving and water sports",
+    "highlights": [
+     "Coral Reefs",
+     "Snorkeling",
+     "Desert Safaris",
+     "Nightlife"
+    ],
+    "bestTimeToVisit": "October to April",
+    "tags": [
+     "beach",
+     "water-sports",
+     "diving",
+     "resort"
+    ]
+   },
+   "arabic": {
+    "name": "الغردقة",
+    "country": "مصر",
+    "description": "الغردقة وجهة رائدة للمنتجعات على البحر الأحمر، تشتهر بشواطئها النقية والغوص ذي المستوى العالمي والرياضات المائية.",
+    "shortDescription": "جنة على البحر الأحمر للغوص والرياضات المائية",
+    "highlights": [
+     "الشعاب المرجانية",
+     "السنوركلينغ",
+     "رحلات سفاري الصحراء",
+     "الحياة الليلية"
+    ],
+    "bestTimeToVisit": "من أكتوبر إلى أبريل",
+    "tags": [
+     "شاطئ",
+     "رياضات مائية",
+     "غوص",
+     "منتجع"
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,445 @@
+{
+ "note": "The shared terms of batch B18A and their one Arabic reading, each taken from the Arabic the network already publishes where it has one. `forms` lists the shapes the reading may take in running Arabic (a definite article, a nisba, a place kept in Latin because it has no published Arabic form); `avoid` lists a second reading that must appear nowhere.",
+ "terms": [
+  {
+   "en": "Hurghada",
+   "ar": "الغردقة",
+   "forms": [
+    "الغردقة",
+    "غردقة"
+   ]
+  },
+  {
+   "en": "Makadi Bay",
+   "ar": "خليج مكادي",
+   "forms": [
+    "خليج مكادي",
+    "مكادي"
+   ]
+  },
+  {
+   "en": "Makadi",
+   "ar": "مكادي"
+  },
+  {
+   "en": "Sahl Hasheesh",
+   "ar": "سهل حشيش"
+  },
+  {
+   "en": "El Gouna",
+   "ar": "الجونة"
+  },
+  {
+   "en": "Safaga",
+   "ar": "سفاجا"
+  },
+  {
+   "en": "Soma Bay",
+   "ar": "خليج سوما"
+  },
+  {
+   "en": "Red Sea",
+   "ar": "البحر الأحمر",
+   "forms": [
+    "البحر الأحمر",
+    "بحر الأحمر"
+   ]
+  },
+  {
+   "en": "Cairo",
+   "ar": "القاهرة",
+   "forms": [
+    "قاهرة",
+    "قاهري",
+    "Cairo"
+   ]
+  },
+  {
+   "en": "Giza",
+   "ar": "الجيزة",
+   "forms": [
+    "الجيزة",
+    "جيزة"
+   ]
+  },
+  {
+   "en": "Luxor",
+   "ar": "الأقصر",
+   "forms": [
+    "الأقصر",
+    "أقصر"
+   ]
+  },
+  {
+   "en": "Alexandria",
+   "ar": "الإسكندرية"
+  },
+  {
+   "en": "Egypt",
+   "ar": "مصر",
+   "forms": [
+    "مصر",
+    "المصري",
+    "المصرية",
+    "مصري",
+    "المصريات"
+   ]
+  },
+  {
+   "en": "Nile",
+   "ar": "النيل",
+   "forms": [
+    "النيل",
+    "نيل"
+   ]
+  },
+  {
+   "en": "Pyramids",
+   "ar": "الأهرامات",
+   "forms": [
+    "الأهرامات",
+    "أهرامات",
+    "أهرام",
+    "Pyramids"
+   ]
+  },
+  {
+   "en": "Sphinx",
+   "ar": "أبو الهول",
+   "forms": [
+    "أبو الهول"
+   ]
+  },
+  {
+   "en": "Egyptian Museum",
+   "ar": "المتحف المصري",
+   "forms": [
+    "المتحف المصري",
+    "متحف المصري"
+   ]
+  },
+  {
+   "en": "Valley of the Kings",
+   "ar": "وادي الملوك",
+   "forms": [
+    "وادي الملوك"
+   ]
+  },
+  {
+   "en": "Karnak",
+   "ar": "الكرنك"
+  },
+  {
+   "en": "Hatshepsut",
+   "ar": "حتشبسوت"
+  },
+  {
+   "en": "Memnon",
+   "ar": "ممنون"
+  },
+  {
+   "en": "Tutankhamun",
+   "ar": "توت عنخ آمون"
+  },
+  {
+   "en": "Khan el-Khalili",
+   "ar": "خان الخليلي"
+  },
+  {
+   "en": "Khan El Khalili",
+   "ar": "خان الخليلي"
+  },
+  {
+   "en": "Al-Azhar",
+   "ar": "الأزهر"
+  },
+  {
+   "en": "Hanging Church",
+   "ar": "الكنيسة المعلقة"
+  },
+  {
+   "en": "Saladin",
+   "ar": "صلاح الدين"
+  },
+  {
+   "en": "Alabaster",
+   "ar": "الألباستر"
+  },
+  {
+   "en": "Talaat Harb",
+   "ar": "طلعت حرب"
+  },
+  {
+   "en": "Coptic",
+   "ar": "القبطية",
+   "forms": [
+    "القبطية",
+    "قبطية",
+    "القبطي"
+   ]
+  },
+  {
+   "en": "Islamic",
+   "ar": "الإسلامي",
+   "forms": [
+    "الإسلامي",
+    "الإسلامية",
+    "إسلامياً",
+    "إسلامي"
+   ]
+  },
+  {
+   "en": "felucca",
+   "ar": "فلوكة",
+   "forms": [
+    "فلوكة",
+    "الفلوكة",
+    "بالفلوكة"
+   ]
+  },
+  {
+   "en": "koshari",
+   "ar": "الكشري",
+   "forms": [
+    "الكشري",
+    "كشري"
+   ]
+  },
+  {
+   "en": "falafel",
+   "ar": "الفلافل",
+   "forms": [
+    "الفلافل",
+    "فلافل"
+   ]
+  },
+  {
+   "en": "ful medames",
+   "ar": "الفول المدمس"
+  },
+  {
+   "en": "Bedouin",
+   "ar": "بدوي",
+   "forms": [
+    "بدوي",
+    "بدوياً",
+    "البدوي"
+   ]
+  },
+  {
+   "en": "horse riding",
+   "ar": "ركوب الخيل",
+   "forms": [
+    "ركوب الخيل",
+    "ركوب خيل"
+   ]
+  },
+  {
+   "en": "horseback",
+   "ar": "ظهر الخيل",
+   "forms": [
+    "ظهر الخيل",
+    "ركوب الخيل",
+    "بالخيل",
+    "ركوب خيل"
+   ]
+  },
+  {
+   "en": "pony",
+   "ar": "المهر",
+   "forms": [
+    "المهر",
+    "مهر",
+    "المهور",
+    "مهور"
+   ]
+  },
+  {
+   "en": "stable",
+   "ar": "الإسطبل",
+   "forms": [
+    "الإسطبل",
+    "إسطبل",
+    "Stable"
+   ]
+  },
+  {
+   "en": "paddock",
+   "ar": "الحلبة"
+  },
+  {
+   "en": "quad bike",
+   "ar": "دراجات الكواد",
+   "forms": [
+    "دراجات الكواد",
+    "دراجة الكواد",
+    "كواد"
+   ]
+  },
+  {
+   "en": "buggy",
+   "ar": "عربة الكثبان",
+   "forms": [
+    "عربة الكثبان",
+    "عربات الكثبان"
+   ]
+  },
+  {
+   "en": "camel",
+   "ar": "الجمل",
+   "forms": [
+    "الجمل",
+    "جمل",
+    "الجمال",
+    "جمال"
+   ]
+  },
+  {
+   "en": "desert",
+   "ar": "الصحراء",
+   "forms": [
+    "الصحراء",
+    "صحراء",
+    "صحراوية",
+    "صحراوي"
+   ]
+  },
+  {
+   "en": "sunset",
+   "ar": "الغروب",
+   "forms": [
+    "الغروب",
+    "غروب"
+   ]
+  },
+  {
+   "en": "stargazing",
+   "ar": "مراقبة النجوم"
+  },
+  {
+   "en": "BBQ",
+   "ar": "المشويات",
+   "forms": [
+    "المشويات",
+    "مشويات"
+   ]
+  },
+  {
+   "en": "hotel pickup",
+   "ar": "الاصطحاب من الفندق",
+   "forms": [
+    "الاصطحاب من الفندق",
+    "الاصطحاب من فندقك",
+    "النقل من الفندق",
+    "اصطحاب"
+   ]
+  },
+  {
+   "en": "drop-off",
+   "ar": "التوصيل",
+   "forms": [
+    "التوصيل",
+    "توصيل",
+    "والعودة إليه",
+    "وإليه"
+   ]
+  },
+  {
+   "en": "guide",
+   "ar": "مرشد",
+   "forms": [
+    "مرشد",
+    "المرشد",
+    "مرشدك",
+    "مرشدون",
+    "مرشدونا",
+    "بصحبة مرشد",
+    "مدرّب",
+    "الشرح الصوتي"
+   ]
+  },
+  {
+   "en": "lunch",
+   "ar": "الغداء",
+   "forms": [
+    "الغداء",
+    "غداء",
+    "بغداء"
+   ]
+  },
+  {
+   "en": "dinner",
+   "ar": "العشاء",
+   "forms": [
+    "العشاء",
+    "عشاء",
+    "عشاءً"
+   ]
+  },
+  {
+   "en": "breakfast",
+   "ar": "الإفطار",
+   "forms": [
+    "الإفطار",
+    "إفطار"
+   ]
+  },
+  {
+   "en": "buffet",
+   "ar": "بوفيه"
+  },
+  {
+   "en": "mint tea",
+   "ar": "الشاي بالنعناع",
+   "forms": [
+    "الشاي بالنعناع",
+    "شاي بالنعناع"
+   ]
+  },
+  {
+   "en": "Free cancellation",
+   "ar": "إلغاء مجاني"
+  },
+  {
+   "en": "Sunscreen",
+   "ar": "واقي شمس",
+   "forms": [
+    "واقي شمس",
+    "واقٍ من الشمس",
+    "واقي الشمس"
+   ]
+  },
+  {
+   "en": "Sunglasses",
+   "ar": "نظارات شمسية"
+  },
+  {
+   "en": "Comfortable shoes",
+   "ar": "أحذية مريحة",
+   "forms": [
+    "أحذية مريحة",
+    "حذاء مريح"
+   ]
+  },
+  {
+   "en": "wheelchair",
+   "ar": "الكراسي المتحركة",
+   "forms": [
+    "كراسي المتحركة",
+    "الكرسي المتحرك"
+   ]
+  },
+  {
+   "en": "Gamila Horse Stable",
+   "ar": "Gamila Horse Stable"
+  },
+  {
+   "en": "Cairo Attractions Ticket",
+   "ar": "Cairo Attractions Ticket"
+  },
+  {
+   "en": "Four Seasons",
+   "ar": "Four Seasons"
+  }
+ ]
+}

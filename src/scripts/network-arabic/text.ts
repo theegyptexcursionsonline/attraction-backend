@@ -109,6 +109,13 @@ export const GLOSSARY_TERMS: readonly string[] = [
   // Features and food the B17 facts name
   'mangrove', 'canyon', 'pool', 'oasis', 'camel', 'quad', 'jeep', 'calamari', 'salad', 'tea', 'Bedouin tent',
   'star', 'telescope', 'sunset', 'wind', 'kite',
+  // The Hurghada bays, the Cairo and Luxor sites and the riding words the B18 facts name
+  'Makadi Bay', 'Sahl Hasheesh', 'Soma Bay', 'Safaga', 'Luxor', 'Karnak', 'Hatshepsut', 'Colossi of Memnon',
+  'Tutankhamun', 'Khan el-Khalili', 'Khan El Khalili', 'Al-Azhar', 'Hanging Church', 'Coptic', 'Saladin',
+  'Citadel', 'Alabaster', 'Muhammad Ali', 'Talaat Harb', 'Alexandria', 'Egyptologist', 'Grand Egyptian Museum',
+  'Sound and Light', 'Sound & Light', 'felucca', 'koshari', 'falafel', 'ful medames', 'pastries', 'street food',
+  'horse riding', 'horseback', 'horse', 'pony', 'paddock', 'handler', 'stable', 'saddle', 'gallop', 'rider',
+  'riding level', 'swim', 'swimming', 'wheelchair', 'stroller', 'Smart casual', 'tips', 'skip-the-line',
 ];
 
 export function containsTerm(text: string, term: string): boolean {

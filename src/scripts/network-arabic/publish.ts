@@ -11,7 +11,13 @@
  * collision checks, the row shape (`filter`, `before`, `after`) and, on publication, the same transaction,
  * index readiness, source fence and readback as `executeLocalizationPlan` / `executeTenantPresentation`.
  *
- * A site that has its own domain is refused here: the repository planners are the path for it.
+ * A site whose own domain the group does not declare is refused here: the repository planners are the path
+ * for it. B18's older sites do have their own domains, and for them neither path works unchanged — the
+ * repository's presentation planner wants all four languages, which these sites do not offer — so a group may
+ * declare the domain a site already answers on (`network-arabic/group.ts`). The verification then widens by
+ * one checked fact rather than loosening: the live `customDomain` must equal the declared one exactly, a site
+ * with no declaration must still have none, and a site that grows or changes a domain after the group was
+ * written is refused with nothing planned.
  *
  * Because a file written on the ops-runner does not survive the run, a plan cannot be saved and approved
  * later. The approval digest is therefore computed over everything that decides the write and nothing that
@@ -35,17 +41,19 @@ import { localizationDigest } from '../../services/localizationMigration.service
 import { cleanPresentationContent, ownedPresentationSource, presentationSourceSnapshot, type PresentationKind } from '../../services/tenantPresentationLocalization.service';
 import { presentationDigest } from '../../services/tenantPresentationMigration.service';
 import { tenantPickupDestinationSlugs } from '../../utils/pickupDestinations';
-import type { NetworkBatch } from '../seed-network-sites';
+import type { ArabicGroup } from './group';
 import { B14A, B14B } from '../network-sites/b14';
 import { B17A, B17B, B17C } from './b17';
+import { B18A } from './b18';
 
 export const LOCALE = 'ar' as const;
-export const PUBLISH_BATCHES: Record<string, { batch: NetworkBatch; folder: string }> = {
+export const PUBLISH_BATCHES: Record<string, { batch: ArabicGroup; folder: string }> = {
   b14a: { batch: B14A, folder: 'b14' },
   b14b: { batch: B14B, folder: 'b14' },
   b17a: { batch: B17A, folder: 'b17' },
   b17b: { batch: B17B, folder: 'b17' },
   b17c: { batch: B17C, folder: 'b17' },
+  b18a: { batch: B18A, folder: 'b18' },
 };
 const PAYLOAD_ROOT = __dirname;
 const HEX24 = /^[a-f\d]{24}$/i;
@@ -58,7 +66,8 @@ export interface SitePayload {
   version: 1;
   batch: string;
   locale: typeof LOCALE;
-  tenant: { id: string; slug: string; domain: string };
+  /** `customDomain` is the site's own domain where the group declares one, and absent where it does not. */
+  tenant: { id: string; slug: string; domain: string; customDomain?: string };
   presentationSha256: string;
   presentation: PresentationEntry[];
   tours: RecordEntry[];
@@ -83,6 +92,8 @@ export function loadGroupPayloads(group: string, root = PAYLOAD_ROOT): SitePaylo
 export function assertPayloadShape(payload: SitePayload, group: string, slug: string): void {
   if (payload?.version !== 1 || payload.batch !== group || payload.locale !== LOCALE) fail(slug, 'payload version, group or language differs');
   if (payload.tenant?.slug !== slug || !HEX24.test(payload.tenant?.id || '') || payload.tenant.domain !== `${slug}.foxesnetwork.com`) fail(slug, 'payload site identity differs');
+  const declared = PUBLISH_BATCHES[group]?.batch.sites.find((site) => site.slug === slug)?.customDomain;
+  if ((payload.tenant.customDomain || undefined) !== declared) fail(slug, 'payload own domain is not the one the group declares');
   if (!/^[a-f\d]{64}$/.test(payload.presentationSha256 || '')) fail(slug, 'presentation digest missing');
   for (const entry of [...payload.tours, ...payload.destinations]) {
     if (!HEX24.test(entry.id) || !SLUG.test(entry.slug) || entry.slug !== `${entry.sourceSlug}-ar` || !/^[a-f\d]{64}$/.test(entry.sourceDigest)) fail(slug, `record ${entry.id} has no valid identity, URL or digest`);
@@ -92,11 +103,16 @@ export function assertPayloadShape(payload: SitePayload, group: string, slug: st
 
 const TENANT_FIELDS = '_id slug status domain customDomain designMode tagline description heroImages seoSettings pageSeo navigation customPages pickupDestinationSlugs supportedLanguages updatedAt';
 
-/** A network site with no custom domain, verified by id, slug, platform domain and active status. */
+/**
+ * A network site verified by id, slug, platform domain, active status and the domain of its own that the
+ * group declares — none for B14's and B17's sites, an exact domain for B18's.
+ */
 export async function networkTenant(target: SitePayload['tenant'], session?: ClientSession): Promise<Json> {
   const tenant: any = await Tenant.findOne({ _id: target.id, slug: target.slug, domain: target.domain, status: 'active' }).select(TENANT_FIELDS).session(session || null).lean();
   if (!tenant) fail(target.slug, 'active site, slug and platform domain did not match');
-  if (tenant.customDomain) fail(target.slug, 'the site has its own domain; plan it with the repository planners');
+  const live = typeof tenant.customDomain === 'string' ? tenant.customDomain.trim().toLowerCase() : '';
+  const declared = (target.customDomain || '').trim().toLowerCase();
+  if (live !== declared) fail(target.slug, declared ? `the site's own domain is ${live || 'absent'}, not the declared ${declared}` : 'the site has its own domain and the group declares none; plan it with the repository planners');
   return tenant;
 }
 
