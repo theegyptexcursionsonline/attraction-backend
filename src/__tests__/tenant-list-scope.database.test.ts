@@ -125,4 +125,33 @@ describe('admin site list (GET /tenants)', () => {
     expect(found.pagination.total).toBe(0);
     expect(found.names).toEqual([]);
   });
+
+  it('reaches every site once when several share a name, across every page break', async () => {
+    // Production has two pairs of sites with one name each. Sorting by name alone leaves their order to the
+    // database, so a pair split by a page break could show one site twice and never the other.
+    const twins = Array.from({ length: 30 }, (_, index) => site(100 + index, {
+      slug: `zeta-twin-${String(index).padStart(2, '0')}`, name: 'Zeta Twin', domain: `zeta-twin-${index}.foxesnetwork.com`,
+    }));
+    await Tenant.collection.insertMany(twins);
+    try {
+      for (const limit of [4, 7, 11]) {
+        const slugs: string[] = [];
+        const pages = Math.ceil(twins.length / limit);
+        for (let page = 1; page <= pages; page += 1) {
+          const res: any = {};
+          res.status = jest.fn().mockReturnValue(res);
+          res.json = jest.fn().mockReturnValue(res);
+          res.setHeader = jest.fn();
+          const next = jest.fn();
+          await getTenants({ query: { page, limit, search: 'Zeta Twin' }, user: superAdmin } as unknown as AuthRequest, res, next);
+          expect(next).not.toHaveBeenCalled();
+          slugs.push(...(res.json.mock.calls[0][0].data as Array<{ slug: string }>).map((row) => row.slug));
+        }
+        expect(slugs).toHaveLength(twins.length);
+        expect(new Set(slugs).size).toBe(twins.length);
+      }
+    } finally {
+      await Tenant.collection.deleteMany({ _id: { $in: twins.map((row) => row._id) } });
+    }
+  });
 });

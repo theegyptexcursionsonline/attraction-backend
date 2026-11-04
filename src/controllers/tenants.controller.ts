@@ -175,8 +175,9 @@ export const getTenants = async (
     }
 
     const [tenants, total] = await Promise.all([
+      // _id breaks ties between sites that share a name, so a page break never repeats one and hides its twin.
       Tenant.find(query)
-        .sort({ name: 1 })
+        .sort({ name: 1, _id: 1 })
         .skip((pageNum - 1) * limitNum)
         .limit(limitNum)
         .lean(),
@@ -201,7 +202,7 @@ export const getMarketplaceBrands = async (req: AuthRequest, res: Response, next
     const limitNum = Number(req.query.limit || 100);
     const query = { status: 'active' };
     const [brands, total] = await Promise.all([
-      Tenant.find(query).select('_id name slug logo status').sort({ name: 1 }).skip((pageNum - 1) * limitNum).limit(limitNum).lean(),
+      Tenant.find(query).select('_id name slug logo status').sort({ name: 1, _id: 1 }).skip((pageNum - 1) * limitNum).limit(limitNum).lean(),
       Tenant.countDocuments(query),
     ]);
     sendPaginated(res, brands.map((brand) => ({ id: brand._id, name: brand.name, slug: brand.slug, logo: brand.logo, status: brand.status })), pageNum, limitNum, total);
