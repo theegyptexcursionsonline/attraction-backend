@@ -32061,6 +32061,425 @@
     }
    ],
    "addons": []
+  },
+  {
+   "slug": "cairo-nile-cruise-6-day-egypt-highlights-abu-simbel-hot-air-balloon",
+   "id": "e40322391cfb00993d1de8a3",
+   "readAt": "2026-11-05T17:46:16Z",
+   "detail": {
+    "title": "Cairo & Nile Cruise: 6-Day Egypt Highlights, Abu Simbel & Hot Air Balloon",
+    "duration": "6 days",
+    "languages": [],
+    "whatsIncluded": [
+     "1 night in a 5-star hotel in Cairo",
+     "1 night in a 5-star hotel in Luxor",
+     "3 nights on a 5-star Nile cruise (full board)",
+     "Domestic flights: Cairo to Luxor & Aswan to Cairo",
+     "Expert English-speaking Egyptologist guide for all tours",
+     "Felucca ride in Luxor",
+     "Sunrise hot air balloon ride",
+     "All entrance fees",
+     "All transport in private air-conditioned vehicles",
+     "Meals as mentioned per day",
+     "Hotel pick-up and drop-off in Cairo"
+    ],
+    "whatsNotIncluded": [
+     "Tips (optional)",
+     "Drinks or personal expenses",
+     "Spanish-, German-, Italian- or French-speaking guide (available as an add-on)",
+     "Wi-Fi"
+    ],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "Day 1 - Pyramids of Giza & Egyptian Museum",
+      "description": ""
+     },
+     {
+      "title": "Day 2 - Memphis, Saqqara, Dahshur & Fly to Luxor",
+      "description": ""
+     },
+     {
+      "title": "Day 3 - East Bank Temples & Nile Cruise",
+      "description": ""
+     },
+     {
+      "title": "Day 4 - Hot Air Balloon & West Bank Tour",
+      "description": ""
+     },
+     {
+      "title": "Day 5 - Edfu & Kom Ombo Temples",
+      "description": ""
+     },
+     {
+      "title": "Day 6 - Abu Simbel & Return to Cairo",
+      "description": ""
+     }
+    ],
+    "pricingSummary": {
+     "currency": "USD"
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "premium-5-star-hotels-nile-cruise-bafa5d5fbf9b",
+     "title": "Premium 5-Star Hotels & Nile Cruise",
+     "type": "Per Person",
+     "description": "Enjoy a comfortable 5-star experience with quality hotels and a well-rated Nile cruise, combining excellent service, modern comforts, and great value throughout your Egypt adventure.",
+     "duration": "6 days",
+     "guestPrices": {
+      "adult": 2100,
+      "child": 1400,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "06:00",
+       "guestPrices": {
+        "adult": 2100,
+        "child": 1400,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "07:00",
+       "guestPrices": {
+        "adult": 2100,
+        "child": 1400,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 2100,
+        "child": 1400,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 2100,
+        "child": 1400,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 2100,
+        "child": 1400,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 2100,
+        "child": 1400,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-7",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 2100,
+        "child": 1400,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-1",
+     "pricingKey": "deluxe-5-star-hotels-nile-cruise-6c4267df22fa",
+     "title": "Deluxe 5-Star Hotels & Nile Cruise",
+     "type": "Per Person",
+     "description": "Upgrade your Egypt journey with premium 5-star hotels and a deluxe Nile cruise, featuring upgraded accommodations, enhanced amenities, and attentive service for a more comfortable and refined experience.",
+     "duration": "6 days",
+     "guestPrices": {
+      "adult": 2200,
+      "child": 1650,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "06:00",
+       "guestPrices": {
+        "adult": 2200,
+        "child": 1650,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "07:00",
+       "guestPrices": {
+        "adult": 2200,
+        "child": 1650,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 2200,
+        "child": 1650,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 2200,
+        "child": 1650,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 2200,
+        "child": 1650,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 2200,
+        "child": 1650,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-7",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 2200,
+        "child": 1650,
+        "infant": 0
+       }
+      }
+     ]
+    },
+    {
+     "id": "option-2",
+     "pricingKey": "luxury-5-star-hotels-nile-cruise-7c7a662f2026",
+     "title": "Luxury 5-Star Hotels & Nile Cruise",
+     "type": "Per Person",
+     "description": "Indulge in a refined 5-star experience with Egypt’s premium hotels and luxury Nile cruise, featuring elegant accommodations, personalized service, exceptional amenities, and the highest level of comfort throughout your journey.",
+     "duration": "6 days",
+     "guestPrices": {
+      "adult": 2250,
+      "child": 1750,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "06:00",
+       "guestPrices": {
+        "adult": 2250,
+        "child": 1750,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-2",
+       "time": "07:00",
+       "guestPrices": {
+        "adult": 2250,
+        "child": 1750,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-3",
+       "time": "08:00",
+       "guestPrices": {
+        "adult": 2250,
+        "child": 1750,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-4",
+       "time": "09:00",
+       "guestPrices": {
+        "adult": 2250,
+        "child": 1750,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-5",
+       "time": "10:00",
+       "guestPrices": {
+        "adult": 2250,
+        "child": 1750,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-6",
+       "time": "11:00",
+       "guestPrices": {
+        "adult": 2250,
+        "child": 1750,
+        "infant": 0
+       }
+      },
+      {
+       "id": "slot-7",
+       "time": "12:00",
+       "guestPrices": {
+        "adult": 2250,
+        "child": 1750,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": [
+    {
+     "id": "6a8f62bba83fdd8f8da53f0b",
+     "title": "German, Spanish, French guide",
+     "description": "",
+     "price": 250,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    },
+    {
+     "id": "6a8f62bba83fdd8f8da53f0c",
+     "title": "Italian Tour Guide",
+     "description": "",
+     "price": 250,
+     "perGuest": false,
+     "bookingOptionKeys": [],
+     "required": false
+    }
+   ]
+  },
+  {
+   "slug": "egypt-in-9-days-cairo-alexandria-nile-cruise-luxor-abu-simbel",
+   "id": "2958fab2423081ec99f313d1",
+   "readAt": "2026-11-05T17:46:16Z",
+   "detail": {
+    "title": "Egypt in 9 Days: Cairo, Alexandria, Nile Cruise, Luxor & Abu Simbel",
+    "duration": "9 days",
+    "languages": [],
+    "whatsIncluded": [
+     "4 nights at 3 stars hotel in Cairo with breakfast (available to upgrade)",
+     "A cabin with all facilities",
+     "3 nights on board a 5-star cruise, with all meals from lunch on the first day through breakfast on the last day",
+     "Overnight Sleeping train From cairo to aswan",
+     "Flight tickets Luxor to Cairo",
+     "Hot-air balloon trip of a lifetime in Luxor",
+     "door to door transfers from and to Cairo international airport",
+     "Trip To Abu Simbel Temples",
+     "All sites mentioned in the program",
+     "Taxes and charges",
+     "Horse and carriage",
+     "Expert Egyptology tour guide",
+     "The Great Pyramids, Valley of the Kings, Abu Simbel, and much more as listed in the itinerary",
+     "Meet and Assist upon arrival & Departure",
+     "Trip to Alexandria"
+    ],
+    "whatsNotIncluded": [
+     "Tipping",
+     "Entrance fees"
+    ],
+    "whatToBring": [],
+    "itinerary": [
+     {
+      "title": "Arrival at Cairo Airport - Check in at Hotel",
+      "description": ""
+     },
+     {
+      "title": "Visit Giza Pyramids Complex - Back to Hotel",
+      "description": ""
+     },
+     {
+      "title": "Visiting Alexandria Landmarks - Back to Hotel",
+      "description": ""
+     },
+     {
+      "title": "Arriving To Aswan - Check In the Cruise",
+      "description": ""
+     },
+     {
+      "title": "Tour to Kom Ombo Temple - Back to Cruise",
+      "description": ""
+     },
+     {
+      "title": "Tour in Edfu Temple - Back to Cruise",
+      "description": ""
+     },
+     {
+      "title": "Taking a Tour in Luxor - Fly Back to Cairo",
+      "description": ""
+     },
+     {
+      "title": "Tour to Old Cairo",
+      "description": ""
+     },
+     {
+      "title": "End of Your 9 Days Egypt Tour",
+      "description": ""
+     }
+    ],
+    "pricingSummary": {
+     "currency": "USD"
+    }
+   },
+   "options": [
+    {
+     "id": "option-0",
+     "pricingKey": "egypt-9-day-cairo-alexandria-aswan-luxor-crui-d8f4776027f0",
+     "title": "Egypt: 9-Day Cairo, Alexandria, Aswan, Luxor Cruise and Abu Simbel",
+     "type": "Per Person",
+     "description": "Discover Egypt’s highlights on a 9-day journey through Cairo, Alexandria, Aswan, Kom Ombo, Edfu, and Luxor. Explore ancient temples and pyramids, enjoy a 3-night Nile cruise, visit Abu Simbel, and experience Egypt’s fascinating history with private transportation and guided tours.",
+     "duration": "9 days",
+     "guestPrices": {
+      "adult": 2300,
+      "child": 1200,
+      "infant": 0
+     },
+     "maxCapacity": null,
+     "timeSlots": [
+      {
+       "id": "slot-1",
+       "time": "07:00",
+       "guestPrices": {
+        "adult": 2300,
+        "child": 1200,
+        "infant": 0
+       }
+      }
+     ]
+    }
+   ],
+   "addons": []
   }
  ]
 }

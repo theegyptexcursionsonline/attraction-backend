@@ -327,10 +327,12 @@ describe('Key of Egypt Tours: one site for a Nile valley tour company, on its ow
   });
 
   it('reaches no Aswan and no Abu Simbel day, because the client publishes none', () => {
-    // The only records that stand before those monuments are the multi-day packages with hotels, flights and a
-    // cruise, which no batch on the network sells. Nothing here claims one, and the fence bars both names.
+    // The only records that stand before those monuments are the multi-day trips with hotels, flights and a
+    // cruise. The site sells two of them as packages, which are not days and are not in this catalogue; no day
+    // here is built on one. Nothing in the site's own words claims one, and the fence bars both names.
+    const sold = new Set(SITE.trips.map((trip) => trip.price.source));
     const dayRecords = (SNAPSHOT.tours as Array<Record<string, any>>)
-      .filter((item) => /aswan|abu-simbel/i.test(item.slug));
+      .filter((item) => /aswan|abu-simbel/i.test(item.slug) && sold.has(item.slug));
     expect(dayRecords).toEqual([]);
     expect(WORDS).not.toMatch(/Aswan|Abu Simbel/i);
     expect(SITE.foreignPlaces.test('Aswan')).toBe(true);

@@ -46,9 +46,11 @@
  *   is the one an earlier batch already sells, so its programme is imported rather than written again; the
  *   Makadi Bay record of the same shape is written nowhere on the network and is left for a later pass.
  * Nothing in the client's published list reaches Aswan or Abu Simbel as a day: the only records that stand
- * before those monuments are the multi-day packages with hotels, flights and a Nile cruise, which no batch on
- * the network sells and which this site cannot describe without naming towns it does not serve. So the
- * selection has no Aswan and no Abu Simbel day, and claims none.
+ * before those monuments are the multi-day trips with hotels, flights and a Nile cruise, which no day trip on
+ * the network sells and which no day here can describe without naming towns it does not serve. So the selection
+ * of days has no Aswan and no Abu Simbel day, and claims none. Two of those multi-day records are sold on this
+ * site as packages instead, each naming its own record's towns, and they are written by their own seed
+ * (`seed-keyofegypt-packages.ts`); this file and this site's fence cover the eight days only.
  *
  * Every one of the eight records is already sold by an earlier batch, so this file writes no programme of its
  * own at all: each is imported from the batch that first sold it, which keeps the network saying the same thing
