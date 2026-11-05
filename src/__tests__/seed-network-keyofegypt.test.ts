@@ -32,15 +32,14 @@ const SITE = SITES[0];
 
 /**
  * Key of Egypt Tours is site 129 and the first of the network that stands for a tour company of the Nile valley
- * rather than for a place or for a business on Fouad's domain list. It has no domain of its own yet, and the
- * tests below hold it to that: the field carries the network address the tenant record publishes for a site
- * whose domain is not connected, and nothing anywhere invents one. They also hold the site to claiming nothing
+ * rather than for a place or for a business on Fouad's domain list. Its domain, `keyofegypt.travel`, is the
+ * one the owner named. The tests below hold the site to claiming nothing
  * about the company beyond its name and its badge, to selling exactly the eight days the selection gives it, and
  * to taking no booking until the owner opens it.
  */
 const KOE_TRIPS = 8;
-/** No domain yet: the network address `tenantRecord` writes, until the client's own arrives. */
-const NETWORK_DOMAIN = 'key-of-egypt-tours.foxesnetwork.com';
+/** The client's domain, named by the owner on 5 Nov. */
+const DOMAIN = 'keyofegypt.travel';
 /** The storefront design, which the storefront picks by slug. */
 const DESIGN = 'keyofegypt';
 /** The admin palette the site is created with (primary / secondary / accent). */
@@ -208,7 +207,7 @@ function expectCompleteTrip(site: Pick<NetworkSite, 'foreignPlaces'>, document: 
   expect((document.needToKnow as string[]).join('\n')).toMatch(childPriced ? /have their own price|pay the child price/ : /pay the same price as adults/);
 }
 
-describe('Key of Egypt Tours: one site for a Nile valley tour company, with no domain yet', () => {
+describe('Key of Egypt Tours: one site for a Nile valley tour company, on its own domain', () => {
   it('is one site, built before nowhere, and is not the King of Egypt Tours preview', () => {
     expect(KEYOFEGYPT.id).toBe('keyofegypt');
     expect(SITES).toHaveLength(1);
@@ -242,18 +241,14 @@ describe('Key of Egypt Tours: one site for a Nile valley tour company, with no d
     expect(validateBatch(KEYOFEGYPT)).toEqual([]);
   });
 
-  it('invents no domain: the field is the network address the tenant record publishes', () => {
-    // The client sent the brand with no domain and the owner's instruction was to proceed on the brand alone.
-    // Nothing here is a domain of the client's: the field is the address the seed itself writes for a site whose
-    // own domain is not connected, and this test holds it there until the client's arrives.
-    expect(SITE.domain).toBe(NETWORK_DOMAIN);
+  it('carries the domain the owner named, attached in its own step like every network site', () => {
+    expect(SITE.domain).toBe(DOMAIN);
     const record = tenantRecord(SITE);
-    expect(record.domain).toBe(NETWORK_DOMAIN);
-    expect(SITE.domain).toBe(`${SITE.slug}.foxesnetwork.com`);
+    // The seed publishes the network address and leaves the custom domain to the bind after DNS.
+    expect(record.domain).toBe(`${SITE.slug}.foxesnetwork.com`);
     expect(record.customDomain).toBeUndefined();
     expect(record.domainMigrated).toBe(false);
     expect(record.customDomainStatus).toBe('unconfigured');
-    // No other site on the network carries a `.foxesnetwork.com` address in this field, so the state is visible.
     expect(EARLIER.filter((site) => /foxesnetwork\.com$/.test(site.domain))).toEqual([]);
   });
 

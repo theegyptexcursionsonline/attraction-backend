@@ -4,13 +4,9 @@
  * "nearest days" machinery of batches B12 to B16 applies here: no site place to disclaim, no distance to give or
  * withhold, and no sentence anywhere saying what a programme does not name.
  *
- * NO DOMAIN YET. The client sent the brand and the owner's instruction was to proceed on the brand alone and
- * replace the domain later, and `NetworkSite` requires a domain. No domain is invented here: the field carries the
- * network address the tenant record itself publishes for a site whose own domain is not connected,
- * `key-of-egypt-tours.foxesnetwork.com` (`tenantRecord` writes exactly that as `domain` and unsets
- * `customDomain`). Nothing in the seed treats that value as a custom domain to attach: it is read only by the
- * namespace check, where it matches nothing. When the client's domain arrives it replaces this one line, and the
- * test beside this file holds the line to the network address until it does.
+ * DOMAIN. The client sent the brand first and the owner's instruction was to proceed on the brand alone; the
+ * domain followed the same day: `keyofegypt.travel`. As for every network site, the seed writes the network
+ * address as `domain` and leaves `customDomain` to its own step after DNS (the gateway bind).
  *
  * WHAT THE COMPANY IS. Only its name and its badge are known. Nothing here claims more: no trading history, no
  * licence or registration, no address, no telephone number, no team, no counts, no ratings and no superlative,
@@ -172,8 +168,8 @@ export const KEYOFEGYPT: NetworkBatch = {
       slug: 'key-of-egypt-tours',
       name: 'Key of Egypt Tours',
       listingPath: '/trips',
-      // No domain of its own yet: the network address the tenant record publishes until the client's arrives.
-      domain: 'key-of-egypt-tours.foxesnetwork.com',
+      // The client's domain, named on 5 Nov after the brand.
+      domain: 'keyofegypt.travel',
       city: 'Cairo',
       area: 'Cairo or Giza',
       pickupDestination: 'cairo',
