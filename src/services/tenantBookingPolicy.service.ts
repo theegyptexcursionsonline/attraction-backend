@@ -119,6 +119,11 @@ const BOOKING_CREATION_CLOSED_TENANT_SLUGS = [
   'marsa-abu-galawa',
   'skar-transport-cairo',
   'future-travel-egypt',
+  // Key of Egypt Tours, site 129: a brand the client asked a site for on 5 November, selling eight of the
+  // client's own Nile valley days. It has no domain of its own yet, so it is closed to real bookings until the
+  // domain is connected and the owner opens it; opening the site is removing this slug. It is a different site
+  // from `king-of-egypt-tours` above, which is closed by its own entry.
+  'key-of-egypt-tours',
   // Coral starts with preference requests only; no route may create a normal booking for it.
   CORAL_REQUEST_TENANT_SLUG,
 ] as const;

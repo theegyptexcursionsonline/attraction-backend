@@ -61,9 +61,16 @@ describe('tenant booking-creation closure policy', () => {
       'wadi-lahmy']) {
       expect(isTenantBookingCreationClosed({ slug })).toBe(true);
     }
+    // Key of Egypt Tours, site 129, is closed by its own slug and is not the King of Egypt Tours preview: the
+    // two names differ by one letter, and each is closed by an entry of its own.
+    expect(isTenantBookingCreationClosed({ slug: 'key-of-egypt-tours' })).toBe(true);
+    expect(() => assertTenantBookingCreationAllowed({ slug: 'key-of-egypt-tours' }))
+      .toThrow(TenantBookingCreationClosedError);
     expect(() => assertTenantBookingCreationAllowed({ slug: 'king-of-egypt-tours' }))
       .toThrow(TenantBookingCreationClosedError);
     // A look-alike slug is a different site and is not closed by this policy.
+    expect(isTenantBookingCreationClosed({ slug: 'key-of-egypt-tour' })).toBe(false);
+    expect(isTenantBookingCreationClosed({ slug: 'keys-of-egypt-tours' })).toBe(false);
     expect(isTenantBookingCreationClosed({ slug: 'king-of-egypt-tours-2' })).toBe(false);
     expect(isTenantBookingCreationClosed({ slug: 'KING-OF-EGYPT-TOURS' })).toBe(false);
   });
@@ -125,6 +132,8 @@ describe('tenant booking-creation closure policy', () => {
         // Batch B16's eight: six places batch B15 held back, and two of the client's own businesses.
         'blue-lagoon-dahab', 'ein-kid', 'seven-pools', 'wadi-zaghara', 'gebel-el-rosas-bay',
         'marsa-abu-galawa', 'skar-transport-cairo', 'future-travel-egypt',
+        // Key of Egypt Tours, site 129, closed until its domain is connected and the owner opens it.
+        'key-of-egypt-tours',
         'coral-safari-hurghada',
       ] },
     });
